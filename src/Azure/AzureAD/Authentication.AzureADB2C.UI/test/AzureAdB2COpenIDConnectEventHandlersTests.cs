@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 
             // Assert
             Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
-            Assert.Equal("/AzureADB2C/Account/ResetPassword/AzureADB2C", remoteFailureContext.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/AzureADB2C/Account/ResetPassword/AzureADB2C", remoteFailureContext.Response.Headers.Location);
             Assert.True(remoteFailureContext.Result.Handled);
         }
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 
             // Assert
             Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
-            Assert.Equal("/", remoteFailureContext.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/", remoteFailureContext.Response.Headers.Location);
             Assert.True(remoteFailureContext.Result.Handled);
         }
 
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 
             // Assert
             Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
-            Assert.Equal("/AzureADB2C/Account/Error", remoteFailureContext.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/AzureADB2C/Account/Error", remoteFailureContext.Response.Headers.Location);
             Assert.True(remoteFailureContext.Result.Handled);
         }
     }

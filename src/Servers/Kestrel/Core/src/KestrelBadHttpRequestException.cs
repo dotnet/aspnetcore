@@ -64,9 +64,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 case RequestRejectionReason.TooManyHeaders:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest_TooManyHeaders, StatusCodes.Status431RequestHeaderFieldsTooLarge, reason);
                     break;
-                case RequestRejectionReason.RequestBodyTooLarge:
-                    ex = new BadHttpRequestException(CoreStrings.BadRequest_RequestBodyTooLarge, StatusCodes.Status413PayloadTooLarge, reason);
-                    break;
                 case RequestRejectionReason.RequestHeadersTimeout:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest_RequestHeadersTimeout, StatusCodes.Status408RequestTimeout, reason);
                     break;
@@ -144,6 +141,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     break;
                 case RequestRejectionReason.InvalidHostHeader:
                     ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(detail), StatusCodes.Status400BadRequest, reason);
+                    break;
+                case RequestRejectionReason.RequestBodyTooLarge:
+                    ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_RequestBodyTooLarge(detail), StatusCodes.Status413PayloadTooLarge, reason);
                     break;
                 default:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest, StatusCodes.Status400BadRequest, reason);

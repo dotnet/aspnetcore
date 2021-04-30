@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Builder
                 SpaProxy.CreateHttpClientForProxy(Timeout.InfiniteTimeSpan);
 
             // Proxy all requests to the SPA development server
-            applicationBuilder.Use(async (context, next) =>
+            applicationBuilder.Run(async (context) =>
             {
                 var didProxyRequest = await SpaProxy.PerformProxyRequest(
                     context, neverTimeOutHttpClient, baseUriTaskFactory(), applicationStoppingToken,

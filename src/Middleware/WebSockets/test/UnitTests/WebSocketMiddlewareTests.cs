@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -138,6 +137,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [Fact]
         public async Task SendLongData_Success()
         {
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
@@ -146,29 +146,22 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
                 var serverBuffer = new byte[orriginalData.Length];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
-                int intermediateCount = result.Count;
-                Assert.False(result.EndOfMessage);
-                Assert.Equal(WebSocketMessageType.Text, result.MessageType);
-
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer, intermediateCount, orriginalData.Length - intermediateCount), CancellationToken.None);
-                intermediateCount += result.Count;
-                Assert.False(result.EndOfMessage);
-                Assert.Equal(WebSocketMessageType.Text, result.MessageType);
-
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer, intermediateCount, orriginalData.Length - intermediateCount), CancellationToken.None);
-                intermediateCount += result.Count;
                 Assert.True(result.EndOfMessage);
-                Assert.Equal(orriginalData.Length, intermediateCount);
-                Assert.Equal(WebSocketMessageType.Text, result.MessageType);
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
                 Assert.Equal(orriginalData, serverBuffer);
+
+                tcs.SetResult();
             }))
             {
                 using (var client = new ClientWebSocket())
                 {
                     await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), CancellationToken.None);
                     await client.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+
                 }
+                // Wait to close the server otherwise the app could throw if it takes longer than the shutdown timeout
+                await tcs.Task;
             }
         }
 
@@ -176,6 +169,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task SendFragmentedData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
@@ -187,6 +181,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.Equal(2, result.Count);
                 int totalReceived = result.Count;
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                tcs.SetResult();
 
                 result = await webSocket.ReceiveAsync(
                     new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
@@ -194,6 +189,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.Equal(2, result.Count);
                 totalReceived += result.Count;
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                tcs.SetResult();
 
                 result = await webSocket.ReceiveAsync(
                     new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
@@ -209,7 +205,11 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 {
                     await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), CancellationToken.None);
                     await client.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                    await tcs.Task;
+                    tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     await client.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                    await tcs.Task;
+                    tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     await client.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
                 }
             }
@@ -570,6 +570,63 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
                         var response = await client.SendAsync(request);
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CommonHeadersAreSetToInternedStrings()
+        {
+            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            {
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+                // Use ReferenceEquals and test against the constants
+                Assert.Same(HeaderNames.Upgrade, context.Request.Headers.Connection.ToString());
+                Assert.Same(Constants.Headers.UpgradeWebSocket, context.Request.Headers.Upgrade.ToString());
+                Assert.Same(Constants.Headers.SupportedVersion, context.Request.Headers.SecWebSocketVersion.ToString());
+            }))
+            {
+                using (var client = new ClientWebSocket())
+                {
+                    await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), CancellationToken.None);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task MultipleValueHeadersNotOverridden()
+        {
+            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            {
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+                Assert.Equal("Upgrade, keep-alive", context.Request.Headers.Connection.ToString());
+                Assert.Equal("websocket, example", context.Request.Headers.Upgrade.ToString());
+            }))
+            {
+                using (var client = new HttpClient())
+                {
+                    var uri = new UriBuilder(new Uri($"ws://127.0.0.1:{port}/"));
+                    uri.Scheme = "http";
+
+                    // Craft a valid WebSocket Upgrade request
+                    using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                    {
+                        request.Headers.Connection.Clear();
+                        request.Headers.Connection.Add("Upgrade");
+                        request.Headers.Connection.Add("keep-alive");
+                        request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("websocket"));
+                        request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("example"));
+                        request.Headers.Add(HeaderNames.SecWebSocketVersion, "13");
+                        // SecWebSocketKey required to be 16 bytes
+                        request.Headers.Add(HeaderNames.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
+
+                        var response = await client.SendAsync(request);
+                        Assert.Equal(HttpStatusCode.SwitchingProtocols, response.StatusCode);
                     }
                 }
             }

@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Rewrite
                 }
 
                 // not using the HttpContext.Response.redirect here because status codes may be 301, 302, 307, 308
-                response.Headers[HeaderNames.Location] = encodedPath;
+                response.Headers.Location = encodedPath;
 
                 context.Logger.RedirectedRequest(newPath);
             }

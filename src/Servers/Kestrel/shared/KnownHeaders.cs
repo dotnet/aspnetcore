@@ -18,6 +18,46 @@ namespace CodeGenerator
         public readonly static KnownHeader[] RequestHeaders;
         public readonly static KnownHeader[] ResponseHeaders;
         public readonly static KnownHeader[] ResponseTrailers;
+        public readonly static string[] InternalHeaderAccessors = new[]
+        {
+            HeaderNames.Allow,
+            HeaderNames.AltSvc,
+            HeaderNames.TransferEncoding,
+            HeaderNames.ContentLength,
+            HeaderNames.Connection,
+            HeaderNames.Scheme,
+            HeaderNames.Path,
+            HeaderNames.Method,
+            HeaderNames.Authority,
+            HeaderNames.Host,
+        };
+
+        public static readonly string[] DefinedHeaderNames = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public).Select(h => h.Name).ToArray();
+
+        public readonly static string[] ObsoleteHeaderNames = new[]
+        {
+            HeaderNames.DNT,
+        };
+
+        public readonly static string[] PsuedoHeaderNames = new[]
+        {
+            "Authority", // :authority
+            "Method", // :method
+            "Path", // :path
+            "Scheme", // :scheme
+            "Status" // :status
+        };
+
+        public readonly static string[] NonApiHeaders =
+            ObsoleteHeaderNames
+            .Concat(PsuedoHeaderNames)
+            .ToArray();
+
+        public static readonly string[] ApiHeaderNames =
+            DefinedHeaderNames
+            .Except(NonApiHeaders)
+            .ToArray();
+
         public readonly static long InvalidH2H3ResponseHeadersBits;
 
         static KnownHeaders()
@@ -45,20 +85,11 @@ namespace CodeGenerator
                 HeaderNames.GrpcEncoding,
                 HeaderNames.KeepAlive,
                 HeaderNames.Pragma,
-                HeaderNames.Trailer,
                 HeaderNames.TransferEncoding,
                 HeaderNames.Upgrade,
                 HeaderNames.Via,
                 HeaderNames.Warning,
-                HeaderNames.Allow,
                 HeaderNames.ContentType,
-                HeaderNames.ContentEncoding,
-                HeaderNames.ContentLanguage,
-                HeaderNames.ContentLocation,
-                HeaderNames.ContentMD5,
-                HeaderNames.ContentRange,
-                HeaderNames.Expires,
-                HeaderNames.LastModified
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsRequestHeaders = new[]
@@ -110,9 +141,11 @@ namespace CodeGenerator
                 HeaderNames.CorrelationContext,
                 HeaderNames.TraceParent,
                 HeaderNames.TraceState,
-                HeaderNames.Baggage
+                HeaderNames.Baggage,
             })
             .Concat(corsRequestHeaders)
+            .OrderBy(header => header)
+            .OrderBy(header => !requestPrimaryHeaders.Contains(header))
             .Select((header, index) => new KnownHeader
             {
                 Name = header,
@@ -157,6 +190,7 @@ namespace CodeGenerator
             {
                 HeaderNames.AcceptRanges,
                 HeaderNames.Age,
+                HeaderNames.Allow,
                 HeaderNames.AltSvc,
                 HeaderNames.ETag,
                 HeaderNames.Location,
@@ -166,9 +200,19 @@ namespace CodeGenerator
                 HeaderNames.Server,
                 HeaderNames.SetCookie,
                 HeaderNames.Vary,
+                HeaderNames.Expires,
                 HeaderNames.WWWAuthenticate,
+                HeaderNames.ContentRange,
+                HeaderNames.ContentEncoding,
+                HeaderNames.ContentLanguage,
+                HeaderNames.ContentLocation,
+                HeaderNames.ContentMD5,
+                HeaderNames.LastModified,
+                HeaderNames.Trailer,
             })
             .Concat(corsResponseHeaders)
+            .OrderBy(header => header)
+            .OrderBy(header => !responsePrimaryHeaders.Contains(header))
             .Select((header, index) => new KnownHeader
             {
                 Name = header,
@@ -192,6 +236,8 @@ namespace CodeGenerator
                 HeaderNames.GrpcMessage,
                 HeaderNames.GrpcStatus
             }
+            .OrderBy(header => header)
+            .OrderBy(header => !responsePrimaryHeaders.Contains(header))
             .Select((header, index) => new KnownHeader
             {
                 Name = header,
@@ -730,6 +776,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 #nullable enable
@@ -747,7 +794,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {GetHeaderLookup()}
     }}
 {Each(loops, loop => $@"
-    internal partial class {loop.ClassName}
+    internal partial class {loop.ClassName} : IHeaderDictionary
     {{{(loop.Bytes != null ?
         $@"
         private static ReadOnlySpan<byte> HeaderBytes => new byte[]
@@ -760,7 +807,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool Has{header.Identifier} => {header.TestBit()};")}
 {Each(loop.Headers.Where(header => header.FastCount), header => $@"
         public int {header.Identifier}Count => _headers._{header.Identifier}.Count;")}
-        {Each(loop.Headers, header => $@"
+{Each(loop.Headers.Where(header => Array.IndexOf(InternalHeaderAccessors, header.Name) >= 0), header => $@"
         public {(header.Name == HeaderNames.Connection ? "override " : "")}StringValues Header{header.Identifier}
         {{{(header.Name == HeaderNames.ContentLength ? $@"
             get
@@ -791,6 +838,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
             }}")}
+        }}")}
+        {Each(loop.Headers.Where(header => header.Name != HeaderNames.ContentLength && !NonApiHeaders.Contains(header.Identifier)), header => $@"
+        StringValues IHeaderDictionary.{header.Identifier}
+        {{
+            get
+            {{
+                var value = _headers._{header.Identifier};
+                if ({header.TestBit()})
+                {{
+                    return value;
+                }}
+                return default;
+            }}
+            set
+            {{
+                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
+
+                var flag = {header.FlagBit()};
+                if (value.Count > 0)
+                {{
+                    _bits |= flag;
+                    _headers._{header.Identifier} = value;
+                }}
+                else
+                {{
+                    _bits &= ~flag;
+                    _headers._{header.Identifier} = default;
+                }}{(header.EnhancedSetter == false ? "" : $@"
+                    _headers._raw{header.Identifier} = null;")}
+            }}
+        }}")}
+        {Each(ApiHeaderNames.Where(header => header != "ContentLength" && !loop.Headers.Select(kh => kh.Identifier).Contains(header)), header => $@"
+        StringValues IHeaderDictionary.{header}
+        {{
+            get
+            {{
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.{header}, ref value))
+                {{
+                    value = default;
+                }}
+                return value;
+            }}
+            set
+            {{
+                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
+
+                SetValueUnknown(HeaderNames.{header}, value);
+            }}
         }}")}
 {Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
         public void SetRaw{header.Identifier}(StringValues value, byte[] raw)
@@ -1186,28 +1282,28 @@ $@"        private void Clear(long bitsToClear)
                     if ({header.TestBit()})
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _collection._headers._{header.Identifier});
-                        _currentKnownType = KnownHeaderType.{header.Identifier};
-                        _next = {header.Index + 1};
+                        {(loop.ClassName.Contains("Request") ? "" : @$"_currentKnownType = KnownHeaderType.{header.Identifier};
+                        ")}_next = {header.Index + 1};
                         return true;
                     }}")}
                 {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Count() - 1}
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _currentKnownType = KnownHeaderType.ContentLength;
-                        _next = {loop.Headers.Count()};
+                        {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.ContentLength;
+                        ")}_next = {loop.Headers.Count()};
                         return true;
                     }}" : "")}
                 ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{
                         _current = default(KeyValuePair<string, StringValues>);
-                        _currentKnownType = default;
-                        return false;
+                        {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = default;
+                        ")}return false;
                     }}
                     _current = _unknownEnumerator.Current;
-                    _currentKnownType = KnownHeaderType.Unknown;
-                    return true;
+                    {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.Unknown;
+                    ")}return true;
             }}
         }}
     }}
@@ -1216,10 +1312,9 @@ $@"        private void Clear(long bitsToClear)
 
         private static string GetHeaderLookup()
         {
-            var headerNameFields = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public);
-            return @$"private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>({headerNameFields.Length}, StringComparer.OrdinalIgnoreCase)
-        {{{Each(headerNameFields, (f) => @"
-            HeaderNames." + f.Name + ",")}
+            return @$"private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>({DefinedHeaderNames.Length}, StringComparer.OrdinalIgnoreCase)
+        {{{Each(DefinedHeaderNames, (h) => @"
+            HeaderNames." + h + ",")}
         }};";
         }
 

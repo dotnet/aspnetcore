@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Hosting
         internal string ToStringWithoutPreamble()
             => ToString().Substring(LogPreamble.Length);
 
-        internal static string EscapedValueOrEmptyMarker(string potentialValue)
+        internal static string EscapedValueOrEmptyMarker(string? potentialValue)
             // Encode space as +
             => potentialValue?.Length > 0 ? potentialValue.Replace(' ', '+') : EmptyEntry;
 

@@ -79,6 +79,8 @@ namespace Microsoft.AspNetCore.Components.Web
             }
         }
 
+        [DynamicDependency(JsonSerialized, typeof(DataTransfer))]
+        [DynamicDependency(JsonSerialized, typeof(DataTransferItem))]
         private static bool TryDeserializeStandardWebEventArgs(string eventName, string eventArgsJson, [NotNullWhen(true)] out EventArgs? eventArgs)
         {
             // For back-compatibility, we recognize the built-in list of web event names and hard-code
@@ -216,6 +218,8 @@ namespace Microsoft.AspNetCore.Components.Web
             return null;
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members are preserved by DynamicDependencies.")]
+        // This should use JSON source generation
         static T Deserialize<[DynamicallyAccessedMembers(JsonSerialized)] T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options)!;
 
         private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson)

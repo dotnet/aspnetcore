@@ -7,5 +7,4 @@ using Templates.Test;
 using Templates.Test.Helpers;
 
 [assembly: AssemblyFixture(typeof(ProjectFactoryFixture))]
-[assembly: AssemblyFixture(typeof(PlaywrightFixture<BlazorServerTemplateTest>))]
 

@@ -22,6 +22,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,10 +34,6 @@
       <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="TaskTimeoutExtensions.cs" />
   </ItemGroup>
 
 </Project>

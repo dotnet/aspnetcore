@@ -371,7 +371,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
-        "Startup.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -383,7 +382,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.fs",
-        "Startup.fs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"

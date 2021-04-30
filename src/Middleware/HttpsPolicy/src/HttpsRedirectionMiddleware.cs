@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                 request.QueryString);
 
             context.Response.StatusCode = _statusCode;
-            context.Response.Headers[HeaderNames.Location] = redirectUrl;
+            context.Response.Headers.Location = redirectUrl;
 
             _logger.RedirectingToHttps(redirectUrl);
 

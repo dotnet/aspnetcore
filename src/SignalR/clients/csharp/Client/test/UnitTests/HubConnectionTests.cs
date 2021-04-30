@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -33,10 +33,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var exception = new InvalidOperationException();
                 var hubConnection = CreateHubConnection(new TestConnection(), protocol: MockHubProtocol.Throw(exception), LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var actualException =
-                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.InvokeAsync<int>("test").OrTimeout());
+                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.InvokeAsync<int>("test").DefaultTimeout());
                 Assert.Same(exception, actualException);
             }
         }
@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var exception = new InvalidOperationException();
                 var hubConnection = CreateHubConnection(new TestConnection(), protocol: MockHubProtocol.Throw(exception), LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var actualException =
-                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.SendAsync("test").OrTimeout());
+                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.SendAsync("test").DefaultTimeout());
                 Assert.Same(exception, actualException);
             }
         }
@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return Task.CompletedTask;
             };
 
-            await hubConnection.StartAsync().OrTimeout();
-            await hubConnection.StopAsync().OrTimeout();
+            await hubConnection.StartAsync().DefaultTimeout();
+            await hubConnection.StopAsync().DefaultTimeout();
             Assert.Null(await closedEventTcs.Task);
         }
 
@@ -87,15 +87,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             hubConnection.On("method", async () =>
             {
-                await hubConnection.StopAsync().OrTimeout();
+                await hubConnection.StopAsync().DefaultTimeout();
                 tcs.SetResult();
             });
 
-            await hubConnection.StartAsync().OrTimeout();
+            await hubConnection.StartAsync().DefaultTimeout();
 
-            await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target= "method", arguments = new object[] { } }).OrTimeout();
+            await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target= "method", arguments = new object[] { } }).DefaultTimeout();
 
-            await tcs.Task.OrTimeout();
+            await tcs.Task.DefaultTimeout();
         }
 
         [Fact]
@@ -112,12 +112,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await tcs.Task;
             });
 
-            await hubConnection.StartAsync().OrTimeout();
+            await hubConnection.StartAsync().DefaultTimeout();
 
-            await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target = "method", arguments = new object[] { } }).OrTimeout();
+            await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target = "method", arguments = new object[] { } }).DefaultTimeout();
 
-            await methodCalledTcs.Task.OrTimeout();
-            await hubConnection.StopAsync().OrTimeout();
+            await methodCalledTcs.Task.DefaultTimeout();
+            await hubConnection.StopAsync().DefaultTimeout();
 
             tcs.SetResult();
         }
@@ -129,9 +129,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
-                var invokeTask = hubConnection.InvokeAsync<int>("testMethod").OrTimeout();
-                await hubConnection.StopAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
+                var invokeTask = hubConnection.InvokeAsync<int>("testMethod").DefaultTimeout();
+                await hubConnection.StopAsync().DefaultTimeout();
 
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask);
             }
@@ -151,8 +151,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, protocol: Mock.Of<IHubProtocol>(), LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
-                var invokeTask = hubConnection.InvokeAsync<int>("testMethod").OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
+                var invokeTask = hubConnection.InvokeAsync<int>("testMethod").DefaultTimeout();
 
                 var exception = new InvalidOperationException();
                 connection.CompleteFromTransport(exception);
@@ -169,9 +169,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var invokeTask = hubConnection.InvokeAsync<int>("testMethod", cancellationToken: cts.Token).OrTimeout();
+                var invokeTask = hubConnection.InvokeAsync<int>("testMethod", cancellationToken: cts.Token).DefaultTimeout();
                 cts.Cancel();
 
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask);
@@ -186,14 +186,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
                 await Assert.ThrowsAsync<TaskCanceledException>(() =>
-                    hubConnection.InvokeAsync<int>("testMethod", cancellationToken: new CancellationToken(canceled: true)).OrTimeout());
+                    hubConnection.InvokeAsync<int>("testMethod", cancellationToken: new CancellationToken(canceled: true)).DefaultTimeout());
 
-                await hubConnection.StopAsync().OrTimeout();
+                await hubConnection.StopAsync().DefaultTimeout();
 
                 // Assert that InvokeAsync didn't send a message
-                Assert.Null(await connection.ReadSentTextMessageAsync().OrTimeout());
+                Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
             }
         }
 
@@ -205,14 +205,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
                 await Assert.ThrowsAsync<TaskCanceledException>(() =>
-                    hubConnection.SendAsync("testMethod", cancellationToken: new CancellationToken(canceled: true)).OrTimeout());
+                    hubConnection.SendAsync("testMethod", cancellationToken: new CancellationToken(canceled: true)).DefaultTimeout());
 
-                await hubConnection.StopAsync().OrTimeout();
+                await hubConnection.StopAsync().DefaultTimeout();
 
                 // Assert that SendAsync didn't send a message
-                Assert.Null(await connection.ReadSentTextMessageAsync().OrTimeout());
+                Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
             }
         }
 
@@ -224,14 +224,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
                 await Assert.ThrowsAsync<TaskCanceledException>(() =>
-                    hubConnection.StreamAsChannelAsync<int>("testMethod", cancellationToken: new CancellationToken(canceled: true)).OrTimeout());
+                    hubConnection.StreamAsChannelAsync<int>("testMethod", cancellationToken: new CancellationToken(canceled: true)).DefaultTimeout());
 
-                await hubConnection.StopAsync().OrTimeout();
+                await hubConnection.StopAsync().DefaultTimeout();
 
                 // Assert that StreamAsChannelAsync didn't send a message
-                Assert.Null(await connection.ReadSentTextMessageAsync().OrTimeout());
+                Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
             }
         }
 
@@ -243,14 +243,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
                 var result = hubConnection.StreamAsync<int>("testMethod", cancellationToken: new CancellationToken(canceled: true));
-                await Assert.ThrowsAsync<TaskCanceledException>(() => result.GetAsyncEnumerator().MoveNextAsync().OrTimeout());
+                await Assert.ThrowsAsync<TaskCanceledException>(() => result.GetAsyncEnumerator().MoveNextAsync().DefaultTimeout());
 
-                await hubConnection.StopAsync().OrTimeout();
+                await hubConnection.StopAsync().DefaultTimeout();
 
                 // Assert that StreamAsync didn't send a message
-                Assert.Null(await connection.ReadSentTextMessageAsync().OrTimeout());
+                Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
             }
         }
 
@@ -262,21 +262,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var asyncEnumerable = hubConnection.StreamAsync<int>("Stream", 1);
                 using var cts = new CancellationTokenSource();
                 await using var e = asyncEnumerable.GetAsyncEnumerator(cts.Token);
                 var task = e.MoveNextAsync();
 
-                var item = await connection.ReadSentJsonAsync().OrTimeout();
+                var item = await connection.ReadSentJsonAsync().DefaultTimeout();
                 await connection.ReceiveJsonMessage(
                     new { type = HubProtocolConstants.CompletionMessageType, invocationId = item["invocationId"] }
-                    ).OrTimeout();
+                    ).DefaultTimeout();
 
-                await task.OrTimeout();
+                await task.DefaultTimeout();
 
-                while (await e.MoveNextAsync().OrTimeout())
+                while (await e.MoveNextAsync().DefaultTimeout())
                 {
                 }
                 // Cancel after stream is completed but before the AsyncEnumerator is disposed
@@ -304,9 +304,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return Task.CompletedTask;
                 };
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
-                var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.OrTimeout());
+                var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.DefaultTimeout());
 
                 // We use an interpolated string so the tests are accurate on non-US machines.
                 Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var hubConnection = CreateHubConnection(testConnection, loggerFactory: LoggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(1);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var closeTcs = new TaskCompletionSource<Exception>();
                 hubConnection.Closed += ex =>
@@ -332,11 +332,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return Task.CompletedTask;
                 };
 
-                await hubConnection.RunTimerActions().OrTimeout();
+                await hubConnection.RunTimerActions().DefaultTimeout();
 
                 Assert.False(closeTcs.Task.IsCompleted);
 
-                await hubConnection.DisposeAsync().OrTimeout();
+                await hubConnection.DisposeAsync().DefaultTimeout();
             }
         }
 
@@ -355,10 +355,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(2000);
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 // Start an invocation (but we won't complete it)
-                var invokeTask = hubConnection.InvokeAsync("Method").OrTimeout();
+                var invokeTask = hubConnection.InvokeAsync("Method").DefaultTimeout();
 
                 var exception = await Assert.ThrowsAsync<TimeoutException>(() => invokeTask);
 
@@ -375,34 +375,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var channel = Channel.CreateUnbounded<int>();
                 var invokeTask = hubConnection.InvokeAsync<int>("SomeMethod", channel.Reader);
 
-                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                var invocation = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 Assert.Equal("SomeMethod", invocation["target"]);
                 var streamId = invocation["streamIds"][0];
 
                 foreach (var number in new[] { 42, 43, 322, 3145, -1234 })
                 {
-                    await channel.Writer.WriteAsync(number).AsTask().OrTimeout();
+                    await channel.Writer.WriteAsync(number).AsTask().DefaultTimeout();
 
-                    var item = await connection.ReadSentJsonAsync().OrTimeout();
+                    var item = await connection.ReadSentJsonAsync().DefaultTimeout();
                     Assert.Equal(HubProtocolConstants.StreamItemMessageType, item["type"]);
                     Assert.Equal(number, item["item"]);
                     Assert.Equal(streamId, item["invocationId"]);
                 }
 
                 channel.Writer.TryComplete();
-                var completion = await connection.ReadSentJsonAsync().OrTimeout();
+                var completion = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.CompletionMessageType, completion["type"]);
 
                 await connection.ReceiveJsonMessage(
                     new { type = HubProtocolConstants.CompletionMessageType, invocationId = invocation["invocationId"], result = 42 }
-                    ).OrTimeout();
-                var result = await invokeTask.OrTimeout();
+                    ).DefaultTimeout();
+                var result = await invokeTask.DefaultTimeout();
                 Assert.Equal(42, result);
             }
         }
@@ -415,12 +415,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var channel = Channel.CreateUnbounded<int>();
                 var sendTask = hubConnection.SendAsync("SomeMethod", channel.Reader);
 
-                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                var invocation = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 Assert.Equal("SomeMethod", invocation["target"]);
                 Assert.Null(invocation["invocationId"]);
@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await channel.Writer.WriteAsync(item);
 
-                    var received = await connection.ReadSentJsonAsync().OrTimeout();
+                    var received = await connection.ReadSentJsonAsync().DefaultTimeout();
                     Assert.Equal(HubProtocolConstants.StreamItemMessageType, received["type"]);
                     Assert.Equal(item, received["item"]);
                     Assert.Equal(streamId, received["invocationId"]);
@@ -446,12 +446,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var channel = Channel.CreateUnbounded<object>();
                 var invokeTask = hubConnection.InvokeAsync<SampleObject>("UploadMethod", channel.Reader);
 
-                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                var invocation = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 Assert.Equal("UploadMethod", invocation["target"]);
                 var id = invocation["invocationId"];
@@ -461,21 +461,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await channel.Writer.WriteAsync(item);
 
-                    var received = await connection.ReadSentJsonAsync().OrTimeout();
+                    var received = await connection.ReadSentJsonAsync().DefaultTimeout();
                     Assert.Equal(HubProtocolConstants.StreamItemMessageType, received["type"]);
                     Assert.Equal(item.Foo, received["item"]["foo"]);
                     Assert.Equal(item.Bar, received["item"]["bar"]);
                 }
 
                 channel.Writer.TryComplete();
-                var completion = await connection.ReadSentJsonAsync().OrTimeout();
+                var completion = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.CompletionMessageType, completion["type"]);
 
                 var expected = new SampleObject("oof", 14);
                 await connection.ReceiveJsonMessage(
                     new { type = HubProtocolConstants.CompletionMessageType, invocationId = id, result = expected }
-                    ).OrTimeout();
-                var result = await invokeTask.OrTimeout();
+                    ).DefaultTimeout();
+                var result = await invokeTask.DefaultTimeout();
 
                 Assert.Equal(expected.Foo, result.Foo);
                 Assert.Equal(expected.Bar, result.Bar);
@@ -490,13 +490,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
                 var channel = Channel.CreateUnbounded<int>();
                 var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader, cts.Token);
 
-                var invokeMessage = await connection.ReadSentJsonAsync().OrTimeout();
+                var invokeMessage = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invokeMessage["type"]);
 
                 cts.Cancel();
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
 
                 // the next sent message should be a completion message
-                var complete = await connection.ReadSentJsonAsync().OrTimeout();
+                var complete = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
                 Assert.EndsWith("canceled by client.", ((string)complete["error"]));
             }
@@ -522,17 +522,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var channel = Channel.CreateUnbounded<int>();
                 var invokeTask = hubConnection.InvokeAsync<long>("UploadMethod", channel.Reader);
-                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                var invocation = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 var id = invocation["invocationId"];
 
                 await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CompletionMessageType, invocationId = id, result = 10 });
 
-                var result = await invokeTask.OrTimeout();
+                var result = await invokeTask.DefaultTimeout();
                 Assert.Equal(10L, result);
 
                 // after the server returns, with whatever response
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 // we expect to get sent ints, and receive an int back
                 var channel = Channel.CreateUnbounded<int>();
@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
                 var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 hubConnection.On<string>("Echo", async msg =>
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     try
                     {
                         // This should be canceled when the connection is closed
-                        await hubConnection.InvokeAsync<string>("Echo", msg).OrTimeout();
+                        await hubConnection.InvokeAsync<string>("Echo", msg).DefaultTimeout();
                     }
                     catch (Exception ex)
                     {
@@ -614,15 +614,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return Task.CompletedTask;
                 };
 
-                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target = "Echo", arguments = new object[] { "42" } }).OrTimeout();
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target = "Echo", arguments = new object[] { "42" } }).DefaultTimeout();
 
                 // Read sent message first to make sure invoke has been processed and is waiting for a response
-                await connection.ReadSentJsonAsync().OrTimeout();
-                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CloseMessageType }).OrTimeout();
+                await connection.ReadSentJsonAsync().DefaultTimeout();
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CloseMessageType }).DefaultTimeout();
 
-                await closedTcs.Task.OrTimeout();
+                await closedTcs.Task.DefaultTimeout();
 
-                await Assert.ThrowsAsync<TaskCanceledException>(() => tcs.Task.OrTimeout());
+                await Assert.ThrowsAsync<TaskCanceledException>(() => tcs.Task.DefaultTimeout());
             }
         }
 
@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var connection = new TestConnection();
                 await using var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
             }
         }
 

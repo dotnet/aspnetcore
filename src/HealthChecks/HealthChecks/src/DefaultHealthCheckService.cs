@@ -50,15 +50,14 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             var tasks = new Task<HealthReportEntry>[registrations.Count];
             var index = 0;
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                foreach (var registration in registrations)
-                {
-                    tasks[index++] = Task.Run(() => RunCheckAsync(scope, registration, cancellationToken), cancellationToken);
-                }
 
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+            foreach (var registration in registrations)
+            {
+                tasks[index++] = Task.Run(() => RunCheckAsync(registration, cancellationToken), cancellationToken);
             }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
 
             index = 0;
             var entries = new Dictionary<string, HealthReportEntry>(StringComparer.OrdinalIgnoreCase);
@@ -73,85 +72,88 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             return report;
         }
 
-        private async Task<HealthReportEntry> RunCheckAsync(IServiceScope scope, HealthCheckRegistration registration, CancellationToken cancellationToken)
+        private async Task<HealthReportEntry> RunCheckAsync(HealthCheckRegistration registration, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var healthCheck = registration.Factory(scope.ServiceProvider);
-
-            // If the health check does things like make Database queries using EF or backend HTTP calls,
-            // it may be valuable to know that logs it generates are part of a health check. So we start a scope.
-            using (_logger.BeginScope(new HealthCheckLogScope(registration.Name)))
+            using (var scope = _scopeFactory.CreateScope())
             {
-                var stopwatch = ValueStopwatch.StartNew();
-                var context = new HealthCheckContext { Registration = registration };
+                var healthCheck = registration.Factory(scope.ServiceProvider);
 
-                Log.HealthCheckBegin(_logger, registration);
-
-                HealthReportEntry entry;
-                CancellationTokenSource? timeoutCancellationTokenSource = null;
-                try
+                // If the health check does things like make Database queries using EF or backend HTTP calls,
+                // it may be valuable to know that logs it generates are part of a health check. So we start a scope.
+                using (_logger.BeginScope(new HealthCheckLogScope(registration.Name)))
                 {
-                    HealthCheckResult result;
+                    var stopwatch = ValueStopwatch.StartNew();
+                    var context = new HealthCheckContext { Registration = registration };
 
-                    var checkCancellationToken = cancellationToken;
-                    if (registration.Timeout > TimeSpan.Zero)
+                    Log.HealthCheckBegin(_logger, registration);
+
+                    HealthReportEntry entry;
+                    CancellationTokenSource? timeoutCancellationTokenSource = null;
+                    try
                     {
-                        timeoutCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                        timeoutCancellationTokenSource.CancelAfter(registration.Timeout);
-                        checkCancellationToken = timeoutCancellationTokenSource.Token;
+                        HealthCheckResult result;
+
+                        var checkCancellationToken = cancellationToken;
+                        if (registration.Timeout > TimeSpan.Zero)
+                        {
+                            timeoutCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                            timeoutCancellationTokenSource.CancelAfter(registration.Timeout);
+                            checkCancellationToken = timeoutCancellationTokenSource.Token;
+                        }
+
+                        result = await healthCheck.CheckHealthAsync(context, checkCancellationToken).ConfigureAwait(false);
+
+                        var duration = stopwatch.GetElapsedTime();
+
+                        entry = new HealthReportEntry(
+                            status: result.Status,
+                            description: result.Description,
+                            duration: duration,
+                            exception: result.Exception,
+                            data: result.Data,
+                            tags: registration.Tags);
+
+                        Log.HealthCheckEnd(_logger, registration, entry, duration);
+                        Log.HealthCheckData(_logger, registration, entry);
+                    }
+                    catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                    {
+                        var duration = stopwatch.GetElapsedTime();
+                        entry = new HealthReportEntry(
+                            status: registration.FailureStatus,
+                            description: "A timeout occurred while running check.",
+                            duration: duration,
+                            exception: ex,
+                            data: null,
+                            tags: registration.Tags);
+
+                        Log.HealthCheckError(_logger, registration, ex, duration);
                     }
 
-                    result = await healthCheck.CheckHealthAsync(context, checkCancellationToken).ConfigureAwait(false);
+                    // Allow cancellation to propagate if it's not a timeout.
+                    catch (Exception ex) when (ex as OperationCanceledException == null)
+                    {
+                        var duration = stopwatch.GetElapsedTime();
+                        entry = new HealthReportEntry(
+                            status: registration.FailureStatus,
+                            description: ex.Message,
+                            duration: duration,
+                            exception: ex,
+                            data: null,
+                            tags: registration.Tags);
 
-                    var duration = stopwatch.GetElapsedTime();
+                        Log.HealthCheckError(_logger, registration, ex, duration);
+                    }
 
-                    entry = new HealthReportEntry(
-                        status: result.Status,
-                        description: result.Description,
-                        duration: duration,
-                        exception: result.Exception,
-                        data: result.Data,
-                        tags: registration.Tags);
+                    finally
+                    {
+                        timeoutCancellationTokenSource?.Dispose();
+                    }
 
-                    Log.HealthCheckEnd(_logger, registration, entry, duration);
-                    Log.HealthCheckData(_logger, registration, entry);
+                    return entry;
                 }
-                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
-                {
-                    var duration = stopwatch.GetElapsedTime();
-                    entry = new HealthReportEntry(
-                        status: registration.FailureStatus,
-                        description: "A timeout occurred while running check.",
-                        duration: duration,
-                        exception: ex,
-                        data: null,
-                        tags: registration.Tags);
-
-                    Log.HealthCheckError(_logger, registration, ex, duration);
-                }
-
-                // Allow cancellation to propagate if it's not a timeout.
-                catch (Exception ex) when (ex as OperationCanceledException == null)
-                {
-                    var duration = stopwatch.GetElapsedTime();
-                    entry = new HealthReportEntry(
-                        status: registration.FailureStatus,
-                        description: ex.Message,
-                        duration: duration,
-                        exception: ex,
-                        data: null,
-                        tags: registration.Tags);
-
-                    Log.HealthCheckError(_logger, registration, ex, duration);
-                }
-
-                finally
-                {
-                    timeoutCancellationTokenSource?.Dispose();
-                }
-
-                return entry;
             }
         }
 

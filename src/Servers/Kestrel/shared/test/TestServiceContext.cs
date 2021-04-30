@@ -18,9 +18,8 @@ namespace Microsoft.AspNetCore.Testing
         {
             var logger = new TestApplicationErrorLogger();
             var kestrelTrace = new TestKestrelTrace(logger);
-            var loggerFactory = new LoggerFactory(new[] { new KestrelTestLoggerProvider(logger) });
 
-            Initialize(loggerFactory, kestrelTrace);
+            Initialize(kestrelTrace.LoggerFactory, kestrelTrace);
         }
 
         public TestServiceContext(ILoggerFactory loggerFactory)
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Testing
 
         private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
         {
-            return new KestrelTrace(loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
+            return new KestrelTrace(loggerFactory);
         }
 
         public void InitializeHeartbeat()
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public MockSystemClock MockSystemClock { get; set; }
 
-        public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
+        public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
 
         public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }

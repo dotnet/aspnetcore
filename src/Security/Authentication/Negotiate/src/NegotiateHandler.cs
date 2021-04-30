@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 persistence = (AuthPersistence)connectionItems[AuthPersistenceKey]!;
                 _negotiateState = persistence?.State;
 
-                var authorizationHeader = Request.Headers[HeaderNames.Authorization];
+                var authorizationHeader = Request.Headers.Authorization;
 
                 if (StringValues.IsNullOrEmpty(authorizationHeader))
                 {
@@ -299,6 +299,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 // Not supported. We don't throw because Negotiate may be set as the default auth
                 // handler on a server that's running HTTP/1 and HTTP/2. We'll challenge HTTP/2 requests
                 // that require auth and they'll downgrade to HTTP/1.1.
+                Logger.ProtocolNotSupported(Request.Protocol);
                 return AuthenticateResult.NoResult();
             }
 

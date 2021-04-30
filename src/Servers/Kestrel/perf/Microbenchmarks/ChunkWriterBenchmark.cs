@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         [GlobalSetup]
         public void Setup()
         {
-            _memoryPool = SlabMemoryPoolFactory.Create();
+            _memoryPool = PinnedBlockMemoryPoolFactory.Create();
             var pipe = new Pipe(new PipeOptions(_memoryPool));
             _reader = pipe.Reader;
             _writer = pipe.Writer;

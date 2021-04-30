@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var httpContext = new Mock<HttpContext>();
             var httpRequest = new DefaultHttpContext().Request;
-            httpRequest.Headers[HeaderNames.AcceptCharset] = acceptCharsetHeaders;
-            httpRequest.Headers[HeaderNames.Accept] = "application/acceptCharset";
+            httpRequest.Headers.AcceptCharset = acceptCharsetHeaders;
+            httpRequest.Headers.Accept = "application/acceptCharset";
             httpContext.SetupGet(o => o.Request).Returns(httpRequest);
 
             var formatter = new TestOutputFormatter();
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 typeof(string),
                 "someValue")
             {
-                ContentType = new StringSegment(httpRequest.Headers[HeaderNames.Accept]),
+                ContentType = new StringSegment(httpRequest.Headers.Accept),
             };
 
             // Act
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var formatter = new OverrideEncodingFormatter(encoding: null);
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.AcceptCharset] = expectedValue;
+            context.Request.Headers.AcceptCharset = expectedValue;
 
             var writerContext = new OutputFormatterWriteContext(
                 context,
