@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             SecurityToken = validatedToken
                         };
 
-                        tokenValidatedContext.Properties.ExpiresUtc = validatedToken?.ValidTo;
-                        tokenValidatedContext.Properties.IssuedUtc = validatedToken?.ValidFrom;
+                        tokenValidatedContext.Properties.ExpiresUtc = validatedToken.ValidTo;
+                        tokenValidatedContext.Properties.IssuedUtc = validatedToken.ValidFrom;
 
                         await Events.TokenValidated(tokenValidatedContext);
                         if (tokenValidatedContext.Result != null)

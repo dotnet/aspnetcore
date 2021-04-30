@@ -976,7 +976,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
             {
-                validatedToken = null;
+                validatedToken = new TestSecurityToken();
                 _tokenValidator?.Invoke(securityToken);
 
                 var claims = new[]
