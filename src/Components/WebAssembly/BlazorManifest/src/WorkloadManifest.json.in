@@ -6,7 +6,7 @@
       "packs": [
         "Microsoft.NET.Runtime.MonoAOTCompiler.Task",
         "Microsoft.NET.Runtime.WebAssembly.Sdk",
-        "Microsoft.Netcore.App.Runtime.Aot.Cross.browser-wasm",
+        "Microsoft.NETCore.App.Runtime.AOT.Cross.browser-wasm",
         "Microsoft.NET.Runtime.Emscripten.Node",
         "Microsoft.NET.Runtime.Emscripten.Python",
         "Microsoft.NET.Runtime.Emscripten.Sdk"
@@ -29,7 +29,8 @@
         "win-x86": "Microsoft.NETCore.App.Runtime.AOT.win-x86.Cross.browser-wasm",
         "win-x64": "Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm",
         "linux-x64": "Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.browser-wasm",
-        "osx-x64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.browser-wasm"
+        "osx-x64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.browser-wasm",
+        "osx-arm64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.browser-wasm"
       }
     },
     "Microsoft.NET.Runtime.Emscripten.Node" : {
@@ -39,7 +40,8 @@
         "win-x86": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.win-x86",
         "win-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.win-x64",
         "linux-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.linux-x64",
-        "osx-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.osx-x64"
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.osx-x64"
       }
     },
     "Microsoft.NET.Runtime.Emscripten.Python" : {
@@ -48,7 +50,8 @@
       "alias-to": {
         "win-x86": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x86",
         "win-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x64",
-        "osx-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.osx-x64"
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.osx-x64"
       }
     },
     "Microsoft.NET.Runtime.Emscripten.Sdk" : {
@@ -58,7 +61,8 @@
         "win-x86": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.win-x86",
         "win-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.win-x64",
         "linux-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.linux-x64",
-        "osx-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.osx-x64"
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.osx-x64"
       }
     }
   }

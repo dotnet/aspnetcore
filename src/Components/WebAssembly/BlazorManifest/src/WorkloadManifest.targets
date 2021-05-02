@@ -11,7 +11,7 @@
     <ImportGroup Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'">
       <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Condition="'$(RunAOTCompilation)' == 'true'" />
       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Runtime.WebAssembly.Sdk" />
-      <Import Project="Sdk.props" Sdk="Microsoft.Netcore.App.Runtime.Aot.Cross.browser-wasm" />
+      <Import Project="Sdk.props" Sdk="Microsoft.NETCore.App.Runtime.AOT.Cross.browser-wasm" />
       <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Python" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
       <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Node" />
       <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Sdk" />
