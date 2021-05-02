@@ -45,8 +45,6 @@
     "max-classes-per-file": "off",
     "@typescript-eslint/no-floating-promises": "error",
     "no-empty": "off",
-    "no-bitwise": "off",
-    "no-console": "off",
     "prefer-const": ["error", {
       "ignoreReadBeforeAssign": false
     }],
@@ -73,6 +71,19 @@
           "balanced": true
       }
     }],
-    "guard-for-in": "error"
+    "guard-for-in": "error",
+    "no-labels": ["error", {"allowLoop": true, "allowSwitch": true}],
+    "new-parens": "error",
+    "@typescript-eslint/consistent-type-assertions": [ "error", { "assertionStyle": "as"} ],
+    "no-caller": "error",
+    "no-new-wrappers": "error",
+    "no-eval": "error",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
+    "dot-notation": "off",
+    "@typescript-eslint/dot-notation": ["error"],
+    "no-throw-literal": "off",
+    "@typescript-eslint/no-throw-literal": ["error"]
+
   }
 }

@@ -220,6 +220,7 @@ export class HubConnection {
                 // It's important to throw instead of returning a rejected promise, because we don't want to allow any state
                 // transitions to occur between now and the calling code observing the exceptions. Returning a rejected promise
                 // will cause the calling continuation to get scheduled to run later.
+                // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw this._stopDuringStartError;
             }
         } catch (e) {
@@ -647,7 +648,6 @@ export class HubConnection {
         }
     }
 
-    // tslint:disable-next-line:naming-convention
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
         // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
@@ -895,7 +895,7 @@ export class HubConnection {
         }
 
         // We want to iterate over the keys, since the keys are the stream ids
-        // tslint:disable-next-line:forin
+        // eslint-disable-next-line guard-for-in
         for (const streamId in streams) {
             streams[streamId].subscribe({
                 complete: () => {

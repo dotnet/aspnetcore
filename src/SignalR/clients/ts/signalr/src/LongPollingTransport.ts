@@ -111,13 +111,13 @@ export class LongPollingTransport implements ITransport {
             request.headers = {};
         }
         if (token) {
-            // tslint:disable-next-line:no-string-literal
+            // eslint-disable-next-line @typescript-eslint/dot-notation
             request.headers["Authorization"] = `Bearer ${token}`;
             return;
         }
-        // tslint:disable-next-line:no-string-literal
+        // eslint-disable-next-line @typescript-eslint/dot-notation
         if (request.headers["Authorization"]) {
-            // tslint:disable-next-line:no-string-literal
+            // eslint-disable-next-line @typescript-eslint/dot-notation
             delete request.headers["Authorization"];
         }
     }

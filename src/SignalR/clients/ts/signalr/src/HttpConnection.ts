@@ -307,7 +307,8 @@ export class HttpConnection implements IConnection {
         if (this._accessTokenFactory) {
             const token = await this._accessTokenFactory();
             if (token) {
-                headers[`Authorization`] = `Bearer ${token}`;
+                // eslint-disable-next-line @typescript-eslint/dot-notation
+                headers["Authorization"] = `Bearer ${token}`;
             }
         }
 

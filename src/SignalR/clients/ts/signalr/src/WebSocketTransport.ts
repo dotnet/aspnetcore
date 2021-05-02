@@ -59,6 +59,7 @@ export class WebSocketTransport implements ITransport {
                 headers[name] = value;
 
                 if (cookies) {
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     headers[`Cookie`] = `${cookies}`;
                 }
 
@@ -77,7 +78,6 @@ export class WebSocketTransport implements ITransport {
                 webSocket.binaryType = "arraybuffer";
             }
 
-            // tslint:disable-next-line:variable-name
             webSocket.onopen = (_event: Event) => {
                 this._logger.log(LogLevel.Information, `WebSocket connected to ${url}.`);
                 this._webSocket = webSocket;
