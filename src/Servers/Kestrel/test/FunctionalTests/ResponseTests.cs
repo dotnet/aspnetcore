@@ -880,6 +880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         $"Date: {dateHeaderValueManager.GetDateHeaderValues().String}");
 
                     var minResponseSize = headerSize * headerCount;

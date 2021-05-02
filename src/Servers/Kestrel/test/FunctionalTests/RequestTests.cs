@@ -214,13 +214,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "");
 
                     await connection1.Receive($"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                     await connection2.Receive($"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -319,8 +319,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // a more critical log message.
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
 
@@ -583,9 +583,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connectionClosedTcs.Task.DefaultTimeout();
 
                     await connection.ReceiveEnd($"HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -698,8 +698,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 5",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "World");
 
