@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Threading;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.Http.Connections
@@ -18,6 +20,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         private PipeOptions? _transportPipeOptions;
         private PipeOptions? _appPipeOptions;
+        private TimeSpan _transportSendTimeout;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
@@ -30,6 +33,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             LongPolling = new LongPollingOptions();
             TransportMaxBufferSize = DefaultPipeBufferSize;
             ApplicationMaxBufferSize = DefaultPipeBufferSize;
+            TransportSendTimeout = TimeSpan.FromSeconds(10);
         }
 
         /// <summary>
@@ -67,6 +71,32 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// The default value is 0, the lowest possible protocol version.
         /// </summary>
         public int MinimumProtocolVersion { get; set; } = 0;
+
+
+        /// <summary>
+        /// Gets or sets the amount of time the transport will wait for a send to complete. If a single send exceeds this timeout
+        /// the connection is closed.
+        /// </summary>
+        /// <remarks>
+        /// The default timeout is 10 seconds.
+        /// </remarks>
+        public TimeSpan TransportSendTimeout
+        {
+            get => _transportSendTimeout;
+            set
+            {
+                if (value == TimeSpan.Zero)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _transportSendTimeout = value;
+                TransportSendTimeoutTicks = value.Ticks;
+            }
+        }
+
+        internal long TransportSendTimeoutTicks { get; private set; }
+        internal bool TranspotSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
         // We initialize these lazily based on the state of the options specified here.
         // Though these are mutable it's extremely rare that they would be mutated past the

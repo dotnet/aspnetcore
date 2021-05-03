@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IConnectionInherentKeepAliveFeature,
                                          IConnectionLifetimeFeature
     {
-        private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
+        private readonly HttpConnectionDispatcherOptions _options;
 
         private readonly object _stateLock = new object();
         private readonly object _itemsLock = new object();
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
-        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application)
+        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
         {
             Transport = transport;
             _applicationStream = new PipeWriterStream(application.Output);
@@ -68,6 +67,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             ConnectionId = connectionId;
             ConnectionToken = connectionToken;
             LastSeenUtc = DateTime.UtcNow;
+            _options = options;
 
             // The default behavior is that both formats are supported.
             SupportedFormats = TransferFormat.Binary | TransferFormat.Text;
@@ -550,6 +550,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         internal void StartSendCancellation()
         {
+            if (!_options.TranspotSendTimeoutEnabled)
+            {
+                return;
+            }
+
             lock (_sendingLock)
             {
                 if (_sendCts == null || _sendCts.IsCancellationRequested)
@@ -561,21 +566,35 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 _activeSend = true;
             }
         }
+
         internal void TryCancelSend(long currentTicks)
         {
+            if (!_options.TranspotSendTimeoutEnabled)
+            {
+                return;
+            }
+
             lock (_sendingLock)
             {
                 if (_activeSend)
                 {
-                    if (currentTicks - _startedSendTime > _tenSeconds)
+                    if (currentTicks - _startedSendTime > _options.TransportSendTimeoutTicks)
                     {
                         _sendCts!.Cancel();
+
+                        Log.TransportSendTimeout(_logger, _options.TransportSendTimeout, ConnectionId);
                     }
                 }
             }
         }
+
         internal void StopSendCancellation()
         {
+            if (!_options.TranspotSendTimeoutEnabled)
+            {
+                return;
+            }
+
             lock (_sendingLock)
             {
                 _activeSend = false;
@@ -607,6 +626,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             private static readonly Action<ILogger, HttpTransportType, Exception?> _transportAndApplicationComplete =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(8, "TransportAndApplicationComplete"), "The application and {TransportType} transport are both complete.");
+
+            private static readonly Action<ILogger, int, string, Exception?> _transportSendtimeout =
+                LoggerMessage.Define<int, string>(LogLevel.Trace, new EventId(9, "TransportSendTimeout"), "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.");
 
             public static void DisposingConnection(ILogger logger, string connectionId)
             {
@@ -686,6 +708,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 _transportAndApplicationComplete(logger, transportType, null);
+            }
+
+            public static void TransportSendTimeout(ILogger logger, TimeSpan transportTimeout, string connectionId)
+            {
+                _transportSendtimeout(logger, (int)transportTimeout.TotalMilliseconds, connectionId, null);
             }
         }
     }
