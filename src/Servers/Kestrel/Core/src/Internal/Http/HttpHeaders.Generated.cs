@@ -14271,10 +14271,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 output.Write(HeaderBytes.Slice(640, 18));
                 output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
-                if (tempBits == 0)
-                {
-                    return;
-                }
+            }
+            if (tempBits == 0)
+            {
+                return;
             }
 
             ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
@@ -14595,6 +14595,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break; // OutputHeader
 
                     default:
+                        ThrowInvalidHeaderBits();
                         return;
                 }
 
