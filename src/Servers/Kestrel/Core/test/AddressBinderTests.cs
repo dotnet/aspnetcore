@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task DefaultAddressBinderWithoutDevCertButHttpsConfiguredBindsToHttpsPorts()
+        public async Task DefaultAddressBinderWithoutDevCertButHttpsConfiguredDoesntBindToHttpsPorts()
         {
             var x509Certificate2 = TestResources.GetTestCertificate();
             var logger = new MockLogger();
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
 
             Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
-            Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);
+            Assert.DoesNotContain(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);
         }
     }
 }
