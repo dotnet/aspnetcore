@@ -1,4 +1,4 @@
-# Object Pool
+# Analyzers
 
 This directory contains sources for analyers used internally by ASP.NET Core.
 
@@ -11,7 +11,7 @@ This directory contains sources for analyers used internally by ASP.NET Core.
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3:-build-the-repo).
+To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
 
 ### Test
 
