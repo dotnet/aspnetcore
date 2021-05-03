@@ -17,6 +17,7 @@ parameters:
   LclSource: lclFilesInRepo
   LclPackageId: ''
   RepoType: gitHub
+  condition: ''
 
 jobs:
 - job: OneLocBuild
@@ -44,6 +45,7 @@ jobs:
         filePath: $(Build.SourcesDirectory)/eng/common/generate-locproject.ps1
         arguments: $(_GenerateLocProjectArguments)
       displayName: Generate LocProject.json
+      condition: ${{ parameters.condition }}
 
     - task: OneLocBuild@2
       displayName: OneLocBuild
@@ -62,7 +64,7 @@ jobs:
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
           repoType: ${{ parameters.RepoType }}
           gitHubPatVariable: "${{ parameters.GithubPat }}"
-      condition: always()
+      condition: ${{ parameters.condition }}
 
     - task: PublishBuildArtifacts@1
       displayName: Publish Localization Files
@@ -70,7 +72,7 @@ jobs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/loc'
         PublishLocation: Container
         ArtifactName: Loc
-      condition: always()
+      condition: ${{ parameters.condition }}
 
     - task: PublishBuildArtifacts@1
       displayName: Publish LocProject.json
@@ -78,4 +80,4 @@ jobs:
         PathtoPublish: '$(Build.SourcesDirectory)/Localize/'
         PublishLocation: Container
         ArtifactName: Loc
-      condition: always()
+      condition: ${{ parameters.condition }}
