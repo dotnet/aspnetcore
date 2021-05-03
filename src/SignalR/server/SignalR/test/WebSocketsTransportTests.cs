@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         [ConditionalFact]
         [WebSocketsSupportedCondition]
-        public void HttpOptionsSetOntoWebSocketOptions()
+        public async Task HttpOptionsSetOntoWebSocketOptions()
         {
             ClientWebSocketOptions webSocketsOptions = null;
 
@@ -37,8 +37,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             httpOptions.Proxy = Mock.Of<IWebProxy>();
             httpOptions.WebSocketConfiguration = options => webSocketsOptions = options;
 
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null);
-            Assert.NotNull(webSocketsTransport);
+            await using (var server = await StartServer<Startup>())
+            {
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null);
+                Assert.NotNull(webSocketsTransport);
+
+                // we need to open a connection so it would apply httpOptions to webSocketOptions
+                await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
+                    TransferFormat.Binary).DefaultTimeout();
+                await webSocketsTransport.StopAsync().DefaultTimeout();
+            }
 
             Assert.NotNull(webSocketsOptions);
             Assert.Equal(1, webSocketsOptions.Cookies.Count);
