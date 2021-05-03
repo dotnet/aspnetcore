@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Logging.W3C\\src\\Microsoft.Extensions.Logging.W3C.csproj",
+      "src\\Logging.W3C\\test\\Microsoft.Extensions.Logging.W3C.Tests.csproj",
+      "src\\Logging.W3C\\samples\\Logging.W3C.Sample.csproj"
+    ]
+  }
+}

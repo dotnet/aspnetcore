@@ -1,0 +1,40 @@
+﻿Microsoft.Extensions.Logging.W3C.W3CLoggerFactoryExtensions
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.FileName.get -> string!
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.FileName.set -> void
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.FileSizeLimit.get -> int?
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.FileSizeLimit.set -> void
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.LogDirectory.get -> string!
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.LogDirectory.set -> void
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.LoggingFields.get -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.LoggingFields.set -> void
+Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.W3CLoggerOptions() -> void
+Microsoft.Extensions.Logging.W3C.W3CLoggerProvider
+Microsoft.Extensions.Logging.W3C.W3CLoggerProvider.CreateLogger(string! categoryName) -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.Extensions.Logging.W3C.W3CLoggerProvider.Dispose() -> void
+Microsoft.Extensions.Logging.W3C.W3CLoggerProvider.GetLogFileFullName(string! categoryName) -> string?
+Microsoft.Extensions.Logging.W3C.W3CLoggerProvider.W3CLoggerProvider(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.W3C.W3CLoggerOptions!>! options) -> void
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.All = Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Optional | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Default -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ClientIpAddress = 4 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Cookie = 32768 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Date = 1 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Default = Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Date | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Time | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ClientIpAddress | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ServerName | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ServerIpAddress | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ServerPort | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Method | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UriStem | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UriQuery | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ProtocolStatus | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.TimeTaken | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ProtocolVersion | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Host | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UserAgent | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Referrer -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Host = 8192 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Method = 128 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.None = 0 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Optional = Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UserName | Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Cookie -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ProtocolStatus = 1024 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ProtocolVersion = 4096 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Referrer = 65536 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ServerIpAddress = 32 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ServerName = 16 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.ServerPort = 64 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.Time = 2 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.TimeTaken = 2048 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UriQuery = 512 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UriStem = 256 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UserAgent = 16384 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+Microsoft.Extensions.Logging.W3C.W3CLoggingFields.UserName = 8 -> Microsoft.Extensions.Logging.W3C.W3CLoggingFields
+static Microsoft.Extensions.Logging.W3C.W3CLoggerFactoryExtensions.AddW3CLogger(this Microsoft.Extensions.Logging.ILoggingBuilder! builder) -> Microsoft.Extensions.Logging.ILoggingBuilder!
+static Microsoft.Extensions.Logging.W3C.W3CLoggerFactoryExtensions.AddW3CLogger(this Microsoft.Extensions.Logging.ILoggingBuilder! builder, System.Action<Microsoft.Extensions.Logging.W3C.W3CLoggerOptions!>! configureOptions) -> Microsoft.Extensions.Logging.ILoggingBuilder!

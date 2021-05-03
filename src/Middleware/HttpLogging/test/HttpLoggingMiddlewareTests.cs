@@ -12,6 +12,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
@@ -36,14 +37,14 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(
                 null,
                 CreateOptionsAccessor(),
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>()));
+                new NullLoggerFactory()));
 
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
                 return Task.CompletedTask;
             },
             null,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>()));
+            new NullLoggerFactory()));
 
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 CreateOptionsAccessor(),
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -279,7 +280,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 CreateOptionsAccessor(),
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -302,7 +303,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                      return Task.CompletedTask;
                  },
                  options,
-                 LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                 new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -339,7 +340,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -376,7 +377,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(15, count);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -413,7 +414,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(63000, count);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -439,7 +440,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     var res = await c.Request.Body.ReadAsync(arr);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -479,7 +480,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType;
@@ -519,7 +520,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(1000, count);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType;
@@ -559,7 +560,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(2000, count);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -582,7 +583,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await c.Response.WriteAsync("test");
                 },
                 CreateOptionsAccessor(),
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -607,7 +608,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -633,7 +634,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -658,7 +659,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -681,7 +682,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -705,7 +706,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -727,7 +728,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return c.Response.WriteAsync(expected);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -749,7 +750,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return c.Response.WriteAsync(input);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -779,7 +780,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await letBodyFinish.Task;
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -818,7 +819,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await letBodyFinish.Task;
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 
@@ -848,7 +849,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return c.Response.WriteAsync(expected);
                 },
                 options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+                new NullLoggerFactory());
 
             var httpContext = new DefaultHttpContext();
 

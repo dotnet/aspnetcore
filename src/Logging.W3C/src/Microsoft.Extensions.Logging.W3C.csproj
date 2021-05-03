@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Logger implementation to support W3C logging</Description>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.HttpLogging" />
+  </ItemGroup>
+
+</Project>
