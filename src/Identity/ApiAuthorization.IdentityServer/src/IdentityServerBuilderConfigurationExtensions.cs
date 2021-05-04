@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     var logger = sp.GetRequiredService<ILogger<ConfigureApiResources>>();
                     var effectiveConfig = configuration ?? sp.GetRequiredService<IConfiguration>().GetSection("IdentityServer:Resources");
-                    var localApiDescriptor = sp.GetService<IIdentityServerJwtDescriptor>();
+                    var localApiDescriptor = sp.GetRequiredService<IIdentityServerJwtDescriptor>();
                     return new ConfigureApiResources(effectiveConfig, localApiDescriptor, logger);
                 }));
 

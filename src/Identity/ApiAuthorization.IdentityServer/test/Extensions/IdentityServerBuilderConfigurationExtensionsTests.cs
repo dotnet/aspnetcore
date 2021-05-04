@@ -20,6 +20,37 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions
     public static class IdentityServerBuilderConfigurationExtensionsTests
     {
         [Fact]
+        public static void IValidationKeysStore_Service_Resolution_Fails_If_No_Jwt_Handler_Configured()
+        {
+            // Arrange
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string> { ["MyAPI:Profile"] = "API" })
+                .Build();
+
+            IWebHostEnvironment environment = new MyWebHostEnvironment();
+
+            var services = new ServiceCollection()
+                .AddSingleton(configuration)
+                .AddSingleton(environment)
+                .AddOptions();
+
+            services.AddDefaultIdentity<MyUser>();
+
+            services.AddIdentityServer()
+                    .AddApiAuthorization<MyUser, MyUserContext>();
+
+            services.AddAuthentication();
+
+            using var serviceProvider = services.BuildServiceProvider();
+
+            // Act and Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => serviceProvider.GetRequiredService<IValidationKeysStore>());
+
+            Assert.Equal("No service for type 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration.IIdentityServerJwtDescriptor' has been registered.", exception.Message);
+        }
+
+        [Fact]
         public static void IValidationKeysStore_Service_Resolution_Fails_If_No_Signing_Credential_Configured()
         {
             // Arrange
