@@ -1,6 +1,6 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, isForeignObject } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const selectValuePropname = '_blazorSelectValue';
@@ -220,7 +220,17 @@ export class BrowserRenderer {
   private insertElement(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number) {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
-    const newDomElementRaw = tagName === 'svg' || isSvgElement(parent) ?
+    
+    // SVG elements support `foreignObject` children that can hold arbitrary HTML.
+    // For these scenarios, the parent SVG and `foreignObject` elements should
+    // be rendered under the SVG namespace, while the HTML content should be rendered
+    // under the XHTML namespace. If the correct namespaces are not provided, most
+    // browsers will fail to render the foreign object content. Here, we ensure that if
+    // we encounter a `foreignObject` in the SVG, then all its children will be placed
+    // under the XHTML namespace.
+    const isSvg = (tagName === 'svg' || isSvgElement(parent)) && !isForeignObject(parent);
+
+    const newDomElementRaw =  isSvg ?
       document.createElementNS('http://www.w3.org/2000/svg', tagName) :
       document.createElement(tagName);
     const newElement = toLogicalElement(newDomElementRaw);
