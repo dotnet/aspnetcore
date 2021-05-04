@@ -1,10 +1,11 @@
-# Caching
+# Analyzers
 
-This area contains distributed cache implementations for Microsoft SQL Server and Redis. See documentation at <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests#use-polly-based-handlers>.
+This directory contains sources for analyers used internally by ASP.NET Core.
 
 ## Description
 
-These packages are not part of the ASP.NET Core shared framework but are shipped as an individual package. These packages have a third party dependencies on Polly and Polly.Extensions.Http.
+- `Analyzers`: Contains analyzers for ASP.NET Core shipped as part of the Microsoft.NET.Sdk.Web.
+- `Microsoft.AspNetCore.Analyzer.Testing`: Contains types for writing analyzer tests.
 
 ## Development Setup
 
