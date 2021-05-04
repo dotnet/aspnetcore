@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using BasicTestApp.HttpClientTest;
+using OpenQA.Selenium;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -13,80 +14,93 @@ using PlaywrightSharp;
 using TestServer;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.E2ETesting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class BinaryHttpClientTest : PlaywrightTestBase,
+    public class BinaryHttpClientTest : BrowserTestBase, //PlaywrightTestBase,
         IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>,
-        IClassFixture<DevHostServerFixture<BasicTestApp.Program>>
+        IClassFixture<BlazorWasmTestAppFixture<BasicTestApp.Program>>
     {
-        private readonly DevHostServerFixture<BasicTestApp.Program> _devHostServerFixture;
+        private readonly BlazorWasmTestAppFixture<BasicTestApp.Program> _devHostServerFixture;
         readonly ServerFixture _apiServerFixture;
-        //IWebElement _appElement;
-        //IWebElement _responseStatus;
-        //IWebElement _responseStatusText;
-        //IWebElement _testOutcome;
+        IWebElement _appElement;
+        IWebElement _responseStatus;
+        IWebElement _responseStatusText;
+        IWebElement _testOutcome;
 
         public BinaryHttpClientTest(
-            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BrowserFixture browserFixture,
+            BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
             BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
-            : base(output)
+            : base(browserFixture, output)
+            //: base(output)
         {
             _devHostServerFixture = devHostServerFixture;
             _devHostServerFixture.PathBase = "/subdir";
             _apiServerFixture = apiServerFixture;
         }
 
-        //protected override void InitializeAsyncCore()
-        //{
-        //    //Browser.Navigate(_devHostServerFixture.RootUri, "/subdir", noReload: true);
-        //    //_appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
-        //}
+        protected override void InitializeAsyncCore(/*TestContext context*/)
+        {
+            //await base.InitializeCoreAsync(context);
+            Browser.Navigate(_devHostServerFixture.RootUri, "/subdir", noReload: true);
+            _appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
+        }
 
         [Fact]
-        public async Task CanSendAndReceiveBytes()
+        public void CanSendAndReceiveBytes()
         {
-            if (BrowserManager.IsAvailable(BrowserKind.Chromium))
-            {
-                await using var browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
-                var page = await browser.NewPageAsync();
-                await page.GoToAsync(_devHostServerFixture.RootUri + "/subdir/api/data");
+            //if (BrowserManager.IsAvailable(BrowserKind.Chromium))
+            //{
+            //    await using var browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
+            //    var page = await browser.NewPageAsync();
+            //    var response = await page.GoToAsync(_devHostServerFixture.RootUri + "");
 
-/*                var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
-                    (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
+            //    Assert.True(response.Ok, "Got: "+response.StatusText);
 
-                // Receive render batch
-                await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-                await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+                //var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
+                //    (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
 
-                // JS interop call to intercept navigation
-                await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-                await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+                //// Receive render batch
+                //await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
+                //await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
 
-                await page.WaitForSelectorAsync("ul");*/
+                //// JS interop call to intercept navigation
+                //await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
+                //await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
 
-                await page.CloseAsync();
-            }
+                //await page.WaitForSelectorAsync("ul");
+
+                //await page.CloseAsync();
 
 
-            //IssueRequest("/subdir/api/data");
-            //Assert.Equal("OK", _responseStatus.Text);
-            //Assert.Equal("OK", _responseStatusText.Text);
-            //Assert.Equal("", _testOutcome.Text);
+            IssueRequest("/subdir/api/data");
+            Assert.Equal("OK", _responseStatus.Text);
+            Assert.Equal("OK", _responseStatusText.Text);
+            Assert.Equal("", _testOutcome.Text);
         }
 
-        private void IssueRequest()
+        private void IssueRequest(string relativeUri)
         {
-            //var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);
-            //SetValue("request-uri", targetUri.AbsoluteUri);
+            var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);
+            SetValue("request-uri", targetUri.AbsoluteUri);
 
-            //_appElement.FindElement(By.Id("send-request")).Click();
+            _appElement.FindElement(By.Id("send-request")).Click();
 
-            //_responseStatus = Browser.Exists(By.Id("response-status"));
-            //_responseStatusText = _appElement.FindElement(By.Id("response-status-text"));
-            //_testOutcome = _appElement.FindElement(By.Id("test-outcome"));
+            _responseStatus = Browser.Exists(By.Id("response-status"));
+            _responseStatusText = _appElement.FindElement(By.Id("response-status-text"));
+            _testOutcome = _appElement.FindElement(By.Id("test-outcome"));
 
         }
+
+        private void SetValue(string elementId, string value)
+        {
+            var element = Browser.Exists(By.Id(elementId));
+            element.Clear();
+            element.SendKeys(value);
+        }
+
     }
 }

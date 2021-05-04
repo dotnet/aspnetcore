@@ -44,32 +44,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
         public static string FindSampleOrTestSitePath(string projectName)
         {
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            var comma = projectName.IndexOf(",", StringComparison.Ordinal);
+            if (comma != -1)
             {
-                var comma = projectName.IndexOf(",", StringComparison.Ordinal);
-                if (comma != -1)
-                {
-                     projectName = projectName.Substring(0, comma);
-                }
-                if (string.Equals(projectName, "Components.TestServer", StringComparison.Ordinal))
-                {
-                     projectName = "TestServer"; // This testasset doesn't match the folder name for some reason
-                }
-                var path = Path.Combine(AppContext.BaseDirectory, "testassets", projectName);
-                if (!Directory.Exists(path))
-                {
-                    throw new ArgumentException($"Cannot find a sample or test site directory: '{path}'.");
-                }
-                return path;
+                projectName = projectName.Substring(0, comma);
             }
-            
-            var projects = _projects.Value;
-            if (projects.TryGetValue(projectName, out var dir))
+            if (string.Equals(projectName, "Components.TestServer", StringComparison.Ordinal))
             {
-                return dir;
+                projectName = "TestServer"; // This testasset doesn't match the folder name for some reason
             }
-
-            throw new ArgumentException($"Cannot find a sample or test site with name '{projectName}'.");
+            var path = Path.Combine(AppContext.BaseDirectory, "testassets", projectName);
+            if (!Directory.Exists(path))
+            {
+                throw new ArgumentException($"Cannot find a sample or test site directory: '{path}'.");
+            }
+            return path;
         }
 
         protected static void RunInBackgroundThread(Action action)
