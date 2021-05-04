@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
@@ -18,6 +19,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class JSInteropMethods
     {
+        private static JsonSourceGeneration.JsonContext? _jsonContext;
+
         /// <summary>
         /// For framework use only.
         /// </summary>
@@ -35,7 +38,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         {
             var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
             var jsonSerializerOptions = DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions();
-            var webEvent = WebEventData.Parse(renderer, jsonSerializerOptions, eventDescriptor, eventArgsJson);
+
+            // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
+            // of the serializer settings.
+            _jsonContext ??= new(new JsonSerializerOptions(jsonSerializerOptions));
+
+            var webEvent = WebEventData.Parse(renderer, _jsonContext, eventDescriptor, eventArgsJson);
             return renderer.DispatchEventAsync(
                 webEvent.EventHandlerId,
                 webEvent.EventFieldInfo,

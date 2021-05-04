@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger _logger;
         private bool _initialized;
         private bool _disposed;
+        private JsonSourceGeneration.JsonContext _jsonContext;
 
         // This event is fired when there's an unrecoverable exception coming from the circuit, and
         // it need so be torn down. The registry listens to this even so that the circuit can
@@ -398,8 +400,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             WebEventData webEventData;
             try
             {
-                var jsonSerializerOptions = JSRuntime.ReadJsonSerializerOptions();
-                webEventData = WebEventData.Parse(Renderer, jsonSerializerOptions, eventDescriptorJson, eventArgsJson);
+                // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
+                // of the serializer settings.
+                _jsonContext ??= new(new JsonSerializerOptions(JSRuntime.ReadJsonSerializerOptions()));
+                webEventData = WebEventData.Parse(Renderer, _jsonContext, eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {
