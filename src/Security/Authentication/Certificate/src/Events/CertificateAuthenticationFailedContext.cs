@@ -28,6 +28,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <summary>
         /// The exception.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception Exception { get; set; } = default!;
     }
 }

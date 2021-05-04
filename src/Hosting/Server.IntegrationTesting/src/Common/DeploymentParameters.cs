@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             if (!Directory.Exists(applicationPath))
             {
-                throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", applicationPath));
+                throw new DirectoryNotFoundException($"Application path {applicationPath} does not exist.");
             }
 
             ApplicationPath = applicationPath;
@@ -112,6 +113,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// deployed url.
         /// </summary>
         public string ApplicationBaseUriHint { get; set; }
+
+        public bool RestoreDependencies { get; set; }
 
         /// <summary>
         /// Scheme used by the deployed application if <see cref="ApplicationBaseUriHint"/> is empty.
@@ -177,15 +180,21 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public Action<DeploymentParameters> UserAdditionalCleanup { get; set; }
 
+        /// <summary>
+        /// Timeout for publish
+        /// </summary>
+        public TimeSpan? PublishTimeout { get; set; }
+
         public override string ToString()
         {
             return string.Format(
-                    "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
-                    ServerType,
-                    RuntimeFlavor,
-                    RuntimeArchitecture,
-                    ApplicationBaseUriHint,
-                    PublishApplicationBeforeDeployment);
+                CultureInfo.InvariantCulture,
+                "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
+                ServerType,
+                RuntimeFlavor,
+                RuntimeArchitecture,
+                ApplicationBaseUriHint,
+                PublishApplicationBeforeDeployment);
         }
     }
 }

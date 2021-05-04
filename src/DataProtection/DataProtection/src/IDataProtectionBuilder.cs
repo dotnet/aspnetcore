@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <remarks>
     /// <para>
     /// If the developer changes the at-rest key protection mechanism, it is intended that
-    /// he also change the key storage location, and vice versa. For instance, a call to
+    /// they also change the key storage location, and vice versa. For instance, a call to
     /// <see cref="DataProtectionBuilderExtensions.ProtectKeysWithCertificate(IDataProtectionBuilder,string)" /> should generally be accompanied by
     /// a call to <see cref="DataProtectionBuilderExtensions.PersistKeysToFileSystem(IDataProtectionBuilder,DirectoryInfo)"/>, or exceptions may
     /// occur at runtime due to the data protection system not knowing where to persist keys.
     /// </para>
     /// <para>
     /// Similarly, when a developer modifies the default protected payload cryptographic
-    /// algorithms, it is intended that he also select an explitiy key storage location.
+    /// algorithms, they should also set an explicit key storage location.
     /// A call to <see cref="DataProtectionBuilderExtensions.UseCryptographicAlgorithms(IDataProtectionBuilder,AuthenticatedEncryptorConfiguration)"/>
     /// should therefore generally be paired with a call to <see cref="DataProtectionBuilderExtensions.PersistKeysToFileSystem(IDataProtectionBuilder,DirectoryInfo)"/>,
     /// for example.

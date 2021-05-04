@@ -112,7 +112,7 @@ describe("JsonHubProtocol", () => {
             result: null,
             type: MessageType.Completion,
         } as CompletionMessage],
-    ] as Array<[string, CompletionMessage]>).forEach(([payload, expectedMessage]) =>
+    ] as [string, CompletionMessage][]).forEach(([payload, expectedMessage]) =>
         it("can read Completion message", async () => {
             await VerifyLogger.run(async (logger) => {
                 const messages = new JsonHubProtocol().parseMessages(payload, logger);
@@ -135,7 +135,7 @@ describe("JsonHubProtocol", () => {
             item: Date.UTC(2018, 0, 1, 11, 24, 0),
             type: MessageType.StreamItem,
         } as StreamItemMessage],
-    ] as Array<[string, StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
+    ] as [string, StreamItemMessage][]).forEach(([payload, expectedMessage]) =>
         it("can read StreamItem message", async () => {
             await VerifyLogger.run(async (logger) => {
                 const messages = new JsonHubProtocol().parseMessages(payload, logger);
@@ -153,7 +153,7 @@ describe("JsonHubProtocol", () => {
             item: 8,
             type: MessageType.StreamItem,
         } as StreamItemMessage],
-    ] as Array<[string, StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
+    ] as [string, StreamItemMessage][]).forEach(([payload, expectedMessage]) =>
         it("can read message with headers", async () => {
             await VerifyLogger.run(async (logger) => {
                 const messages = new JsonHubProtocol().parseMessages(payload, logger);
@@ -172,7 +172,7 @@ describe("JsonHubProtocol", () => {
         ["Completion message with invalid invocation id", `{"type":3,"invocationId":1}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
         ["Completion message with result and error", `{"type":3,"invocationId":"1","result":2,"error":"error"}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
         ["Completion message with non-string error", `{"type":3,"invocationId":"1","error":21}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
-    ] as Array<[string, string, string]>).forEach(([name, payload, expectedError]) =>
+    ] as [string, string, string][]).forEach(([name, payload, expectedError]) =>
         it("throws for " + name, async () => {
             await VerifyLogger.run(async (logger) => {
                 expect(() => new JsonHubProtocol().parseMessages(payload, logger))

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The authentication scheme.</param>
         /// <param name="options">The authentication options associated with the scheme.</param>
         /// <param name="properties">The authentication properties.</param>
-        protected PropertiesContext(HttpContext context, AuthenticationScheme scheme, TOptions options, AuthenticationProperties properties)
+        protected PropertiesContext(HttpContext context, AuthenticationScheme scheme, TOptions options, AuthenticationProperties? properties)
             : base(context, scheme, options)
         {
             Properties = properties ?? new AuthenticationProperties();

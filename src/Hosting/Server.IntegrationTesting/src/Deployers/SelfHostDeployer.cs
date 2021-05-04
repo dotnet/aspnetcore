@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +21,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$");
         private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
 
-        private const int RetryCount = 5;
         public Process HostProcess { get; private set; }
+
+        // Use this property before calling DeployAsync
+        // instead of using HostProcess.OutputDataReceived
+        // in order to capture process output from the beginning of the process
+        public Action<string> ProcessOutputListener { get; set; }
 
         public SelfHostDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
@@ -56,33 +59,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     DotnetPublish();
                 }
 
+                var hintUrl = TestUriHelper.BuildTestUri(
+                    DeploymentParameters.ServerType,
+                    DeploymentParameters.Scheme,
+                    DeploymentParameters.ApplicationBaseUriHint,
+                    DeploymentParameters.StatusMessagesEnabled);
+
                 // Launch the host process.
-                for (var i = 0; i < RetryCount; i++)
-                {
-                    var hintUrl = TestUriHelper.BuildTestUri(
-                        DeploymentParameters.ServerType,
-                        DeploymentParameters.Scheme,
-                        DeploymentParameters.ApplicationBaseUriHint,
-                        DeploymentParameters.StatusMessagesEnabled);
-                    var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
+                var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
 
-                    if (DeploymentParameters.ServerType == ServerType.HttpSys && hostExitToken.IsCancellationRequested)
-                    {
-                        // Retry HttpSys deployments due to port conflicts.
-                        continue;
-                    }
+                Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
 
-                    Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
-
-                    return new DeploymentResult(
-                        LoggerFactory,
-                        DeploymentParameters,
-                        applicationBaseUri: actualUrl.ToString(),
-                        contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
-                        hostShutdownToken: hostExitToken);
-                }
-
-                throw new Exception($"Failed to start Self hosted application after {RetryCount} retries.");
+                return new DeploymentResult(
+                    LoggerFactory,
+                    DeploymentParameters,
+                    applicationBaseUri: actualUrl.ToString(),
+                    contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
+                    hostShutdownToken: hostExitToken);
             }
         }
 
@@ -94,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var executableArgs = string.Empty;
                 var workingDirectory = string.Empty;
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll"
-                    : (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "");
+                    : (OperatingSystem.IsWindows() ? ".exe" : "");
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
@@ -151,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
 
                 Uri actualUrl = null;
-                var started = new TaskCompletionSource<object>();
+                var started = new TaskCompletionSource();
 
                 HostProcess = new Process() { StartInfo = startInfo };
                 HostProcess.EnableRaisingEvents = true;
@@ -159,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     if (string.Equals(dataArgs.Data, ApplicationStartedMessage))
                     {
-                        started.TrySetResult(null);
+                        started.TrySetResult();
                     }
                     else if (!string.IsNullOrEmpty(dataArgs.Data))
                     {
@@ -169,6 +162,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                             actualUrl = new Uri(m.Groups["url"].Value);
                         }
                     }
+
+                    ProcessOutputListener?.Invoke(dataArgs.Data);
                 };
                 var hostExitTokenSource = new CancellationTokenSource();
                 HostProcess.Exited += (sender, e) =>
@@ -176,6 +171,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
                     // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+
                     TriggerHostShutdown(hostExitTokenSource);
                 };
 
@@ -187,6 +184,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     Logger.LogError("Error occurred while starting the process. Exception: {exception}", ex.ToString());
                 }
+
                 if (HostProcess.HasExited)
                 {
                     Logger.LogError("Host process {processName} {pid} exited with code {exitCode} or failed to start.", startInfo.FileName, HostProcess.Id, HostProcess.ExitCode);

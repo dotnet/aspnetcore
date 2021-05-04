@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Hosting
     {
         public static readonly HostingEventSource Log = new HostingEventSource();
 
-        private IncrementingPollingCounter _requestsPerSecondCounter;
-        private PollingCounter _totalRequestsCounter;
-        private PollingCounter _failedRequestsCounter;
-        private PollingCounter _currentRequestsCounter;
+        private IncrementingPollingCounter? _requestsPerSecondCounter;
+        private PollingCounter? _totalRequestsCounter;
+        private PollingCounter? _failedRequestsCounter;
+        private PollingCounter? _currentRequestsCounter;
 
         private long _totalRequests;
         private long _currentRequests;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         // Used for testing
         internal HostingEventSource(string eventSourceName)
-            : base(eventSourceName)
+            : base(eventSourceName, EventSourceSettings.EtwManifestEventFormat)
         {
         }
 
@@ -87,23 +87,23 @@ namespace Microsoft.AspNetCore.Hosting
                 // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
                 // They aren't disabled afterwards...
 
-                _requestsPerSecondCounter ??= new IncrementingPollingCounter("requests-per-second", this, () => _totalRequests)
+                _requestsPerSecondCounter ??= new IncrementingPollingCounter("requests-per-second", this, () => Volatile.Read(ref _totalRequests))
                 {
                     DisplayName = "Request Rate",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
                 };
 
-                _totalRequestsCounter ??= new PollingCounter("total-requests", this, () => _totalRequests)
+                _totalRequestsCounter ??= new PollingCounter("total-requests", this, () => Volatile.Read(ref _totalRequests))
                 {
                     DisplayName = "Total Requests",
                 };
 
-                _currentRequestsCounter ??= new PollingCounter("current-requests", this, () => _currentRequests)
+                _currentRequestsCounter ??= new PollingCounter("current-requests", this, () => Volatile.Read(ref _currentRequests))
                 {
                     DisplayName = "Current Requests"
                 };
 
-                _failedRequestsCounter ??= new PollingCounter("failed-requests", this, () => _failedRequests)
+                _failedRequestsCounter ??= new PollingCounter("failed-requests", this, () => Volatile.Read(ref _failedRequests))
                 {
                     DisplayName = "Failed Requests"
                 };

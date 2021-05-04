@@ -83,15 +83,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var assembliesFromAttributes = entryAssembly.GetCustomAttributes<ApplicationPartAttribute>()
                 .Select(name => Assembly.Load(name.AssemblyName))
                 .OrderBy(assembly => assembly.FullName, StringComparer.Ordinal)
-                .SelectMany(GetAsemblyClosure);
+                .SelectMany(GetAssemblyClosure);
 
             // The SDK will not include the entry assembly as an application part. We'll explicitly list it
             // and have it appear before all other assemblies \ ApplicationParts.
-            return GetAsemblyClosure(entryAssembly)
+            return GetAssemblyClosure(entryAssembly)
                 .Concat(assembliesFromAttributes);
         }
 
-        private static IEnumerable<Assembly> GetAsemblyClosure(Assembly assembly)
+        private static IEnumerable<Assembly> GetAssemblyClosure(Assembly assembly)
         {
             yield return assembly;
 

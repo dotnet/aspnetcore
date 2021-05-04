@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 });
 
             var context = new DefaultHttpContext();
-            await middleware.Invoke(context).OrTimeout();
+            await middleware.Invoke(context).DefaultTimeout();
             Assert.True(onRejectedInvoked);
             Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
         }
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                     throw new DivideByZeroException();
                 });
 
-            await middleware.Invoke(new DefaultHttpContext()).OrTimeout();
+            await middleware.Invoke(new DefaultHttpContext()).DefaultTimeout();
         }
 
         [Fact]
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 });
 
             Assert.Equal(0, testQueue.QueuedRequests);
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).DefaultTimeout();
 
             Assert.Equal(0, testQueue.QueuedRequests);
             Assert.True(flag);
@@ -162,7 +163,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
 
             // the second request is rejected with a 503 error. During the rejection, an error occurs
             var context = new DefaultHttpContext();
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(context)).OrTimeout();
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(context)).DefaultTimeout();
             Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
             Assert.Equal(1, concurrent);
             Assert.Equal(0, testQueue.QueuedRequests);

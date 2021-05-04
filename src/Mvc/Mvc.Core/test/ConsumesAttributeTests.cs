@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void Constructor_ForInvalidContentType_Throws(string contentType)
         {
             // Arrange
-            var expectedMessage = string.Format("The header contains invalid values at index 0: '{0}'", contentType);
+            var expectedMessage = $"The header contains invalid values at index 0: '{contentType}'";
 
             // Act & Assert
             var exception = Assert.Throws<FormatException>(() => new ConsumesAttribute(contentType));
@@ -69,9 +70,11 @@ namespace Microsoft.AspNetCore.Mvc
                        () => new ConsumesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
 
             Assert.Equal(
-                string.Format("The argument '{0}' is invalid. " +
-                              "Media types which match all types or match all subtypes are not supported.",
-                              invalidContentType),
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    "The argument '{0}' is invalid. " +
+                    "Media types which match all types or match all subtypes are not supported.",
+                    invalidContentType),
                 ex.Message);
         }
 

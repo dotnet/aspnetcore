@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <summary>
         /// Gets the instance of <see cref="WebAssemblyNavigationManager"/>.
         /// </summary>
-        public static WebAssemblyNavigationManager Instance { get; set; }
+        public static WebAssemblyNavigationManager Instance { get; set; } = default!;
 
         public WebAssemblyNavigationManager(string baseUri, string uri)
         {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, forceLoad);
         }
     }
 }

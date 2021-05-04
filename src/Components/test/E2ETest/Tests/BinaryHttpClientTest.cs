@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using BasicTestApp;
 using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,9 +15,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class BinaryHttpClientTest : BrowserTestBase,
         IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>,
-        IClassFixture<DevHostServerFixture<BasicTestApp.Program>>
+        IClassFixture<BlazorWasmTestAppFixture<BasicTestApp.Program>>
     {
-        private readonly DevHostServerFixture<BasicTestApp.Program> _devHostServerFixture;
+        private readonly BlazorWasmTestAppFixture<BasicTestApp.Program> _devHostServerFixture;
         readonly ServerFixture _apiServerFixture;
         IWebElement _appElement;
         IWebElement _responseStatus;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         public BinaryHttpClientTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
             BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
             : base(browserFixture, output)
@@ -44,6 +43,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanSendAndReceiveBytes()
         {
             IssueRequest("/subdir/api/data");
@@ -59,16 +59,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             _appElement.FindElement(By.Id("send-request")).Click();
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.Id("response-status")) != null);
-            _responseStatus = _appElement.FindElement(By.Id("response-status"));
+            _responseStatus = Browser.Exists(By.Id("response-status"));
             _responseStatusText = _appElement.FindElement(By.Id("response-status-text"));
             _testOutcome = _appElement.FindElement(By.Id("test-outcome"));
         }
 
         private void SetValue(string elementId, string value)
         {
-            var element = Browser.FindElement(By.Id(elementId));
+            var element = Browser.Exists(By.Id(elementId));
             element.Clear();
             element.SendKeys(value);
         }

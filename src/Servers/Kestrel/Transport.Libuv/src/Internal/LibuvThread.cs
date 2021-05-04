@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly LibuvFunctions _libuv;
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly Thread _thread;
-        private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _threadTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly UvLoopHandle _loop;
         private readonly UvAsyncHandle _post;
         private Queue<Work> _workAdding = new Queue<Work>(1024);
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 return Task.CompletedTask;
             }
 
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var work = new Work
             {
                 CallbackAdapter = CallbackAdapter<T>.PostAsyncCallbackAdapter,
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     _closeError = _closeError == null ? ex : new AggregateException(_closeError, ex);
                 }
                 WriteReqPool.Dispose();
-                _threadTcs.SetResult(null);
+                _threadTcs.SetResult();
 
 #if DEBUG && !INNER_LOOP
                 // Check for handle leaks after disposing everything
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 try
                 {
                     work.CallbackAdapter(work.Callback, work.State);
-                    work.Completion?.TrySetResult(null);
+                    work.Completion?.TrySetResult();
                 }
                 catch (Exception ex)
                 {
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             public Action<object, object> CallbackAdapter;
             public object Callback;
             public object State;
-            public TaskCompletionSource<object> Completion;
+            public TaskCompletionSource Completion;
         }
 
         private struct CloseHandle

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
 {
     internal static class RewriteMapParser
     {
-        public static IISRewriteMapCollection Parse(XElement xmlRoot)
+        public static IISRewriteMapCollection? Parse(XElement xmlRoot)
         {
             if (xmlRoot == null)
             {
@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
             var rewriteMaps = new IISRewriteMapCollection();
             foreach (var mapElement in mapsElement.Elements(RewriteTags.RewriteMap))
             {
-                var map = new IISRewriteMap(mapElement.Attribute(RewriteTags.Name)?.Value);
+                var map = new IISRewriteMap(mapElement.Attribute(RewriteTags.Name)?.Value!);
                 foreach (var addElement in mapElement.Elements(RewriteTags.Add))
                 {
-                    map[addElement.Attribute(RewriteTags.Key).Value.ToLowerInvariant()] = addElement.Attribute(RewriteTags.Value).Value;
+                    map[addElement.Attribute(RewriteTags.Key)!.Value.ToLowerInvariant()] = addElement.Attribute(RewriteTags.Value)!.Value;
                 }
                 rewriteMaps.Add(map);
             }

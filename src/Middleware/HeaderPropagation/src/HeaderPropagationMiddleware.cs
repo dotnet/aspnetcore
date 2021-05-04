@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.HeaderPropagation
 {
     /// <summary>
-    /// A Middleware for propagating headers to a <see cref="HttpClient"/>.
+    /// A Middleware for propagating headers to an <see cref="HttpClient"/>.
     /// </summary>
     public class HeaderPropagationMiddleware
     {
@@ -20,6 +20,14 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         private readonly HeaderPropagationOptions _options;
         private readonly HeaderPropagationValues _values;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HeaderPropagationMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="options">The <see cref="IOptions{HeaderPropagationOptions}"/>.</param>
+        /// <param name="values">
+        /// The <see cref="HeaderPropagationValues"/> that stores the request headers to be propagated in an <see cref="System.Threading.AsyncLocal{T}"/>
+        /// </param>
         public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
@@ -33,8 +41,11 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
-        // This needs to be async as otherwise the AsyncLocal could bleed across requests, see https://github.com/aspnet/AspNetCore/issues/13991.
-        public async Task Invoke(HttpContext context)
+        /// <summary>
+        /// Executes the middleware that stores the request headers to be propagated in using <see cref="HeaderPropagationValues"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
+        public Task Invoke(HttpContext context)
         {
             // We need to intialize the headers because the message handler will use this to detect misconfiguration.
             var headers = _values.Headers ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
@@ -57,7 +68,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 }
             }
 
-            await _next.Invoke(context);
+            return _next.Invoke(context);
         }
 
         private static StringValues GetValue(HttpContext context, HeaderPropagationEntry entry)
@@ -65,11 +76,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             context.Request.Headers.TryGetValue(entry.InboundHeaderName, out var value);
             if (entry.ValueFilter != null)
             {
-                var filtered = entry.ValueFilter(new HeaderPropagationContext(context, entry.InboundHeaderName, value));
-                if (!StringValues.IsNullOrEmpty(filtered))
-                {
-                    value = filtered;
-                }
+                value = entry.ValueFilter(new HeaderPropagationContext(context, entry.InboundHeaderName, value));
             }
 
             return value;

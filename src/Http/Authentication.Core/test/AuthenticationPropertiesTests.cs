@@ -1,13 +1,41 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class AuthenticationPropertiesTests
     {
+        [Fact]
+        public void Clone_Copies()
+        {
+            var items = new Dictionary<string, string?>
+            {
+                ["foo"] = "bar",
+            };
+            var value = "value";
+            var parameters = new Dictionary<string, object?>
+            {
+                ["foo2"] = value,
+            };
+            var props = new AuthenticationProperties(items, parameters);
+            Assert.Same(items, props.Items);
+            Assert.Same(parameters, props.Parameters);
+            var copy = props.Clone();
+            Assert.NotSame(props.Items, copy.Items);
+            Assert.NotSame(props.Parameters, copy.Parameters);
+            // Objects in the dictionaries will still be the same
+            Assert.Equal(props.Items, copy.Items);
+            Assert.Equal(props.Parameters, copy.Parameters);
+            props.Items["change"] = "good";
+            props.Parameters["something"] = "bad";
+            Assert.NotEqual(props.Items, copy.Items);
+            Assert.NotEqual(props.Parameters, copy.Parameters);
+        }
+
         [Fact]
         public void DefaultConstructor_EmptyCollections()
         {
@@ -19,7 +47,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         [Fact]
         public void ItemsConstructor_ReusesItemsDictionary()
         {
-            var items = new Dictionary<string, string>
+            var items = new Dictionary<string, string?>
             {
                 ["foo"] = "bar",
             };
@@ -31,11 +59,11 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         [Fact]
         public void FullConstructor_ReusesDictionaries()
         {
-            var items = new Dictionary<string, string>
+            var items = new Dictionary<string, string?>
             {
                 ["foo"] = "bar",
             };
-            var parameters = new Dictionary<string, object>
+            var parameters = new Dictionary<string, object?>
             {
                 ["number"] = 1234,
                 ["list"] = new List<string> { "a", "b", "c" },
@@ -92,7 +120,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             Assert.Equal("foo bar", props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);
 
-            props.SetParameter<string>("foo", null);
+            props.SetParameter<string?>("foo", null);
             Assert.Null(props.GetParameter<string>("foo"));
             Assert.Null(props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);
@@ -129,7 +157,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             Assert.Same(list, props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);
 
-            props.SetParameter<ICollection<string>>("foo", null);
+            props.SetParameter<ICollection<string>?>("foo", null);
             Assert.Null(props.GetParameter<ICollection<string>>("foo"));
             Assert.Null(props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);
@@ -273,6 +301,92 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             props.Items["foo"] = "BAR";
             Assert.Null(props.GetBool("foo"));
             Assert.Equal("BAR", props.Items["foo"]);
+        }
+
+        [Fact]
+        public void Roundtrip_Serializes_With_SystemTextJson()
+        {
+            var props = new AuthenticationProperties()
+            {
+                AllowRefresh = true,
+                ExpiresUtc = new DateTimeOffset(2021, 03, 28, 13, 47, 00, TimeSpan.Zero),
+                IssuedUtc = new DateTimeOffset(2021, 03, 28, 12, 47, 00, TimeSpan.Zero),
+                IsPersistent = true,
+                RedirectUri = "/foo/bar"
+            };
+
+            props.Items.Add("foo", "bar");
+
+            props.Parameters.Add("baz", "quux");
+
+            var json = JsonSerializer.Serialize(props);
+
+            // Verify that Parameters was not serialized
+            Assert.NotNull(json);
+            Assert.DoesNotContain("baz", json);
+            Assert.DoesNotContain("quux", json);
+
+            var deserialized = JsonSerializer.Deserialize<AuthenticationProperties>(json);
+
+            Assert.NotNull(deserialized);
+
+            Assert.Equal(props.AllowRefresh, deserialized!.AllowRefresh);
+            Assert.Equal(props.ExpiresUtc, deserialized.ExpiresUtc);
+            Assert.Equal(props.IssuedUtc, deserialized.IssuedUtc);
+            Assert.Equal(props.IsPersistent, deserialized.IsPersistent);
+            Assert.Equal(props.RedirectUri, deserialized.RedirectUri);
+
+            Assert.NotNull(deserialized.Items);
+            Assert.True(deserialized.Items.ContainsKey("foo"));
+            Assert.Equal(props.Items["foo"], deserialized.Items["foo"]);
+
+            // Ensure that parameters are not round-tripped
+            Assert.NotNull(deserialized.Parameters);
+            Assert.Equal(0, deserialized.Parameters.Count);
+        }
+
+        [Fact]
+        public void Parameters_Is_Not_Deserialized_With_SystemTextJson()
+        {
+            var json = @"{""Parameters"":{""baz"":""quux""}}";
+
+            var deserialized = JsonSerializer.Deserialize<AuthenticationProperties>(json);
+
+            Assert.NotNull(deserialized);
+
+            // Ensure that parameters is not deserialized from a raw payload
+            Assert.NotNull(deserialized!.Parameters);
+            Assert.Equal(0, deserialized.Parameters.Count);
+        }
+
+        [Fact]
+        public void Serialization_Is_Minimised_With_SystemTextJson()
+        {
+            var props = new AuthenticationProperties()
+            {
+                AllowRefresh = true,
+                ExpiresUtc = new DateTimeOffset(2021, 03, 28, 13, 47, 00, TimeSpan.Zero),
+                IssuedUtc = new DateTimeOffset(2021, 03, 28, 12, 47, 00, TimeSpan.Zero),
+                IsPersistent = true,
+                RedirectUri = "/foo/bar"
+            };
+
+            props.Items.Add("foo", "bar");
+
+            var options = new JsonSerializerOptions() { WriteIndented = true }; // Indented for readability if test fails
+            var json = JsonSerializer.Serialize(props, options);
+
+            // Verify that the payload doesn't duplicate the properties backed by Items
+            Assert.Equal(@"{
+  ""Items"": {
+    "".refresh"": ""True"",
+    "".expires"": ""Sun, 28 Mar 2021 13:47:00 GMT"",
+    "".issued"": ""Sun, 28 Mar 2021 12:47:00 GMT"",
+    "".persistent"": """",
+    "".redirect"": ""/foo/bar"",
+    ""foo"": ""bar""
+  }
+}", json, ignoreLineEndingDifferences: true);
         }
 
         public class MyAuthenticationProperties : AuthenticationProperties

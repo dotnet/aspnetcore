@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "React.js",
-    "description": "ASP.NET Core アプリケーションを React.js で作成するためのプロジェクト テンプレートです。"
+    "name": "React.js での ASP.NET Core",
+    "description": "ASP.NET Core アプリケーションを React.js で作成するためのプロジェクト テンプレート"
   }
 }

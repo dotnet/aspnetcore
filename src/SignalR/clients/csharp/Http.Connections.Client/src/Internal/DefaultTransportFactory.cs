@@ -10,14 +10,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal class DefaultTransportFactory : ITransportFactory
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient? _httpClient;
         private readonly HttpConnectionOptions _httpConnectionOptions;
-        private readonly Func<Task<string>> _accessTokenProvider;
+        private readonly Func<Task<string?>> _accessTokenProvider;
         private readonly HttpTransportType _requestedTransportType;
         private readonly ILoggerFactory _loggerFactory;
         private static volatile bool _websocketsSupported = true;
 
-        public DefaultTransportFactory(HttpTransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient, HttpConnectionOptions httpConnectionOptions, Func<Task<string>> accessTokenProvider)
+        public DefaultTransportFactory(HttpTransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient? httpClient, HttpConnectionOptions httpConnectionOptions, Func<Task<string?>> accessTokenProvider)
         {
             if (httpClient == null && requestedTransportType != HttpTransportType.WebSockets)
             {
@@ -39,8 +39,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 {
                     return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider);
                 }
-                catch (PlatformNotSupportedException)
+                catch (PlatformNotSupportedException ex)
                 {
+                    Log.TransportNotSupported(_loggerFactory.CreateLogger<DefaultTransportFactory>(), HttpTransportType.WebSockets, ex);
                     _websocketsSupported = false;
                 }
             }
@@ -48,16 +49,27 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             if ((availableServerTransports & HttpTransportType.ServerSentEvents & _requestedTransportType) == HttpTransportType.ServerSentEvents)
             {
                 // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
-                return new ServerSentEventsTransport(_httpClient, _loggerFactory);
+                return new ServerSentEventsTransport(_httpClient!, _loggerFactory);
             }
 
             if ((availableServerTransports & HttpTransportType.LongPolling & _requestedTransportType) == HttpTransportType.LongPolling)
             {
                 // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
-                return new LongPollingTransport(_httpClient, _loggerFactory);
+                return new LongPollingTransport(_httpClient!, _loggerFactory);
             }
 
             throw new InvalidOperationException("No requested transports available on the server.");
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, HttpTransportType, Exception> _transportNotSupported =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(1, "TransportNotSupported"), "Transport '{TransportType}' is not supported.");
+
+            public static void TransportNotSupported(ILogger logger, HttpTransportType transportType, Exception ex)
+            {
+                _transportNotSupported(logger, transportType, ex);
+            }
         }
     }
 }

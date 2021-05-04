@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -52,30 +53,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportStopsSendAndReceiveLoopsWhenTransportIsStopped()
         {
-            using (StartServer<Startup>(out var server))
+            await using (var server = await StartServer<Startup>())
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
-                    TransferFormat.Binary).OrTimeout();
-                await webSocketsTransport.StopAsync().OrTimeout();
-                await webSocketsTransport.Running.OrTimeout();
+                    TransferFormat.Binary).DefaultTimeout();
+                await webSocketsTransport.StopAsync().DefaultTimeout();
+                await webSocketsTransport.Running.DefaultTimeout();
             }
         }
 
-        [ConditionalFact(Skip = "Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627")]
+        [ConditionalFact]
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsUserAgent()
         {
-            using (StartServer<Startup>(out var server))
+            await using (var server = await StartServer<Startup>())
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
-                    TransferFormat.Binary).OrTimeout();
+                    TransferFormat.Binary).DefaultTimeout();
 
                 await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("User-Agent"));
 
                 // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
-                await webSocketsTransport.Running.OrTimeout();
+                await webSocketsTransport.Running.DefaultTimeout();
 
                 Assert.True(webSocketsTransport.Input.TryRead(out var result));
 
@@ -86,7 +87,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Assembly
                     .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client/" + assemblyVersion.InformationalVersion, userAgent);
+                var majorVersion = typeof(HttpConnection).Assembly.GetName().Version.Major;
+                var minorVersion = typeof(HttpConnection).Assembly.GetName().Version.Minor;
+
+                Assert.StartsWith($"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; ", userAgent);
             }
         }
 
@@ -94,16 +98,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsXRequestedWithHeader()
         {
-            using (StartServer<Startup>(out var server))
+            await using (var server = await StartServer<Startup>())
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
-                    TransferFormat.Binary).OrTimeout();
+                    TransferFormat.Binary).DefaultTimeout();
 
-                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("X-Requested-With"));
+                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes(HeaderNames.XRequestedWith));
 
                 // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
-                await webSocketsTransport.Running.OrTimeout();
+                await webSocketsTransport.Running.DefaultTimeout();
 
                 Assert.True(webSocketsTransport.Input.TryRead(out var result));
 
@@ -117,13 +121,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportStopsWhenConnectionChannelClosed()
         {
-            using (StartServer<Startup>(out var server))
+            await using (var server = await StartServer<Startup>())
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
                     TransferFormat.Binary);
                 webSocketsTransport.Output.Complete();
-                await webSocketsTransport.Running.OrTimeout(TimeSpan.FromSeconds(10));
+                await webSocketsTransport.Running.DefaultTimeout(TimeSpan.FromSeconds(10));
             }
         }
 
@@ -133,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportStopsWhenConnectionClosedByTheServer(TransferFormat transferFormat)
         {
-            using (StartServer<Startup>(out var server))
+            await using (var server = await StartServer<Startup>())
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echoAndClose"), transferFormat);
@@ -141,7 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await webSocketsTransport.Output.WriteAsync(new byte[] { 0x42 });
 
                 // The echoAndClose endpoint closes the connection immediately after sending response which should stop the transport
-                await webSocketsTransport.Running.OrTimeout();
+                await webSocketsTransport.Running.DefaultTimeout();
 
                 Assert.True(webSocketsTransport.Input.TryRead(out var result));
                 Assert.Equal(new byte[] { 0x42 }, result.Buffer.ToArray());
@@ -155,15 +159,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportSetsTransferFormat(TransferFormat transferFormat)
         {
-            using (StartServer<Startup>(out var server))
+            await using (var server = await StartServer<Startup>())
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
 
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
-                    transferFormat).OrTimeout();
+                    transferFormat).DefaultTimeout();
 
-                await webSocketsTransport.StopAsync().OrTimeout();
-                await webSocketsTransport.Running.OrTimeout();
+                await webSocketsTransport.StopAsync().DefaultTimeout();
+                await webSocketsTransport.Running.DefaultTimeout();
             }
         }
 

@@ -34,7 +34,7 @@ if (-not $sharedfx64harvestroot) {
 
 Push-Location $PSScriptRoot
 try {
-    & $repoRoot/build.ps1 `
+    & $repoRoot/eng/build.ps1 `
             -ci:$ci `
             -sign `
             -BuildInstallers `

@@ -82,8 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 modelExpressionProvider);
 
             var serviceProvider = new Mock<IServiceProvider>();
-            var typeActivator = new TypeActivatorCache();
-            var tagHelperActivator = new DefaultTagHelperActivator(typeActivator);
+            var tagHelperActivator = new DefaultTagHelperActivator();
             var myService = new MyService();
             serviceProvider.Setup(mock => mock.GetService(typeof(MyService)))
                            .Returns(myService);
@@ -91,10 +90,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .Returns(new DefaultTagHelperFactory(tagHelperActivator));
             serviceProvider.Setup(mock => mock.GetService(typeof(ITagHelperActivator)))
                            .Returns(tagHelperActivator);
-            serviceProvider.Setup(mock => mock.GetService(typeof(ITypeActivatorCache)))
-                           .Returns(typeActivator);
             serviceProvider.Setup(mock => mock.GetService(It.Is<Type>(serviceType =>
-                serviceType.GetTypeInfo().IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
+                serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
                 .Returns<Type>(serviceType =>
                 {
                     var enumerableType = serviceType.GetGenericArguments().First();

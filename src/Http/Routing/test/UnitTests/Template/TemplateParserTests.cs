@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void Parse_ComplexSegment_ThreeParametersSeperatedByPeriod()
+        public void Parse_ComplexSegment_ThreeParametersSeparatedByPeriod()
         {
             // Arrange
             var template = "{p1}.{p2}.{p3}";
@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [Theory]
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}}$)}")] // extra }
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}}")] // extra } at the end
-        [InlineData(@"{{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}")] // extra { at the begining
+        [InlineData(@"{{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}")] // extra { at the beginning
         [InlineData(@"{p1:regex(([}])\w+}")] // Not escaped }
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}$)}")] // Not escaped }
         [InlineData(@"{p1:regex(abc)")]
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p1}.abc.{p2?}", ".abc.")]
         [InlineData("{p1}{p2?}", "{p1}")]
         [ReplaceCulture]
-        public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template, string parameter)
+        public void Parse_ComplexSegment_OptionalParametersSeparatedByPeriod_Invalid(string template, string parameter)
         {
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
@@ -896,7 +896,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 foreach (var xconstraint in x.InlineConstraints)
                 {
                     if (!y.InlineConstraints.Any<InlineConstraint>(
-                        c => string.Equals(c.Constraint, xconstraint.Constraint)))
+                        c => string.Equals(c.Constraint, xconstraint.Constraint, StringComparison.Ordinal)))
                     {
                         return false;
                     }

@@ -82,7 +82,7 @@ namespace Microsoft.Net.Http.Headers
             range7.Unit = "other";
 
             Assert.False(range1.Equals(null), "bytes=1-2 vs. <null>");
-            Assert.True(range1.Equals(range2), "bytes=1-2 vs. BYTES=1-2");
+            Assert.True(range1!.Equals(range2), "bytes=1-2 vs. BYTES=1-2");
             Assert.False(range1.Equals(range3), "bytes=1-2 vs. bytes=1-");
             Assert.False(range1.Equals(range4), "bytes=1-2 vs. bytes=-2");
             Assert.False(range1.Equals(range5), "bytes=1-2 vs. bytes=1-2,3-4");
@@ -153,28 +153,26 @@ namespace Microsoft.Net.Http.Headers
 
         #region Helper methods
 
-        private void CheckValidParse(string input, RangeHeaderValue expectedResult)
+        private void CheckValidParse(string? input, RangeHeaderValue expectedResult)
         {
             var result = RangeHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => RangeHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, RangeHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, RangeHeaderValue expectedResult)
         {
-            RangeHeaderValue result = null;
-            Assert.True(RangeHeaderValue.TryParse(input, out result));
+            Assert.True(RangeHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            RangeHeaderValue result = null;
-            Assert.False(RangeHeaderValue.TryParse(input, out result));
+            Assert.False(RangeHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 

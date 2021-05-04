@@ -68,17 +68,17 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Gets the access token provided by the authentication service.
         /// </summary>
-        public string AccessToken => TokenResponse.AccessToken;
+        public string? AccessToken => TokenResponse.AccessToken;
 
         /// <summary>
         /// Gets the access token type provided by the authentication service.
         /// </summary>
-        public string TokenType => TokenResponse.TokenType;
+        public string? TokenType => TokenResponse.TokenType;
 
         /// <summary>
         /// Gets the refresh token provided by the authentication service.
         /// </summary>
-        public string RefreshToken => TokenResponse.RefreshToken;
+        public string? RefreshToken => TokenResponse.RefreshToken;
 
         /// <summary>
         /// Gets the access token expiration time.
@@ -106,15 +106,23 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// Gets the main identity exposed by the authentication ticket.
         /// This property returns <c>null</c> when the ticket is <c>null</c>.
         /// </summary>
-        public ClaimsIdentity Identity => Principal?.Identity as ClaimsIdentity;
+        public ClaimsIdentity? Identity => Principal?.Identity as ClaimsIdentity;
 
+        /// <summary>
+        /// Examines <see cref="User"/>, determine if the requisite data is present, and optionally add it
+        /// to <see cref="Identity"/>.
+        /// </summary>
         public void RunClaimActions() => RunClaimActions(User);
 
+        /// <summary>
+        /// Examines the specified <paramref name="userData"/>, determine if the requisite data is present, and optionally add it
+        /// to <see cref="Identity"/>.
+        /// </summary>
         public void RunClaimActions(JsonElement userData)
         {
             foreach (var action in Options.ClaimActions)
             {
-                action.Run(userData, Identity, Options.ClaimsIssuer ?? Scheme.Name);
+                action.Run(userData, Identity!, Options.ClaimsIssuer ?? Scheme.Name);
             }
         }
     }

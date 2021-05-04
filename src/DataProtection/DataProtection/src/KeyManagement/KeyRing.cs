@@ -37,22 +37,20 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             _defaultKeyHolder = _keyIdToKeyHolderMap[DefaultKeyId];
         }
         
-        public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor
+        public IAuthenticatedEncryptor? DefaultAuthenticatedEncryptor
         {
             get
             {
-                bool unused;
-                return _defaultKeyHolder.GetEncryptorInstance(out unused);
+                return _defaultKeyHolder.GetEncryptorInstance(out _);
             }
         }
 
         public Guid DefaultKeyId { get; }
 
-        public IAuthenticatedEncryptor GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
+        public IAuthenticatedEncryptor? GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
         {
             isRevoked = false;
-            KeyHolder holder;
-            _keyIdToKeyHolderMap.TryGetValue(keyId, out holder);
+            _keyIdToKeyHolderMap.TryGetValue(keyId, out var holder);
             return holder?.GetEncryptorInstance(out isRevoked);
         }
 
@@ -60,18 +58,18 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private sealed class KeyHolder
         {
             private readonly IKey _key;
-            private IAuthenticatedEncryptor _encryptor;
+            private IAuthenticatedEncryptor? _encryptor;
 
             internal KeyHolder(IKey key)
             {
                 _key = key;
             }
 
-            internal IAuthenticatedEncryptor GetEncryptorInstance(out bool isRevoked)
+            internal IAuthenticatedEncryptor? GetEncryptorInstance(out bool isRevoked)
             {
                 // simple double-check lock pattern
                 // we can't use LazyInitializer<T> because we don't have a simple value factory
-                IAuthenticatedEncryptor encryptor = Volatile.Read(ref _encryptor);
+                IAuthenticatedEncryptor? encryptor = Volatile.Read(ref _encryptor);
                 if (encryptor == null)
                 {
                     lock (this)

@@ -21,15 +21,15 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public static readonly EventCallback Empty = new EventCallback(null, (Action)(() => { }));
 
-        internal readonly MulticastDelegate Delegate;
-        internal readonly IHandleEvent Receiver;
+        internal readonly MulticastDelegate? Delegate;
+        internal readonly IHandleEvent? Receiver;
 
         /// <summary>
         /// Creates the new <see cref="EventCallback"/>.
         /// </summary>
         /// <param name="receiver">The event receiver.</param>
         /// <param name="delegate">The delegate to bind.</param>
-        public EventCallback(IHandleEvent receiver, MulticastDelegate @delegate)
+        public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate)
         {
             Receiver = receiver;
             Delegate = @delegate;
@@ -51,17 +51,24 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="arg">The argument.</param>
         /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
-        public Task InvokeAsync(object arg)
+        public Task InvokeAsync(object? arg)
         {
             if (Receiver == null)
             {
-                return EventCallbackWorkItem.InvokeAsync<object>(Delegate, arg);
+                return EventCallbackWorkItem.InvokeAsync<object?>(Delegate, arg);
             }
 
             return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
         }
 
-        object IEventCallback.UnpackForRenderTree()
+        /// <summary>
+        /// Invokes the delegate associated with this binding and dispatches an event notification to the
+        /// appropriate component.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
+        public Task InvokeAsync() => InvokeAsync(null!);
+
+        object? IEventCallback.UnpackForRenderTree()
         {
             return RequiresExplicitReceiver ? (object)this : Delegate;
         }

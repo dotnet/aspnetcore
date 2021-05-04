@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
     {
-        private ProblemDetailsFactory _problemDetailsFactory;
+        private ProblemDetailsFactory? _problemDetailsFactory;
 
         public void Configure(ApiBehaviorOptions options)
         {
@@ -42,7 +42,10 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else
             {
-                result = new ObjectResult(problemDetails);
+                result = new ObjectResult(problemDetails)
+                {
+                    StatusCode = problemDetails.Status,
+                };
             }
             result.ContentTypes.Add("application/problem+json");
             result.ContentTypes.Add("application/problem+xml");

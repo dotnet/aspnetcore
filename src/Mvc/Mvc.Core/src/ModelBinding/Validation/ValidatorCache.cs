@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Concurrent;
@@ -8,10 +10,19 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
+    /// <summary>
+    /// A cache for <see cref="IModelValidator"/>
+    /// </summary>
     public class ValidatorCache
     {
-        private readonly ConcurrentDictionary<ModelMetadata, CacheEntry> _cacheEntries = new ConcurrentDictionary<ModelMetadata, CacheEntry>();
+        private readonly ConcurrentDictionary<ModelMetadata, CacheEntry> _cacheEntries = new();
 
+        /// <summary>
+        /// Get the validators for a model.
+        /// </summary>
+        /// <param name="metadata">The model metadata.</param>
+        /// <param name="validatorProvider">The validator provider.</param>
+        /// <returns>A list of model validators.</returns>
         public IReadOnlyList<IModelValidator> GetValidators(ModelMetadata metadata, IModelValidatorProvider validatorProvider)
         {
             if (_cacheEntries.TryGetValue(metadata, out var entry))
@@ -56,12 +67,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         private IReadOnlyList<IModelValidator> GetValidatorsFromEntry(CacheEntry entry, ModelMetadata metadata, IModelValidatorProvider validationProvider)
         {
-            Debug.Assert(entry.Validators != null || entry.Items != null);
-
             if (entry.Validators != null)
             {
                 return entry.Validators;
             }
+
+            Debug.Assert(entry.Items != null);
 
             var items = new List<ValidatorItem>(entry.Items.Count);
             for (var i = 0; i < entry.Items.Count; i++)
@@ -133,9 +144,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 Validators = null;
             }
 
-            public IReadOnlyList<IModelValidator> Validators { get; }
+            public IReadOnlyList<IModelValidator>? Validators { get; }
 
-            public List<ValidatorItem> Items { get; }
+            public List<ValidatorItem>? Items { get; }
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 
@@ -10,8 +12,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class ServicesModelBinderProvider : IModelBinderProvider
     {
+        // ServicesModelBinder does not have any state. Re-use the same instance for binding.
+
+        private readonly ServicesModelBinder _modelBinder = new ServicesModelBinder();
+
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -21,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (context.BindingInfo.BindingSource != null &&
                 context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Services))
             {
-                return new ServicesModelBinder();
+                return _modelBinder;
             }
 
             return null;

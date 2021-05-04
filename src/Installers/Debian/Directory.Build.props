@@ -2,7 +2,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
     <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
 
@@ -15,6 +14,6 @@
 
     <!-- All installers are shipping assets. -->
     <IsShipping>true</IsShipping>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 </Project>

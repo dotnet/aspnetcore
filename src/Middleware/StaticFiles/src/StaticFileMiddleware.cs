@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             _next = next;
             _options = options.Value;
-            _contentTypeProvider = options.Value.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
+            _contentTypeProvider = _options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
             _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
             _matchUrl = _options.RequestPath;
             _logger = loggerFactory.CreateLogger<StaticFileMiddleware>();
@@ -98,25 +99,14 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private static bool ValidateMethod(HttpContext context)
         {
-            var method = context.Request.Method;
-            var isValid = false;
-            if (HttpMethods.IsGet(method))
-            {
-                isValid = true;
-            }
-            else if (HttpMethods.IsHead(method))
-            {
-                isValid = true;
-            }
-
-            return isValid;
+            return Helpers.IsGetOrHeadMethod(context.Request.Method);
         }
 
         internal static bool ValidatePath(HttpContext context, PathString matchUrl, out PathString subPath) => Helpers.TryMatchPath(context, matchUrl, forDirectory: false, out subPath);
 
-        internal static bool LookupContentType(IContentTypeProvider contentTypeProvider, StaticFileOptions options, PathString subPath, out string contentType)
+        internal static bool LookupContentType(IContentTypeProvider contentTypeProvider, StaticFileOptions options, PathString subPath, out string? contentType)
         {
-            if (contentTypeProvider.TryGetContentType(subPath.Value, out contentType))
+            if (contentTypeProvider.TryGetContentType(subPath.Value!, out contentType))
             {
                 return true;
             }
@@ -130,7 +120,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             return false;
         }
 
-        private Task TryServeStaticFile(HttpContext context, string contentType, PathString subPath)
+        private Task TryServeStaticFile(HttpContext context, string? contentType, PathString subPath)
         {
             var fileContext = new StaticFileContext(context, _options, _logger, _fileProvider, contentType, subPath);
 

@@ -6,12 +6,12 @@ using System.IO.Pipelines;
 namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
-    /// Represents the HttpRequestBody as a PipeReader.
+    /// Represents the HTTP request body as a <see cref="PipeReader"/>.
     /// </summary>
     public interface IRequestBodyPipeFeature
     {
         /// <summary>
-        /// A <see cref="PipeReader"/> representing the request body, if any.
+        /// Gets a <see cref="PipeReader"/> representing the request body, if any.
         /// </summary>
         PipeReader Reader { get; }
     }

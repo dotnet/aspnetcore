@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
@@ -46,6 +48,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
+            _logger.AttemptingToBindModel(bindingContext);
+
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
@@ -56,15 +60,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return Task.CompletedTask;
             }
 
-            _logger.AttemptingToBindModel(bindingContext);
-
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 
             try
             {
                 var value = valueProviderResult.FirstValue;
 
-                object model;
+                object? model;
                 if (bindingContext.ModelType == typeof(string))
                 {
                     // Already have a string. No further conversion required but handle ConvertEmptyStringToNull.
@@ -115,10 +117,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void CheckModel(
             ModelBindingContext bindingContext,
             ValueProviderResult valueProviderResult,
-            object model)
+            object? model)
         {
             // When converting newModel a null value may indicate a failed conversion for an otherwise required
             // model (can't set a ValueType to null). This detects if a null model value is acceptable given the

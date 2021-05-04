@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "Webanwendung",
-    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit Beispielinhalt für ASP.NET Core-Razor-Seiten."
+    "name": "ASP.NET Core-Web-App",
+    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit Beispielinhalt für ASP.NET-Razor-Seiten."
   }
 }

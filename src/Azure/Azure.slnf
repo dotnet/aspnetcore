@@ -1,0 +1,38 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\Azure\\AzureAD\\Authentication.AzureAD.UI\\src\\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj",
+      "src\\Azure\\AzureAD\\Authentication.AzureAD.UI\\test\\Microsoft.AspNetCore.Authentication.AzureAD.UI.Test.csproj",
+      "src\\Azure\\AzureAD\\Authentication.AzureADB2C.UI\\src\\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj",
+      "src\\Azure\\AzureAD\\Authentication.AzureADB2C.UI\\test\\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test.csproj",
+      "src\\Azure\\AzureAD\\test\\FunctionalTests\\Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests.csproj",
+      "src\\Azure\\AzureAD\\test\\testassets\\AzureAD.WebSite\\AzureAD.WebSite.csproj",
+      "src\\Azure\\samples\\AzureAppServicesSample\\AzureAppServicesSample.csproj",
+      "src\\Azure\\samples\\AzureAppServicesHostingStartupSample\\AzureAppServicesHostingStartupSample.csproj",
+      "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
+      "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
+      "src\\Middleware\\HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj",
+      "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
+      "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj",
+      "src\\Mvc\\Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",
+      "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
+      "src\\Azure\\AzureAppServices.HostingStartup\\src\\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj",
+      "src\\Azure\\AzureAppServicesIntegration\\src\\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj",
+      "src\\Azure\\AzureAppServicesIntegration\\test\\Microsoft.AspNetCore.AzureAppServicesIntegration.Tests.csproj",
+      "src\\Azure\\samples\\AzureAppServicesHostingStartupSample\\AzureAppServicesHostingStartupSample.csproj",
+      "src\\Azure\\samples\\AzureAppServicesSample\\AzureAppServicesSample.csproj",
+      "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
+      "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
+      "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
+      "src\\Security\\Authentication\\OpenIdConnect\\src\\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj",
+      "src\\Security\\Authentication\\OAuth\\src\\Microsoft.AspNetCore.Authentication.OAuth.csproj",
+      "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
+      "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
+      "src\\Security\\Authentication\\JwtBearer\\src\\Microsoft.AspNetCore.Authentication.JwtBearer.csproj"
+    ]
+  }
+}

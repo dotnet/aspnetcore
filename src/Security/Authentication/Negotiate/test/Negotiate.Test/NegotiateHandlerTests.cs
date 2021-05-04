@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection());
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate", result.Response.Headers.WWWAuthenticate);
         }
 
         [Fact]
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var result = await SendAsync(server, "/Authenticate", connection: null, http2: true);
             // Clients will downgrade to HTTP/1.1 and authenticate.
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate", result.Response.Headers.WWWAuthenticate);
         }
 
         [Fact]
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var server = host.GetTestServer();
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate ClientNtlmBlob1");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerNtlmBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerNtlmBlob1", result.Response.Headers.WWWAuthenticate);
         }
 
         [Fact]
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/Authenticate", testConnection);
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate", result.Response.Headers.WWWAuthenticate);
         }
 
         [Theory]
@@ -205,6 +206,28 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
             await NtlmStage1And2Auth(server, testConnection);
             await NtlmStage1And2Auth(server, testConnection);
+        }
+
+        [Fact]
+        public async Task RBACClaimsRetrievedFromCacheAfterKerberosCompleted()
+        {
+            var claimsCache = new MemoryCache(new MemoryCacheOptions());
+            claimsCache.Set("name", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
+            NegotiateOptions negotiateOptions = null;
+            using var host = await CreateHostAsync(options =>
+                {
+                    options.EnableLdap(ldapSettings =>
+                    {
+                        ldapSettings.Domain = "domain.NET";
+                        ldapSettings.ClaimsCache = claimsCache;
+                        ldapSettings.EnableLdapClaimResolution = false; // This disables binding to the LDAP connection on startup
+                    });
+                    negotiateOptions = options;
+                });
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+            negotiateOptions.EnableLdap(_ => { }); // Forcefully re-enable ldap claims resolution to trigger RBAC claims retrieval from cache
+            await AuthenticateAndRetrieveRBACClaims(server, testConnection);
         }
 
         [Theory]
@@ -279,7 +302,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate CredentialError");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate", result.Response.Headers.WWWAuthenticate);
         }
 
         [Fact]
@@ -301,7 +324,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
 
             var ex = await Assert.ThrowsAsync<Exception>(() => SendAsync(server, "/404", testConnection, "Negotiate OtherError"));
-            Assert.Equal("A test other error occured", ex.Message);
+            Assert.Equal("A test other error occurred", ex.Message);
+        }
+        private static async Task AuthenticateAndRetrieveRBACClaims(TestServer server, TestConnection testConnection)
+        {
+            var result = await SendAsync(server, "/AuthenticateAndRetrieveRBACClaims", testConnection, "Negotiate ClientKerberosBlob");
+            Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
+            Assert.Equal("Negotiate ServerKerberosBlob", result.Response.Headers.WWWAuthenticate);
         }
 
         // Single Stage
@@ -309,7 +338,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob");
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerKerberosBlob", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerKerberosBlob", result.Response.Headers.WWWAuthenticate);
         }
 
         private static async Task KerberosStage1And2Auth(TestServer server, TestConnection testConnection)
@@ -322,14 +351,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob1");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerKerberosBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerKerberosBlob1", result.Response.Headers.WWWAuthenticate);
         }
 
         private static async Task KerberosStage2Auth(TestServer server, TestConnection testConnection)
         {
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob2");
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerKerberosBlob2", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerKerberosBlob2", result.Response.Headers.WWWAuthenticate);
         }
 
         private static async Task NtlmStage1And2Auth(TestServer server, TestConnection testConnection)
@@ -342,14 +371,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var result = await SendAsync(server, "/404", testConnection, "Negotiate ClientNtlmBlob1");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerNtlmBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerNtlmBlob1", result.Response.Headers.WWWAuthenticate);
         }
 
         private static async Task NtlmStage2Auth(TestServer server, TestConnection testConnection)
         {
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientNtlmBlob2");
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerNtlmBlob2", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerNtlmBlob2", result.Response.Headers.WWWAuthenticate);
         }
 
         private static async Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
@@ -407,6 +436,24 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 await context.Response.WriteAsync(name);
             });
 
+            builder.Map("/AuthenticateAndRetrieveRBACClaims", async context =>
+            {
+                if (!context.User.Identity.IsAuthenticated)
+                {
+                    await context.ChallengeAsync();
+                    return;
+                }
+
+                Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
+                var name = context.User.Identity.Name;
+                Assert.False(string.IsNullOrEmpty(name), "name");
+                Assert.Contains(
+                    context.User.Claims,
+                    claim => claim.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                        && claim.Value == "CN=Domain Admins,CN=Users,DC=domain,DC=net");
+                await context.Response.WriteAsync(name);
+            });
+
             builder.Map("/AlreadyAuthenticated", async context =>
             {
                 Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
@@ -442,7 +489,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 context.Request.Path = path;
                 if (!string.IsNullOrEmpty(authorizationHeader))
                 {
-                    context.Request.Headers[HeaderNames.Authorization] = authorizationHeader;
+                    context.Request.Headers.Authorization = authorizationHeader;
                 }
                 if (connection != null)
                 {
@@ -552,15 +599,15 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         return "ServerKerberosBlob2";
                     case "CredentialError":
                         errorType = BlobErrorType.CredentialError;
-                        ex = new Exception("A test credential error occured");
+                        ex = new Exception("A test credential error occurred");
                         return null;
                     case "ClientError":
                         errorType = BlobErrorType.ClientError;
-                        ex = new Exception("A test client error occured");
+                        ex = new Exception("A test client error occurred");
                         return null;
                     case "OtherError":
                         errorType = BlobErrorType.Other;
-                        ex = new Exception("A test other error occured");
+                        ex = new Exception("A test other error occurred");
                         return null;
                     default:
                         errorType = BlobErrorType.Other;

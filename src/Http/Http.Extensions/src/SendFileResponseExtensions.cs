@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="response"></param>
         /// <param name="file">The file.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task SendFileAsync(this HttpResponse response, IFileInfo file, CancellationToken cancellationToken = default)
         {
             if (response == null)
@@ -47,6 +49,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task SendFileAsync(this HttpResponse response, IFileInfo file, long offset, long? count, CancellationToken cancellationToken = default)
         {
             if (response == null)
@@ -68,6 +71,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="fileName">The full path to the file.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task SendFileAsync(this HttpResponse response, string fileName, CancellationToken cancellationToken = default)
         {
             if (response == null)
@@ -92,6 +96,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
         {
             if (response == null)
@@ -138,7 +143,7 @@ namespace Microsoft.AspNetCore.Http
         {
             var useRequestAborted = !cancellationToken.CanBeCanceled;
             var localCancel = useRequestAborted ? response.HttpContext.RequestAborted : cancellationToken;
-            var sendFile = response.HttpContext.Features.Get<IHttpResponseBodyFeature>();
+            var sendFile = response.HttpContext.Features.Get<IHttpResponseBodyFeature>()!;
 
             try
             {

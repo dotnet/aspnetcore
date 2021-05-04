@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,18 +59,18 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// Configuration provided directly by the developer. If provided, then MetadataAddress and the Backchannel properties
         /// will not be used. This information should not be updated during request processing.
         /// </summary>
-        public WsFederationConfiguration Configuration { get; set; }
+        public WsFederationConfiguration? Configuration { get; set; }
 
         /// <summary>
         /// Gets or sets the address to retrieve the wsFederation metadata
         /// </summary>
-        public string MetadataAddress { get; set; }
+        public string? MetadataAddress { get; set; }
 
         /// <summary>
         /// Responsible for retrieving, caching, and refreshing the configuration from metadata.
         /// If not provided, then one will be created using the MetadataAddress and Backchannel properties.
         /// </summary>
-        public IConfigurationManager<WsFederationConfiguration> ConfigurationManager { get; set; }
+        public IConfigurationManager<WsFederationConfiguration> ConfigurationManager { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.
         /// </summary>
-        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
+        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="TokenValidationParameters"/>
@@ -135,18 +135,18 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// Gets or sets the 'wreply'. CallbackPath must be set to match or cleared so it can be generated dynamically.
         /// This field is optional. If not set then it will be generated from the current request and the CallbackPath.
         /// </summary>
-        public string Wreply { get; set; }
+        public string? Wreply { get; set; }
 
         /// <summary>
         /// Gets or sets the 'wreply' value used during sign-out.
         /// If none is specified then the value from the Wreply field is used.
         /// </summary>
-        public string SignOutWreply { get; set; }
+        public string? SignOutWreply { get; set; }
         
         /// <summary>
         /// Gets or sets the 'wtrealm'.
         /// </summary>
-        public string Wtrealm { get; set; }
+        public string? Wtrealm { get; set; }
 
         /// <summary>
         /// Indicates that the authentication session lifetime (e.g. cookies) should match that of the authentication token.
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// The Authentication Scheme to use with SignOutAsync from RemoteSignOutPath. SignInScheme will be used if this
         /// is not set.
         /// </summary>
-        public string SignOutScheme { get; set; }
+        public string? SignOutScheme { get; set; }
         
         /// <summary>
         /// SaveTokens is not supported in WsFederation

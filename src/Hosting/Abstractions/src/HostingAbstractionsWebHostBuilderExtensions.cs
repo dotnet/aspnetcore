@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -11,10 +12,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Contains extension methods for configuring the <see cref="IWebHostBuilder" />.
+    /// </summary>
     public static class HostingAbstractionsWebHostBuilderExtensions
     {
-        private static readonly string ServerUrlsSeparator = ";";
-
         /// <summary>
         /// Use the given configuration settings on the web host.
         /// </summary>
@@ -49,13 +51,13 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
         /// <param name="startupAssemblyName">The name of the assembly containing the startup type.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        [RequiresUnreferencedCode("Types and members the loaded assembly depends on might be removed.")]
         public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, string startupAssemblyName)
         {
             if (startupAssemblyName == null)
             {
                 throw new ArgumentNullException(nameof(startupAssemblyName));
             }
-
 
             return hostBuilder
                 .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
@@ -144,7 +146,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(urls));
             }
 
-            return hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Join(ServerUrlsSeparator, urls));
+            return hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Join(';', urls));
         }
 
         /// <summary>

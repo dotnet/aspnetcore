@@ -11,5 +11,7 @@ namespace Ignitor
         {
             _componentId = componentId;
         }
+
+        public int ComponentId => _componentId;
     }
 }

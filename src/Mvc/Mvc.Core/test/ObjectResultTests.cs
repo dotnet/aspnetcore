@@ -94,6 +94,68 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
         }
 
+        [Fact]
+        public async Task ObjectResult_ExecuteResultAsync_GetsStatusCodeFromProblemDetails()
+        {
+            // Arrange
+            var details = new ProblemDetails { Status = StatusCodes.Status413RequestEntityTooLarge, };
+
+            var result = new ObjectResult(details)
+            {
+                Formatters = new FormatterCollection<IOutputFormatter>()
+                {
+                    new NoOpOutputFormatter(),
+                },
+            };
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = CreateServices(),
+                }
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, details.Status.Value);
+            Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, result.StatusCode.Value);
+            Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, actionContext.HttpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ObjectResult_ExecuteResultAsync_ResultAndProblemDetailsHaveStatusCodes()
+        {
+            // Arrange
+            var details = new ProblemDetails { Status = StatusCodes.Status422UnprocessableEntity, };
+
+            var result = new BadRequestObjectResult(details)
+            {
+                Formatters = new FormatterCollection<IOutputFormatter>()
+                {
+                    new NoOpOutputFormatter(),
+                },
+            };
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = CreateServices(),
+                }
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode.Value);
+            Assert.Equal(StatusCodes.Status400BadRequest, actionContext.HttpContext.Response.StatusCode);
+        }
+
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();

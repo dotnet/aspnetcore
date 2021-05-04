@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.MiddlewareAnalysis
@@ -19,23 +20,31 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
         {
             DiagnosticListener diagnosticListener = null;
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
-
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        throw new Exception("Test exception");
-                    });
-                })
-                .ConfigureServices(services => services.AddMiddlewareAnalysis());
-            var server = new TestServer(builder);
+                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
+                    })
+                    .ConfigureServices(services => services.AddMiddlewareAnalysis());
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
-            
+
             await server.CreateClient().GetAsync(string.Empty);
 
             // "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware",

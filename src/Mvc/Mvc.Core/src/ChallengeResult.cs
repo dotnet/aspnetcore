@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(AuthenticationProperties properties)
+        public ChallengeResult(AuthenticationProperties? properties)
             : this(Array.Empty<string>(), properties)
         {
         }
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(string authenticationScheme, AuthenticationProperties properties)
+        public ChallengeResult(string authenticationScheme, AuthenticationProperties? properties)
             : this(new[] { authenticationScheme }, properties)
         {
         }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
+        public ChallengeResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
         {
             AuthenticationSchemes = authenticationSchemes;
             Properties = properties;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
         public override async Task ExecuteResultAsync(ActionContext context)

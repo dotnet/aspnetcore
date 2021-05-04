@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace IISSample
@@ -35,7 +37,7 @@ namespace IISSample
 
                 await context.Response.WriteAsync("Address:" + Environment.NewLine);
                 await context.Response.WriteAsync("Scheme: " + context.Request.Scheme + Environment.NewLine);
-                await context.Response.WriteAsync("Host: " + context.Request.Headers["Host"] + Environment.NewLine);
+                await context.Response.WriteAsync("Host: " + context.Request.Headers.Host + Environment.NewLine);
                 await context.Response.WriteAsync("PathBase: " + context.Request.PathBase.Value + Environment.NewLine);
                 await context.Response.WriteAsync("Path: " + context.Request.Path.Value + Environment.NewLine);
                 await context.Response.WriteAsync("Query: " + context.Request.QueryString.Value + Environment.NewLine);
@@ -70,20 +72,23 @@ namespace IISSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseAzureAppServices()
+                        .UseStartup<Startup>();
+                })
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();
                 })
-                .UseKestrel()
-                .UseAzureAppServices()
-                .UseStartup<Startup>()
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }
-

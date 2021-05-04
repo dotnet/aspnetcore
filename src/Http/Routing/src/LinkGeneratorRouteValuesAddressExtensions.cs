@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -27,14 +28,15 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
-        public static string GetPathByRouteValues(
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? GetPathByRouteValues(
             this LinkGenerator generator,
             HttpContext httpContext,
-            string routeName,
-            object values,
+            string? routeName,
+            object? values,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -70,13 +72,14 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
-        public static string GetPathByRouteValues(
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? GetPathByRouteValues(
             this LinkGenerator generator,
-            string routeName,
-            object values,
+            string? routeName,
+            object? values,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -118,16 +121,17 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string GetUriByRouteValues(
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? GetUriByRouteValues(
             this LinkGenerator generator,
             HttpContext httpContext,
-            string routeName,
-            object values,
-            string scheme = default,
+            string? routeName,
+            object? values,
+            string? scheme = default,
             HostString? host = default,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -178,15 +182,16 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string GetUriByRouteValues(
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? GetUriByRouteValues(
             this LinkGenerator generator,
-            string routeName,
-            object values,
+            string? routeName,
+            object? values,
             string scheme,
             HostString host,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -197,7 +202,7 @@ namespace Microsoft.AspNetCore.Routing
             return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);
         }
 
-        private static RouteValuesAddress CreateAddress(HttpContext httpContext, string routeName, object values)
+        private static RouteValuesAddress CreateAddress(HttpContext? httpContext, string? routeName, object? values)
         {
             return new RouteValuesAddress()
             {

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// If not set the ambient value will be used when generating the URL.
         /// </remarks>
-        public string PageHandler { get; set; }
+        public string? PageHandler { get; set; }
 
         /// <summary>
         /// The page name used when generating the URL where client should send a validation request.
@@ -32,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// If not set the ambient value will be used when generating the URL.
         /// </remarks>
-        public string PageName { get; set; }
+        public string? PageName { get; set; }
 
         /// <inheritdoc />
         protected override string GetUrl(ClientModelValidationContext context)

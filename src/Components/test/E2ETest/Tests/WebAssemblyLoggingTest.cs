@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<ErrorComponent>();
             Browser.Exists(By.Id("blazor-error-ui"));
 
-            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
         }
 
         [Fact]
         public void LogsSimpleExceptionsUsingLogger()
         {
-            Browser.FindElement(By.Id("throw-simple-exception")).Click();
+            Browser.Exists(By.Id("throw-simple-exception")).Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
             AssertLogContainsCriticalMessages(
                 "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
@@ -47,19 +47,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void LogsInnerExceptionsUsingLogger()
         {
-            Browser.FindElement(By.Id("throw-inner-exception")).Click();
+            Browser.Exists(By.Id("throw-inner-exception")).Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
             AssertLogContainsCriticalMessages(
                 "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
                 "[Custom logger] Unhandled exception rendering component: Here is the outer exception",
-                "System.InvalidTimeZoneException: Here is the outer exception ---> System.ArithmeticException: Here is the inner exception",
+                "System.InvalidTimeZoneException: Here is the outer exception",
+                "System.ArithmeticException: Here is the inner exception",
                 "at BasicTestApp.ErrorComponent.ThrowInner");
         }
 
         [Fact]
         public void LogsAggregateExceptionsUsingLogger()
         {
-            Browser.FindElement(By.Id("throw-aggregate-exception")).Click();
+            Browser.Exists(By.Id("throw-aggregate-exception")).Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
             AssertLogContainsCriticalMessages(
                 "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
@@ -82,27 +83,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // None of these severity levels are displayed by default, so at the end
             // we'll continue to see "Test log message" as the most recent output
-            Browser.FindElement(By.Id("log-none")).Click();
-            Browser.FindElement(By.Id("log-trace")).Click();
-            Browser.FindElement(By.Id("log-debug")).Click();
-            Browser.FindElement(By.Id("log-information")).Click();
+            Browser.Exists(By.Id("log-none")).Click();
+            Browser.Exists(By.Id("log-trace")).Click();
+            Browser.Exists(By.Id("log-debug")).Click();
+            Browser.Exists(By.Id("log-information")).Click();
             // The Warning minimum log-level is only set on the PrependMessage
             // logger so the last info log will be processed by the default
             // logger but not the PrependMessage one.
             AssertLastLogMessage(LogLevel.Info, "info: BasicTestApp.ErrorComponent[0]");
 
             // These severity levels are displayed
-            Browser.FindElement(By.Id("log-warning")).Click();
+            Browser.Exists(By.Id("log-warning")).Click();
             AssertLastLogMessage(LogLevel.Warning, "[Custom logger] This is a Warning message with count=5");
-            Browser.FindElement(By.Id("log-error")).Click();
+            Browser.Exists(By.Id("log-error")).Click();
             AssertLastLogMessage(LogLevel.Severe, "[Custom logger] This is a Error message with count=6");
 
             // All the preceding levels don't cause the error UI to appear
-            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 
             // ... but "Critical" level does
-            Browser.FindElement(By.Id("log-critical")).Click();
+            Browser.Exists(By.Id("log-critical")).Click();
             AssertLastLogMessage(LogLevel.Severe, "[Custom logger] This is a Critical message with count=7");
             Assert.Equal("block", errorUi.GetCssValue("display"));
         }

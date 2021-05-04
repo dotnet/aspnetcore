@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             ProcessRouteParameters(context);
 
             // Set IsRequired=true
-            ProcessIsRequired(context);
+            ProcessIsRequired(context, _mvcOptions);
 
             // Set DefaultValue
             ProcessParameterDefaultValue(context);
@@ -273,13 +273,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        internal static void ProcessIsRequired(ApiParameterContext context)
+        internal static void ProcessIsRequired(ApiParameterContext context, MvcOptions mvcOptions)
         {
             foreach (var parameter in context.Results)
             {
                 if (parameter.Source == BindingSource.Body)
                 {
-                    parameter.IsRequired = true;
+                    if (parameter.BindingInfo == null || parameter.BindingInfo.EmptyBodyBehavior == EmptyBodyBehavior.Default)
+                    {
+                        parameter.IsRequired = !mvcOptions.AllowEmptyInputInBodyModelBinding;
+                    }
+                    else
+                    {
+                        parameter.IsRequired = !(parameter.BindingInfo.EmptyBodyBehavior == EmptyBodyBehavior.Allow);
+                    }
                 }
 
                 if (parameter.ModelMetadata != null && parameter.ModelMetadata.IsBindingRequired)
@@ -466,6 +473,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             public string PropertyName { get; set; }
 
+            public BindingInfo BindingInfo { get; set; }
+
             public static ApiParameterDescriptionContext GetContext(
                 ModelMetadata metadata,
                 BindingInfo bindingInfo,
@@ -478,6 +487,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     BinderModelName = bindingInfo?.BinderModelName,
                     BindingSource = bindingInfo?.BindingSource,
                     PropertyName = propertyName ?? metadata.Name,
+                    BindingInfo = bindingInfo,
                 };
             }
         }
@@ -607,20 +617,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Source = source,
                     Type = bindingContext.ModelMetadata.ModelType,
                     ParameterDescriptor = Parameter,
+                    BindingInfo = bindingContext.BindingInfo
                 };
             }
 
             private static string GetName(string containerName, ApiParameterDescriptionContext metadata)
             {
-                if (!string.IsNullOrEmpty(metadata.BinderModelName))
-                {
-                    // Name was explicitly provided
-                    return metadata.BinderModelName;
-                }
-                else
-                {
-                    return ModelNames.CreatePropertyModelName(containerName, metadata.PropertyName);
-                }
+                var propertyName = !string.IsNullOrEmpty(metadata.BinderModelName) ? metadata.BinderModelName : metadata.PropertyName;
+                return ModelNames.CreatePropertyModelName(containerName, propertyName);
             }
 
             private readonly struct PropertyKey
@@ -651,11 +655,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 public int GetHashCode(PropertyKey obj)
                 {
-                    var hashCodeCombiner = HashCodeCombiner.Start();
+                    var hashCodeCombiner = new HashCode();
                     hashCodeCombiner.Add(obj.ContainerType);
                     hashCodeCombiner.Add(obj.PropertyName);
                     hashCodeCombiner.Add(obj.Source);
-                    return hashCodeCombiner.CombinedHash;
+                    return hashCodeCombiner.ToHashCode();
                 }
             }
         }

@@ -1,10 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);BL0005;BL0006</NoWarn>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\WebAssembly\test\TestWebAssemblyJSRuntimeInvoker.cs" Link="Shared\TestWebAssemblyJSRuntimeInvoker.cs" />
+    <Compile Include="..\..\WebAssembly\test\TestJSUnmarshalledRuntime.cs" Link="Shared\TestWebAssemblyJSRuntimeInvoker.cs" />
   </ItemGroup>
 
 </Project>

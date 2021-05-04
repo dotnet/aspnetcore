@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -97,16 +99,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         /// <inheritdoc />
-        protected override object ConvertToCollectionType(Type targetType, IEnumerable<TElement> collection)
+        protected override object? ConvertToCollectionType(Type targetType, IEnumerable<TElement?> collection)
         {
-            Debug.Assert(targetType == typeof(TElement[]), "GenericModelBinder only creates this binder for arrays.");
+            Debug.Assert(targetType == typeof(TElement?[]), "GenericModelBinder only creates this binder for arrays.");
 
             // If non-null, collection is a List<TElement>, never already a TElement[].
             return collection?.ToArray();
         }
 
         /// <inheritdoc />
-        protected override void CopyToModel(object target, IEnumerable<TElement> sourceCollection)
+        protected override void CopyToModel(object target, IEnumerable<TElement?> sourceCollection)
         {
             if (target == null)
             {

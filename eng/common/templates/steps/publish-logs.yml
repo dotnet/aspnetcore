@@ -1,0 +1,23 @@
+parameters:
+  StageLabel: ''
+  JobLabel: ''
+
+steps:
+- task: Powershell@2
+  displayName: Prepare Binlogs to Upload
+  inputs:
+    targetType: inline
+    script: |
+      New-Item -ItemType Directory $(Build.SourcesDirectory)/PostBuildLogs/${{parameters.StageLabel}}/${{parameters.JobLabel}}/
+      Move-Item -Path $(Build.SourcesDirectory)/artifacts/log/Debug/* $(Build.SourcesDirectory)/PostBuildLogs/${{parameters.StageLabel}}/${{parameters.JobLabel}}/
+  continueOnError: true
+  condition: always()
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Logs
+  inputs:
+    PathtoPublish: '$(Build.SourcesDirectory)/PostBuildLogs'
+    PublishLocation: Container
+    ArtifactName: PostBuildLogs
+  continueOnError: true
+  condition: always()

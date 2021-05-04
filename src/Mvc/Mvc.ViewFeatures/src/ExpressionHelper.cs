@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Check whether GetDefaultMembers() (if present in CoreCLR) would return a member of this type. Compiler
             // names the indexer property, if any, in a generated [DefaultMember] attribute for the containing type.
             var declaringType = methodExpression.Method.DeclaringType;
-            var defaultMember = declaringType.GetTypeInfo().GetCustomAttribute<DefaultMemberAttribute>(inherit: true);
+            var defaultMember = declaringType.GetCustomAttribute<DefaultMemberAttribute>(inherit: true);
             if (defaultMember == null)
             {
                 return false;

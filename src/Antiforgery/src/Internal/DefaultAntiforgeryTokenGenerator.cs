@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 // Application says user is authenticated, but we have no identifier for the user.
                 throw new InvalidOperationException(
                     Resources.FormatAntiforgeryTokenValidator_AuthenticatedUserWithoutUsername(
-                        authenticatedIdentity.GetType(),
+                        authenticatedIdentity?.GetType() ?? typeof(ClaimsIdentity),
                         nameof(IIdentity.IsAuthenticated),
                         "true",
                         nameof(IIdentity.Name),
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         /// <inheritdoc />
-        public bool IsCookieTokenValid(AntiforgeryToken cookieToken)
+        public bool IsCookieTokenValid(AntiforgeryToken? cookieToken)
         {
             return cookieToken != null && cookieToken.IsCookieToken;
         }
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             HttpContext httpContext,
             AntiforgeryToken cookieToken,
             AntiforgeryToken requestToken,
-            out string message)
+            [NotNullWhen(false)] out string? message)
         {
             if (httpContext == null)
             {
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             // Is the incoming token meant for the current user?
             var currentUsername = string.Empty;
-            BinaryBlob currentClaimUid = null;
+            BinaryBlob? currentClaimUid = null;
 
             var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
             if (authenticatedIdentity != null)
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             return true;
         }
 
-        private static BinaryBlob GetClaimUidBlob(string base64ClaimUid)
+        private static BinaryBlob? GetClaimUidBlob(string? base64ClaimUid)
         {
             if (base64ClaimUid == null)
             {
@@ -203,7 +204,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             return new BinaryBlob(256, Convert.FromBase64String(base64ClaimUid));
         }
 
-        private static ClaimsIdentity GetAuthenticatedIdentity(ClaimsPrincipal claimsPrincipal)
+        private static ClaimsIdentity? GetAuthenticatedIdentity(ClaimsPrincipal? claimsPrincipal)
         {
             if (claimsPrincipal == null)
             {

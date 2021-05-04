@@ -7,11 +7,16 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="TlsConnectionFeature"/>.
+    /// </summary>
     public class TlsConnectionFeature : ITlsConnectionFeature
     {
-        public X509Certificate2 ClientCertificate { get; set; }
+        /// <inheritdoc />
+        public X509Certificate2? ClientCertificate { get; set; }
 
-        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(ClientCertificate);
         }

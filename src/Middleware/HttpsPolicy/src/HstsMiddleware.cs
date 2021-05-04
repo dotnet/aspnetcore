@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                 return _next(context);
             }
 
-            context.Response.Headers[HeaderNames.StrictTransportSecurity] = _strictTransportSecurityValue;
+            context.Response.Headers.StrictTransportSecurity = _strictTransportSecurityValue;
             _logger.AddingHstsHeader();
 
             return _next(context);

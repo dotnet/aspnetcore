@@ -3,10 +3,19 @@
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
+    /// <summary>
+    /// Default values for the Twitter authentication handler.
+    /// </summary>
     public static class TwitterDefaults
     {
+        /// <summary>
+        /// The default scheme for Twitter authentication. The value is <c>Twitter</c>.
+        /// </summary>
         public const string AuthenticationScheme = "Twitter";
 
+        /// <summary>
+        /// The default display name for Twitter authentication. Defaults to <c>Twitter</c>.
+        /// </summary>
         public static readonly string DisplayName = "Twitter";
 
         // https://developer.twitter.com/en/docs/basics/authentication/api-reference/request_token

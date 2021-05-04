@@ -3,8 +3,12 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// A feature for routing functionality.
+    /// </summary>
     public class RoutingFeature : IRoutingFeature
     {
-        public RouteData RouteData { get; set; }
+        /// <inheritdoc />
+        public RouteData? RouteData { get; set; }
     }
 }

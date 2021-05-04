@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
                 sourceEnumerableOfT,
                 typeof(IEnumerable<>));
-            if (!sourceEnumerableOfT.GetTypeInfo().IsInterface || enumerableOfT == null)
+            if (!sourceEnumerableOfT.IsInterface || enumerableOfT == null)
             {
                 throw new ArgumentException(
                     Resources.FormatEnumerableWrapperProvider_InvalidSourceEnumerableOfT(typeof(IEnumerable<>).Name),

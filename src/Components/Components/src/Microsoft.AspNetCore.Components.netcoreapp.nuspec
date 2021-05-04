@@ -3,18 +3,17 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".NETCoreApp3.1">
-        <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerPackageVersion$" />
-        <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationPackageVersion$" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.JSInterop" version="$jsInteropPackageVersion$" exclude="Build,Analyzers" />
+      <group targetFramework=".net6.0">
+        <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerVersion$" />
+        <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="$OutputPath$**\$AssemblyName$.dll" target="lib\" />
-    <file src="$OutputPath$**\$AssemblyName$.pdb" target="lib\" />
-    <file src="$OutputPath$**\$AssemblyName$.xml" target="lib\" />
+    <file src="$OutputPath$$AssemblyName$.dll" target="lib\$DefaultNetCoreTargetFramework$\" />
+    <file src="$OutputPath$$AssemblyName$.pdb" target="lib\$DefaultNetCoreTargetFramework$\" />
+    <file src="$OutputPath$$AssemblyName$.xml" target="lib\$DefaultNetCoreTargetFramework$\" />
     <file src="$PackageThirdPartyNoticesFile$" target=".\THIRD-PARTY-NOTICES.txt" />
   </files>
 </package>

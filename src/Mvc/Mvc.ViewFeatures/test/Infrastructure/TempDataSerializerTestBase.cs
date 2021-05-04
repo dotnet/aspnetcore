@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
             var value = new DateTime(2009, 1, 1, 12, 37, 43);
             var input = new Dictionary<string, object>
             {
-                { key, value.ToString() }
+                { key, value.ToString(CultureInfo.InvariantCulture) }
             };
 
             // Act
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
 
             // Assert
             var roundTripValue = Assert.IsType<string>(values[key]);
-            Assert.Equal(value.ToString(), roundTripValue);
+            Assert.Equal(value.ToString(CultureInfo.InvariantCulture), roundTripValue);
         }
 
         [Fact]

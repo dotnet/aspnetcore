@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
@@ -10,19 +11,69 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents the <c>Cache-Control</c> HTTP header.
+    /// </summary>
     public class CacheControlHeaderValue
     {
+        /// <summary>
+        /// A constant for the <c>public</c> cache-control directive.
+        /// </summary>
         public static readonly string PublicString = "public";
+
+        /// <summary>
+        /// A constant for the <c>private</c> cache-control directive.
+        /// </summary>
         public static readonly string PrivateString = "private";
+
+        /// <summary>
+        /// A constant for the <c>max-age</c> cache-control directive.
+        /// </summary>
         public static readonly string MaxAgeString = "max-age";
+
+        /// <summary>
+        /// A constant for the <c>s-maxage</c> cache-control directive.
+        /// </summary>
         public static readonly string SharedMaxAgeString = "s-maxage";
+
+        /// <summary>
+        /// A constant for the <c>no-cache</c> cache-control directive.
+        /// </summary>
         public static readonly string NoCacheString = "no-cache";
+
+        /// <summary>
+        /// A constant for the <c>no-store</c> cache-control directive.
+        /// </summary>
         public static readonly string NoStoreString = "no-store";
+
+        /// <summary>
+        /// A constant for the <c>max-stale</c> cache-control directive.
+        /// </summary>
         public static readonly string MaxStaleString = "max-stale";
+
+        /// <summary>
+        /// A constant for the <c>min-fresh</c> cache-control directive.
+        /// </summary>
         public static readonly string MinFreshString = "min-fresh";
+
+        /// <summary>
+        /// A constant for the <c>no-transform</c> cache-control directive.
+        /// </summary>
         public static readonly string NoTransformString = "no-transform";
+
+        /// <summary>
+        /// A constant for the <c>only-if-cached</c> cache-control directive.
+        /// </summary>
         public static readonly string OnlyIfCachedString = "only-if-cached";
+
+        /// <summary>
+        /// A constant for the <c>must-revalidate</c> cache-control directive.
+        /// </summary>
         public static readonly string MustRevalidateString = "must-revalidate";
+
+        /// <summary>
+        /// A constant for the <c>proxy-revalidate</c> cache-control directive.
+        /// </summary>
         public static readonly string ProxyRevalidateString = "proxy-revalidate";
 
         // The Cache-Control header is special: It is a header supporting a list of values, but we represent the list
@@ -36,7 +87,7 @@ namespace Microsoft.Net.Http.Headers
         private static readonly Action<StringSegment> CheckIsValidTokenAction = CheckIsValidToken;
 
         private bool _noCache;
-        private ICollection<StringSegment> _noCacheHeaders;
+        private ICollection<StringSegment>? _noCacheHeaders;
         private bool _noStore;
         private TimeSpan? _maxAge;
         private TimeSpan? _sharedMaxAge;
@@ -47,22 +98,36 @@ namespace Microsoft.Net.Http.Headers
         private bool _onlyIfCached;
         private bool _public;
         private bool _private;
-        private ICollection<StringSegment> _privateHeaders;
+        private ICollection<StringSegment>? _privateHeaders;
         private bool _mustRevalidate;
         private bool _proxyRevalidate;
-        private IList<NameValueHeaderValue> _extensions;
+        private IList<NameValueHeaderValue>? _extensions;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CacheControlHeaderValue"/>.
+        /// </summary>
         public CacheControlHeaderValue()
         {
             // This type is unique in that there is no single required parameter.
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>no-cache</c> directive.
+        /// <para>
+        /// Configuring no-cache indicates that the client must re-validate cached responses with the original server
+        /// before using it.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.4</remarks>
         public bool NoCache
         {
             get { return _noCache; }
             set { _noCache = value; }
         }
 
+        /// <summary>
+        /// Gets a collection of field names in the "no-cache" directive in a cache-control header field on an HTTP response.
+        /// </summary>
         public ICollection<StringSegment> NoCacheHeaders
         {
             get
@@ -75,66 +140,140 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>no-store</c> directive.
+        /// <para>
+        /// Configuring no-store indicates that the response may not be stored in any cache.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.5</remarks>
         public bool NoStore
         {
             get { return _noStore; }
             set { _noStore = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>max-age</c> directive.
+        /// <para>
+        /// max-age specifies the maximum amount of time the response is considered fresh.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.1</remarks>
         public TimeSpan? MaxAge
         {
             get { return _maxAge; }
             set { _maxAge = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>s-maxage</c> directive.
+        /// <para>
+        /// Overrides <see cref="MaxAge">max-age</see>, but only for shared caches (such as proxies).
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.9</remarks>
         public TimeSpan? SharedMaxAge
         {
             get { return _sharedMaxAge; }
             set { _sharedMaxAge = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value that determines if the <c>max-stale</c> is included.
+        /// <para>
+        /// <c>max-stale</c> that the client will accept stale responses. The maximum tolerance for staleness
+        /// is specified by <see cref="MaxStaleLimit"/>.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.2</remarks>
         public bool MaxStale
         {
             get { return _maxStale; }
             set { _maxStale = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>max-stale</c> directive.
+        /// <para>
+        /// Indicates the maximum duration an HTTP client is willing to accept a response that has exceeded its expiration time.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.2</remarks>
         public TimeSpan? MaxStaleLimit
         {
             get { return _maxStaleLimit; }
             set { _maxStaleLimit = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>min-fresh</c> directive.
+        /// <para>
+        /// Indicates the freshness lifetime that an HTTP client is willing to accept a response.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.3</remarks>
         public TimeSpan? MinFresh
         {
             get { return _minFresh; }
             set { _minFresh = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>no-transform</c> request directive.
+        /// <para>
+        /// Forbids intermediate caches or proxies from editing the response payload.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.6</remarks>
         public bool NoTransform
         {
             get { return _noTransform; }
             set { _noTransform = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>only-if-cached</c> request directive.
+        /// <para>
+        /// Indicates that the client only wishes to obtain a stored response
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.7</remarks>
         public bool OnlyIfCached
         {
             get { return _onlyIfCached; }
             set { _onlyIfCached = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value that determines if the <c>public</c> response directive is included.
+        /// <para>
+        /// Indicates that the response may be stored by any cache.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.5</remarks>
         public bool Public
         {
             get { return _public; }
             set { _public = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value that determines if the <c>private</c> response directive is included.
+        /// <para>
+        /// Indicates that the response may not be stored by a shared cache.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.6</remarks>
         public bool Private
         {
             get { return _private; }
             set { _private = value; }
         }
 
+        /// <summary>
+        /// Gets a collection of field names in the "private" directive in a cache-control header field on an HTTP response.
+        /// </summary>
         public ICollection<StringSegment> PrivateHeaders
         {
             get
@@ -147,18 +286,35 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value that determines if the <c>must-revalidate</c> response directive is included.
+        /// <para>
+        /// Indicates that caches must revalidate the use of stale caches with the origin server before their use.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.1</remarks>
         public bool MustRevalidate
         {
             get { return _mustRevalidate; }
             set { _mustRevalidate = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value that determines if the <c>proxy-validate</c> response directive is included.
+        /// <para>
+        /// Indicates that shared caches must revalidate the use of stale caches with the origin server before their use.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.1</remarks>
         public bool ProxyRevalidate
         {
             get { return _proxyRevalidate; }
             set { _proxyRevalidate = value; }
         }
 
+        /// <summary>
+        /// Gets cache-extension tokens, each with an optional assigned value.
+        /// </summary>
         public IList<NameValueHeaderValue> Extensions
         {
             get
@@ -171,6 +327,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -240,7 +397,8 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
             var other = obj as CacheControlHeaderValue;
 
@@ -279,6 +437,7 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             // Use a different bit for bool fields: bool.GetHashCode() will return 0 (false) or 1 (true). So we would
@@ -323,9 +482,14 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="CacheControlHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static CacheControlHeaderValue Parse(StringSegment input)
         {
-            int index = 0;
+            var index = 0;
             // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
             var result = Parser.ParseValue(input, ref index);
             if (result == null)
@@ -335,9 +499,15 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public static bool TryParse(StringSegment input, out CacheControlHeaderValue parsedValue)
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="CacheControlHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="SetCookieHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CacheControlHeaderValue? parsedValue)
         {
-            int index = 0;
+            var index = 0;
             // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
             if (Parser.TryParseValue(input, ref index, out parsedValue) && parsedValue != null)
             {
@@ -347,7 +517,7 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        private static int GetCacheControlLength(StringSegment input, int startIndex, out CacheControlHeaderValue parsedValue)
+        private static int GetCacheControlLength(StringSegment input, int startIndex, out CacheControlHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -361,16 +531,18 @@ namespace Microsoft.Net.Http.Headers
             // Cache-Control header consists of a list of name/value pairs, where the value is optional. So use an
             // instance of NameValueHeaderParser to parse the string.
             var current = startIndex;
-            NameValueHeaderValue nameValue = null;
             var nameValueList = new List<NameValueHeaderValue>();
             while (current < input.Length)
             {
-                if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, ref current, out nameValue))
+                if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, ref current, out var nameValue))
                 {
                     return 0;
                 }
 
-                nameValueList.Add(nameValue);
+                if (nameValue != null)
+                {
+                    nameValueList.Add(nameValue);
+                }
             }
 
             // If we get here, we were able to successfully parse the string as list of name/value pairs. Now analyze
@@ -539,10 +711,8 @@ namespace Microsoft.Net.Http.Headers
         private static bool TrySetOptionalTokenList(
             NameValueHeaderValue nameValue,
             ref bool boolField,
-            ref ICollection<StringSegment> destination)
+            ref ICollection<StringSegment>? destination)
         {
-            Contract.Requires(nameValue != null);
-
             if (nameValue.Value == null)
             {
                 boolField = true;
@@ -603,8 +773,6 @@ namespace Microsoft.Net.Http.Headers
 
         private static bool TrySetTimeSpan(NameValueHeaderValue nameValue, ref TimeSpan? timeSpan)
         {
-            Contract.Requires(nameValue != null);
-
             if (nameValue.Value == null)
             {
                 return false;

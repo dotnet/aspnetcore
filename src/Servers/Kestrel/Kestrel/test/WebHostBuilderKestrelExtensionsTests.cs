@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
@@ -63,17 +64,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [Fact]
         public void LibuvTransportCanBeManuallySelectedIndependentOfOrder()
         {
+#pragma warning disable CS0618
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel()
                 .UseLibuv()
                 .Configure(app => { });
+#pragma warning restore CS0618
 
             Assert.IsType<LibuvTransportFactory>(hostBuilder.Build().Services.GetService<IConnectionListenerFactory>());
 
+#pragma warning disable CS0618
             var hostBuilderReversed = new WebHostBuilder()
                 .UseLibuv()
                 .UseKestrel()
                 .Configure(app => { });
+#pragma warning restore CS0618
 
             Assert.IsType<LibuvTransportFactory>(hostBuilderReversed.Build().Services.GetService<IConnectionListenerFactory>());
         }
@@ -94,6 +99,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                 .Configure(app => { });
 
             Assert.IsType<SocketTransportFactory>(hostBuilderReversed.Build().Services.GetService<IConnectionListenerFactory>());
+        }
+
+        [Fact]
+        public void ServerIsKestrelServerImpl()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseSockets()
+                .UseKestrel()
+                .Configure(app => { });
+
+            Assert.IsType<KestrelServerImpl>(hostBuilder.Build().Services.GetService<IServer>());
         }
     }
 }

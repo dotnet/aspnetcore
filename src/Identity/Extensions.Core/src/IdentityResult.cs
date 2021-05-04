@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity
     {
         private static readonly IdentityResult _success = new IdentityResult { Succeeded = true };
         private List<IdentityError> _errors = new List<IdentityError>();
-        
+
         /// <summary>
         /// Flag indicating whether if the operation succeeded or not.
         /// </summary>
@@ -22,10 +23,10 @@ namespace Microsoft.AspNetCore.Identity
         public bool Succeeded { get; protected set; }
 
         /// <summary>
-        /// An <see cref="IEnumerable{T}"/> of <see cref="IdentityError"/>s containing an errors
+        /// An <see cref="IEnumerable{T}"/> of <see cref="IdentityError"/> instances containing errors
         /// that occurred during the identity operation.
         /// </summary>
-        /// <value>An <see cref="IEnumerable{T}"/> of <see cref="IdentityError"/>s.</value>
+        /// <value>An <see cref="IEnumerable{T}"/> of <see cref="IdentityError"/> instances.</value>
         public IEnumerable<IdentityError> Errors => _errors;
 
         /// <summary>
@@ -54,14 +55,14 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <returns>A string representation of the current <see cref="IdentityResult"/> object.</returns>
         /// <remarks>
-        /// If the operation was successful the ToString() will return "Succeeded" otherwise it returned 
+        /// If the operation was successful the ToString() will return "Succeeded" otherwise it returned
         /// "Failed : " followed by a comma delimited list of error codes from its <see cref="Errors"/> collection, if any.
         /// </remarks>
         public override string ToString()
         {
-            return Succeeded ? 
-                   "Succeeded" : 
-                   string.Format("{0} : {1}", "Failed", string.Join(",", Errors.Select(x => x.Code).ToList()));
+            return Succeeded ?
+                   "Succeeded" :
+                   string.Format(CultureInfo.InvariantCulture, "{0} : {1}", "Failed", string.Join(",", Errors.Select(x => x.Code).ToList()));
         }
     }
 }

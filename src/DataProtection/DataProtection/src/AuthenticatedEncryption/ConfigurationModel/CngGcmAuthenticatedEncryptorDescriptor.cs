@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Versioning;
 using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -11,8 +11,14 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     /// A descriptor which can create an authenticated encryption system based upon the
     /// configuration provided by an <see cref="CngGcmAuthenticatedEncryptorConfiguration"/> object.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public sealed class CngGcmAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="CngGcmAuthenticatedEncryptorDescriptor"/>.
+        /// </summary>
+        /// <param name="configuration">The <see cref="CngCbcAuthenticatedEncryptorConfiguration"/>.</param>
+        /// <param name="masterKey">The master key.</param>
         public CngGcmAuthenticatedEncryptorDescriptor(CngGcmAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
         {
             if (configuration == null)
@@ -33,6 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         internal CngGcmAuthenticatedEncryptorConfiguration Configuration { get; }
 
+        /// <inheritdoc />
         public XmlSerializedDescriptorInfo ExportToXml()
         {
             // <descriptor>

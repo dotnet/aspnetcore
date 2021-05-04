@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         [ConditionalRunTestOnlyOnWindows]
         public void ImportFromXml_CreatesAppropriateDescriptor()
         {
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
             // Arrange
             var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(
                 new CngCbcAuthenticatedEncryptorConfiguration()
@@ -28,14 +30,14 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                     HashAlgorithm = Constants.BCRYPT_SHA512_ALGORITHM,
                     HashAlgorithmProvider = null
                 },
-                "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret());
+                masterKey.ToSecret());
             var control = CreateEncryptorInstanceFromDescriptor(descriptor);
 
-            const string xml = @"
+            var xml = $@"
                 <descriptor version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   <encryption algorithm='AES' keyLength='192' />
                   <hash algorithm='SHA512' />
-                  <masterKey enc:requiresEncryption='true'>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</masterKey>
+                  <masterKey enc:requiresEncryption='true'>{masterKey}</masterKey>
                 </descriptor>";
             var deserializedDescriptor = new CngCbcAuthenticatedEncryptorDescriptorDeserializer().ImportFromXml(XElement.Parse(xml));
             var test = CreateEncryptorInstanceFromDescriptor(deserializedDescriptor as CngCbcAuthenticatedEncryptorDescriptor);

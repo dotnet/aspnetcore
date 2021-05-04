@@ -1,0 +1,69 @@
+<Project>
+
+  <PropertyGroup>
+    <GitHubRepositoryName>aspnetcore</GitHubRepositoryName>
+    <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
+    <CloneSubmodulesToInnerSourceBuildRepo>false</CloneSubmodulesToInnerSourceBuildRepo>
+  </PropertyGroup>
+
+  <Target Name="ApplySourceBuildPatchFiles"
+          AfterTargets="PrepareInnerSourceBuildRepoRoot"
+          BeforeTargets="RunInnerSourceBuildCommand">
+
+    <ItemGroup>
+      <SourceBuildPatchFile Include="$(RepositoryEngineeringDir)source-build-patches\*.patch" />
+    </ItemGroup>
+
+    <Exec
+      Command="git apply --ignore-whitespace --whitespace=nowarn &quot;%(SourceBuildPatchFile.FullPath)&quot;"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      Condition="'@(SourceBuildPatchFile)' != ''" />
+  </Target>
+
+  <!--
+    Init submodules - temporarary workaround for https://github.com/dotnet/sourcelink/pull/653
+  -->
+  <Target Name="InitSubmodules"
+          DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
+          BeforeTargets="RunInnerSourceBuildCommand">
+
+    <Exec
+      Command="git submodule update --init --recursive"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="@(InnerBuildEnv)" />
+  </Target>
+
+  <!--
+    Remove inner source .globalconfig file as both the inner and outer config files get loaded and cause a conflict.
+    Leaving the inner will cause all conflicting settings to be ignored.
+    https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files#general-options
+  -->
+  <Target Name="RemoveInnerGlobalConfig"
+          DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
+          BeforeTargets="RunInnerSourceBuildCommand">
+
+    <Delete Files="$(InnerSourceBuildRepoRoot).globalconfig" />
+  </Target>
+
+  <!--
+    Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild
+  -->
+  <Target Name="BuildRepoTasks"
+          Condition="'$(ArcadeInnerBuildFromSource)' == 'true'"
+          BeforeTargets="Execute">
+
+    <Exec
+      Command="./eng/build.sh --only-build-repo-tasks"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="@(InnerBuildEnv)" />
+  </Target>
+
+  <Target Name="CustomizeInnerBuildArgs"
+          BeforeTargets="GetSourceBuildCommandConfiguration">
+
+    <PropertyGroup>
+      <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildRuntimeIdentifier=$(TargetRuntimeIdentifier)</InnerBuildArgs>
+    </PropertyGroup>
+  </Target>
+
+</Project>

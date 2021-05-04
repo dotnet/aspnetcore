@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IHttpRequestIdentifierFeature"/>.
+    /// </summary>
     public class HttpRequestIdentifierFeature : IHttpRequestIdentifierFeature
     {
         // Base32 encoding - in ascii sort order for easy text based sorting
@@ -15,8 +18,9 @@ namespace Microsoft.AspNetCore.Http.Features
         // for a roughly increasing _requestId over restarts
         private static long _requestId = DateTime.UtcNow.Ticks;
 
-        private string _id = null;
+        private string? _id = null;
 
+        /// <inheritdoc />
         public string TraceIdentifier
         {
             get

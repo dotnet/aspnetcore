@@ -20,6 +20,14 @@ namespace Microsoft.AspNetCore.Http
         private readonly Stream _baseStream;
         private readonly long _baseStreamOffset;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormFile"/>.
+        /// </summary>
+        /// <param name="baseStream">The <see cref="Stream"/> containing the form file.</param>
+        /// <param name="baseStreamOffset">The offset at which the form file begins.</param>
+        /// <param name="length">The length of the form file.</param>
+        /// <param name="name">The name of the form file from the <c>Content-Disposition</c> header.</param>
+        /// <param name="fileName">The file name from the <c>Content-Disposition</c> header.</param>
         public FormFile(Stream baseStream, long baseStreamOffset, long length, string name, string fileName)
         {
             _baseStream = baseStream;
@@ -34,8 +42,8 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public string ContentDisposition
         {
-            get { return Headers[HeaderNames.ContentDisposition]; }
-            set { Headers[HeaderNames.ContentDisposition] = value; }
+            get { return Headers.ContentDisposition; }
+            set { Headers.ContentDisposition = value; }
         }
 
         /// <summary>
@@ -43,14 +51,14 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public string ContentType
         {
-            get { return Headers[HeaderNames.ContentType]; }
-            set { Headers[HeaderNames.ContentType] = value; }
+            get { return Headers.ContentType; }
+            set { Headers.ContentType = value; }
         }
 
         /// <summary>
         /// Gets the header dictionary of the uploaded file.
         /// </summary>
-        public IHeaderDictionary Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; } = default!;
 
         /// <summary>
         /// Gets the file length in bytes.

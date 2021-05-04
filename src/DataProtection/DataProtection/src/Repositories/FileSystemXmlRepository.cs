@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
             catch (Exception ex)
             {
-                // Treat exceptions as non-fatal when attempting to detect docker. 
+                // Treat exceptions as non-fatal when attempting to detect docker.
                 // These might occur if fstab is an unrecognized format, or if there are other unusual
                 // file IO errors.
                 _logger.LogTrace(ex, "Failure occurred while attempting to detect docker.");
@@ -55,13 +55,14 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// This property can return null if no suitable default key storage directory can
         /// be found, such as the case when the user profile is unavailable.
         /// </remarks>
-        public static DirectoryInfo DefaultKeyStorageDirectory => DefaultKeyStorageDirectories.Instance.GetKeyStorageDirectory();
+        public static DirectoryInfo? DefaultKeyStorageDirectory => DefaultKeyStorageDirectories.Instance.GetKeyStorageDirectory();
 
         /// <summary>
         /// The directory into which key material will be written.
         /// </summary>
         public DirectoryInfo Directory { get; }
 
+        /// <inheritdoc/>
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
             // forces complete enumeration
@@ -105,6 +106,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
         }
 
+        /// <inheritdoc/>
         public virtual void StoreElement(XElement element, string friendlyName)
         {
             if (element == null)
@@ -151,7 +153,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 catch (IOException)
                 {
                     // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
-                    // See https://github.com/aspnet/AspNetCore/issues/2941 for more context
+                    // See https://github.com/dotnet/aspnetcore/issues/2941 for more context
                     File.Copy(tempFilename, finalFilename);
                 }
             }

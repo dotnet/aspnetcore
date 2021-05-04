@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -36,9 +37,9 @@ namespace Microsoft.AspNetCore.TestHost
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
-            if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
+            if (pathBase.HasValue && pathBase.Value.EndsWith('/'))
             {
-                pathBase = new PathString(pathBase.Value.Substring(0, pathBase.Value.Length - 1));
+                pathBase = new PathString(pathBase.Value[..^1]); // All but the last character
             }
             _pathBase = pathBase;
         }
@@ -65,32 +66,35 @@ namespace Microsoft.AspNetCore.TestHost
 
             var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
 
-            var requestContent = request.Content ?? new StreamContent(Stream.Null);
+            var requestContent = request.Content;
 
-            // Read content from the request HttpContent into a pipe in a background task. This will allow the request
-            // delegate to start before the request HttpContent is complete. A background task allows duplex streaming scenarios.
-            contextBuilder.SendRequestStream(async writer =>
+            if (requestContent != null)
             {
-                if (requestContent is StreamContent)
+                // Read content from the request HttpContent into a pipe in a background task. This will allow the request
+                // delegate to start before the request HttpContent is complete. A background task allows duplex streaming scenarios.
+                contextBuilder.SendRequestStream(async writer =>
                 {
+                    if (requestContent is StreamContent)
+                    {
                     // This is odd but required for backwards compat. If StreamContent is passed in then seek to beginning.
                     // This is safe because StreamContent.ReadAsStreamAsync doesn't block. It will return the inner stream.
                     var body = await requestContent.ReadAsStreamAsync();
-                    if (body.CanSeek)
-                    {
+                        if (body.CanSeek)
+                        {
                         // This body may have been consumed before, rewind it.
                         body.Seek(0, SeekOrigin.Begin);
+                        }
+
+                        await body.CopyToAsync(writer);
+                    }
+                    else
+                    {
+                        await requestContent.CopyToAsync(writer.AsStream());
                     }
 
-                    await body.CopyToAsync(writer);
-                }
-                else
-                {
-                    await requestContent.CopyToAsync(writer.AsStream());
-                }
-
-                await writer.CompleteAsync();
-            });
+                    await writer.CompleteAsync();
+                });
+            }
 
             contextBuilder.Configure((context, reader) =>
             {
@@ -99,7 +103,7 @@ namespace Microsoft.AspNetCore.TestHost
                 if (request.Version == HttpVersion.Version20)
                 {
                     // https://tools.ietf.org/html/rfc7540
-                    req.Protocol = "HTTP/2";
+                    req.Protocol = HttpProtocol.Http2;
                 }
                 else
                 {
@@ -107,11 +111,52 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.Method = request.Method.ToString();
 
-                req.Scheme = request.RequestUri.Scheme;
+                req.Scheme = request.RequestUri!.Scheme;
+
+                var canHaveBody = false;
+                if (requestContent != null)
+                {
+                    canHaveBody = true;
+                    // Chunked takes precedence over Content-Length, don't create a request with both Content-Length and chunked.
+                    if (request.Headers.TransferEncodingChunked != true)
+                    {
+                        // Reading the ContentLength will add it to the Headers‼
+                        // https://github.com/dotnet/runtime/blob/874399ab15e47c2b4b7c6533cc37d27d47cb5242/src/libraries/System.Net.Http/src/System/Net/Http/Headers/HttpContentHeaders.cs#L68-L87
+                        var contentLength = requestContent.Headers.ContentLength;
+                        if (!contentLength.HasValue && request.Version == HttpVersion.Version11)
+                        {
+                            // HTTP/1.1 requests with a body require either Content-Length or Transfer-Encoding: chunked.
+                            request.Headers.TransferEncodingChunked = true;
+                        }
+                        else if (contentLength == 0)
+                        {
+                            canHaveBody = false;
+                        }
+                    }
+
+                    foreach (var header in requestContent.Headers)
+                    {
+                        req.Headers.Append(header.Key, header.Value.ToArray());
+                    }
+
+                    if (canHaveBody)
+                    {
+                        req.Body = new AsyncStreamWrapper(reader.AsStream(), () => contextBuilder.AllowSynchronousIO);
+                    }
+                }
+                context.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(canHaveBody));
 
                 foreach (var header in request.Headers)
                 {
-                    req.Headers.Append(header.Key, header.Value.ToArray());
+                    // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
+                    if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
+                    {
+                        req.Headers.Append(header.Key, string.Join(" ", header.Value));
+                    }
+                    else
+                    {
+                        req.Headers.Append(header.Key, header.Value.ToArray());
+                    }
                 }
 
                 if (!req.Host.HasValue)
@@ -132,16 +177,6 @@ namespace Microsoft.AspNetCore.TestHost
                     req.PathBase = _pathBase;
                 }
                 req.QueryString = QueryString.FromUriComponent(request.RequestUri);
-
-                if (requestContent != null)
-                {
-                    foreach (var header in requestContent.Headers)
-                    {
-                        req.Headers.Append(header.Key, header.Value.ToArray());
-                    }
-                }
-
-                req.Body = new AsyncStreamWrapper(reader.AsStream(), () => contextBuilder.AllowSynchronousIO);
             });
 
             var response = new HttpResponseMessage();
@@ -149,7 +184,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Copy trailers to the response message when the response stream is complete
             contextBuilder.RegisterResponseReadCompleteCallback(context =>
             {
-                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>()!;
 
                 foreach (var trailer in responseTrailersFeature.Trailers)
                 {
@@ -161,8 +196,9 @@ namespace Microsoft.AspNetCore.TestHost
             var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
-            response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+            response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase;
             response.RequestMessage = request;
+            response.Version = request.Version;
 
             response.Content = new StreamContent(httpContext.Response.Body);
 

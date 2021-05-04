@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -33,13 +35,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void NotAllConnectionsClosedGracefully();
 
-        void ConnectionBadRequest(string connectionId, BadHttpRequestException ex);
+        void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex);
 
         void ApplicationError(string connectionId, string traceIdentifier, Exception ex);
 
         void NotAllConnectionsAborted();
 
-        void HeartbeatSlow(TimeSpan interval, DateTimeOffset now);
+        void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now);
 
         void ApplicationNeverCompleted(string connectionId);
 
@@ -51,9 +53,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void RequestBodyDrainTimedOut(string connectionId, string traceIdentifier);
 
-        void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate);
+        void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier, double rate);
 
-        void ResponseMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier);
+        void ResponseMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier);
 
         void ApplicationAbortedConnection(string connectionId, string traceIdentifier);
 
@@ -74,5 +76,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http2FrameReceived(string connectionId, Http2Frame frame);
 
         void Http2FrameSending(string connectionId, Http2Frame frame);
+
+        void Http2MaxConcurrentStreamsReached(string connectionId);
+
+        void InvalidResponseHeaderRemoved();
+
+        void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex);
+
+        void Http3ConnectionClosing(string connectionId);
+
+        void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId);
+
+        void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason);
+
+        void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame);
+
+        void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame);
     }
 }
