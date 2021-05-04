@@ -6,6 +6,8 @@ namespace Microsoft.Net.Http.Headers
     /// <summary>
     /// Defines constants for well-known HTTP headers.
     /// </summary>
+    // Modification policy: This list is not intended to be exhaustive, it primarily contains values used by the framework itself.
+    // Please do not open PRs without first opening an issue to discuss a specific item.
     public static class HeaderNames
     {
         // Use readonly statics rather than constants so ReferenceEquals works
