@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.Migration.E2ETests</TestGroupName>
@@ -50,8 +47,6 @@
     <HelixContent Include="..\..\Blazor\testassets\StandaloneApp\**\*" />
   </ItemGroup>
 
-  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
-
   <ItemGroup>
     <!-- Shared descriptor infrastructure with MVC -->
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
@@ -76,9 +71,6 @@
 
   <ItemGroup>
     <None Update="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
