@@ -1410,14 +1410,14 @@ public class HubConnection implements AutoCloseable {
                     handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
                 } catch (RuntimeException ex) {
                     RuntimeException exception = new RuntimeException("An invalid handshake response was received from the server.", ex);
-                    handshakeResponseSubject.onError(exception);
+                    errorHandshake(exception);
                     throw exception;
                 }
                 if (handshakeResponse.getHandshakeError() != null) {
                     String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
                     logger.error(errorMessage);
                     RuntimeException exception = new RuntimeException(errorMessage);
-                    handshakeResponseSubject.onError(exception);
+                    errorHandshake(exception);
                     throw exception;
                 }
                 handshakeReceived = true;
@@ -1428,12 +1428,7 @@ public class HubConnection implements AutoCloseable {
         public void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
             handshakeTimeout = Executors.newSingleThreadScheduledExecutor();
             handshakeTimeout.schedule(() -> {
-                // If onError is called on a completed subject the global error handler is called
-                if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable()))
-                {
-                    handshakeResponseSubject.onError(
-                        new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
-                }
+                errorHandshake(new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
             }, timeout, unit);
         }
 
@@ -1472,6 +1467,18 @@ public class HubConnection implements AutoCloseable {
             }
 
             return handlers.get(0).getTypes();
+        }
+
+        private void errorHandshake(Exception error) {
+            lock.lock();
+            try {
+                // If onError is called on a completed subject the global error handler is called
+                if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable())) {
+                    handshakeResponseSubject.onError(error);
+                }
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
