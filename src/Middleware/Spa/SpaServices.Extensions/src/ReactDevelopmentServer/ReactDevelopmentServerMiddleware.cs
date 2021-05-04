@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             var devServerPort = spaBuilder.Options.DevServerPort;
+            var waitForLine = spaBuilder.Options.WaitForConsoleLine;
             if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             var applicationStoppingToken = appBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
             var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
-            var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
+            var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, waitForLine, logger, diagnosticSource, applicationStoppingToken);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
         }
 
         private static async Task<int> StartCreateReactAppServerAsync(
-            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
+            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, string waitForLine, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
         {
             if (portNumber == default(int))
             {
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                     // no compiler warnings. So instead of waiting for that, consider it ready as soon
                     // as it starts listening for requests.
                     await scriptRunner.StdOut.WaitForMatch(
-                        new Regex("Starting the development server", RegexOptions.None, RegexMatchTimeout));
+                        new Regex(waitForLine ?? "Starting the development server", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {

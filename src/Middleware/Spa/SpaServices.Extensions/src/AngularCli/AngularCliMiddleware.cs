@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             var devServerPort = spaBuilder.Options.DevServerPort;
+            var waitForLine = spaBuilder.Options.WaitForConsoleLine;
             if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var applicationStoppingToken = appBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
             var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
-            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
+            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, waitForLine, logger, diagnosticSource, applicationStoppingToken);
 
             SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
             {
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         }
 
         private static async Task<Uri> StartAngularCliServerAsync(
-            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
+            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, string waitForLine, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
         {
             if (portNumber == default(int))
             {
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 try
                 {
                     openBrowserLine = await scriptRunner.StdOut.WaitForMatch(
-                        new Regex("open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout));
+                        new Regex(waitForLine ?? "open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
