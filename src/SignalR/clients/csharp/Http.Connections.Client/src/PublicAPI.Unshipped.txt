@@ -38,10 +38,11 @@
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketFactory.get -> System.Func<Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<System.Net.WebSockets.WebSocket!>>?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketFactory.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext
-Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext.AccessToken.get -> string?
 Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext.Options.get -> Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions!
+Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext.Options.init -> void
 Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext.Uri.get -> System.Uri!
-Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext.WebSocketConnectionContext(System.Uri! uri, Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions! options, string? accessToken) -> void
+Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext.Uri.init -> void
+Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext.WebSocketConnectionContext(System.Uri! uri, Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions! options) -> void
 override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Transport.get -> System.IO.Pipelines.IDuplexPipe!
 override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Transport.set -> void
 override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
