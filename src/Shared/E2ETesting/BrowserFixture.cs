@@ -45,27 +45,26 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public static bool IsHostAutomationSupported()
         {
-            return true;
-            //// We emit an assemblymetadata attribute that reflects the value of SeleniumE2ETestsSupported at build
-            //// time and we use that to conditionally skip Selenium tests parts.
-            //var attribute = typeof(BrowserFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            //    .SingleOrDefault(a => a.Key == "Microsoft.AspNetCore.Testing.Selenium.Supported");
-            //var attributeValue = attribute != null ? bool.Parse(attribute.Value) : false;
+            // We emit an assemblymetadata attribute that reflects the value of SeleniumE2ETestsSupported at build
+            // time and we use that to conditionally skip Selenium tests parts.
+            var attribute = typeof(BrowserFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .SingleOrDefault(a => a.Key == "Microsoft.AspNetCore.Testing.Selenium.Supported");
+            var attributeValue = attribute != null ? bool.Parse(attribute.Value) : false;
 
-            //// The environment variable below can be set up before running the tests so as to override the default
-            //// value provided in the attribute.
-            //var environmentOverride = Environment
-            //    .GetEnvironmentVariable("MICROSOFT_ASPNETCORE_TESTING_SELENIUM_SUPPORTED");
-            //var environmentOverrideValue = !string.IsNullOrWhiteSpace(environmentOverride) ? bool.Parse(attribute.Value) : false;
+            // The environment variable below can be set up before running the tests so as to override the default
+            // value provided in the attribute.
+            var environmentOverride = Environment
+                .GetEnvironmentVariable("MICROSOFT_ASPNETCORE_TESTING_SELENIUM_SUPPORTED");
+            var environmentOverrideValue = !string.IsNullOrWhiteSpace(environmentOverride) ? bool.Parse(attribute.Value) : false;
 
-            //if (environmentOverride != null)
-            //{
-            //    return environmentOverrideValue;
-            //}
-            //else
-            //{
-            //    return attributeValue;
-            //}
+            if (environmentOverride != null)
+            {
+                return environmentOverrideValue;
+            }
+            else
+            {
+                return attributeValue;
+            }
         }
 
         public async Task DisposeAsync()
