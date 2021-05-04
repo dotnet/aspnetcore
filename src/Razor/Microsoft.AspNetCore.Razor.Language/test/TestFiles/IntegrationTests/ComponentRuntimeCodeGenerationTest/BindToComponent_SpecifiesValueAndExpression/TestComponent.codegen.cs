@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            __builder.AddAttribute(2, "ValueChanged", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheckDelegate<System.Action<System.Int32>>(__value => ParentValue = __value));
+            __builder.AddAttribute(2, "ValueChanged", (System.Action<System.Int32>)(__value => ParentValue = __value));
             __builder.AddAttribute(3, "ValueExpression", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Linq.Expressions.Expression<System.Func<System.Int32>>>(() => ParentValue));
             __builder.CloseComponent();
         }

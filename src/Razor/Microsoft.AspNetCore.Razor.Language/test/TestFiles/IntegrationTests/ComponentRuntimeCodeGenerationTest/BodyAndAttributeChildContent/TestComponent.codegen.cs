@@ -41,7 +41,7 @@ namespace Test
 #line hidden
 #nullable disable
             __builder.OpenComponent<Test.MyComponent>(2);
-            __builder.AddAttribute(3, "Header", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheckDelegate<Microsoft.AspNetCore.Components.RenderFragment<System.String>>(
+            __builder.AddAttribute(3, "Header", (Microsoft.AspNetCore.Components.RenderFragment<System.String>)(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                      header

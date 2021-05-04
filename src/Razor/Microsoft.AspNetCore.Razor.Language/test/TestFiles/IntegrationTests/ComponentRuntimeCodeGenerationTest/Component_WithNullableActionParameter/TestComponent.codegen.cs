@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenComponent<Test.ComponentWithNullableAction>(0);
-            __builder.AddAttribute(1, "NullableAction", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheckDelegate<System.Action>(
+            __builder.AddAttribute(1, "NullableAction", (System.Action)(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                               NullableAction
