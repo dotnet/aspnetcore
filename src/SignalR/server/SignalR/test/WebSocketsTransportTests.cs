@@ -8,6 +8,7 @@ using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
@@ -55,6 +56,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.False(webSocketsOptions.UseDefaultCredentials);
             Assert.Same(httpOptions.Proxy, webSocketsOptions.Proxy);
             Assert.Same(httpOptions.Credentials, webSocketsOptions.Credentials);
+        }
+
+        [ConditionalFact]
+        [WebSocketsSupportedCondition]
+        public async Task HttpOptionsWebSocketFactoryIsUsed()
+        {
+            var httpOptions = new HttpConnectionOptions();
+            var webSocketMock = new Mock<WebSocket>();
+            bool factoryWasUsed = false;
+
+            // we emulate that connection is closed right away after it was established
+            webSocketMock.Setup(socket => socket.CloseStatus).Returns(WebSocketCloseStatus.NormalClosure);
+            webSocketMock.Setup(socket => socket.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+
+            httpOptions.WebSocketFactory = (context, token) =>
+            {
+                factoryWasUsed = true;
+                return ValueTask.FromResult(webSocketMock.Object);
+            };
+
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null);
+            await webSocketsTransport.StartAsync(new Uri("http://FakeEndpot.com/echo"),TransferFormat.Binary).DefaultTimeout();
+            await webSocketsTransport.StopAsync().DefaultTimeout();
+
+            webSocketMock.Verify((socket) => socket.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()), Times.Once());
+            Assert.True(factoryWasUsed);
         }
 
         [ConditionalFact]

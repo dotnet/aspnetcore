@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private async ValueTask<WebSocket> DefaultWebSocketFactory(WebSocketConnectionContext context, CancellationToken cancellationToken)
         {
             var webSocket = new ClientWebSocket();
+            var url = context.Uri;
 
             var isBrowser = OperatingSystem.IsBrowser();
             if (!isBrowser)
@@ -114,7 +115,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 }
             }
 
-            await webSocket.ConnectAsync(context.Uri, cancellationToken);
+            if (!string.IsNullOrEmpty(context.AccessToken))
+            {
+                // We can't use request headers in the browser, so instead append the token as a query string in that case
+                if (OperatingSystem.IsBrowser())
+                {
+                    var accessTokenEncoded = UrlEncoder.Default.Encode(context.AccessToken);
+                    accessTokenEncoded = "access_token=" + accessTokenEncoded;
+                    url = Utils.AppendQueryString(url, accessTokenEncoded);
+                }
+                else
+                {
+#pragma warning disable CA1416 // Analyzer bug
+                    webSocket.Options.SetRequestHeader("Authorization", $"Bearer {context.AccessToken}");
+#pragma warning restore CA1416 // Analyzer bug
+                }
+            }
+
+            await webSocket.ConnectAsync(url, cancellationToken);
             return webSocket;
         }
 
@@ -137,31 +155,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             var resolvedUrl = ResolveWebSocketsUrl(url);
 
             // We don't need to capture to a local because we never change this delegate.
+            string? accessToken = null;
             if (_accessTokenProvider != null)
             {
-                var accessToken = await _accessTokenProvider();
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    // We can't use request headers in the browser, so instead append the token as a query string in that case
-                    if (OperatingSystem.IsBrowser())
-                    {
-                        var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
-                        accessTokenEncoded = "access_token=" + accessTokenEncoded;
-                        resolvedUrl = Utils.AppendQueryString(resolvedUrl, accessTokenEncoded);
-                    }
-                    else
-                    {
-                        _httpConnectionOptions.Headers.Remove("Authorization");
-                        _httpConnectionOptions.Headers.Add("Authorization", $"Bearer {accessToken}");
-                    }
-                }
+                accessToken = await _accessTokenProvider();
             }
 
             Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
             try
             {
-                var context = new WebSocketConnectionContext(resolvedUrl, _httpConnectionOptions);
+                var context = new WebSocketConnectionContext(resolvedUrl, _httpConnectionOptions, accessToken);
                 var factory = _httpConnectionOptions.WebSocketFactory ?? DefaultWebSocketFactory;
                 _webSocket = await factory(context, cancellationToken);
             }

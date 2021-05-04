@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public Func<HttpMessageHandler, HttpMessageHandler>? HttpMessageHandlerFactory { get; set; }
 
         /// <summary>
-        /// Gets or sets a delegate for warpping or replacing the <see cref="WebSocket"/>
+        /// Gets or sets a delegate for wrapping or replacing the <see cref="WebSocket"/>
         /// that will be used for WebSocket transport
         /// </summary>
         public Func<WebSocketConnectionContext, CancellationToken, ValueTask<WebSocket>>? WebSocketFactory { get; set; }
