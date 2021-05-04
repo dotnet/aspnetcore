@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using IdentityServer4.EntityFramework.Entities;
 using IdentityServer4.EntityFramework.Interfaces;
 using IdentityServer4.Stores;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,13 +19,18 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions
 {
     public static class IdentityServerBuilderConfigurationExtensionsTests
     {
-        [Fact]
-        public static void IValidationKeysStore_Service_Resolution_Fails_If_No_Jwt_Handler_Configured()
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
+        public static void IValidationKeysStore_Service_Resolution_Succeeds_If_Key_Found()
         {
             // Arrange
             IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string> { ["MyAPI:Profile"] = "API" })
-                .Build();
+                .AddInMemoryCollection(new Dictionary<string, string>()
+                {
+                    ["IdentityServer:Key:Type"] = "File",
+                    ["IdentityServer:Key:FilePath"] = "test.pfx",
+                    ["IdentityServer:Key:Password"] = "aspnetcore"
+                }).Build();
 
             IWebHostEnvironment environment = new MyWebHostEnvironment();
 
@@ -43,11 +48,11 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions
 
             using var serviceProvider = services.BuildServiceProvider();
 
-            // Act and Assert
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => serviceProvider.GetRequiredService<IValidationKeysStore>());
+            // Act
+            var store = serviceProvider.GetRequiredService<IValidationKeysStore>();
 
-            Assert.Equal("No service for type 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration.IIdentityServerJwtDescriptor' has been registered.", exception.Message);
+            // Assert
+            Assert.NotNull(store);
         }
 
         [Fact]
@@ -55,7 +60,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions
         {
             // Arrange
             IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string> { ["MyAPI:Profile"] = "API" })
                 .Build();
 
             IWebHostEnvironment environment = new MyWebHostEnvironment();
@@ -69,9 +73,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions
 
             services.AddIdentityServer()
                     .AddApiAuthorization<MyUser, MyUserContext>();
-
-            services.AddAuthentication()
-                    .AddIdentityServerJwt();
 
             using var serviceProvider = services.BuildServiceProvider();
 
