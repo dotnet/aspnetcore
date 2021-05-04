@@ -26,6 +26,7 @@
       }
     ],
 
+    // turn off default in @typescript-eslint that were causing issues (also not on in TSLint)
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
@@ -83,7 +84,23 @@
     "dot-notation": "off",
     "@typescript-eslint/dot-notation": ["error"],
     "no-throw-literal": "off",
-    "@typescript-eslint/no-throw-literal": ["error"]
+    "@typescript-eslint/no-throw-literal": ["error"],
+    "no-trailing-spaces": "error",
+    "no-undef-init": "error",
+    "no-unsafe-finally": "error",
 
+    "no-unused-expressions": "off",
+    "@typescript-eslint/no-unused-expressions": "error",
+    "no-var": "error",
+    "@typescript-eslint/no-var-requires": "error",
+    "object-shorthand": "error",
+
+    // to achieve the same as one-variable-per-declaration
+    "one-var": ["error", "never"],
+    "one-var-declaration-per-line": ["error", "always"],
+    "@typescript-eslint/prefer-for-of": "error",
+    "radix": "error",
+    "eqeqeq": ["error", "always", {"null": "ignore"}],
+    "use-isnan": "error"
   }
 }
