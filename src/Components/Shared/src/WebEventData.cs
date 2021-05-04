@@ -81,6 +81,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
         [DynamicDependency(JsonSerialized, typeof(DataTransfer))]
         [DynamicDependency(JsonSerialized, typeof(DataTransferItem))]
+        [DynamicDependency(JsonSerialized, typeof(TouchPoint))]
         private static bool TryDeserializeStandardWebEventArgs(string eventName, string eventArgsJson, [NotNullWhen(true)] out EventArgs? eventArgs)
         {
             // For back-compatibility, we recognize the built-in list of web event names and hard-code
