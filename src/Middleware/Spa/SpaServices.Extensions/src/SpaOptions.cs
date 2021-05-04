@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SpaServices
         /// <summary>
         /// Gets or sets what console output line to wait for to determine if the spa server host is running properly.
         /// </summary>
-        public string WaitForConsoleLine { get; set; }
+        public string? WaitForConsoleLine { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the package manager executable, (e.g npm,
