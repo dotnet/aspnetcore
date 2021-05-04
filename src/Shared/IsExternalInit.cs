@@ -1,6 +1,6 @@
 namespace System.Runtime.CompilerServices
 {
-#if NETSTANDARD2_0 || NETSTANDARD2_1 || NET461
+#if !NET5_0_OR_GREATER
     internal static class IsExternalInit { }
 #endif
 }
