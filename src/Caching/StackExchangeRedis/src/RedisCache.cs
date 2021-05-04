@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
@@ -33,10 +32,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private const string SlidingExpirationKey = "sldexp";
         private const string DataKey = "data";
         private const long NotPresent = -1;
-        private static readonly byte[] EmptyByteArray = Array.Empty<byte>();
 
-        private volatile IConnectionMultiplexer? _connection;
-        private IDatabase? _cache;
+        private volatile IConnectionMultiplexer _connection;
+        private IDatabase _cache;
         private bool _disposed;
 
         private readonly RedisCacheOptions _options;
@@ -145,7 +143,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            await _cache!.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+            await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -179,7 +177,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
         }
 
-        [MemberNotNull(nameof(_cache))]
         private void Connect()
         {
             CheckDisposed();
@@ -301,7 +298,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 return results[2];
             }
 
-            return EmptyByteArray;
+            return null;
         }
 
         private async Task<byte[]> GetAndRefreshAsync(string key, bool getData, CancellationToken token = default(CancellationToken))
@@ -320,11 +317,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             RedisValue[] results;
             if (getData)
             {
-                results = await _cache!.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
+                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
             }
             else
             {
-                results = await _cache!.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
+                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
             }
 
             // TODO: Error handling
@@ -339,7 +336,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 return results[2];
             }
 
-            return EmptyByteArray;
+            return null;
         }
 
         /// <inheritdoc />
@@ -366,7 +363,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             await ConnectAsync(token).ConfigureAwait(false);
 
-            await _cache!.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
+            await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
             // TODO: Error handling
         }
 
@@ -406,7 +403,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
-                _cache!.KeyExpire(_instance + key, expr);
+                _cache.KeyExpire(_instance + key, expr);
                 // TODO: Error handling
             }
         }
@@ -433,7 +430,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
-                await _cache!.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
+                await _cache.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
                 // TODO: Error handling
             }
         }
