@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Initializes a new instance of <see cref="OpenIdConnectChallengeProperties"/>.
         /// </summary>
         /// <inheritdoc />
-        public OpenIdConnectChallengeProperties(IDictionary<string, string> items)
+        public OpenIdConnectChallengeProperties(IDictionary<string, string?> items)
             : base(items)
         { }
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Initializes a new instance of <see cref="OpenIdConnectChallengeProperties"/>.
         /// </summary>
         /// <inheritdoc />
-        public OpenIdConnectChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
+        public OpenIdConnectChallengeProperties(IDictionary<string, string?> items, IDictionary<string, object?> parameters)
             : base(items, parameters)
         { }
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// The "prompt" parameter value being used for a challenge request.
         /// </summary>
-        public string Prompt
+        public string? Prompt
         {
             get => GetParameter<string>(PromptKey);
             set => SetParameter(PromptKey, value);

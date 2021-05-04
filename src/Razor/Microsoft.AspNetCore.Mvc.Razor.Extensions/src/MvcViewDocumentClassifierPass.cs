@@ -9,11 +9,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class MvcViewDocumentClassifierPass : DocumentClassifierPassBase
     {
+        private bool _useConsolidatedMvcViews = false;
+
         public static readonly string MvcViewDocumentKind = "mvc.1.0.view";
 
         protected override string DocumentKind => MvcViewDocumentKind;
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode) => true;
+
+        public MvcViewDocumentClassifierPass() : this(false) { }
+
+        public MvcViewDocumentClassifierPass(bool useConsolidatedMvcViews)
+        {
+            _useConsolidatedMvcViews = useConsolidatedMvcViews;
+        }
 
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument, 
@@ -25,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (!codeDocument.TryComputeNamespace(fallbackToRootNamespace: false, out var namespaceName))
             {
-                @namespace.Content = "AspNetCore";
+                @namespace.Content = _useConsolidatedMvcViews ? "AspNetCoreGeneratedDocument" : "AspNetCore";
             }
             else
             {
@@ -47,7 +56,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
             @class.Modifiers.Clear();
-            @class.Modifiers.Add("public");
+            if (_useConsolidatedMvcViews)
+            {
+                @class.Modifiers.Add("internal");
+                @class.Modifiers.Add("sealed");
+            }
+            else
+            {
+                @class.Modifiers.Add("public");
+            }
 
             method.MethodName = "ExecuteAsync";
             method.Modifiers.Clear();

@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        private readonly JsonOptions _jsonOptions;
         private readonly ILogger<SystemTextJsonInputFormatter> _logger;
 
         /// <summary>
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ILogger<SystemTextJsonInputFormatter> logger)
         {
             SerializerOptions = options.JsonSerializerOptions;
+            _jsonOptions = options;
             _logger = logger;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
@@ -68,18 +70,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var httpContext = context.HttpContext;
             var (inputStream, usesTranscodingStream) = GetInputStream(httpContext, encoding);
 
-            object model;
+            object? model;
             try
             {
                 model = await JsonSerializer.DeserializeAsync(inputStream, context.ModelType, SerializerOptions);
             }
             catch (JsonException jsonException)
             {
-                var path = jsonException.Path;
+                var path = jsonException.Path ?? string.Empty;
 
-                var formatterException = new InputFormatterException(jsonException.Message, jsonException);
+                var modelStateException = WrapExceptionForModelState(jsonException);
 
-                context.ModelState.TryAddModelError(path, formatterException, context.Metadata);
+                context.ModelState.TryAddModelError(path, modelStateException, context.Metadata);
 
                 Log.JsonInputException(_logger, jsonException);
 
@@ -118,6 +120,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
+        private Exception WrapExceptionForModelState(JsonException jsonException)
+        {
+            if (!_jsonOptions.AllowInputFormatterExceptionMessages)
+            {
+                // This app is not opted-in to System.Text.Json messages, return the original exception.
+                return jsonException;
+            }
+
+            // InputFormatterException specifies that the message is safe to return to a client, it will
+            // be added to model state.
+            return new InputFormatterException(jsonException.Message, jsonException);
+        }
+
         private (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding encoding)
         {
             if (encoding.CodePage == Encoding.UTF8.CodePage)
@@ -132,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _jsonInputFormatterException;
-            private static readonly Action<ILogger, string, Exception> _jsonInputSuccess;
+            private static readonly Action<ILogger, string?, Exception?> _jsonInputSuccess;
 
             static Log()
             {
@@ -140,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     LogLevel.Debug,
                     new EventId(1, "SystemTextJsonInputException"),
                     "JSON input formatter threw an exception: {Message}");
-                _jsonInputSuccess = LoggerMessage.Define<string>(
+                _jsonInputSuccess = LoggerMessage.Define<string?>(
                     LogLevel.Debug,
                     new EventId(2, "SystemTextJsonInputSuccess"),
                     "JSON input formatter succeeded, deserializing to type '{TypeName}'");

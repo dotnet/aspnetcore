@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     {
         private readonly IHttpBodyControlFeature _bodyControl;
         private HttpStreamState _state;
-        private Exception _error;
+        private Exception? _error;
 
         public EmptyStream(IHttpBodyControlFeature bodyControl)
         {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _state = HttpStreamState.Closed;
         }
 
-        public void Abort(Exception error = null)
+        public void Abort(Exception? error = null)
         {
             // We don't want to throw an ODE until the app func actually completes.
             // If the request is aborted, we throw a TaskCanceledException instead,

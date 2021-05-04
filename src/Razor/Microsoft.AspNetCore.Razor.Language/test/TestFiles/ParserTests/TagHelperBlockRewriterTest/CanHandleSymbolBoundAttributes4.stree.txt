@@ -18,7 +18,7 @@ RazorDocument - [0..56)::56 - [<button bound (^click)='doSomething()'>Click Me</
                     MarkupTextLiteral - [23..24)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [24..37)::13
-                        CSharpExpressionLiteral - [24..37)::13 - [doSomething()] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [24..37)::13 - [doSomething()] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                             Text;[doSomething()];
                     MarkupTextLiteral - [37..38)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];

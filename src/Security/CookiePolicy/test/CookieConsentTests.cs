@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value");
                 return Task.CompletedTask;
             });
-            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value");
                 return Task.CompletedTask;
             });
-            Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Empty(httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value", new CookieOptions() { IsEssential = false });
                 return Task.CompletedTask;
             });
-            Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Empty(httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value", new CookieOptions() { IsEssential = false });
                 return Task.CompletedTask;
             });
-            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value", new CookieOptions() { IsEssential = true });
                 return Task.CompletedTask;
             });
-            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             },
             requestContext =>
             {
-                requestContext.Request.Headers[HeaderNames.Cookie] = ".AspNet.Consent=yes";
+                requestContext.Request.Headers.Cookie = ".AspNet.Consent=yes";
             },
             context =>
             {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value", new CookieOptions() { IsEssential = true });
                 return Task.CompletedTask;
             });
-            Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Empty(httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             },
             requestContext =>
             {
-                requestContext.Request.Headers[HeaderNames.Cookie] = ".AspNet.Consent=yes";
+                requestContext.Request.Headers.Cookie = ".AspNet.Consent=yes";
             },
             context =>
             {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value");
                 return Task.CompletedTask;
             });
-            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             },
             requestContext =>
             {
-                requestContext.Request.Headers[HeaderNames.Cookie] = ".AspNet.Consent=IAmATeapot";
+                requestContext.Request.Headers.Cookie = ".AspNet.Consent=IAmATeapot";
             },
             context =>
             {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 context.Response.Cookies.Append("Test", "Value");
                 return Task.CompletedTask;
             });
-            Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Empty(httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
             Assert.Equal(2, cookies.Count);
             var consentCookie = cookies[0];
             Assert.Equal(".AspNet.Consent", consentCookie.Name);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
             Assert.Equal(1, cookies.Count);
             var consentCookie = cookies[0];
             Assert.Equal(".AspNet.Consent1", consentCookie.Name);
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             },
             requestContext =>
             {
-                requestContext.Request.Headers[HeaderNames.Cookie] = ".AspNet.Consent=yes";
+                requestContext.Request.Headers.Cookie = ".AspNet.Consent=yes";
             },
             context =>
             {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             var reader = new StreamReader(httpContext.Response.Body);
             Assert.Equal("Started.Granted.", await reader.ReadToEndAsync());
-            Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Empty(httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Empty(httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             },
             requestContext =>
             {
-                requestContext.Request.Headers[HeaderNames.Cookie] = ".AspNet.Consent=yes";
+                requestContext.Request.Headers.Cookie = ".AspNet.Consent=yes";
             },
             context =>
             {
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
             Assert.Equal(2, cookies.Count);
             var testCookie = cookies[0];
             Assert.Equal("Test", testCookie.Name);
@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             },
             requestContext =>
             {
-                requestContext.Request.Headers[HeaderNames.Cookie] = ".AspNet.Consent=yes";
+                requestContext.Request.Headers.Cookie = ".AspNet.Consent=yes";
             },
             context =>
             {
@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
             Assert.Equal(1, cookies.Count);
             var consentCookie = cookies[0];
             Assert.Equal(".AspNet.Consent1", consentCookie.Name);
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             },
             requestContext =>
             {
-                requestContext.Request.Headers[HeaderNames.Cookie] = ".AspNet.Consent=yes";
+                requestContext.Request.Headers.Cookie = ".AspNet.Consent=yes";
             },
             async context =>
             {
@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             var reader = new StreamReader(httpContext.Response.Body);
             Assert.Equal("Started.Withdrawn.", await reader.ReadToEndAsync());
-            Assert.Equal("Test=Value1; path=/", httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("Test=Value1; path=/", httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
             Assert.Equal(1, cookies.Count);
             var testCookie = cookies[0];
             Assert.Equal("Test", testCookie.Name);
@@ -542,7 +542,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Empty(httpContext.Response.Headers.SetCookie);
         }
 
         [Fact]
@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
             Assert.Equal(1, cookies.Count);
             var consentCookie = cookies[0];
             Assert.Equal(".AspNet.Consent", consentCookie.Name);
@@ -625,7 +625,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 return Task.CompletedTask;
             });
 
-            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
             Assert.Equal(1, cookies.Count);
             var consentCookie = cookies[0];
             Assert.Equal(".AspNet.Consent1", consentCookie.Name);

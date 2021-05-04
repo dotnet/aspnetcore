@@ -4,15 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Provides utilities to parse and modify HTTP header valeus.
+    /// </summary>
     public static class HeaderUtilities
     {
-        private static readonly int _int64MaxStringLength = 19;
         private static readonly int _qualityValueMaxCharCount = 10; // Little bit more permissive than RFC7231 5.3.1
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
@@ -228,7 +231,7 @@ namespace Microsoft.Net.Http.Headers
         /// <see langword="false" />.
         /// </returns>
         // e.g. { "headerValue=10, targetHeaderValue=30" }
-        public static bool TryParseSeconds(StringValues headerValues, string targetValue, out TimeSpan? value)
+        public static bool TryParseSeconds(StringValues headerValues, string targetValue, [NotNullWhen(true)] out TimeSpan? value)
         {
             if (StringValues.IsNullOrEmpty(headerValues) || string.IsNullOrEmpty(targetValue))
             {
@@ -321,7 +324,7 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        private static unsafe bool TryParseNonNegativeInt64FromHeaderValue(int startIndex, string headerValue, out long result)
+        private static bool TryParseNonNegativeInt64FromHeaderValue(int startIndex, string headerValue, out long result)
         {
             // Trim leading whitespace
             startIndex += HttpRuleParser.GetWhitespaceLength(headerValue, startIndex);
@@ -362,7 +365,7 @@ namespace Microsoft.Net.Http.Headers
         /// result will be overwritten.
         /// </param>
         /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
-        public static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
+        public static bool TryParseNonNegativeInt32(StringSegment value, out int result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
             {
@@ -370,32 +373,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            result = 0;
-            fixed (char* ptr = value.Buffer)
-            {
-                var ch = (ushort*)ptr + value.Offset;
-                var end = ch + value.Length;
-
-                ushort digit = 0;
-                while (ch < end && (digit = (ushort)(*ch - 0x30)) <= 9)
-                {
-                    // Check for overflow
-                    if ((result = result * 10 + digit) < 0)
-                    {
-                        result = 0;
-                        return false;
-                    }
-
-                    ch++;
-                }
-
-                if (ch != end)
-                {
-                    result = 0;
-                    return false;
-                }
-                return true;
-            }
+            return int.TryParse(value.AsSpan(), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
         }
 
         /// <summary>
@@ -413,40 +391,14 @@ namespace Microsoft.Net.Http.Headers
         /// originally supplied in result will be overwritten.
         /// </param>
         /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
-        public static unsafe bool TryParseNonNegativeInt64(StringSegment value, out long result)
+        public static bool TryParseNonNegativeInt64(StringSegment value, out long result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
             {
                 result = 0;
                 return false;
             }
-
-            result = 0;
-            fixed (char* ptr = value.Buffer)
-            {
-                var ch = (ushort*)ptr + value.Offset;
-                var end = ch + value.Length;
-
-                ushort digit = 0;
-                while (ch < end && (digit = (ushort)(*ch - 0x30)) <= 9)
-                {
-                    // Check for overflow
-                    if ((result = result * 10 + digit) < 0)
-                    {
-                        result = 0;
-                        return false;
-                    }
-
-                    ch++;
-                }
-
-                if (ch != end)
-                {
-                    result = 0;
-                    return false;
-                }
-                return true;
-            }
+            return long.TryParse(value.AsSpan(), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
         }
 
         // Strict and fast RFC7231 5.3.1 Quality value parser (and without memory allocation)
@@ -549,7 +501,7 @@ namespace Microsoft.Net.Http.Headers
         /// <returns>
         /// The string representation of the value of this instance, consisting of a sequence of digits ranging from 0 to 9 with no leading zeroes.
         /// </returns>
-        public unsafe static string FormatNonNegativeInt64(long value)
+        public static string FormatNonNegativeInt64(long value)
         {
             if (value < 0)
             {
@@ -561,31 +513,38 @@ namespace Microsoft.Net.Http.Headers
                 return "0";
             }
 
-            var position = _int64MaxStringLength;
-            char* charBuffer = stackalloc char[_int64MaxStringLength];
-
-            do
-            {
-                // Consider using Math.DivRem() if available
-                var quotient = value / 10;
-                charBuffer[--position] = (char)(0x30 + (value - quotient * 10)); // 0x30 = '0'
-                value = quotient;
-            }
-            while (value != 0);
-
-            return new string(charBuffer, position, _int64MaxStringLength - position);
+            return ((ulong)value).ToString(NumberFormatInfo.InvariantInfo);
         }
 
+        /// <summary>
+        ///Attempts to parse the specified <paramref name="input"/> as a <see cref="DateTimeOffset"/> value.
+        /// </summary>
+        /// <param name="input">The input value.</param>
+        /// <param name="result">The parsed value.</param>
+        /// <returns>
+        /// <see langword="true" /> if <paramref name="input"/> can be parsed as a date, otherwise <see langword="false" />.
+        /// </returns>
         public static bool TryParseDate(StringSegment input, out DateTimeOffset result)
         {
             return HttpRuleParser.TryStringToDate(input, out result);
         }
 
+        /// <summary>
+        /// Formats the <paramref name="dateTime"/> using the RFC1123 format specifier.
+        /// </summary>
+        /// <param name="dateTime">The date to format.</param>
+        /// <returns>The formatted date.</returns>
         public static string FormatDate(DateTimeOffset dateTime)
         {
-            return FormatDate(dateTime, false);
+            return FormatDate(dateTime, quoted: false);
         }
 
+        /// <summary>
+        /// Formats the <paramref name="dateTime"/> using the RFC1123 format specifier and optionally quotes it.
+        /// </summary>
+        /// <param name="dateTime">The date to format.</param>
+        /// <param name="quoted">Determines if the formatted date should be quoted.</param>
+        /// <returns>The formatted date.</returns>
         public static string FormatDate(DateTimeOffset dateTime, bool quoted)
         {
             if (quoted)
@@ -597,9 +556,14 @@ namespace Microsoft.Net.Http.Headers
                 });
             }
 
-            return dateTime.ToString("r");
+            return dateTime.ToString("r", CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Removes quotes from the specified <paramref name="input"/> if quoted.
+        /// </summary>
+        /// <param name="input">The input to remove quotes from.</param>
+        /// <returns>The value without quotes.</returns>
         public static StringSegment RemoveQuotes(StringSegment input)
         {
             if (IsQuoted(input))
@@ -609,6 +573,11 @@ namespace Microsoft.Net.Http.Headers
             return input;
         }
 
+        /// <summary>
+        /// Determines if the specified <paramref name="input"/> is quoted.
+        /// </summary>
+        /// <param name="input">The value to inspect.</param>
+        /// <returns><see langword="true"/> if the value is quoted, otherwise <see langword="false"/>.</returns>
         public static bool IsQuoted(StringSegment input)
         {
             return !StringSegment.IsNullOrEmpty(input) && input.Length >= 2 && input[0] == '"' && input[input.Length - 1] == '"';

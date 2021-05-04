@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
@@ -294,6 +295,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     yield return attribute;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets a flag that indicates whether the corresponding component supplies any cascading
+        /// generic type parameters to descendants.
+        /// </summary>
+        /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/>.</param>
+        /// <returns>True if it does supply one or more generic type parameters to descendants; false otherwise.</returns>
+        public static bool SuppliesCascadingGenericParameters(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return tagHelper.BoundAttributes.Any(a => a.IsCascadingTypeParameterProperty());
         }
     }
 }

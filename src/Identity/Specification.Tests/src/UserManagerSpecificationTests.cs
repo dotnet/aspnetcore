@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -55,6 +57,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             services.AddHttpContextAccessor();
             services.AddDataProtection();
+            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
             var builder = services.AddIdentityCore<TUser>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -302,9 +305,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = CreateManager();
             manager.Options.User.RequireUniqueEmail = true;
             manager.UserValidators.Add(new UserValidator<TUser>());
-            var random = new Random();
-            var email = "foo" + random.Next() + "@example.com";
-            var newEmail = "bar" + random.Next() + "@example.com";
+            var email = "foo" + Random.Shared.Next() + "@example.com";
+            var newEmail = "bar" + Random.Shared.Next() + "@example.com";
             var user = CreateTestUser(email: email);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, newEmail));
@@ -1905,8 +1907,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Null(await userMgr.GetLockoutEndDateAsync(user));
 
             // set to a valid value
-            await userMgr.SetLockoutEndDateAsync(user, DateTimeOffset.Parse("01/01/2014"));
-            Assert.Equal(DateTimeOffset.Parse("01/01/2014"), await userMgr.GetLockoutEndDateAsync(user));
+            var lockoutEndDate = new DateTimeOffset(new DateTime(2014, 01, 01));
+            await userMgr.SetLockoutEndDateAsync(user, lockoutEndDate);
+            Assert.Equal(lockoutEndDate, await userMgr.GetLockoutEndDateAsync(user));
         }
 
         /// <summary>

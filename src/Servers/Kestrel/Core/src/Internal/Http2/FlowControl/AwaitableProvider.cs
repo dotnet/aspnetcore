@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
     internal abstract class AwaitableProvider
     {
-        public abstract ManualResetValueTaskSource<object> GetAwaitable();
+        public abstract ManualResetValueTaskSource<object?> GetAwaitable();
         public abstract void CompleteCurrent();
         public abstract int ActiveCount { get; }
     }
@@ -19,11 +19,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
     /// </summary>
     internal class MultipleAwaitableProvider : AwaitableProvider
     {
-        private Queue<ManualResetValueTaskSource<object>> _awaitableQueue;
-        private Queue<ManualResetValueTaskSource<object>> _awaitableCache;
+        private Queue<ManualResetValueTaskSource<object?>>? _awaitableQueue;
+        private Queue<ManualResetValueTaskSource<object?>>? _awaitableCache;
 
         public override void CompleteCurrent()
         {
+            Debug.Assert(_awaitableQueue != null);
+            Debug.Assert(_awaitableCache != null);
+
             var awaitable = _awaitableQueue.Dequeue();
             awaitable.TrySetResult(null);
 
@@ -31,17 +34,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _awaitableCache.Enqueue(awaitable);
         }
 
-        public override ManualResetValueTaskSource<object> GetAwaitable()
+        public override ManualResetValueTaskSource<object?> GetAwaitable()
         {
             if (_awaitableQueue == null)
             {
-                _awaitableQueue = new Queue<ManualResetValueTaskSource<object>>();
-                _awaitableCache = new Queue<ManualResetValueTaskSource<object>>();
+                _awaitableQueue = new Queue<ManualResetValueTaskSource<object?>>();
+                _awaitableCache = new Queue<ManualResetValueTaskSource<object?>>();
             }
 
             // First attempt to reuse an existing awaitable in the queue
             // to save allocating a new instance.
-            if (_awaitableCache.TryDequeue(out var awaitable))
+            if (_awaitableCache!.TryDequeue(out var awaitable))
             {
                 // Reset previously used awaitable
                 Debug.Assert(awaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Previous awaitable should have been completed.");
@@ -49,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             }
             else
             {
-                awaitable = new ManualResetValueTaskSource<object>();
+                awaitable = new ManualResetValueTaskSource<object?>();
             }
 
             _awaitableQueue.Enqueue(awaitable);
@@ -65,18 +68,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
     /// </summary>
     internal class SingleAwaitableProvider : AwaitableProvider
     {
-        private ManualResetValueTaskSource<object> _awaitable;
+        private ManualResetValueTaskSource<object?>? _awaitable;
 
         public override void CompleteCurrent()
         {
+            Debug.Assert(_awaitable != null);
             _awaitable.TrySetResult(null);
         }
 
-        public override ManualResetValueTaskSource<object> GetAwaitable()
+        public override ManualResetValueTaskSource<object?> GetAwaitable()
         {
             if (_awaitable == null)
             {
-                _awaitable = new ManualResetValueTaskSource<object>();
+                _awaitable = new ManualResetValueTaskSource<object?>();
             }
             else
             {

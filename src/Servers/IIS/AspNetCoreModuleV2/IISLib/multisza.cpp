@@ -4,7 +4,6 @@
 #pragma warning (disable : 4267)
 #include "precomp.h"
 #include "multisza.h"
-#include <tchar.h>
 
 //
 //  Private Definitions
@@ -26,10 +25,9 @@ MULTISZA::CalcLength( const CHAR * str,
 {
     DWORD count = 0;
     DWORD total = 1;
-    DWORD len;
 
     while( *str ) {
-        len = ::strlen( str ) + 1;
+        DWORD len = ::strlen(str) + 1;
         total += len;
         str += len;
         count++;
@@ -45,11 +43,8 @@ MULTISZA::CalcLength( const CHAR * str,
 
 
 BOOL
-MULTISZA::FindString( const CHAR * str )
+MULTISZA::FindString( const CHAR * str ) const
 {
-
-    CHAR * multisz;
-
     //
     // Sanity check.
     //
@@ -62,7 +57,7 @@ MULTISZA::FindString( const CHAR * str )
     // Scan it.
     //
 
-    multisz = QueryStr();
+    CHAR* multisz = QueryStr();
 
     while( *multisz != '\0' ) {
 
@@ -82,11 +77,8 @@ MULTISZA::FindString( const CHAR * str )
 
 
 BOOL
-MULTISZA::FindStringNoCase( const CHAR * str )
+MULTISZA::FindStringNoCase( const CHAR * str ) const
 {
-
-    CHAR * multisz;
-
     //
     // Sanity check.
     //
@@ -99,7 +91,7 @@ MULTISZA::FindStringNoCase( const CHAR * str )
     // Scan it.
     //
 
-    multisz = QueryStr();
+    CHAR* multisz = QueryStr();
 
     while( *multisz != '\0' ) {
 
@@ -121,13 +113,11 @@ MULTISZA::FindStringNoCase( const CHAR * str )
 VOID
 MULTISZA::AuxInit( const CHAR * pInit )
 {
-    BOOL fRet;
-
     if ( pInit )
     {
         DWORD cStrings;
         int cbCopy = CalcLength( pInit, &cStrings ) * sizeof(CHAR);
-        fRet = Resize( cbCopy );
+        BOOL fRet = Resize(cbCopy);
 
         if ( fRet ) {
             CopyMemory( QueryPtr(), pInit, cbCopy );
@@ -194,13 +184,13 @@ BOOL MULTISZA::AuxAppend( const CHAR * pStr, UINT cbStr, BOOL fAddSlop )
     //
     // ( 2 * sizeof( CHAR ) ) is for the double terminator
     //
-    ULONGLONG cb64Required = (ULONGLONG)cbThis + cbStr + 2 * sizeof(CHAR);
+    ULONGLONG cb64Required = static_cast<ULONGLONG>(cbThis) + cbStr + 2 * sizeof(CHAR);
     if ( cb64Required > MAXULONG )
     {
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
         return FALSE;
     }
-    if ( QuerySize() < (DWORD) cb64Required )
+    if ( QuerySize() < static_cast<DWORD>(cb64Required) )
     {
         ULONGLONG cb64AllocSize = cb64Required + (fAddSlop ? STR_SLOP : 0 );
         // 
@@ -211,18 +201,18 @@ BOOL MULTISZA::AuxAppend( const CHAR * pStr, UINT cbStr, BOOL fAddSlop )
             SetLastError( ERROR_ARITHMETIC_OVERFLOW );
             return FALSE;
         }
-        if ( !Resize( (DWORD) cb64AllocSize ) )
+        if ( !Resize( static_cast<DWORD>(cb64AllocSize) ) )
             return FALSE;
     }
 
     // copy the exact string and tack on the double terminator
-    memcpy( (BYTE *) QueryPtr() + cbThis,
+    memcpy( static_cast<BYTE*>(QueryPtr()) + cbThis,
             pStr,
             cbStr);
-    *(CHAR *)((BYTE *)QueryPtr() + cbThis + cbStr) = L'\0';
-    *(CHAR *)((BYTE *)QueryPtr() + cbThis + cbStr + sizeof(CHAR) ) = L'\0';
+    *reinterpret_cast<CHAR*>(static_cast<BYTE*>(QueryPtr()) + cbThis + cbStr) = L'\0';
+    *reinterpret_cast<CHAR*>(static_cast<BYTE*>(QueryPtr()) + cbThis + cbStr + sizeof(CHAR)) = L'\0';
 
-    m_cchLen = CalcLength( (const CHAR *)QueryPtr(), &m_cStrings );
+    m_cchLen = CalcLength( reinterpret_cast<const CHAR*>(QueryPtr()), &m_cStrings );
     return TRUE;
 
 } // MULTISZA::AuxAppend()
@@ -255,7 +245,7 @@ MULTISZA::CopyToBuffer( __out_ecount_opt(*lpcch) CHAR * lpszBuffer, LPDWORD lpcc
         return ( FALSE);
     }
 
-    register DWORD cch = QueryCCH();
+   DWORD cch = QueryCCH();
 
     if ( *lpcch >= cch) {
 
@@ -275,7 +265,7 @@ MULTISZA::CopyToBuffer( __out_ecount_opt(*lpcch) CHAR * lpszBuffer, LPDWORD lpcc
 BOOL
 MULTISZA::Equals(
     MULTISZA* pmszRhs
-)
+) const
 //
 // Compares this to pmszRhs, returns TRUE if equal
 //
@@ -388,7 +378,7 @@ Return Value:
 
         if ( pszCurrent != pszEnd || !fRemoveEmptyEntries  )
         {
-            if ( !pmszList->Append( pszCurrent, (DWORD) ( pszEnd - pszCurrent ) ) )
+            if ( !pmszList->Append( pszCurrent, static_cast<DWORD>(pszEnd - pszCurrent) ) )
             {
                 hr = HRESULT_FROM_WIN32( GetLastError() );
                 goto Finished;

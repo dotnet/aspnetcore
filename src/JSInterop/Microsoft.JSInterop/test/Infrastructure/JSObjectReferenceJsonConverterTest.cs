@@ -16,10 +16,7 @@ namespace Microsoft.JSInterop.Infrastructure
         public JSObjectReferenceJsonConverterTest()
         {
             JsonSerializerOptions = JSRuntime.JsonSerializerOptions;
-            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<IJSInProcessObjectReference, JSInProcessObjectReference>(
-                id => new JSInProcessObjectReference(default!, id)));
-            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<IJSUnmarshalledObjectReference, TestJSUnmarshalledObjectReference>(
-                id => new TestJSUnmarshalledObjectReference(id)));
+            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter(JSRuntime));
         }
 
         [Fact]
@@ -75,34 +72,6 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act
             var deserialized = (JSObjectReference)JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions)!;
-
-            // Assert
-            Assert.Equal(expectedId, deserialized?.Id);
-        }
-
-        [Fact]
-        public void Read_ReadsJson_IJSInProcessObjectReference()
-        {
-            // Arrange
-            var expectedId = 3;
-            var json = $"{{\"__jsObjectId\":{expectedId}}}";
-
-            // Act
-            var deserialized = (JSInProcessObjectReference)JsonSerializer.Deserialize<IJSInProcessObjectReference>(json, JsonSerializerOptions)!;
-
-            // Assert
-            Assert.Equal(expectedId, deserialized?.Id);
-        }
-
-        [Fact]
-        public void Read_ReadsJson_IJSUnmarshalledObjectReference()
-        {
-            // Arrange
-            var expectedId = 3;
-            var json = $"{{\"__jsObjectId\":{expectedId}}}";
-
-            // Act
-            var deserialized = (TestJSUnmarshalledObjectReference)JsonSerializer.Deserialize<IJSUnmarshalledObjectReference>(json, JsonSerializerOptions)!;
 
             // Assert
             Assert.Equal(expectedId, deserialized?.Id);

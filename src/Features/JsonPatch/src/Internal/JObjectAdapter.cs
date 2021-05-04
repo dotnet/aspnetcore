@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var obj = (JObject) target;
 
-            obj[segment] = JToken.FromObject(value);
+            obj[segment] = value != null ? JToken.FromObject(value) : JValue.CreateNull();
 
             errorMessage = null;
             return true;
@@ -31,14 +31,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var obj = (JObject) target;
 
-            if (!obj.ContainsKey(segment))
+            if (!obj.TryGetValue(segment, out var valueAsToken))
             {
                 value = null;
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
             }
 
-            value = obj[segment];
+            value = valueAsToken;
             errorMessage = null;
             return true;
         }
@@ -51,13 +51,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var obj = (JObject) target;
 
-            if (!obj.ContainsKey(segment))
+            if (!obj.Remove(segment))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
             }
 
-            obj.Remove(segment);
             errorMessage = null;
             return true;
         }
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            obj[segment] = JToken.FromObject(value);
+            obj[segment] = value != null ? JToken.FromObject(value) : JValue.CreateNull();
 
             errorMessage = null;
             return true;
@@ -92,13 +91,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var obj = (JObject) target;
 
-            if (!obj.ContainsKey(segment))
+            if (!obj.TryGetValue(segment, out var currentValue))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
             }
-
-            var currentValue = obj[segment];
             
             if (currentValue == null || string.IsNullOrEmpty(currentValue.ToString()))
             {
@@ -125,14 +122,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var obj = (JObject) target;
 
-            if (!obj.ContainsKey(segment))
+            if (!obj.TryGetValue(segment, out var nextTargetToken))
             {
                 nextTarget = null;
                 errorMessage = null;
                 return false;
             }
 
-            nextTarget = obj[segment];
+            nextTarget = nextTargetToken;
             errorMessage = null;
             return true;
         }

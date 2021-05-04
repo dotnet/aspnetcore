@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// <see cref="IActionResult.ExecuteResultAsync(ActionContext)"/> method of the corresponding action result type.
     /// Implementations should be registered as singleton services.
     /// </remarks>
-    public interface IActionResultExecutor<in TResult> where TResult : IActionResult
+    public interface IActionResultExecutor<in TResult> where TResult : notnull, IActionResult
     {
         /// <summary>
         /// Asynchronously executes the action result, by modifying the <see cref="HttpResponse"/>.

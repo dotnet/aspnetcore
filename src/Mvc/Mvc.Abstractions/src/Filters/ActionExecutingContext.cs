@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         public ActionExecutingContext(
             ActionContext actionContext,
             IList<IFilterMetadata> filters,
-            IDictionary<string, object> actionArguments,
+            IDictionary<string, object?> actionArguments,
             object controller)
             : base(actionContext, filters)
         {
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets the arguments to pass when invoking the action. Keys are parameter names.
         /// </summary>
-        public virtual IDictionary<string, object> ActionArguments { get; }
+        public virtual IDictionary<string, object?> ActionArguments { get; }
 
         /// <summary>
         /// Gets the controller instance containing the action.

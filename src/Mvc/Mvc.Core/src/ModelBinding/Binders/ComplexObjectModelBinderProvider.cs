@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class ComplexObjectModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return Array.Empty<IModelBinder>();
             }
 
-            var parameterBinders = boundConstructor.BoundConstructorParameters.Count == 0 ?
+            var parameterBinders = boundConstructor.BoundConstructorParameters!.Count == 0 ?
                 Array.Empty<IModelBinder>() :
                 new IModelBinder[boundConstructor.BoundConstructorParameters.Count];
 

@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
+    /// <summary>
+    /// Limits for <see cref="KestrelServer"/>.
+    /// </summary>
     public class KestrelServerLimits
     {
         // Matches the non-configurable default response buffer size for Kestrel in 1.0.0
@@ -88,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to 8,192 bytes (8 KB).
         /// </summary>
         /// <remarks>
-        /// For HTTP/2 this measures the total size of the required pseudo headers
+        /// For HTTP/2 and HTTP/3 this measures the total size of the required pseudo headers
         /// :method, :scheme, :authority, and :path.
         /// </remarks>
         public int MaxRequestLineSize
@@ -272,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         /// <remarks>
         /// </remarks>
-        public MinDataRate MinRequestBodyDataRate { get; set; } =
+        public MinDataRate? MinRequestBodyDataRate { get; set; } =
             // Matches the default IIS minBytesPerSecond
             new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
 
@@ -296,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The connection is aborted if the write has not completed by the time that timer expires.
         /// </para>
         /// </remarks>
-        public MinDataRate MinResponseDataRate { get; set; } =
+        public MinDataRate? MinResponseDataRate { get; set; } =
             // Matches the default IIS minBytesPerSecond
             new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
     }

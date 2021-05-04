@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Tools.Internal
 {
     public class TestConsole : IConsole
     {
-        private event ConsoleCancelEventHandler _cancelKeyPress;
+        private event ConsoleCancelEventHandler _cancelKeyPress = default!;
         private readonly TaskCompletionSource<bool> _cancelKeySubscribed = new TaskCompletionSource<bool>();
         private readonly TestOutputWriter _testWriter;
 

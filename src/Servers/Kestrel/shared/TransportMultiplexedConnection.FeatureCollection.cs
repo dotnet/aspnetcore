@@ -3,24 +3,21 @@
 
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Threading;
 using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
-    internal partial class TransportMultiplexedConnection : IConnectionIdFeature,
-                                                 IConnectionItemsFeature,
-                                                 IMemoryPoolFeature,
-                                                 IConnectionLifetimeFeature
+    internal partial class TransportMultiplexedConnection
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
-        // then the list of `features` in the generated code project MUST also be updated.
+        // then the list of `features` in the generated code project MUST also be updated first
+        // and the code generator re-reun, which will change the interface list.
         // See also: tools/CodeGenerator/TransportConnectionFeatureCollection.cs
 
         MemoryPool<byte> IMemoryPoolFeature.MemoryPool => MemoryPool;
 
-        IDictionary<object, object> IConnectionItemsFeature.Items
+        IDictionary<object, object?> IConnectionItemsFeature.Items
         {
             get => Items;
             set => Items = value;

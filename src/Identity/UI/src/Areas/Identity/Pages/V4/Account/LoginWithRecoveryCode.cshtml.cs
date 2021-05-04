@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("User logged in with a recovery code.");
+                _logger.LogInformation(LoggerEventIds.UserLoginWithRecoveryCode, "User logged in with a recovery code.");
                 return LocalRedirect(returnUrl ?? Url.Content("~/"));
             }
             if (result.IsLockedOut)
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             }
             else
             {
-                _logger.LogWarning("Invalid recovery code entered.");
+                _logger.LogWarning(LoggerEventIds.InvalidRecoveryCode, "Invalid recovery code entered.");
                 ModelState.AddModelError(string.Empty, "Invalid recovery code entered.");
                 return Page();
             }

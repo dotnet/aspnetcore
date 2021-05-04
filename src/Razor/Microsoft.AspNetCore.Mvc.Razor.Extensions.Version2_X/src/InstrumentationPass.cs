@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -40,7 +40,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             beginNode.Children.Add(new IntermediateToken()
             {
                 Kind = TokenKind.CSharp,
-                Content = string.Format("{0}({1}, {2}, {3});",
+                Content = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}({1}, {2}, {3});",
                     beginContextMethodName,
                     item.Source.AbsoluteIndex.ToString(CultureInfo.InvariantCulture),
                     item.Source.Length.ToString(CultureInfo.InvariantCulture),
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             endNode.Children.Add(new IntermediateToken()
             {
                 Kind = TokenKind.CSharp,
-                Content = string.Format("{0}();", endContextMethodName)
+                Content = string.Format(CultureInfo.InvariantCulture, "{0}();", endContextMethodName)
             });
 
             var nodeIndex = item.Parent.Children.IndexOf(item.Node);

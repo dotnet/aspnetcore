@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetT_KnownTypeWithValidValue_Success()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.ContentType] = "text/plain";
+            context.Request.Headers.ContentType = "text/plain";
 
             var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetT_KnownTypeWithInvalidValue_Null()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.ContentType] = "invalid";
+            context.Request.Headers.ContentType = "invalid";
 
             var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetListT_KnownTypeWithValidValue_Success()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.Accept] = "text/plain; q=0.9, text/other, */*";
+            context.Request.Headers.Accept = "text/plain; q=0.9, text/other, */*";
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetListT_KnownTypeWithInvalidValue_EmptyList()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.Accept] = "invalid";
+            context.Request.Headers.Accept = "invalid";
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 

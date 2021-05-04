@@ -1,0 +1,83 @@
+parameters:
+  # Optional: dependencies of the job
+  dependsOn: ''
+
+  # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
+  pool:
+    vmImage: vs2017-win2016
+
+  CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+  GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
+
+  SourcesDirectory: $(Build.SourcesDirectory)
+  CreatePr: true
+  AutoCompletePr: false
+  UseCheckedInLocProjectJson: false
+  LanguageSet: VS_Main_Languages
+  LclSource: lclFilesInRepo
+  LclPackageId: ''
+  RepoType: gitHub
+  condition: ''
+
+jobs:
+- job: OneLocBuild
+  
+  dependsOn: ${{ parameters.dependsOn }}
+
+  displayName: OneLocBuild
+
+  pool: ${{ parameters.pool }}
+
+  variables:
+    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+    - name: _GenerateLocProjectArguments
+      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
+        -LanguageSet "${{ parameters.LanguageSet }}"
+        -CreateNeutralXlfs
+    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
+      - name: _GenerateLocProjectArguments
+        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
+      
+
+  steps:
+    - task: Powershell@2
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/generate-locproject.ps1
+        arguments: $(_GenerateLocProjectArguments)
+      displayName: Generate LocProject.json
+      condition: ${{ parameters.condition }}
+
+    - task: OneLocBuild@2
+      displayName: OneLocBuild
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        locProj: Localize/LocProject.json
+        outDir: $(Build.ArtifactStagingDirectory)
+        lclSource: ${{ parameters.LclSource }}
+        lclPackageId: ${{ parameters.LclPackageId }}
+        isCreatePrSelected: ${{ parameters.CreatePr }}
+        ${{ if eq(parameters.CreatePr, true) }}:
+          isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
+        packageSourceAuth: patAuth
+        patVariable: ${{ parameters.CeapexPat }}
+        ${{ if eq(parameters.RepoType, 'gitHub') }}:
+          repoType: ${{ parameters.RepoType }}
+          gitHubPatVariable: "${{ parameters.GithubPat }}"
+      condition: ${{ parameters.condition }}
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Localization Files
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/loc'
+        PublishLocation: Container
+        ArtifactName: Loc
+      condition: ${{ parameters.condition }}
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish LocProject.json
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/Localize/'
+        PublishLocation: Container
+        ArtifactName: Loc
+      condition: ${{ parameters.condition }}

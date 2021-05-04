@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,26 +44,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public abstract void AdvanceTo(SequencePosition consumed);
-
-        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
+        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
         public abstract bool TryRead(out ReadResult readResult);
 
-        public abstract void Complete(Exception exception);
+        public void AdvanceTo(SequencePosition consumed)
+        {
+            AdvanceTo(consumed, consumed);
+        }
+
+        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
 
         public abstract void CancelPendingRead();
 
-        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
+        public abstract void Complete(Exception? exception);
+
+        public virtual ValueTask CompleteAsync(Exception? exception)
+        {
+            Complete(exception);
+            return default;
+        }
 
         public virtual Task ConsumeAsync()
         {
-            TryStart();
+            Task startTask = TryStartAsync();
+            if (!startTask.IsCompletedSuccessfully)
+            {
+                return ConsumeAwaited(startTask);
+            }    
 
             return OnConsumeAsync();
         }
 
-        public virtual Task StopAsync()
+        private async Task ConsumeAwaited(Task startTask)
+        {
+            await startTask;
+            await OnConsumeAsync();
+        }
+
+        public virtual ValueTask StopAsync()
         {
             TryStop();
 
@@ -71,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual Task OnConsumeAsync() => Task.CompletedTask;
 
-        protected virtual Task OnStopAsync() => Task.CompletedTask;
+        protected virtual ValueTask OnStopAsync() => default;
 
         public virtual void Reset()
         {
@@ -84,20 +104,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _examinedUnconsumedBytes = 0;
         }
 
-        protected void TryProduceContinue()
+        protected ValueTask<FlushResult> TryProduceContinueAsync()
         {
             if (_send100Continue)
             {
-                _context.HttpResponseControl.ProduceContinue();
                 _send100Continue = false;
+                return _context.HttpResponseControl.ProduceContinueAsync();
             }
+
+            return default;
         }
 
-        protected void TryStart()
+        protected Task TryStartAsync()
         {
             if (_context.HasStartedConsumingRequestBody)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             OnReadStarting();
@@ -119,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            OnReadStarted();
+            return OnReadStartedAsync();
         }
 
         protected void TryStop()
@@ -156,17 +178,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
-        protected virtual void OnReadStarted()
+        protected virtual Task OnReadStartedAsync()
         {
+            return Task.CompletedTask;
         }
 
         protected void AddAndCheckObservedBytes(long observedBytes)
         {
             _observedBytes += observedBytes;
 
-            if (_observedBytes > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+            if (_observedBytes > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -174,7 +198,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!readAwaitable.IsCompleted)
             {
-                TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
+                if (!continueTask.IsCompletedSuccessfully)
+                {
+                    return StartTimingReadAwaited(continueTask, readAwaitable, cancellationToken);
+                }
+                else
+                {
+                    continueTask.GetAwaiter().GetResult();
+                }
 
                 if (_timingEnabled)
                 {
@@ -184,6 +216,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return readAwaitable;
+        }
+
+        protected async ValueTask<ReadResult> StartTimingReadAwaited(ValueTask<FlushResult> continueTask, ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
+        {
+            await continueTask;
+
+            if (_timingEnabled)
+            {
+                _backpressure = true;
+                _context.TimeoutControl.StartTimingRead();
+            }
+
+            return await readAwaitable;
         }
 
         protected void CountBytesRead(long bytesInReadResult)

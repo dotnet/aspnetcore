@@ -5,7 +5,7 @@ package com.microsoft.signalr;
 
 import java.nio.ByteBuffer;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 abstract class WebSocketWrapper {
     public abstract Completable start();

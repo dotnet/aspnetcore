@@ -1,4 +1,4 @@
-﻿// Copyright(c) .NET Foundation.All rights reserved.
+// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
@@ -145,6 +145,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.True(token.Optional);
             Assert.Null(token.Name);
             Assert.Null(token.Description);
+        }
+
+        [Fact]
+        public void AddOptionalGenericTypeConstraintToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalGenericTypeConstraintToken("Name", "Description"));
+
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.GenericTypeConstraint, token.Kind);
+            Assert.True(token.Optional);
+            Assert.Equal("Name", token.Name);
+            Assert.Equal("Description", token.Description);
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                         var testSink = new TestSink();
                         var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
                         services.AddSingleton<ILoggerFactory>(loggerFactory);
+                        services.AddSingleton<TestSink>(testSink);
                     });
         }
 

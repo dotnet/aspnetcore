@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Hosting.Server.Abstractions
         /// <summary>
         /// Represents the <typeparamref name="TContext"/>  of the host.
         /// </summary>
-        TContext HostContext { get; set; }
+        TContext? HostContext { get; set; }
     }
 }

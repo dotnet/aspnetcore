@@ -1425,6 +1425,48 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.Equal(typeof(string), comments.Type);
         }
 
+        [Fact]
+        public void GetApiDescription_ParameterDescription_FromQueryEmployee()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsEmployee));
+            var parameterDescriptor = action.Parameters.Single();
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(1, description.ParameterDescriptions.Count);
+
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Name");
+            Assert.Same(BindingSource.Query, id.Source);
+            Assert.Equal(typeof(string), id.Type);
+        }
+        
+        [Fact]
+        public void GetApiDescription_ParameterDescription_FromQueryManager()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsManager));
+            var parameterDescriptor = action.Parameters.Single();
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(2, description.ParameterDescriptions.Count);
+
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "managerid");
+            Assert.Same(BindingSource.Query, id.Source);
+            Assert.Equal(typeof(string), id.Type);
+
+            var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "name");
+            Assert.Same(BindingSource.Query, product.Source);
+            Assert.Equal(typeof(string), product.Type);
+        }
+
         // The method under test uses an attribute on the parameter to set a 'default' source
         [Fact]
         public void GetApiDescription_ParameterDescription_ComplexDTO_AmbientValueProviderMetadata()
@@ -1749,9 +1791,9 @@ namespace Microsoft.AspNetCore.Mvc.Description
         public void ProcessIsRequired_SetsFalse_IfEmptyBodyBehaviorIsAllowedInBindingInfo()
         {
             // Arrange
-            var description = new ApiParameterDescription 
-            { 
-                Source = BindingSource.Body, 
+            var description = new ApiParameterDescription
+            {
+                Source = BindingSource.Body,
                 BindingInfo = new BindingInfo
                 {
                     EmptyBodyBehavior = EmptyBodyBehavior.Allow,
@@ -1850,7 +1892,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = new ApiParameterDescription
             {
                 Source = BindingSource.Path,
-                RouteInfo = new ApiParameterRouteInfo {  DefaultValue = defaultValue },
+                RouteInfo = new ApiParameterRouteInfo { DefaultValue = defaultValue },
                 ParameterDescriptor = new ControllerParameterDescriptor
                 {
                     ParameterInfo = parameterInfo,
@@ -2188,6 +2230,14 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
+        private void AcceptsManager([ModelBinder] Manager dto)
+        {
+        }
+
+        private void AcceptsEmployee([FromQuery(Name = "employee")] Employee dto)
+        {
+        }
+
         private void AcceptsOrderDTO(OrderDTO dto)
         {
         }
@@ -2236,11 +2286,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        private void AcceptsMultipleProperties([FromQuery]MultipleProperties model)
+        private void AcceptsMultipleProperties([FromQuery] MultipleProperties model)
         {
         }
 
-        private void AcceptsMultiplePropertiesNested([FromQuery]MultiplePropertiesContainer model)
+        private void AcceptsMultiplePropertiesNested([FromQuery] MultiplePropertiesContainer model)
         {
         }
 
@@ -2303,6 +2353,20 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
         public class DerivedProducesController : BaseProducesController
         {
+        }
+
+        private class Employee
+        {
+            public string Name { get; set; }
+        }
+
+        private class Manager
+        {
+            [FromQuery(Name = "managerid")]
+            public string ManagerId { get; set; }
+
+            [FromQuery(Name = "name")]
+            public string Name { get; set; }
         }
 
         private class Product

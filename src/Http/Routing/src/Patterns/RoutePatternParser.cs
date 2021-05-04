@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
                 else if (context.Current == CloseBrace)
                 {
-                    // When we encounter Closed brace here, it either means end of the parameter or it is a closed 
+                    // When we encounter Closed brace here, it either means end of the parameter or it is a closed
                     // brace in the parameter, in that case it needs to be escaped.
                     // Example: {p1:regex(([}}])\w+}. First pair is escaped one and last marks end of the parameter
                     if (!context.MoveNext())
@@ -357,8 +358,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
             }
 
-            // if a segment has multiple parts, then only the last one parameter can be optional 
-            // if it is following a optional seperator. 
+            // if a segment has multiple parts, then only the last one parameter can be optional
+            // if it is following a optional seperator.
             for (var i = 0; i < parts.Count; i++)
             {
                 var part = parts[i];
@@ -376,8 +377,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             // Example of error message:
                             // "In the segment '{RouteValue}{param?}', the optional parameter 'param' is preceded
                             // by an invalid segment '{RouteValue}'. Only a period (.) can precede an optional parameter.
-                            context.Error = string.Format(
-                                Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
+                            context.Error = Resources.FormatTemplateRoute_OptionalParameterCanbBePrecededByPeriod(
                                 RoutePatternPathSegment.DebuggerToString(parts),
                                 parameter.Name,
                                 parts[i - 1].DebuggerToString());
@@ -390,8 +390,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             // Example of error message:
                             // "In the segment '{RouteValue}-{param?}', the optional parameter 'param' is preceded
                             // by an invalid segment '-'. Only a period (.) can precede an optional parameter.
-                            context.Error = string.Format(
-                                Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
+                            context.Error = Resources.FormatTemplateRoute_OptionalParameterCanbBePrecededByPeriod(
                                 RoutePatternPathSegment.DebuggerToString(parts),
                                 parameter.Name,
                                 parts[i - 1].DebuggerToString());
@@ -405,10 +404,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     {
                         // This optional parameter is not the last one in the segment
                         // Example:
-                        // An optional parameter must be at the end of the segment. In the segment '{RouteValue?})', 
+                        // An optional parameter must be at the end of the segment. In the segment '{RouteValue?})',
                         // optional parameter 'RouteValue' is followed by ')'
-                        context.Error = string.Format(
-                            Resources.TemplateRoute_OptionalParameterHasTobeTheLast,
+                        context.Error = Resources.FormatTemplateRoute_OptionalParameterHasTobeTheLast(
                             RoutePatternPathSegment.DebuggerToString(parts),
                             parameter.Name,
                             parts[i + 1].DebuggerToString());

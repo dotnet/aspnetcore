@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// <summary>
         /// A transport available on the server.
         /// </summary>
-        public string Transport { get; set; }
+        public string? Transport { get; set; }
 
         /// <summary>
         /// A list of formats supported by the transport. Examples include "Text" and "Binary".
         /// </summary>
-        public IList<string> TransferFormats { get; set; }
+        public IList<string>? TransferFormats { get; set; }
     }
 }

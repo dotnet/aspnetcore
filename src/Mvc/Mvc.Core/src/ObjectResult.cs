@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="ObjectResult"/> instance with the provided <paramref name="value"/>.
         /// </summary>
         /// <param name="value"></param>
-        public ObjectResult(object value)
+        public ObjectResult(object? value)
         {
             Value = value;
             Formatters = new FormatterCollection<IOutputFormatter>();
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// The object result.
         /// </summary>
         [ActionResultObjectValue]
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         /// <summary>
         /// The collection of <see cref="IOutputFormatter"/>.
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the declared type.
         /// </summary>
-        public Type DeclaredType { get; set; }
+        public Type? DeclaredType { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.

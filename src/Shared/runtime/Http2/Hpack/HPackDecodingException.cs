@@ -7,7 +7,7 @@ namespace System.Net.Http.HPack
 {
     // TODO: Should this be public?
     [Serializable]
-    internal class HPackDecodingException : Exception
+    internal sealed class HPackDecodingException : Exception
     {
         public HPackDecodingException()
         {

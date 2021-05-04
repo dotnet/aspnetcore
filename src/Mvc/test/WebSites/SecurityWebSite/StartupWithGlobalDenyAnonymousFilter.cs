@@ -25,8 +25,7 @@ namespace SecurityWebSite
             services.AddMvc(o =>
             {
                 o.Filters.Add(new AuthorizeFilter());
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            });
 
             services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
         }

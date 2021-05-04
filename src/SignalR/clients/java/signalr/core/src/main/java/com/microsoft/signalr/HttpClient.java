@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 class HttpRequest {
     private String method;

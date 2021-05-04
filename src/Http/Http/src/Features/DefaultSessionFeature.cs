@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Http.Features
     /// </summary>
     public class DefaultSessionFeature : ISessionFeature
     {
+        /// <inheritdoc />
         public ISession Session { get; set; } = default!;
     }
 }

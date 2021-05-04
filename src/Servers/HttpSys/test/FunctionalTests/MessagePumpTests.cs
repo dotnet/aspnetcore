@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28993")]
         public void UseDefaultAddress_WhenNoServerAddressAndNoDirectConfiguration()
         {
             using (var server = Utilities.CreatePump())

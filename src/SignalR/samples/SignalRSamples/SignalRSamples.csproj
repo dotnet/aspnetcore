@@ -32,11 +32,6 @@
     </ItemGroup>
     <Copy SourceFiles="@(SignalRBrowserJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
     <Copy SourceFiles="@(SignalRWebWorkerJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-webworker"/>
-
-    <ItemGroup>
-      <MsgPackClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr-protocol-msgpack\node_modules\msgpack5\dist\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(MsgPackClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\msgpack5" />
   </Target>
 
 </Project>

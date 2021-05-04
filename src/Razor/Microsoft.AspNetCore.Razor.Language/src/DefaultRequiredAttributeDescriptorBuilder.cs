@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Value,
                 ValueComparisonMode,
                 displayName,
-                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>(),
+                diagnostics.ToArray(),
                 new Dictionary<string, string>(Metadata));
 
             return rule;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var name = Name;
                 var isDirectiveAttribute = this.IsDirectiveAttribute();
-                if (isDirectiveAttribute && name.StartsWith("@"))
+                if (isDirectiveAttribute && name.StartsWith("@", StringComparison.Ordinal))
                 {
                     name = name.Substring(1);
                 }

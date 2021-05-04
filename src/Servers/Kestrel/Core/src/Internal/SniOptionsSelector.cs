@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private readonly string _endpointName;
 
-        private readonly Func<ConnectionContext, string, X509Certificate2> _fallbackServerCertificateSelector;
-        private readonly Action<ConnectionContext, SslServerAuthenticationOptions> _onAuthenticateCallback;
+        private readonly Func<ConnectionContext, string?, X509Certificate2?>? _fallbackServerCertificateSelector;
+        private readonly Action<ConnectionContext, SslServerAuthenticationOptions>? _onAuthenticateCallback;
 
         private readonly Dictionary<string, SniOptions> _exactNameOptions = new Dictionary<string, SniOptions>(StringComparer.OrdinalIgnoreCase);
         private readonly SortedList<string, SniOptions> _wildcardPrefixOptions = new SortedList<string, SniOptions>(LongestStringFirstComparer.Instance);
-        private readonly SniOptions _wildcardOptions;
+        private readonly SniOptions? _wildcardOptions;
 
         public SniOptionsSelector(
             string endpointName,
@@ -94,11 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 httpProtocols = HttpsConnectionMiddleware.ValidateAndNormalizeHttpProtocols(httpProtocols, logger);
                 HttpsConnectionMiddleware.ConfigureAlpn(sslOptions, httpProtocols);
 
-                var sniOptions = new SniOptions
-                {
-                    SslOptions = sslOptions,
-                    HttpProtocols = httpProtocols,
-                };
+                var sniOptions = new SniOptions(sslOptions, httpProtocols);
 
                 if (name.Equals(WildcardHost, StringComparison.Ordinal))
                 {
@@ -118,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public SslServerAuthenticationOptions GetOptions(ConnectionContext connection, string serverName)
         {
-            SniOptions sniOptions = null;
+            SniOptions? sniOptions = null;
 
             if (!string.IsNullOrEmpty(serverName) && !_exactNameOptions.TryGetValue(serverName, out sniOptions))
             {
@@ -204,8 +200,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private class SniOptions
         {
-            public SslServerAuthenticationOptions SslOptions { get; set; }
-            public HttpProtocols HttpProtocols { get; set; }
+            public SniOptions(SslServerAuthenticationOptions sslOptions, HttpProtocols httpProtocols)
+            {
+                SslOptions = sslOptions;
+                HttpProtocols = httpProtocols;
+            }
+
+            public SslServerAuthenticationOptions SslOptions { get; }
+            public HttpProtocols HttpProtocols { get; }
         }
 
         private class LongestStringFirstComparer : IComparer<string>
@@ -216,10 +218,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
             }
 
-            public int Compare(string x, string y)
+            public int Compare(string? x, string? y)
             {
                 // Flip x and y to put the longest instead of the shortest string first in the SortedList.
-                return y.Length.CompareTo(x.Length);
+                return y!.Length.CompareTo(x!.Length);
             }
         }
     }

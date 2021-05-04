@@ -1336,7 +1336,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var cacheEntry = new ControllerActionInvokerCacheEntry(
                 new FilterItem[0],
                 _ => new TestController(),
-                (_, __) => { },
+                (_, __) => default,
                 (_, __, ___) => Task.CompletedTask,
                 objectMethodExecutor,
                 controllerMethodExecutor);

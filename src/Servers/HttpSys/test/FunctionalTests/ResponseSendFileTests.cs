@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -215,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
-                httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString();
+                httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString(CultureInfo.InvariantCulture);
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -223,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.Equal(FileLength.ToString(), contentLength.First());
+                Assert.Equal(FileLength.ToString(CultureInfo.InvariantCulture), contentLength.First());
                 Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Equal(FileLength, (await response.Content.ReadAsByteArrayAsync()).Length);
             }
@@ -386,7 +387,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }, options => options.ThrowWriteExceptions = true))
             {
                 await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                await testComplete.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
             }
         }
 
@@ -414,7 +415,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }))
             {
                 await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                await testComplete.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
             }
         }
 
@@ -441,7 +442,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }, options => options.ThrowWriteExceptions = true))
             {
                 await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                await testComplete.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
             }
         }
 
@@ -468,7 +469,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }))
             {
                 await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                await testComplete.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
             }
         }
 
@@ -514,14 +515,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
-                await requestReceived.Task.WithTimeout();
+                await requestReceived.Task.DefaultTimeout();
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
                 requestCancelled.SetResult(0);
 
-                await testComplete.Task.WithTimeout();
-                await cancellationReceived.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
+                await cancellationReceived.Task.DefaultTimeout();
             }
         }
 
@@ -557,14 +558,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
-                await requestReceived.Task.WithTimeout();
+                await requestReceived.Task.DefaultTimeout();
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
                 requestCancelled.SetResult(0);
 
-                await testComplete.Task.WithTimeout();
-                await cancellationReceived.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
+                await cancellationReceived.Task.DefaultTimeout();
             }
         }
 
@@ -613,14 +614,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Drain data from the connection so that SendFileAsync can complete.
                     var bufferTask = response.Content.LoadIntoBufferAsync();
 
-                    await firstSendComplete.Task.WithTimeout();
+                    await firstSendComplete.Task.DefaultTimeout();
 
                     // Abort
                     response.Dispose();
                 }
                 clientDisconnected.SetResult(0);
-                await testComplete.Task.WithTimeout();
-                await cancellationReceived.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
+                await cancellationReceived.Task.DefaultTimeout();
             }
         }
 
@@ -662,14 +663,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Drain data from the connection so that SendFileAsync can complete.
                     var bufferTask = response.Content.LoadIntoBufferAsync();
 
-                    await firstSendComplete.Task.WithTimeout();
+                    await firstSendComplete.Task.DefaultTimeout();
 
                     // Abort
                     response.Dispose();
                 }
                 clientDisconnected.SetResult(0);
-                await testComplete.Task.WithTimeout();
-                await cancellationReceived.Task.WithTimeout();
+                await testComplete.Task.DefaultTimeout();
+                await cancellationReceived.Task.DefaultTimeout();
             }
         }
 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -74,7 +75,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // Listing all type parameters that exist
                 var bindings = new Dictionary<string, Binding>();
-                foreach (var attribute in node.Component.GetTypeParameters())
+                var componentTypeParameters = node.Component.GetTypeParameters().ToList();
+                var supplyCascadingTypeParameters = componentTypeParameters
+                    .Where(p => p.IsCascadingTypeParameterProperty())
+                    .Select(p => p.Name)
+                    .ToList();
+                foreach (var attribute in componentTypeParameters)
                 {
                     bindings.Add(attribute.Name, new Binding() { Attribute = attribute, });
                 }
@@ -88,6 +94,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     var binding = bindings[typeArgumentNode.TypeParameterName];
                     binding.Node = typeArgumentNode;
                     binding.Content = GetContent(typeArgumentNode);
+
+                    // Offer this explicit type argument to descendants too
+                    if (supplyCascadingTypeParameters.Contains(typeArgumentNode.TypeParameterName))
+                    {
+                        node.ProvidesCascadingGenericTypes ??= new();
+                        node.ProvidesCascadingGenericTypes[typeArgumentNode.TypeParameterName] = new CascadingGenericTypeParameter
+                        {
+                            GenericTypeNames = new[] { typeArgumentNode.TypeParameterName },
+                            ValueType = typeArgumentNode.TypeParameterName,
+                            ValueExpression = $"default({binding.Content})",
+                        };
+                    }
                 }
 
                 if (hasTypeArgumentSpecified)
@@ -118,36 +136,113 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // For example, consider a repeater where the generic type is the 'item' type, but the developer has
                 // not set the items. We won't be able to do type inference on this and so it will just be nonsense.
-                var attributes = node.Attributes.Select(a => a.BoundAttribute).Concat(node.ChildContents.Select(c => c.BoundAttribute));
-                foreach (var attribute in attributes)
+                foreach (var attribute in node.Attributes)
                 {
-                    if (attribute == null)
+                    if (attribute != null && TryFindGenericTypeNames(attribute.BoundAttribute, out var typeParameters))
                     {
-                        // Will be null for attributes set on the component that don't match a declared component parameter
-                        continue;
-                    }
-
-                    // Now we need to parse the type name and extract the generic parameters.
-                    //
-                    // Two cases;
-                    // 1. name is a simple identifier like TItem
-                    // 2. name contains type parameters like Dictionary<string, TItem>
-                    if (!attribute.IsGenericTypedProperty())
-                    {
-                        continue;
-                    }
-
-                    var typeParameters = _pass.TypeNameFeature.ParseTypeParameters(attribute.TypeName);
-                    if (typeParameters.Count == 0)
-                    {
-                        bindings.Remove(attribute.TypeName);
-                    }
-                    else
-                    {
-                        for (var i = 0; i < typeParameters.Count; i++)
+                        var attributeValueIsLambda = _pass.TypeNameFeature.IsLambda(GetContent(attribute));
+                        var provideCascadingGenericTypes = new CascadingGenericTypeParameter
                         {
-                            var typeParameter = typeParameters[i];
-                            bindings.Remove(typeParameter.ToString());
+                            GenericTypeNames = typeParameters,
+                            ValueType = attribute.BoundAttribute.TypeName,
+                            ValueSourceNode = attribute,
+                        };
+
+                        foreach (var typeName in typeParameters)
+                        {
+                            if (supplyCascadingTypeParameters.Contains(typeName))
+                            {
+                                // Advertise that this particular inferred generic type is available to descendants.
+                                // There might be multiple sources for each generic type, so pick the one that has the
+                                // fewest other generic types on it. For example if we could infer from either List<T>
+                                // or Dictionary<T, U>, we prefer List<T>.
+                                node.ProvidesCascadingGenericTypes ??= new();
+                                if (!node.ProvidesCascadingGenericTypes.TryGetValue(typeName, out var existingValue)
+                                    || existingValue.GenericTypeNames.Count > typeParameters.Count)
+                                {
+                                    node.ProvidesCascadingGenericTypes[typeName] = provideCascadingGenericTypes;
+                                }
+                            }
+
+                            if (attributeValueIsLambda)
+                            {
+                                // For attributes whose values are lambdas, we don't know whether or not the value
+                                // covers the generic type - it depends on the content of the lambda.
+                                // For example, "() => 123" can cover Func<T>, but "() => null" cannot. So we'll
+                                // accept cascaded generic types from ancestors if they are compatible with the lambda,
+                                // hence we don't remove it from the list of uncovered generic types until after
+                                // we try matching against ancestor cascades.
+                                if (bindings.TryGetValue(typeName, out var binding))
+                                {
+                                    binding.CoveredByLambda = true;
+                                }
+                            }
+                            else
+                            {
+                                bindings.Remove(typeName);
+                            }
+                        }
+                    }
+                }
+
+                // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them
+                // with a cascaded generic parameter that can cover this one
+                List<CascadingGenericTypeParameter> receivesCascadingGenericTypes = null;
+                foreach (var uncoveredBindingKey in bindings.Keys.ToList())
+                {
+                    var uncoveredBinding = bindings[uncoveredBindingKey];
+                    foreach (var candidateAncestor in Ancestors.OfType<ComponentIntermediateNode>())
+                    {
+                        if (candidateAncestor.ProvidesCascadingGenericTypes != null
+                            && candidateAncestor.ProvidesCascadingGenericTypes.TryGetValue(uncoveredBindingKey, out var genericTypeProvider))
+                        {
+                            // If the parameter value is an expression that includes multiple generic types, we only want
+                            // to use it if we want *all* those generic types. That is, a parameter of type MyType<T0, T1>
+                            // can supply types to a Child<T0, T1>, but not to a Child<T0>.
+                            // This is purely to avoid blowing up the complexity of the implementation here and could be
+                            // overcome in the future if we want. We'd need to figure out which extra types are unwanted,
+                            // and rewrite them to some unique name, and add that to the generic parameters list of the
+                            // inference methods.
+                            if (genericTypeProvider.GenericTypeNames.All(GenericTypeIsUsed))
+                            {
+                                bindings.Remove(uncoveredBindingKey);
+                                receivesCascadingGenericTypes ??= new();
+                                receivesCascadingGenericTypes.Add(genericTypeProvider);
+
+                                // It's sufficient to identify the closest provider for each type parameter
+                                break;
+                            }
+
+                            bool GenericTypeIsUsed(string typeName) => componentTypeParameters
+                                .Select(t => t.Name)
+                                .Contains(typeName, StringComparer.Ordinal);
+                        }
+                    }
+                }
+
+                // There are two remaining sources of possible generic type info which we consider
+                // lower-priority than cascades from ancestors. Since these two sources *may* actually
+                // resolve generic type ambiguities in some cases, we treat them as covering.
+                //
+                // [1] Attributes given as lambda expressions. These are lower priority than ancestor
+                //     cascades because in most cases, lambdas don't provide type info
+                foreach (var entryToRemove in bindings.Where(e => e.Value.CoveredByLambda).ToList())
+                {
+                    // Treat this binding as covered, because it's possible that the lambda does provide
+                    // enough info for type inference to succeed.
+                    bindings.Remove(entryToRemove.Key);
+                }
+
+                // [2] Child content parameters, which are nearly always defined as untyped lambdas
+                //     (at least, that's what the Razor compiler produces), but can technically be
+                //     hardcoded as a RenderFragment<Something> and hence actually give type info.
+                foreach (var attribute in node.ChildContents)
+                {
+                    if (TryFindGenericTypeNames(attribute.BoundAttribute, out var typeParameters))
+                    {
+                        foreach (var typeName in typeParameters)
+                        {
+                            bindings.Remove(typeName);
                         }
                     }
                 }
@@ -169,10 +264,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // contains all of the operations on the render tree building. Calling a method to operate on the builder
                 // will allow the C# compiler to perform type inference.
                 var documentNode = (DocumentIntermediateNode)Ancestors[Ancestors.Count - 1];
-                CreateTypeInferenceMethod(documentNode, node);
+                CreateTypeInferenceMethod(documentNode, node, receivesCascadingGenericTypes);
+            }
+
+            private bool TryFindGenericTypeNames(BoundAttributeDescriptor boundAttribute, out IReadOnlyList<string> typeParameters)
+            {
+                if (boundAttribute == null)
+                {
+                    // Will be null for attributes set on the component that don't match a declared component parameter
+                    typeParameters = null;
+                    return false;
+                }
+
+                if (!boundAttribute.IsGenericTypedProperty())
+                {
+                    typeParameters = null;
+                    return false;
+                }
+
+                // Now we need to parse the type name and extract the generic parameters.
+                // Two cases;
+                // 1. name is a simple identifier like TItem
+                // 2. name contains type parameters like Dictionary<string, TItem>
+                typeParameters = _pass.TypeNameFeature.ParseTypeParameters(boundAttribute.TypeName);
+                if (typeParameters.Count == 0)
+                {
+                    typeParameters = new[] { boundAttribute.TypeName };
+                }
+
+                return true;
             }
 
             private string GetContent(ComponentTypeArgumentIntermediateNode node)
+            {
+                return string.Join(string.Empty, node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).Select(t => t.Content));
+            }
+
+            private string GetContent(ComponentAttributeIntermediateNode node)
             {
                 return string.Join(string.Empty, node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).Select(t => t.Content));
             }
@@ -270,7 +398,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node)
+            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node, List<CascadingGenericTypeParameter> receivesCascadingGenericTypes)
             {
                 var @namespace = documentNode.FindPrimaryNamespace().Content;
                 @namespace = string.IsNullOrEmpty(@namespace) ? "__Blazor" : "__Blazor." + @namespace;
@@ -284,6 +412,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // component call site.
                     MethodName = $"Create{CSharpIdentifier.SanitizeIdentifier(node.TagName)}_{_id++}",
                     FullTypeName = @namespace + ".TypeInference",
+
+                    ReceivesCascadingGenericTypes = receivesCascadingGenericTypes,
                 };
 
                 node.TypeInferenceNode = typeInferenceNode;
@@ -336,6 +466,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public string Content { get; set; }
 
             public ComponentTypeArgumentIntermediateNode Node { get; set; }
+
+            public bool CoveredByLambda { get; set; }
         }
     }
 }

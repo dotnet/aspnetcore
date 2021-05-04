@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public string ConnectionId { get; }
 
-        public bool TryGetConnection(out KestrelConnection connection)
+        public bool TryGetConnection([NotNullWhen(true)] out KestrelConnection? connection)
         {
             return _weakReference.TryGetTarget(out connection);
         }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -14,8 +15,16 @@ namespace Microsoft.JSInterop.WebAssembly
     /// </summary>
     public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalledRuntime
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WebAssemblyJSRuntime"/>.
+        /// </summary>
+        protected WebAssemblyJSRuntime()
+        {
+            JsonSerializerOptions.Converters.Insert(0, new WebAssemblyJSObjectReferenceJsonConverter(this));
+        }
+
         /// <inheritdoc />
-        protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override string InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             var callInfo = new JSCallInfo
             {
@@ -34,7 +43,7 @@ namespace Microsoft.JSInterop.WebAssembly
         }
 
         /// <inheritdoc />
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             var callInfo = new JSCallInfo
             {
@@ -49,12 +58,13 @@ namespace Microsoft.JSInterop.WebAssembly
         }
 
         /// <inheritdoc />
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "TODO: This should be in the xml suppressions file, but can't be because https://github.com/mono/linker/issues/2006")]
         protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
             // For these we'll serialize as something that's useful to receive on the JS side.
             // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
-            var resultOrError = dispatchResult.Success ? dispatchResult.Result : dispatchResult.Exception.ToString();
+            var resultOrError = dispatchResult.Success ? dispatchResult.Result : dispatchResult.Exception!.ToString();
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
@@ -94,15 +104,15 @@ namespace Microsoft.JSInterop.WebAssembly
 
         /// <inheritdoc />
         public TResult InvokeUnmarshalled<TResult>(string identifier)
-            => InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null, 0);
+            => InvokeUnmarshalled<object?, object?, object?, TResult>(identifier, null, null, null, 0);
 
         /// <inheritdoc />
         public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
-            => InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null, 0);
+            => InvokeUnmarshalled<T0, object?, object?, TResult>(identifier, arg0, null, null, 0);
 
         /// <inheritdoc />
         public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
-            => InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null, 0);
+            => InvokeUnmarshalled<T0, T1, object?, TResult>(identifier, arg0, arg1, null, 0);
 
         /// <inheritdoc />
         public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)

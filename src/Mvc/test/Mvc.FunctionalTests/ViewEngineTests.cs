@@ -438,14 +438,7 @@ Partial that does not specify Layout
 
             // Assert
             responseContent = responseContent.Trim();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(
-                expectedContent,
-                responseContent,
-                ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_assembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// Represents the state of an attempt to bind values from an HTTP Request to an action method, which includes
     /// validation information.
     /// </summary>
-    public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry>
+    public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?>
     {
         // Make sure to update the doc headers if this value is changed.
         /// <summary>
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public KeyEnumerable Keys => new KeyEnumerable(this);
 
         /// <inheritdoc />
-        IEnumerable<string> IReadOnlyDictionary<string, ModelStateEntry>.Keys => Keys;
+        IEnumerable<string> IReadOnlyDictionary<string, ModelStateEntry?>.Keys => Keys;
 
         /// <summary>
         /// Gets the value sequence.
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public ValueEnumerable Values => new ValueEnumerable(this);
 
         /// <inheritdoc />
-        IEnumerable<ModelStateEntry> IReadOnlyDictionary<string, ModelStateEntry>.Values => Values;
+        IEnumerable<ModelStateEntry> IReadOnlyDictionary<string, ModelStateEntry?>.Values => Values;
 
         /// <summary>
         /// Gets a value that indicates whether any model state values in this model state dictionary is invalid or not validated.
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public ModelValidationState ValidationState => GetValidity(_root) ?? ModelValidationState.Valid;
 
         /// <inheritdoc />
-        public ModelStateEntry this[string key]
+        public ModelStateEntry? this[string key]
         {
             get
             {
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
 
                 TryGetValue(key, out var entry);
-                return entry!;
+                return entry;
             }
         }
 
@@ -513,7 +513,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="attemptedValue">
         /// The values of <paramref name="rawValue"/> in a comma-separated <see cref="string"/>.
         /// </param>
-        public void SetModelValue(string key, object? rawValue, string attemptedValue)
+        public void SetModelValue(string key, object? rawValue, string? attemptedValue)
         {
             if (key == null)
             {
@@ -799,8 +799,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public Enumerator GetEnumerator() => new Enumerator(this, prefix: string.Empty);
 
         /// <inheritdoc />
-        IEnumerator<KeyValuePair<string, ModelStateEntry>>
-            IEnumerable<KeyValuePair<string, ModelStateEntry>>.GetEnumerator() => GetEnumerator();
+        IEnumerator<KeyValuePair<string, ModelStateEntry?>>
+            IEnumerable<KeyValuePair<string, ModelStateEntry?>>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -43,9 +43,9 @@ namespace InteropTestsWebsite
             {
                 Console.WriteLine("Application started.");
 
-                var runtimeVersion = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
+                var runtimeVersion = typeof(object).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
                 Console.WriteLine($"NetCoreAppVersion: {runtimeVersion}");
-                var aspNetCoreVersion = typeof(HeaderNames).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
+                var aspNetCoreVersion = typeof(HeaderNames).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
                 Console.WriteLine($"AspNetCoreAppVersion: {aspNetCoreVersion}");
             });
 

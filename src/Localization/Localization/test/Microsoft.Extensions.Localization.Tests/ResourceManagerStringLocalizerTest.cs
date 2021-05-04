@@ -162,7 +162,9 @@ namespace Microsoft.Extensions.Localization
 
             // Act
             // We have to access the result so it evaluates.
+#pragma warning disable CA1304 // Specify CultureInfo
             var strings = localizer.GetAllStrings(includeParentCultures).ToList();
+#pragma warning restore CA1304 // Specify CultureInfo
 
             // Assert
             var value = Assert.Single(strings);
@@ -193,7 +195,9 @@ namespace Microsoft.Extensions.Localization
             var exception = Assert.Throws<MissingManifestResourceException>(() =>
             {
                 // We have to access the result so it evaluates.
+#pragma warning disable CA1304 // Specify CultureInfo
                 localizer.GetAllStrings(includeParentCultures).ToArray();
+#pragma warning restore CA1304 // Specify CultureInfo
             });
 
             var expectedTries = includeParentCultures ? 3 : 1;
@@ -279,7 +283,7 @@ namespace Microsoft.Extensions.Localization
             }
 
             public TestAssemblyWrapper(Type type)
-                : base(type.GetTypeInfo().Assembly)
+                : base(type.Assembly)
             {
             }
 

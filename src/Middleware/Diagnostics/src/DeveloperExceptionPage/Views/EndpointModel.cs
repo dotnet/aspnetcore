@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
 {
     internal class EndpointModel
     {
-        public string DisplayName { get; set; }
-        public string RoutePattern { get; set; }
+        public string? DisplayName { get; set; }
+        public string? RoutePattern { get; set; }
         public int? Order { get; set; }
-        public string HttpMethods { get; set; }
+        public string? HttpMethods { get; set; }
     }
 }

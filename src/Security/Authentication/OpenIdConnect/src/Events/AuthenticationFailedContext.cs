@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
         /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        public OpenIdConnectMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the exception associated with the failure.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception Exception { get; set; } = default!;
     }
 }

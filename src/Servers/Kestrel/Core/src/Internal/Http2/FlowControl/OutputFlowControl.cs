@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         public int Available => _flow.Available;
         public bool IsAborted => _flow.IsAborted;
 
-        public ManualResetValueTaskSource<object> AvailabilityAwaitable
+        public ManualResetValueTaskSource<object?> AvailabilityAwaitable
         {
             get
             {

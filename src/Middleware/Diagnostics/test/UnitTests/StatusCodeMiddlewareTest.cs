@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.Use(async (context, next) =>
                         {
                             var beforeNext = context.Request.QueryString;
-                            await next();
+                            await next(context);
                             var afterNext = context.Request.QueryString;
 
                             Assert.Equal(beforeNext, afterNext);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         {
                             Assert.Empty(context.Request.RouteValues);
                             Assert.Null(context.GetEndpoint());
-                            return next();
+                            return next(context);
                         });
 
                         app.Map(destination, (innerAppBuilder) =>

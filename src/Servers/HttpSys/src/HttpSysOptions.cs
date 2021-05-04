@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
         private long? _maxConnections;
-        private RequestQueue _requestQueue;
-        private UrlGroup _urlGroup;
+        private RequestQueue? _requestQueue;
+        private UrlGroup? _urlGroup;
         private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
-        private string _requestQueueName;
+        private string? _requestQueueName;
 
         /// <summary>
         /// Initializes a new <see cref="HttpSysOptions"/>.
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// The name of the Http.Sys request queue
         /// </summary>
-        public string RequestQueueName
+        public string? RequestQueueName
         {
             get => _requestQueueName;
             set
@@ -68,8 +68,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
 
         /// <summary>
-        /// The maximum number of concurrent accepts.
+        /// Gets or sets the number of concurrent workers draining requests from the Http.sys queue.
         /// </summary>
+        /// <remarks>
+        /// Defaults to 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
+        /// </remarks>
         public int MaxAccepts { get; set; } = DefaultMaxAccepts;
 
         /// <summary>

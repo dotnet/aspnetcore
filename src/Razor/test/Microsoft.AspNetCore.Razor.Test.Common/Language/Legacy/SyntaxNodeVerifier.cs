@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -176,13 +176,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return;
                 }
 
-                var expectedDelimiter = expected.IndexOf(" - ", charsVerified);
+                var expectedDelimiter = expected.IndexOf(" - ", charsVerified, StringComparison.Ordinal);
                 if (expectedDelimiter != charsVerified && expectedDelimiter != -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{actual}'.");
                 }
 
-                var actualDelimiter = actual.IndexOf(" - ", charsVerified);
+                var actualDelimiter = actual.IndexOf(" - ", charsVerified, StringComparison.Ordinal);
                 if (actualDelimiter != charsVerified && actualDelimiter != -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{actual}'.");
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private string GetName(string text, int start)
             {
-                var delimiter = text.IndexOf(" - ", start);
+                var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 if (delimiter == -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{text}'.");
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private string GetLocation(string text, int start)
             {
-                var delimiter = text.IndexOf(" - ", start);
+                var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 return delimiter == -1 ? text.Substring(start) : text.Substring(start, delimiter - start);
             }
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -501,7 +502,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         });
                         app.Run(context =>
                         {
-                            Assert.Equal(hostHeader, context.Request.Headers[HeaderNames.Host]);
+                            Assert.Equal(hostHeader, context.Request.Headers.Host);
                             assertsExecuted = true;
                             return Task.FromResult(0);
                         });
@@ -552,7 +553,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         });
                         app.Run(context =>
                         {
-                            Assert.NotEqual<string>(hostHeader, context.Request.Headers[HeaderNames.Host]);
+                            Assert.NotEqual<string>(hostHeader, context.Request.Headers.Host);
                             assertsExecuted = true;
                             return Task.FromResult(0);
                         });
@@ -588,7 +589,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         });
                         app.Run(context =>
                         {
-                            Assert.Equal("bar.foo.com:432", context.Request.Headers[HeaderNames.Host]);
+                            Assert.Equal("bar.foo.com:432", context.Request.Headers.Host);
                             assertsExecuted = true;
                             return Task.FromResult(0);
                         });
@@ -1017,7 +1018,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 var knownNetworkParts = knownNetwork.Split('/');
                 var networkIp = IPAddress.Parse(knownNetworkParts[0]);
-                var prefixLength = int.Parse(knownNetworkParts[1]);
+                var prefixLength = int.Parse(knownNetworkParts[1], CultureInfo.InvariantCulture);
                 options.KnownNetworks.Add(new IPNetwork(networkIp, prefixLength));
             }
 

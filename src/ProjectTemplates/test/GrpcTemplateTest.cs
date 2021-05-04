@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
@@ -33,7 +35,8 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
         public async Task GrpcTemplate()
         {
             var project = await ProjectFactory.GetOrCreateProject("grpc", Output);

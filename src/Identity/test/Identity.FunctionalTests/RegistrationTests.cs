@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                     .CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             // Act & Assert
             await UserStories.RegisterNewUserAsync(client, userName, password);
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var client2 = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             // Act & Assert
             var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var client2 = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             // Act & Assert
             var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                     .CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             // Act & Assert
             await UserStories.RegisterNewUserAsync(client, userName, password);

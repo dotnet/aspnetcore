@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.Extensions.Tools.Internal
@@ -98,7 +101,7 @@ namespace Microsoft.Extensions.Tools.Internal
 
         public void Create()
         {
-            _directory.CreateFile(_filename, string.Format(Template, string.Join("\r\n", _properties), string.Join("\r\n", _items), Sdk));
+            _directory.CreateFile(_filename, string.Format(CultureInfo.InvariantCulture, Template, string.Join("\r\n", _properties), string.Join("\r\n", _items), Sdk));
         }
 
         public class ItemSpec

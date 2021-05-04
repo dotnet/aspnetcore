@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupGet(e => e.ApplicationName)
-                .Returns(typeof(MvcOptionsSetupTest).GetTypeInfo().Assembly.GetName().Name);
+                .Returns(typeof(MvcOptionsSetupTest).Assembly.GetName().Name);
 
             hostingEnvironment.SetupGet(e => e.ContentRootFileProvider)
                 .Returns(Mock.Of<IFileProvider>());

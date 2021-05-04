@@ -195,6 +195,15 @@
         var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
         ReturnValues["jsInProcessObjectReference.identity"] = jsInProcObjectReference.Invoke<string>("identity", "Invoked from JSInProcessObjectReference");
 
+        // we should be able to downcast a IJSInProcessObjectReference as a IJSUnmarshalledObjectReference
+        var unmarshalledCast = (IJSUnmarshalledObjectReference)jsInProcObjectReference;
+        ReturnValues["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = unmarshalledCast.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
+        {
+            Message = "Sent from .NET",
+            NumberField = 41,
+        }).ToString();
+
+
         var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
         var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");
         ReturnValues["jsUnmarshalledObjectReference.unmarshalledFunction"] = jsUnmarshalledReference.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct

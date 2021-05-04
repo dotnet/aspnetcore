@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable
     {
-        private Http2StreamContext _context;
-        private Http2OutputProducer _http2Output;
-        private StreamInputFlowControl _inputFlowControl;
-        private StreamOutputFlowControl _outputFlowControl;
-        private Http2MessageBody _messageBody;
+        private Http2StreamContext _context = default!;
+        private Http2OutputProducer _http2Output = default!;
+        private StreamInputFlowControl _inputFlowControl = default!;
+        private StreamOutputFlowControl _outputFlowControl = default!;
+        private Http2MessageBody? _messageBody;
 
         private bool _decrementCalled;
 
-        public Pipe RequestBodyPipe { get; set; }
+        public Pipe RequestBodyPipe { get; private set; } = default!;
 
         internal long DrainExpirationTicks { get; set; }
 
@@ -114,7 +114,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _keepAlive = true;
             _connectionAborted = false;
 
-            ResetHttp2Features();
+            // Reset Http2 Features
+            _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttp2StreamIdFeature = this;
+            _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         protected override void OnRequestProcessingEnded()
@@ -145,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         if (!errored)
                         {
                             // Don't block on IO. This never faults.
-                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR).Preserve();
                         }
                         RequestBodyPipe.Writer.Complete();
                     }
@@ -270,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             // Approximate MaxRequestLineSize by totaling the required pseudo header field lengths.
-            var requestLineLength = _methodText.Length + Scheme.Length + hostText.Length + path.Length;
+            var requestLineLength = _methodText!.Length + Scheme!.Length + hostText.Length + path.Length;
             if (requestLineLength > ServerOptions.Limits.MaxRequestLineSize)
             {
                 ResetAndAbort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http2ErrorCode.PROTOCOL_ERROR);
@@ -386,7 +390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     pathBuffer[i] = (byte)ch;
                 }
 
-                Path = PathNormalizer.DecodePath(pathBuffer, pathEncoded, RawTarget, QueryString.Length);
+                Path = PathNormalizer.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
 
                 return true;
             }
@@ -450,6 +454,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
                             // _inputFlowControl.Advance() didn't throw.
                             Debug.Assert(flushTask.IsCompletedSuccessfully);
+                            
+                            // If it's a IValueTaskSource backed ValueTask,
+                            // inform it its result has been read so it can reset
+                            flushTask.GetAwaiter().GetResult();
                         }
                     }
                 }
@@ -541,7 +549,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             DecrementActiveClientStreamCount();
             // Don't block on IO. This never faults.
-            _ = _http2Output.WriteRstStreamAsync(error);
+            _ = _http2Output.WriteRstStreamAsync(error).Preserve();
 
             AbortCore(abortReason);
         }

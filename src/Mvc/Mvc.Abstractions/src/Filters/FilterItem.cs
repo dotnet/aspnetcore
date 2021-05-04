@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets or sets the executable <see cref="IFilterMetadata"/> associated with <see cref="Descriptor"/>.
         /// </summary>
-        public IFilterMetadata Filter { get; set; } = default!;
+        public IFilterMetadata? Filter { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not <see cref="Filter"/> can be reused across requests.

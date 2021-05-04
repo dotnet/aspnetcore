@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <param name="name">The name of the property.</param>
         /// <param name="containerType">The container type of the model property.</param>
         /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
-        [Obsolete("This API is obsolete and may be removed in a future release.")]
+        [Obsolete("This API is obsolete and may be removed in a future release. Please use the overload that takes a PropertyInfo object.")] // Remove after .NET 6.
         public static ModelMetadataIdentity ForProperty(
             Type modelType,
             string name,
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 ContainerType == other.ContainerType &&
                 ModelType == other.ModelType &&
                 Name == other.Name &&
-                ParameterInfo == other.ParameterInfo && 
+                ParameterInfo == other.ParameterInfo &&
                 PropertyInfo == other.PropertyInfo &&
                 ConstructorInfo == other.ConstructorInfo;
         }

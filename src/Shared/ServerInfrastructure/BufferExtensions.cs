@@ -7,6 +7,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
+#nullable enable
+
 namespace System.Buffers
 {
     internal static class BufferExtensions
@@ -14,7 +16,7 @@ namespace System.Buffers
         private const int _maxULongByteLength = 20;
 
         [ThreadStatic]
-        private static byte[] _numericBytesScratch;
+        private static byte[]? _numericBytesScratch;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlySpan<byte> ToSpan(in this ReadOnlySequence<byte> buffer)

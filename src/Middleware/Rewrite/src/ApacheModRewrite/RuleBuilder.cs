@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
@@ -13,9 +14,9 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 {
     internal class RuleBuilder
     {
-        private IList<Condition> _conditions;
+        private IList<Condition>? _conditions;
         internal IList<UrlAction> _actions = new List<UrlAction>();
-        private UrlMatch _match;
+        private UrlMatch? _match;
         private CookieActionFactory _cookieActionFactory = new CookieActionFactory();
 
         private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 
         public void AddRule(string rule)
         {
-            var tokens = new Tokenizer().Tokenize(rule);
+            var tokens = new Tokenizer().Tokenize(rule)!;
             var regex = new RuleRegexParser().ParseRuleRegex(tokens[1]);
             var pattern = new TestStringParser().Parse(tokens[2]);
 
@@ -58,65 +59,66 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 _conditions = new List<Condition>();
             }
 
-            var condition = new Condition();
+            var orNext = flags.HasFlag(FlagType.Or);
 
-            condition.OrNext = flags.HasFlag(FlagType.Or);
-            condition.Input = pattern;
-
+            UrlMatch match;
             switch (input.ConditionType)
             {
                 case ConditionType.Regex:
+                    Debug.Assert(input.Operand != null);
                     if (flags.HasFlag(FlagType.NoCase))
                     {
-                        condition.Match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, _regexTimeout), input.Invert);
+                        match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, _regexTimeout), input.Invert);
                     }
                     else
                     {
-                        condition.Match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled, _regexTimeout), input.Invert);
+                        match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled, _regexTimeout), input.Invert);
                     }
                     break;
                 case ConditionType.IntComp:
+                    Debug.Assert(input.Operand != null);
                     switch (input.OperationType)
                     {
                         case OperationType.Equal:
-                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Equal);
+                            match = new IntegerMatch(input.Operand, IntegerOperationType.Equal);
                             break;
                         case OperationType.Greater:
-                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Greater);
+                            match = new IntegerMatch(input.Operand, IntegerOperationType.Greater);
                             break;
                         case OperationType.GreaterEqual:
-                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.GreaterEqual);
+                            match = new IntegerMatch(input.Operand, IntegerOperationType.GreaterEqual);
                             break;
                         case OperationType.Less:
-                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Less);
+                            match = new IntegerMatch(input.Operand, IntegerOperationType.Less);
                             break;
                         case OperationType.LessEqual:
-                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.LessEqual);
+                            match = new IntegerMatch(input.Operand, IntegerOperationType.LessEqual);
                             break;
                         case OperationType.NotEqual:
-                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.NotEqual);
+                            match = new IntegerMatch(input.Operand, IntegerOperationType.NotEqual);
                             break;
                         default:
                             throw new ArgumentException("Invalid operation for integer comparison.");
                     }
                     break;
                 case ConditionType.StringComp:
+                    Debug.Assert(input.Operand != null);
                     switch (input.OperationType)
                     {
                         case OperationType.Equal:
-                            condition.Match = new StringMatch(input.Operand, StringOperationType.Equal, input.Invert);
+                            match = new StringMatch(input.Operand, StringOperationType.Equal, input.Invert);
                             break;
                         case OperationType.Greater:
-                            condition.Match = new StringMatch(input.Operand, StringOperationType.Greater, input.Invert);
+                            match = new StringMatch(input.Operand, StringOperationType.Greater, input.Invert);
                             break;
                         case OperationType.GreaterEqual:
-                            condition.Match = new StringMatch(input.Operand, StringOperationType.GreaterEqual, input.Invert);
+                            match = new StringMatch(input.Operand, StringOperationType.GreaterEqual, input.Invert);
                             break;
                         case OperationType.Less:
-                            condition.Match = new StringMatch(input.Operand, StringOperationType.Less, input.Invert);
+                            match = new StringMatch(input.Operand, StringOperationType.Less, input.Invert);
                             break;
                         case OperationType.LessEqual:
-                            condition.Match = new StringMatch(input.Operand, StringOperationType.LessEqual, input.Invert);
+                            match = new StringMatch(input.Operand, StringOperationType.LessEqual, input.Invert);
                             break;
                         default:
                             throw new ArgumentException("Invalid operation for string comparison.");
@@ -126,20 +128,20 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                     switch (input.OperationType)
                     {
                         case OperationType.Directory:
-                            condition.Match = new IsDirectoryMatch(input.Invert);
+                            match = new IsDirectoryMatch(input.Invert);
                             break;
                         case OperationType.RegularFile:
-                            condition.Match = new IsFileMatch(input.Invert);
+                            match = new IsFileMatch(input.Invert);
                             break;
                         case OperationType.ExistingFile:
-                            condition.Match = new IsFileMatch(input.Invert);
+                            match = new IsFileMatch(input.Invert);
                             break;
                         case OperationType.SymbolicLink:
                             // TODO see if FileAttributes.ReparsePoint works for this?
                             throw new NotImplementedException("Symbolic links are not supported because " +
                                                             "of cross platform implementation");
                         case OperationType.Size:
-                            condition.Match = new FileSizeMatch(input.Invert);
+                            match = new FileSizeMatch(input.Invert);
                             break;
                         case OperationType.ExistingUrl:
                             throw new NotSupportedException("Existing Url lookups not supported because it requires a subrequest");
@@ -151,6 +153,8 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                     }
                     break;
             }
+
+            var condition = new Condition(pattern, match, orNext);
             _conditions.Add(condition);
         }
 
@@ -158,6 +162,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
             ParsedModRewriteInput input,
             Flags flags)
         {
+            Debug.Assert(input.Operand != null);
             if (flags.HasFlag(FlagType.NoCase))
             {
                 _match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, _regexTimeout), input.Invert);
@@ -172,14 +177,13 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
             Pattern pattern,
             Flags flags)
         {
-            string flag;
-            if (flags.GetValue(FlagType.Cookie, out flag))
+            if (flags.GetValue(FlagType.Cookie, out var flag))
             {
                 var action = _cookieActionFactory.Create(flag);
                 _actions.Add(action);
             }
 
-            if (flags.GetValue(FlagType.Env, out flag))
+            if (flags.GetValue(FlagType.Env, out _))
             {
                 throw new NotSupportedException(Resources.Error_ChangeEnvironmentNotSupported);
             }
@@ -199,8 +203,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 var queryStringDelete = flags.HasFlag(FlagType.QSDiscard);
 
                 // is redirect?
-                string statusCode;
-                if (flags.GetValue(FlagType.Redirect, out statusCode))
+                if (flags.GetValue(FlagType.Redirect, out var statusCode))
                 {
                     int responseStatusCode;
                     if (string.IsNullOrEmpty(statusCode))

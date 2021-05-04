@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
+using NuGet.Frameworks;
 using Xunit;
 
 namespace Microsoft.Net.Http.Headers
@@ -681,6 +682,115 @@ namespace Microsoft.Net.Http.Headers
                 "application/xml;q=0 4"
             };
             Assert.False(MediaTypeHeaderValue.TryParseStrictList(inputs, out var results));
+        }
+
+        [Theory]
+        [InlineData("*/*;", "*/*")]
+        [InlineData("text/*", "text/*")]
+        [InlineData("text/*", "text/plain")]
+        [InlineData("*/*;", "text/plain")]
+        [InlineData("text/plain", "text/plain")]
+        [InlineData("text/plain;", "text/plain")]
+        [InlineData("text/plain;", "TEXT/PLAIN")]
+        public void MatchesMediaType_PositiveCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Act
+            var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.True(matches);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(matches, isSubsetOf);
+        }
+
+        [Theory]
+        [InlineData("application/html", "text/*")]
+        [InlineData("application/json", "application/html")]
+        [InlineData("text/plain;", "*/*")]
+        public void MatchesMediaType_NegativeCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Act
+            var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.False(matches);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(matches, isSubsetOf);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+json")]
+        [InlineData("application/json", "application/entity+json")]
+        [InlineData("application/*+json", "application/entity+json")]
+        [InlineData("application/*+json", "application/*+json")]
+        [InlineData("application/json", "application/problem+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
+        [InlineData("application/*", "application/*+JSON")]
+        [InlineData("application/*", "application/entity+JSON")]
+        [InlineData("*/*", "application/entity+json")]
+        public void MatchesMediaTypeWithSuffixes_PositiveCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Act
+            var result = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.True(result);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(result, isSubsetOf);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+txt")]
+        [InlineData("application/entity+json", "application/json")]
+        [InlineData("application/entity+json", "application/entity.v2+json")]
+        [InlineData("application/*+json", "application/entity+txt")]
+        [InlineData("application/*+*", "application/json")]
+        [InlineData("application/entity", "application/entity+")]
+        [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/entity+json", "application/entity")]
+        public void MatchesMediaTypeWithSuffixes_NegativeCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Arrange
+            var result = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.False(result);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(result, isSubsetOf);
+        }
+
+        [Fact]
+        public void MatchesMediaType_IgnoresParameters()
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse("application/json;param=1");
+
+            // Arrange
+            var result = parsedMediaType1.MatchesMediaType("application/json;param2=1");
+
+            // Assert
+            Assert.True(result);
         }
 
         [Theory]

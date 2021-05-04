@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-     internal class HttpResponseStream : WriteOnlyStream
+     internal class HttpResponseStream : WriteOnlyStreamInternal
      {
         private readonly IHttpBodyControlFeature _bodyControl;
         private readonly IISHttpContext _context;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }

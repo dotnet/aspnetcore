@@ -1,16 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -31,12 +29,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public object AddStream(string streamId, Type itemType, Type targetType)
         {
-            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs);
+            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs)!;
             _lookup[streamId] = newConverter;
             return newConverter.GetReaderAsObject(targetType);
         }
 
-        private bool TryGetConverter(string streamId, out IStreamConverter converter)
+        private bool TryGetConverter(string streamId, [NotNullWhen(true)] out IStreamConverter? converter)
         {
             if (_lookup.TryGetValue(streamId, out converter))
             {
@@ -46,9 +44,9 @@ namespace Microsoft.AspNetCore.SignalR
             return false;
         }
 
-        public bool TryProcessItem(StreamItemMessage message, out Task task)
+        public bool TryProcessItem(StreamItemMessage message, [NotNullWhen(true)] out Task? task)
         {
-            if (TryGetConverter(message.InvocationId, out var converter))
+            if (TryGetConverter(message.InvocationId!, out var converter))
             {
                 task = converter.WriteToStream(message.Item);
                 return true;
@@ -70,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public bool TryComplete(CompletionMessage message)
         {
-            _lookup.TryRemove(message.InvocationId, out var converter);
+            _lookup.TryRemove(message.InvocationId!, out var converter);
             if (converter == null)
             {
                 return false;
@@ -96,17 +94,17 @@ namespace Microsoft.AspNetCore.SignalR
         {
             Type GetItemType();
             object GetReaderAsObject(Type type);
-            Task WriteToStream(object item);
-            void TryComplete(Exception ex);
+            Task WriteToStream(object? item);
+            void TryComplete(Exception? ex);
         }
 
         private class ChannelConverter<T> : IStreamConverter
         {
-            private Channel<T> _channel;
+            private Channel<T?> _channel;
 
             public ChannelConverter(int streamBufferCapacity)
             {
-                _channel = Channel.CreateBounded<T>(streamBufferCapacity);
+                _channel = Channel.CreateBounded<T?>(streamBufferCapacity);
             }
 
             public Type GetItemType()
@@ -126,12 +124,12 @@ namespace Microsoft.AspNetCore.SignalR
                 }
             }
 
-            public Task WriteToStream(object o)
+            public Task WriteToStream(object? o)
             {
-                return _channel.Writer.WriteAsync((T)o).AsTask();
+                return _channel.Writer.WriteAsync((T?)o).AsTask();
             }
 
-            public void TryComplete(Exception ex)
+            public void TryComplete(Exception? ex)
             {
                 _channel.Writer.TryComplete(ex);
             }

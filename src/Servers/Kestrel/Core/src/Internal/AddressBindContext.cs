@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -10,12 +11,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class AddressBindContext
     {
-        public ServerAddressesFeature ServerAddressesFeature { get; set; }
+        public AddressBindContext(
+            ServerAddressesFeature serverAddressesFeature,
+            KestrelServerOptions serverOptions,
+            ILogger logger,
+            Func<ListenOptions, CancellationToken, Task> createBinding)
+        {
+            ServerAddressesFeature = serverAddressesFeature;
+            ServerOptions = serverOptions;
+            Logger = logger;
+            CreateBinding = createBinding;
+        }
+
+        public ServerAddressesFeature ServerAddressesFeature { get; }
         public ICollection<string> Addresses => ServerAddressesFeature.InternalCollection;
 
-        public KestrelServerOptions ServerOptions { get; set; }
-        public ILogger Logger { get; set; }
+        public KestrelServerOptions ServerOptions { get; }
+        public ILogger Logger { get; }
 
-        public Func<ListenOptions, Task> CreateBinding { get; set; }
+        public Func<ListenOptions, CancellationToken, Task> CreateBinding { get; }
     }
 }

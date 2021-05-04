@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating a worker service.",
   "groupIdentity": "Microsoft.Worker.Empty",
-  "precedence": "7000",
-  "identity": "Microsoft.Worker.Empty.FSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.Worker.Empty.FSharp.6.0",
   "shortName": "worker",
   "tags": {
     "language": "F#",
@@ -47,12 +47,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net5.0",
-          "description": "Target net5.0"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "replaces": "net5.0",
-      "defaultValue": "net5.0"
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "copyrightYear": {
       "type": "generated",

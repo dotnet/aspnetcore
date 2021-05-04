@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <summary>
         /// Gets or sets the <see cref="System.Reflection.PropertyInfo"/> for this property.
         /// </summary>
-        public PropertyInfo PropertyInfo { get; set; }
+        public PropertyInfo PropertyInfo { get; set; } = default!;
     }
 }

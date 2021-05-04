@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -480,7 +482,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        public void OpenComponent<TComponent>(int sequence) where TComponent : notnull, IComponent
+        public void OpenComponent<[DynamicallyAccessedMembers(Component)] TComponent>(int sequence) where TComponent : notnull, IComponent
             => OpenComponentUnchecked(sequence, typeof(TComponent));
 
         /// <summary>
@@ -488,7 +490,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="componentType">The type of the child component.</param>
-        public void OpenComponent(int sequence, Type componentType)
+        public void OpenComponent(int sequence, [DynamicallyAccessedMembers(Component)] Type componentType)
         {
             if (!typeof(IComponent).IsAssignableFrom(componentType))
             {
@@ -532,7 +534,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private void OpenComponentUnchecked(int sequence, Type componentType)
+        private void OpenComponentUnchecked(int sequence, [DynamicallyAccessedMembers(Component)] Type componentType)
         {
             // We are entering a new scope, since we track the "duplicate attributes" per
             // element/component we might need to clean them up now.
@@ -794,7 +796,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
         }
 
-        void IDisposable.Dispose()
+        /// <inheritdoc />
+        public void Dispose()
         {
             _entries.Dispose();
         }

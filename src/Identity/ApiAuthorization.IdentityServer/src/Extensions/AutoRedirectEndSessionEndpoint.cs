@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             var result = await _requestvalidator.ValidateAsync(parameters, user);
             if (result.IsError)
             {
-                _logger.LogError($"Error ending session {result.Error}");
+                _logger.LogError(LoggerEventIds.EndingSessionFailed, "Error ending session {Error}", result.Error);
                 return new RedirectResult(_identityServerOptions.Value.UserInteraction.ErrorUrl);
             }
 

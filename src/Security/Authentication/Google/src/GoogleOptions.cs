@@ -40,6 +40,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// Set the value to offline if your application needs to refresh access tokens when the user is not present at the browser.
         /// </para>
         /// </summary>
-        public string AccessType { get; set; }
+        public string? AccessType { get; set; }
     }
 }

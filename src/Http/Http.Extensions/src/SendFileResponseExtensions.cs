@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http
         {
             var useRequestAborted = !cancellationToken.CanBeCanceled;
             var localCancel = useRequestAborted ? response.HttpContext.RequestAborted : cancellationToken;
-            var sendFile = response.HttpContext.Features.Get<IHttpResponseBodyFeature>();
+            var sendFile = response.HttpContext.Features.Get<IHttpResponseBodyFeature>()!;
 
             try
             {

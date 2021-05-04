@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -58,6 +59,49 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
             // Assert
             Assert.True(controller.Disposed);
+        }
+
+        [Fact]
+        public async Task ReleaseAsync_AsynchronouslyDisposesController_IfAsyncDisposableAsync()
+        {
+            // Arrange
+            var controller = new MyAsyncDisposableController();
+            var activator = new DefaultControllerActivator(Mock.Of<ITypeActivatorCache>());
+
+            // Act
+            await activator.ReleaseAsync(new ControllerContext(), controller);
+
+            // Assert
+            Assert.True(controller.Disposed);
+        }
+
+        [Fact]
+        public async Task ReleaseAsync_SynchronouslyDisposesController_IfDisposableAsync()
+        {
+            // Arrange
+            var controller = new MyController();
+            var activator = new DefaultControllerActivator(Mock.Of<ITypeActivatorCache>());
+
+            // Act
+            await activator.ReleaseAsync(new ControllerContext(), controller);
+
+            // Assert
+            Assert.True(controller.Disposed);
+        }
+
+        [Fact]
+        public async Task ReleaseAsync_SynchronouslyDisposesController_PrefersDisposeAsyncOverDispose()
+        {
+            // Arrange
+            var controller = new MyDisposableAndAsyncDisposableController();
+            var activator = new DefaultControllerActivator(Mock.Of<ITypeActivatorCache>());
+
+            // Act
+            await activator.ReleaseAsync(new ControllerContext(), controller);
+
+            // Assert
+            Assert.False(controller.SyncDisposed);
+            Assert.True(controller.AsyncDisposed);
         }
 
         [Fact]
@@ -154,6 +198,38 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             public void Dispose()
             {
                 Disposed = true;
+            }
+        }
+
+        private class MyAsyncDisposableController : IAsyncDisposable
+        {
+            public bool Disposed { get; set; }
+
+            public void Dispose()
+            {
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return default;
+            }
+        }
+
+        private class MyDisposableAndAsyncDisposableController : IDisposable, IAsyncDisposable
+        {
+            public bool AsyncDisposed { get; set; }
+            public bool SyncDisposed { get; set; }
+
+            public void Dispose()
+            {
+                SyncDisposed = true;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                AsyncDisposed = true;
+                return default;
             }
         }
     }

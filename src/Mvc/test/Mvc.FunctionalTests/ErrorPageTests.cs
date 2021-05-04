@@ -80,6 +80,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)
             {
+                options.AdditionalReferencePaths.Add(typeof(string).Assembly.Location);
+
                 // Workaround for incorrectly generated deps file. The build output has all of the binaries required to compile. We'll grab these and
                 // add it to the list of assemblies runtime compilation uses.
                 foreach (var path in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll"))
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var expectedMessage = "The type or namespace name &#x27;NamespaceDoesNotExist&#x27; could not be found ("
                 + "are you missing a using directive or an assembly reference?)";
-            var expectedCompilationContent = "public class Views_ErrorFromViewImports_Index : "
+            var expectedCompilationContent = "Views_ErrorFromViewImports_Index : "
                 + "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage&lt;dynamic&gt;";
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
         /// </summary>
         /// <inheritdoc />
-        public GoogleChallengeProperties(IDictionary<string, string> items)
+        public GoogleChallengeProperties(IDictionary<string, string?> items)
             : base(items)
         { }
 
@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
         /// </summary>
         /// <inheritdoc />
-        public GoogleChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
+        public GoogleChallengeProperties(IDictionary<string, string?> items, IDictionary<string, object?> parameters)
             : base(items, parameters)
         { }
 
         /// <summary>
         /// The "access_type" parameter value being used for a challenge request.
         /// </summary>
-        public string AccessType
+        public string? AccessType
         {
             get => GetParameter<string>(AccessTypeKey);
             set => SetParameter(AccessTypeKey, value);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// <summary>
         /// The "approval_prompt" parameter value being used for a challenge request.
         /// </summary>
-        public string ApprovalPrompt
+        public string? ApprovalPrompt
         {
             get => GetParameter<string>(ApprovalPromptKey);
             set => SetParameter(ApprovalPromptKey, value);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// <summary>
         /// The "login_hint" parameter value being used for a challenge request.
         /// </summary>
-        public string LoginHint
+        public string? LoginHint
         {
             get => GetParameter<string>(LoginHintKey);
             set => SetParameter(LoginHintKey, value);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// <summary>
         /// The "prompt" parameter value being used for a challenge request.
         /// </summary>
-        public string Prompt
+        public string? Prompt
         {
             get => GetParameter<string>(PromptParameterKey);
             set => SetParameter(PromptParameterKey, value);

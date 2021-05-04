@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
     internal class TimingPipeFlusher
     {
         private readonly PipeWriter _writer;
-        private readonly ITimeoutControl _timeoutControl;
+        private readonly ITimeoutControl? _timeoutControl;
         private readonly IKestrelTrace _log;
 
         public TimingPipeFlusher(
             PipeWriter writer,
-            ITimeoutControl timeoutControl,
+            ITimeoutControl? timeoutControl,
             IKestrelTrace log)
         {
             _writer = writer;
@@ -50,12 +50,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public ValueTask<FlushResult> FlushAsync(MinDataRate? minRate, long count, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
-            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
-
             if (minRate is object)
             {
-                _timeoutControl.BytesWrittenToBuffer(minRate, count);
+                // Call BytesWrittenToBuffer before FlushAsync() to make testing easier, otherwise the Flush can cause test code to run before the timeout
+                // control updates and if the test checks for a timeout it can fail
+                _timeoutControl!.BytesWrittenToBuffer(minRate, count);
             }
+
+            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
 
             if (pipeFlushTask.IsCompletedSuccessfully)
             {
@@ -76,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             if (minRate is object)
             {
-                _timeoutControl.StartTimingWrite();
+                _timeoutControl!.StartTimingWrite();
             }
 
             try
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             {
                 if (minRate is object)
                 {
-                    _timeoutControl.StopTimingWrite();
+                    _timeoutControl!.StopTimingWrite();
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();

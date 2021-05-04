@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
             {
                 var id = value.ToString();
-                return new OrderWithTypeConverter() { Id = int.Parse(id) };
+                return new OrderWithTypeConverter() { Id = int.Parse(id, CultureInfo.InvariantCulture) };
             }
         }
     }

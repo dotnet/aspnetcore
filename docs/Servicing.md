@@ -39,29 +39,7 @@ As a result, in general, requests for servicing fixes in Long-Term Support relea
 To request Shiproom approval for a fix, open a **Pull Request** to the target `release/` branch (for example `release/3.1` for 3.1.x). Prior to submitting to shiproom, ensure all of the following:
 
 * The PR is "ready-to-merge" (Has at least one review approval, passing builds, is not a draft)
-* The PR description contains the following template:
-
-```
-#### Description
-
-<!-- Describe the bug and the fix. -->
-
-#### Customer Impact
-
-<!--
-* Was the bug reported by a customer?
-* How does the bug impact the customer
-* Are there any workarounds? If so, why are they not acceptable alternatives?
--->
-
-#### Regression?
-
-<!-- Either "no", or include the version that regressed the behavior -->
-
-#### Risk
-
-<!-- Describe the risk of introducing this change. -->
-```
+* The PR description contains the following template: [https://aka.ms/aspnet/servicing/template](https://aka.ms/aspnet/servicing/template)
 
 Once the above conditions are met, apply the `servicing-consider` label.
 
