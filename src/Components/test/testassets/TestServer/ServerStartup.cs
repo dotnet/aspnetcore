@@ -24,10 +24,9 @@ namespace TestServer
             services.AddServerSideBlazor();
             services.AddSingleton<ResourceRequestLog>();
 
-            // Since tests run in parallel, it's possible multiple servers will startup and read files being written by another test
-            // Use a unique directory per server to avoid this collision
-            services.AddDataProtection()
-                .PersistKeysToFileSystem(Directory.CreateDirectory(Path.GetRandomFileName()));
+            // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
+            // contention issues.
+            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
