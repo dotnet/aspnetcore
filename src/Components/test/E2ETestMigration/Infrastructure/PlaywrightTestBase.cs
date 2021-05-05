@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using PlaywrightSharp;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -80,5 +82,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
         public ContextInformation BrowserContextInfo { get; protected set; }
         public BrowserManager BrowserManager { get; private set; }
+
+        protected async Task MountTestComponentAsync<TComponent>(IPage page)
+        {
+            var componentType = typeof(TComponent);
+            var componentTypeName = componentType.Assembly == typeof(BasicTestApp.Program).Assembly ?
+                componentType.FullName :
+                componentType.AssemblyQualifiedName;
+            var testSelector = await page.WaitForSelectorAsync("#test-selector > select");
+
+            Output.WriteLine("Selecting test: " + componentTypeName);
+
+            var option = $"#test-selector > select > option[value='{componentTypeName}']";
+            var selected = await page.SelectOptionAsync("#test-selector > select", componentTypeName);
+            Assert.True(selected.Length == 1);
+            Assert.Equal(componentTypeName, selected.First());
+        }
+
     }
 }
