@@ -111,7 +111,6 @@
     <MicrosoftExtensionsOptionsVersion>6.0.0-preview.5.21254.12</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0-preview.5.21254.12</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftAspNetCoreInternalTransportVersion>6.0.0-preview.5.21254.12</MicrosoftAspNetCoreInternalTransportVersion>
-    <SystemComponentModelAnnotationsVersion>6.0.0-preview.5.21227.1</SystemComponentModelAnnotationsVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-preview.5.21254.12</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0-preview.5.21254.12</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>6.0.0-preview.5.21254.12</SystemDirectoryServicesProtocolsVersion>
