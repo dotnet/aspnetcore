@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
             var scope = _serviceScopeFactory.CreateScope();
-            connection.HubCallerClients =  new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
+            connection.HubCallerClients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
 
             try
             {
@@ -470,14 +470,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     return;
                 }
 
-                var enumerable = descriptor.FromReturnedStream(result, streamCts.Token);
-
+                await using var enumerator = descriptor.FromReturnedStream(result, streamCts.Token);
                 Log.StreamingResult(_logger, invocationId, descriptor.MethodExecutor);
-
                 var streamItemMessage = new StreamItemMessage(invocationId, null);
-                await foreach (var streamItem in enumerable)
+
+                while (await enumerator.MoveNextAsync())
                 {
-                    streamItemMessage.Item = streamItem;
+                    streamItemMessage.Item = enumerator.Current;
                     // Send the stream item
                     await connection.WriteAsync(streamItemMessage);
                 }
