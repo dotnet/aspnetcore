@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
-// tslint:disable:no-floating-promises
+// This code uses a lot of `.then` instead of `await` and ESLint doesn't like it.
+/* eslint-disable @typescript-eslint/no-floating-promises */
 
 import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@microsoft/signalr";
 import { DEFAULT_TIMEOUT_INTERVAL, eachHttpClient, eachTransport, ECHOENDPOINT_URL, ENDPOINT_BASE_URL, HTTPS_ECHOENDPOINT_URL, shouldRunHttpsTests } from "./Common";
@@ -32,7 +32,7 @@ describe("connection", () => {
 
         connection.onreceive = async (data: any) => {
             if (data === message) {
-                void connection.stop();
+                connection.stop();
             }
         };
 
@@ -64,7 +64,7 @@ describe("connection", () => {
 
                     connection.onreceive = (data: any) => {
                         if (data === message) {
-                            void connection.stop();
+                            connection.stop();
                         }
                     };
 
@@ -95,7 +95,7 @@ describe("connection", () => {
                     const closePromise = new PromiseSource();
                     connection.onreceive = (data: any) => {
                         if (data === message) {
-                            void connection.stop();
+                            connection.stop();
                         }
                     };
 
@@ -131,7 +131,7 @@ describe("connection", () => {
 
                     connection.onreceive = (data: any) => {
                         if (data === message) {
-                            void connection.stop();
+                            connection.stop();
                         }
                     };
 
@@ -206,7 +206,7 @@ describe("connection", () => {
 
                 connection.onreceive = async (data: any) => {
                     if (data === message) {
-                        void connection.stop();
+                        connection.stop();
                     }
                 };
 

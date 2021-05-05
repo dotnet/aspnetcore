@@ -19,7 +19,6 @@ export class TestWebSocket {
     public static webSocket: TestWebSocket;
     public receivedData: (string | ArrayBuffer | Blob | ArrayBufferView)[];
 
-    // tslint:disable-next-line:variable-name
     private _onopen?: (this: WebSocket, evt: Event) => any;
     public openSet: PromiseSource = new PromiseSource();
     public set onopen(value: (this: WebSocket, evt: Event) => any) {
@@ -34,7 +33,6 @@ export class TestWebSocket {
         };
     }
 
-    // tslint:disable-next-line:variable-name
     private _onclose?: (this: WebSocket, evt: Event) => any;
     public closeSet: PromiseSource = new PromiseSource();
     public set onclose(value: (this: WebSocket, evt: Event) => any) {

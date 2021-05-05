@@ -235,10 +235,12 @@ describe("HttpConnection", () => {
 
             expect(negotiateCount).toEqual(1);
         },
+        /* eslint-disable max-len */
         "Failed to start the transport 'WebSockets': Error: WebSocket failed to connect. The connection could not be found on the server, " +
         "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.",
         "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: " +
         "Error: WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled. ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+        /* eslint-disable max-len */
     });
 
     it("negotiate called again when transport fails to start and falls back", async () => {
@@ -1320,8 +1322,6 @@ describe("HttpConnection", () => {
         it("uses WebSocket constructor from options if provided", async () => {
             await VerifyLogger.run(async (logger) => {
                 class BadConstructorWebSocket {
-                    // The "_" prefix tell TypeScript not to worry about unused parameter, but tslint doesn't like it.
-                    // tslint:disable-next-line:variable-name
                     constructor(_url: string, _protocols?: string | string[]) {
                         throw new Error("WebSocket constructor called.");
                     }
