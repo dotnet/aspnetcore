@@ -18,6 +18,7 @@ using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -2241,6 +2242,50 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var message = await client.InvokeAsync(nameof(MethodHub.AuthMethod)).DefaultTimeout();
 
                     Assert.Null(message.Error);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.DefaultTimeout();
+                }
+            }
+        }
+
+        private class TestConnectionLifetimeNotification : IConnectionLifetimeNotificationFeature
+        {
+            private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+            public CancellationToken ConnectionClosedRequested { get => _cts.Token; set => throw new NotImplementedException(); }
+
+            public void RequestClose()
+            {
+                _cts.Cancel();
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionLifetimeNotificationClosesConnectionWithReconnectAllowed()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    client.Connection.Features.Set<IConnectionLifetimeNotificationFeature>(new TestConnectionLifetimeNotification());
+
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.DefaultTimeout();
+
+                    client.Connection.Features.Get<IConnectionLifetimeNotificationFeature>().RequestClose();
+
+                    var close = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+
+                    Assert.True(close.AllowReconnect);
+                    // TODO: error message?
+                    Assert.Equal("", close.Error);
 
                     client.Dispose();
 

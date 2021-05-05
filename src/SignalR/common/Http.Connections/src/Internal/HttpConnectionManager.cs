@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // Tick the heartbeat, if the connection is still active
                     connection.TickHeartbeat();
 
-                    if (connection.AuthorizationExpiration < utcNow)
+                    if (connection.AuthenticationExpiration < utcNow)
                     {
                         // TODO: Call DisposeAndRemoveAsync after this?
                         // TODO: Log here or in HttpConnectionContext

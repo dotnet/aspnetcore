@@ -43,7 +43,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object?>? _items;
-        private DateTimeOffset? _authorizationExpiration;
+        private DateTimeOffset? _authenticationExpiration;
+        private readonly CancellationTokenSource _connectionClosedTokenSource;
         private readonly CancellationTokenSource _connectionClosingTokenSource;
 
         private CancellationTokenSource? _sendCts;
@@ -110,12 +111,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
         internal AsyncServiceScope? ServiceScope { get; set; }
 
-        internal DateTimeOffset? AuthorizationExpiration
+        internal DateTimeOffset? AuthenticationExpiration
         {
-            get => _authorizationExpiration;
+            get => _authenticationExpiration;
             set
             {
-                _authorizationExpiration = value;
+                _authenticationExpiration = value;
             }
         }
 
