@@ -1,8 +1,8 @@
-# Microsoft.AspNetCore.Authentication.Certificate
+# Microsoft.AspNetCore.Authentication.OAuth
 
-This project contains an implementation of [Certificate Authentication](https://tools.ietf.org/html/rfc5246#section-7.4.4) for ASP.NET Core. Certificate authentication happens at the TLS level, long before it ever gets to ASP.NET Core, so, more accurately this is an authentication handler that validates the certificate and then gives you an event where you can resolve that certificate to a ClaimsPrincipal.
+This project contains a generic implementation of [OAuth2 Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/social/) for ASP.NET Core. While it can be used directly, it's often easier to use a derived implementation for a specific provider. Adjacent directories contain providers for Facebook, Google, Microsoft Accounts, and Twitter.
 
-For more information, see [Configure certificate authentication in ASP.NET Core](https://docs.microsoft.com/aspnet/core/security/authentication/certauth).
+Some community projects related to OAuth for ASP.NET Core are listed in the [documentation](https://docs.microsoft.com/aspnet/core/security/authentication/social/).
 
 ## Development Setup
 

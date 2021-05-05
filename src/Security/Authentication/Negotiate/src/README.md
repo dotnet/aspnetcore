@@ -1,8 +1,6 @@
-# Microsoft.AspNetCore.Authentication.Certificate
+# Microsoft.AspNetCore.Authentication.Negotiate
 
-This project contains an implementation of [Certificate Authentication](https://tools.ietf.org/html/rfc5246#section-7.4.4) for ASP.NET Core. Certificate authentication happens at the TLS level, long before it ever gets to ASP.NET Core, so, more accurately this is an authentication handler that validates the certificate and then gives you an event where you can resolve that certificate to a ClaimsPrincipal.
-
-For more information, see [Configure certificate authentication in ASP.NET Core](https://docs.microsoft.com/aspnet/core/security/authentication/certauth).
+This project contains an implementation of [Negotiate Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/windowsauth#kestrel) for ASP.NET Core. It's designed to work cross platform with Kestrel. When using IIS or HttpSys servers this will delegate to their built in implementation instead.
 
 ## Development Setup
 
