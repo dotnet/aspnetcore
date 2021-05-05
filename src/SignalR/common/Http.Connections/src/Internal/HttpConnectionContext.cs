@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         internal void StartSendCancellation()
         {
-            if (!_options.TranspotSendTimeoutEnabled)
+            if (!_options.TransportSendTimeoutEnabled)
             {
                 return;
             }
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         internal void TryCancelSend(long currentTicks)
         {
-            if (!_options.TranspotSendTimeoutEnabled)
+            if (!_options.TransportSendTimeoutEnabled)
             {
                 return;
             }
@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         internal void StopSendCancellation()
         {
-            if (!_options.TranspotSendTimeoutEnabled)
+            if (!_options.TransportSendTimeoutEnabled)
             {
                 return;
             }

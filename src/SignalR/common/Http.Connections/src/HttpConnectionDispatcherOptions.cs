@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         }
 
         internal long TransportSendTimeoutTicks { get; private set; }
-        internal bool TranspotSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
+        internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
         // We initialize these lazily based on the state of the options specified here.
         // Though these are mutable it's extremely rare that they would be mutated past the
