@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         /// <summary>
         /// Gets or sets a delegate for wrapping or replacing the <see cref="WebSocket"/>
-        /// that will be used for WebSocket transport
+        /// that will be used for the WebSocket transport.
         /// </summary>
         public Func<WebSocketConnectionContext, CancellationToken, ValueTask<WebSocket>>? WebSocketFactory { get; set; }
 

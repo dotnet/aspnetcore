@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
             _httpConnectionOptions = httpConnectionOptions ?? new HttpConnectionOptions();
 
-            _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;
+            _closeTimeout = _httpConnectionOptions.CloseTimeout;
 
             // We were given an updated delegate from the HttpConnection and we are updating what we have in httpOptions
             // options itself is copied object of user's options
@@ -136,7 +136,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 }
             }
 
-            await webSocket.ConnectAsync(url, cancellationToken);
+            try
+            { 
+                await webSocket.ConnectAsync(url, cancellationToken);
+            }
+            catch
+            {
+                webSocket.Dispose();
+                throw;
+            }
+
             return webSocket;
         }
 
@@ -160,17 +169,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
-            try
-            {
-                var context = new WebSocketConnectionContext(resolvedUrl, _httpConnectionOptions);
-                var factory = _httpConnectionOptions.WebSocketFactory ?? DefaultWebSocketFactory;
-                _webSocket = await factory(context, cancellationToken);
-            }
-            catch
-            {
-                _webSocket?.Dispose();
-                throw;
-            }
+            var context = new WebSocketConnectionContext(resolvedUrl, _httpConnectionOptions);
+            var factory = _httpConnectionOptions.WebSocketFactory ?? DefaultWebSocketFactory;
+            _webSocket = await factory(context, cancellationToken);
 
             Log.StartedTransport(_logger);
 
