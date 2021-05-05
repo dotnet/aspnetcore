@@ -483,7 +483,6 @@ describe("HttpConnection", () => {
                 constructor() {
                     this._onopen = null;
                 }
-                // tslint:disable-next-line:variable-name
                 private _onopen: ((this: WebSocket, ev: Event) => any) | null;
                 public get onopen(): ((this: WebSocket, ev: Event) => any) | null {
                     return this._onopen;
@@ -494,6 +493,7 @@ describe("HttpConnection", () => {
                     sync.continue();
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 public close(): void {
                 }
             };
@@ -752,7 +752,7 @@ describe("HttpConnection", () => {
                     .on("POST", () => ({ connectionId: "42", availableTransports: [availableTransport] }))
                     .on("GET", (r) => {
                         httpClientGetCount++;
-                        // tslint:disable-next-line:no-string-literal
+                        // eslint-disable-next-line @typescript-eslint/dot-notation
                         const authorizationValue = r.headers!["Authorization"];
                         if (httpClientGetCount === 1) {
                             if (authorizationValue) {
@@ -1096,7 +1096,6 @@ describe("HttpConnection", () => {
             const availableTransports = [{ transport: "WebSockets", transferFormats: ["Text"] }, { transport: "LongPolling", transferFormats: ["Text"] }];
             let negotiateCount: number = 0;
             let getCount: number = 0;
-            let connection: HttpConnection;
             const options: IHttpConnectionOptions = {
                 WebSocket: TestWebSocket,
                 ...commonOptions,
@@ -1119,7 +1118,7 @@ describe("HttpConnection", () => {
 
             TestWebSocket.webSocketSet = new PromiseSource();
 
-            connection = new HttpConnection("http://tempuri.org", options);
+            const connection = new HttpConnection("http://tempuri.org", options);
             const startPromise = connection.start(TransferFormat.Text);
 
             await TestWebSocket.webSocketSet;
@@ -1285,8 +1284,6 @@ describe("HttpConnection", () => {
                 let eventSourceConstructorCalled: boolean = false;
 
                 class TestEventSource {
-                    // The "_" prefix tell TypeScript not to worry about unused parameter, but tslint doesn't like it.
-                    // tslint:disable-next-line:variable-name
                     constructor(_url: string, _eventSourceInitDict: EventSourceInit) {
                         eventSourceConstructorCalled = true;
                         throw new Error("EventSource constructor called.");

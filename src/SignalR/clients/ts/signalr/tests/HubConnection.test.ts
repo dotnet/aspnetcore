@@ -180,7 +180,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -208,7 +207,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", null)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -238,7 +236,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.invoke("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -1367,6 +1364,7 @@ class TestProtocol implements IHubProtocol {
         return [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public writeMessage(message: HubMessage): any {
 
     }
@@ -1405,10 +1403,12 @@ class NullSubscriber<T> implements IStreamSubscriber<T> {
     private constructor() {
     }
 
+    /* eslint-disable @typescript-eslint/no-empty-function */
     public next(value: T): void {
     }
     public error(err: any): void {
     }
     public complete(): void {
     }
+    /* eslint-disable @typescript-eslint/no-empty-function */
 }

@@ -69,15 +69,15 @@ export class TestConnection implements IConnection {
         this._invokeOnReceive(TextMessageFormat.write(payload));
     }
 
-    public receiveText(data: string) {
+    public receiveText(data: string): void {
         this._invokeOnReceive(data);
     }
 
-    public receiveBinary(data: ArrayBuffer) {
+    public receiveBinary(data: ArrayBuffer): void {
         this._invokeOnReceive(data);
     }
 
-    private _invokeOnReceive(data: string | ArrayBuffer) {
+    private _invokeOnReceive(data: string | ArrayBuffer): void {
         if (this.onreceive) {
             this.onreceive(data);
         }
