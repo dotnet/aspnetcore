@@ -156,14 +156,18 @@ export function getLogicalChild(parent: LogicalElement, childIndex: number): Log
   return getLogicalChildrenArray(parent)[childIndex];
 }
 
+// SVG elements support `foreignObject` children that can hold arbitrary HTML.
+// For these scenarios, the parent SVG and `foreignObject` elements should
+// be rendered under the SVG namespace, while the HTML content should be rendered
+// under the XHTML namespace. If the correct namespaces are not provided, most
+// browsers will fail to render the foreign object content. Here, we ensure that if
+// we encounter a `foreignObject` in the SVG, then all its children will be placed
+// under the XHTML namespace.
 export function isSvgElement(element: LogicalElement) {
-  return getClosestDomElement(element).namespaceURI === 'http://www.w3.org/2000/svg';
-}
-
-export function isForeignObject(element: LogicalElement) {
   // Note: This check is intentionally case-sensitive since we expect this element
   // to appear as a child of an SVG element and SVGs are case-sensitive.
-  return getClosestDomElement(element).tagName === 'foreignObject';
+  var closestElement = getClosestDomElement(element);
+  return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement.tagName !== 'foreignObject';
 }
 
 export function getLogicalChildrenArray(element: LogicalElement) {
