@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly object _receiveMessageTimeoutLock = new object();
         private readonly ISystemClock _systemClock;
         private readonly CancellationTokenRegistration _closedRegistration;
+        private readonly CancellationTokenRegistration? _closedRequestedRegistration;
 
         private StreamTracker? _streamTracker;
         private long _lastSendTimeStamp;
@@ -73,9 +74,8 @@ namespace Microsoft.AspNetCore.SignalR
 
             if (connectionContext.Features.Get<IConnectionLifetimeNotificationFeature>() is IConnectionLifetimeNotificationFeature lifetimeNotification)
             {
-                // TODO: dispose registration
-                // This feature is used by HttpConnectionManager to gracefully close the connection on authorization expiration
-                lifetimeNotification.ConnectionClosedRequested.Register(static (state) => ((HubConnectionContext)state!).AbortAllowReconnect(), this);
+                // This feature is used by HttpConnectionManager to gracefully close the connection on authentication expiration
+                _closedRequestedRegistration = lifetimeNotification.ConnectionClosedRequested.Register(static (state) => ((HubConnectionContext)state!).AbortAllowReconnect(), this);
             }
 
             HubCallerContext = new DefaultHubCallerContext(this);
@@ -735,6 +735,7 @@ namespace Microsoft.AspNetCore.SignalR
         internal void Cleanup()
         {
             _closedRegistration.Dispose();
+            _closedRequestedRegistration?.Dispose();
 
             // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
             if (_streamTracker != null)

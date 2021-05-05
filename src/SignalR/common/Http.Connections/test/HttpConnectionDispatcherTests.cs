@@ -2707,8 +2707,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        [Fact]
-        public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithJWT()
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithJWT(HttpTransportType transportType)
         {
             SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
             JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
@@ -2786,9 +2789,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 {
                     Url = new Uri(url),
                     AccessTokenProvider = () => Task.FromResult(token),
-                    Transports = HttpTransportType.WebSockets,
+                    Transports = transportType,
                     DefaultTransferFormat = TransferFormat.Text,
-                    HttpMessageHandlerFactory = handler => new WrappingHttpHandler(handler, stream)
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream)
                 },
                 LoggerFactory);
 
@@ -2804,8 +2807,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             await connection.DisposeAsync();
         }
 
-        [Fact]
-        public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithCookies()
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithCookies(HttpTransportType transportType)
         {
             using var host = CreateHost(services =>
             {
@@ -2844,9 +2850,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 new HttpConnectionOptions()
                 {
                     Url = new Uri(url),
-                    Transports = HttpTransportType.WebSockets,
+                    Transports = transportType,
                     DefaultTransferFormat = TransferFormat.Text,
-                    HttpMessageHandlerFactory = handler => new WrappingHttpHandler(handler, stream),
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream),
                     Cookies = cookies
                 },
                 LoggerFactory);
@@ -2863,8 +2869,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             await connection.DisposeAsync();
         }
 
-        [Fact]
-        public async Task AuthenticationExpirationUsesCorrectScheme()
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task AuthenticationExpirationUsesCorrectScheme(HttpTransportType transportType)
         {
             SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
             JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
@@ -2942,9 +2951,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 {
                     Url = new Uri(url),
                     AccessTokenProvider = () => Task.FromResult(token),
-                    Transports = HttpTransportType.WebSockets,
+                    Transports = transportType,
                     DefaultTransferFormat = TransferFormat.Text,
-                    HttpMessageHandlerFactory = handler => new WrappingHttpHandler(handler, stream),
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream),
                 },
                 LoggerFactory);
 
@@ -2960,11 +2969,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             await connection.DisposeAsync();
         }
 
-        private class WrappingHttpHandler : DelegatingHandler
+        private class GetNegotiateHttpHandler : DelegatingHandler
         {
             private readonly MemoryStream _stream;
+            private bool _read;
 
-            public WrappingHttpHandler(HttpMessageHandler handler, MemoryStream stream)
+            public GetNegotiateHttpHandler(HttpMessageHandler handler, MemoryStream stream)
                 : base(handler)
             {
                 _stream = stream;
@@ -2973,9 +2983,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 var response = await base.SendAsync(request, cancellationToken);
-                await response.Content.CopyToAsync(_stream);
-                response.Content = new ByteArrayContent(_stream.ToArray());
-                _stream.Position = 0;
+                if (!_read)
+                {
+                    await response.Content.CopyToAsync(_stream);
+                    response.Content = new ByteArrayContent(_stream.ToArray());
+                    _stream.Position = 0;
+                    _read = true;
+                }
                 return response;
             }
         }

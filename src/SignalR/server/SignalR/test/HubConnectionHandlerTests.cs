@@ -2284,8 +2284,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var close = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
 
                     Assert.True(close.AllowReconnect);
-                    // TODO: error message?
-                    Assert.Equal("", close.Error);
 
                     client.Dispose();
 

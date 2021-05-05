@@ -619,7 +619,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        // TODO: Log here or in HttpConnectionManager
         public void RequestClose()
         {
             ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosingTokenSource);

@@ -172,8 +172,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                     if (connection.AuthenticationExpiration < utcNow)
                     {
-                        // TODO: Call DisposeAndRemoveAsync after this?
-                        // TODO: Log here or in HttpConnectionContext
+                        Log.AuthenticationExpired(_logger, connection.ConnectionId);
                         connection.RequestClose();
                     }
                 }
