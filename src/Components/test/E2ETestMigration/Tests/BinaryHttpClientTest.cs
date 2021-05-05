@@ -46,48 +46,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 var response = await page.GoToAsync(url);
 
                 Assert.True(response.Ok, "Got: " + response.StatusText + "from: "+url);
+                Output.WriteLine("Loaded page");
 
-                //var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
-                //    (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
+                await MountTestComponentAsync<BinaryHttpRequestsComponent>(page);
 
-                //// Receive render batch
-                //await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-                //await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+                var targetUri = new Uri(_apiServerFixture.RootUri, "/subdir/api/data");
+                await page.TypeAsync("#request-uri", targetUri.AbsoluteUri);
+                await page.ClickAsync("#send-request");
 
-                //// JS interop call to intercept navigation
-                //await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-                //await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+                var status = await page.GetTextContentAsync("#response-status");
+                var statusText = await page.GetTextContentAsync("#response-status-text");
+                var testOutcome = await page.GetTextContentAsync("#test-outcome");
 
-                //await page.WaitForSelectorAsync("ul");
+                Assert.Equal("OK", status);
+                Assert.Equal("OK", statusText);
+                Assert.Equal("", testOutcome);
 
-                //await page.CloseAsync();
+                await page.CloseAsync();
             }
-
-            //    IssueRequest("/subdir/api/data");
-            //Assert.Equal("OK", _responseStatus.Text);
-            //Assert.Equal("OK", _responseStatusText.Text);
-            //Assert.Equal("", _testOutcome.Text);
         }
-
-        //private void IssueRequest(string relativeUri)
-        //{
-        //    var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);
-        //    SetValue("request-uri", targetUri.AbsoluteUri);
-
-        //    _appElement.FindElement(By.Id("send-request")).Click();
-
-        //    _responseStatus = Browser.Exists(By.Id("response-status"));
-        //    _responseStatusText = _appElement.FindElement(By.Id("response-status-text"));
-        //    _testOutcome = _appElement.FindElement(By.Id("test-outcome"));
-
-        //}
-
-        //private void SetValue(string elementId, string value)
-        //{
-        //    var element = Browser.Exists(By.Id(elementId));
-        //    element.Clear();
-        //    element.SendKeys(value);
-        //}
-
     }
 }
