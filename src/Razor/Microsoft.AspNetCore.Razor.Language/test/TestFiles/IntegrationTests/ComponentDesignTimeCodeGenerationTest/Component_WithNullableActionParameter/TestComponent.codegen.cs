@@ -10,29 +10,42 @@ namespace Test
     using Microsoft.AspNetCore.Components;
     public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
+        #pragma warning disable 219
+        private void __RazorDirectiveTokenHelpers__() {
+        }
+        #pragma warning restore 219
+        #pragma warning disable 0414
+        private static System.Object __o = null;
+        #pragma warning restore 0414
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.OpenComponent<Test.MyComponent>(0);
-            __builder.AddAttribute(1, "OnClick", (System.Action<System.EventArgs>)(
+            __o = new System.Action(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                        e => { Increment(); }
+                                              NullableAction
 
 #line default
 #line hidden
 #nullable disable
+            );
+            __builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+            }
             ));
-            __builder.CloseComponent();
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(ComponentWithNullableAction);
+
+#line default
+#line hidden
+#nullable disable
         }
         #pragma warning restore 1998
 #nullable restore
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    private int counter;
-    private void Increment() {
-        counter++;
-    }
+	[Parameter]
+	public Action NullableAction { get; set; }
 
 #line default
 #line hidden

@@ -13,11 +13,11 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.OpenComponent<Test.MyComponent>(0);
-            __builder.AddAttribute(1, "OnClick", (System.Action<System.EventArgs>)(
+            __builder.OpenComponent<Test.ComponentWithNullableAction>(0);
+            __builder.AddAttribute(1, "NullableAction", (System.Action)(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                        e => { Increment(); }
+                                              NullableAction
 
 #line default
 #line hidden
@@ -27,12 +27,10 @@ namespace Test
         }
         #pragma warning restore 1998
 #nullable restore
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    private int counter;
-    private void Increment() {
-        counter++;
-    }
+	[Parameter]
+	public Action NullableAction { get; set; }
 
 #line default
 #line hidden

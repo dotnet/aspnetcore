@@ -580,8 +580,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     if (canTypeCheck)
                     {
-                        context.CodeWriter.Write("new ");
+                        context.CodeWriter.Write("(");
                         context.CodeWriter.Write(node.TypeName);
+                        context.CodeWriter.Write(")");
                         context.CodeWriter.Write("(");
                     }
 
