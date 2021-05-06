@@ -9,8 +9,8 @@ import { map } from 'rxjs/operators';
   styleUrls: ['./login-menu.component.css']
 })
 export class LoginMenuComponent implements OnInit {
-  public isAuthenticated: Observable<boolean>;
-  public userName: Observable<string>;
+  public isAuthenticated?: Observable<boolean>;
+  public userName?: Observable<string | null | undefined>;
 
   constructor(private authorizeService: AuthorizeService) { }
 
