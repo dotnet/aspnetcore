@@ -384,6 +384,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32479")]
         public async Task Server_SetConnectionLimitChangeAfterStarted_Success()
         {
             HttpSysOptions options = null;
