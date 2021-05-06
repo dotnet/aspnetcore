@@ -18,8 +18,4 @@
     <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <SuppressBaselineReference Include="System.Security.Cryptography.Cng" />
-  </ItemGroup>
-
 </Project>
