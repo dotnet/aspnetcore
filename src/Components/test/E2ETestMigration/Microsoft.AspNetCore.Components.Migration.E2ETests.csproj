@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -9,6 +9,9 @@
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
 
+    <BaseOutputPath />
+
+    <OutputPath />
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +36,29 @@
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
+
+    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\Wasm.Performance.TestApp\"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\BasicTestApp\"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\GlobalizationWasmApp\;"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\StandaloneApp\;"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
   </ItemGroup>
 
   <ItemGroup>
