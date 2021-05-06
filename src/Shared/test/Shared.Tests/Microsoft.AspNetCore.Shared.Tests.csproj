@@ -45,6 +45,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.Net.Http.Headers" />
+    <SuppressBaselineReference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 
   <ItemGroup>
