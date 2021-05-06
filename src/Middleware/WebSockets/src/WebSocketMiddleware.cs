@@ -3,9 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -151,9 +155,46 @@ namespace Microsoft.AspNetCore.WebSockets
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
+                // TODO: get from options
+                WebSocketDeflateOptions? deflateOptions = null;
+                var ext = _context.Request.Headers["Sec-WebSocket-Extensions"];
+                if (ext.Count != 0)
+                {
+                    var decline = false;
+                    foreach (var extension in ext)
+                    {
+                        if (extension.TrimStart().StartsWith(ClientWebSocketDeflateConstants.Extension, StringComparison.Ordinal))
+                        {
+                            deflateOptions = new();
+                            if (ParseDeflateOptions(extension, deflateOptions, out var hasClientMaxWindowBits))
+                            {
+                                Resp(_context.Response.Headers, deflateOptions, hasClientMaxWindowBits);
+                                decline = false;
+                                break;
+                            }
+                            else
+                            {
+                                decline = true;
+                            }
+                        }
+                    }
+                    if (decline)
+                    {
+                        throw new InvalidOperationException("'permessage-deflate' extension not accepted.");
+                    }
+                }
+
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
-                return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+                var options = new WebSocketCreationOptions()
+                {
+                    IsServer = true,
+                    KeepAliveInterval = keepAliveInterval,
+                    SubProtocol = subProtocol,
+                    DangerousDeflateOptions = deflateOptions,
+                };
+
+                return WebSocket.CreateFromStream(opaqueTransport, options);
             }
 
             public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)
@@ -225,6 +266,142 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
 
                 return HandshakeHelpers.IsRequestKeyValid(requestHeaders.SecWebSocketKey.ToString());
+            }
+
+            internal static class ClientWebSocketDeflateConstants
+            {
+                /// <summary>
+                /// The maximum length that this extension can have, assuming that we're not abusing white space.
+                /// <para />
+                /// "permessage-deflate; client_max_window_bits=15; client_no_context_takeover; server_max_window_bits=15; server_no_context_takeover"
+                /// </summary>
+                public const int MaxExtensionLength = 128;
+
+                public const string Extension = "permessage-deflate";
+
+                public const string ClientMaxWindowBits = "client_max_window_bits";
+                public const string ClientNoContextTakeover = "client_no_context_takeover";
+
+                public const string ServerMaxWindowBits = "server_max_window_bits";
+                public const string ServerNoContextTakeover = "server_no_context_takeover";
+            }
+
+            private static bool ParseDeflateOptions(ReadOnlySpan<char> extension, WebSocketDeflateOptions options, out bool hasClientMaxWindowBits)
+            {
+                hasClientMaxWindowBits = false;
+                while (true)
+                {
+                    int end = extension.IndexOf(';');
+                    ReadOnlySpan<char> value = (end >= 0 ? extension[..end] : extension).Trim();
+
+                    if (value.Length > 0)
+                    {
+                        if (value.SequenceEqual(ClientWebSocketDeflateConstants.ClientNoContextTakeover))
+                        {
+                            options.ClientContextTakeover = false;
+                        }
+                        else if (value.SequenceEqual(ClientWebSocketDeflateConstants.ServerNoContextTakeover))
+                        {
+                            options.ServerContextTakeover = false;
+                        }
+                        else if (value.StartsWith(ClientWebSocketDeflateConstants.ClientMaxWindowBits))
+                        {
+                            hasClientMaxWindowBits = true;
+                            var clientMaxWindowBits = ParseWindowBits(value);
+                            if (clientMaxWindowBits > options.ClientMaxWindowBits)
+                            {
+                                return false;
+                            }
+                            options.ClientMaxWindowBits = clientMaxWindowBits;
+                        }
+                        else if (value.StartsWith(ClientWebSocketDeflateConstants.ServerMaxWindowBits))
+                        {
+                            var serverMaxWindowBits = ParseWindowBits(value);
+                            if (serverMaxWindowBits > options.ServerMaxWindowBits)
+                            {
+                                return false;
+                            }
+                            options.ServerMaxWindowBits = serverMaxWindowBits;
+                        }
+
+                        static int ParseWindowBits(ReadOnlySpan<char> value)
+                        {
+                            // parameters can be sent without a value by the client
+                            var startIndex = value.IndexOf('=');
+
+                            if (startIndex < 0 ||
+                                !int.TryParse(value[(startIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int windowBits) ||
+                                windowBits < 9 ||
+                                windowBits > 15)
+                            {
+                                throw new WebSocketException(WebSocketError.HeaderError, "");
+                            }
+
+                            return windowBits;
+                        }
+                    }
+
+                    if (end < 0)
+                    {
+                        break;
+                    }
+                    extension = extension[(end + 1)..];
+                }
+
+                return true;
+            }
+
+            private static void Resp(IHeaderDictionary headers, WebSocketDeflateOptions options, bool hasClientMaxWindowBits)
+            {
+                headers.Add("Sec-WebSocket-Extensions", GetDeflateOptions(options, hasClientMaxWindowBits));
+
+                static string GetDeflateOptions(WebSocketDeflateOptions options, bool hasClientMaxWindowBits)
+                {
+                    var builder = new StringBuilder(ClientWebSocketDeflateConstants.MaxExtensionLength);
+                    builder.Append(ClientWebSocketDeflateConstants.Extension);
+
+                    // If a received extension negotiation offer doesn't have the
+                    // "client_max_window_bits" extension parameter, the corresponding
+                    // extension negotiation response to the offer MUST NOT include the
+                    // "client_max_window_bits" extension parameter.
+                    // https://tools.ietf.org/html/rfc7692#section-7.1.2.2
+                    if (hasClientMaxWindowBits)
+                    {
+                        if (options.ClientMaxWindowBits != 15)
+                        {
+                            builder.Append("; ").Append(ClientWebSocketDeflateConstants.ClientMaxWindowBits).Append('=')
+                               .Append(options.ClientMaxWindowBits.ToString(CultureInfo.InvariantCulture));
+                        }
+                        else
+                        {
+                            builder.Append("; ").Append(ClientWebSocketDeflateConstants.ClientMaxWindowBits);
+                        }
+                    }
+
+                    if (!options.ClientContextTakeover)
+                    {
+                        builder.Append("; ").Append(ClientWebSocketDeflateConstants.ClientNoContextTakeover);
+                    }
+
+                    if (options.ServerMaxWindowBits != 15)
+                    {
+                        builder.Append("; ")
+                               .Append(ClientWebSocketDeflateConstants.ServerMaxWindowBits).Append('=')
+                               .Append(options.ServerMaxWindowBits.ToString(CultureInfo.InvariantCulture));
+                    }
+                    else
+                    {
+                        builder.Append("; ").Append(ClientWebSocketDeflateConstants.ServerMaxWindowBits);
+                    }
+
+                    if (!options.ServerContextTakeover)
+                    {
+                        builder.Append("; ").Append(ClientWebSocketDeflateConstants.ServerNoContextTakeover);
+                    }
+
+                    Debug.Assert(builder.Length <= ClientWebSocketDeflateConstants.MaxExtensionLength);
+                    return builder.ToString();
+                }
             }
         }
     }
