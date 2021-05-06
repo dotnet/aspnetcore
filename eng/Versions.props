@@ -121,7 +121,6 @@
     <SystemReflectionMetadataVersion>6.0.0-preview.5.21254.12</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsVersion>6.0.0-preview.5.21254.12</SystemResourcesExtensionsVersion>
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.5.21254.12</SystemRuntimeCompilerServicesUnsafeVersion>
-    <SystemSecurityCryptographyCngVersion>6.0.0-preview.5.21226.1</SystemSecurityCryptographyCngVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.5.21254.12</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-preview.5.21254.12</SystemSecurityCryptographyXmlVersion>
     <SystemSecurityPrincipalWindowsVersion>6.0.0-preview.5.21254.12</SystemSecurityPrincipalWindowsVersion>

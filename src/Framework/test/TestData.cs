@@ -280,7 +280,6 @@ namespace Microsoft.AspNetCore
                 { "System.Diagnostics.EventLog", "6.0.0.0" },
                 { "System.IO.Pipelines", "6.0.0.0" },
                 { "System.Security.AccessControl", "6.0.0.0" },
-                { "System.Security.Cryptography.Cng", "6.0.0.0" },
                 { "System.Security.Cryptography.Xml", "6.0.0.0" },
                 { "System.Security.Principal.Windows", "6.0.0.0" },
             };
