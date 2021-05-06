@@ -185,10 +185,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e795b06c331fa7fd69e8872e3b644587a0badac7</Sha>
     </Dependency>
-    <Dependency Name="System.ComponentModel.Annotations" Version="6.0.0-preview.5.21227.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6cde32922e8329c75b2db3e028c7b80b11afd0a8</Sha>
-    </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="6.0.0-preview.5.21256.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e795b06c331fa7fd69e8872e3b644587a0badac7</Sha>

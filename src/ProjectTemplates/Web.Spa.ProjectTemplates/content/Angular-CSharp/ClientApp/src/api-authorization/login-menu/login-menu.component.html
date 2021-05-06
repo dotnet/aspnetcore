@@ -6,7 +6,7 @@
         <a  class="nav-link text-dark" [routerLink]='["/authentication/logout"]' [state]='{ local: true }' title="Logout">Logout</a>
     </li>
 </ul>
-<ul class="navbar-nav" *ngIf="!(isAuthenticated | async)">
+<ul class="navbar-nav" *ngIf="(isAuthenticated | async) !== true">
   <li class="nav-item">
         <a class="nav-link text-dark" [routerLink]='["/authentication/register"]'>Register</a>
     </li>
