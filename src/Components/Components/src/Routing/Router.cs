@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -91,6 +92,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             _baseUri = NavigationManager.BaseUri;
             _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
+
+            if  (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied += ClearRouteCaches;
+            }
         }
 
         /// <inheritdoc />
@@ -131,6 +137,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
+            if (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= ClearRouteCaches;
+            }
         }
 
         private static string StringUntilAny(string str, char[] chars)
@@ -150,6 +160,12 @@ namespace Microsoft.AspNetCore.Components.Routing
                 _currentRouteKey = routeKey;
                 Routes = RouteTableFactory.Create(routeKey);
             }
+        }
+
+        private void ClearRouteCaches()
+        {
+            RouteTableFactory.ClearCaches();
+            _currentRouteKey = default;
         }
 
         internal virtual void Refresh(bool isNavigationIntercepted)
