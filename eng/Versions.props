@@ -206,7 +206,7 @@
     <SystemIdentityModelTokensJwtVersion>6.10.0</SystemIdentityModelTokensJwtVersion>
     <NuGetVersioningVersion>5.10.0-preview.2.7203</NuGetVersioningVersion>
     <NuGetFrameworksVersion>5.10.0-preview.2.7203</NuGetFrameworksVersion>
-    <SystemComponentModelAnnotationsVersion>6.0.0-preview.5.21227.1</SystemComponentModelAnnotationsVersion>
+    <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>
