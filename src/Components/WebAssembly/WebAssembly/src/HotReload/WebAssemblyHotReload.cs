@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.HotReload;
 using Microsoft.JSInterop;
@@ -27,7 +26,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
 
         internal static async Task InitializeAsync()
         {
-            if (!HotReloadEnvironment.Instance.IsHotReloadEnabled)
+            // Determine if we're running under a hot reload environment (e.g. dotnet-watch).
+            // It's insufficient to know it the app can be hot reloaded (HotReloadEnvironment.IsEnabled),
+            // since the hot-reload agent might be unavilable.
+            if (Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") != "debug")
             {
                 return;
             }
@@ -45,7 +47,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
         public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDeta)
         {
             var moduleId = Guid.Parse(moduleIdString);
-            Debug.Assert(HotReloadEnvironment.Instance.IsHotReloadEnabled);
 
             _updateDeltas[0].ModuleId = moduleId;
             _updateDeltas[0].MetadataDelta = metadataDelta;
