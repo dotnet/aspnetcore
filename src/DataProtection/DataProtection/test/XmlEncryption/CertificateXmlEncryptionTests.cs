@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         public void Encrypt_Decrypt_RoundTrips()
         {
             // Arrange
-            var symmetricAlgorithm = new TripleDESCryptoServiceProvider();
+            var symmetricAlgorithm = TripleDES.Create();
             symmetricAlgorithm.GenerateKey();
 
             var mockInternalEncryptor = new Mock<IInternalCertificateXmlEncryptor>();
