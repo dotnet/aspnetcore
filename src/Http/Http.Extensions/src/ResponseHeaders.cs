@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<SetCookieHeaderValue>(HeaderNames.SetCookie);
+                return Headers.SetCookie.GetList<SetCookieHeaderValue>();
             }
             set
             {

@@ -126,7 +126,10 @@ namespace Microsoft.AspNetCore.Localization
 
             if (_options.ApplyCurrentCultureToResponseHeaders)
             {
-                context.Response.Headers.Add(HeaderNames.ContentLanguage, requestCulture.UICulture.Name);
+                var headers = context.Response.Headers;
+                // Can't use += as StringValues does not override operator+
+                // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                headers.ContentLanguage = StringValues.Concat(headers.ContentLanguage, requestCulture.UICulture.Name);
             }
 
             await _next(context);
