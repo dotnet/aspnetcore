@@ -52,6 +52,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter]
         public NavLinkMatch Match { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag to indicate whether route matching should ignore the query string.
+        /// </summary>
+        [Parameter]
+        public bool IgnoreQueryString { get; set; }
+
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
         /// <inheritdoc />
@@ -72,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
-            _isActive = ShouldMatch(RemoveQueryString(NavigationManager.Uri));
+            _isActive = ShouldMatch(NavigationManager.Uri);
 
             _class = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
@@ -99,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             // We could just re-render always, but for this component we know the
             // only relevant state change is to the _isActive property.
-            var shouldBeActiveNow = ShouldMatch(RemoveQueryString(args.Location));
+            var shouldBeActiveNow = ShouldMatch(args.Location);
             if (shouldBeActiveNow != _isActive)
             {
                 _isActive = shouldBeActiveNow;
@@ -115,13 +121,15 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return false;
             }
 
-            if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsolute))
+            var matchingUri = IgnoreQueryString? RemoveQueryString(currentUriAbsolute) : currentUriAbsolute;
+
+            if (EqualsHrefExactlyOrIfTrailingSlashAdded(matchingUri))
             {
                 return true;
             }
 
             if (Match == NavLinkMatch.Prefix
-                && IsStrictlyPrefixWithSeparator(currentUriAbsolute, _hrefAbsolute))
+                && IsStrictlyPrefixWithSeparator(matchingUri, _hrefAbsolute))
             {
                 return true;
             }
