@@ -173,6 +173,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             var factory = _httpConnectionOptions.WebSocketFactory ?? DefaultWebSocketFactory;
             _webSocket = await factory(context, cancellationToken);
 
+            if (_webSocket == null)
+            {
+                throw new InvalidOperationException("Configured WebSocketFactory did not return a value.");
+            }
+
             Log.StartedTransport(_logger);
 
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)

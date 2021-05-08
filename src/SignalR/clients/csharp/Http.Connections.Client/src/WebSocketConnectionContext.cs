@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <summary>
         /// Gets the URL to connect to.
         /// </summary>
-        public Uri Uri { get; init; }
+        public Uri Uri { get; }
 
         /// <summary>
         /// Gets the connection options to use.
         /// </summary>
-        public HttpConnectionOptions Options { get; init; }
+        public HttpConnectionOptions Options { get; }
     }
 }
