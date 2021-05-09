@@ -256,15 +256,15 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 switch (entry.Status)
                 {
                     case HealthStatus.Healthy:
-                        _healthCheckEndHealthy(logger, registration.Name, duration.TotalMilliseconds, entry.Status, entry.Description, null);
+                        _healthCheckEndHealthy(logger, registration.Name, entry.Status, duration.TotalMilliseconds, entry.Description, null);
                         break;
 
                     case HealthStatus.Degraded:
-                        _healthCheckEndDegraded(logger, registration.Name, duration.TotalMilliseconds, entry.Status, entry.Description, null);
+                        _healthCheckEndDegraded(logger, registration.Name, entry.Status, duration.TotalMilliseconds, entry.Description, null);
                         break;
 
                     case HealthStatus.Unhealthy:
-                        _healthCheckEndUnhealthy(logger, registration.Name, duration.TotalMilliseconds, entry.Status, entry.Description, entry.Exception);
+                        _healthCheckEndUnhealthy(logger, registration.Name, entry.Status, duration.TotalMilliseconds, entry.Description, entry.Exception);
                         break;
                 }
             }
