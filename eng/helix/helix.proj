@@ -11,7 +11,7 @@
   <Import Project="..\targets\Helix.Common.props" />
   <Import Project="..\Build.props" />
   <Import Project="..\Versions.props" />
-  
+
   <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
   <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
     <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
@@ -26,13 +26,11 @@
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
-    <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>    
+    <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
     <DotNetCliChannel>Current</DotNetCliChannel>
 
-    <!-- Copied from Microsoft.NET.DefaultOutputPaths.targets in the .NET SDK. The Helix SDK contains nothing similar. -->
-    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
-    <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' == 'AnyCPU'">$(BaseOutputPath)$(Configuration)\</OutputPath>
-    <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
+    <!-- Similar to ProjectLayout.props in the Arcade SDK. The Helix SDK contains nothing similar. -->
+    <OutputPath Condition=" '$(OutputPath)' == '' ">$(RepoRoot)artifacts\bin\$(MSBuildProjectName)\</OutputPath>
   </PropertyGroup>
 
   <!-- Specify the runtime we need which will be included as a correlation payload -->
@@ -44,7 +42,7 @@
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
   </ItemGroup>
-  
+
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
     <!-- Creator is not valid for internal queues -->
@@ -86,30 +84,35 @@
 
     <PropertyGroup>
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
-    </PropertyGroup>    
-    
+    </PropertyGroup>
+
+    <!-- Use package because .dotnet/ folder doesn't contain RuntimeList.xml file and SharedFxTests checks that. -->
     <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')"
-       SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg" 
-       DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
+       SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg"
+       DestinationFolder="$(OutputPath)\SharedFx.Unzip" />
     <ItemGroup>
-      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.txt" />
-      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.json" />
-      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.dll" />
-      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.xml" />
+      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\*.txt" />
+      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\*.json" />
+      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\*.dll" />
+      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\RuntimeList.xml" />
     </ItemGroup>
-    <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
-    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg')" 
-      SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg" 
-      DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\packs\Microsoft.AspNetCore.App.Ref\$(SharedFxVersion)" />
-    <ZipDirectory Condition="Exists('$(OutputPath)\AspNetCoreAppRuntimeHelix')"
-      SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" 
-      DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
-    
+    <Copy SourceFiles="@(_appRuntimeFiles)"
+        DestinationFolder="$(OutputPath)\SharedFx.Layout\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
+    <Copy SourceFiles="$(OutputPath)\SharedFx.Unzip\Microsoft.AspNetCore.App.versions.txt"
+        DestinationFiles="$(OutputPath)\SharedFx.Layout\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)\.version" />
+
+    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg')"
+      SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg"
+      DestinationFolder="$(OutputPath)\SharedFx.Layout\packs\Microsoft.AspNetCore.App.Ref\$(SharedFxVersion)" />
+    <ZipDirectory Condition="Exists('$(OutputPath)\SharedFx.Layout')"
+      SourceDirectory="$(OutputPath)\SharedFx.Layout"
+      DestinationFile="$(OutputPath)\SharedFx.Layout.zip" Overwrite="true" />
+
     <ItemGroup>
-      <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)" />
+      <HelixCorrelationPayload Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
     </ItemGroup>
   </Target>
-  
+
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
               Targets="CreateHelixPayload"
