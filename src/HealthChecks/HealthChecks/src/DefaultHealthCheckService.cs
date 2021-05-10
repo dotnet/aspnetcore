@@ -226,7 +226,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 EventIds.HealthCheckEnd,
                 HealthCheckEndText);
 
-            private static readonly Action<ILogger, string, HealthStatus, double, string?, Exception?> _healthCheckEndFailed = LoggerMessage.Define<string, HealthStatus,  double, string?>(
+            private static readonly Action<ILogger, string, HealthStatus, double, string?, Exception?> _healthCheckEndFailed = LoggerMessage.Define<string, HealthStatus, double, string?>(
                 LogLevel.Error,
                 EventIds.HealthCheckEnd,
                 HealthCheckEndText);
