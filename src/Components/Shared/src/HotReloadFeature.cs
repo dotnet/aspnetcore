@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Components.HotReload
     {
         /// <summary>
         /// Gets a value that determines if hot reload is supported. Currently, the <c>Debugger.IsSupported</c> feature switch is used as a proxy for this.
+        /// Changing to a dedicated feature switch is tracked by https://github.com/dotnet/runtime/issues/51159.
         /// </summary>
         public static bool IsSupported { get; } = AppContext.TryGetSwitch("System.Diagnostics.Debugger.IsSupported", out var isSupported) ? isSupported : true;
     }
