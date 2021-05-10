@@ -8,10 +8,6 @@
 
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
-
-    <BaseOutputPath />
-
-    <OutputPath />
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,6 +55,13 @@
       Targets="Publish"
       Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\StandaloneApp\;"
       Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
+      Targets="Publish"
+      Properties="PublishDir=$(PublishDir)testassets\BasicTestApp\"
+     />
+
   </ItemGroup>
 
   <ItemGroup>
