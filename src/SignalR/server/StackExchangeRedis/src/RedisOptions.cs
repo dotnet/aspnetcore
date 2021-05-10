@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         /// <summary>
         /// Gets or sets the Redis connection factory.
         /// </summary>
-        public Func<TextWriter, Task<IConnectionMultiplexer>> ConnectionFactory { get; set; }
+        public Func<TextWriter, Task<IConnectionMultiplexer>>? ConnectionFactory { get; set; }
 
         internal async Task<IConnectionMultiplexer> ConnectAsync(TextWriter log)
         {

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             get
             {
-                var skip = OnHelix() && (Queues == null || Queues.ToLowerInvariant().Split(';').Contains(GetTargetHelixQueue().ToLowerInvariant()));
+                var skip = OnHelix() && ShouldSkip();
                 return !skip;
             }
         }
@@ -41,6 +41,23 @@ namespace Microsoft.AspNetCore.Testing
             {
                 return $"This test is skipped on helix";
             }
+        }
+
+        private bool ShouldSkip()
+        {
+            if (Queues == null)
+            {
+                return true;
+            }
+
+            var targetQueue = GetTargetHelixQueue().ToLowerInvariant();
+
+            if (Queues.Contains("All.OSX") && targetQueue.StartsWith("osx", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
         }
 
         public static bool OnHelix() => !string.IsNullOrEmpty(GetTargetHelixQueue());

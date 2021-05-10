@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31404")]
         public async Task ClosesAfterDataSent()
         {
             var bodyReceived = CreateTaskCompletionSource();
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 async ctx => {
                     await ctx.Response.WriteAsync("Abort");
                     await ctx.Response.Body.FlushAsync();
-                    await bodyReceived.Task.DefaultTimeout();
+                    await bodyReceived.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     ctx.Abort();
                 }, LoggerFactory))
             {

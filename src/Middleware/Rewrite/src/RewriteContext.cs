@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Gets and sets the <see cref="HttpContext"/>
         /// </summary>
-        public HttpContext HttpContext { get; set; }
+        public HttpContext HttpContext { get; set; } = default!;
 
         /// <summary>
         /// Gets and sets the File Provider for file and directory checks.
         /// </summary>
-        public IFileProvider StaticFileProvider { get; set; }
+        public IFileProvider StaticFileProvider { get; set; } = default!;
 
         /// <summary>
         /// Gets and sets the logger

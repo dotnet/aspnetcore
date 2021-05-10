@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Options.Password.RequiredLength = 0;
             manager.Options.Password.RequiredUniqueChars = uniqueChars;
             IdentityResultAssert.IsFailure(await valid.ValidateAsync(manager, null, input),
-                String.Format("Passwords must use at least {0} different characters.", uniqueChars));
+                $"Passwords must use at least {uniqueChars} different characters.");
         }
 
         [Theory]

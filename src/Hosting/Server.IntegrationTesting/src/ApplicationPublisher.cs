@@ -106,15 +106,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private static string GetRuntimeIdentifier(DeploymentParameters deploymentParameters)
         {
             var architecture = deploymentParameters.RuntimeArchitecture;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return "win-" + architecture;
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (OperatingSystem.IsLinux())
             {
                 return "linux-" + architecture;
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 return "osx-" + architecture;
             }

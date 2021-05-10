@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
@@ -87,7 +86,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             // Assert
             Assert.Empty(directory);
         }
-        
+
         [Fact]
         public void GetDirectoryContents_HandlersEmptyPath()
         {
@@ -164,7 +163,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         public void GetFileInfo_DoesNotMatch_IncompletePrefixSegments()
         {
             // Arrange
-            var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            var expectedResult = OperatingSystem.IsWindows();
             var provider = new StaticWebAssetsFileProvider(
                 "_cont",
                 Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location));
@@ -180,7 +179,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         public void GetFileInfo_Prefix_RespectsOsCaseSensitivity()
         {
             // Arrange
-            var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            var expectedResult = OperatingSystem.IsWindows();
             var provider = new StaticWebAssetsFileProvider(
                 "_content",
                 Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location));
@@ -196,7 +195,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         public void GetDirectoryContents_Prefix_RespectsOsCaseSensitivity()
         {
             // Arrange
-            var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            var expectedResult = OperatingSystem.IsWindows();
             var provider = new StaticWebAssetsFileProvider(
                 "_content",
                 Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location));

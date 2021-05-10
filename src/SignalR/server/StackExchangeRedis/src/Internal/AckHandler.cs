@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
@@ -19,26 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 
         public AckHandler()
         {
-            // Don't capture the current ExecutionContext and its AsyncLocals onto the timer
-            bool restoreFlow = false;
-            try
-            {
-                if (!ExecutionContext.IsFlowSuppressed())
-                {
-                    ExecutionContext.SuppressFlow();
-                    restoreFlow = true;
-                }
-
-                _timer = new Timer(state => ((AckHandler)state).CheckAcks(), state: this, dueTime: _ackInterval, period: _ackInterval);
-            }
-            finally
-            {
-                // Restore the current ExecutionContext
-                if (restoreFlow)
-                {
-                    ExecutionContext.RestoreFlow();
-                }
-            }
+            _timer = NonCapturingTimer.Create(state => ((AckHandler)state!).CheckAcks(), state: this, dueTime: _ackInterval, period: _ackInterval);
         }
 
         public Task CreateAck(int id)

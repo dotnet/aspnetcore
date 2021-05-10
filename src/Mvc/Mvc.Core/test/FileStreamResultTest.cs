@@ -118,11 +118,11 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             var contentRange = new ContentRangeHeaderValue(start.Value, end.Value, byteArray.Length);
-            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
             Assert.Equal(contentLength, httpResponse.ContentLength);
             Assert.Equal(expectedString, body);
             Assert.False(readStream.CanSeek);
@@ -166,12 +166,12 @@ namespace Microsoft.AspNetCore.Mvc
             httpResponse.Body.Seek(0, SeekOrigin.Begin);
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
-            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             var contentRange = new ContentRangeHeaderValue(0, 4, byteArray.Length);
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
             Assert.Equal(5, httpResponse.ContentLength);
             Assert.Equal("Hello", body);
             Assert.False(readStream.CanSeek);
@@ -215,8 +215,8 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal("Hello World", body);
             Assert.False(readStream.CanSeek);
         }
@@ -260,8 +260,8 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal("Hello World", body);
             Assert.False(readStream.CanSeek);
         }
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
-            httpContext.Request.Headers[HeaderNames.Range] = rangeString;
+            httpContext.Request.Headers.Range = rangeString;
             httpContext.Request.Method = HttpMethods.Get;
             httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -301,10 +301,10 @@ namespace Microsoft.AspNetCore.Mvc
             httpResponse.Body.Seek(0, SeekOrigin.Begin);
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Empty(httpResponse.Headers.ContentRange);
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal("Hello World", body);
             Assert.False(readStream.CanSeek);
         }
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc
             };
 
             var httpContext = GetHttpContext();
-            httpContext.Request.Headers[HeaderNames.Range] = rangeString;
+            httpContext.Request.Headers.Range = rangeString;
             httpContext.Request.Method = HttpMethods.Get;
             httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -343,11 +343,11 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             var contentRange = new ContentRangeHeaderValue(byteArray.Length);
-            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
             Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 new EntityTagHeaderValue("\"NotEtag\""),
             };
-            httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
+            httpContext.Request.Headers.Range = "bytes = 0-6";
             httpContext.Request.Method = HttpMethods.Get;
             httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -391,8 +391,8 @@ namespace Microsoft.AspNetCore.Mvc
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Empty(httpResponse.Headers.ContentRange);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);
         }
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 new EntityTagHeaderValue("\"Etag\""),
             };
-            httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
+            httpContext.Request.Headers.Range = "bytes = 0-6";
             httpContext.Request.Method = HttpMethods.Get;
             httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -435,9 +435,9 @@ namespace Microsoft.AspNetCore.Mvc
             var body = await streamReader.ReadToEndAsync();
             Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);            
+            Assert.Empty(httpResponse.Headers.ContentRange);            
             Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);
         }
@@ -481,12 +481,12 @@ namespace Microsoft.AspNetCore.Mvc
             httpResponse.Body.Seek(0, SeekOrigin.Begin);
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
-            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             var contentRange = new ContentRangeHeaderValue(byteArray.Length);
             Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
             Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);

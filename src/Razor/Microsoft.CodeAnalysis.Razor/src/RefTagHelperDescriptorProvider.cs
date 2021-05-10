@@ -35,6 +35,12 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null && !SymbolEqualityComparer.Default.Equals(targetAssembly, elementReference.ContainingAssembly))
+            {
+                return;
+            }
+
             context.Results.Add(CreateRefTagHelper());
         }
 

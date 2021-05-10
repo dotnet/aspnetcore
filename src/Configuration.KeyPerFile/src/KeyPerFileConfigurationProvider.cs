@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
     /// </summary>
     public class KeyPerFileConfigurationProvider : ConfigurationProvider, IDisposable
     {
-        private readonly IDisposable _changeTokenRegistration;
+        private readonly IDisposable? _changeTokenRegistration;
 
         KeyPerFileConfigurationSource Source { get; set; }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
             => key.Replace("__", ConfigurationPath.KeyDelimiter);
 
         private static string TrimNewLine(string value)
-            => value.EndsWith(Environment.NewLine)
+            => value.EndsWith(Environment.NewLine, StringComparison.Ordinal)
                 ? value.Substring(0, value.Length - Environment.NewLine.Length)
                 : value;
 
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         /// <summary>
         /// Generates a string representing this provider name and relevant details.
         /// </summary>
-        /// <returns> The configuration name. </returns>
+        /// <returns>The configuration name.</returns>
         public override string ToString()
             => $"{GetType().Name} for files in '{GetDirectoryName()}' ({(Source.Optional ? "Optional" : "Required")})";
 

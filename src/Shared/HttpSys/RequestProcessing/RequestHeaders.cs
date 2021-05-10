@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal partial class RequestHeaders : IHeaderDictionary
     {
-        private IDictionary<string, StringValues> _extra;
+        private IDictionary<string, StringValues>? _extra;
         private NativeRequestContext _requestMemoryBlob;
         private long? _contentLength;
         private StringValues _contentLengthText;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        private string GetKnownHeader(HttpSysRequestHeader header)
+        private string? GetKnownHeader(HttpSysRequestHeader header)
         {
             return _requestMemoryBlob.GetKnownHeader(header);
         }
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             get
             {
                 long value;
-                var rawValue = this[HttpKnownHeaderNames.ContentLength];
+                var rawValue = this[HeaderNames.ContentLength];
 
                 if (_contentLengthText.Equals(rawValue))
                 {
@@ -171,12 +171,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                         throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
                     }
                     _contentLengthText = HeaderUtilities.FormatNonNegativeInt64(value.Value);
-                    this[HttpKnownHeaderNames.ContentLength] = _contentLengthText;
+                    this[HeaderNames.ContentLength] = _contentLengthText;
                     _contentLength = value;
                 }
                 else
                 {
-                    Remove(HttpKnownHeaderNames.ContentLength);
+                    Remove(HeaderNames.ContentLength);
                     _contentLengthText = StringValues.Empty;
                     _contentLength = null;
                 }
@@ -187,8 +187,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                StringValues values;
-                return TryGetValue(key, out values) ? values : StringValues.Empty;
+                return TryGetValue(key, out var values) ? values : StringValues.Empty;
             }
             set
             {
@@ -196,31 +195,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 {
                     Remove(key);
                 }
-                else
-                {
-                    Extra[key] = value;
-                }
-            }
-        }
-
-        StringValues IHeaderDictionary.this[string key]
-        {
-            get
-            {
-                if (PropertiesTryGetValue(key, out var value))
-                {
-                    return value;
-                }
-
-                if (Extra.TryGetValue(key, out value))
-                {
-                    return value;
-                }
-                return StringValues.Empty;
-            }
-            set
-            {
-                if (!PropertiesTrySetValue(key, value))
+                else if (!PropertiesTrySetValue(key, value))
                 {
                     Extra[key] = value;
                 }

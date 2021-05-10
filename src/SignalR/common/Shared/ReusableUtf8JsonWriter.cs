@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Buffers;
 using System.Text.Encodings.Web;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Internal
     internal sealed class ReusableUtf8JsonWriter
     {
         [ThreadStatic]
-        private static ReusableUtf8JsonWriter _cachedInstance;
+        private static ReusableUtf8JsonWriter? _cachedInstance;
 
         private readonly Utf8JsonWriter _writer;
 

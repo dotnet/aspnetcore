@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.DataProtection
             return new ArgumentException(message, parameterName);
         }
 
-        public static CryptographicException CryptCommon_GenericError(Exception inner = null)
+        public static CryptographicException CryptCommon_GenericError(Exception? inner = null)
         {
             return new CryptographicException(Resources.CryptCommon_GenericError, inner);
         }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.DataProtection
             return new InvalidOperationException(message);
         }
 
-        public static CryptographicException Common_EncryptionFailed(Exception inner = null)
+        public static CryptographicException Common_EncryptionFailed(Exception? inner = null)
         {
             return new CryptographicException(Resources.Common_EncryptionFailed, inner);
         }

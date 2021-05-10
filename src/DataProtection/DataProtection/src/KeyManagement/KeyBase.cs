@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private readonly Lazy<IAuthenticatedEncryptorDescriptor> _lazyDescriptor;
         private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
 
-        private IAuthenticatedEncryptor _encryptor;
+        private IAuthenticatedEncryptor? _encryptor;
 
         public KeyBase(
             Guid keyId,
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        public IAuthenticatedEncryptor CreateEncryptor()
+        public IAuthenticatedEncryptor? CreateEncryptor()
         {
             if (_encryptor == null)
             {

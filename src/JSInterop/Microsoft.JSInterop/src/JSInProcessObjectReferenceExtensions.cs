@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.JSInterop
 {
+    /// <summary>
+    /// Extension methods for <see cref="IJSInProcessObjectReference"/>.
+    /// </summary>
     public static class JSInProcessObjectReferenceExtensions
     {
         /// <summary>
@@ -13,6 +17,7 @@ namespace Microsoft.JSInterop
         /// <param name="jsObjectReference">The <see cref="IJSInProcessObjectReference"/>.</param>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
         /// <param name="args">JSON-serializable arguments.</param>
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The method returns void, so nothing is deserialized.")]
         public static void InvokeVoid(this IJSInProcessObjectReference jsObjectReference, string identifier, params object?[] args)
         {
             if (jsObjectReference == null)

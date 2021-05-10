@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     // Make sure the current token is not markup, which can be html start tag or @:
                     if (!(At(SyntaxKind.OpenAngle) ||
-                        (At(SyntaxKind.Transition) && Lookahead(count: 1).Content.StartsWith(":"))))
+                        (At(SyntaxKind.Transition) && Lookahead(count: 1).Content.StartsWith(":", StringComparison.Ordinal))))
                     {
                         // Don't accept whitespace as markup if the end text tag is followed by csharp.
                         shouldAcceptWhitespaceAndNewLine = false;
@@ -2184,7 +2184,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return false;
             }
 
-            if (tagName.StartsWith("!"))
+            if (tagName.StartsWith("!", StringComparison.Ordinal))
             {
                 tagName = tagName.Substring(1);
             }

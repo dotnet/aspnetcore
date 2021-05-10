@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http1ConnectionTests()
         {
-            _pipelineFactory = SlabMemoryPoolFactory.Create();
+            _pipelineFactory = PinnedBlockMemoryPoolFactory.Create();
             var options = new PipeOptions(_pipelineFactory, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
@@ -58,15 +58,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = new HttpConnectionContext
-            {
-                ServiceContext = _serviceContext,
-                ConnectionContext = Mock.Of<ConnectionContext>(),
-                ConnectionFeatures = connectionFeatures,
-                MemoryPool = _pipelineFactory,
-                TimeoutControl = _timeoutControl.Object,
-                Transport = pair.Transport
-            };
+            _http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: _serviceContext,
+                connectionContext: Mock.Of<ConnectionContext>(),
+                transport: pair.Transport,
+                timeoutControl: _timeoutControl.Object,
+                memoryPool: _pipelineFactory,
+                connectionFeatures: connectionFeatures);
 
             _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
         }
@@ -972,7 +970,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void Http10HostHeaderAllowed()
         {
             _http1Connection.HttpVersion = "HTTP/1.0";
-            _http1Connection.RequestHeaders[HeaderNames.Host] = "localhost:5000";
+            _http1Connection.RequestHeaders.Host = "localhost:5000";
             _http1Connection.EnsureHostHeaderExists();
         }
 
@@ -980,7 +978,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void Http11EmptyHostHeaderAccepted()
         {
             _http1Connection.HttpVersion = "HTTP/1.1";
-            _http1Connection.RequestHeaders[HeaderNames.Host] = "";
+            _http1Connection.RequestHeaders.Host = "";
             _http1Connection.EnsureHostHeaderExists();
         }
 
@@ -988,7 +986,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void Http11ValidHostHeadersAccepted()
         {
             _http1Connection.HttpVersion = "HTTP/1.1";
-            _http1Connection.RequestHeaders[HeaderNames.Host] = "localhost:5000";
+            _http1Connection.RequestHeaders.Host = "localhost:5000";
             _http1Connection.EnsureHostHeaderExists();
         }
 
@@ -996,7 +994,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void BadRequestFor10BadHostHeaderFormat()
         {
             _http1Connection.HttpVersion = "HTTP/1.0";
-            _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
+            _http1Connection.RequestHeaders.Host = "a=b";
             var ex = Assert.ThrowsAny<Http.BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
         }
@@ -1005,7 +1003,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void BadRequestFor11BadHostHeaderFormat()
         {
             _http1Connection.HttpVersion = "HTTP/1.1";
-            _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
+            _http1Connection.RequestHeaders.Host = "a=b";
             var ex = Assert.ThrowsAny<Http.BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
         }

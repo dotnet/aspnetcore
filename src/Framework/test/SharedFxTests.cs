@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore
         public SharedFxTests(ITestOutputHelper output)
         {
             _output = output;
-            _expectedTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _expectedTfm = TestData.GetDefaultNetCoreTargetFramework();
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
             _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore
         {
             var depsFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.deps.json");
 
-            var target = $".NETCoreApp,Version=v{TestData.GetSharedFxVersion().Substring(0, 3)}/{_expectedRid}";
+            var target = $".NETCoreApp,Version=v{_expectedTfm.Substring(3)}/{_expectedRid}";
             var ridPackageId = $"Microsoft.AspNetCore.App.Runtime.{_expectedRid}";
             var libraryId = $"{ridPackageId}/{TestData.GetTestDataValue("RuntimePackageVersion")}";
 
@@ -171,7 +171,8 @@ namespace Microsoft.AspNetCore
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .ToHashSet();
 
-            var version = Version.Parse(TestData.GetMicrosoftNETCoreAppPackageVersion());
+            var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+            var version = Version.Parse(versionStringWithoutPrereleaseTag);
             var dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
@@ -244,11 +245,11 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RuntimeListListsContainsCorrectEntries()
         {
-            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
             var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .ToHashSet();
 
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
             AssertEx.FileExists(runtimeListPath);
 
             var runtimeListDoc = XDocument.Load(runtimeListPath);
@@ -301,14 +302,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RuntimeListListsContainsCorrectPaths()
         {
-            var runtimePath = Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
-            if (string.IsNullOrEmpty(runtimePath))
-            {
-                return;
-            }
-
             var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
-
             AssertEx.FileExists(runtimeListPath);
 
             var runtimeListDoc = XDocument.Load(runtimeListPath);
@@ -319,7 +313,7 @@ namespace Microsoft.AspNetCore
             ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
 
             var actualPaths = archive.Entries
-                .Where(i => i.FullName.EndsWith(".dll"))
+                .Where(i => i.FullName.EndsWith(".dll", StringComparison.Ordinal))
                 .Select(i => i.FullName).ToHashSet();
 
             var expectedPaths = runtimeListEntries.Select(i => i.Attribute("Path").Value).ToHashSet();

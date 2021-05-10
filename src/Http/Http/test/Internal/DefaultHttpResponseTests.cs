@@ -179,6 +179,70 @@ namespace Microsoft.AspNetCore.Http
             Assert.True(mock.IsCalled);
         }
 
+        [Fact]
+        public async Task RegisterForDisposeHandlesDisposeAsyncIfObjectImplementsIAsyncDisposable()
+        {
+            var features = new FeatureCollection();
+            var response = new ResponseFeature();
+            features.Set<IHttpResponseFeature>(response);
+
+            var context = new DefaultHttpContext(features);
+            var instance = new DisposableClass();
+            context.Response.RegisterForDispose(instance);
+
+            await response.ExecuteOnCompletedCallbacks();
+
+            Assert.True(instance.DisposeAsyncCalled);
+            Assert.False(instance.DisposeCalled);
+        }
+
+        public class ResponseFeature : IHttpResponseFeature
+        {
+            private List<(Func<object, Task>, object)> _callbacks = new();
+            public int StatusCode { get; set; }
+            public string ReasonPhrase { get; set; }
+            public IHeaderDictionary Headers { get; set; }
+            public Stream Body { get; set; }
+
+            public bool HasStarted => false;
+
+            public void OnCompleted(Func<object, Task> callback, object state)
+            {
+                _callbacks.Add((callback, state));
+            }
+
+            public void OnStarting(Func<object, Task> callback, object state)
+            {
+                throw new NotImplementedException();
+            }
+
+            public async Task ExecuteOnCompletedCallbacks()
+            {
+                foreach (var (callback, state) in _callbacks)
+                {
+                    await callback(state);
+                }
+            }
+        }
+
+        public class DisposableClass : IDisposable, IAsyncDisposable
+        {
+            public bool DisposeCalled { get; set; }
+
+            public bool DisposeAsyncCalled { get; set; }
+
+            public void Dispose()
+            {
+                DisposeCalled = true;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                DisposeAsyncCalled = true;
+                return ValueTask.CompletedTask;
+            }
+        }
+
         private static HttpResponse CreateResponse(IHeaderDictionary headers)
         {
             var context = new DefaultHttpContext();

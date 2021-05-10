@@ -26,22 +26,22 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
         /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        public OpenIdConnectMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="JwtSecurityToken"/> that was received in the authentication response, if any.
         /// </summary>
-        public JwtSecurityToken JwtSecurityToken { get; set; }
+        public JwtSecurityToken? JwtSecurityToken { get; set; }
 
         /// <summary>
         /// The request that will be sent to the token endpoint and is available for customization.
         /// </summary>
-        public OpenIdConnectMessage TokenEndpointRequest { get; set; }
+        public OpenIdConnectMessage? TokenEndpointRequest { get; set; }
 
         /// <summary>
         /// The configured communication channel to the identity provider for use when making custom requests to the token endpoint.
         /// </summary>
-        public HttpClient Backchannel { get; internal set; }
+        public HttpClient Backchannel { get; internal set; } = default!;
 
         /// <summary>
         /// If the developer chooses to redeem the code themselves then they can provide the resulting tokens here. This is the
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// is required if one had not been previously received in the authorization response. An access token is optional
         /// if the handler is to contact the user-info endpoint.
         /// </summary>
-        public OpenIdConnectMessage TokenEndpointResponse { get; set; }
+        public OpenIdConnectMessage? TokenEndpointResponse { get; set; }
 
         /// <summary>
         /// Indicates if the developer choose to handle (or skip) the code redemption. If true then the handler will not attempt

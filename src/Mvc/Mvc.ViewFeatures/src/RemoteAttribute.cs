@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the route name used when generating the URL where client should send a validation request.
         /// </summary>
-        protected string RouteName { get; set; }
+        protected string? RouteName { get; set; }
 
         /// <inheritdoc />
         protected override string GetUrl(ClientModelValidationContext context)
@@ -116,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var url = urlHelper.RouteUrl(new UrlRouteContext()
             {
-                RouteName = this.RouteName,
+                RouteName = RouteName,
                 Values = RouteData,
             });
 

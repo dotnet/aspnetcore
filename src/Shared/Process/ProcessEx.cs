@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Internal
             _stdoutCapture = new StringBuilder();
             _stderrCapture = new StringBuilder();
             _stdoutLines = new BlockingCollection<string>();
+            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _process = proc;
             proc.EnableRaisingEvents = true;
@@ -47,7 +48,6 @@ namespace Microsoft.AspNetCore.Internal
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
 
-            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
             // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
@@ -176,6 +176,13 @@ namespace Microsoft.AspNetCore.Internal
 
         private void OnProcessExited(object sender, EventArgs e)
         {
+            lock (_testOutputLock)
+            {
+                if (!_disposed)
+                {
+                    _output.WriteLine("Process exited.");
+                }
+            }
             _process.WaitForExit();
             _stdoutLines.CompleteAdding();
             _stdoutLines = null;

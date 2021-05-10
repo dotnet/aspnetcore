@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Net.Http;
 
@@ -19,11 +20,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             |                       Frame Payload (*)                     ...
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         */
-        internal static bool TryReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3RawFrame frame, uint maxFrameSize, out ReadOnlySequence<byte> framePayload)
+        internal static bool TryReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3RawFrame frame, out ReadOnlySequence<byte> framePayload)
         {
             framePayload = ReadOnlySequence<byte>.Empty;
-            var consumed = readableBuffer.Start;
-            var examined = readableBuffer.Start;
+            SequencePosition consumed;
+            SequencePosition examined;
 
             var type = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
             if (type == -1)

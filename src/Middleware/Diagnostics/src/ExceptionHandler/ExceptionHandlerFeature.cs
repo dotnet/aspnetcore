@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Diagnostics
     public class ExceptionHandlerFeature : IExceptionHandlerPathFeature
     {
         /// <inheritdoc/>
-        public Exception Error { get; set; }
+        public Exception Error { get; set; } = default!;
 
         /// <inheritdoc/>
-        public string Path { get; set; }
+        public string Path { get; set; } = default!;
     }
 }

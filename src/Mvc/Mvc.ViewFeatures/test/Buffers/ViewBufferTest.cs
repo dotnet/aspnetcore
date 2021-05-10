@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         {
             // Arrange
             var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
-            var expected = Enumerable.Range(0, 32).Select(i => i.ToString());
+            var expected = Enumerable.Range(0, 32).Select(i => i.ToString(CultureInfo.InvariantCulture));
 
             // Act
             foreach (var item in expected)
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         {
             // Arrange
             var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
-            var expected = Enumerable.Range(0, 32).Select(i => i.ToString());
+            var expected = Enumerable.Range(0, 32).Select(i => i.ToString(CultureInfo.InvariantCulture));
 
             // Act
             foreach (var item in expected)
@@ -115,8 +116,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         {
             // Arrange
             var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
-            var expected0 = Enumerable.Range(0, 32).Select(i => i.ToString());
-            var expected1 = Enumerable.Range(32, 32).Select(i => i.ToString());
+            var expected0 = Enumerable.Range(0, 32).Select(i => i.ToString(CultureInfo.InvariantCulture));
+            var expected1 = Enumerable.Range(32, 32).Select(i => i.ToString(CultureInfo.InvariantCulture));
 
             // Act
             foreach (var item in expected0)
@@ -471,7 +472,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
             {
                 original.AppendHtml($"original-{i}");
             }
-            
+
             for (var i = 0; i < 9; i++)
             {
                 other.AppendHtml($"other-{i}");

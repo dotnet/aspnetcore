@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// The exception that occurred while processing the authentication.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception Exception { get; set; } = default!;
     }
 }

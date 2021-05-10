@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO
@@ -11,9 +12,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         private const int HttpDataChunkStackLimit = 128; // 16 bytes per HTTP_DATA_CHUNK
 
-        private NativeSafeHandle _requestHandler;
+        private NativeSafeHandle? _requestHandler;
         private ReadOnlySequence<byte> _buffer;
-        private MemoryHandle[] _handles;
+        private MemoryHandle[]? _handles;
 
         public void Initialize(NativeSafeHandle requestHandler, ReadOnlySequence<byte> buffer)
         {
@@ -23,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         protected override unsafe bool InvokeOperation(out int hr, out int bytes)
         {
+            Debug.Assert(_requestHandler != null, "Must initialize first.");
+
             if (_buffer.Length > int.MaxValue)
             {
                 throw new InvalidOperationException($"Writes larger then {int.MaxValue} are not supported.");
@@ -38,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 // To avoid stackoverflows, we will only stackalloc if the write size is less than the StackChunkLimit
                 // The stack size is IIS is by default 128/256 KB, so we are generous with this threshold.
                 var chunks = stackalloc HttpApiTypes.HTTP_DATA_CHUNK[chunkCount];
-                hr = WriteSequence(chunkCount, _buffer, chunks, out completionExpected);
+                hr = WriteSequence(_requestHandler, chunkCount, _buffer, chunks, out completionExpected);
             }
             else
             {
@@ -46,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 var chunks = new HttpApiTypes.HTTP_DATA_CHUNK[chunkCount];
                 fixed (HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks = chunks)
                 {
-                    hr = WriteSequence(chunkCount, _buffer, pDataChunks, out completionExpected);
+                    hr = WriteSequence(_requestHandler, chunkCount, _buffer, pDataChunks, out completionExpected);
                 }
             }
 
@@ -56,10 +59,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         public override void FreeOperationResources(int hr, int bytes)
         {
-            // Free the handles
-            foreach (var handle in _handles)
+            if (_handles != null)
             {
-                handle.Dispose();
+                // Free the handles
+                foreach (var handle in _handles)
+                {
+                    handle.Dispose();
+                }
             }
         }
 
@@ -89,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             return count;
         }
 
-        private unsafe int WriteSequence(int nChunks, ReadOnlySequence<byte> buffer, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, out bool fCompletionExpected)
+        private unsafe int WriteSequence(NativeSafeHandle requestHandler, int nChunks, ReadOnlySequence<byte> buffer, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, out bool fCompletionExpected)
         {
             var currentChunk = 0;
 
@@ -111,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 currentChunk++;
             }
 
-            return WriteChunks(_requestHandler, nChunks, pDataChunks, out fCompletionExpected);
+            return WriteChunks(requestHandler, nChunks, pDataChunks, out fCompletionExpected);
         }
 
         protected abstract unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected);

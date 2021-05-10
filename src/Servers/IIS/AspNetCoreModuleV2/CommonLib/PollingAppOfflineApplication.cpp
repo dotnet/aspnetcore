@@ -11,6 +11,7 @@
 HRESULT PollingAppOfflineApplication::TryCreateHandler(_In_ IHttpContext* pHttpContext, _Outptr_result_maybenull_ IREQUEST_HANDLER** pRequestHandler)
 {
     CheckAppOffline();
+
     return LOG_IF_FAILED(APPLICATION::TryCreateHandler(pHttpContext, pRequestHandler));
 }
 

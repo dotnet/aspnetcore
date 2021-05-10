@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -14,5 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract TypeNameRewriter CreateGenericTypeRewriter(Dictionary<string, string> bindings);
 
         public abstract TypeNameRewriter CreateGlobalQualifiedTypeNameRewriter(ICollection<string> ignore);
+
+        public abstract bool IsLambda(string expression);
     }
 }

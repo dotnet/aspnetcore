@@ -35,6 +35,24 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Contains("The Some number field must be a number.", validationMessages);
         }
 
+        [Fact]
+        public async Task InputElementIsAssignedSuccessfully()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.SomeNumber,
+            };
+
+            // Act
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+            // Assert
+            Assert.NotNull(inputSelectComponent.Element);
+        }
+
         private class TestModel
         {
             public int SomeNumber { get; set; }

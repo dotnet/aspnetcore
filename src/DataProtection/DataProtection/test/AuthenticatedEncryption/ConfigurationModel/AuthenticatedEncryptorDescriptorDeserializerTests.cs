@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -15,20 +16,21 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void ImportFromXml_Cbc_CreatesAppropriateDescriptor()
         {
             // Arrange
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
             var descriptor = new AuthenticatedEncryptorDescriptor(
                 new AuthenticatedEncryptorConfiguration()
                 {
                     EncryptionAlgorithm = EncryptionAlgorithm.AES_192_CBC,
                     ValidationAlgorithm = ValidationAlgorithm.HMACSHA512
                 },
-                "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret());
+                masterKey.ToSecret());
             var control = CreateEncryptorInstanceFromDescriptor(descriptor);
 
-            const string xml = @"
+            var xml = $@"
                 <encryptor version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   <encryption algorithm='AES_192_CBC' />
                   <validation algorithm='HMACSHA512' />
-                  <masterKey enc:requiresEncryption='true'>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</masterKey>
+                  <masterKey enc:requiresEncryption='true'>{masterKey}</masterKey>
                 </encryptor>";
             var deserializedDescriptor = new AuthenticatedEncryptorDescriptorDeserializer().ImportFromXml(XElement.Parse(xml));
             var test = CreateEncryptorInstanceFromDescriptor(deserializedDescriptor as AuthenticatedEncryptorDescriptor);

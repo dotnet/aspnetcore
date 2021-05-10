@@ -299,24 +299,6 @@ namespace Microsoft.JSInterop.Infrastructure
             Assert.Equal(expected, ex.Message);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12357")]
-        public void EndInvoke_AfterCancel()
-        {
-            // Arrange
-            var jsRuntime = new TestJSRuntime();
-            var testDTO = new TestDTO { StringVal = "Hello", IntVal = 4 };
-            var cts = new CancellationTokenSource();
-            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant", cts.Token);
-            var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, true, testDTO }, jsRuntime.JsonSerializerOptions);
-
-            // Act
-            cts.Cancel();
-            DotNetDispatcher.EndInvokeJS(jsRuntime, argsJson);
-
-            // Assert
-            Assert.True(task.IsCanceled);
-        }
-
         [Fact]
         public async Task EndInvoke_WithNullError()
         {

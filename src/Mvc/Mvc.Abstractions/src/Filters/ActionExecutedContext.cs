@@ -91,6 +91,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets or sets the <see cref="IActionResult"/>.
         /// </summary>
-        public virtual IActionResult Result { get; set; } = default!;
+        public virtual IActionResult? Result { get; set; }
     }
 }

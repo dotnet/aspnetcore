@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Localization
 {
@@ -60,6 +61,7 @@ namespace Microsoft.Extensions.Localization
         /// Implicitly converts the <see cref="LocalizedString"/> to a <see cref="string"/>.
         /// </summary>
         /// <param name="localizedString">The string to be implicitly converted.</param>
+        [return: NotNullIfNotNull("localizedString")]
         public static implicit operator string?(LocalizedString localizedString)
         {
             return localizedString?.Value;

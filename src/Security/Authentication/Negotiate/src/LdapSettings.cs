@@ -24,20 +24,20 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <example>
         /// DOMAIN.com
         /// </example>
-        public string Domain { get; set; }
+        public string Domain { get; set; } = default!;
 
         /// <summary>
         /// The machine account name to use when opening the LDAP connection.
         /// If this is not provided, the machine wide credentials of the
         /// domain joined machine will be used.
         /// </summary>
-        public string MachineAccountName { get; set; }
+        public string? MachineAccountName { get; set; }
 
         /// <summary>
         /// The machine account password to use when opening the LDAP connection.
         /// This must be provided if a <see cref="MachineAccountName"/> is provided.
         /// </summary>
-        public string MachineAccountPassword { get; set; }
+        public string? MachineAccountPassword { get; set; }
 
         /// <summary>
         /// This option indicates whether nested groups should be ignored when
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <see cref="MachineAccountPassword"/>  options will not be used to create
         /// the <see cref="LdapConnection"/>.
         /// </summary>
-        public LdapConnection LdapConnection { get; set; }
+        public LdapConnection? LdapConnection { get; set; }
 
         /// <summary>
         /// The sliding expiration that should be used for entries in the cache for user claims, defaults to 10 minutes.
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// </summary>
         public int ClaimsCacheSize { get; set; } = 100 * 1024 * 1024;
 
-        internal MemoryCache ClaimsCache { get; set; }
+        internal MemoryCache? ClaimsCache { get; set; }
 
         /// <summary>
         /// Validates the <see cref="LdapSettings"/>.

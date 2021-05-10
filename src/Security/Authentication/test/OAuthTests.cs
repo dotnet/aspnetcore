@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/oauth-callback", correlation);
         }
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/", correlation);
         }
 
@@ -406,9 +406,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                             app.UseAuthentication();
                             app.Use(async (context, next) =>
                             {
-                                if (handler == null || ! await handler(context))
+                                if (handler == null || !await handler(context))
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

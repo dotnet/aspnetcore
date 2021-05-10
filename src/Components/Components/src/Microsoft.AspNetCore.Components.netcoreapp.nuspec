@@ -3,9 +3,9 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".net5.0">
-        <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerPackageVersion$" />
-        <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationPackageVersion$" exclude="Build,Analyzers" />
+      <group targetFramework=".net6.0">
+        <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerVersion$" />
+        <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>

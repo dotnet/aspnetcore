@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
             if (element.Elements().Count() == 0 &&
                 !element.IsEmpty &&
                 element.Nodes().Count() == 1 &&
-                element.FirstNode.NodeType == XmlNodeType.Text)
+                element.FirstNode?.NodeType == XmlNodeType.Text)
             {
                 return element.Value;
             }

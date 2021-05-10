@@ -29,14 +29,14 @@ function Write-PipelineTelemetryError {
         [switch]$AsOutput,
         [switch]$Force)
 
-        $PSBoundParameters.Remove('Category') | Out-Null
+    $PSBoundParameters.Remove('Category') | Out-Null
 
-        if($Force -Or ((Test-Path variable:ci) -And $ci)) {
-            $Message = "(NETCORE_ENGINEERING_TELEMETRY=$Category) $Message"
-        }
-        $PSBoundParameters.Remove('Message') | Out-Null
-        $PSBoundParameters.Add('Message', $Message)
-        Write-PipelineTaskError @PSBoundParameters
+    if ($Force -Or ((Test-Path variable:ci) -And $ci)) {
+        $Message = "(NETCORE_ENGINEERING_TELEMETRY=$Category) $Message"
+    }
+    $PSBoundParameters.Remove('Message') | Out-Null
+    $PSBoundParameters.Add('Message', $Message)
+    Write-PipelineTaskError @PSBoundParameters
 }
 
 # Specify "-Force" to force pipeline formatted output even if "$ci" is false or not set
@@ -55,8 +55,8 @@ function Write-PipelineTaskError {
         [switch]$Force
     )
 
-    if(!$Force -And (-Not (Test-Path variable:ci) -Or !$ci)) {
-        if($Type -eq 'error') {
+    if (!$Force -And (-Not (Test-Path variable:ci) -Or !$ci)) {
+        if ($Type -eq 'error') {
             Write-Host $Message -ForegroundColor Red
             return
         }
@@ -66,47 +66,61 @@ function Write-PipelineTaskError {
         }
     }
 
-    if(($Type -ne 'error') -and ($Type -ne 'warning')) {
+    if (($Type -ne 'error') -and ($Type -ne 'warning')) {
         Write-Host $Message
         return
     }
     $PSBoundParameters.Remove('Force') | Out-Null      
-    if(-not $PSBoundParameters.ContainsKey('Type')) {
+    if (-not $PSBoundParameters.ContainsKey('Type')) {
         $PSBoundParameters.Add('Type', 'error')
     }
     Write-LogIssue @PSBoundParameters
-  }
+}
   
-  function Write-PipelineSetVariable {
+function Write-PipelineSetVariable {
     [CmdletBinding()]
     param(
-      [Parameter(Mandatory = $true)]
-      [string]$Name,
-      [string]$Value,
-      [switch]$Secret,
-      [switch]$AsOutput,
-      [bool]$IsMultiJobVariable=$true)
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [string]$Value,
+        [switch]$Secret,
+        [switch]$AsOutput,
+        [bool]$IsMultiJobVariable = $true)
 
-      if((Test-Path variable:ci) -And $ci) {
+    if ((Test-Path variable:ci) -And $ci) {
         Write-LoggingCommand -Area 'task' -Event 'setvariable' -Data $Value -Properties @{
-          'variable' = $Name
-          'isSecret' = $Secret
-          'isOutput' = $IsMultiJobVariable
+            'variable' = $Name
+            'isSecret' = $Secret
+            'isOutput' = $IsMultiJobVariable
         } -AsOutput:$AsOutput
-      }
-  }
+    }
+}
   
-  function Write-PipelinePrependPath {
+function Write-PipelinePrependPath {
     [CmdletBinding()]
     param(
-      [Parameter(Mandatory=$true)]
-      [string]$Path,
-      [switch]$AsOutput)
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [switch]$AsOutput)
 
-      if((Test-Path variable:ci) -And $ci) {
+    if ((Test-Path variable:ci) -And $ci) {
         Write-LoggingCommand -Area 'task' -Event 'prependpath' -Data $Path -AsOutput:$AsOutput
-      }
-  }
+    }
+}
+
+function Write-PipelineSetResult {
+    [CmdletBinding()]
+    param(
+        [ValidateSet("Succeeded", "SucceededWithIssues", "Failed", "Cancelled", "Skipped")]
+        [Parameter(Mandatory = $true)]
+        [string]$Result,
+        [string]$Message)
+    if ((Test-Path variable:ci) -And $ci) {
+        Write-LoggingCommand -Area 'task' -Event 'complete' -Data $Message -Properties @{
+            'result' = $Result
+        }
+    }
+}
 
 <########################################
 # Private functions.
@@ -123,7 +137,8 @@ function Format-LoggingCommandData {
         foreach ($mapping in $script:loggingCommandEscapeMappings) {
             $Value = $Value.Replace($mapping.Token, $mapping.Replacement)
         }
-    } else {
+    }
+    else {
         for ($i = $script:loggingCommandEscapeMappings.Length - 1 ; $i -ge 0 ; $i--) {
             $mapping = $script:loggingCommandEscapeMappings[$i]
             $Value = $Value.Replace($mapping.Replacement, $mapping.Token)
@@ -156,7 +171,8 @@ function Format-LoggingCommand {
                 if ($first) {
                     $null = $sb.Append(' ')
                     $first = $false
-                } else {
+                }
+                else {
                     $null = $sb.Append(';')
                 }
 
@@ -193,7 +209,8 @@ function Write-LoggingCommand {
     $command = Format-LoggingCommand -Area $Area -Event $Event -Data $Data -Properties $Properties
     if ($AsOutput) {
         $command
-    } else {
+    }
+    else {
         Write-Host $command
     }
 }
@@ -212,12 +229,12 @@ function Write-LogIssue {
         [switch]$AsOutput)
 
     $command = Format-LoggingCommand -Area 'task' -Event 'logissue' -Data $Message -Properties @{
-            'type' = $Type
-            'code' = $ErrCode
-            'sourcepath' = $SourcePath
-            'linenumber' = $LineNumber
-            'columnnumber' = $ColumnNumber
-        }
+        'type'         = $Type
+        'code'         = $ErrCode
+        'sourcepath'   = $SourcePath
+        'linenumber'   = $LineNumber
+        'columnnumber' = $ColumnNumber
+    }
     if ($AsOutput) {
         return $command
     }
@@ -229,7 +246,8 @@ function Write-LogIssue {
             $foregroundColor = [System.ConsoleColor]::Red
             $backgroundColor = [System.ConsoleColor]::Black
         }
-    } else {
+    }
+    else {
         $foregroundColor = $host.PrivateData.WarningForegroundColor
         $backgroundColor = $host.PrivateData.WarningBackgroundColor
         if ($foregroundColor -isnot [System.ConsoleColor] -or $backgroundColor -isnot [System.ConsoleColor]) {

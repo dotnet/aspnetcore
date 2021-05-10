@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -76,6 +77,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             {
                 disposable.Dispose();
             }
+        }
+
+        public ValueTask ReleaseAsync(ViewComponentContext context, object viewComponent)
+        {
+            if (context == null)
+            {
+                throw new InvalidOperationException(nameof(context));
+            }
+
+            if (viewComponent == null)
+            {
+                throw new InvalidOperationException(nameof(viewComponent));
+            }
+
+            if (viewComponent is IAsyncDisposable disposable)
+            {
+                return disposable.DisposeAsync();
+            }
+
+            Release(context, viewComponent);
+            return default;
         }
     }
 }

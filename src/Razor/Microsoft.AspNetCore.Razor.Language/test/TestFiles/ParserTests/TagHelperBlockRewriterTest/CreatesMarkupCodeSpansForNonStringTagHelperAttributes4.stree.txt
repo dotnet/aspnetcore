@@ -14,7 +14,7 @@ RazorDocument - [0..36)::36 - [<person age=" @DateTime.Now.Year" />]
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [13..32)::19
                         MarkupBlock - [13..32)::19
-                            CSharpExpressionLiteral - [13..14)::1 - [ ] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                            CSharpExpressionLiteral - [13..14)::1 - [ ] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                                 Whitespace;[ ];
                             CSharpCodeBlock - [14..32)::18
                                 CSharpImplicitExpression - [14..32)::18
@@ -22,9 +22,9 @@ RazorDocument - [0..36)::36 - [<person age=" @DateTime.Now.Year" />]
                                         Transition;[<Missing>];
                                     CSharpImplicitExpressionBody - [14..32)::18
                                         CSharpCodeBlock - [14..32)::18
-                                            CSharpExpressionLiteral - [14..15)::1 - [@] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                                            CSharpExpressionLiteral - [14..15)::1 - [@] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                                                 Transition;[@];
-                                            CSharpExpressionLiteral - [15..32)::17 - [DateTime.Now.Year] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                                            CSharpExpressionLiteral - [15..32)::17 - [DateTime.Now.Year] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                                                 Identifier;[DateTime];
                                                 Dot;[.];
                                                 Identifier;[Now];

@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
         private readonly int _validationAlgorithmSubkeyLengthInBytes;
         private readonly Func<KeyedHashAlgorithm> _validationAlgorithmFactory;
 
-        public ManagedAuthenticatedEncryptor(Secret keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom genRandom = null)
+        public ManagedAuthenticatedEncryptor(Secret keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom? genRandom = null)
         {
             _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
             _keyDerivationKey = keyDerivationKey;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
 
         private byte[] CreateContextHeader()
         {
-            var EMPTY_ARRAY = new byte[0];
+            var EMPTY_ARRAY = Array.Empty<byte>();
             var EMPTY_ARRAY_SEGMENT = new ArraySegment<byte>(EMPTY_ARRAY);
 
             var retVal = new byte[checked(
@@ -186,9 +186,9 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                     ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
                 }
 
-                ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array, keyModifierOffset, ivOffset - keyModifierOffset);
+                ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array!, keyModifierOffset, ivOffset - keyModifierOffset);
                 var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
-                Buffer.BlockCopy(protectedPayload.Array, ivOffset, iv, 0, iv.Length);
+                Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
 
                 // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
                 // We pin all unencrypted keys to limit their exposure via GC relocation.
@@ -229,12 +229,12 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                                 macOffset = eofOffset - _validationAlgorithmDigestLengthInBytes;
                             }
 
-                            correctHash = hashAlgorithm.ComputeHash(protectedPayload.Array, ivOffset, macOffset - ivOffset);
+                            correctHash = hashAlgorithm.ComputeHash(protectedPayload.Array!, ivOffset, macOffset - ivOffset);
                         }
 
                         // Step 4: Validate the MAC provided as part of the payload.
 
-                        if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array, macOffset, eofOffset - macOffset))
+                        if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array!, macOffset, eofOffset - macOffset))
                         {
                             throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
                         }
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                             var outputStream = new MemoryStream();
                             using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
                             {
-                                cryptoStream.Write(protectedPayload.Array, ciphertextOffset, macOffset - ciphertextOffset);
+                                cryptoStream.Write(protectedPayload.Array!, ciphertextOffset, macOffset - ciphertextOffset);
                                 cryptoStream.FlushFinalBlock();
 
                                 // At this point, outputStream := { plaintext }, and we're done!
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                         using (var cryptoTransform = symmetricAlgorithm.CreateEncryptor(encryptionSubkey, iv))
                         using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
                         {
-                            cryptoStream.Write(plaintext.Array, plaintext.Offset, plaintext.Count);
+                            cryptoStream.Write(plaintext.Array!, plaintext.Offset, plaintext.Count);
                             cryptoStream.FlushFinalBlock();
 
                             // At this point, outputStream := { keyModifier || IV || ciphertext }
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                                 var mac = validationAlgorithm.ComputeHash(underlyingBuffer, KEY_MODIFIER_SIZE_IN_BYTES, checked((int)outputStream.Length - KEY_MODIFIER_SIZE_IN_BYTES));
                                 outputStream.Write(mac, 0, mac.Length);
 
-                                // At this point, outputStream := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) } 
+                                // At this point, outputStream := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) }
                                 // And we're done!
                                 return outputStream.ToArray();
                             }

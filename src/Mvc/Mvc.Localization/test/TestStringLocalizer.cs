@@ -67,11 +67,5 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
 
             return allStrings;
         }
-
-        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public IStringLocalizer WithCulture(CultureInfo culture)
-        {
-            return new TestStringLocalizer(culture);
-        }
     }
 }

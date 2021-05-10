@@ -119,6 +119,25 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No matching response compression provider found.");
         }
 
+        [Fact]
+        public async Task RequestHead_NoAcceptEncoding_Uncompressed()
+        {
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain, httpMethod: HttpMethods.Head);
+
+            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
+            AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        }
+
+        [Fact]
+        public async Task RequestHead_AcceptGzipDeflate_CompressedGzip()
+        {
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain, httpMethod: HttpMethods.Head);
+
+            // Per RFC 7231, section 4.3.2, the Content-Lenght header can be omitted on HEAD requests.
+            CheckResponseCompressed(response, expectedBodyLength: null, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
+        }
+
         [Theory]
         [InlineData("text/plain")]
         [InlineData("text/PLAIN")]
@@ -150,7 +169,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             return context.Response.WriteAsync(new string('a', 100));
                         });
@@ -308,7 +327,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = contentType;
                             return Task.FromResult(0);
                         });
@@ -390,7 +409,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(50, requestAcceptEncodings: new[] { "gzip" }, responseType: TextPlain, addResponseAction: (r) =>
             {
-                r.Headers[HeaderNames.ContentRange] = "1-2/*";
+                r.Headers.ContentRange = "1-2/*";
             });
 
             CheckResponseNotCompressed(response, expectedBodyLength: 50, sendVaryHeader: false);
@@ -407,7 +426,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var (response, logMessages) = await InvokeMiddleware(50, requestAcceptEncodings: new[] { "gzip" }, responseType: TextPlain, addResponseAction: (r) =>
             {
-                r.Headers[HeaderNames.ContentEncoding] = otherContentEncoding;
+                r.Headers.ContentEncoding = otherContentEncoding;
             });
 
             Assert.True(response.Content.Headers.ContentEncoding.Contains(otherContentEncoding));
@@ -624,7 +643,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(async context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             context.Response.Body.Flush();
                             await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
@@ -670,7 +689,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(async context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             await context.Response.Body.FlushAsync();
                             await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
@@ -721,7 +740,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                                 feature.AllowSynchronousIO = true;
                             }
 
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             context.Response.Body.Write(new byte[10], 0, 10);
                             context.Response.Body.Flush();
@@ -774,7 +793,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(async context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             await context.Response.WriteAsync(new string('a', 10));
                             await context.Response.Body.FlushAsync();
@@ -834,7 +853,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(async context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
@@ -904,7 +923,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(async context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
@@ -961,12 +980,12 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
                             context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = "custom/type";
                             context.Response.ContentLength = 1024;
                             var sendFile = context.Features.Get<IHttpResponseBodyFeature>();
@@ -1011,12 +1030,12 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
                             context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             context.Response.ContentLength = 1024;
                             var sendFile = context.Features.Get<IHttpResponseBodyFeature>();
@@ -1061,12 +1080,12 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
                             context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(async context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             var feature = context.Features.Get<IHttpResponseBodyFeature>();
 
@@ -1111,12 +1130,12 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.Use((context, next) =>
                         {
                             context.Response.Body = new NoSyncWrapperStream(context.Response.Body);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(async context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = TextPlain;
                             await context.Response.WriteAsync(new string('a', 10));
                             await context.Response.Body.FlushAsync();
@@ -1154,7 +1173,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             string[] requestAcceptEncodings,
             string responseType,
             Action<HttpResponse> addResponseAction = null,
-            Action<ResponseCompressionOptions> configure = null)
+            Action<ResponseCompressionOptions> configure = null,
+            string httpMethod = "GET")
         {
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>,
@@ -1176,8 +1196,15 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.UseResponseCompression();
                         app.Run(context =>
                         {
-                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.Headers.ContentMD5 = "MD5";
                             context.Response.ContentType = responseType;
+
+                            if (HttpMethods.IsHead(context.Request.Method))
+                            {
+                                context.Response.ContentLength = uncompressedBodyLength;
+                                return Task.CompletedTask;
+                            }
+
                             addResponseAction?.Invoke(context.Response);
                             return context.Response.WriteAsync(new string('a', uncompressedBodyLength));
                         });
@@ -1189,7 +1216,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var server = host.GetTestServer();
             var client = server.CreateClient();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            var request = new HttpRequestMessage(new HttpMethod(httpMethod), "");
             for (var i = 0; i < requestAcceptEncodings?.Length; i++)
             {
                 request.Headers.AcceptEncoding.Add(System.Net.Http.Headers.StringWithQualityHeaderValue.Parse(requestAcceptEncodings[i]));
@@ -1200,7 +1227,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             return (response, sink.Writes.ToList());
         }
 
-        private void CheckResponseCompressed(HttpResponseMessage response, int expectedBodyLength, string expectedEncoding)
+        private void CheckResponseCompressed(HttpResponseMessage response, long? expectedBodyLength, string expectedEncoding)
         {
             var containsVaryAcceptEncoding = false;
             foreach (var value in response.Headers.GetValues(HeaderNames.Vary))
@@ -1217,7 +1244,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
         }
 
-        private void CheckResponseNotCompressed(HttpResponseMessage response, int expectedBodyLength, bool sendVaryHeader)
+        private void CheckResponseNotCompressed(HttpResponseMessage response, long? expectedBodyLength, bool sendVaryHeader)
         {
             if (sendVaryHeader)
             {

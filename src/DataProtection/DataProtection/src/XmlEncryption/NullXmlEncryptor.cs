@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// Creates a new instance of <see cref="NullXmlEncryptor"/>.
         /// </summary>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public NullXmlEncryptor(IServiceProvider services)
+        public NullXmlEncryptor(IServiceProvider? services)
         {
             _logger = services.GetLogger<NullXmlEncryptor>();
         }

@@ -52,7 +52,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 SuppressMetadataAttributes,
                 SuppressPrimaryMethodBody,
                 SuppressNullabilityEnforcement,
-                OmitMinimizedComponentAttributeValues);
+                OmitMinimizedComponentAttributeValues)
+            {
+                SuppressMetadataSourceChecksumAttributes = SuppressMetadataSourceChecksumAttributes,
+            };
         }
 
         public override void SetDesignTime(bool designTime)

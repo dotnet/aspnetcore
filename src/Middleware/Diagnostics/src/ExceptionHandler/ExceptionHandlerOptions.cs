@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         /// The <see cref="RequestDelegate" /> that will handle the exception. If this is not
         /// explicitly provided, the subsequent middleware pipeline will be used by default.
         /// </summary>
-        public RequestDelegate ExceptionHandler { get; set; }
+        public RequestDelegate? ExceptionHandler { get; set; }
 
         /// <summary>
         /// This value controls whether the <see cref="ExceptionHandlerMiddleware" /> should

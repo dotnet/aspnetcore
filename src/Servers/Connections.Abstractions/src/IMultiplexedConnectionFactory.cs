@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Connections.Experimental
+namespace Microsoft.AspNetCore.Connections
 {
     /// <summary>
     /// A factory abstraction for creating connections to an endpoint.
     /// </summary>
-    internal interface IMultiplexedConnectionFactory
+    public interface IMultiplexedConnectionFactory
     {
         /// <summary>
         /// Creates a new connection to an endpoint.

@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         /// </remarks>
         public ValidationAlgorithm ValidationAlgorithm { get; set; } = ValidationAlgorithm.HMACSHA256;
 
+        /// <inheritdoc />
         public override IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
             var internalConfiguration = (IInternalAlgorithmConfiguration)this;

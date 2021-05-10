@@ -5,22 +5,24 @@ using System;
 using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal abstract class HttpHeaders : IHeaderDictionary
+    internal abstract partial class HttpHeaders : IHeaderDictionary
     {
         protected long _bits = 0;
         protected long? _contentLength;
         protected bool _isReadOnly;
-        protected Dictionary<string, StringValues> MaybeUnknown;
-        protected Dictionary<string, StringValues> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
+        protected Dictionary<string, StringValues>? MaybeUnknown;
+        protected Dictionary<string, StringValues> Unknown => MaybeUnknown ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
 
         public long? ContentLength
         {
@@ -38,6 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _contentLength = value;
             }
         }
+
+        public abstract StringValues HeaderConnection { get; set; }
 
         StringValues IHeaderDictionary.this[string key]
         {
@@ -123,6 +127,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _isReadOnly = false;
             ClearFast();
+        }
+
+        protected static string GetInternedHeaderName(string name)
+        {
+            // Some headers can be very long lived; for example those on a WebSocket connection
+            // so we exchange these for the preallocated strings predefined in HeaderNames
+            if (_internedHeaderNames.TryGetValue(name, out var internedName))
+            {
+                return internedName;
+            }
+
+            return name;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -275,7 +291,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public static ConnectionOptions ParseConnection(StringValues connection)
+        private readonly static string KeepAlive = "keep-alive";
+        private readonly static StringValues ConnectionValueKeepAlive = KeepAlive;
+        private readonly static StringValues ConnectionValueClose = "close";
+        private readonly static StringValues ConnectionValueUpgrade = HeaderNames.Upgrade;
+
+        public static ConnectionOptions ParseConnection(HttpHeaders headers)
         {
             // Keep-alive
             const ulong lowerCaseKeep = 0x0000_0020_0020_0020; // Don't lowercase hyphen
@@ -288,9 +309,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Close
             const ulong closeEnd = 0x0065_0073_006f_006c; // 4 chars "lose"
 
+            var connection = headers.HeaderConnection;
+            var connectionCount = connection.Count;
+            if (connectionCount == 0)
+            {
+                return ConnectionOptions.None;
+            }
+
             var connectionOptions = ConnectionOptions.None;
 
-            var connectionCount = connection.Count;
+            if (connectionCount == 1)
+            {
+                // "keep-alive" is the only value that will be repeated over
+                // many requests on the same connection; on the first request
+                // we will have switched it for the readonly static value;
+                // so we can ptentially short-circuit parsing and use ReferenceEquals.
+                if (ReferenceEquals(connection.ToString(), KeepAlive))
+                {
+                    return ConnectionOptions.KeepAlive;
+                }
+            }
+
             for (var i = 0; i < connectionCount; i++)
             {
                 var value = connection[i].AsSpan();
@@ -417,6 +456,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
                 }
+            }
+
+            // If Connection is a single value, switch it for the interned value
+            // in case the connection is long lived
+            if (connectionOptions == ConnectionOptions.Upgrade)
+            {
+                headers.HeaderConnection = ConnectionValueUpgrade;
+            }
+            else if (connectionOptions == ConnectionOptions.KeepAlive)
+            {
+                headers.HeaderConnection = ConnectionValueKeepAlive;
+            }
+            else if (connectionOptions == ConnectionOptions.Close)
+            {
+                headers.HeaderConnection = ConnectionValueClose;
             }
 
             return connectionOptions;
@@ -572,7 +626,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private static void ThrowInvalidHeaderCharacter(char ch)
         {
-            throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(string.Format("0x{0:X4}", (ushort)ch)));
+            throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(string.Format(CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
         }
 
         private static void ThrowInvalidEmptyHeaderName()

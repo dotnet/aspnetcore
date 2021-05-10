@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -24,30 +27,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         protected override void OnReadStarting()
         {
             // Note ContentLength or MaxRequestBodySize may be null
-            if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+
+            if (_context.RequestHeaders.ContentLength > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
             }
         }
 
-        protected override void OnReadStarted()
+        protected override Task OnReadStartedAsync()
         {
             // Produce 100-continue if no request body data for the stream has arrived yet.
             if (!_context.RequestBodyStarted)
             {
-                TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
+                if (!continueTask.IsCompletedSuccessfully)
+                {
+                    return continueTask.GetAsTask();
+                }
             }
+
+            return Task.CompletedTask;
         }
 
         public override void Reset()
         {
             base.Reset();
             _readResult = default;
-        }
-
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
         }
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
@@ -64,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override bool TryRead(out ReadResult readResult)
         {
-            TryStart();
+            TryStartAsync();
 
             var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
 
@@ -85,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            TryStart();
+            await TryStartAsync();
 
             try
             {
@@ -108,10 +114,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return _readResult;
         }
 
-        public override void Complete(Exception exception)
+        public override void Complete(Exception? exception)
         {
-            _context.RequestBodyPipe.Reader.Complete();
             _context.ReportApplicationError(exception);
+            _context.RequestBodyPipe.Reader.Complete();
+        }
+
+        public override ValueTask CompleteAsync(Exception? exception)
+        {
+            _context.ReportApplicationError(exception);
+            return _context.RequestBodyPipe.Reader.CompleteAsync();
         }
 
         public override void CancelPendingRead()
@@ -119,16 +131,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _context.RequestBodyPipe.Reader.CancelPendingRead();
         }
 
-        protected override Task OnStopAsync()
+        protected override ValueTask OnStopAsync()
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
-                return Task.CompletedTask;
+                return default;
             }
 
             _context.RequestBodyPipe.Reader.Complete();
 
-            return Task.CompletedTask;
+            return default;
         }
     }
 }

@@ -80,7 +80,7 @@ namespace Ignitor
                             break;
 
                         case RenderTreeEditType.RemoveAttribute:
-                            edits[j] = RenderTreeEdit.RemoveAttribute(siblingIndex, removedAttributeName);
+                            edits[j] = RenderTreeEdit.RemoveAttribute(siblingIndex, removedAttributeName!);
                             break;
 
                         case RenderTreeEditType.PrependFrame:

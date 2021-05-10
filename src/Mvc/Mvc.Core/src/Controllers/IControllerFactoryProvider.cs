@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
@@ -22,6 +23,26 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// </summary>
         /// <param name="descriptor">The <see cref="ControllerActionDescriptor"/>.</param>
         /// <returns>The delegate used to release the created controller.</returns>
-        Action<ControllerContext, object> CreateControllerReleaser(ControllerActionDescriptor descriptor);
+        Action<ControllerContext, object>? CreateControllerReleaser(ControllerActionDescriptor descriptor);
+
+        /// <summary>
+        /// Releases a controller asynchronously.
+        /// </summary>
+        /// <param name="descriptor">The <see cref="ControllerActionDescriptor"/>.</param>
+        /// <returns>The delegate used to release the created controller asynchronously.</returns>
+        Func<ControllerContext, object, ValueTask>? CreateAsyncControllerReleaser(ControllerActionDescriptor descriptor)
+        {
+            var releaser = CreateControllerReleaser(descriptor);
+            if (releaser is null)
+            {
+                return static (_, _) => default;
+            }
+
+            return (context, controller) =>
+            {
+                releaser.Invoke(context, controller);
+                return default;
+            };
+        }
     }
 }

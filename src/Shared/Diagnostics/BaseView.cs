@@ -12,6 +12,8 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
 {
     internal abstract class BaseView
@@ -19,22 +21,22 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
         /// <summary>
         /// The request context
         /// </summary>
-        protected HttpContext Context { get; private set; }
+        protected HttpContext Context { get; private set; } = default!;
 
         /// <summary>
         /// The request
         /// </summary>
-        protected HttpRequest Request { get; private set; }
+        protected HttpRequest Request { get; private set; } = default!;
 
         /// <summary>
         /// The response
         /// </summary>
-        protected HttpResponse Response { get; private set; }
+        protected HttpResponse Response { get; private set; } = default!;
 
         /// <summary>
         /// The output stream
         /// </summary>
-        protected StreamWriter Output { get; private set; }
+        protected StreamWriter Output { get; private set; } = default!;
 
         /// <summary>
         /// Html encoder used to encode content.
@@ -88,7 +90,7 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
             WriteLiteralTo(Output, value);
         }
 
-        private List<string> AttributeValues { get; set; }
+        private List<string>? AttributeValues { get; set; }
 
         protected void WriteAttributeValue(string thingy, int startPostion, object value, int endValue, int dealyo, bool yesno)
         {
@@ -97,10 +99,10 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
                 AttributeValues = new List<string>();
             }
 
-            AttributeValues.Add(value.ToString());
+            AttributeValues.Add(value.ToString()!);
         }
 
-        private string AttributeEnding { get; set; }
+        private string? AttributeEnding { get; set; }
 
         protected void BeginWriteAttribute(string name, string beginning, int startPosition, string ending, int endPosition, int thingy)
         {
@@ -112,6 +114,7 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
 
         protected void EndWriteAttribute()
         {
+            Debug.Assert(AttributeValues != null);
             Debug.Assert(!string.IsNullOrEmpty(AttributeEnding));
 
             var attributes = string.Join(" ", AttributeValues);
@@ -167,7 +170,7 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
                 // value might be a bool. If the value is the bool 'true' we want to write the attribute name
                 // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
                 // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
-                string stringValue;
+                string? stringValue;
                 if (value.Value is bool)
                 {
                     if ((bool)value.Value)
@@ -218,7 +221,7 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
         /// Html encode and write
         /// </summary>
         /// <param name="value"></param>
-        protected void Write(string value)
+        protected void Write(string? value)
         {
             WriteTo(Output, value);
         }
@@ -263,9 +266,12 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        protected void WriteTo(TextWriter writer, string value)
+        protected void WriteTo(TextWriter writer, string? value)
         {
-            WriteLiteralTo(writer, HtmlEncoder.Encode(value));
+            if (!string.IsNullOrEmpty(value))
+            {
+                WriteLiteralTo(writer, HtmlEncoder.Encode(value));
+            }
         }
 
         /// <summary>
@@ -275,7 +281,7 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
         /// <param name="value">The <see cref="object"/> to write.</param>
         protected void WriteLiteralTo(TextWriter writer, object value)
         {
-            WriteLiteralTo(writer, Convert.ToString(value, CultureInfo.InvariantCulture));
+            WriteLiteralTo(writer, Convert.ToString(value, CultureInfo.InvariantCulture)!);
         }
 
         /// <summary>

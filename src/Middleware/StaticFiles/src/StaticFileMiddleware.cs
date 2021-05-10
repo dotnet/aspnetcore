@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -103,9 +104,9 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         internal static bool ValidatePath(HttpContext context, PathString matchUrl, out PathString subPath) => Helpers.TryMatchPath(context, matchUrl, forDirectory: false, out subPath);
 
-        internal static bool LookupContentType(IContentTypeProvider contentTypeProvider, StaticFileOptions options, PathString subPath, out string contentType)
+        internal static bool LookupContentType(IContentTypeProvider contentTypeProvider, StaticFileOptions options, PathString subPath, out string? contentType)
         {
-            if (contentTypeProvider.TryGetContentType(subPath.Value, out contentType))
+            if (contentTypeProvider.TryGetContentType(subPath.Value!, out contentType))
             {
                 return true;
             }
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             return false;
         }
 
-        private Task TryServeStaticFile(HttpContext context, string contentType, PathString subPath)
+        private Task TryServeStaticFile(HttpContext context, string? contentType, PathString subPath)
         {
             var fileContext = new StaticFileContext(context, _options, _logger, _fileProvider, contentType, subPath);
 

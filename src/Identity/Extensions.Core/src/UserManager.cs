@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.Identity
             var success = result != PasswordVerificationResult.Failed;
             if (!success)
             {
-                Logger.LogWarning(0, "Invalid password for user.");
+                Logger.LogWarning(LoggerEventIds.InvalidPassword, "Invalid password for user.");
             }
             return success;
         }
@@ -763,7 +763,7 @@ namespace Microsoft.AspNetCore.Identity
             var hash = await passwordStore.GetPasswordHashAsync(user, CancellationToken);
             if (hash != null)
             {
-                Logger.LogWarning(1, "User already has a password.");
+                Logger.LogWarning(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
                 return IdentityResult.Failed(ErrorDescriber.UserAlreadyHasPassword());
             }
             var result = await UpdatePasswordHash(passwordStore, user, password);
@@ -804,7 +804,7 @@ namespace Microsoft.AspNetCore.Identity
                 }
                 return await UpdateUserAsync(user);
             }
-            Logger.LogWarning(2, "Change password failed for user.");
+            Logger.LogWarning(LoggerEventIds.ChangePasswordFailed, "Change password failed for user.");
             return IdentityResult.Failed(ErrorDescriber.PasswordMismatch());
         }
 
@@ -865,7 +865,7 @@ namespace Microsoft.AspNetCore.Identity
             var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken);
             if (stamp == null)
             {
-                Logger.LogWarning(15, "GetSecurityStampAsync for user failed because stamp was null.");
+                Logger.LogWarning(LoggerEventIds.GetSecurityStampFailed, "GetSecurityStampAsync for user failed because stamp was null.");
                 throw new InvalidOperationException(Resources.NullSecurityStamp);
             }
             return stamp;
@@ -1021,7 +1021,7 @@ namespace Microsoft.AspNetCore.Identity
             var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey);
             if (existingUser != null)
             {
-                Logger.LogWarning(4, "AddLogin for user failed because it was already associated with another user.");
+                Logger.LogWarning(LoggerEventIds.AddLoginFailed, "AddLogin for user failed because it was already associated with another user.");
                 return IdentityResult.Failed(ErrorDescriber.LoginAlreadyAssociated());
             }
             await loginStore.AddLoginAsync(user, login, CancellationToken);
@@ -1285,13 +1285,13 @@ namespace Microsoft.AspNetCore.Identity
 
         private IdentityResult UserAlreadyInRoleError(string role)
         {
-            Logger.LogWarning(5, "User is already in role {role}.", role);
+            Logger.LogWarning(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
             return IdentityResult.Failed(ErrorDescriber.UserAlreadyInRole(role));
         }
 
         private IdentityResult UserNotInRoleError(string role)
         {
-            Logger.LogWarning(6, "User is not in role {role}.", role);
+            Logger.LogWarning(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
             return IdentityResult.Failed(ErrorDescriber.UserNotInRole(role));
         }
 
@@ -1627,7 +1627,7 @@ namespace Microsoft.AspNetCore.Identity
 
             if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber))
             {
-                Logger.LogWarning(7, "Change phone number for user failed with invalid token.");
+                Logger.LogWarning(LoggerEventIds.PhoneNumberChanged, "Change phone number for user failed with invalid token.");
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
             await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken);
@@ -1725,7 +1725,7 @@ namespace Microsoft.AspNetCore.Identity
 
             if (!result)
             {
-                Logger.LogWarning(9, "VerifyUserTokenAsync() failed with purpose: {purpose} for user.", purpose);
+                Logger.LogWarning(LoggerEventIds.VerifyUserTokenFailed, "VerifyUserTokenAsync() failed with purpose: {purpose} for user.", purpose);
             }
             return result;
         }
@@ -1827,7 +1827,7 @@ namespace Microsoft.AspNetCore.Identity
             var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user);
             if (!result)
             {
-                Logger.LogWarning(10, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
+                Logger.LogWarning(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
             }
             return result;
         }
@@ -2000,7 +2000,7 @@ namespace Microsoft.AspNetCore.Identity
 
             if (!await store.GetLockoutEnabledAsync(user, CancellationToken))
             {
-                Logger.LogWarning(11, "Lockout for user failed because lockout is not enabled for this user.");
+                Logger.LogWarning(LoggerEventIds.LockoutFailed, "Lockout for user failed because lockout is not enabled for this user.");
                 return IdentityResult.Failed(ErrorDescriber.UserLockoutNotEnabled());
             }
             await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken);
@@ -2029,7 +2029,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return await UpdateUserAsync(user);
             }
-            Logger.LogWarning(12, "User is locked out.");
+            Logger.LogWarning(LoggerEventIds.UserLockedOut, "User is locked out.");
             await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
                 CancellationToken);
             await store.ResetAccessFailedCountAsync(user, CancellationToken);
@@ -2503,7 +2503,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (errors.Count > 0)
             {
-                Logger.LogWarning(13, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+                Logger.LogWarning(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
                 return IdentityResult.Failed(errors.ToArray());
             }
             return IdentityResult.Success;
@@ -2535,7 +2535,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (!isValid)
             {
-                Logger.LogWarning(14, "User password validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+                Logger.LogWarning(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
                 return IdentityResult.Failed(errors.ToArray());
             }
             return IdentityResult.Success;

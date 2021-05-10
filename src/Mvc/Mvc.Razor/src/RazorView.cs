@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly IRazorPageActivator _pageActivator;
         private readonly HtmlEncoder _htmlEncoder;
         private readonly DiagnosticListener _diagnosticListener;
-        private IViewBufferScope _bufferScope;
+        private IViewBufferScope? _bufferScope;
 
         /// <summary>
         /// Initializes a new instance of <see cref="RazorView"/>
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         public IReadOnlyList<IRazorPage> ViewStartPages { get; }
 
-        internal Action<IRazorPage, ViewContext> OnAfterPageActivated { get; set; }
+        internal Action<IRazorPage, ViewContext>? OnAfterPageActivated { get; set; }
 
         /// <inheritdoc />
         public virtual async Task RenderAsync(ViewContext context)
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private async Task RenderViewStartsAsync(ViewContext context)
         {
-            string layout = null;
+            string? layout = null;
             var oldFilePath = context.ExecutingFilePath;
             try
             {
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 // This means we're writing to a 'real' writer, probably to the actual output stream.
                 // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
-                await using (var writer = _bufferScope.CreateWriter(context.Writer))
+                await using (var writer = _bufferScope!.CreateWriter(context.Writer))
                 {
                     await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
                     await writer.FlushAsync();
@@ -305,8 +305,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             if (layoutPageResult.Page == null)
             {
+                Debug.Assert(originalLocations is not null && layoutPageResult.SearchedLocations is not null);
+
                 var locations = string.Empty;
-                if (originalLocations.Any())
+                if (originalLocations!.Any())
                 {
                     locations = Environment.NewLine + string.Join(Environment.NewLine, originalLocations);
                 }

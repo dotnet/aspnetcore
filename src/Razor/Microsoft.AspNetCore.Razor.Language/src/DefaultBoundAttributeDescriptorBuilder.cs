@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
 
                 var name = Name;
-                if (isDirectiveAttribute && name.StartsWith("@"))
+                if (isDirectiveAttribute && name.StartsWith("@", StringComparison.Ordinal))
                 {
                     name = name.Substring(1);
                 }
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 else
                 {
                     var indexerPrefix = IndexerAttributeNamePrefix;
-                    if (isDirectiveAttribute && indexerPrefix.StartsWith("@"))
+                    if (isDirectiveAttribute && indexerPrefix.StartsWith("@", StringComparison.Ordinal))
                     {
                         indexerPrefix = indexerPrefix.Substring(1);
                     }

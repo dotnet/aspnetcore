@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 }
             }
 
-            var fromBodyParameters = action.Parameters.Where(p => p.BindingInfo.BindingSource == BindingSource.Body).ToList();
+            var fromBodyParameters = action.Parameters.Where(p => p.BindingInfo!.BindingSource == BindingSource.Body).ToList();
             if (fromBodyParameters.Count > 1)
             {
                 var parameters = string.Join(Environment.NewLine, fromBodyParameters.Select(p => p.DisplayName));
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     continue;
                 }
 
-                var parsedTemplate = TemplateParser.Parse(selector.AttributeRouteModel.Template);
+                var parsedTemplate = TemplateParser.Parse(selector.AttributeRouteModel.Template!);
                 if (parsedTemplate.GetParameter(parameterName) != null)
                 {
                     return true;

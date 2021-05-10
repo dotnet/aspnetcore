@@ -4,7 +4,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+#nullable enable
 namespace Microsoft.AspNetCore.Components
 {
     internal sealed class ElementReferenceJsonConverter : JsonConverter<ElementReference>
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components
 
         public override ElementReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            string id = null;
+            string? id = null;
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)

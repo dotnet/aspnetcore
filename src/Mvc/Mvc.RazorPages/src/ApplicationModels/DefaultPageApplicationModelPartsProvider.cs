@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             handler = null;
 
             // Handler method names always start with "On"
-            if (!methodName.StartsWith("On") || methodName.Length <= "On".Length)
+            if (!methodName.StartsWith("On", StringComparison.Ordinal) || methodName.Length <= "On".Length)
             {
                 return false;
             }

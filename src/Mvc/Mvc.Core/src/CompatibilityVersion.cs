@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,14 +37,17 @@ namespace Microsoft.AspNetCore.Mvc
     /// settings to match a particular minor release of ASP.NET Core MVC.
     /// </para>
     /// </remarks>
+    // Remove after .NET 6.
+    [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
+        DiagnosticId = "ASP5001",
+        UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
     public enum CompatibilityVersion
     {
         /// <summary>
         /// Sets the default value of settings on <see cref="MvcOptions"/> to match the behavior of
         /// ASP.NET Core MVC 2.0.
         /// </summary>
-        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete. The recommended alternatives are " +
-            nameof(Version_3_0) + " or later.")]
+        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete.")]
         Version_2_0,
 
         /// <summary>
@@ -55,8 +58,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// ASP.NET Core MVC 2.1 introduced a compatibility switch for
         /// <c>MvcJsonOptions.AllowInputFormatterExceptionMessages</c>. This is now a regular property.
         /// </remarks>
-        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete. The recommended alternatives are " +
-            nameof(Version_3_0) + " or later.")]
+        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete.")]
         Version_2_1,
 
         /// <summary>
@@ -72,20 +74,21 @@ namespace Microsoft.AspNetCore.Mvc
         /// </list>
         /// All of the above are now regular properties.
         /// </remarks>
-        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete. The recommended alternatives are " +
-            nameof(Version_3_0) + " or later.")]
+        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete.")]
         Version_2_2,
 
         /// <summary>
         /// Sets the default value of settings on <see cref="MvcOptions"/> and other <c>Options</c> types to match
         /// the behavior of ASP.NET Core MVC 3.0.
         /// </summary>
+        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete.")]
         Version_3_0,
 
         /// <summary>
         /// Sets the default value of settings on <see cref="MvcOptions"/> to match the latest release. Use this
         /// value with care, upgrading minor versions will cause breaking changes when using <see cref="Latest"/>.
         /// </summary>
+        [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete.")]
         Latest = int.MaxValue,
     }
 }

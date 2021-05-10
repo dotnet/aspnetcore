@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public string BuilderVarName { get; private set; } = ComponentsApi.RenderTreeBuilder.BuilderParameter;
 
+        public int Depth => _stack.Count;
+
         public void OpenComponentScope(CodeRenderingContext context, string name, string parameterName)
         {
             var scope = new ScopeEntry(name, ScopeKind.Component);

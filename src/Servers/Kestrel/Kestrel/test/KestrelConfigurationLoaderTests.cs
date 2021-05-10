@@ -328,6 +328,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             });
         }
 
+        [Fact]
+        public void ConfigureEndpoint_ThrowsWhen_The_KeyIsPublic()
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                    new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "https-aspnet.crt")),
+                    new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-aspnet.pub")),
+                }).Build();
+
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                serverOptions
+                    .Configure(config)
+                    .Endpoint("End1", opt =>
+                    {
+                        Assert.True(opt.IsHttps);
+                    }).Load();
+            });
+            Assert.StartsWith("Error getting private key from", ex.Message);
+            Assert.IsAssignableFrom<CryptographicException>(ex.InnerException);
+        }
+
         [Theory]
         [InlineData("https-rsa.pem", "https-rsa.key", null)]
         [InlineData("https-rsa.pem", "https-rsa-protected.key", "aspnetcore")]

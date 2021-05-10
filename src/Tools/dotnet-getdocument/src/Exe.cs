@@ -18,17 +18,19 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             string workingDirectory = null,
             bool interceptOutput = false)
         {
-            var arguments = ArgumentEscaper.EscapeAndConcatenate(args);
-
-            reporter.WriteVerbose(executable + " " + arguments);
+            reporter.WriteVerbose(executable + " " + string.Join(" " , args));
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = executable,
-                Arguments = arguments,
                 UseShellExecute = false,
                 RedirectStandardOutput = interceptOutput
             };
+            foreach (var argument in args)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
             if (workingDirectory != null)
             {
                 startInfo.WorkingDirectory = workingDirectory;

@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            __builder.AddAttribute(2, "ValueChanged", new System.Action<System.String>(__value => person.Name = __value));
+            __builder.AddAttribute(2, "ValueChanged", (System.Action<System.String>)(__value => person.Name = __value));
             __builder.CloseComponent();
         }
         #pragma warning restore 1998

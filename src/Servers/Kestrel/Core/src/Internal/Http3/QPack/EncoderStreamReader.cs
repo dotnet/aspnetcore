@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private readonly byte[] _stringOctets;
         private readonly byte[] _headerNameOctets;
         private readonly byte[] _headerValueOctets;
-        private byte[] _headerName;
+        private byte[]? _headerName;
         private int _headerNameLength;
         private int _headerValueLength;
         private int _stringLength;

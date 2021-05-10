@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
             if (options.StateDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(WsFederationHandler).FullName, name, "v1");
+                    typeof(WsFederationHandler).FullName!, name, "v1");
                 options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
             

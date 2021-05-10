@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         private readonly string _max;
         private readonly string _min;
 
-        public StringLengthAttributeAdapter(StringLengthAttribute attribute, IStringLocalizer stringLocalizer)
+        public StringLengthAttributeAdapter(StringLengthAttribute attribute, IStringLocalizer? stringLocalizer)
             : base(attribute, stringLocalizer)
         {
             _max = Attribute.MaximumLength.ToString(CultureInfo.InvariantCulture);

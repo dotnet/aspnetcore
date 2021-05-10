@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.SignalR.Specification.Tests;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             public string TestProperty { get; set; }
         }
 
-        private RedisHubLifetimeManager<MyHub> CreateLifetimeManager(TestRedisServer server, MessagePackHubProtocolOptions messagePackOptions = null, NewtonsoftJsonHubProtocolOptions jsonOptions = null)
+        private RedisHubLifetimeManager<Hub> CreateLifetimeManager(TestRedisServer server, MessagePackHubProtocolOptions messagePackOptions = null, NewtonsoftJsonHubProtocolOptions jsonOptions = null)
         {
             var options = new RedisOptions() { ConnectionFactory = async (t) => await Task.FromResult(new TestConnectionMultiplexer(server)) };
             messagePackOptions = messagePackOptions ?? new MessagePackHubProtocolOptions();
             jsonOptions = jsonOptions ?? new NewtonsoftJsonHubProtocolOptions();
-            return new RedisHubLifetimeManager<MyHub>(
-                NullLogger<RedisHubLifetimeManager<MyHub>>.Instance,
+            return new RedisHubLifetimeManager<Hub>(
+                NullLogger<RedisHubLifetimeManager<Hub>>.Instance,
                 Options.Create(options),
                 new DefaultHubProtocolResolver(new IHubProtocol[]
                 {
@@ -59,12 +59,12 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
-                await manager1.OnConnectedAsync(connection1).OrTimeout();
-                await manager2.OnConnectedAsync(connection2).OrTimeout();
+                await manager1.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager2.OnConnectedAsync(connection2).DefaultTimeout();
 
                 await manager1.SendAllAsync("Hello", new object[] { new TestObject { TestProperty = "Foo" } });
 
-                var message = Assert.IsType<InvocationMessage>(await client2.ReadAsync().OrTimeout());
+                var message = Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
                 Assert.Equal("Hello", message.Target);
                 Assert.Collection(
                     message.Arguments,

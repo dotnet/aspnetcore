@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
     internal class ManifestSinkDirectory : ManifestDirectory
     {
         private ManifestSinkDirectory()
-            : base(name: null, children: Array.Empty<ManifestEntry>())
+            : base(name: string.Empty, children: Array.Empty<ManifestEntry>())
         {
             SetParent(this);
             Children = new[] { this };

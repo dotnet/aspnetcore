@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly ResponseTrailersFeature _responseTrailersFeature = new ResponseTrailersFeature();
         private bool _pipelineFinished;
         private bool _returningResponse;
-        private object _testContext;
+        private object? _testContext;
         private readonly Pipe _requestPipe;
 
-        private Action<HttpContext> _responseReadCompleteCallback;
-        private Task _sendRequestStreamTask;
+        private Action<HttpContext>? _responseReadCompleteCallback;
+        private Task? _sendRequestStreamTask;
 
         internal HttpContextBuilder(ApplicationWrapper application, bool allowSynchronousIO, bool preserveExecutionContext)
         {
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     newFeatures[pair.Key] = pair.Value;
                 }
-                var serverResponseFeature = _httpContext.Features.Get<IHttpResponseFeature>();
+                var serverResponseFeature = _httpContext.Features.Get<IHttpResponseFeature>()!;
                 // The client gets a deep copy of this so they can interact with the body stream independently of the server.
                 var clientResponseFeature = new HttpResponseFeature()
                 {

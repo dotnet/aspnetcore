@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _responseStream.Close();
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
         }
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return _requestStream.EndRead(asyncResult);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);
         }

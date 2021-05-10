@@ -2,21 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
     public class KestrelWebSocketHelpers
     {
-        public static IDisposable CreateServer(ILoggerFactory loggerFactory, out int port, Func<HttpContext, Task> app, Action<WebSocketOptions> configure = null)
+        public static IAsyncDisposable CreateServer(ILoggerFactory loggerFactory, out int port, Func<HttpContext, Task> app, Action<WebSocketOptions> configure = null)
         {
+            Exception exceptionFromApp = null;
             configure = configure ?? (o => { });
             Action<IApplicationBuilder> startup = builder =>
             {
@@ -26,10 +29,12 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     {
                         // Kestrel does not return proper error responses:
                         // https://github.com/aspnet/KestrelHttpServer/issues/43
-                        await next();
+                        await next(ct);
                     }
                     catch (Exception ex)
                     {
+                        // capture the exception from the app, we'll throw this at the end of the test when the server is disposed
+                        exceptionFromApp = ex;
                         if (ct.Response.HasStarted)
                         {
                             throw;
@@ -47,7 +52,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             var configBuilder = new ConfigurationBuilder();
             configBuilder.AddInMemoryCollection();
             var config = configBuilder.Build();
-            config["server.urls"] = $"http://127.0.0.1:0";
 
             var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -59,14 +63,43 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                         s.AddSingleton(loggerFactory);
                     })
                     .UseConfiguration(config)
-                    .UseKestrel()
+                    .UseKestrel(options =>
+                    {
+                        options.Listen(IPAddress.Loopback, 0);
+                    })
                     .Configure(startup);
+                }).ConfigureHostOptions(o =>
+                {
+                    o.ShutdownTimeout = TimeSpan.FromSeconds(30);
                 }).Build();
 
             host.Start();
             port = host.GetPort();
 
-            return host;
+            return new Disposable(async () =>
+            {
+                await host.StopAsync();
+                host.Dispose();
+                if (exceptionFromApp is not null)
+                {
+                    ExceptionDispatchInfo.Throw(exceptionFromApp);
+                }
+            });
+        }
+
+        private class Disposable : IAsyncDisposable
+        {
+            private readonly Func<ValueTask> _dispose;
+
+            public Disposable(Func<ValueTask> dispose)
+            {
+                _dispose = dispose;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                return _dispose();
+            }
         }
     }
 }

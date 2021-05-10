@@ -20,8 +20,7 @@ namespace GenericHostWebSite
                 {
                     // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
                     options.EnableEndpointRouting = false;
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                });
 
             services.AddLogging();
             services.AddHttpContextAccessor();

@@ -3,30 +3,33 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "This type loads resx files. We don't expect it's dependencies to be trimmed in the ordinary case.")]
     internal class WebAssemblyCultureProvider
     {
         internal const string GetSatelliteAssemblies = "window.Blazor._internal.getSatelliteAssemblies";
         internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
 
-        private readonly WebAssemblyJSRuntimeInvoker _invoker;
+        private readonly IJSUnmarshalledRuntime _invoker;
 
         // For unit testing.
-        internal WebAssemblyCultureProvider(WebAssemblyJSRuntimeInvoker invoker, CultureInfo initialCulture, CultureInfo initialUICulture)
+        internal WebAssemblyCultureProvider(IJSUnmarshalledRuntime invoker, CultureInfo initialCulture, CultureInfo initialUICulture)
         {
             _invoker = invoker;
             InitialCulture = initialCulture;
             InitialUICulture = initialUICulture;
         }
 
-        public static WebAssemblyCultureProvider Instance { get; private set; }
+        public static WebAssemblyCultureProvider? Instance { get; private set; }
 
         public CultureInfo InitialCulture { get; }
 
@@ -35,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         internal static void Initialize()
         {
             Instance = new WebAssemblyCultureProvider(
-                WebAssemblyJSRuntimeInvoker.Instance,
+                DefaultWebAssemblyJSRuntime.Instance,
                 initialCulture: CultureInfo.CurrentCulture,
                 initialUICulture: CultureInfo.CurrentUICulture);
         }
@@ -47,12 +50,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // incomplete icu data for their culture. We would like to flag this as an error and notify the author to
             // use the combined icu data file instead.
             //
-            // The Initialize method is invoked as one of the first steps bootstrapping the app prior to any user code running.
+            // The Initialize method is invoked as one of the first steps bootstrapping the app within WebAssemblyHostBuilder.CreateDefault.
             // It allows us to capture the initial .NET culture that is configured based on the browser language.
             // The current method is invoked as part of WebAssemblyHost.RunAsync i.e. after user code in Program.MainAsync has run
             // thus allows us to detect if the culture was changed by user code.
             if (Environment.GetEnvironmentVariable("__BLAZOR_SHARDED_ICU") == "1" &&
-                ((CultureInfo.CurrentCulture != InitialCulture) || (CultureInfo.CurrentUICulture != InitialUICulture)))
+                ((!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal) ||
+                  !CultureInfo.CurrentUICulture.Name.Equals(InitialUICulture.Name, StringComparison.Ordinal))))
             {
                 throw new InvalidOperationException("Blazor detected a change in the application's culture that is not supported with the current project configuration. " +
                     "To change culture dynamically during startup, set <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData> in the application's project file.");
@@ -72,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // assemblies. We effectively want to resovle a Task<byte[][]> but there is no way to express this
             // using interop. We'll instead do this in two parts:
             // getSatelliteAssemblies resolves when all satellite assemblies to be loaded in .NET are fetched and available in memory.
-            var count = (int)await _invoker.InvokeUnmarshalled<string[], object, object, Task<object>>(
+            var count = (int)await _invoker.InvokeUnmarshalled<string[], object?, object?, Task<object>>(
                 GetSatelliteAssemblies,
                 culturesToLoad.ToArray(),
                 null,
@@ -84,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             }
 
             // readSatelliteAssemblies resolves the assembly bytes
-            var assemblies = _invoker.InvokeUnmarshalled<object, object, object, object[]>(
+            var assemblies = _invoker.InvokeUnmarshalled<object?, object?, object?, object[]>(
                 ReadSatelliteAssemblies,
                 null,
                 null,

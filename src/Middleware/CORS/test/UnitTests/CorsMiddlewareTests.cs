@@ -584,7 +584,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                         {
                             try
                             {
-                                await next();
+                                await next(context);
                             }
                             catch (Exception)
                             {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
             // Arrange
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
 
-            context.HttpContext.Request.Headers[HeaderNames.Location] = "foo";
+            context.HttpContext.Request.Headers.Location = "foo";
             var segment = new HeaderSegment(HeaderNames.Location);
 
             // Act

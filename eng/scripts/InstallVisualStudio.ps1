@@ -23,7 +23,7 @@
     Run the installer without UI and wait for installation to complete.
 .LINK
     https://visualstudio.com
-    https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
+    https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 .EXAMPLE
     To install VS 2019 Enterprise, run this command in PowerShell:
 
@@ -81,7 +81,7 @@ if (-not $InstallPath) {
     $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (Test-Path $vsWhere)
     {
-        $installations = & $vsWhere -version '[16,17)' -format json -sort -prerelease -products $productId | ConvertFrom-Json
+        $installations = & $vsWhere -version '[16,17)' -format json -prerelease -products $productId | ConvertFrom-Json |Sort-Object -Descending -Property installationVersion, installDate
         foreach ($installation in $installations) {
             Write-Host "Found '$($installation.installationName)' in '$($installation.installationPath)', channel = '$($installation.channelId)'"
             if ($installation.channelId -eq $channelId) {

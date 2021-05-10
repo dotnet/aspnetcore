@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
         private readonly List<byte[]> _data = new List<byte[]>();
 
-        public ParseResult ParseMessage(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[] message)
+        public ParseResult ParseMessage(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[]? message)
         {
             consumed = buffer.Start;
             examined = buffer.End;

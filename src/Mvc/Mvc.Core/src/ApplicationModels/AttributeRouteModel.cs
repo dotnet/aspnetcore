@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets the <see cref="IRouteTemplateProvider"/>.
         /// </summary>
-        public IRouteTemplateProvider Attribute { get; }
+        public IRouteTemplateProvider? Attribute { get; }
 
         /// <summary>
         /// Gets or sets the attribute route template.
         /// </summary>
-        public string Template { get; set; }
+        public string? Template { get; set; }
 
         /// <summary>
         /// Gets or sets the route order.
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the route name.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value that determines if this model participates in link generation.
@@ -105,9 +105,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <returns>A new instance of <see cref="AttributeRouteModel"/> that represents the
         /// combination of the two <see cref="AttributeRouteModel"/> instances or <c>null</c> if both
         /// parameters are <c>null</c>.</returns>
-        public static AttributeRouteModel CombineAttributeRouteModel(
-            AttributeRouteModel left,
-            AttributeRouteModel right)
+        public static AttributeRouteModel? CombineAttributeRouteModel(
+            AttributeRouteModel? left,
+            AttributeRouteModel? right)
         {
             right = right ?? _default;
 
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <param name="prefix">The prefix.</param>
         /// <param name="template">The route template.</param>
         /// <returns>The combined pattern.</returns>
-        public static string CombineTemplates(string prefix, string template)
+        public static string? CombineTemplates(string? prefix, string? template)
         {
             var result = CombineCore(prefix, template);
             return CleanTemplate(result);
@@ -156,14 +156,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <remarks>
         /// Route templates starting with "~/" or "/" can be used to override the prefix.
         /// </remarks>
-        public static bool IsOverridePattern(string template)
+        public static bool IsOverridePattern(string? template)
         {
             return template != null &&
                 (template.StartsWith("~/", StringComparison.Ordinal) ||
                 template.StartsWith("/", StringComparison.Ordinal));
         }
 
-        private static string ChooseName(
+        private static string? ChooseName(
             AttributeRouteModel left,
             AttributeRouteModel right)
         {
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private static string CombineCore(string left, string right)
+        private static string? CombineCore(string? left, string? right)
         {
             if (left == null && right == null)
             {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 return right;
             }
 
-            if (left.EndsWith("/", StringComparison.Ordinal))
+            if (left!.EndsWith("/", StringComparison.Ordinal))
             {
                 return left + right;
             }
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return left + "/" + right;
         }
 
-        private static bool IsEmptyLeftSegment(string template)
+        private static bool IsEmptyLeftSegment(string? template)
         {
             return template == null ||
                 template.Equals(string.Empty, StringComparison.Ordinal) ||
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 template.Equals("/", StringComparison.Ordinal);
         }
 
-        private static string CleanTemplate(string result)
+        private static string? CleanTemplate(string? result)
         {
             if (result == null)
             {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <param name="template">The template.</param>
         /// <param name="values">The token values to use.</param>
         /// <returns>A new string with the replaced values.</returns>
-        public static string ReplaceTokens(string template, IDictionary<string, string> values)
+        public static string ReplaceTokens(string template, IDictionary<string, string?> values)
         {
             return ReplaceTokens(template, values, routeTokenTransformer: null);
         }
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <param name="values">The token values to use.</param>
         /// <param name="routeTokenTransformer">The route token transformer.</param>
         /// <returns>A new string with the replaced values.</returns>
-        public static string ReplaceTokens(string template, IDictionary<string, string> values, IOutboundParameterTransformer routeTokenTransformer)
+        public static string ReplaceTokens(string template, IDictionary<string, string?> values, IOutboundParameterTransformer? routeTokenTransformer)
         {
             var builder = new StringBuilder();
             var state = TemplateParserState.Plaintext;
@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                         {
                             // This is the end of a replacement token.
                             var token = template
-                                .Substring(tokenStart.Value, i - tokenStart.Value - 1)
+                                .Substring(tokenStart!.Value, i - tokenStart.Value - 1)
                                 .Replace("[[", "[")
                                 .Replace("]]", "]");
 

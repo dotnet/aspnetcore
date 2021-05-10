@@ -33,8 +33,8 @@ reporoot="$(dirname "$(dirname "$scriptroot")")"
 #    mv "$reporoot/global.bak.json" "$reporoot/global.json"
 #}" EXIT
 
-dotnet_runtime_source_feed=''
-dotnet_runtime_source_feed_key=''
+runtime_source_feed=''
+runtime_source_feed_key=''
 other_args=()
 
 #
@@ -46,8 +46,8 @@ __usage() {
 Arguments:
     <Arguments>...                    Arguments passed to the command. Variable number of arguments allowed.
 
-    --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
-    --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
+    --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
+    --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
 
 Description:
    This script is meant for testing source build by imitating some of the input parameters and conditions.
@@ -73,15 +73,15 @@ while [[ $# -gt 0 ]]; do
             __usage --no-exit
             exit 0
             ;;
-        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed)
+        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed|-runtime_source_feed|-runtimesourcefeed)
             shift
-            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed" && __usage
-            dotnet_runtime_source_feed="${1:-}"
+            [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed" && __usage
+            runtime_source_feed="${1:-}"
             ;;
-        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey)
+        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey|-runtime_source_feed_key|-runtimesourcefeedkey)
             shift
-            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed-key" && __usage
-            dotnet_runtime_source_feed_key="${1:-}"
+            [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
+            runtime_source_feed_key="${1:-}"
             ;;
         *)
             other_args[${#other_args[*]}]="$1"
@@ -92,9 +92,14 @@ done
 
 # Set up additional runtime args
 runtime_feed_args=()
-if [ ! -z "$dotnet_runtime_source_feed$dotnet_runtime_source_feed_key" ]; then
-    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$dotnet_runtime_source_feed"
-    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$dotnet_runtime_source_feed_key"
+if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
+    runtime_feed_args[${#runtime_feed_args[*]}]="-runtimesourcefeed"
+    runtime_feed_args[${#runtime_feed_args[*]}]="$runtime_source_feed"
+    runtime_feed_args[${#runtime_feed_args[*]}]="-runtimesourcefeedKey"
+    runtime_feed_args[${#runtime_feed_args[*]}]="$runtime_source_feed_key"
+
+    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$runtime_source_feed"
+    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
     runtime_feed_args[${#runtime_feed_args[*]}]=$runtimeFeedArg
     runtime_feed_args[${#runtime_feed_args[*]}]=$runtimeFeedKeyArg
 fi
@@ -105,4 +110,4 @@ fi
 export DotNetBuildFromSource='true'
 
 # Build projects
-"$reporoot/eng/common/build.sh" --restore --build --pack ${other_args[@]+"${other_args[@]}"} ${runtime_feed_args[@]+"${runtime_feed_args[@]}"}
+"$reporoot/eng/common/build.sh" --restore --build --ci --pack ${other_args[@]+"${other_args[@]}"} ${runtime_feed_args[@]+"${runtime_feed_args[@]}"}

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
@@ -15,12 +14,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         // them even though we might still receive incoming events from JS.
 
         private static int _nextId;
-        private static Dictionary<int, WebAssemblyRenderer> _renderers;
+        private static Dictionary<int, WebAssemblyRenderer>? _renderers;
 
         static RendererRegistry()
         {
-            bool _isWebAssembly = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
-            if (_isWebAssembly)
+            if (OperatingSystem.IsBrowser())
             {
                 _renderers = new Dictionary<int, WebAssemblyRenderer>();
             }
@@ -28,9 +26,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         internal static WebAssemblyRenderer Find(int rendererId)
         {
-            return _renderers != null && _renderers.ContainsKey(rendererId)
-                ? _renderers?[rendererId]
-                : throw new ArgumentException($"There is no renderer with ID {rendererId}.");
+            if (_renderers != null && _renderers.TryGetValue(rendererId, out var renderer))
+            {
+                return renderer;
+            }
+
+            throw new ArgumentException($"There is no renderer with ID {rendererId}.");
         }
 
         public static int Add(WebAssemblyRenderer renderer)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
     {
         public IList<IRule> Parse(TextReader input)
         {
-            string line;
+            string? line;
             var rules = new List<IRule>();
             var builder = new RuleBuilder();
             var lineNum = 0;
@@ -30,11 +30,11 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 {
                     continue;
                 }
-                if (line.StartsWith("#"))
+                if (line.StartsWith('#'))
                 {
                     continue;
                 }
-                var tokens = tokenizer.Tokenize(line);
+                var tokens = tokenizer.Tokenize(line)!;
                 if (tokens.Count > 4)
                 {
                     // This means the line didn't have an appropriate format, throw format exception

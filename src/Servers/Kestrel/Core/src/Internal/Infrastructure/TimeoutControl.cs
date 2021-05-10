@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _timeoutTimestamp = long.MaxValue;
 
         private readonly object _readTimingLock = new object();
-        private MinDataRate _minReadRate;
+        private MinDataRate? _minReadRate;
         private bool _readTimingEnabled;
         private bool _readTimingPauseRequested;
         private long _readTimingElapsedTicks;
         private long _readTimingBytesRead;
-        private InputFlowControl _connectionInputFlowControl;
+        private InputFlowControl? _connectionInputFlowControl;
         // The following are always 0 or 1 for HTTP/1.x
         private int _concurrentIncompleteRequestBodies;
         private int _concurrentAwaitingReads;
@@ -81,9 +81,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return;
             }
 
+            // HTTP/2
             // Don't enforce the rate timeout if there is back pressure due to HTTP/2 connection-level input
             // flow control. We don't consider stream-level flow control, because we wouldn't be timing a read
             // for any stream that didn't have a completely empty stream-level flow control window.
+            //
+            // HTTP/3
+            // This isn't (currently) checked. Reasons:
+            // - We're not sure how often people in the real-world run into this. If it
+            //   becomes a problem then we'll need to revisit.
+            // - There isn't a way to get this information easily and efficently from msquic.
+            // - With QUIC, bytes can be received out of order. The connection window could
+            //   be filled up out of order so that availablility is low but there is still
+            //   no data available to use. Would need a smarter way to handle this situation.
             if (_connectionInputFlowControl?.IsAvailabilityLow == true)
             {
                 return;
@@ -101,6 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Assume overly long tick intervals are the result of server resource starvation.
                 // Don't count extra time between ticks against the rate limit.
                 _readTimingElapsedTicks += Math.Min(timestamp - _lastTimestamp, Heartbeat.Interval.Ticks);
+
+                Debug.Assert(_minReadRate != null);
 
                 if (_minReadRate.BytesPerSecond > 0 && _readTimingElapsedTicks > _minReadRate.GracePeriod.Ticks)
                 {

@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// </summary>
     public static partial class HubConnectionExtensions
     {
-        private static IDisposable On(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Action<object[]> handler)
+        private static IDisposable On(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Action<object?[]> handler)
         {
             return hubConnection.On(methodName, parameterTypes, (parameters, state) =>
             {
-                var currentHandler = (Action<object[]>)state;
+                var currentHandler = (Action<object?[]>)state;
                 currentHandler(parameters);
                 return Task.CompletedTask;
             }, handler);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1) },
-                args => handler((T1)args[0]));
+                args => handler((T1)args[0]!));
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2) },
-                args => handler((T1)args[0], (T2)args[1]));
+                args => handler((T1)args[0]!, (T2)args[1]!));
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!));
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!));
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!));
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4], (T6)args[5]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!, (T6)args[5]!));
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4], (T6)args[5], (T7)args[6]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!, (T6)args[5]!, (T7)args[6]!));
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4], (T6)args[5], (T7)args[6], (T8)args[7]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!, (T6)args[5]!, (T7)args[6]!, (T8)args[7]!));
         }
 
         /// <summary>
@@ -234,11 +234,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <param name="parameterTypes">The parameters types expected by the hub method.</param>
         /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
         /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
-        public static IDisposable On(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Func<object[], Task> handler)
+        public static IDisposable On(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Func<object?[], Task> handler)
         {
             return hubConnection.On(methodName, parameterTypes, (parameters, state) =>
             {
-                var currentHandler = (Func<object[], Task>)state;
+                var currentHandler = (Func<object?[], Task>)state;
                 return currentHandler(parameters);
             }, handler);
         }
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1) },
-                args => handler((T1)args[0]));
+                args => handler((T1)args[0]!));
         }
 
         /// <summary>
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2) },
-                args => handler((T1)args[0], (T2)args[1]));
+                args => handler((T1)args[0]!, (T2)args[1]!));
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!));
         }
 
         /// <summary>
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!));
         }
 
         /// <summary>
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!));
         }
 
         /// <summary>
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4], (T6)args[5]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!, (T6)args[5]!));
         }
 
         /// <summary>
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4], (T6)args[5], (T7)args[6]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!, (T6)args[5]!, (T7)args[6]!));
         }
 
         /// <summary>
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8) },
-                args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4], (T6)args[5], (T7)args[6], (T8)args[7]));
+                args => handler((T1)args[0]!, (T2)args[1]!, (T3)args[2]!, (T4)args[3]!, (T5)args[4]!, (T6)args[5]!, (T7)args[6]!, (T8)args[7]!));
         }
     }
 }

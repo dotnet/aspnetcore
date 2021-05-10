@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 return false;
             }
 
-            return symbol.Name.EndsWith(ViewComponentTypes.ViewComponentSuffix) ||
+            return symbol.Name.EndsWith(ViewComponentTypes.ViewComponentSuffix, StringComparison.Ordinal) ||
                 AttributeIsDefined(symbol, _viewComponentAttribute);
         }
 
@@ -75,11 +75,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 return false;
             }
 
-            var attribute = type.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, queryAttribute)).FirstOrDefault();
-
-            if (attribute != null)
+            foreach (var attribute in type.GetAttributes())
             {
-                return true;
+                if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, queryAttribute))
+                {
+                    return true;
+                }
             }
 
             return AttributeIsDefined(type.BaseType, queryAttribute);

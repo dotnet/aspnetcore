@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -73,6 +74,27 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             {
                 disposable.Dispose();
             }
+        }
+
+        public ValueTask ReleaseAsync(ControllerContext context, object controller)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (controller == null)
+            {
+                throw new ArgumentNullException(nameof(controller));
+            }
+
+            if (controller is IAsyncDisposable asyncDisposable)
+            {
+                return asyncDisposable.DisposeAsync();
+            }
+
+            Release(context, controller);
+            return default;
         }
     }
 }

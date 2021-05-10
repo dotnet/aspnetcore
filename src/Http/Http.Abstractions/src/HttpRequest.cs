@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or sets the Content-Type header.
         /// </summary>
         /// <returns>The Content-Type header.</returns>
-        public abstract string ContentType { get; set; }
+        public abstract string? ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the request body <see cref="Stream"/>.

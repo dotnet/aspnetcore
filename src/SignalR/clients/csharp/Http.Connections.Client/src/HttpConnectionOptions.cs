@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {
@@ -20,8 +20,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
     public class HttpConnectionOptions
     {
         private IDictionary<string, string> _headers;
-        private X509CertificateCollection _clientCertificates;
+        private X509CertificateCollection? _clientCertificates;
         private CookieContainer _cookies;
+        private ICredentials? _credentials;
+        private IWebProxy? _proxy;
+        private bool? _useDefaultCredentials;
+        private Action<ClientWebSocketOptions>? _webSocketConfiguration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionOptions"/> class.
@@ -31,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _headers = new Dictionary<string, string>();
 
             // System.Security.Cryptography isn't supported on WASM currently
-            if (!Utils.IsRunningInBrowser())
+            if (!OperatingSystem.IsBrowser())
             {
                 _clientCertificates = new X509CertificateCollection();
             }
@@ -45,7 +49,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// Gets or sets a delegate for wrapping or replacing the <see cref="HttpMessageHandlerFactory"/>
         /// that will make HTTP requests.
         /// </summary>
-        public Func<HttpMessageHandler, HttpMessageHandler> HttpMessageHandlerFactory { get; set; }
+        public Func<HttpMessageHandler, HttpMessageHandler>? HttpMessageHandlerFactory { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of headers that will be sent with HTTP requests.
@@ -59,25 +63,43 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <summary>
         /// Gets or sets a collection of client certificates that will be sent with HTTP requests.
         /// </summary>
-        public X509CertificateCollection ClientCertificates
+        [UnsupportedOSPlatform("browser")]
+        public X509CertificateCollection? ClientCertificates
         {
-            get => _clientCertificates;
-            set => _clientCertificates = value ?? throw new ArgumentNullException(nameof(value));
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _clientCertificates;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _clientCertificates = value ?? throw new ArgumentNullException(nameof(value));
+            }
         }
 
         /// <summary>
         /// Gets or sets a collection of cookies that will be sent with HTTP requests.
         /// </summary>
+        [UnsupportedOSPlatform("browser")]
         public CookieContainer Cookies
         {
-            get => _cookies;
-            set => _cookies = value ?? throw new ArgumentNullException(nameof(value));
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _cookies;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _cookies = value ?? throw new ArgumentNullException(nameof(value));
+            }
         }
 
         /// <summary>
         /// Gets or sets the URL used to send HTTP requests.
         /// </summary>
-        public Uri Url { get; set; }
+        public Uri? Url { get; set; }
 
         /// <summary>
         /// Gets or sets a bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use to send HTTP requests.
@@ -95,7 +117,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <summary>
         /// Gets or sets an access token provider that will be called to return a token for each HTTP request.
         /// </summary>
-        public Func<Task<string>> AccessTokenProvider { get; set; }
+        public Func<Task<string?>>? AccessTokenProvider { get; set; }
 
         /// <summary>
         /// Gets or sets a close timeout.
@@ -105,17 +127,56 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <summary>
         /// Gets or sets the credentials used when making HTTP requests.
         /// </summary>
-        public ICredentials Credentials { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public ICredentials? Credentials
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _credentials;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _credentials = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the proxy used when making HTTP requests.
         /// </summary>
-        public IWebProxy Proxy { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public IWebProxy? Proxy
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _proxy;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _proxy = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether default credentials are used when making HTTP requests.
         /// </summary>
-        public bool? UseDefaultCredentials { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public bool? UseDefaultCredentials
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _useDefaultCredentials;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _useDefaultCredentials = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the default <see cref="TransferFormat" /> to use if <see cref="HttpConnection.StartAsync(CancellationToken)"/>
@@ -131,6 +192,27 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenProvider"/>
         /// has been applied.
         /// </remarks>
-        public Action<ClientWebSocketOptions> WebSocketConfiguration { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public Action<ClientWebSocketOptions>? WebSocketConfiguration
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _webSocketConfiguration;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _webSocketConfiguration = value;
+            }
+        }
+
+        private static void ThrowIfUnsupportedPlatform()
+        {
+            if (OperatingSystem.IsBrowser())
+            {
+                throw new PlatformNotSupportedException();
+            }
+        }
     }
 }

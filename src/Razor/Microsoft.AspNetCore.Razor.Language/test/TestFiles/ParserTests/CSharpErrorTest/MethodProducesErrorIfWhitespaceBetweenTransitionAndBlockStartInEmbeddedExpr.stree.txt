@@ -19,7 +19,7 @@ RazorDocument - [0..17)::17 - [@{LF    @   {}LF}]
                                     Transition;[@];
                                 CSharpImplicitExpressionBody - [9..9)::0
                                     CSharpCodeBlock - [9..9)::0
-                                        CSharpExpressionLiteral - [9..9)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14
+                                        CSharpExpressionLiteral - [9..9)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K15
                                             Marker;[];
                         CSharpStatementLiteral - [9..16)::7 - [   {}LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Whitespace;[   ];
