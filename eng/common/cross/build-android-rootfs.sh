@@ -106,7 +106,6 @@ __AndroidPackages+=" libandroid-glob"
 __AndroidPackages+=" liblzma"
 __AndroidPackages+=" krb5"
 __AndroidPackages+=" openssl"
-__AndroidPackages+=" openldap"
 
 for path in $(wget -qO- http://termux.net/dists/stable/main/binary-$__AndroidArch/Packages |\
     grep -A15 "Package: \(${__AndroidPackages// /\\|}\)" | grep -v "static\|tool" | grep Filename); do

@@ -8,7 +8,7 @@ param(
 )
 
 # Maximum number of jobs to run in parallel
-$MaxParallelJobs = 6
+$MaxParallelJobs = 16
 
 # Max number of retries
 $MaxRetry = 5
@@ -114,6 +114,7 @@ $CountMissingSymbols = {
       $totalRetries = 0
 
       while ($totalRetries -lt $using:MaxRetry) {
+
         # Save the output and get diagnostic output
         $output = & $dotnetSymbolExe --symbols --modules $WindowsPdbVerificationParam $TargetServerParam $FullPath -o $SymbolsPath --diagnostics | Out-String
 
@@ -144,8 +145,16 @@ $CountMissingSymbols = {
       return $null
     }
 
-    $SymbolsOnMSDL = & $FirstMatchingSymbolDescriptionOrDefault $FileName '--microsoft-symbol-server' $SymbolsPath $WindowsPdbVerificationParam
-    $SymbolsOnSymWeb = & $FirstMatchingSymbolDescriptionOrDefault $FileName '--internal-server' $SymbolsPath $WindowsPdbVerificationParam
+    $SymbolsOnMSDL = & $FirstMatchingSymbolDescriptionOrDefault `
+        -FullPath $FileName `
+        -TargetServerParam '--microsoft-symbol-server' `
+        -SymbolsPath $SymbolsPath `
+        -WindowsPdbVerificationParam $WindowsPdbVerificationParam
+    $SymbolsOnSymWeb = & $FirstMatchingSymbolDescriptionOrDefault `
+        -FullPath $FileName `
+        -TargetServerParam '--internal-server' `
+        -SymbolsPath $SymbolsPath `
+        -WindowsPdbVerificationParam $WindowsPdbVerificationParam
 
     Write-Host -NoNewLine "`t Checking file " $FileName "... "
   
