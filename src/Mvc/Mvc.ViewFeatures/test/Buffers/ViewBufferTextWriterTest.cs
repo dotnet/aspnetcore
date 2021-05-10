@@ -125,6 +125,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         }
 
         [Fact]
+        public void Write_WritesEmptyCharBuffer()
+        {
+            // Arrange
+            var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 4);
+            var writer = new ViewBufferTextWriter(buffer, Encoding.UTF8);
+            var charBuffer = new char[0];
+
+            // Act
+            writer.Write(charBuffer, 0, 0);
+
+            // Assert
+            var actual = GetValues(buffer);
+            Assert.Equal<object>(new[] { string.Empty }, actual);
+        }
+
+        [Fact]
         public async Task Write_WritesStringBuffer()
         {
             // Arrange
