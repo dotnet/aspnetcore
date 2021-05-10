@@ -161,14 +161,15 @@ namespace Microsoft.AspNetCore.WebSockets
                 if (ext.Count != 0)
                 {
                     var decline = false;
-                    foreach (var extension in ext)
+                    // loop over each extension offer, extensions can have multiple offers we can accept any
+                    foreach (var extension in _context.Request.Headers.GetCommaSeparatedValues("Sec-WebSocket-Extensions"))
                     {
                         if (extension.TrimStart().StartsWith(ClientWebSocketDeflateConstants.Extension, StringComparison.Ordinal))
                         {
                             deflateOptions = new();
                             if (ParseDeflateOptions(extension, deflateOptions, out var hasClientMaxWindowBits))
                             {
-                                Resp(_context.Response.Headers, deflateOptions, hasClientMaxWindowBits);
+                                WriteDeflatNegotiateResponseHeader(_context.Response.Headers, deflateOptions, hasClientMaxWindowBits);
                                 decline = false;
                                 break;
                             }
@@ -180,7 +181,8 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                     if (decline)
                     {
-                        throw new InvalidOperationException("'permessage-deflate' extension not accepted.");
+                        // TODO: Do we care?
+                        throw new WebSocketException(WebSocketError.HeaderError, "'permessage-deflate' extension not accepted.");
                     }
                 }
 
@@ -312,7 +314,8 @@ namespace Microsoft.AspNetCore.WebSockets
                             {
                                 return false;
                             }
-                            options.ClientMaxWindowBits = clientMaxWindowBits;
+                            // if client didn't send a value for ClientMaxWindowBits use the value the server set
+                            options.ClientMaxWindowBits = clientMaxWindowBits ?? options.ClientMaxWindowBits;
                         }
                         else if (value.StartsWith(ClientWebSocketDeflateConstants.ServerMaxWindowBits))
                         {
@@ -321,19 +324,25 @@ namespace Microsoft.AspNetCore.WebSockets
                             {
                                 return false;
                             }
-                            options.ServerMaxWindowBits = serverMaxWindowBits;
+                            // if client didn't send a value for ServerMaxWindowBits use the value the server set
+                            options.ServerMaxWindowBits = serverMaxWindowBits ?? options.ServerMaxWindowBits;
                         }
 
-                        static int ParseWindowBits(ReadOnlySpan<char> value)
+                        static int? ParseWindowBits(ReadOnlySpan<char> value)
                         {
-                            // parameters can be sent without a value by the client
                             var startIndex = value.IndexOf('=');
 
-                            if (startIndex < 0 ||
-                                !int.TryParse(value[(startIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int windowBits) ||
+                            // parameters can be sent without a value by the client
+                            if (startIndex < 0)
+                            {
+                                return null;
+                            }
+
+                            if (!int.TryParse(value[(startIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int windowBits) ||
                                 windowBits < 9 ||
                                 windowBits > 15)
                             {
+                                // TODO
                                 throw new WebSocketException(WebSocketError.HeaderError, "");
                             }
 
@@ -351,7 +360,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 return true;
             }
 
-            private static void Resp(IHeaderDictionary headers, WebSocketDeflateOptions options, bool hasClientMaxWindowBits)
+            private static void WriteDeflatNegotiateResponseHeader(IHeaderDictionary headers, WebSocketDeflateOptions options, bool hasClientMaxWindowBits)
             {
                 headers.Add("Sec-WebSocket-Extensions", GetDeflateOptions(options, hasClientMaxWindowBits));
 
@@ -367,15 +376,8 @@ namespace Microsoft.AspNetCore.WebSockets
                     // https://tools.ietf.org/html/rfc7692#section-7.1.2.2
                     if (hasClientMaxWindowBits)
                     {
-                        if (options.ClientMaxWindowBits != 15)
-                        {
-                            builder.Append("; ").Append(ClientWebSocketDeflateConstants.ClientMaxWindowBits).Append('=')
-                               .Append(options.ClientMaxWindowBits.ToString(CultureInfo.InvariantCulture));
-                        }
-                        else
-                        {
-                            builder.Append("; ").Append(ClientWebSocketDeflateConstants.ClientMaxWindowBits);
-                        }
+                        builder.Append("; ").Append(ClientWebSocketDeflateConstants.ClientMaxWindowBits).Append('=')
+                            .Append(options.ClientMaxWindowBits.ToString(CultureInfo.InvariantCulture));
                     }
 
                     if (!options.ClientContextTakeover)
@@ -383,16 +385,10 @@ namespace Microsoft.AspNetCore.WebSockets
                         builder.Append("; ").Append(ClientWebSocketDeflateConstants.ClientNoContextTakeover);
                     }
 
-                    if (options.ServerMaxWindowBits != 15)
-                    {
-                        builder.Append("; ")
-                               .Append(ClientWebSocketDeflateConstants.ServerMaxWindowBits).Append('=')
-                               .Append(options.ServerMaxWindowBits.ToString(CultureInfo.InvariantCulture));
-                    }
-                    else
-                    {
-                        builder.Append("; ").Append(ClientWebSocketDeflateConstants.ServerMaxWindowBits);
-                    }
+                    // TODO: we could avoid sending this in some cases
+                    builder.Append("; ")
+                            .Append(ClientWebSocketDeflateConstants.ServerMaxWindowBits).Append('=')
+                            .Append(options.ServerMaxWindowBits.ToString(CultureInfo.InvariantCulture));
 
                     if (!options.ServerContextTakeover)
                     {

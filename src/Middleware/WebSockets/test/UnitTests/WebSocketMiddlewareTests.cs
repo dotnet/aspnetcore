@@ -634,8 +634,16 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [Fact]
-        public async Task InitialCompression()
+        [Theory]
+        [InlineData("permessage-deflate", "permessage-deflate; server_max_window_bits=15")]
+        [InlineData("permessage-deflate; server_no_context_takeover", "permessage-deflate; server_max_window_bits=15; server_no_context_takeover")]
+        [InlineData("permessage-deflate; client_no_context_takeover", "permessage-deflate; client_no_context_takeover; server_max_window_bits=15")]
+        [InlineData("permessage-deflate; client_max_window_bits=9", "permessage-deflate; client_max_window_bits=9; server_max_window_bits=15")]
+        [InlineData("permessage-deflate; client_max_window_bits", "permessage-deflate; client_max_window_bits=15; server_max_window_bits=15")]
+        [InlineData("permessage-deflate; server_max_window_bits", "permessage-deflate; server_max_window_bits=15")]
+        [InlineData("permessage-deflate; server_max_window_bits=10", "permessage-deflate; server_max_window_bits=10")]
+        [InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover", "permessage-deflate; server_max_window_bits=10; server_no_context_takeover")]
+        public async Task CompressionNegotiationProducesCorrectHeader(string clientHeader, string expectedResponse)
         {
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
@@ -658,11 +666,11 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                         request.Headers.Add(HeaderNames.SecWebSocketVersion, "13");
                         // SecWebSocketKey required to be 16 bytes
                         request.Headers.Add(HeaderNames.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
-                        request.Headers.Add("Sec-WebSocket-Extensions", "permessage-deflate");
+                        request.Headers.Add("Sec-WebSocket-Extensions", clientHeader);
 
                         var response = await client.SendAsync(request);
                         Assert.Equal(HttpStatusCode.SwitchingProtocols, response.StatusCode);
-                        Assert.Equal("permessage-deflate; server_max_window_bits", response.Headers.GetValues("Sec-WebSocket-Extensions").Aggregate((l, r) => $"{l}; {r}"));
+                        Assert.Equal(expectedResponse, response.Headers.GetValues("Sec-WebSocket-Extensions").Aggregate((l, r) => $"{l}; {r}"));
                     }
                 }
             }
