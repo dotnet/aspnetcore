@@ -204,8 +204,8 @@
     <MicrosoftWebWebView2Version>1.0.705.50</MicrosoftWebWebView2Version>
     <MicrosoftWebXdtVersion>1.4.0</MicrosoftWebXdtVersion>
     <SystemIdentityModelTokensJwtVersion>6.10.0</SystemIdentityModelTokensJwtVersion>
-    <NuGetVersioningVersion>5.10.0-preview.2.7203</NuGetVersioningVersion>
-    <NuGetFrameworksVersion>5.10.0-preview.2.7203</NuGetFrameworksVersion>
+    <NuGetVersioningVersion>5.10.0-rc.7240</NuGetVersioningVersion>
+    <NuGetFrameworksVersion>5.10.0-rc.7240</NuGetFrameworksVersion>
     <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
