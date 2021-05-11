@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (ros.Length < StackAllocThreshold)
             {
-                Span<byte> buffer = stackalloc byte[StackAllocThreshold].Slice((int)ros.Length);
+                Span<byte> buffer = stackalloc byte[StackAllocThreshold].Slice(0, (int)ros.Length);
                 ros.CopyTo(buffer);
                 return GetDecodedString(buffer);
             }
