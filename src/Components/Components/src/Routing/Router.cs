@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private Task _previousOnNavigateTask = Task.CompletedTask;
 
-        private RouteKey _currentRouteKey;
+        private RouteKey _routeTableLastBuiltForRouteKey;
 
         private bool _onNavigateCalled = false;
 
@@ -155,9 +155,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             var routeKey = new RouteKey(AppAssembly, AdditionalAssemblies);
 
-            if (!routeKey.Equals(_currentRouteKey))
+            if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
             {
-                _currentRouteKey = routeKey;
+                _routeTableLastBuiltForRouteKey = routeKey;
                 Routes = RouteTableFactory.Create(routeKey);
             }
         }
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private void ClearRouteCaches()
         {
             RouteTableFactory.ClearCaches();
-            _currentRouteKey = default;
+            _routeTableLastBuiltForRouteKey = default;
         }
 
         internal virtual void Refresh(bool isNavigationIntercepted)
