@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
         private static readonly bool _isCIEnvironment =
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
 
-        public BrowserTestBase(ITestOutputHelper output) : base(output) { }
+        public BrowserTestBase(ITestOutputHelper output = null) : base(output) { }
 
         protected async override Task InitializeCoreAsync(TestContext context)
         {
