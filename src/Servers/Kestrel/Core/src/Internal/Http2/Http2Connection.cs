@@ -717,8 +717,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // Second reset
                 if (stream.RstStreamReceived)
                 {
-                    // Hard abort, do not allow any more frames on this stream.
-                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                    // https://tools.ietf.org/html/rfc7540#section-5.1
+                    // If RST_STREAM has already been received then the stream is in a closed state.
+                    // Additional frames (other than PRIORITY) are a stream error.
+                    // The server will usually send a RST_STREAM for a stream error, but RST_STREAM
+                    // shouldn't be sent in response to RST_STREAM to avoid a loop. 
+                    // The best course of action here is to do nothing.
+                    return Task.CompletedTask;
                 }
 
                 // No additional inbound header or data frames are allowed for this stream after receiving a reset.

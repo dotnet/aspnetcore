@@ -83,7 +83,6 @@
   -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or $(TargetFrameworks.Contains('netstandard2.0')) or '$(TargetFramework)' == 'netstandard2.1'">
     <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
-    <_CompilationOnlyReference Include="System.Security.Cryptography.Cng" />
     <_CompilationOnlyReference Include="System.Security.Principal.Windows" />
     <_CompilationOnlyReference Include="System.Buffers" />
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
@@ -97,7 +96,6 @@
   -->
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' or $(TargetFrameworks.Contains('$(DefaultNetCoreTargetFramework)'))">
     <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
-    <_CompilationOnlyReference Include="System.Security.Cryptography.Cng" />
     <_CompilationOnlyReference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 

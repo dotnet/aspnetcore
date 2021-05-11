@@ -14,7 +14,7 @@ The following contains a description of each sub-directory in the `Framework` di
 
 ### Build
 
-To build this specific project from source,  follow the instructions [on building a subset of the code](../../docs/BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
 
 ### Test
 

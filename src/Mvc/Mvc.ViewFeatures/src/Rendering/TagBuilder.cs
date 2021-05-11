@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             if (Attributes.TryGetValue("class", out var currentValue))
             {
-                Attributes["class"] = value + " " + currentValue;
+                Attributes["class"] = currentValue + " " + value;
             }
             else
             {

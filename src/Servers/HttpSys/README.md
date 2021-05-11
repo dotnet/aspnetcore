@@ -19,7 +19,7 @@ This folder contains all relevant code for the HttpSys Web Server implementation
 
 HTTP.sys can only be used on Windows.
 
-To build this specific project from source, you can follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building the project](../../../docs/BuildFromSource.md#step-3-build-the-repo).
 
 Or for the less detailed explanation, run the following command inside this directory.
 ```powershell

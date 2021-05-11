@@ -6,7 +6,6 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-    <SkipHelixArm>true</SkipHelixArm>
     <BaseOutputPath />
     <OutputPath />
 
@@ -14,7 +13,7 @@
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
-    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
     <TestDependsOnMssql>true</TestDependsOnMssql>
     <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
   </PropertyGroup>
