@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
@@ -144,11 +145,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             await manager.RestoreStateAsync(store);
 
-            var initializeTask = InitializeHotReloadAsync();
-            if (initializeTask is not null)
+            if (HotReloadFeature.IsSupported)
             {
-                // The returned value will be "null" in a trimmed app
-                await initializeTask;
+                await WebAssemblyHotReload.InitializeAsync();
             }
 
             var tcs = new TaskCompletionSource();
@@ -183,12 +182,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                 await tcs.Task;
             }
-        }
-
-        private Task? InitializeHotReloadAsync()
-        {
-            // In Development scenarios, wait for hot reload to apply deltas before initiating rendering.
-            return WebAssemblyHotReload.InitializeAsync();
         }
     }
 }
