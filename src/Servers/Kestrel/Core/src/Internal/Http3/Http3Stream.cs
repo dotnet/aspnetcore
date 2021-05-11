@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -739,6 +740,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return true;
         }
 
+        [SkipLocalsInit]
         private bool TryValidatePath(ReadOnlySpan<char> pathSegment)
         {
             // Must start with a leading slash

@@ -332,6 +332,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             throw new InvalidDataException($"Form value length limit {ValueLengthLimit} exceeded.");
         }
 
+        [SkipLocalsInit]
         private string GetDecodedStringFromReadOnlySequence(in ReadOnlySequence<byte> ros)
         {
             if (ros.IsSingleSegment)
@@ -341,7 +342,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (ros.Length < StackAllocThreshold)
             {
-                Span<byte> buffer = stackalloc byte[(int)ros.Length];
+                Span<byte> buffer = stackalloc byte[StackAllocThreshold].Slice((int)ros.Length);
                 ros.CopyTo(buffer);
                 return GetDecodedString(buffer);
             }

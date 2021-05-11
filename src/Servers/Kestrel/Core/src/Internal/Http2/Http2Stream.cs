@@ -352,6 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
+        [SkipLocalsInit]
         private bool TryValidatePath(ReadOnlySpan<char> pathSegment)
         {
             // Must start with a leading slash

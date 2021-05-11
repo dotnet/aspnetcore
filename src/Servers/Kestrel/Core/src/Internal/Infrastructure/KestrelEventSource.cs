@@ -301,6 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
+        [SkipLocalsInit]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, string? arg3, string? arg4, string? arg5)
         {
             const int EventDataCount = 5;

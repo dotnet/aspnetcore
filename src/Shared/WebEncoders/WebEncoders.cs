@@ -8,6 +8,7 @@ using System.Buffers;
 #endif
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.WebEncoders.Sources;
 
 #if WebEncoders_In_WebUtilities
@@ -343,6 +344,7 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="input">The binary input to encode.</param>
         /// <returns>The base64url-encoded form of <paramref name="input"/>.</returns>
+        [SkipLocalsInit]
         public static string Base64UrlEncode(ReadOnlySpan<byte> input)
         {
             if (input.IsEmpty)
