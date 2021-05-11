@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -71,6 +74,90 @@ namespace Microsoft.AspNetCore.WebSockets
             }
 
             return Convert.ToBase64String(hashedBytes);
+        }
+
+        public static bool ParseDeflateOptions(ReadOnlySpan<char> extension, WebSocketDeflateOptions options, [NotNullWhen(true)] out string? response)
+        {
+            response = null;
+            var builder = new StringBuilder(WebSocketDeflateConstants.MaxExtensionLength);
+            builder.Append(WebSocketDeflateConstants.Extension);
+
+            while (true)
+            {
+                int end = extension.IndexOf(';');
+                ReadOnlySpan<char> value = (end >= 0 ? extension[..end] : extension).Trim();
+
+                if (value.Length > 0)
+                {
+                    if (value.SequenceEqual(WebSocketDeflateConstants.ClientNoContextTakeover))
+                    {
+                        // REVIEW: If someone specifies true for server options, do we allow client to override this?
+                        options.ClientContextTakeover = false;
+                        builder.Append("; ").Append(WebSocketDeflateConstants.ClientNoContextTakeover);
+                    }
+                    else if (value.SequenceEqual(WebSocketDeflateConstants.ServerNoContextTakeover))
+                    {
+                        options.ServerContextTakeover = false;
+                        builder.Append("; ").Append(WebSocketDeflateConstants.ServerNoContextTakeover);
+                    }
+                    else if (value.StartsWith(WebSocketDeflateConstants.ClientMaxWindowBits))
+                    {
+                        var clientMaxWindowBits = ParseWindowBits(value, WebSocketDeflateConstants.ClientMaxWindowBits);
+                        if (clientMaxWindowBits > options.ClientMaxWindowBits)
+                        {
+                            return false;
+                        }
+                        // if client didn't send a value for ClientMaxWindowBits use the value the server set
+                        options.ClientMaxWindowBits = clientMaxWindowBits ?? options.ClientMaxWindowBits;
+                        builder.Append("; ").Append(WebSocketDeflateConstants.ClientMaxWindowBits).Append('=')
+                            .Append(options.ClientMaxWindowBits.ToString(CultureInfo.InvariantCulture));
+                    }
+                    else if (value.StartsWith(WebSocketDeflateConstants.ServerMaxWindowBits))
+                    {
+                        var serverMaxWindowBits = ParseWindowBits(value, WebSocketDeflateConstants.ServerMaxWindowBits);
+                        if (serverMaxWindowBits > options.ServerMaxWindowBits)
+                        {
+                            return false;
+                        }
+                        // if client didn't send a value for ServerMaxWindowBits use the value the server set
+                        options.ServerMaxWindowBits = serverMaxWindowBits ?? options.ServerMaxWindowBits;
+
+                        builder.Append("; ")
+                            .Append(WebSocketDeflateConstants.ServerMaxWindowBits).Append('=')
+                            .Append(options.ServerMaxWindowBits.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    static int? ParseWindowBits(ReadOnlySpan<char> value, string propertyName)
+                    {
+                        var startIndex = value.IndexOf('=');
+
+                        // parameters can be sent without a value by the client, we'll use the values set by the app developer or the default of 15
+                        if (startIndex < 0)
+                        {
+                            return null;
+                        }
+
+                        if (!int.TryParse(value[(startIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int windowBits) ||
+                            windowBits < 9 ||
+                            windowBits > 15)
+                        {
+                            throw new WebSocketException(WebSocketError.HeaderError, $"invalid {propertyName} used: {value[(startIndex + 1)..].ToString()}");
+                        }
+
+                        return windowBits;
+                    }
+                }
+
+                if (end < 0)
+                {
+                    break;
+                }
+                extension = extension[(end + 1)..];
+            }
+
+            response = builder.ToString();
+
+            return true;
         }
     }
 }

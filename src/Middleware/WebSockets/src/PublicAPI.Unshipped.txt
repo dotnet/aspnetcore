@@ -1,5 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.WebSocketOptions.AllowedOrigins.get -> System.Collections.Generic.IList<string!>!
+Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.WebSocketOptions.get -> System.Net.WebSockets.WebSocketCreationOptions?
+Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.WebSocketOptions.set -> void
 Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 ~Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.WebSocketMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.WebSocketOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 override Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.SubProtocol.get -> string?

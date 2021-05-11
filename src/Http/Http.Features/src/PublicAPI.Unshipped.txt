@@ -161,6 +161,8 @@ Microsoft.AspNetCore.Http.IHeaderDictionary.RetryAfter.get -> Microsoft.Extensio
 Microsoft.AspNetCore.Http.IHeaderDictionary.RetryAfter.set -> void
 Microsoft.AspNetCore.Http.IHeaderDictionary.SecWebSocketAccept.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.Http.IHeaderDictionary.SecWebSocketAccept.set -> void
+Microsoft.AspNetCore.Http.IHeaderDictionary.SecWebSocketExtensions.get -> Microsoft.Extensions.Primitives.StringValues
+Microsoft.AspNetCore.Http.IHeaderDictionary.SecWebSocketExtensions.set -> void
 Microsoft.AspNetCore.Http.IHeaderDictionary.SecWebSocketKey.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.Http.IHeaderDictionary.SecWebSocketKey.set -> void
 Microsoft.AspNetCore.Http.IHeaderDictionary.SecWebSocketProtocol.get -> Microsoft.Extensions.Primitives.StringValues

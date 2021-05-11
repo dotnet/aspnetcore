@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.WebSockets
@@ -24,5 +25,10 @@ namespace Microsoft.AspNetCore.WebSockets
         /// The interval to send pong frames. This is a heart-beat that keeps the connection alive.
         /// </summary>
         public TimeSpan? KeepAliveInterval { get; set; }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public WebSocketCreationOptions? WebSocketOptions { get; set; }
     }
 }

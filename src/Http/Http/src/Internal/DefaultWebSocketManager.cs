@@ -62,11 +62,16 @@ namespace Microsoft.AspNetCore.Http
 
         public override Task<WebSocket> AcceptWebSocketAsync(string? subProtocol)
         {
+            return AcceptWebSocketAsync(new WebSocketAcceptContext() { SubProtocol = subProtocol });
+        }
+
+        public override Task<WebSocket> AcceptWebSocketAsync(WebSocketAcceptContext acceptContext)
+        {
             if (WebSocketFeature == null)
             {
                 throw new NotSupportedException("WebSockets are not supported");
             }
-            return WebSocketFeature.AcceptAsync(new WebSocketAcceptContext() { SubProtocol = subProtocol });
+            return WebSocketFeature.AcceptAsync(acceptContext);
         }
 
         struct FeatureInterfaces

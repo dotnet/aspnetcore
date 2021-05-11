@@ -225,6 +225,9 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>Sec-WebSocket-Version</c> HTTP header name.</summary>
         public static readonly string SecWebSocketVersion = "Sec-WebSocket-Version";
 
+        /// <summary>Gets the <c>Sec-WebSocket-Extensions</c> HTTP header name.</summary>
+        public static readonly string SecWebSocketExtensions = "Sec-WebSocket-Extensions";
+
         /// <summary>Gets the <c>Server</c> HTTP header name.</summary>
         public static readonly string Server = "Server";
 
