@@ -166,6 +166,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 throw new NotImplementedException();
             }
 
+            public override ValueTask<ReadResult> ReadAtLeastAsync(int minimumSize, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
             public override bool TryRead(out ReadResult readResult)
             {
                 throw new NotImplementedException();
