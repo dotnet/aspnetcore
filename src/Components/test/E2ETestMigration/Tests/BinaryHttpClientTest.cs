@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class BinaryHttpClientTest : PlaywrightTestBase,
+    public class BinaryHttpClientTest : ComponentBrowserTestBase,
         IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>,
         IClassFixture<BlazorWasmTestAppFixture<BasicTestApp.Program>>
     {

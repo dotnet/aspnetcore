@@ -10,9 +10,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 {
-    public class PlaywrightTestBase : BrowserTestBase
+    public class ComponentBrowserTestBase : BrowserTestBase
     {
-        public PlaywrightTestBase(ITestOutputHelper output) : base(output) { }
+        public ComponentBrowserTestBase(ITestOutputHelper output = null) : base(output) { }
 
         protected async Task MountTestComponentAsync<TComponent>(IPage page)
         {
