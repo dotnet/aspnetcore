@@ -5,13 +5,13 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.BrowserTesting
 {
-    internal class TestOutputLogger : ITestOutputHelper
+    internal class BrowserTestOutputLogger : ITestOutputHelper
     {
         private readonly ILogger _logger;
 
-        public TestOutputLogger(ILogger logger)
+        public BrowserTestOutputLogger(ILogger logger)
         {
             _logger = logger;
         }
