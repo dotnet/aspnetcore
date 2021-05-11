@@ -1,0 +1,88 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using BasicTestApp;
+using BasicTestApp.Reconnection;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
+using OpenQA.Selenium;
+using TestServer;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
+{
+    public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartup>>
+    {
+        public CircuitTests(
+            BrowserFixture browserFixture,
+            BasicTestAppServerSiteFixture<ServerStartup> serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
+        {
+        }
+
+        protected override void InitializeAsyncCore()
+        {
+            Navigate(ServerPathBase, noReload: false);
+            Browser.MountTestComponent<ReliabilityComponent>();
+            Browser.Exists(By.Id("thecounter"));
+        }
+
+        [Theory]
+        [InlineData("constructor-throw")]
+        [InlineData("attach-throw")]
+        [InlineData("setparameters-sync-throw")]
+        [InlineData("setparameters-async-throw")]
+        [InlineData("render-throw")]
+        [InlineData("afterrender-sync-throw")]
+        [InlineData("afterrender-async-throw")]
+        public void ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
+        {
+            var targetButton = Browser.Exists(By.Id(id));
+            targetButton.Click();
+
+            // Triggering an error will show the exception UI
+            Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
+
+            // Clicking the button again will trigger a server disconnect
+            targetButton.Click();
+
+            AssertLogContains("Connection disconnected.");
+        }
+
+        [Fact]
+        public void ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
+        {
+            // Arrange
+            var targetButton = Browser.Exists(By.Id("dispose-throw"));
+
+            // Clicking the button sets a boolean that renders the component
+            targetButton.Click();
+            // Clicking it again hides the component and invokes the rethrow which triggers the exception
+            targetButton.Click();
+            Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
+
+            // Clicking it again causes the circuit to disconnect
+            targetButton.Click();
+            AssertLogContains("Connection disconnected.");
+        }
+
+        void AssertLogContains(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.Contains(log, entry =>
+                {
+                    return entry.Level == LogLevel.Info
+                    && entry.Message.Contains(message);
+                });
+            }
+        }
+    }
+}
