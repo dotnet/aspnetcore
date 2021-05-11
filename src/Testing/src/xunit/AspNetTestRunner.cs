@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Testing
 {
     internal class AspNetTestRunner : XunitTestRunner
     {
+        private readonly TestOutputHelper _testOutputHelper;
+        private readonly bool _ownsTestOutputHelper;
+
         public AspNetTestRunner(
             ITest test,
             IMessageBus messageBus,
@@ -26,6 +29,39 @@ namespace Microsoft.AspNetCore.Testing
             CancellationTokenSource cancellationTokenSource)
             : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource)
         {
+            // Prioritize using ITestOutputHelper from constructor.
+            if (ConstructorArguments != null)
+            {
+                foreach (var obj in ConstructorArguments)
+                {
+                    _testOutputHelper = obj as TestOutputHelper;
+                    if (_testOutputHelper != null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            // No ITestOutputHelper ctor in helper so we'll create it ourselves.
+            if (_testOutputHelper == null)
+            {
+                _testOutputHelper = new TestOutputHelper();
+                _testOutputHelper.Initialize(MessageBus, Test);
+                _ownsTestOutputHelper = true;
+            }
+        }
+
+        protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
+        {
+            var result = await base.InvokeTestAsync(aggregator);
+            if (_ownsTestOutputHelper)
+            {
+                // Update result with output if we created our own ITestOutputHelper.
+                result = new Tuple<decimal, string>(result.Item1, _testOutputHelper.Output);
+                _testOutputHelper.Uninitialize();
+            }
+
+            return result;
         }
 
         protected override async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
@@ -54,7 +90,7 @@ namespace Microsoft.AspNetCore.Testing
 
         private Task<decimal> InvokeTestMethodCoreAsync(ExceptionAggregator aggregator)
         {
-            var invoker = new AspNetTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource);
+            var invoker = new AspNetTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, _testOutputHelper);
             return invoker.RunAsync();
         }
 

@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Testing
 {
     internal class AspNetTestInvoker : XunitTestInvoker
     {
+        private readonly TestOutputHelper _testOutputHelper;
+
         public AspNetTestInvoker(
             ITest test,
             IMessageBus messageBus,
@@ -23,17 +25,16 @@ namespace Microsoft.AspNetCore.Testing
             object[] testMethodArguments,
             IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes,
             ExceptionAggregator aggregator,
-            CancellationTokenSource cancellationTokenSource)
+            CancellationTokenSource cancellationTokenSource,
+            TestOutputHelper testOutputHelper)
             : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, beforeAfterAttributes, aggregator, cancellationTokenSource)
         {
+            _testOutputHelper = testOutputHelper;
         }
 
         protected override async Task<decimal> InvokeTestMethodAsync(object testClassInstance)
         {
-            var output = new TestOutputHelper();
-            output.Initialize(MessageBus, Test);
-
-            var context = new TestContext(TestClass, ConstructorArguments, TestMethod, TestMethodArguments, output);
+            var context = new TestContext(TestClass, ConstructorArguments, TestMethod, TestMethodArguments, _testOutputHelper);
             var lifecycleHooks = GetLifecycleHooks(testClassInstance, TestClass, TestMethod);
 
             await Aggregator.RunAsync(async () =>
