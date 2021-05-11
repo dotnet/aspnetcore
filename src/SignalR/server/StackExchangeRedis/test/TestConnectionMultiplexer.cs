@@ -246,8 +246,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Action<RedisChannel, RedisValue> handler = (channel, value) =>
             {
                 // ChannelMessageQueue isn't mockable currently, this works around that by using private reflection
-                // Change to `Write` when Redis is updated, the private method got renamed
-                typeof(ChannelMessageQueue).GetMethod("HandleMessage", BindingFlags.NonPublic | BindingFlags.Instance)
+                typeof(ChannelMessageQueue).GetMethod("Write", BindingFlags.NonPublic | BindingFlags.Instance)
                     .Invoke(messageQueue, new object[] { channel, value });
             };
 
