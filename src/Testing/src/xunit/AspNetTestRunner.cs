@@ -46,14 +46,19 @@ namespace Microsoft.AspNetCore.Testing
             if (_testOutputHelper == null)
             {
                 _testOutputHelper = new TestOutputHelper();
-                _testOutputHelper.Initialize(MessageBus, Test);
                 _ownsTestOutputHelper = true;
             }
         }
 
         protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
         {
+            if (_ownsTestOutputHelper)
+            {
+                _testOutputHelper.Initialize(MessageBus, Test);
+            }
+
             var result = await base.InvokeTestAsync(aggregator);
+
             if (_ownsTestOutputHelper)
             {
                 // Update result with output if we created our own ITestOutputHelper.
