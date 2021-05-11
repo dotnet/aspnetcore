@@ -58,6 +58,6 @@
     "eventsource": "^1.0.7",
     "fetch-cookie": "^0.11.0",
     "node-fetch": "^2.6.1",
-    "ws": "^7.4.3"
+    "ws": "^7.4.5"
   }
 }
