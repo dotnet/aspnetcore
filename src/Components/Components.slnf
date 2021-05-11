@@ -101,6 +101,7 @@
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\Shared\\BrowserTesting\\src\\Microsoft.AspNetCore.BrowserTesting.csproj",
       "src\\SignalR\\clients\\csharp\\Client.Core\\src\\Microsoft.AspNetCore.SignalR.Client.Core.csproj",
       "src\\SignalR\\clients\\csharp\\Client\\src\\Microsoft.AspNetCore.SignalR.Client.csproj",
       "src\\SignalR\\clients\\csharp\\Http.Connections.Client\\src\\Microsoft.AspNetCore.Http.Connections.Client.csproj",
