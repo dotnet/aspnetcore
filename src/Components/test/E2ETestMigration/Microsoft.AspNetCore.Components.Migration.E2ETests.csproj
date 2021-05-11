@@ -33,29 +33,6 @@
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
 
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(OutputPath)trimmed\Wasm.Performance.TestApp\"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
-
-    <ProjectReference
-      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(OutputPath)trimmed\BasicTestApp\"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
-
-    <ProjectReference
-      Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(OutputPath)trimmed\GlobalizationWasmApp\;"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
-
-    <ProjectReference
-      Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(OutputPath)trimmed\StandaloneApp\;"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
-
     <ProjectReference
       Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
       Targets="Publish"
@@ -73,7 +50,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <HelixContent Include="..\testassets\**\*" LinkBase="testassets"/>
-    <HelixContent Include="..\..\Blazor\testassets\StandaloneApp\**\*" />
   </ItemGroup>
 
   <ItemGroup>
