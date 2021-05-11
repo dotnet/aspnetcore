@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.Builder
         public void ApplyConfigurationSettings(IConfiguration configuration)
         {
             ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? ApplicationName;
-            ContentRootPath = configuration[WebHostDefaults.ContentRootKey] ?? ContentRootPath;
             EnvironmentName = configuration[WebHostDefaults.EnvironmentKey] ?? EnvironmentName;
-            WebRootPath = configuration[WebHostDefaults.ContentRootKey] ?? WebRootPath;
+            ContentRootPath = configuration[WebHostDefaults.ContentRootKey] ?? ContentRootPath;
+            WebRootPath = configuration[WebHostDefaults.WebRootKey] ?? WebRootPath;
 
             ResolveFileProviders(configuration);
         }
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (Directory.Exists(WebRootPath))
             {
-                WebRootFileProvider = new PhysicalFileProvider(Path.Combine(ContentRootPath, WebRootPath));
+                WebRootFileProvider = new PhysicalFileProvider(WebRootPath);
             }
 
             if (this.IsDevelopment())
