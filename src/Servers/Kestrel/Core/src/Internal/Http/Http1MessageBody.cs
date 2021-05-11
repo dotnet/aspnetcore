@@ -30,7 +30,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return ReadAsyncInternal(cancellationToken);
         }
 
+        public override ValueTask<ReadResult> ReadAtLeastAsync(int minimumSize, CancellationToken cancellationToken = default)
+        {
+            ThrowIfReaderCompleted();
+            return ReadAtLeastAsyncInternal(minimumSize, cancellationToken);
+        }
+
         public abstract ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default);
+
+        public abstract ValueTask<ReadResult> ReadAtLeastAsyncInternal(int minimumSize, CancellationToken cancellationToken = default);
 
         public override bool TryRead(out ReadResult readResult)
         {

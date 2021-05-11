@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _unexaminedInputLength = contentLength;
         }
 
-        public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
+        public override async ValueTask<ReadResult> ReadAtLeastAsyncInternal(int minimumSize, CancellationToken cancellationToken = default)
         {
             VerifyIsNotReading();
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 try
                 {
-                    var readAwaitable = _context.Input.ReadAsync(cancellationToken);
+                    var readAwaitable = minimumSize == 0 ? _context.Input.ReadAsync(cancellationToken) : _context.Input.ReadAtLeastAsync(minimumSize, cancellationToken);
 
                     _isReading = true;
                     _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
@@ -115,6 +115,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return _readResult;
+        }
+
+        public override ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
+        {
+            return ReadAtLeastAsyncInternal(0, cancellationToken);
         }
 
         public override bool TryReadInternal(out ReadResult readResult)

@@ -46,6 +46,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
+        public abstract ValueTask<ReadResult> ReadAtLeastAsync(int minimumSize, CancellationToken cancellationToken = default);
+
         public abstract bool TryRead(out ReadResult readResult);
 
         public void AdvanceTo(SequencePosition consumed)

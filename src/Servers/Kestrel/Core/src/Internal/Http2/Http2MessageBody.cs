@@ -89,6 +89,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return hasResult;
         }
 
+        public override async ValueTask<ReadResult> ReadAtLeastAsync(int minimumSize, CancellationToken cancellationToken = default)
+        {
+            await TryStartAsync();
+
+            try
+            {
+                var readAwaitable = _context.RequestBodyPipe.Reader.ReadAtLeastAsync(minimumSize, cancellationToken);
+
+                _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
+
+            StopTimingRead(_readResult.Buffer.Length);
+
+            if (_readResult.IsCompleted)
+            {
+                TryStop();
+            }
+
+            return _readResult;
+        }
+
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             await TryStartAsync();

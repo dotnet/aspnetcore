@@ -66,6 +66,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _body!.ReadAsync(cancellationToken);
         }
 
+        protected override ValueTask<ReadResult> ReadAtLeastAsyncCore(int minimumSize, CancellationToken cancellationToken)
+        {
+            ValidateState(cancellationToken);
+
+            return _body!.ReadAtLeastAsync(minimumSize, cancellationToken);
+        }
+
         public override bool TryRead(out ReadResult result)
         {
             ValidateState();
