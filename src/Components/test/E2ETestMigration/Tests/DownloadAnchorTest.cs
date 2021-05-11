@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29739")]
         public async Task DownloadFileFromAnchor()
         {
             // Arrange
