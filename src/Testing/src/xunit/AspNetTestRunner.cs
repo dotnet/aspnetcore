@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Testing
                 }
             }
 
-            // No ITestOutputHelper ctor in helper so we'll create it ourselves.
+            // No ITestOutputHelper in constructor so we'll create it ourselves.
             if (_testOutputHelper == null)
             {
                 _testOutputHelper = new TestOutputHelper();
@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Testing
             if (_ownsTestOutputHelper)
             {
                 // Update result with output if we created our own ITestOutputHelper.
+                // The string returned from this method is what VS displays as the test output.
                 result = new Tuple<decimal, string>(result.Item1, _testOutputHelper.Output);
                 _testOutputHelper.Uninitialize();
             }
