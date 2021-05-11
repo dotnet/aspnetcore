@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -226,13 +227,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = args
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
-                    await handlerTcs.Task.OrTimeout();
+                    await handlerTcs.Task.DefaultTimeout();
                 }
                 finally
                 {
-                    await hubConnection.DisposeAsync().OrTimeout();
+                    await hubConnection.DisposeAsync().DefaultTimeout();
                 }
             }
 
@@ -246,7 +247,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     hubConnection.On<int>("Foo", r => { receiveTcs.SetResult(r); });
-                    await hubConnection.StartAsync().OrTimeout();
+                    await hubConnection.StartAsync().DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -255,7 +256,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { 42, "42" }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -264,13 +265,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { 42 }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
-                    Assert.Equal(42, await receiveTcs.Task.OrTimeout());
+                    Assert.Equal(42, await receiveTcs.Task.DefaultTimeout());
                 }
                 finally
                 {
-                    await hubConnection.DisposeAsync().OrTimeout();
+                    await hubConnection.DisposeAsync().DefaultTimeout();
                 }
             }
 
@@ -288,7 +289,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         receiveTcs.SetResult(r);
                         return Task.CompletedTask;
                     });
-                    await hubConnection.StartAsync().OrTimeout();
+                    await hubConnection.StartAsync().DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { 42, "42" }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -306,13 +307,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { 42 }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
-                    Assert.Equal(42, await receiveTcs.Task.OrTimeout());
+                    Assert.Equal(42, await receiveTcs.Task.DefaultTimeout());
                 }
                 finally
                 {
-                    await hubConnection.DisposeAsync().OrTimeout();
+                    await hubConnection.DisposeAsync().DefaultTimeout();
                 }
             }
 
@@ -326,7 +327,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     hubConnection.On<int>("Foo", r => { receiveTcs.SetResult(r); });
-                    await hubConnection.StartAsync().OrTimeout();
+                    await hubConnection.StartAsync().DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -335,7 +336,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { "xxx" }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -344,13 +345,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { 42 }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
-                    Assert.Equal(42, await receiveTcs.Task.OrTimeout());
+                    Assert.Equal(42, await receiveTcs.Task.DefaultTimeout());
                 }
                 finally
                 {
-                    await hubConnection.DisposeAsync().OrTimeout();
+                    await hubConnection.DisposeAsync().DefaultTimeout();
                 }
             }
 
@@ -368,7 +369,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         receiveTcs.SetResult(r);
                         return Task.CompletedTask;
                     });
-                    await hubConnection.StartAsync().OrTimeout();
+                    await hubConnection.StartAsync().DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -377,7 +378,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { "xxx" }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
                     await connection.ReceiveJsonMessage(
                         new
@@ -386,13 +387,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             type = 1,
                             target = "Foo",
                             arguments = new object[] { 42 }
-                        }).OrTimeout();
+                        }).DefaultTimeout();
 
-                    Assert.Equal(42, await receiveTcs.Task.OrTimeout());
+                    Assert.Equal(42, await receiveTcs.Task.DefaultTimeout());
                 }
                 finally
                 {
-                    await hubConnection.DisposeAsync().OrTimeout();
+                    await hubConnection.DisposeAsync().DefaultTimeout();
                 }
             }
         }

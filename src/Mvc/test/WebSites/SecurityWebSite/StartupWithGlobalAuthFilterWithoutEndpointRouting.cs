@@ -36,8 +36,7 @@ namespace SecurityWebSite
             {
                 options.Conventions.AllowAnonymousToPage("/AllowAnonymousPageViaConvention");
                 options.Conventions.AuthorizePage("/AuthorizePageViaConvention", "RequireClaimB");
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            });
         }
 
         public void Configure(IApplicationBuilder app)

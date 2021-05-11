@@ -3,11 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents an entity-tag (<c>etag</c>) header value.
+    /// </summary>
     public class EntityTagHeaderValue
     {
         // Note that the ETag header does not allow a * but we're not that strict: We allow both '*' and ETag values in a single value.
@@ -21,8 +25,6 @@ namespace Microsoft.Net.Http.Headers
         private static readonly HttpHeaderParser<EntityTagHeaderValue> MultipleValueParser
             = new GenericHeaderParser<EntityTagHeaderValue>(true, GetEntityTagLength);
 
-        private static EntityTagHeaderValue AnyType;
-
         private StringSegment _tag;
         private bool _isWeak;
 
@@ -31,11 +33,20 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityTagHeaderValue"/>.
+        /// </summary>
+        /// <param name="tag">A <see cref="StringSegment"/> that contains an <see cref="EntityTagHeaderValue"/>.</param>
         public EntityTagHeaderValue(StringSegment tag)
-            : this(tag, false)
+            : this(tag, isWeak: false)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityTagHeaderValue"/>.
+        /// </summary>
+        /// <param name="tag">A <see cref="StringSegment"/> that contains an <see cref="EntityTagHeaderValue"/>.</param>
+        /// <param name="isWeak">A value that indicates if this entity-tag header is a weak validator.</param>
         public EntityTagHeaderValue(StringSegment tag, bool isWeak)
         {
             if (StringSegment.IsNullOrEmpty(tag))
@@ -43,17 +54,16 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentException("An empty string is not allowed.", nameof(tag));
             }
 
-            int length = 0;
             if (!isWeak && StringSegment.Equals(tag, "*", StringComparison.Ordinal))
             {
                 // * is valid, but W/* isn't.
                 _tag = tag;
             }
-            else if ((HttpRuleParser.GetQuotedStringLength(tag, 0, out length) != HttpParseResult.Parsed) ||
+            else if ((HttpRuleParser.GetQuotedStringLength(tag, 0, out var length) != HttpParseResult.Parsed) ||
                 (length != tag.Length))
             {
                 // Note that we don't allow 'W/' prefixes for weak ETags in the 'tag' parameter. If the user wants to
-                // add a weak ETag, he can set 'isWeak' to true.
+                // add a weak ETag, they can set 'isWeak' to true.
                 throw new FormatException("Invalid ETag name");
             }
 
@@ -61,30 +71,22 @@ namespace Microsoft.Net.Http.Headers
             _isWeak = isWeak;
         }
 
-        public static EntityTagHeaderValue Any
-        {
-            get
-            {
-                if (AnyType == null)
-                {
-                    AnyType = new EntityTagHeaderValue();
-                    AnyType._tag = "*";
-                    AnyType._isWeak = false;
-                }
-                return AnyType;
-            }
-        }
+        /// <summary>
+        /// Gets the "any" etag.
+        /// </summary>
+        public static EntityTagHeaderValue Any { get; } = new EntityTagHeaderValue("*", isWeak: false);
 
-        public StringSegment Tag
-        {
-            get { return _tag; }
-        }
+        /// <summary>
+        /// Gets the quoted tag.
+        /// </summary>
+        public StringSegment Tag => _tag;
 
-        public bool IsWeak
-        {
-            get { return _isWeak; }
-        }
+        /// <summary>
+        /// Gets a value that determines if the entity-tag header is a weak validator.
+        /// </summary>
+        public bool IsWeak => _isWeak;
 
+        /// <inheritdoc />
         public override string ToString()
         {
             if (_isWeak)
@@ -103,19 +105,13 @@ namespace Microsoft.Net.Http.Headers
         /// <c>true</c> if the strength and tag of the two values match,
         /// <c>false</c> if the other value is null, is not an <see cref="EntityTagHeaderValue"/>, or if there is a mismatch of strength or tag between the two values.
         /// </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            var other = obj as EntityTagHeaderValue;
-
-            if (other == null)
-            {
-                return false;
-            }
-
             // Since the tag is a quoted-string we treat it case-sensitive.
-            return _isWeak == other._isWeak && StringSegment.Equals(_tag, other._tag, StringComparison.Ordinal);
+            return obj is EntityTagHeaderValue other && _isWeak == other._isWeak && StringSegment.Equals(_tag, other._tag, StringComparison.Ordinal);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             // Since the tag is a quoted-string we treat it case-sensitive.
@@ -131,7 +127,7 @@ namespace Microsoft.Net.Http.Headers
         /// <c>true</c> if the <see cref="EntityTagHeaderValue"/> match for the given comparison type,
         /// <c>false</c> if the other value is null or the comparison failed.
         /// </returns>
-        public bool Compare(EntityTagHeaderValue other, bool useStrongComparison)
+        public bool Compare(EntityTagHeaderValue? other, bool useStrongComparison)
         {
             if (other == null)
             {
@@ -148,39 +144,72 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="EntityTagHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static EntityTagHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out EntityTagHeaderValue parsedValue)
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="EntityTagHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="EntityTagHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out EntityTagHeaderValue parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<EntityTagHeaderValue> ParseList(IList<string> inputs)
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="EntityTagHeaderValue"/> values.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
+        public static IList<EntityTagHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<EntityTagHeaderValue> ParseStrictList(IList<string> inputs)
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="EntityTagHeaderValue"/> values using string parsing rules.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
+        public static IList<EntityTagHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, out IList<EntityTagHeaderValue> parsedValues)
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="EntityTagHeaderValue"/>.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="EntityTagHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<EntityTagHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, out IList<EntityTagHeaderValue> parsedValues)
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="EntityTagHeaderValue"/> using string parsing rules.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="EntityTagHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<EntityTagHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        internal static int GetEntityTagLength(StringSegment input, int startIndex, out EntityTagHeaderValue parsedValue)
+        internal static int GetEntityTagLength(StringSegment input, int startIndex, out EntityTagHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 

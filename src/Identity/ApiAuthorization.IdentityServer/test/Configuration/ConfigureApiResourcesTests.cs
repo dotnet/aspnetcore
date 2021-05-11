@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             var resource = Assert.Single(resources);
             var scope = Assert.Single(resource.Scopes);
             Assert.Equal("MyAPI", resource.Name);
-            Assert.Equal("MyAPI", scope.Name);
+            Assert.Equal("MyAPI", scope);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("MyAPI", resource.Name);
             Assert.NotNull(resource.Scopes);
             Assert.Equal(3, resource.Scopes.Count);
-            Assert.Equal(expectedScopes, resource.Scopes.Select(s => s.Name).ToArray());
+            Assert.Equal(expectedScopes, resource.Scopes.Select(s => s).ToArray());
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             var resource = Assert.Single(resources);
             var scope = Assert.Single(resource.Scopes);
             Assert.Equal("MyAPI", resource.Name);
-            Assert.Equal("MyAPI", scope.Name);
+            Assert.Equal("MyAPI", scope);
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             var resource = Assert.Single(options.ApiResources);
             var scope = Assert.Single(resource.Scopes);
             Assert.Equal("MyAPI", resource.Name);
-            Assert.Equal("MyAPI", scope.Name);
+            Assert.Equal("MyAPI", scope);
         }
 
         private class TestLocalApiDescriptor : IIdentityServerJwtDescriptor

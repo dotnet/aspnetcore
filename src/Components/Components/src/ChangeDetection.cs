@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Components
             }
             else if (oldIsNotNull) // i.e., both are not null (considering previous check)
             {
-                var oldValueType = oldValue.GetType();
-                var newValueType = newValue.GetType();
+                var oldValueType = oldValue!.GetType();
+                var newValueType = newValue!.GetType();
                 if (oldValueType != newValueType            // Definitely different
                     || !IsKnownImmutableType(oldValueType)  // Maybe different
                     || !oldValue.Equals(newValue))          // Somebody says they are different

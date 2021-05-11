@@ -158,6 +158,20 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
+        public async Task PreferEmptyValuesFromValueFilter_OverRequestHeader()
+        {
+            // Arrange
+            Configuration.Headers.Add("in", (context) => StringValues.Empty);
+            Context.Request.Headers.Add("in", "no");
+
+            // Act
+            await Middleware.Invoke(Context);
+
+            // Assert
+            Assert.DoesNotContain("in", CapturedHeaders.Keys);
+        }
+
+        [Fact]
         public async Task EmptyValuesFromValueFilter_DoesNotAddIt()
         {
             // Arrange
@@ -184,44 +198,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Assert
             Assert.Contains("in", CapturedHeaders.Keys);
             Assert.Equal("Test", CapturedHeaders["in"]);
-        }
-
-        [Fact]
-        public async Task HeaderInRequest_WithBleedAsyncLocal_HasCorrectValue()
-        {
-            // Arrange
-            Configuration.Headers.Add("in");
-
-            // Process first request
-            Context.Request.Headers.Add("in", "dirty");
-            await Middleware.Invoke(Context);
-
-            // Process second request
-            Context = new DefaultHttpContext();
-            Context.Request.Headers.Add("in", "test");
-            await Middleware.Invoke(Context);
-
-            // Assert
-            Assert.Contains("in", CapturedHeaders.Keys);
-            Assert.Equal(new[] { "test" }, CapturedHeaders["in"]);
-        }
-
-        [Fact]
-        public async Task NoHeaderInRequest_WithBleedAsyncLocal_DoesNotHaveIt()
-        {
-            // Arrange
-            Configuration.Headers.Add("in");
-
-            // Process first request
-            Context.Request.Headers.Add("in", "dirty");
-            await Middleware.Invoke(Context);
-
-            // Process second request
-            Context = new DefaultHttpContext();
-            await Middleware.Invoke(Context);
-
-            // Assert
-            Assert.Empty(CapturedHeaders);
         }
     }
 }

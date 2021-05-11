@@ -8,12 +8,19 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IRequestBodyPipeFeature"/>.
+    /// </summary>
     public class RequestBodyPipeFeature : IRequestBodyPipeFeature
     {
-        private PipeReader _internalPipeReader;
-        private Stream _streamInstanceWhenWrapped;
+        private PipeReader? _internalPipeReader;
+        private Stream? _streamInstanceWhenWrapped;
         private HttpContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="IRequestBodyPipeFeature"/>.
+        /// </summary>
+        /// <param name="context"></param>
         public RequestBodyPipeFeature(HttpContext context)
         {
             if (context == null)
@@ -23,6 +30,7 @@ namespace Microsoft.AspNetCore.Http.Features
             _context = context;
         }
 
+        /// <inheritdoc />
         public PipeReader Reader
         {
             get

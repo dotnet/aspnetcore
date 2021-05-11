@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
@@ -47,17 +48,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 expectedExceptionMessage);
         }
 
-        [Theory]
-        [InlineData("Hea\0der: value", "Invalid characters in header name.")]
-        [InlineData("Header: va\0lue", "Malformed request: invalid headers.")]
-        [InlineData("Head\x80r: value", "Invalid characters in header name.")]
-        [InlineData("Header: valu\x80", "Malformed request: invalid headers.")]
-        public Task BadRequestWhenHeaderNameContainsNonASCIIOrNullCharacters(string header, string expectedExceptionMessage)
+        public static Dictionary<string, (string header, string errorMessage)> BadHeaderData => new Dictionary<string, (string, string)>
         {
+            { "Hea\0der: value".EscapeNonPrintable(), ("Hea\0der: value", "Invalid characters in header name.") },
+            { "Header: va\0lue".EscapeNonPrintable(), ("Header: va\0lue", "Malformed request: invalid headers.") },
+            { "Head\x80r: value".EscapeNonPrintable(), ("Head\x80r: value", "Invalid characters in header name.") },
+            { "Header: valu\x80".EscapeNonPrintable(), ("Header: valu\x80", "Malformed request: invalid headers.") },
+        };
+
+        public static TheoryData<string> BadHeaderDataNames => new TheoryData<string>
+        {
+            "Hea\0der: value".EscapeNonPrintable(),
+            "Header: va\0lue".EscapeNonPrintable(),
+            "Head\x80r: value".EscapeNonPrintable(),
+            "Header: valu\x80".EscapeNonPrintable()
+        };
+
+        [Theory]
+        [MemberData(nameof(BadHeaderDataNames))]
+        public Task BadRequestWhenHeaderNameContainsNonASCIIOrNullCharacters(string dataName)
+        {
+            // Using dictionary of input data to avoid invalid strings in the xml test results
+            var header = BadHeaderData[dataName].header;
+            var errorMessage = BadHeaderData[dataName].errorMessage;
+
             return TestBadRequest(
                 $"GET / HTTP/1.1\r\n{header}\r\n\r\n",
                 "400 Bad Request",
-                expectedExceptionMessage);
+                errorMessage);
         }
 
         [Theory]
@@ -168,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
+            Assert.All(TestSink.Writes.Where(w => w.LoggerName != "Microsoft.Hosting.Lifetime"), w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17);
         }
 
@@ -191,6 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
         {
             BadHttpRequestException loggedException = null;
+
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.IsEnabled(LogLevel.Information))
@@ -236,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 foreach (var requestLine in HttpParsingData.RequestLineInvalidData)
                 {
-                    data.Add(requestLine, CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()));
+                    data.Add(requestLine, CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()));
                 }
 
                 foreach (var target in HttpParsingData.TargetWithEncodedNullCharData)

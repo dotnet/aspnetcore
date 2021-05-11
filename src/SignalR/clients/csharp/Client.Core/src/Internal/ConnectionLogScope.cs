@@ -8,15 +8,15 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Internal
 {
-    internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
+    internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object?>>
     {
         // Name chosen so as not to collide with Kestrel's "ConnectionId"
         private const string ClientConnectionIdKey = "ClientConnectionId";
 
-        private string _cachedToString;
-        private string _connectionId;
+        private string? _cachedToString;
+        private string? _connectionId;
 
-        public string ConnectionId
+        public string? ConnectionId
         {
             get => _connectionId;
             set
@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             }
         }
 
-        public KeyValuePair<string, object> this[int index]
+        public KeyValuePair<string, object?> this[int index]
         {
             get
             {
                 if (index == 0)
                 {
-                    return new KeyValuePair<string, object>(ClientConnectionIdKey, ConnectionId);
+                    return new KeyValuePair<string, object?>(ClientConnectionIdKey, ConnectionId);
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         public int Count => string.IsNullOrEmpty(ConnectionId) ? 0 : 1;
 
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
             {

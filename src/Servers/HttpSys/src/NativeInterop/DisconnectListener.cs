@@ -1,20 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class DisconnectListener
+    internal partial class DisconnectListener
     {
-        private readonly ConcurrentDictionary<ulong, ConnectionCancellation> _connectionCancellationTokens
-            = new ConcurrentDictionary<ulong, ConnectionCancellation>();
+        private readonly ConcurrentDictionary<ulong, ConnectionCancellation> _connectionCancellationTokens = new();
 
         private readonly RequestQueue _requestQueue;
         private readonly ILogger _logger;
@@ -34,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Win32Exception exception)
             {
-                LogHelper.LogException(_logger, "GetConnectionToken", exception);
+                Log.DisconnectRegistrationError(_logger, exception);
                 return CancellationToken.None;
             }
         }
@@ -42,8 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private CancellationToken GetOrCreateDisconnectToken(ulong connectionId)
         {
             // Read case is performance sensitive 
-            ConnectionCancellation cancellation;
-            if (!_connectionCancellationTokens.TryGetValue(connectionId, out cancellation))
+            if (!_connectionCancellationTokens.TryGetValue(connectionId, out var cancellation))
             {
                 cancellation = GetCreatedConnectionCancellation(connectionId);
             }
@@ -54,40 +51,44 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             // Race condition on creation has no side effects 
             var cancellation = new ConnectionCancellation(this);
-            return _connectionCancellationTokens.GetOrAdd(connectionId, cancellation); 
+            return _connectionCancellationTokens.GetOrAdd(connectionId, cancellation);
         }
 
         private unsafe CancellationToken CreateDisconnectToken(ulong connectionId)
         {
-            LogHelper.LogDebug(_logger, "CreateDisconnectToken", "Registering connection for disconnect for connection ID: " + connectionId);
+            Log.RegisterDisconnectListener(_logger, connectionId);
 
             // Create a nativeOverlapped callback so we can register for disconnect callback
             var cts = new CancellationTokenSource();
             var returnToken = cts.Token;
 
-            SafeNativeOverlapped nativeOverlapped = null;
-            var boundHandle = _requestQueue.BoundHandle;
-            nativeOverlapped = new SafeNativeOverlapped(boundHandle, boundHandle.AllocateNativeOverlapped(
-                (errorCode, numBytes, overlappedPtr) =>
-                {
-                    LogHelper.LogDebug(_logger, "CreateDisconnectToken", "http.sys disconnect callback fired for connection ID: " + connectionId);
-                    
-                    // Free the overlapped
-                    nativeOverlapped.Dispose();
+            var overlapped = new Overlapped
+            {
+                OffsetHigh = 0,
+                OffsetLow = 0
+            };
 
-                    // Pull the token out of the list and Cancel it.
-                    ConnectionCancellation token;
-                    _connectionCancellationTokens.TryRemove(connectionId, out token);
-                    try
-                    {
-                        cts.Cancel();
-                    }
-                    catch (AggregateException exception)
-                    {
-                        LogHelper.LogException(_logger, "CreateDisconnectToken Callback", exception);
-                    }
-                },
-                null, null));
+            // We're not using boundHandle.AllocateNativeOverlapped here because we want to avoid capturing the ExecutionContext (see https://github.com/dotnet/runtime/issues/42549)
+            // Instead, we're going to use lower level APIs to get access to UnsafePack (which avoids the capture)
+            var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOverlapped) =>
+            {
+                Log.DisconnectTriggered(_logger, connectionId);
+
+                // Free the overlapped
+                Overlapped.Free(pOverlapped);
+
+                // Pull the token out of the list and Cancel it.
+                _connectionCancellationTokens.TryRemove(connectionId, out _);
+                try
+                {
+                    cts.Cancel();
+                }
+                catch (AggregateException exception)
+                {
+                    Log.DisconnectHandlerError(_logger, exception);
+                }
+            },
+            null);
 
             uint statusCode;
             try
@@ -98,26 +99,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             catch (Win32Exception exception)
             {
                 statusCode = (uint)exception.NativeErrorCode;
-                LogHelper.LogException(_logger, "CreateDisconnectToken", exception);
+                Log.CreateDisconnectTokenError(_logger, exception);
             }
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING &&
                 statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 // We got an unknown result, assume the connection has been closed.
-                nativeOverlapped.Dispose();
-                ConnectionCancellation ignored;
-                _connectionCancellationTokens.TryRemove(connectionId, out ignored);
-                LogHelper.LogDebug(_logger, "HttpWaitForDisconnectEx", new Win32Exception((int)statusCode));
+                Overlapped.Free(nativeOverlapped);
+                _connectionCancellationTokens.TryRemove(connectionId, out _);
+                Log.UnknownDisconnectError(_logger, new Win32Exception((int)statusCode));
                 cts.Cancel();
             }
 
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 // IO operation completed synchronously - callback won't be called to signal completion
-                nativeOverlapped.Dispose();
-                ConnectionCancellation ignored;
-                _connectionCancellationTokens.TryRemove(connectionId, out ignored);
+                Overlapped.Free(nativeOverlapped);
+                _connectionCancellationTokens.TryRemove(connectionId, out _);
                 cts.Cancel();
             }
 

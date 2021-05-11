@@ -3,6 +3,7 @@
 
 using System;
 using System.Data;
+using System.IO;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.CommandLineUtils;
@@ -15,6 +16,9 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
         private string _connectionString = null;
         private string _schemaName = null;
         private string _tableName = null;
+        private string _outputPath = null;
+        private bool _idempotent;
+
         private readonly IConsole _console;
 
         public Program(IConsole console)
@@ -44,12 +48,12 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                 };
 
                 app.HelpOption();
-                app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
+                app.VersionOptionFromAssemblyAttributes(typeof(Program).Assembly);
                 var verbose = app.VerboseOption();
 
                 app.Command("create", command =>
                 {
-                    command.Description = app.Description;
+                    command.Description = "Adds table and indexes to the database.";
 
                     var connectionStringArg = command.Argument(
                         "[connectionString]", "The connection string to connect to the database.");
@@ -70,7 +74,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                             || string.IsNullOrEmpty(tableNameArg.Value))
                         {
                             reporter.Error("Invalid input");
-                            app.ShowHelp();
+                            command.ShowHelp();
                             return 2;
                         }
 
@@ -79,6 +83,51 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                         _tableName = tableNameArg.Value;
 
                         return CreateTableAndIndexes(reporter);
+                    });
+                });
+
+                app.Command("script", command =>
+                {
+                    command.Description = "Generates a SQL script for the table and indexes.";
+
+                    var schemaNameArg = command.Argument(
+                        "[schemaName]", "Name of the table schema.");
+
+                    var tableNameArg = command.Argument(
+                        "[tableName]", "Name of the table to be created.");
+
+                    var outputOption = command.Option(
+                        "-o|--output",
+                        "The file to write the result to.",
+                        CommandOptionType.SingleValue);
+
+                    var idempotentOption = command.Option(
+                        "-i|--idempotent",
+                        "Generates a script that can be used on a database that already has the table.",
+                        CommandOptionType.NoValue);
+
+                    command.HelpOption();
+
+                    command.OnExecute(() =>
+                    {
+                        var reporter = CreateReporter(verbose.HasValue());
+                        if (string.IsNullOrEmpty(schemaNameArg.Value)
+                            || string.IsNullOrEmpty(tableNameArg.Value))
+                        {
+                            reporter.Error("Invalid input");
+                            command.ShowHelp();
+                            return 2;
+                        }
+
+                        _schemaName = schemaNameArg.Value;
+                        _tableName = tableNameArg.Value;
+                        _idempotent = idempotentOption.HasValue();
+                        if (outputOption.HasValue())
+                        {
+                            _outputPath = outputOption.Value();
+                        }
+
+                        return ScriptTableAndIndexes(reporter);
                     });
                 });
 
@@ -100,6 +149,57 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 
         private IReporter CreateReporter(bool verbose)
             => new ConsoleReporter(_console, verbose, quiet: false);
+
+        private SqlQueries CreateSqlQueries()
+            => new SqlQueries(_schemaName, _tableName);
+
+        private int ScriptTableAndIndexes(IReporter reporter)
+        {
+            Action<string> writer = reporter.Output;
+            StreamWriter streamWriter = default;
+
+            try
+            {
+                if (_outputPath is not null)
+                {
+                    streamWriter = new StreamWriter(_outputPath);
+                    writer = streamWriter.WriteLine;
+                }
+
+                var sqlQueries = CreateSqlQueries();
+
+                if (_idempotent)
+                {
+                    writer("IF NOT EXISTS (");
+                    writer("\t" + sqlQueries.TableInfo);
+                    writer(")");
+                    writer("BEGIN");
+                }
+
+                var prefix = _idempotent ? "\t" : "";
+                writer(prefix + sqlQueries.CreateTable);
+                writer(prefix + sqlQueries.CreateNonClusteredIndexOnExpirationTime);
+
+                if (_idempotent)
+                {
+                    writer("END");
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                reporter.Error(
+                    $"An error occurred while trying to script the table and index. {ex.Message}");
+
+                return 1;
+            }
+            finally
+            {
+                streamWriter?.Dispose();
+            }
+        }
+
         private int CreateTableAndIndexes(IReporter reporter)
         {
             ValidateConnectionString();
@@ -108,7 +208,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
             {
                 connection.Open();
 
-                var sqlQueries = new SqlQueries(_schemaName, _tableName);
+                var sqlQueries = CreateSqlQueries();
                 var command = new SqlCommand(sqlQueries.TableInfo, connection);
 
                 using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))

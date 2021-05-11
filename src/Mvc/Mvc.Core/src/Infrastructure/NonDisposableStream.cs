@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.IO;
 using System.Threading;
@@ -30,11 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             _innerStream = innerStream;
         }
-
-        /// <summary>
-        /// The inner stream this object delegates to.
-        /// </summary>
-        private Stream InnerStream => _innerStream;
 
         /// <inheritdoc />
         public override bool CanRead => _innerStream.CanRead;
@@ -94,8 +91,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             byte[] buffer,
             int offset,
             int count,
-            AsyncCallback callback,
-            object state)
+            AsyncCallback? callback,
+            object? state)
         {
             return _innerStream.BeginRead(buffer, offset, count, callback, state);
         }
@@ -111,8 +108,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             byte[] buffer,
             int offset,
             int count,
-            AsyncCallback callback,
-            object state)
+            AsyncCallback? callback,
+            object? state)
         {
             return _innerStream.BeginWrite(buffer, offset, count, callback, state);
         }

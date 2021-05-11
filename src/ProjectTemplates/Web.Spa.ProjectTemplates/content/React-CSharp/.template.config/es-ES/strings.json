@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "React.js",
-    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con React.js."
+    "name": "ASP.NET Core con React.js",
+    "description": "Plantilla de proyecto para crear una aplicación ASP.NET Core con React.js"
   }
 }

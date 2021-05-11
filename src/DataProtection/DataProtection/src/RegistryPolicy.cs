@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection
     internal class RegistryPolicy
     {
         public RegistryPolicy(
-            AlgorithmConfiguration configuration,
+            AlgorithmConfiguration? configuration,
             IEnumerable<IKeyEscrowSink> keyEscrowSinks,
             int? defaultKeyLifetime)
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection
             DefaultKeyLifetime = defaultKeyLifetime;
         }
 
-        public AlgorithmConfiguration EncryptorConfiguration { get; }
+        public AlgorithmConfiguration? EncryptorConfiguration { get; }
 
         public IEnumerable<IKeyEscrowSink> KeyEscrowSinks { get; }
 

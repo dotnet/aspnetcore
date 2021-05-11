@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
     {
         private readonly IHtmlFormElement _loginForm;
         private readonly IHtmlAnchorElement _forgotPasswordLink;
+        private readonly IHtmlAnchorElement _reconfirmLink;
         private readonly IHtmlFormElement _externalLoginForm;
         private readonly IHtmlElement _contosoButton;
         private readonly IHtmlElement _loginButton;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             _loginForm = HtmlAssert.HasForm("#account", login);
             _loginButton = HtmlAssert.HasElement("#login-submit", login);
             _forgotPasswordLink = HtmlAssert.HasLink("#forgot-password", login);
+            _reconfirmLink = HtmlAssert.HasLink("#resend-confirmation", login);
             if (Context.ContosoLoginEnabled)
             {
                 _externalLoginForm = HtmlAssert.HasForm("#external-account", login);
@@ -50,6 +52,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             var forgotPassword = await ResponseAssert.IsHtmlDocumentAsync(response);
 
             return new ForgotPassword(Client, forgotPassword, Context);
+        }
+
+        public async Task<ResendEmailConfirmation> ClickReconfirmEmailLinkAsync()
+        {
+            var response = await Client.GetAsync(_reconfirmLink.Href);
+            var forgotPassword = await ResponseAssert.IsHtmlDocumentAsync(response);
+
+            return new ResendEmailConfirmation(Client, forgotPassword, Context);
         }
 
         public async Task<Index> LoginValidUserAsync(string userName, string password)

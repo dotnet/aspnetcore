@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            _logger.LogInformation("User changed their password successfully.");
+            _logger.LogInformation(LoggerEventIds.PasswordChanged, "User changed their password successfully.");
             StatusMessage = "Your password has been changed.";
 
             return RedirectToPage();

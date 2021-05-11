@@ -8,10 +8,20 @@ namespace Microsoft.AspNetCore.Diagnostics
     /// </summary>
     public class DiagnosticMessage
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="DiagnosticMessage"/>.
+        /// </summary>
+        /// <param name="message">The error message.</param>
+        /// <param name="formattedMessage">The formatted error message.</param>
+        /// <param name="filePath">The path of the file that produced the message.</param>
+        /// <param name="startLine">The one-based line index for the start of the compilation error.</param>
+        /// <param name="startColumn">The zero-based column index for the start of the compilation error.</param>
+        /// <param name="endLine">The one-based line index for the end of the compilation error.</param>
+        /// <param name="endColumn">The zero-based column index for the end of the compilation error.</param>
         public DiagnosticMessage(
-            string message,
-            string formattedMessage,
-            string filePath,
+            string? message,
+            string? formattedMessage,
+            string? filePath,
             int startLine,
             int startColumn,
             int endLine,
@@ -29,12 +39,12 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <summary>
         /// Path of the file that produced the message.
         /// </summary>
-        public string SourceFilePath { get; }
+        public string? SourceFilePath { get; }
 
         /// <summary>
         /// Gets the error message.
         /// </summary>
-        public string Message { get; }
+        public string? Message { get; }
 
         /// <summary>
         /// Gets the one-based line index for the start of the compilation error.
@@ -59,6 +69,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <summary>
         /// Gets the formatted error message.
         /// </summary>
-        public string FormattedMessage { get; }
+        public string? FormattedMessage { get; }
     }
 }

@@ -42,6 +42,6 @@ namespace Microsoft.AspNetCore.Mvc
         int? IRouteTemplateProvider.Order => _order;
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

@@ -12,8 +12,10 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public abstract class ResultContext<TOptions> : BaseContext<TOptions> where TOptions : AuthenticationSchemeOptions
     {
+        private AuthenticationProperties? _properties;
+
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of <see cref="ResultContext{TOptions}"/>.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="scheme">The authentication scheme.</param>
@@ -24,26 +26,30 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the <see cref="ClaimsPrincipal"/> containing the user claims.
         /// </summary>
-        public ClaimsPrincipal Principal { get; set; }
+        public ClaimsPrincipal? Principal { get; set; }
 
-        private AuthenticationProperties _properties;
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/>.
         /// </summary>
-        public AuthenticationProperties Properties {
-            get => _properties ?? (_properties = new AuthenticationProperties());
+        public AuthenticationProperties Properties
+        {
+            get
+            {
+                _properties ??= new AuthenticationProperties();
+                return _properties;
+            }
             set => _properties = value;
         }
 
         /// <summary>
         /// Gets the <see cref="AuthenticateResult"/> result.
         /// </summary>
-        public AuthenticateResult Result { get; private set; }
+        public AuthenticateResult Result { get; private set; } = default!;
 
         /// <summary>
         /// Calls success creating a ticket with the <see cref="Principal"/> and <see cref="Properties"/>.
         /// </summary>
-        public void Success() => Result = HandleRequestResult.Success(new AuthenticationTicket(Principal, Properties, Scheme.Name));
+        public void Success() => Result = HandleRequestResult.Success(new AuthenticationTicket(Principal!, Properties, Scheme.Name));
 
         /// <summary>
         /// Indicates that there was no information returned for this authentication scheme.

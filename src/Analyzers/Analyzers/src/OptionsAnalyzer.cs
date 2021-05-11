@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Analyzers
                     operation.Value.ConstantValue.HasValue &&
                     operation.Target is IPropertyReferenceOperation property &&
                     property.Property?.ContainingType?.Name != null &&
-                    property.Property.ContainingType.Name.EndsWith("Options"))
+                    property.Property.ContainingType.Name.EndsWith("Options", StringComparison.Ordinal))
                 {
                     options.Add(new OptionsItem(property.Property, operation.Value.ConstantValue.Value));
                 }

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -109,14 +111,12 @@ namespace Microsoft.Extensions.Internal
             var fsharpOptionOfTaskCreationOptionsType = fsharpOptionType
                 .MakeGenericType(typeof(TaskCreationOptions));
             _fsharpOptionOfTaskCreationOptionsNoneProperty = fsharpOptionOfTaskCreationOptionsType
-                .GetTypeInfo()
                 .GetRuntimeProperty("None");
 
             // Get a reference to FSharpOption<CancellationToken>.None
             var fsharpOptionOfCancellationTokenType = fsharpOptionType
                 .MakeGenericType(typeof(CancellationToken));
             _fsharpOptionOfCancellationTokenNoneProperty = fsharpOptionOfCancellationTokenType
-                .GetTypeInfo()
                 .GetRuntimeProperty("None");
 
             // Get a reference to FSharpAsync.StartAsTask<>

@@ -2,14 +2,51 @@
 
   <!-- For 'legacy' .csproj files, set map TargetFrameworkVersion back to TargetFramework -->
   <PropertyGroup Condition=" '$(TargetFramework)' == '' AND '$(TargetFrameworks)' == '' ">
-    <TargetFramework>net$(TargetFrameworkVersion.Substring(1).Replace('.',''))</TargetFramework>
+    <TargetFramework>net$(TargetFrameworkVersion.TrimStart('vV').Replace('.',''))</TargetFramework>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Ensure API changes show up clearly in PRs. -->
+    <AddPublicApiAnalyzers Condition=" '$(AddPublicApiAnalyzers)' == '' AND
+        '$(IsImplementationProject)' == 'true' AND
+        ! $(RepoRelativeProjectDir.Contains('Tools')) ">true</AddPublicApiAnalyzers>
+    <AddPublicApiAnalyzers Condition=" '$(AddPublicApiAnalyzers)' == '' ">false</AddPublicApiAnalyzers>
+
+    <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
+    <NoWarn>$(NoWarn);RS0041</NoWarn>
+
+    <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
+    <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
+        '$(IsTestAssetProject)' == 'true' OR
+        '$(ISBenchmarkProject)' == 'true' OR
+        '$(IsSampleProject)' == 'true' OR
+        '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
+    <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
+  </ItemGroup>
+  <Target Name="_CheckIgnoredPublicApiFiles"
+      BeforeTargets="Build;Restore"
+      Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND ! $(AddPublicApiAnalyzers) ">
+    <Warning Text="Public API baseline files ignored." />
+  </Target>
+  <Target Name="_RemovePublicApiAnalyzer" BeforeTargets="RazorCoreCompile">
+    <ItemGroup>
+      <_PublicAPIAnalyzers Include="@(Analyzer->WithMetadataValue('NuGetPackageId','Microsoft.CodeAnalysis.PublicApiAnalyzers'))" />
+      <Analyzer Remove="@(_PublicAPIAnalyzers)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_RestorePublicApiAnalyzer" AfterTargets="RazorCoreCompile">
+    <ItemGroup>
+      <Analyzer Include="@(_PublicAPIAnalyzers)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"
           DependsOnTargets="InitializeSourceControlInformation">
-
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(SourceRevisionId)' != ''">
         <_Parameter1>CommitHash</_Parameter1>
@@ -25,10 +62,54 @@
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Trimmable)' == 'true'">
+        <_Parameter1>IsTrimmable</_Parameter1>
+        <_Parameter2>True</_Parameter2>
+      </AssemblyAttribute>
     </ItemGroup>
+  </Target>
+
+  <!-- Reference assemblies are shipped only in targeting packs. -->
+  <Target Name="_RemoveReferenceAssembly" BeforeTargets="_GetPackageFiles;GenerateNuspec" Condition="$(HasReferenceAssembly)">
+    <ItemGroup>
+      <_PackageFilesToExclude Include="@(IntermediateRefAssembly);$(TargetRefPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Choose>
+    <!--
+        C# 8.0's nullable annotations only work for .NET Core 3.0+ by default. However it can be made to work for other target frameworks
+        by compiling the annotations (as internal types).
+        The code block that follows sets it up so projects in this repo that target ns2.0 or netfx can compile when Nullable is configured.
+        Based on https://github.com/dotnet/runtime/blob/93b6c449d4f31ddd7d573d1d3769e681d5ebceb9/src/libraries/Directory.Build.targets#L215-L222
+
+        SuppressNullableAttributesImport to disable. Used when attributes are already present from another project because of InternalsVisibleTo.
+     -->
+    <When Condition="'$(Nullable)' != '' AND '$(SuppressNullableAttributesImport)' != 'true' AND
+        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+      <PropertyGroup>
+        <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
+        <NoWarn>$(NoWarn);nullable</NoWarn>
+      </PropertyGroup>
+      <ItemGroup>
+        <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <Target Name="ValidateBenchmarks" BeforeTargets="Test" Condition="'$(IsMicrobenchmarksProject)' == 'true' AND '$(SkipMicrobenchmarksValidation)' != 'true'">
+    <Message Text="%0ARunning benchmark validation for:%0A$(MSBuildProjectName)%0A"
+    Importance="High" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" PropertyName="ExecPath" />
+    </MSBuild>
+
+    <Exec Command="dotnet $(ExecPath) -f * --validate-fast" IgnoreStandardErrorWarningFormat="true" StandardOutputImportance="low" />
   </Target>
 
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
-  <Import Project="Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
+
 </Project>

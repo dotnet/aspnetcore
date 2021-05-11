@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("https://www.example.com/logout", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("https://www.example.com/logout", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("https://www.example.com/logout", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("https://www.example.com/logout?state=appState", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("https://www.example.com/logout?state=appState", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("/Identity/Error", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("/Identity/Error", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/Identity/Error", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("/Identity/Account/Logout", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("/Identity/Account/Logout", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers.Location);
         }
 
         [Theory]

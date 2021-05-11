@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
         private const char Colon = ':';
         private const char OpenBrace = '{';
         private const char CloseBrace = '}';
-        private readonly IISRewriteMapCollection _rewriteMaps;
+        private readonly IISRewriteMapCollection? _rewriteMaps;
         private readonly bool _alwaysUseManagedServerVariables;
 
         public InputParser()
         {
         }
 
-        public InputParser(IISRewriteMapCollection rewriteMaps, bool alwaysUseManagedServerVariables)
+        public InputParser(IISRewriteMapCollection? rewriteMaps, bool alwaysUseManagedServerVariables)
         {
             _rewriteMaps = rewriteMaps;
             _alwaysUseManagedServerVariables = alwaysUseManagedServerVariables;
@@ -93,14 +93,14 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
             // 3. {C:1}  - Condition Parameter
             // 4. {function:xxx} - String function 
             // (unless we support Reload)
-            string parameter;
+            string? parameter;
             while (context.Next())
             {
                 if (context.Current == CloseBrace)
                 {
                     // This is just a server variable, so we do a lookup and verify the server variable exists.
                     parameter = context.Capture();
-                    results.Add(ServerVariables.FindServerVariable(parameter, context, uriMatchPart, _alwaysUseManagedServerVariables));
+                    results.Add(ServerVariables.FindServerVariable(parameter!, context, uriMatchPart, _alwaysUseManagedServerVariables));
                     return;
                 }
                 else if (context.Current == Colon)
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                                 return;
                             }
                         default:
-                            var rewriteMap = _rewriteMaps?[parameter];
+                            var rewriteMap = _rewriteMaps?[parameter!];
                             if (rewriteMap != null)
                             {
                                 var pattern = ParseString(context, uriMatchPart);
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
         private static void ParseLiteral(ParserContext context, IList<PatternSegment> results)
         {
             context.Mark();
-            string literal;
+            string? literal;
             while (true)
             {
                 if (context.Current == OpenBrace || context.Current == CloseBrace)
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                 }
             }
 
-            results.Add(new LiteralSegment(literal));
+            results.Add(new LiteralSegment(literal!));
         }
     }
 }

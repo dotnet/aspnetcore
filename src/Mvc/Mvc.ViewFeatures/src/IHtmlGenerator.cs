@@ -12,12 +12,31 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// </summary>
     public interface IHtmlGenerator
     {
+        /// <summary>
+        /// Gets the replacement for '.' in an Id attribute.
+        /// </summary>
         string IdAttributeDotReplacement { get; }
 
+        /// <summary>
+        /// Encodes a value.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
         string Encode(string value);
 
+        /// <summary>
+        /// Encodes a value.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
         string Encode(object value);
 
+        /// <summary>
+        /// Format a value.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="format">The format to use.</param>
+        /// <returns>The formatted value.</returns>
         string FormatValue(object value, string format);
 
         /// <summary>
@@ -216,6 +235,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             string method,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a &lt;input type="hidden"&gt; element
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="value">The value which is injected into the element</param>
+        /// <param name="useViewData">Whether to use the ViewData to generate this element</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <returns></returns>
         TagBuilder GenerateHidden(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
@@ -224,6 +258,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             bool useViewData,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a &lt;label&gt; element
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model. Used to set the target of the label.</param>
+        /// <param name="labelText">Text used to render this label.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <returns></returns>
         TagBuilder GenerateLabel(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
@@ -231,6 +279,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             string labelText,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a &lt;input type="password"&gt; element
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="value">Value used to prefill the checkbox</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <returns></returns>
         TagBuilder GeneratePassword(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
@@ -238,6 +300,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object value,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a &lt;input type="radio"&gt; element
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="value">value of the given radio button</param>
+        /// <param name="isChecked">Whether or not the radio button is checked</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <returns></returns>
         TagBuilder GenerateRadioButton(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
@@ -384,6 +461,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </returns>
         IHtmlContent GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList);
 
+        /// <summary>
+        /// Generates a &lt;textarea&gt; element
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="rows"></param>
+        /// <param name="columns"></param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <returns></returns>
         TagBuilder GenerateTextArea(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
@@ -392,6 +484,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             int columns,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generates a &lt;input type="text"&gt; element
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="value"></param>
+        /// <param name="format"></param>
+        /// <param name="htmlAttributes"> 
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <returns></returns>
         TagBuilder GenerateTextBox(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
@@ -420,12 +527,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <returns>
-        /// A <see cref="TagBuilder"/> containing a <paramref name="tag"/> element if the
-        /// <paramref name="viewContext"/>'s <see cref="ActionContext.ModelState"/> contains an error for the
-        /// <paramref name="expression"/> or (as a placeholder) if client-side validation is enabled. <c>null</c> if
-        /// the <paramref name="expression"/> is valid and client-side validation is disabled.
-        /// </returns>
+        /// <returns></returns>
         /// <remarks><see cref="ViewContext.ValidationMessageElement"/> is <c>"span"</c> by default.</remarks>
         TagBuilder GenerateValidationMessage(
             ViewContext viewContext,
@@ -435,6 +537,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             string tag,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generates a &lt;div&gt; element which contains a list of validation errors.
+        /// </summary>
+        /// <param name="viewContext"></param>
+        /// <param name="excludePropertyErrors"></param>
+        /// <param name="message"></param>
+        /// <param name="headerTag"></param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <returns></returns>
         TagBuilder GenerateValidationSummary(
             ViewContext viewContext,
             bool excludePropertyErrors,

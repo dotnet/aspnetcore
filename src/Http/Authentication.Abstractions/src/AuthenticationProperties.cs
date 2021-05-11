@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -30,7 +31,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// Initializes a new instance of the <see cref="AuthenticationProperties"/> class.
         /// </summary>
         /// <param name="items">State values dictionary to use.</param>
-        public AuthenticationProperties(IDictionary<string, string> items)
+        [JsonConstructor]
+        public AuthenticationProperties(IDictionary<string, string?> items)
             : this(items, parameters: null)
         { }
 
@@ -39,26 +41,37 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="items">State values dictionary to use.</param>
         /// <param name="parameters">Parameters dictionary to use.</param>
-        public AuthenticationProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
+        public AuthenticationProperties(IDictionary<string, string?>? items, IDictionary<string, object?>? parameters)
         {
-            Items = items ?? new Dictionary<string, string>(StringComparer.Ordinal);
-            Parameters = parameters ?? new Dictionary<string, object>(StringComparer.Ordinal);
+            Items = items ?? new Dictionary<string, string?>(StringComparer.Ordinal);
+            Parameters = parameters ?? new Dictionary<string, object?>(StringComparer.Ordinal);
         }
+
+        /// <summary>
+        /// Return a copy.
+        /// </summary>
+        /// <returns>A copy.</returns>
+        public AuthenticationProperties Clone()
+            => new AuthenticationProperties(
+                new Dictionary<string, string?>(Items, StringComparer.Ordinal),
+                new Dictionary<string, object?>(Parameters, StringComparer.Ordinal));
 
         /// <summary>
         /// State values about the authentication session.
         /// </summary>
-        public IDictionary<string, string> Items { get; }
+        public IDictionary<string, string?> Items { get; }
 
         /// <summary>
         /// Collection of parameters that are passed to the authentication handler. These are not intended for
         /// serialization or persistence, only for flowing data between call sites.
         /// </summary>
-        public IDictionary<string, object> Parameters { get; }
+        [JsonIgnore]
+        public IDictionary<string, object?> Parameters { get; }
 
         /// <summary>
         /// Gets or sets whether the authentication session is persisted across multiple requests.
         /// </summary>
+        [JsonIgnore]
         public bool IsPersistent
         {
             get => GetString(IsPersistentKey) != null;
@@ -68,7 +81,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the full path or absolute URI to be used as an http redirect response value.
         /// </summary>
-        public string RedirectUri
+        [JsonIgnore]
+        public string? RedirectUri
         {
             get => GetString(RedirectUriKey);
             set => SetString(RedirectUriKey, value);
@@ -77,6 +91,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket was issued.
         /// </summary>
+        [JsonIgnore]
         public DateTimeOffset? IssuedUtc
         {
             get => GetDateTimeOffset(IssuedUtcKey);
@@ -86,6 +101,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket expires.
         /// </summary>
+        [JsonIgnore]
         public DateTimeOffset? ExpiresUtc
         {
             get => GetDateTimeOffset(ExpiresUtcKey);
@@ -95,6 +111,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets if refreshing the authentication session should be allowed.
         /// </summary>
+        [JsonIgnore]
         public bool? AllowRefresh
         {
             get => GetBool(RefreshKey);
@@ -106,17 +123,17 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="key">Property key.</param>
         /// <returns>Retrieved value or <c>null</c> if the property is not set.</returns>
-        public string GetString(string key)
+        public string? GetString(string key)
         {
-            return Items.TryGetValue(key, out string value) ? value : null;
+            return Items.TryGetValue(key, out var value) ? value : null;
         }
 
         /// <summary>
-        /// Set a string value in the <see cref="Items"/> collection.
+        /// Set or remove a string value from the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <param name="value">Value to set or <c>null</c> to remove the property.</param>
-        public void SetString(string key, string value)
+        /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
+        public void SetString(string key, string? value)
         {
             if (value != null)
             {
@@ -134,7 +151,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <typeparam name="T">Parameter type.</typeparam>
         /// <param name="key">Parameter key.</param>
         /// <returns>Retrieved value or the default value if the property is not set.</returns>
-        public T GetParameter<T>(string key)
+        public T? GetParameter<T>(string key)
             => Parameters.TryGetValue(key, out var obj) && obj is T value ? value : default;
 
         /// <summary>
@@ -147,13 +164,13 @@ namespace Microsoft.AspNetCore.Authentication
             => Parameters[key] = value;
 
         /// <summary>
-        /// Get a bool value from the <see cref="Items"/> collection.
+        /// Get a nullable <see cref="bool"/> from the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <returns>Retrieved value or <c>null</c> if the property is not set.</returns>
+        /// <returns>Retrieved value or <see langword="null" /> if the property is not set.</returns>
         protected bool? GetBool(string key)
         {
-            if (Items.TryGetValue(key, out string value) && bool.TryParse(value, out bool boolValue))
+            if (Items.TryGetValue(key, out var value) && bool.TryParse(value, out var boolValue))
             {
                 return boolValue;
             }
@@ -161,10 +178,10 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Set a bool value in the <see cref="Items"/> collection.
+        /// Set or remove a <see cref="bool"/> value in the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <param name="value">Value to set or <c>null</c> to remove the property.</param>
+        /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
         protected void SetBool(string key, bool? value)
         {
             if (value.HasValue)
@@ -178,14 +195,14 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Get a DateTimeOffset value from the <see cref="Items"/> collection.
+        /// Get a nullable <see cref="DateTimeOffset"/> value from the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <returns>Retrieved value or <c>null</c> if the property is not set.</returns>
+        /// <returns>Retrieved value or <see langword="null" /> if the property is not set.</returns>
         protected DateTimeOffset? GetDateTimeOffset(string key)
         {
-            if (Items.TryGetValue(key, out string value)
-                && DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTimeOffset dateTimeOffset))
+            if (Items.TryGetValue(key, out var value)
+                && DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTimeOffset))
             {
                 return dateTimeOffset;
             }
@@ -193,10 +210,10 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Set a DateTimeOffset value in the <see cref="Items"/> collection.
+        /// Sets or removes a <see cref="DateTimeOffset" /> value in the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <param name="value">Value to set or <c>null</c> to remove the property.</param>
+        /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
         protected void SetDateTimeOffset(string key, DateTimeOffset? value)
         {
             if (value.HasValue)

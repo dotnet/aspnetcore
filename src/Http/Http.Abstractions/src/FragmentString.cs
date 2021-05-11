@@ -105,6 +105,11 @@ namespace Microsoft.AspNetCore.Http
             return new FragmentString(fragmentValue);
         }
 
+        /// <summary>
+        /// Evaluates if the current fragment is equal to another fragment <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other">A <see cref="FragmentString" /> to compare.</param>
+        /// <returns><see langword="true" /> if the fragments are equal.</returns>
         public bool Equals(FragmentString other)
         {
             if (!HasValue && !other.HasValue)
@@ -114,7 +119,12 @@ namespace Microsoft.AspNetCore.Http
             return string.Equals(_value, other._value, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Evaluates if the current fragment is equal to an object <paramref name="obj"/>.
+        /// </summary>
+        /// <param name="obj">An object to compare.</param>
+        /// <returns><see langword="true" /> if the fragments are equal.</returns>
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -123,16 +133,32 @@ namespace Microsoft.AspNetCore.Http
             return obj is FragmentString && Equals((FragmentString)obj);
         }
 
+        /// <summary>
+        /// Gets a hash code for the value.
+        /// </summary>
+        /// <returns>The hash code as an <see cref="int"/>.</returns>
         public override int GetHashCode()
         {
             return (HasValue ? _value.GetHashCode() : 0);
         }
 
+        /// <summary>
+        /// Evaluates if one fragment is equal to another.
+        /// </summary>
+        /// <param name="left">A <see cref="FragmentString"/> instance.</param>
+        /// <param name="right">A <see cref="FragmentString"/> instance.</param>
+        /// <returns><see langword="true" /> if the fragments are equal.</returns>
         public static bool operator ==(FragmentString left, FragmentString right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Evalutes if one framgent is not equal to another.
+        /// </summary>
+        /// <param name="left">A <see cref="FragmentString"/> instance.</param>
+        /// <param name="right">A <see cref="FragmentString"/> instance.</param>
+        /// <returns><see langword="true" /> if the fragments are not equal.</returns>
         public static bool operator !=(FragmentString left, FragmentString right)
         {
             return !left.Equals(right);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -29,5 +30,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets or sets the maximum message size the client can send.
         /// </summary>
         public long? MaximumReceiveMessageSize { get; set; }
+
+        internal ISystemClock SystemClock { get; set; } = default!;
+
+        /// <summary>
+        /// Gets or sets the maximum parallel hub method invocations.
+        /// </summary>
+        public int MaximumParallelInvocations { get; set; } = 1;
     }
 }

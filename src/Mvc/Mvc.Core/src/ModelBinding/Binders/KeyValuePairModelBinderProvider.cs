@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -15,18 +16,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class KeyValuePairModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var modelTypeInfo = context.Metadata.ModelType.GetTypeInfo();
-            if (modelTypeInfo.IsGenericType &&
-                modelTypeInfo.GetGenericTypeDefinition().GetTypeInfo() == typeof(KeyValuePair<,>).GetTypeInfo())
+            var modelType = context.Metadata.ModelType;
+            if (modelType.IsGenericType &&
+                modelType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
             {
-                var typeArguments = modelTypeInfo.GenericTypeArguments;
+                var typeArguments = modelType.GenericTypeArguments;
 
                 var keyMetadata = context.MetadataProvider.GetMetadataForType(typeArguments[0]);
                 var keyBinder = context.CreateBinder(keyMetadata);
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 var binderType = typeof(KeyValuePairModelBinder<,>).MakeGenericType(typeArguments);
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-                return (IModelBinder)Activator.CreateInstance(binderType, keyBinder, valueBinder, loggerFactory);
+                return (IModelBinder)Activator.CreateInstance(binderType, keyBinder, valueBinder, loggerFactory)!;
             }
 
             return null;

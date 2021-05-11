@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
 
         public override async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    _logger.LogInformation(LoggerEventIds.UserCreated, "User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

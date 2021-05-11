@@ -11,13 +11,16 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets
 {
+    /// <summary>
+    /// Enables accepting WebSocket requests by adding a <see cref="IHttpWebSocketFeature"/>
+    /// to the <see cref="HttpContext"/> if the request is a valid WebSocket request.
+    /// </summary>
     public class WebSocketMiddleware
     {
         private readonly RequestDelegate _next;
@@ -26,6 +29,12 @@ namespace Microsoft.AspNetCore.WebSockets
         private readonly bool _anyOriginAllowed;
         private readonly List<string> _allowedOrigins;
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="WebSocketMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="options">The configuration options.</param>
+        /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
         public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options, ILoggerFactory loggerFactory)
         {
             if (next == null)
@@ -47,6 +56,12 @@ namespace Microsoft.AspNetCore.WebSockets
             // TODO: validate options.
         }
 
+        /// <summary>
+        /// Processes a request to determine if it is a WebSocket request, and if so,
+        /// sets the <see cref="IHttpWebSocketFeature"/> on the <see cref="HttpContext.Features"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> representing the request.</param>
+        /// <returns>The <see cref="Task"/> that represents the completion of the middleware pipeline.</returns>
         public Task Invoke(HttpContext context)
         {
             // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
@@ -59,7 +74,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 if (!_anyOriginAllowed)
                 {
                     // Check for Origin header
-                    var originHeader = context.Request.Headers[HeaderNames.Origin];
+                    var originHeader = context.Request.Headers.Origin;
 
                     if (!StringValues.IsNullOrEmpty(originHeader) && webSocketFeature.IsWebSocketRequest)
                     {
@@ -103,15 +118,7 @@ namespace Microsoft.AspNetCore.WebSockets
                         }
                         else
                         {
-                            var headers = new List<KeyValuePair<string, string>>();
-                            foreach (string headerName in HandshakeHelpers.NeededHeaders)
-                            {
-                                foreach (var value in _context.Request.Headers.GetCommaSeparatedValues(headerName))
-                                {
-                                    headers.Add(new KeyValuePair<string, string>(headerName, value));
-                                }
-                            }
-                            _isWebSocketRequest = HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, headers);
+                            _isWebSocketRequest = CheckSupportedWebSocketRequest(_context.Request.Method, _context.Request.Headers);
                         }
                     }
                     return _isWebSocketRequest.Value;
@@ -125,34 +132,99 @@ namespace Microsoft.AspNetCore.WebSockets
                     throw new InvalidOperationException("Not a WebSocket request."); // TODO: LOC
                 }
 
-                string subProtocol = null;
+                string? subProtocol = null;
                 if (acceptContext != null)
                 {
                     subProtocol = acceptContext.SubProtocol;
                 }
 
                 TimeSpan keepAliveInterval = _options.KeepAliveInterval;
-                int receiveBufferSize = _options.ReceiveBufferSize;
-                var advancedAcceptContext = acceptContext as ExtendedWebSocketAcceptContext;
-                if (advancedAcceptContext != null)
+                if (acceptContext is ExtendedWebSocketAcceptContext advancedAcceptContext)
                 {
-                    if (advancedAcceptContext.ReceiveBufferSize.HasValue)
-                    {
-                        receiveBufferSize = advancedAcceptContext.ReceiveBufferSize.Value;
-                    }
                     if (advancedAcceptContext.KeepAliveInterval.HasValue)
                     {
                         keepAliveInterval = advancedAcceptContext.KeepAliveInterval.Value;
                     }
                 }
 
-                string key = string.Join(", ", _context.Request.Headers[HeaderNames.SecWebSocketKey]);
+                string key = _context.Request.Headers.SecWebSocketKey;
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
                 return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+            }
+
+            public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)
+            {
+                if (!HttpMethods.IsGet(method))
+                {
+                    return false;
+                }
+
+                var foundHeader = false;
+
+                var values = requestHeaders.GetCommaSeparatedValues(HeaderNames.SecWebSocketVersion);
+                foreach (var value in values)
+                {
+                    if (string.Equals(value, Constants.Headers.SupportedVersion, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                        if (values.Length == 1)
+                        {
+                            requestHeaders.SecWebSocketVersion = Constants.Headers.SupportedVersion;
+                        }
+                        foundHeader = true;
+                        break;
+                    }
+                }
+                if (!foundHeader)
+                {
+                    return false;
+                }
+                foundHeader = false;
+
+                values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Connection);
+                foreach (var value in values)
+                {
+                    if (string.Equals(value, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                        if (values.Length == 1)
+                        {
+                            requestHeaders.Connection = HeaderNames.Upgrade;
+                        }
+                        foundHeader = true;
+                        break;
+                    }
+                }
+                if (!foundHeader)
+                {
+                    return false;
+                }
+                foundHeader = false;
+
+                values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Upgrade);
+                foreach (var value in values)
+                {
+                    if (string.Equals(value, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                        if (values.Length == 1)
+                        {
+                            requestHeaders.Upgrade = Constants.Headers.UpgradeWebSocket;
+                        }
+                        foundHeader = true;
+                        break;
+                    }
+                }
+                if (!foundHeader)
+                {
+                    return false;
+                }
+
+                return HandshakeHelpers.IsRequestKeyValid(requestHeaders.SecWebSocketKey.ToString());
             }
         }
     }

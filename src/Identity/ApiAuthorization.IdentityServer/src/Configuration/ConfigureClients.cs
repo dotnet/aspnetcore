@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             {
                 foreach (var kvp in data)
                 {
-                    _logger.LogInformation($"Configuring client '{kvp.Key}'.");
+                    _logger.LogInformation(LoggerEventIds.ConfiguringClient, "Configuring client '{ClientName}'.", kvp.Key);
                     var name = kvp.Key;
                     var definition = kvp.Value;
 

@@ -11,11 +11,6 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHostOptions
     {
-        public WebHostOptions() { }
-
-        public WebHostOptions(IConfiguration configuration)
-            : this(configuration, string.Empty) { }
-
         public WebHostOptions(IConfiguration configuration, string applicationNameFallback)
         {
             if (configuration == null)
@@ -76,21 +71,8 @@ namespace Microsoft.AspNetCore.Hosting
 
         private IReadOnlyList<string> Split(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return Array.Empty<string>();
-            }
-
-            var list = new List<string>();
-            foreach (var part in value.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                var trimmedPart = part;
-                if (!string.IsNullOrEmpty(trimmedPart))
-                {
-                    list.Add(trimmedPart);
-                }
-            }
-            return list;
+            return value?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                ?? Array.Empty<string>();
         }
     }
 }

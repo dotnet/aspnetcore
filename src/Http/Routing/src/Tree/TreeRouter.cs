@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
@@ -17,8 +19,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
     /// </summary>
     public class TreeRouter : IRouter
     {
-        // Key used by routing and action selection to match an attribute route entry to a
-        // group of action descriptors.
+        /// <summary>
+        /// Key used by routing and action selection to match an attribute
+        /// route entry to a group of action descriptors.
+        /// </summary>
         public static readonly string RouteGroupKey = "!__route_group";
 
         private readonly LinkGenerationDecisionTree _linkGenerationTree;

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
-            var isSha256 = scriptTag.Integrity.StartsWith("sha256");
+            var isSha256 = scriptTag.Integrity.StartsWith("sha256", StringComparison.Ordinal);
             var prefix = isSha256 ? "sha256" : "sha384";
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
             using (var alg256 = SHA256.Create())
@@ -79,7 +79,9 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.AzP.macOS)]
+        // Ubuntu 16 uses an old version of OpenSSL that doesn't work well when an intermediate CA is expired.
+        // We've decided to not run these tests against that OS anymore and will run on newer versions of Ubuntu.
+        [SkipOnHelix("Skip on Ubuntu 16", Queues = "Ubuntu.1604.Amd64.Open;Ubuntu.1604.Amd64")]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);
@@ -107,9 +109,8 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var uiDirV3 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V3");
             var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
-            var cshtmlFiles = GetRazorFiles(uiDirV3).Concat(GetRazorFiles(uiDirV4));
+            var cshtmlFiles = GetRazorFiles(uiDirV4);
 
             var scriptTags = new List<ScriptTag>();
             foreach (var cshtmlFile in cshtmlFiles)
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
                 scriptTags.Add(new ScriptTag
                 {
-                    Version = cshtmlFile.Contains("V3") ? "V3" : "V4",
+                    Version = "V4",
                     Src = scriptElement.Source,
                     Integrity = scriptElement.Integrity,
                     FallbackSrc = fallbackSrcAttribute?.Value,

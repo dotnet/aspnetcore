@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Setting the value to "null" will use the default value in case of value types, and
             // null in case of reference types
             object value = null;
-            if (jsonProperty.PropertyType.GetTypeInfo().IsValueType
+            if (jsonProperty.PropertyType.IsValueType
                 && Nullable.GetUnderlyingType(jsonProperty.PropertyType) == null)
             {
                 value = Activator.CreateInstance(jsonProperty.PropertyType);

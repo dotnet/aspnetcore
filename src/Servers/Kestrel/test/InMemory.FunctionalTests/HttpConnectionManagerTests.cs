@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var logWh = new SemaphoreSlim(0);
             var appStartedWh = new SemaphoreSlim(0);
 
-            var mockTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockTrace = new Mock<KestrelTrace>(LoggerFactory) { CallBase = true };
             mockTrace
                 .Setup(trace => trace.ApplicationNeverCompleted(It.IsAny<string>()))
                 .Callback(() =>
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await using (var server = new TestServer(context =>
                 {
                     appStartedWh.Release();
-                    var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     return tcs.Task;
                 },
                 testContext))

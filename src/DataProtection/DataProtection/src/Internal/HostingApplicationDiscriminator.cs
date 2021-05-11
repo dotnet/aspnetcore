@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 {
     internal class HostingApplicationDiscriminator : IApplicationDiscriminator
     {
-        private readonly IHostEnvironment _hosting;
+        private readonly IHostEnvironment? _hosting;
 
         // the optional constructor for when IHostingEnvironment is not available from DI
         public HostingApplicationDiscriminator()
@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
             _hosting = hosting;
         }
 
-        public string Discriminator => _hosting?.ContentRootPath;
+        public string? Discriminator => _hosting?.ContentRootPath;
     }
 }

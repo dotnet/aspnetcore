@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             });
 
             Services = serviceCollection.BuildServiceProvider();
-            Factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>());
+            Factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
         }
 
         internal ActionEndpointFactory Factory { get; }
@@ -209,6 +209,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
+        public void AddEndpoints_AttributeRouted_ContainsParameterUsingReservedNameWithConstraint_ExceptionThrown()
+        {
+            // Arrange
+            var values = new { controller = "TestController", action = "TestAction", page = (string)null };
+            var action = CreateActionDescriptor(values, "Products/{action:int}");
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => CreateAttributeRoutedEndpoint(action));
+            Assert.Equal(
+                "Failed to update the route pattern 'Products/{action:int}' with required route values. " +
+                "This can occur when the route pattern contains parameters with reserved names such as: 'controller', 'action', 'page' and also uses route constraints such as '{action:int}'. " +
+                "To fix this error, choose a different parameter name.",
+                exception.Message);
+        }
+
+        [Fact]
         public void AddEndpoints_AttributeRouted_ContainsParameterWithNullRequiredRouteValue_EndpointCreated()
         {
             // Arrange
@@ -243,6 +259,29 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.False(endpoint.RoutePattern.RequiredValues.ContainsKey("page"));
             Assert.Equal("Test", endpoint.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
             Assert.Equal("Test", endpoint.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
+        }
+
+        [Fact]
+        public void RequestDelegateFactoryWorks()
+        {
+            // Arrange
+            var values = new { controller = "TestController", action = "TestAction", page = (string)null };
+            var action = CreateActionDescriptor(values, "{controller}/{action}/{page}");
+            action.AttributeRouteInfo.Name = "Test";
+            RequestDelegate del = context => Task.CompletedTask;
+            var requestDelegateFactory = new Mock<IRequestDelegateFactory>();
+            requestDelegateFactory.Setup(m => m.CreateRequestDelegate(action, It.IsAny<RouteValueDictionary>())).Returns(del);
+
+            // Act
+            var factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), new[] { requestDelegateFactory.Object });
+
+            var endpoints = new List<Endpoint>();
+            factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
+
+            var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
+
+            // Assert
+            Assert.Same(del, endpoint.RequestDelegate);
         }
 
         [Fact]

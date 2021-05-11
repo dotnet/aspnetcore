@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Hosting;
 
 namespace HttpOverridesSample
 {
@@ -30,15 +32,19 @@ namespace HttpOverridesSample
         }
 
         // Entry point for the application.
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                // .UseIIS() // This repo can no longer reference IIS because IISIntegration depends on it.
-                .UseStartup<Startup>()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    // .UseIIS() // This repo can no longer reference IIS because IISIntegration depends on it.
+                    .UseStartup<Startup>();
+                })
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

@@ -19,8 +19,7 @@ namespace BasicWebSite
 
             services
                 .AddMvc()
-                .AddNewtonsoftJson()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddNewtonsoftJson();
 
             services.Configure<ApiBehaviorOptions>(options =>
             {

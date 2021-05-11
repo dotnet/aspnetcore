@@ -7,20 +7,29 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// An implementation for <see cref="IServiceProvidersFeature"/> for accessing request services.
+    /// </summary>
     public class RequestServicesFeature : IServiceProvidersFeature, IDisposable, IAsyncDisposable
     {
-        private readonly IServiceScopeFactory _scopeFactory;
-        private IServiceProvider _requestServices;
-        private IServiceScope _scope;
+        private readonly IServiceScopeFactory? _scopeFactory;
+        private IServiceProvider? _requestServices;
+        private IServiceScope? _scope;
         private bool _requestServicesSet;
         private readonly HttpContext _context;
 
-        public RequestServicesFeature(HttpContext context, IServiceScopeFactory scopeFactory)
+        /// <summary>
+        /// Initializes a new instance of <see cref="RequestServicesFeature"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scopeFactory">The <see cref="IServiceScopeFactory"/>.</param>
+        public RequestServicesFeature(HttpContext context, IServiceScopeFactory? scopeFactory)
         {
             _context = context;
             _scopeFactory = scopeFactory;
         }
 
+        /// <inheritdoc />
         public IServiceProvider RequestServices
         {
             get
@@ -32,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     _requestServices = _scope.ServiceProvider;
                     _requestServicesSet = true;
                 }
-                return _requestServices;
+                return _requestServices!;
             }
 
             set
@@ -42,6 +51,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
+        /// <inheritdoc />
         public ValueTask DisposeAsync()
         {
             switch (_scope)
@@ -74,9 +84,10 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
     }
 }

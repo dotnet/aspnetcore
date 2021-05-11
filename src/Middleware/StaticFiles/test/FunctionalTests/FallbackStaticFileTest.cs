@@ -12,8 +12,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -24,94 +26,102 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsFileForDefaultPattern()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddRouting();
-                    services.AddSingleton(LoggerFactory);
-                })
-                .UseKestrel()
-                .UseWebRoot(AppContext.BaseDirectory)
-                .Configure(app =>
-                {
-                    var environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
+                    webHostBuilder
+                    .ConfigureServices(services =>
                     {
-                        endpoints.Map("/hello", context =>
+                        services.AddRouting();
+                        services.AddSingleton(LoggerFactory);
+                    })
+                    .UseKestrel()
+                    .UseUrls(TestUrlHelper.GetTestUrl(ServerType.Kestrel))
+                    .UseWebRoot(AppContext.BaseDirectory)
+                    .Configure(app =>
+                    {
+                        var environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
                         {
-                            return context.Response.WriteAsync("Hello, world!");
-                        });
+                            endpoints.Map("/hello", context =>
+                            {
+                                return context.Response.WriteAsync("Hello, world!");
+                            });
 
-                        endpoints.MapFallbackToFile("default.html", new StaticFileOptions()
-                        {
-                            FileProvider = new PhysicalFileProvider(Path.Combine(environment.WebRootPath, "SubFolder")),
+                            endpoints.MapFallbackToFile("default.html", new StaticFileOptions()
+                            {
+                                FileProvider = new PhysicalFileProvider(Path.Combine(environment.WebRootPath, "SubFolder")),
+                            });
                         });
                     });
-                });
+                }).Build();
 
-            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
+            await host.StartAsync();
+
+            var environment = host.Services.GetRequiredService<IWebHostEnvironment>();
+            using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(host)) })
             {
-                var environment = server.Services.GetRequiredService<IWebHostEnvironment>();
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
-                {
-                    var response = await client.GetAsync("hello");
-                    var responseText = await response.Content.ReadAsStringAsync();
+                var response = await client.GetAsync("hello");
+                var responseText = await response.Content.ReadAsStringAsync();
 
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    Assert.Equal("Hello, world!", responseText);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("Hello, world!", responseText);
 
-                    response = await client.GetAsync("/");
-                    var responseContent = await response.Content.ReadAsByteArrayAsync();
+                response = await client.GetAsync("/");
+                var responseContent = await response.Content.ReadAsByteArrayAsync();
 
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    AssertFileEquals(environment, "SubFolder/default.html", responseContent);
-                }
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                AssertFileEquals(environment, "SubFolder/default.html", responseContent);
             }
         }
 
         [Fact]
         public async Task ReturnsFileForCustomPattern()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddRouting();
-                    services.AddSingleton(LoggerFactory);
-                })
-                .UseKestrel()
-                .UseWebRoot(AppContext.BaseDirectory)
-                .Configure(app =>
-                {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
+                    webHostBuilder
+                    .ConfigureServices(services =>
                     {
-                        endpoints.Map("/hello", context =>
+                        services.AddRouting();
+                        services.AddSingleton(LoggerFactory);
+                    })
+                    .UseKestrel()
+                    .UseUrls(TestUrlHelper.GetTestUrl(ServerType.Kestrel))
+                    .UseWebRoot(AppContext.BaseDirectory)
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
                         {
-                            return context.Response.WriteAsync("Hello, world!");
+                            endpoints.Map("/hello", context =>
+                            {
+                                return context.Response.WriteAsync("Hello, world!");
+                            });
+
+                            endpoints.MapFallbackToFile("/prefix/{*path:nonfile}", "TestDocument.txt");
                         });
-
-                        endpoints.MapFallbackToFile("/prefix/{*path:nonfile}", "TestDocument.txt");
                     });
-                });
+                }).Build();
 
-            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
+            await host.StartAsync();
+
+            var environment = host.Services.GetRequiredService<IWebHostEnvironment>();
+            using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(host)) })
             {
-                var environment = server.Services.GetRequiredService<IWebHostEnvironment>();
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
-                {
-                    var response = await client.GetAsync("hello");
-                    var responseText = await response.Content.ReadAsStringAsync();
+                var response = await client.GetAsync("hello");
+                var responseText = await response.Content.ReadAsStringAsync();
 
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    Assert.Equal("Hello, world!", responseText);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("Hello, world!", responseText);
 
-                    response = await client.GetAsync("prefix/Some-Path");
-                    var responseContent = await response.Content.ReadAsByteArrayAsync();
+                response = await client.GetAsync("prefix/Some-Path");
+                var responseContent = await response.Content.ReadAsByteArrayAsync();
 
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    AssertFileEquals(environment, "TestDocument.txt", responseContent);
-                }
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                AssertFileEquals(environment, "TestDocument.txt", responseContent);
             }
         }
 

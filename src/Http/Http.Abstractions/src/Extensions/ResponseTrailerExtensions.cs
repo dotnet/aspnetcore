@@ -8,6 +8,10 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Contains extension methods for modifying the `Trailer` response header
+    /// and trailing headers in an <see cref="HttpResponse" />.
+    /// </summary>
     public static class ResponseTrailerExtensions
     {
         /// <summary>

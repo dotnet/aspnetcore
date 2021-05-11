@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             // Assert
             Assert.NotNull(encryptor);
-            Assert.IsType<GcmAuthenticatedEncryptor>(encryptor);
+            Assert.IsType<CngGcmAuthenticatedEncryptor>(encryptor);
         }
     }
 }

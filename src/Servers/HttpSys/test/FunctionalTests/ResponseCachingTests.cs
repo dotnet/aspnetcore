@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2135", FlakyOn.All)]
         public async Task Caching_JustPublic_NotCached()
         {
             var requestCount = 1;
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public";
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win2008R2, WindowsVersions.Win7, SkipReason = "Content type not required for caching on Win7 and Win2008R2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "Content type not required for caching on Win7.")]
         public async Task Caching_WithoutContentType_NotCached()
         {
             var requestCount = 1;
@@ -74,19 +73,40 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 // httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2207", FlakyOn.All)]
+        public async Task Caching_304_NotCached()
+        {
+            var requestCount = 1;
+            using (Utilities.CreateHttpServer(out string address, httpContext =>
+            {
+                // 304 responses are not themselves cachable. Their cache header mirrors the resource's original cache header.
+                httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
+                httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
+                httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
+                httpContext.Response.ContentLength = 10;
+                return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
+            }))
+            {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
+                Assert.Equal("1", await SendRequestAsync(address, StatusCodes.Status304NotModified));
+                Assert.Equal("2", await SendRequestAsync(address, StatusCodes.Status304NotModified));
+            }
+        }
+
+        [ConditionalFact]
         public async Task Caching_WithoutContentType_Cached_OnWin7AndWin2008R2()
         {
             if (Utilities.IsWin8orLater)
@@ -99,12 +119,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 // httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -118,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -138,12 +159,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=" + int.MaxValue.ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -157,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, s-maxage=10";
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -177,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=0, s-maxage=10";
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -197,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public";
                 httpContext.Response.Headers["Expires"] = (DateTime.UtcNow + TimeSpan.FromSeconds(10)).ToString("r");
                 httpContext.Response.ContentLength = 10;
@@ -221,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.Headers[headerName] = "headerValue";
                 httpContext.Response.ContentLength = 10;
@@ -237,7 +259,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         [ConditionalTheory]
         [InlineData("0")]
         [InlineData("-1")]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2208", FlakyOn.All)]
         public async Task Caching_InvalidExpires_NotCached(string expiresValue)
         {
             var requestCount = 1;
@@ -245,7 +266,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public";
                 httpContext.Response.Headers["Expires"] = expiresValue;
                 httpContext.Response.ContentLength = 10;
@@ -266,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Expires"] = (DateTime.UtcNow + TimeSpan.FromSeconds(10)).ToString("r");
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -286,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.Headers["Expires"] = (DateTime.UtcNow - TimeSpan.FromSeconds(10)).ToString("r"); // In the past
                 httpContext.Response.ContentLength = 10;
@@ -307,13 +328,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
                 httpContext.Response.Body.FlushAsync();
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -327,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
                 await httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -335,6 +357,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 Assert.Null(httpContext.Response.ContentLength);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -348,11 +371,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await GetFileAsync(address));
                 Assert.Equal("2", await GetFileAsync(address));
             }
@@ -366,19 +390,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = _fileLength;
                 await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await GetFileAsync(address));
                 Assert.Equal("1", await GetFileAsync(address));
             }
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.All)]
         public async Task Caching_VariousStatusCodes_Cached()
         {
             var requestCount = 1;
@@ -386,9 +410,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
-                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
-                var status = int.Parse(httpContext.Request.Path.Value.Substring(1));
+                var status = int.Parse(httpContext.Request.Path.Value.Substring(1), CultureInfo.InvariantCulture);
                 httpContext.Response.StatusCode = status;
                 httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -400,13 +424,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     switch (status)
                     {
                         case 206: // 206 (Partial Content) is not cached
+                        case 304: // 304 (Not Modified) is not cached
                         case 407: // 407 (Proxy Authentication Required) makes CoreCLR's HttpClient throw
                             continue;
                     }
                     requestCount = 1;
+                    var query = "?" + Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                     try
                     {
-                        Assert.Equal("1", await SendRequestAsync(address + status, status));
+                        Assert.Equal("1", await SendRequestAsync(address + status + query, status));
                     }
                     catch (Exception ex)
                     {
@@ -414,7 +440,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     }
                     try
                     {
-                        Assert.Equal("1", await SendRequestAsync(address + status, status));
+                        Assert.Equal("1", await SendRequestAsync(address + status + query, status));
                     }
                     catch (Exception ex)
                     {

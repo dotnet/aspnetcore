@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
         /// This feature is not available for HTTP/2 requests. Instead, use <see cref="KestrelServerLimits.MinResponseDataRate"/>
         /// for server-wide configuration which applies to both HTTP/2 and HTTP/1.x.
         /// </summary>
-        MinDataRate MinDataRate { get; set; }
+        MinDataRate? MinDataRate { get; set; }
     }
 }

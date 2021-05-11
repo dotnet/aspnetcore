@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
             var unixTimestamp = Convert.ToInt64(Math.Round((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
             var timestep = Convert.ToInt64(unixTimestamp / 30);
             var topt = Rfc6238AuthenticationService.ComputeTotp(hash, (ulong)timestep, modifier: null);
-            return topt.ToString("D6");
+            return topt.ToString("D6", CultureInfo.InvariantCulture);
         }
     }
 }

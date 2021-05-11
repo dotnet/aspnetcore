@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Internal;
@@ -13,8 +14,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         internal ControllerActionInvokerCacheEntry(
             FilterItem[] cachedFilters,
             Func<ControllerContext, object> controllerFactory,
-            Action<ControllerContext, object> controllerReleaser,
-            ControllerBinderDelegate controllerBinderDelegate,
+            Func<ControllerContext, object, ValueTask>? controllerReleaser,
+            ControllerBinderDelegate? controllerBinderDelegate,
             ObjectMethodExecutor objectMethodExecutor,
             ActionMethodExecutor actionMethodExecutor)
         {
@@ -30,9 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         public Func<ControllerContext, object> ControllerFactory { get; }
 
-        public Action<ControllerContext, object> ControllerReleaser { get; }
+        public Func<ControllerContext, object, ValueTask>? ControllerReleaser { get; }
 
-        public ControllerBinderDelegate ControllerBinderDelegate { get; }
+        public ControllerBinderDelegate? ControllerBinderDelegate { get; }
 
         internal ObjectMethodExecutor ObjectMethodExecutor { get; }
 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     /// Represents a configured authenticated encryption mechanism which uses
     /// Windows CNG algorithms in CBC encryption + HMAC authentication modes.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public sealed class CngCbcAuthenticatedEncryptorConfiguration : AlgorithmConfiguration, IInternalAlgorithmConfiguration
     {
         /// <summary>
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         /// The default value is null.
         /// </remarks>
         [ApplyPolicy]
-        public string EncryptionAlgorithmProvider { get; set; } = null;
+        public string? EncryptionAlgorithmProvider { get; set; } = null;
 
         /// <summary>
         /// The length (in bits) of the key that will be used for symmetric encryption.
@@ -69,8 +71,9 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         /// The default value is null.
         /// </remarks>
         [ApplyPolicy]
-        public string HashAlgorithmProvider { get; set; } = null;
+        public string? HashAlgorithmProvider { get; set; } = null;
 
+        /// <inheritdoc />
         public override IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
             var internalConfiguration = (IInternalAlgorithmConfiguration)this;

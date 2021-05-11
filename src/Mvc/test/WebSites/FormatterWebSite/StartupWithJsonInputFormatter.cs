@@ -17,8 +17,7 @@ namespace FormatterWebSite
                 options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Developer)));
                 options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Supplier)));
             })
-            .AddXmlDataContractSerializerFormatters()
-            .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            .AddXmlDataContractSerializerFormatters();
         }
 
         public void Configure(IApplicationBuilder app)

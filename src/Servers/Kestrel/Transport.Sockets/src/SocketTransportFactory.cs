@@ -13,6 +13,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
+    /// <summary>
+    /// A factory for socket based connections.
+    /// </summary>
     public sealed class SocketTransportFactory : IConnectionListenerFactory
     {
         private readonly SocketTransportOptions _options;

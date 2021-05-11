@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -10,9 +13,9 @@ namespace Microsoft.Extensions.Internal
 {
     internal class ObjectMethodExecutor
     {
-        private readonly object[] _parameterDefaultValues;
-        private readonly MethodExecutorAsync _executorAsync;
-        private readonly MethodExecutor _executor;
+        private readonly object?[]? _parameterDefaultValues;
+        private readonly MethodExecutorAsync? _executorAsync;
+        private readonly MethodExecutor? _executor;
 
         private static readonly ConstructorInfo _objectMethodExecutorAwaitableConstructor =
             typeof(ObjectMethodExecutorAwaitable).GetConstructor(new[] {
@@ -22,9 +25,9 @@ namespace Microsoft.Extensions.Internal
                 typeof(Func<object, object>),   // getResultMethod
                 typeof(Action<object, Action>), // onCompletedMethod
                 typeof(Action<object, Action>)  // unsafeOnCompletedMethod
-            });
+            })!;
 
-        private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, object[] parameterDefaultValues)
+        private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[]? parameterDefaultValues)
         {
             if (methodInfo == null)
             {
@@ -54,11 +57,11 @@ namespace Microsoft.Extensions.Internal
             _parameterDefaultValues = parameterDefaultValues;
         }
 
-        private delegate ObjectMethodExecutorAwaitable MethodExecutorAsync(object target, object[] parameters);
+        private delegate ObjectMethodExecutorAwaitable MethodExecutorAsync(object target, object?[]? parameters);
 
-        private delegate object MethodExecutor(object target, object[] parameters);
+        private delegate object? MethodExecutor(object target, object?[]? parameters);
 
-        private delegate void VoidMethodExecutor(object target, object[] parameters);
+        private delegate void VoidMethodExecutor(object target, object?[]? parameters);
 
         public MethodInfo MethodInfo { get; }
 
@@ -66,7 +69,7 @@ namespace Microsoft.Extensions.Internal
 
         public TypeInfo TargetTypeInfo { get; }
 
-        public Type AsyncResultType { get; }
+        public Type? AsyncResultType { get; }
 
         // This field is made internal set because it is set in unit tests.
         public Type MethodReturnType { get; internal set; }
@@ -78,7 +81,7 @@ namespace Microsoft.Extensions.Internal
             return new ObjectMethodExecutor(methodInfo, targetTypeInfo, null);
         }
 
-        public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo, object[] parameterDefaultValues)
+        public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[] parameterDefaultValues)
         {
             if (parameterDefaultValues == null)
             {
@@ -103,8 +106,9 @@ namespace Microsoft.Extensions.Internal
         /// <param name="target">The object whose method is to be executed.</param>
         /// <param name="parameters">Parameters to pass to the method.</param>
         /// <returns>The method return value.</returns>
-        public object Execute(object target, object[] parameters)
+        public object? Execute(object target, object?[]? parameters)
         {
+            Debug.Assert(_executor != null, "Sync execution is not supported.");
             return _executor(target, parameters);
         }
 
@@ -128,12 +132,13 @@ namespace Microsoft.Extensions.Internal
         /// <param name="target">The object whose method is to be executed.</param>
         /// <param name="parameters">Parameters to pass to the method.</param>
         /// <returns>An object that you can "await" to get the method return value.</returns>
-        public ObjectMethodExecutorAwaitable ExecuteAsync(object target, object[] parameters)
+        public ObjectMethodExecutorAwaitable ExecuteAsync(object target, object?[]? parameters)
         {
+            Debug.Assert(_executorAsync != null, "Async execution is not supported.");
             return _executorAsync(target, parameters);
         }
 
-        public object GetDefaultValueForParameter(int index)
+        public object? GetDefaultValueForParameter(int index)
         {
             if (_parameterDefaultValues == null)
             {
@@ -152,11 +157,11 @@ namespace Microsoft.Extensions.Internal
         {
             // Parameters to executor
             var targetParameter = Expression.Parameter(typeof(object), "target");
-            var parametersParameter = Expression.Parameter(typeof(object[]), "parameters");
+            var parametersParameter = Expression.Parameter(typeof(object?[]), "parameters");
 
             // Build parameter list
-            var parameters = new List<Expression>();
             var paramInfos = methodInfo.GetParameters();
+            var parameters = new List<Expression>(paramInfos.Length);
             for (int i = 0; i < paramInfos.Length; i++)
             {
                 var paramInfo = paramInfos[i];
@@ -190,7 +195,7 @@ namespace Microsoft.Extensions.Internal
 
         private static MethodExecutor WrapVoidMethod(VoidMethodExecutor executor)
         {
-            return delegate (object target, object[] parameters)
+            return delegate (object target, object?[]? parameters)
             {
                 executor(target, parameters);
                 return null;
@@ -207,8 +212,8 @@ namespace Microsoft.Extensions.Internal
             var parametersParameter = Expression.Parameter(typeof(object[]), "parameters");
 
             // Build parameter list
-            var parameters = new List<Expression>();
             var paramInfos = methodInfo.GetParameters();
+            var parameters = new List<Expression>(paramInfos.Length);
             for (int i = 0; i < paramInfos.Length; i++)
             {
                 var paramInfo = paramInfos[i];
@@ -294,7 +299,7 @@ namespace Microsoft.Extensions.Internal
                 onCompletedParam1,
                 onCompletedParam2).Compile();
 
-            Action<object, Action> unsafeOnCompletedFunc = null;
+            Action<object, Action>? unsafeOnCompletedFunc = null;
             if (awaitableInfo.AwaiterUnsafeOnCompletedMethod != null)
             {
                 // var unsafeOnCompletedFunc = (object awaiter, Action continuation) => {

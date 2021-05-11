@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Represents a list that lets users select multiple items.
-    /// This class is typically rendered as an HTML <code>&lt;select multiple="multiple"&gt;</code> element with the specified collection
+    /// This class is typically rendered as an HTML <c>&lt;select multiple="multiple"&gt;</c> element with the specified collection
     /// of <see cref="SelectListItem"/> objects.
     /// </summary>
     public class MultiSelectList : IEnumerable<SelectListItem>
@@ -20,6 +20,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         private readonly IList<SelectListGroup> _groups;
         private IList<SelectListItem> _selectListItems;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="MultiSelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
         public MultiSelectList(IEnumerable items)
             : this(items, selectedValues: null)
         {
@@ -29,6 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="MultiSelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="selectedValues">The selected values.</param>
         public MultiSelectList(IEnumerable items, IEnumerable selectedValues)
             : this(items, dataValueField: null, dataTextField: null, selectedValues: selectedValues)
         {
@@ -38,6 +47,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="MultiSelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="dataValueField">The data value field.</param>
+        /// <param name="dataTextField">The data text field.</param>
         public MultiSelectList(IEnumerable items, string dataValueField, string dataTextField)
             : this(items, dataValueField, dataTextField, selectedValues: null)
         {
@@ -47,6 +62,13 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="MultiSelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="dataValueField">The data value field.</param>
+        /// <param name="dataTextField">The data text field.</param>
+        /// <param name="selectedValues">The selected values.</param>
         public MultiSelectList(
             IEnumerable items,
             string dataValueField,
@@ -98,18 +120,31 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Gets or sets the data group field.
+        /// Gets the data group field.
         /// </summary>
         public string DataGroupField { get; }
 
+        /// <summary>
+        /// Gets the data text field.
+        /// </summary>
         public string DataTextField { get; }
 
+        /// <summary>
+        /// Gets the data value field.
+        /// </summary>
         public string DataValueField { get; }
 
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
         public IEnumerable Items { get; }
 
+        /// <summary>
+        /// Gets the selected values.
+        /// </summary>
         public IEnumerable SelectedValues { get; }
 
+        /// <inheritdoc />
         public virtual IEnumerator<SelectListItem> GetEnumerator()
         {
             if (_selectListItems == null)

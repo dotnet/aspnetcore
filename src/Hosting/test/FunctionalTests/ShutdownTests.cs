@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27371")]
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
-// https://github.com/aspnet/AspNetCore/issues/8247
+// https://github.com/dotnet/aspnetcore/issues/8247
 #pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",
-                    TargetFramework = Tfm.NetCoreApp31,
+                    TargetFramework = Tfm.Default,
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false
@@ -69,45 +71,50 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
                 {
-                    await deployer.DeployAsync();
-
-                    var started = new ManualResetEventSlim();
-                    var completed = new ManualResetEventSlim();
+                    var startedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var completedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var output = string.Empty;
-                    deployer.HostProcess.OutputDataReceived += (sender, args) =>
+
+                    deployer.ProcessOutputListener = (data) =>
                     {
-                        if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage))
+                        if (!string.IsNullOrEmpty(data) && data.StartsWith(StartedMessage, StringComparison.Ordinal))
                         {
-                            started.Set();
-                            output += args.Data.Substring(StartedMessage.Length) + '\n';
+                            startedTcs.TrySetResult();
+                            output += data.Substring(StartedMessage.Length) + '\n';
                         }
                         else
                         {
-                            output += args.Data + '\n';
+                            output += data + '\n';
                         }
 
                         if (output.Contains(CompletionMessage))
                         {
-                            completed.Set();
+                            completedTcs.TrySetResult();
                         }
                     };
 
-                    started.Wait(50000);
+                    await deployer.DeployAsync();
 
-                    if (!started.IsSet)
+                    try
                     {
-                        throw new InvalidOperationException("Application did not start successfully");
+                        await startedTcs.Task.TimeoutAfter(TimeSpan.FromMinutes(1));
+                    }
+                    catch (TimeoutException ex)
+                    {
+                        throw new InvalidOperationException("Timeout while waiting for host process to output started message.", ex);
                     }
 
                     SendSIGINT(deployer.HostProcess.Id);
 
                     WaitForExitOrKill(deployer.HostProcess);
 
-                    completed.Wait(50000);
-
-                    if (!started.IsSet)
+                    try
                     {
-                        throw new InvalidOperationException($"Application did not write the expected output. The received output is: {output}");
+                        await completedTcs.Task.TimeoutAfter(TimeSpan.FromMinutes(1));
+                    }
+                    catch (TimeoutException ex)
+                    {
+                        throw new InvalidOperationException($"Timeout while waiting for host process to output completion message. The received output is: {output}", ex);
                     }
 
                     output = output.Trim('\n');
@@ -122,7 +129,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             var startInfo = new ProcessStartInfo
             {
                 FileName = "kill",
-                Arguments = processId.ToString(),
+                Arguments = processId.ToString(CultureInfo.InvariantCulture),
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             };
@@ -133,7 +140,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         private static void WaitForExitOrKill(Process process)
         {
-            process.WaitForExit(1000);
+            process.WaitForExit(5 * 1000);
             if (!process.HasExited)
             {
                 process.Kill();

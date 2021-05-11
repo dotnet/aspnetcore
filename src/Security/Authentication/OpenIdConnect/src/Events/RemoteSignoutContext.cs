@@ -6,12 +6,22 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
+    /// <summary>
+    /// A context for <see cref="OpenIdConnectEvents.RemoteSignOut(RemoteSignOutContext)"/> event.
+    /// </summary>
     public class RemoteSignOutContext : RemoteAuthenticationContext<OpenIdConnectOptions>
     {
-        public RemoteSignOutContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage message)
+        /// <summary>
+        /// Initializes a new instance of <see cref="RemoteSignOutContext"/>.
+        /// </summary>
+        /// <inheritdoc />
+        public RemoteSignOutContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage? message)
             : base(context, scheme, options, new AuthenticationProperties())
             => ProtocolMessage = message;
 
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
+        /// </summary>
+        public OpenIdConnectMessage? ProtocolMessage { get; set; }
     }
 }

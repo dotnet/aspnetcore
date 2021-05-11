@@ -11,9 +11,11 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -28,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ILogger _logger;
         private DataContractSerializerSettings _serializerSettings;
         private MvcOptions _mvcOptions;
+        private AsyncEnumerableReader _asyncEnumerableReaderFactory;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlDataContractSerializerOutputFormatter"/>
@@ -86,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             };
             WrapperProviderFactories.Add(new EnumerableWrapperProviderFactory(WrapperProviderFactories));
 
-            _logger = loggerFactory?.CreateLogger(GetType());
+            _logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
         }
 
         /// <summary>
@@ -245,13 +248,29 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var writerSettings = WriterSettings.Clone();
             writerSettings.Encoding = selectedEncoding;
 
-            // Wrap the object only if there is a wrapping type.
+            var httpContext = context.HttpContext;
+            var response = httpContext.Response;
+
+            _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
+            _asyncEnumerableReaderFactory ??= new AsyncEnumerableReader(_mvcOptions);
+
             var value = context.Object;
-            var wrappingType = GetSerializableType(context.ObjectType);
-            if (wrappingType != null && wrappingType != context.ObjectType)
+            var valueType = context.ObjectType;
+
+            if (value is not null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
+            {
+                Log.BufferingAsyncEnumerable(_logger, value);
+
+                value = await reader(value);
+                valueType = value.GetType();
+            }
+
+            // Wrap the object only if there is a wrapping type.
+            var wrappingType = GetSerializableType(valueType);
+            if (wrappingType != null && wrappingType != valueType)
             {
                 var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(new WrapperProviderContext(
-                    declaredType: context.ObjectType,
+                    declaredType: valueType,
                     isSerialization: true));
 
                 value = wrapperProvider.Wrap(value);
@@ -259,10 +278,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var dataContractSerializer = GetCachedSerializer(wrappingType);
 
-            var httpContext = context.HttpContext;
-            var response = httpContext.Response;
-
-            _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
 
             var responseStream = response.Body;
             FileBufferingWriteStream fileBufferingWriteStream = null;
@@ -276,10 +291,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 await using (var textWriter = context.WriterFactory(responseStream, writerSettings.Encoding))
                 {
-                    using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))
-                    {
-                        dataContractSerializer.WriteObject(xmlWriter, value);
-                    }
+                    using var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings);
+                    dataContractSerializer.WriteObject(xmlWriter, value);
                 }
 
                 if (fileBufferingWriteStream != null)
@@ -313,6 +326,23 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             return (DataContractSerializer)serializer;
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                new EventId(1, "BufferingAsyncEnumerable"),
+                "Buffering IAsyncEnumerable instance of type '{Type}'.",
+                skipEnabledCheck: true);
+
+            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

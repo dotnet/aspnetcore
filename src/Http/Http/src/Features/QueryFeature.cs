@@ -6,16 +6,23 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IQueryFeature"/>.
+    /// </summary>
     public class QueryFeature : IQueryFeature
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
 
         private FeatureReferences<IHttpRequestFeature> _features;
 
-        private string _original;
-        private IQueryCollection _parsedValues;
+        private string? _original;
+        private IQueryCollection? _parsedValues;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="QueryFeature"/>.
+        /// </summary>
+        /// <param name="query">The <see cref="IQueryCollection"/> to use as a backing store.</param>
         public QueryFeature(IQueryCollection query)
         {
             if (query == null)
@@ -26,6 +33,10 @@ namespace Microsoft.AspNetCore.Http.Features
             _parsedValues = query;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="QueryFeature"/>.
+        /// </summary>
+        /// <param name="features">The <see cref="IFeatureCollection"/> to initialize.</param>
         public QueryFeature(IFeatureCollection features)
         {
             if (features == null)
@@ -37,8 +48,9 @@ namespace Microsoft.AspNetCore.Http.Features
         }
 
         private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache, _nullRequestFeature);
+            _features.Fetch(ref _features.Cache, _nullRequestFeature)!;
 
+        /// <inheritdoc />
         public IQueryCollection Query
         {
             get

@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Xunit;
 
@@ -62,6 +63,25 @@ namespace Microsoft.AspNetCore.Mvc
             var objectResult = Assert.IsType<ObjectResult>(result);
             Assert.Same(value, objectResult.Value);
             Assert.Equal(typeof(BaseItem), objectResult.DeclaredType);
+            Assert.Equal(StatusCodes.Status200OK, objectResult.StatusCode);
+        }
+
+        [Fact]
+        public void Convert_ReturnsObjectResultWrappingValue_SetsStatusCodeFromProblemDetails()
+        {
+            // Arrange
+            var value = new ProblemDetails { Status = StatusCodes.Status400BadRequest };
+            var actionResultOfT = new ActionResult<ProblemDetails>(value);
+            var convertToActionResult = (IConvertToActionResult)actionResultOfT;
+
+            // Act
+            var result = convertToActionResult.Convert();
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Same(value, objectResult.Value);
+            Assert.Equal(typeof(ProblemDetails), objectResult.DeclaredType);
+            Assert.Equal(StatusCodes.Status400BadRequest, objectResult.StatusCode);
         }
 
         [Fact]
@@ -79,6 +99,7 @@ namespace Microsoft.AspNetCore.Mvc
             var objectResult = Assert.IsType<ObjectResult>(result);
             Assert.Same(value, objectResult.Value);
             Assert.Equal(typeof(BaseItem), objectResult.DeclaredType);
+            Assert.Equal(StatusCodes.Status200OK, objectResult.StatusCode);
         }
 
         private class BaseItem

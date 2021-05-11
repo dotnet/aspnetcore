@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.Extensions.Tools.Internal;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Tests
@@ -21,8 +22,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
         protected readonly TextWriter _output = new StringWriter();
         protected readonly TextWriter _error = new StringWriter();
         protected readonly ITestOutputHelper _outputHelper;
-        protected const string TestTFM = "netcoreapp3.1";
-
+        protected const string TestTFM = "net6.0";
 
         protected const string Content = @"{""x-generator"": ""NSwag""}";
         protected const string ActualUrl = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v3.0/api-with-examples.yaml";
@@ -106,8 +106,15 @@ namespace Microsoft.DotNet.OpenApi.Tests
                 { PackageUrl, Tuple.Create<string, ContentDispositionHeaderValue>(PackageUrlContent, null) },
                 { NoDispositionUrl, Tuple.Create<string, ContentDispositionHeaderValue>(Content, null) },
                 { NoExtensionUrl, Tuple.Create(Content, noExtension) },
-                { NoSegmentUrl, Tuple.Create(Content, justAttachments) }
+                { NoSegmentUrl, Tuple.Create(Content, justAttachments) },
+                { BrokenUrl, null }
             };
+        }
+
+        protected void AssertNoErrors(int appExitCode)
+        {
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.Equal(0, appExitCode);
         }
 
         public void Dispose()
@@ -133,10 +140,14 @@ namespace Microsoft.DotNet.OpenApi.Tests
         public Task<IHttpResponseMessageWrapper> GetResponseAsync(string url)
         {
             var result = _results[url];
-            byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
-            var stream = new MemoryStream(byteArray);
+            MemoryStream stream = null;
+            if(result != null)
+            {
+                byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
+                stream = new MemoryStream(byteArray);
+            }
 
-            return Task.FromResult<IHttpResponseMessageWrapper>(new TestHttpResponseMessageWrapper(stream, result.Item2));
+            return Task.FromResult<IHttpResponseMessageWrapper>(new TestHttpResponseMessageWrapper(stream, result?.Item2));
         }
     }
 
@@ -148,16 +159,30 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
         public bool IsSuccessCode()
         {
-            return true;
+            switch(StatusCode)
+            {
+                case HttpStatusCode.OK:
+                case HttpStatusCode.Created:
+                case HttpStatusCode.NoContent:
+                case HttpStatusCode.Accepted:
+                    return true;
+                case HttpStatusCode.NotFound:
+                default:
+                    return false;
+            }
         }
 
-        private ContentDispositionHeaderValue _contentDisposition;
+        private readonly ContentDispositionHeaderValue _contentDisposition;
 
         public TestHttpResponseMessageWrapper(
             MemoryStream stream,
             ContentDispositionHeaderValue header)
         {
             Stream = Task.FromResult<Stream>(stream);
+            if (header is null && stream is null)
+            {
+                StatusCode = HttpStatusCode.NotFound;
+            }
             _contentDisposition = header;
         }
 

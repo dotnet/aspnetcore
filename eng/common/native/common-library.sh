@@ -34,7 +34,7 @@ function ExpandZip {
     echo "'Force flag enabled, but '$output_directory' exists. Removing directory"
     rm -rf $output_directory
     if [[ $? != 0 ]]; then
-      echo Unable to remove '$output_directory'>&2
+      Write-PipelineTelemetryError -category 'NativeToolsBootstrap' "Unable to remove '$output_directory'"
       return 1
     fi
   fi
@@ -45,7 +45,7 @@ function ExpandZip {
   echo "Extracting archive"
   tar -xf $zip_path -C $output_directory
   if [[ $? != 0 ]]; then
-    echo "Unable to extract '$zip_path'" >&2
+    Write-PipelineTelemetryError -category 'NativeToolsBootstrap' "Unable to extract '$zip_path'"
     return 1
   fi
 
@@ -117,7 +117,7 @@ function DownloadAndExtract {
   # Download file
   GetFile "$uri" "$temp_tool_path" $force $download_retries $retry_wait_time_seconds
   if [[ $? != 0 ]]; then
-    echo "Failed to download '$uri' to '$temp_tool_path'." >&2
+    Write-PipelineTelemetryError -category 'NativeToolsBootstrap' "Failed to download '$uri' to '$temp_tool_path'."
     return 1
   fi
 
@@ -125,7 +125,7 @@ function DownloadAndExtract {
   echo "extracting from  $temp_tool_path to $installDir"
   ExpandZip "$temp_tool_path" "$installDir" $force $download_retries $retry_wait_time_seconds
   if [[ $? != 0 ]]; then
-    echo "Failed to extract '$temp_tool_path' to '$installDir'." >&2
+    Write-PipelineTelemetryError -category 'NativeToolsBootstrap' "Failed to extract '$temp_tool_path' to '$installDir'."
     return 1
   fi
 
@@ -148,7 +148,7 @@ function NewScriptShim {
   fi
   
   if [[ ! -f $tool_file_path ]]; then
-    echo "Specified tool file path:'$tool_file_path' does not exist" >&2
+    Write-PipelineTelemetryError -category 'NativeToolsBootstrap' "Specified tool file path:'$tool_file_path' does not exist"
     return 1
   fi
 

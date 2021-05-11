@@ -8,11 +8,10 @@ namespace Microsoft.AspNetCore.HttpsPolicy
 {
     internal static class HttpsLoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception> _redirectingToHttps;
-        private static readonly Action<ILogger, int, Exception> _portLoadedFromConfig;
-        private static readonly Action<ILogger, Exception> _failedToDeterminePort;
-        private static readonly Action<ILogger, Exception> _failedMultiplePorts;
-        private static readonly Action<ILogger, int, Exception> _portFromServer;
+        private static readonly Action<ILogger, string, Exception?> _redirectingToHttps;
+        private static readonly Action<ILogger, int, Exception?> _portLoadedFromConfig;
+        private static readonly Action<ILogger, Exception?> _failedToDeterminePort;
+        private static readonly Action<ILogger, int, Exception?> _portFromServer;
 
         static HttpsLoggingExtensions()
         {
@@ -30,12 +29,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                 LogLevel.Warning,
                 new EventId(3, "FailedToDeterminePort"),
                 "Failed to determine the https port for redirect.");
-
-            _failedMultiplePorts = LoggerMessage.Define(
-                LogLevel.Warning,
-                new EventId(4, "FailedMultiplePorts"),
-                "Cannot determine the https port from IServerAddressesFeature, multiple values were found. " +
-                "Please set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.");
 
             _portFromServer = LoggerMessage.Define<int>(
                 LogLevel.Debug,
@@ -56,11 +49,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         public static void FailedToDeterminePort(this ILogger logger)
         {
             _failedToDeterminePort(logger, null);
-        }
-
-        public static void FailedMultiplePorts(this ILogger logger)
-        {
-            _failedMultiplePorts(logger, null);
         }
 
         public static void PortFromServer(this ILogger logger, int port)

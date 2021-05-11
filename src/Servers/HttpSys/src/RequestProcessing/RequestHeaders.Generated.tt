@@ -16,7 +16,7 @@ var props = new[]
 	new { Key = "Content-Language", Name = "ContentLanguage", ID = "HttpSysRequestHeader.ContentLanguage" },
 	new { Key = "Content-Length", Name = "ContentLength", ID = "HttpSysRequestHeader.ContentLength" },
 	new { Key = "Content-Location", Name = "ContentLocation", ID = "HttpSysRequestHeader.ContentLocation" },
-	new { Key = "Content-Md5", Name = "ContentMd5", ID = "HttpSysRequestHeader.ContentMd5" },
+	new { Key = "Content-Md5", Name = "ContentMD5", ID = "HttpSysRequestHeader.ContentMd5" },
 	new { Key = "Content-Range", Name = "ContentRange", ID = "HttpSysRequestHeader.ContentRange" },
 	new { Key = "Content-Type", Name = "ContentType", ID = "HttpSysRequestHeader.ContentType" },
 	new { Key = "Cookie", Name = "Cookie", ID = "HttpSysRequestHeader.Cookie" },
@@ -37,7 +37,7 @@ var props = new[]
 	new { Key = "Proxy-Authorization", Name = "ProxyAuthorization", ID = "HttpSysRequestHeader.ProxyAuthorization" },
 	new { Key = "Range", Name = "Range", ID = "HttpSysRequestHeader.Range" },
 	new { Key = "Referer", Name = "Referer", ID = "HttpSysRequestHeader.Referer" },
-	new { Key = "Te", Name = "Te", ID = "HttpSysRequestHeader.Te" },
+	new { Key = "Te", Name = "TE", ID = "HttpSysRequestHeader.Te" },
 	new { Key = "Trailer", Name = "Trailer", ID = "HttpSysRequestHeader.Trailer" },
 	new { Key = "Transfer-Encoding", Name = "TransferEncoding", ID = "HttpSysRequestHeader.TransferEncoding" },
 	new { Key = "Translate", Name = "Translate", ID = "HttpSysRequestHeader.Translate" },
@@ -60,14 +60,11 @@ Func<int,string> Clear = Index => "_flag" + (Index / 32) + " &= ~0x" + (1<<(Inde
 
 using System;
 using System.CodeDom.Compiler;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     [GeneratedCode("TextTemplatingFileGenerator", "")]
     internal partial class RequestHeaders
@@ -81,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 <# } #>
 
 <# foreach(var prop in props) { #>
-        internal StringValues <#=prop.Name#>
+        public StringValues <#=prop.Name#>
         {
             get
 			{
@@ -111,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 <# foreach(var length in lengths) { #>
                 case <#=length.Key#>:
 <# foreach(var prop in length) { #>
-                    if (string.Equals(key, "<#=prop.Key#>", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return <#=prop.Name#>.Count > 0;
                     }
@@ -129,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 <# foreach(var length in lengths) { #>
                 case <#=length.Key#>:
 <# foreach(var prop in length) { #>
-                    if (string.Equals(key, "<#=prop.Key#>", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = <#=prop.Name#>;
 						return value.Count > 0;
@@ -149,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 <# foreach(var length in lengths) { #>
                 case <#=length.Key#>:
 <# foreach(var prop in length) { #>
-                    if (string.Equals(key, "<#=prop.Key#>", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.OrdinalIgnoreCase)) 
                     {
                         <#=MarkRead(prop.Index)#>;
                         <#=prop.Name#> = value;
@@ -170,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 case <#=length.Key#>:
 <# foreach(var prop in length) { #>
                     if (_<#=prop.Name#>.Count > 0 
-                        && string.Equals(key, "<#=prop.Key#>", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.Ordinal))
                     {
 					    bool wasSet = <#=IsRead(prop.Index)#>;
                         <#=prop.Name#> = StringValues.Empty;
@@ -188,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 <# foreach(var prop in props) { #>
             if (<#=prop.Name#>.Count > 0)
             {
-                yield return "<#=prop.Key#>";
+                yield return HeaderNames.<#=prop.Name#>;
             }
 <# } #>
         }
@@ -208,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 <# foreach(var prop in props) { #>
             if (<#=prop.Name#>.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("<#=prop.Key#>", <#=prop.Name#>);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.<#=prop.Name#>, <#=prop.Name#>);
             }
 <# } #>
         }

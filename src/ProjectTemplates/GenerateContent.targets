@@ -8,7 +8,7 @@
     <!-- The version of the shared framework. This is used in tests to ensure they run against the shared framework version we just built. -->
     <GeneratedContentProperties>
       $(GeneratedContentProperties);
-      MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
+      MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

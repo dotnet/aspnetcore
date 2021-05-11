@@ -42,27 +42,27 @@ namespace Microsoft.AspNetCore.Hosting
             Console.CancelKeyPress -= CancelKeyPress;
         }
 
-        private void CancelKeyPress(object sender, ConsoleCancelEventArgs eventArgs)
+        private void CancelKeyPress(object? sender, ConsoleCancelEventArgs eventArgs)
         {
             Shutdown();
             // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
             eventArgs.Cancel = true;
         }
 
-        private void ProcessExit(object sender, EventArgs eventArgs)
+        private void ProcessExit(object? sender, EventArgs eventArgs)
         {
             Shutdown();
             if (_exitedGracefully)
             {
                 // On Linux if the shutdown is triggered by SIGTERM then that's signaled with the 143 exit code.
-                // Suppress that since we shut down gracefully. https://github.com/aspnet/AspNetCore/issues/6526
+                // Suppress that since we shut down gracefully. https://github.com/dotnet/aspnetcore/issues/6526
                 Environment.ExitCode = 0;
             }
         }
 
         private void Shutdown()
         {
-            try 
+            try
             {
                 if (!_cts.IsCancellationRequested)
                 {

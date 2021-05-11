@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Use fixed version instead of $(DefaultNetCoreTargetFramework) to avoid needing workarounds set up here. -->
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
+  <Target Name="GenerateDirectoryBuildFiles">
+    <PropertyGroup>
+      <_TemplateProperties>
+        DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+        KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
+        MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
+        MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
+        MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
+        MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+        MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);
+        SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
+      </_TemplateProperties>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(BaseOutputPath)" />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.props" />
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildProjectDirectory)\Directory.Build.props.in"
+      Properties="$(_TemplateProperties)"
+      OutputPath="$(BaseOutputPath)Directory.Build.props" />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.targets" />
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildProjectDirectory)\Directory.Build.targets.in"
+      Properties="$(_TemplateProperties)"
+      OutputPath="$(BaseOutputPath)Directory.Build.targets" />
+  </Target>
+</Project>

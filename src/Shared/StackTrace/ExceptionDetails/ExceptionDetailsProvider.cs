@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,17 +7,22 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+
+#nullable enable
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class ExceptionDetailsProvider
     {
         private readonly IFileProvider _fileProvider;
+        private readonly ILogger? _logger;
         private readonly int _sourceCodeLineCount;
 
-        public ExceptionDetailsProvider(IFileProvider fileProvider, int sourceCodeLineCount)
+        public ExceptionDetailsProvider(IFileProvider fileProvider, ILogger? logger, int sourceCodeLineCount)
         {
             _fileProvider = fileProvider;
+            _logger = logger;
             _sourceCodeLineCount = sourceCodeLineCount;
         }
 
@@ -27,19 +32,27 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
             foreach (var ex in exceptions)
             {
-                yield return new ExceptionDetails
-                {
-                    Error = ex,
-                    StackFrames = StackTraceHelper.GetFrames(ex)
-                            .Select(frame => GetStackFrameSourceCodeInfo(
-                                frame.MethodDisplayInfo.ToString(),
-                                frame.FilePath,
-                                frame.LineNumber))
-                };
+                yield return new ExceptionDetails(ex, GetStackFrames(ex));
             }
         }
 
-        private static IEnumerable<Exception> FlattenAndReverseExceptionTree(Exception ex)
+        private IEnumerable<StackFrameSourceCodeInfo> GetStackFrames(Exception original)
+        {
+            var stackFrames = StackTraceHelper.GetFrames(original, out var exception)
+                .Select(frame => GetStackFrameSourceCodeInfo(
+                    frame.MethodDisplayInfo?.ToString(),
+                    frame.FilePath,
+                    frame.LineNumber));
+
+            if (exception != null)
+            {
+                _logger?.FailedToReadStackTraceInfo(exception);
+            }
+
+            return stackFrames;
+        }
+
+        private static IEnumerable<Exception> FlattenAndReverseExceptionTree(Exception? ex)
         {
             // ReflectionTypeLoadException is special because the details are in
             // the LoaderExceptions property
@@ -52,7 +65,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     typeLoadExceptions.AddRange(FlattenAndReverseExceptionTree(loadException));
                 }
 
-                typeLoadExceptions.Add(ex);
+                typeLoadExceptions.Add(typeLoadException);
                 return typeLoadExceptions;
             }
 
@@ -80,7 +93,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         }
 
         // make it internal to enable unit testing
-        internal StackFrameSourceCodeInfo GetStackFrameSourceCodeInfo(string method, string filePath, int lineNumber)
+        internal StackFrameSourceCodeInfo GetStackFrameSourceCodeInfo(string? method, string? filePath, int lineNumber)
         {
             var stackFrame = new StackFrameSourceCodeInfo
             {
@@ -94,7 +107,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return stackFrame;
             }
 
-            IEnumerable<string> lines = null;
+            IEnumerable<string>? lines = null;
             if (File.Exists(stackFrame.File))
             {
                 lines = File.ReadLines(stackFrame.File);
@@ -159,7 +172,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         {
             using (var reader = new StreamReader(fileInfo.CreateReadStream()))
             {
-                string line;
+                string? line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     yield return line;
