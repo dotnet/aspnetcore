@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -28,8 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private readonly MemoryPool<byte> _pool;
         private readonly BufferSegmentStack _bufferSegmentPool = new BufferSegmentStack(InitialSegmentPoolSize);
 
-        private BufferSegment _head;
-        private BufferSegment _tail;
+        private BufferSegment? _head;
+        private BufferSegment? _tail;
         private Memory<byte> _tailMemory;
         private int _tailBytesBuffered;
         private long _bytesBuffered;
@@ -43,20 +44,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         // In either case, we need to manually append buffer segments until the loop in the current or next call to FlushAsync()
         // flushes all the buffers putting the ConcurrentPipeWriter back into passthrough mode.
         // The manual buffer appending logic is borrowed from corefx's StreamPipeWriter.
-        private TaskCompletionSource<FlushResult> _currentFlushTcs;
+        private TaskCompletionSource<FlushResult>? _currentFlushTcs;
         private bool _bufferedWritePending;
 
         // We're trusting the Http2FrameWriter and Http1OutputProducer to not call into the PipeWriter after calling Abort() or Complete().
         // If an Abort() is called while a flush is in progress, we clean up after the next flush completes, and don't flush again.
         private bool _aborted;
         // If an Complete() is called while a flush is in progress, we clean up after the flush loop completes, and call Complete() on the inner PipeWriter.
-        private Exception _completeException;
+        private Exception? _completeException;
 
         public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool, object sync)
         {
             _innerPipeWriter = innerPipeWriter;
             _pool = pool;
             _sync = sync;
+        }
+
+        public void Reset()
+        {
+            Debug.Assert(_currentFlushTcs == null, "There should not be a pending flush.");
+
+            _aborted = false;
+            _completeException = null;
         }
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
@@ -154,6 +163,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                         if (flushResult.IsCanceled)
                         {
+                            Debug.Assert(_currentFlushTcs != null);
+
                             // Complete anyone currently awaiting a flush with the canceled FlushResult since CancelPendingFlush() was called.
                             _currentFlushTcs.SetResult(flushResult);
                             // Reset _currentFlushTcs, so we don't enter passthrough mode while we're still flushing.
@@ -182,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         }
 
         // To return all the segments without completing the inner pipe, call Abort().
-        public override void Complete(Exception exception = null)
+        public override void Complete(Exception? exception = null)
         {
             // Store the exception or sentinel in a field so that if a flush is ongoing, we call the
             // inner Complete() method with the correct exception or lack thereof once the flush loop ends.
@@ -214,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private void CleanupSegmentsUnsynchronized()
         {
-            BufferSegment segment = _head;
+            BufferSegment? segment = _head;
             while (segment != null)
             {
                 BufferSegment returnSegment = segment;
@@ -229,6 +240,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private void CopyAndReturnSegmentsUnsynchronized()
         {
+            Debug.Assert(_tail != null);
+
             // Update any buffered data
             _tail.End += _tailBytesBuffered;
             _tailBytesBuffered = 0;
@@ -266,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _bytesBuffered = 0;
         }
 
-        private void CompleteFlushUnsynchronized(FlushResult flushResult, Exception flushEx)
+        private void CompleteFlushUnsynchronized(FlushResult flushResult, Exception? flushEx)
         {
             // Ensure all blocks are returned prior to the last call to FlushAsync() completing.
             if (_completeException != null || _aborted)
@@ -283,6 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 _innerPipeWriter.Complete(_completeException);
             }
 
+            Debug.Assert(_currentFlushTcs != null);
             if (flushEx != null)
             {
                 _currentFlushTcs.SetException(flushEx);
@@ -315,6 +329,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                 if (bytesLeftInBuffer == 0 || bytesLeftInBuffer < sizeHint)
                 {
+                    Debug.Assert(_tail != null);
+
                     if (_tailBytesBuffered > 0)
                     {
                         // Flush buffered data to the segment
@@ -341,8 +357,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
             else
             {
-                // We can't use the pool so allocate an array
-                newSegment.SetUnownedMemory(new byte[sizeHint]);
+                // We can't use the recommended pool so use the ArrayPool
+                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(sizeHint));
             }
 
             _tailMemory = newSegment.AvailableMemory;
@@ -352,7 +368,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private BufferSegment CreateSegmentUnsynchronized()
         {
-            if (_bufferSegmentPool.TryPop(out BufferSegment segment))
+            if (_bufferSegmentPool.TryPop(out var segment))
             {
                 return segment;
             }

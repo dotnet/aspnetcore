@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
     internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvider
     {
-        private CacheableKeyRing _cacheableKeyRing;
+        private CacheableKeyRing? _cacheableKeyRing;
         private readonly object _cacheableKeyRingLockObj = new object();
         private readonly IDefaultKeyResolver _defaultKeyResolver;
         private readonly KeyManagementOptions _keyManagementOptions;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             _defaultKeyResolver = defaultKeyResolver;
             _logger = loggerFactory.CreateLogger<KeyRingProvider>();
 
-            // We will automatically refresh any unknown keys for 2 minutes see https://github.com/aspnet/AspNetCore/issues/3975
+            // We will automatically refresh any unknown keys for 2 minutes see https://github.com/dotnet/aspnetcore/issues/3975
             AutoRefreshWindowEnd = DateTime.UtcNow.AddMinutes(2);
         }
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         internal bool InAutoRefreshWindow() => DateTime.UtcNow < AutoRefreshWindowEnd;
 
-        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey keyJustAdded)
+        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey? keyJustAdded)
         {
             // Refresh the list of all keys
             var cacheExpirationToken = _keyManager.GetCacheExpirationToken();
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Debug.Assert(utcNow.Kind == DateTimeKind.Utc);
 
             // Can we return the cached keyring to the caller?
-            CacheableKeyRing existingCacheableKeyRing = null;
+            CacheableKeyRing? existingCacheableKeyRing = null;
             if (!forceRefresh)
             {
                 existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
@@ -226,9 +226,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                             Volatile.Write(ref _cacheableKeyRing, existingCacheableKeyRing.WithTemporaryExtendedLifetime(utcNow));
                         }
 
-                        // The immediate caller should fail so that he can report the error up his chain. This makes it more likely
+                        // The immediate caller should fail so that they can report the error up the chain. This makes it more likely
                         // that an administrator can see the error and react to it as appropriate. The caller can retry the operation
-                        // and will probably have success as long as he falls within the temporary extension mentioned above.
+                        // and will probably have success as long as they fall within the temporary extension mentioned above.
                         throw;
                     }
 
@@ -259,7 +259,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // hit a single repository simultaneously. For instance, if the refresh period is 1 hour,
             // we'll return a value in the vicinity of 48 - 60 minutes. We use the Random class since
             // we don't need a secure PRNG for this.
-            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (new Random().NextDouble() / 5))));
+#if NET6_0_OR_GREATER
+            var random = Random.Shared;
+#else
+            var random = new Random();
+#endif
+            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (random.NextDouble() / 5))));
         }
 
         private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b)

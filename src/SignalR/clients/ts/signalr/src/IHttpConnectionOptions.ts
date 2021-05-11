@@ -2,12 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport } from "./ITransport";
 import { EventSourceConstructor, WebSocketConstructor } from "./Polyfills";
 
 /** Options provided to the 'withUrl' method on {@link @microsoft/signalr.HubConnectionBuilder} to configure options for the HTTP-based transports. */
 export interface IHttpConnectionOptions {
+    /** {@link @microsoft/signalr.MessageHeaders} containing custom headers to be sent with every HTTP request. Note, setting headers in the browser will not work for WebSockets or the ServerSentEvents stream. */
+    headers?: MessageHeaders;
+
     /** An {@link @microsoft/signalr.HttpClient} that will be used to make HTTP requests. */
     httpClient?: HttpClient;
 
@@ -53,4 +57,12 @@ export interface IHttpConnectionOptions {
      * @internal
      */
     EventSource?: EventSourceConstructor;
+
+    /**
+     * Default value is 'true'.
+     * This controls whether credentials such as cookies are sent in cross-site requests.
+     *
+     * Cookies are used by many load-balancers for sticky sessions which is required when your app is deployed with multiple servers.
+     */
+    withCredentials?: boolean;
 }

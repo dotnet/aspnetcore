@@ -76,8 +76,8 @@ GetElementRawTimeSpanProperty(
     OUT ULONGLONG *      pulonglong
     );
 
-#define FIND_ELEMENT_CASE_SENSITIVE     0x00000000
-#define FIND_ELEMENT_CASE_INSENSITIVE   0x00000001
+constexpr auto FIND_ELEMENT_CASE_SENSITIVE = 0x00000000;
+constexpr auto FIND_ELEMENT_CASE_INSENSITIVE = 0x00000001;
 
 HRESULT
 DeleteElementFromCollection(

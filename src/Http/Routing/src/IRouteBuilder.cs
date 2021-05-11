@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
         /// Gets or sets the default <see cref="IRouter"/> that is used as a handler if an <see cref="IRouter"/>
         /// is added to the list of routes but does not specify its own.
         /// </summary>
-        IRouter DefaultHandler { get; set; }
+        IRouter? DefaultHandler { get; set; }
 
         /// <summary>
         /// Gets the sets the <see cref="IServiceProvider"/> used to resolve services for routes.

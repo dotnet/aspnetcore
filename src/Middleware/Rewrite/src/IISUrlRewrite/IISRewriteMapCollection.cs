@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
@@ -20,12 +20,11 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
 
         public int Count => _rewriteMaps.Count;
 
-        public IISRewriteMap this[string key]
+        public IISRewriteMap? this[string key]
         {
             get
             {
-                IISRewriteMap value;
-                return _rewriteMaps.TryGetValue(key, out value) ? value : null;
+                return _rewriteMaps.TryGetValue(key, out var value) ? value : null;
             }
         }
 

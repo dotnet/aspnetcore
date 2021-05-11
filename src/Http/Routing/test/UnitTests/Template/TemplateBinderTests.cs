@@ -1380,7 +1380,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             Assert.Equal(expected, boundTemplate);
         }
 
-        // Regression test for aspnet/AspNetCore#4212
+        // Regression test for dotnet/aspnetcore#4212
         //
         // An ambient value should be used to satisfy a required value even if if we're discarding
         // ambient values.

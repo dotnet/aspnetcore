@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -189,12 +190,25 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Equal(expected, ex.Message);
         }
 
+        [Fact]
+        public async Task Reader_ThrowsIfIAsyncEnumerableThrows()
+        {
+            // Arrange
+            var enumerable = ThrowingAsyncEnumerable();
+            var options = new MvcOptions();
+            var readerFactory = new AsyncEnumerableReader(options);
+
+            // Act & Assert
+            Assert.True(readerFactory.TryGetReader(enumerable.GetType(), out var reader));
+            await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => reader(enumerable));
+        }
+
         public static async IAsyncEnumerable<string> TestEnumerable(int count = 3)
         {
             await Task.Yield();
             for (var i = 0; i < count; i++)
             {
-                yield return i.ToString();
+                yield return i.ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -223,6 +237,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             IAsyncEnumerator<object> IAsyncEnumerable<object>.GetAsyncEnumerator(CancellationToken cancellationToken)
                 => GetAsyncEnumerator(cancellationToken);
+        }
+
+        private static async IAsyncEnumerable<string> ThrowingAsyncEnumerable()
+        {
+            await Task.Yield();
+            for (var i = 0; i < 10; i++)
+            {
+                yield return $"Hello {i}";
+                if (i == 5)
+                {
+                   throw new TimeZoneNotFoundException();
+                }
+            }
         }
     }
 }

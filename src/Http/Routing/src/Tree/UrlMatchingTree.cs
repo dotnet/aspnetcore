@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             current.Matches.Sort((x, y) =>
             {
                 var result = x.Entry.Precedence.CompareTo(y.Entry.Precedence);
-                return result == 0 ? x.Entry.RouteTemplate.TemplateText.CompareTo(y.Entry.RouteTemplate.TemplateText) : result;
+                return result == 0 ? string.Compare(x.Entry.RouteTemplate.TemplateText, y.Entry.RouteTemplate.TemplateText, StringComparison.Ordinal) : result;
             });
         }
 

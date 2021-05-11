@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
+using System.Text;
 using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
@@ -13,28 +15,27 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void ExportToXml_CustomTypes_ProducesCorrectPayload()
         {
             // Arrange
-            var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
             var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
             {
                 EncryptionAlgorithmType = typeof(MySymmetricAlgorithm),
                 EncryptionAlgorithmKeySize = 2048,
                 ValidationAlgorithmType = typeof(MyKeyedHashAlgorithm)
-            }, masterKey);
+            }, masterKey.ToSecret());
 
             // Act
             var retVal = descriptor.ExportToXml();
 
             // Assert
             Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = string.Format(@"
+            var expectedXml = $@"
                 <descriptor>
-                  <encryption algorithm='{0}' keyLength='2048' />
-                  <validation algorithm='{1}' />
+                  <encryption algorithm='{typeof(MySymmetricAlgorithm).AssemblyQualifiedName}' keyLength='2048' />
+                  <validation algorithm='{typeof(MyKeyedHashAlgorithm).AssemblyQualifiedName}' />
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
-                </descriptor>",
-                typeof(MySymmetricAlgorithm).AssemblyQualifiedName, typeof(MyKeyedHashAlgorithm).AssemblyQualifiedName);
+                </descriptor>";
             XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
         }
 
@@ -46,28 +47,27 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void ExportToXml_BuiltInTypes_ProducesCorrectPayload(Type encryptionAlgorithmType, Type validationAlgorithmType)
         {
             // Arrange
-            var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
             var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
             {
                 EncryptionAlgorithmType = encryptionAlgorithmType,
                 EncryptionAlgorithmKeySize = 2048,
                 ValidationAlgorithmType = validationAlgorithmType
-            }, masterKey);
+            }, masterKey.ToSecret());
 
             // Act
             var retVal = descriptor.ExportToXml();
 
             // Assert
             Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = string.Format(@"
+            var expectedXml = $@"
                 <descriptor>
-                  <encryption algorithm='{0}' keyLength='2048' />
-                  <validation algorithm='{1}' />
+                  <encryption algorithm='{encryptionAlgorithmType.Name}' keyLength='2048' />
+                  <validation algorithm='{validationAlgorithmType.Name}' />
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
-                </descriptor>",
-                encryptionAlgorithmType.Name, validationAlgorithmType.Name);
+                </descriptor>";
             XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
         }
 

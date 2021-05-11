@@ -1,5 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -9,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     /// <typeparam name="T">The type to which the value must be parseable.</typeparam>
     internal class TypeRouteConstraint<T> : RouteConstraint
     {
-        public delegate bool TryParseDelegate(string str, out T result);
+        public delegate bool TryParseDelegate(string str, [MaybeNullWhen(false)] out T result);
 
         private readonly TryParseDelegate _parser;
 
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _parser = parser;
         }
 
-        public override bool Match(string pathSegment, out object convertedValue)
+        public override bool Match(string pathSegment, out object? convertedValue)
         {
             if (_parser(pathSegment, out var result))
             {
@@ -31,5 +34,18 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return false;
             }
         }
+
+        public override string ToString() => typeof(T) switch
+        {
+            var x when x == typeof(bool) => "bool",
+            var x when x == typeof(DateTime) => "datetime",
+            var x when x == typeof(decimal) => "decimal",
+            var x when x == typeof(double) => "double",
+            var x when x == typeof(float) => "float",
+            var x when x == typeof(Guid) => "guid",
+            var x when x == typeof(int) => "int",
+            var x when x == typeof(long) => "long",
+            var x => x.Name.ToLowerInvariant()
+        };
     }
 }

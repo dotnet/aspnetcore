@@ -1,20 +1,52 @@
 <Project>
-
   <!-- See https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Signing.md for details. -->
+  <Import Project="Common.props" />
 
   <ItemGroup>
     <!-- Reset Arcade's defaults. -->
     <ItemsToSign Remove="@(ItemsToSign)" />
-    <StrongNameSignInfo Remove="@(StrongNameSignInfo)" />
+    <ItemsToSignPostBuild Remove="@(ItemsToSignPostBuild)" />
     <FileExtensionSignInfo Remove="@(FileExtensionSignInfo)" />
   </ItemGroup>
 
-  <ItemGroup Label="Signing config">
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
-    <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
-    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
+  <!-- Files that should be always be signed between in-build and post-build signing -->
+  <ItemGroup Label="Common Files to Sign">
+    <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
+    <CommonFilesToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
+    <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
+    <CommonFilesToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
+    <CommonFilesToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
+  </ItemGroup>
+  <Choose>
+    <!-- When post build signing is false - Sign as normal.
+         When post build signing is true - Sign all of our signable artifacts
+          that we would publish. Use a different ItemGroup name so that
+          the signing stage signs nothing. We then set ItemToSign during
+          publishing to this ItemGroup.
+        -->
+    <When Condition="'$(PostBuildSign)' != 'true'">
+      <ItemGroup Label="Files To Sign">
+        <ItemsToSign Include="@(CommonFilesToSign)" />
+        <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
+      </ItemGroup>
+    </When>
+    <When Condition="'$(PostBuildSign)' == 'true'">
+      <PropertyGroup>
+        <AllowEmptySignList>true</AllowEmptySignList>
+      </PropertyGroup>
+      <ItemGroup Label="Files To Sign">
+        <!-- Sign symbol nupkgs so that shared files between layouts and msis end up identical. -->
+        <ItemsToSignPostBuild Include="@(CommonFilesToSign)" />
+        <ItemsToSignPostBuild Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" />
+        <ItemsToSignPostBuild Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" />
+        <!-- Wixlibs are signed because they are containers of other files -->
+        <ItemsToSignPostBuild Include="$(ArtifactsDir)installers\$(Configuration)\**\*.wixlib" />
+      </ItemGroup>
+    </When>
+  </Choose>
 
+
+  <ItemGroup Label="File signing information">
     <!--
       Map file extensions to a code-sign cert.
       "None" means don't sign the file itself, but still scan the contents for signable files.
@@ -26,24 +58,10 @@
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".cab" CertificateName="None" />
-    <FileExtensionSignInfo Include=".msi" CertificateName="None" />
-
-    <!--
-      Use the PublicKeyToken of .NET assemblies to determine with authenticode cert to use.
-      'None' is required to ensure code signing does not attempt to re-sign them or submit
-      to ESPR for strong-naming signing. We don't delay sign, so we only need to authenticode sign.
-      See https://github.com/dotnet/arcade/issues/1911 for context.
-    -->
-    <!-- The AspNetCore strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="adb9793829ddae60" CertificateName="Microsoft400" />
-    <!-- The MsSharedLib72 strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
-    <!-- The MsftStrongName strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="b03f5f7f11d50a3a" CertificateName="Microsoft400" />
-    <!-- The MsftStrongName2 strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="b77a5c561934e089" CertificateName="Microsoft400" />
-    <!-- The MsftOpenStrongName strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="cc7b13ffcd2ddd51" CertificateName="Microsoft400" />
+    <!-- If doing post build sign, explicitly give MSIs a cert. If doing in build signing,
+         this is handled by the wix targets, and .msi should be "None" -->
+    <FileExtensionSignInfo Include=".msi" CertificateName="Microsoft400" Condition="'$(PostBuildSign)' == 'true'" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="None" Condition="'$(PostBuildSign)' != 'true'" />
 
     <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
     <FileSignInfo Include="aspnetcore.dll" CertificateName="Microsoft400" />
@@ -69,7 +87,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
     <BaseRedistNetCorePath>$(ArtifactsObjDir)RedistSharedFx.Layout\$(Configuration)\</BaseRedistNetCorePath>
     <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
   </PropertyGroup>
@@ -89,6 +106,11 @@
       These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime.
       List all combinations of Windows RID's because CI may build multiple combinations of artitectures on the same machine.
       This uses globs because some of the file names change on every build of .NET Core, like sos_amd64_$(fileversion).dll.
+
+      Technically, this may not be necessary. SignTool does a good deal of detection to determine
+      whether files are already signed.
+
+      Do not include these with cert "None" when doing post-build signing. In that case, we will recognize that
     -->
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x64\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x86\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
@@ -99,7 +121,11 @@
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm64\host\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(RedistNetCorePath)dotnet.exe" CertificateName="None" />
-    <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" />
+    <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" Condition="'$(PostBuildSign)' != 'true'" />
+
+    <!-- Symbol packages should get no NuGet signature -->
+    <!-- Requires https://github.com/dotnet/arcade/issues/6192 to be fixed -->
+    <!-- <FileSignInfo Include="@(_SymbolPackages->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" /> -->
 
     <!--
       We include the Microsoft.Build.Locator.dll assembly in our global tool 'Microsoft.dotnet-openapi'.

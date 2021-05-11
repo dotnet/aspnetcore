@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.False(result);
         }
 
-        // Test for https://github.com/aspnet/AspNetCore/issues/6945
+        // Test for https://github.com/dotnet/aspnetcore/issues/6945
         [Fact]
         public async Task IsProblematicParameter_ReturnsFalse_ForSimpleTypes()
         {
@@ -322,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                     Assert.Equal(descriptor.Id, diagnostic.Id);
                     Assert.Same(descriptor, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(expectedLocation, diagnostic.Location);
-                    Assert.Equal(string.Format(descriptor.MessageFormat.ToString(), typeName, parameterName), diagnostic.GetMessage());
+                    Assert.Equal(string.Format(CultureInfo.InvariantCulture, descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture), typeName, parameterName), diagnostic.GetMessage(CultureInfo.InvariantCulture));
                 });
         }
     }

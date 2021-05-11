@@ -35,28 +35,28 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void ReconnectUI()
         {
-            Browser.FindElement(By.Id("increment")).Click();
+            Browser.Exists(By.Id("increment")).Click();
 
             var javascript = (IJavaScriptExecutor)Browser;
             javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
             // We should see the 'reconnecting' UI appear
-            Browser.Equal("block", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
+            Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
             // Then it should disappear
-            Browser.Equal("none", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
+            Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
-            Browser.FindElement(By.Id("increment")).Click();
+            Browser.Exists(By.Id("increment")).Click();
 
             // Can dispatch events after reconnect
-            Browser.Equal("2", () => Browser.FindElement(By.Id("count")).Text);
+            Browser.Equal("2", () => Browser.Exists(By.Id("count")).Text);
         }
 
         [Fact]
         public void RendersContinueAfterReconnect()
         {
             var selector = By.Id("ticker");
-            var element = Browser.FindElement(selector);
+            var element = Browser.Exists(selector);
 
             var initialValue = element.Text;
 
@@ -64,24 +64,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
             // We should see the 'reconnecting' UI appear
-            Browser.Equal("block", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
+            Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
             // Then it should disappear
-            Browser.Equal("none", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
+            Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
             // We should receive a render that occurred while disconnected
-            var currentValue = Browser.FindElement(selector).Text;
+            var currentValue = Browser.Exists(selector).Text;
             Assert.NotEqual(initialValue, currentValue);
 
             // Verify it continues to tick
             Thread.Sleep(5);
-            Browser.False(() => Browser.FindElement(selector).Text == currentValue);
+            Browser.False(() => Browser.Exists(selector).Text == currentValue);
         }
 
         [Fact]
         public void ErrorsStopTheRenderingProcess()
         {
-            Browser.FindElement(By.Id("cause-error")).Click();
+            Browser.Exists(By.Id("cause-error")).Click();
             Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
                 .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
         }

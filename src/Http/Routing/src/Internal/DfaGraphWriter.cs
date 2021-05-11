@@ -26,11 +26,20 @@ namespace Microsoft.AspNetCore.Routing.Internal
     {
         private readonly IServiceProvider _services;
 
+        /// <summary>
+        /// Constructor for a <see cref="DfaGraphWriter"/> given <paramref name="services"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         public DfaGraphWriter(IServiceProvider services)
         {
             _services = services;
         }
 
+        /// <summary>
+        /// Displays a graph representation of <paramref name="dataSource"/> in DOT.
+        /// </summary>
+        /// <param name="dataSource">The <see cref="EndpointDataSource"/> to extract routes from.</param>
+        /// <param name="writer">The <see cref="TextWriter"/> to which the content is written.</param>
         public void Write(EndpointDataSource dataSource, TextWriter writer)
         {
             var builder = _services.GetRequiredService<DfaMatcherBuilder>();
@@ -46,7 +55,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             // Assign each node a sequential index.
             var visited = new Dictionary<DfaNode, int>();
-            
+
             var tree = builder.BuildDfaTree(includeLabel: true);
 
             writer.WriteLine("digraph DFA {");

@@ -18,8 +18,7 @@ namespace HtmlGenerationWebSite
             // Add MVC services to the services container. Change default FormTagHelper.AntiForgery to false. Usually
             // null which is interpreted as true unless element includes an action attribute.
             services.AddMvc(ConfigureMvcOptions)
-                .InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false)
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false);
 
             services.AddSingleton(typeof(ISignalTokenProviderService<>), typeof(SignalTokenProviderService<>));
             services.AddSingleton<ProductsService>();

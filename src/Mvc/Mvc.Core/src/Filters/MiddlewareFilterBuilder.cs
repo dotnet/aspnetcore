@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,14 +14,14 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// </summary>
     internal class MiddlewareFilterBuilder
     {
-        // 'GetOrAdd' call on the dictionary is not thread safe and we might end up creating the pipeline more
+        // 'GetOrAdd' call on the dictionary is not thread safe and we might end up creating the pipeline more than
         // once. To prevent this Lazy<> is used. In the worst case multiple Lazy<> objects are created for multiple
         // threads but only one of the objects succeeds in creating a pipeline.
         private readonly ConcurrentDictionary<Type, Lazy<RequestDelegate>> _pipelinesCache
             = new ConcurrentDictionary<Type, Lazy<RequestDelegate>>();
         private readonly MiddlewareFilterConfigurationProvider _configurationProvider;
 
-        public IApplicationBuilder ApplicationBuilder { get; set; }
+        public IApplicationBuilder? ApplicationBuilder { get; set; }
 
         public MiddlewareFilterBuilder(MiddlewareFilterConfigurationProvider configurationProvider)
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                         Resources.FormatMiddlewareFilterBuilder_NoMiddlewareFeature(nameof(IMiddlewareFilterFeature)));
                 }
 
-                var resourceExecutionDelegate = feature.ResourceExecutionDelegate;
+                var resourceExecutionDelegate = feature.ResourceExecutionDelegate!;
 
                 var resourceExecutedContext = await resourceExecutionDelegate();
                 if (resourceExecutedContext.ExceptionHandled)

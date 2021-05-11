@@ -1,0 +1,13 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\DefaultBuilder\\samples\\SampleApp\\DefaultBuilder.SampleApp.csproj",
+      "src\\DefaultBuilder\\test\\Microsoft.AspNetCore.Tests\\Microsoft.AspNetCore.Tests.csproj",
+      "src\\DefaultBuilder\\test\\Microsoft.AspNetCore.FunctionalTests\\Microsoft.AspNetCore.FunctionalTests.csproj",
+      "src\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
+      "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj"
+    ]
+  }
+}

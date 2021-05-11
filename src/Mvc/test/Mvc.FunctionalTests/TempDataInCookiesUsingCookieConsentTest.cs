@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             builder.UseStartup<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent>();
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1803", FlakyOn.AzP.Windows)]
         public async Task CookieTempDataProviderCookie_SetInResponse_OnGrantingConsent()
         {
             // Arrange
@@ -64,7 +63,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1803", FlakyOn.AzP.Windows)]
         public async Task CookieTempDataProviderCookie_NotSetInResponse_OnNoConsent()
         {
             // Arrange

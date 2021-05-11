@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -33,6 +35,9 @@ namespace Microsoft.AspNetCore.Components
         [Parameter]
         public Type DefaultLayout { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RouteView"/>.
+        /// </summary>
         public RouteView()
         {
             // Cache the delegate instances

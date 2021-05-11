@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -20,12 +19,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    // Flaky doesn't support classes :(
-    // https://github.com/aspnet/Extensions/issues/1568
     public class HttpsTests
     {
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_200OK_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -39,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_SendHelloWorld_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -55,7 +50,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_EchoHelloWorld_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -73,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -110,8 +103,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
-        [OSDontSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
         public async Task Https_SkipsITlsHandshakeFeatureOnWin7()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -133,38 +125,45 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task Https_SetsITlsHandshakeFeature()
         {
-            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                try
-                {
-                    var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
-                    Assert.NotNull(tlsFeature);
-                    Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
-                    Assert.True(Enum.IsDefined(typeof(SslProtocols), tlsFeature.Protocol), "Defined"); // Mapping is required, make sure it's current
-                    Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
-                    Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
-                    Assert.True(tlsFeature.HashAlgorithm > HashAlgorithmType.None, "HashAlgorithm");
-                    Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
-                    Assert.True(tlsFeature.KeyExchangeAlgorithm > ExchangeAlgorithmType.None, "KeyExchangeAlgorithm");
-                    Assert.True(tlsFeature.KeyExchangeStrength > 0, "KeyExchangeStrength");
-                }
-                catch (Exception ex)
-                {
-                    await httpContext.Response.WriteAsync(ex.ToString());
-                }
+                var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
+                Assert.NotNull(tlsFeature);
+                return httpContext.Response.WriteAsJsonAsync(tlsFeature);
             }))
             {
                 string response = await SendRequestAsync(address);
-                Assert.Equal(string.Empty, response);
+                var result = System.Text.Json.JsonDocument.Parse(response).RootElement;
+
+                var protocol = (SslProtocols)result.GetProperty("protocol").GetInt32();
+                Assert.True(protocol > SslProtocols.None, "Protocol: " + protocol);
+                Assert.True(Enum.IsDefined(typeof(SslProtocols), protocol), "Defined: " + protocol); // Mapping is required, make sure it's current
+
+                var cipherAlgorithm = (CipherAlgorithmType)result.GetProperty("cipherAlgorithm").GetInt32();
+                Assert.True(cipherAlgorithm > CipherAlgorithmType.Null, "Cipher: " + cipherAlgorithm);
+
+                var cipherStrength = result.GetProperty("cipherStrength").GetInt32();
+                Assert.True(cipherStrength > 0, "CipherStrength: " + cipherStrength);
+
+                var hashAlgorithm = (HashAlgorithmType)result.GetProperty("hashAlgorithm").GetInt32();
+                Assert.True(hashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm: " + hashAlgorithm);
+
+                var hashStrength = result.GetProperty("hashStrength").GetInt32();
+                Assert.True(hashStrength >= 0, "HashStrength: " + hashStrength); // May be 0 for some algorithms
+
+                var keyExchangeAlgorithm = (ExchangeAlgorithmType)result.GetProperty("keyExchangeAlgorithm").GetInt32();
+                Assert.True(keyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm: " + keyExchangeAlgorithm);
+
+                var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
+                Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
             }
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task Https_ITlsHandshakeFeature_MatchesIHttpSysExtensionInfoFeature()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -206,16 +205,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private async Task<string> SendRequestAsync(string uri,
             X509Certificate cert = null)
         {
-            var handler = new WinHttpHandler();
-            handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
+            var handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             if (cert != null)
             {
                 handler.ClientCertificates.Add(cert);
             }
-            using (HttpClient client = new HttpClient(handler))
-            {
-                return await client.GetStringAsync(uri);
-            }
+            using HttpClient client = new HttpClient(handler);
+            return await client.GetStringAsync(uri);
         }
 
         private async Task<string> SendRequestAsync(string uri, string upload)

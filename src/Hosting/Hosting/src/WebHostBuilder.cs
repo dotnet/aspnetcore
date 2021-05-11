@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +18,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -25,13 +27,13 @@ namespace Microsoft.AspNetCore.Hosting
     public class WebHostBuilder : IWebHostBuilder
     {
         private readonly HostingEnvironment _hostingEnvironment;
-        private Action<WebHostBuilderContext, IServiceCollection> _configureServices;
+        private readonly IConfiguration _config;
+        private readonly WebHostBuilderContext _context;
 
-        private IConfiguration _config;
-        private WebHostOptions _options;
-        private WebHostBuilderContext _context;
+        private WebHostOptions? _options;
         private bool _webHostBuilt;
-        private Action<WebHostBuilderContext, IConfigurationBuilder> _configureAppConfigurationBuilder;
+        private Action<WebHostBuilderContext, IServiceCollection>? _configureServices;
+        private Action<WebHostBuilderContext, IConfigurationBuilder>? _configureAppConfigurationBuilder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHostBuilder"/> class.
@@ -79,7 +81,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="key">The key of the setting to add or replace.</param>
         /// <param name="value">The value of the setting to add or replace.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder UseSetting(string key, string value)
+        public IWebHostBuilder UseSetting(string key, string? value)
         {
             _config[key] = value;
             return this;
@@ -181,9 +183,13 @@ namespace Microsoft.AspNetCore.Hosting
                 var logger = host.Services.GetRequiredService<ILogger<WebHost>>();
 
                 // Warn about duplicate HostingStartupAssemblies
-                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().GroupBy(a => a, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+                var assemblyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies())
                 {
-                    logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
+                    if (!assemblyNames.Add(assemblyName))
+                    {
+                        logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
+                    }
                 }
 
                 return host;
@@ -213,26 +219,34 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private IServiceCollection BuildCommonServices(out AggregateException hostingStartupErrors)
+        [MemberNotNull(nameof(_options))]
+        private IServiceCollection BuildCommonServices(out AggregateException? hostingStartupErrors)
         {
             hostingStartupErrors = null;
 
-            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name);
+            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
 
             if (!_options.PreventHostingStartup)
             {
                 var exceptions = new List<Exception>();
+                var processed = new HashSet<Assembly>();
 
                 // Execute the hosting startup assemblies
-                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().Distinct(StringComparer.OrdinalIgnoreCase))
+                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies())
                 {
                     try
                     {
                         var assembly = Assembly.Load(new AssemblyName(assemblyName));
 
+                        if (!processed.Add(assembly))
+                        {
+                            // Already processed, skip it
+                            continue;
+                        }
+
                         foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
                         {
-                            var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType);
+                            var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType)!;
                             hostingStartup.Configure(this);
                         }
                     }
@@ -276,9 +290,9 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<IConfiguration>(_ => configuration);
             _context.Configuration = configuration;
 
-            var listener = new DiagnosticListener("Microsoft.AspNetCore");
-            services.AddSingleton<DiagnosticListener>(listener);
-            services.AddSingleton<DiagnosticSource>(listener);
+            services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
+            services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
+            services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
@@ -294,7 +308,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var startupType = StartupLoader.FindStartupType(_options.StartupAssembly, _hostingEnvironment.EnvironmentName);
 
-                    if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
+                    if (typeof(IStartup).IsAssignableFrom(startupType))
                     {
                         services.AddSingleton(typeof(IStartup), startupType);
                     }
@@ -331,8 +345,11 @@ namespace Microsoft.AspNetCore.Hosting
             // NOTE: This code overrides original services lifetime. Instances would always be singleton in
             // application container.
             var listener = hostingServiceProvider.GetService<DiagnosticListener>();
-            services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticListener), listener));
-            services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticSource), listener));
+            services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticListener), listener!));
+            services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticSource), listener!));
+
+            var activitySource = hostingServiceProvider.GetService<ActivitySource>();
+            services.Replace(ServiceDescriptor.Singleton(typeof(ActivitySource), activitySource!));
         }
 
         private string ResolveContentRootPath(string contentRootPath, string basePath)

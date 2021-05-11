@@ -65,6 +65,9 @@ namespace Microsoft.AspNetCore.Http
             get { return _value; }
         }
 
+        /// <summary>
+        /// Returns true if the host is set.
+        /// </summary>
         public bool HasValue
         {
             get { return !string.IsNullOrEmpty(_value); }
@@ -96,7 +99,7 @@ namespace Microsoft.AspNetCore.Http
                 GetParts(_value, out var host, out var port);
 
                 if (!StringSegment.IsNullOrEmpty(port)
-                    && int.TryParse(port.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out var p))
+                    && int.TryParse(port.AsSpan(), NumberStyles.None, CultureInfo.InvariantCulture, out var p))
                 {
                     return p;
                 }
@@ -223,7 +226,7 @@ namespace Microsoft.AspNetCore.Http
         /// "abc.example.com:443" but not "example.com:443".
         /// Matching is case insensitive.
         /// </remarks>
-        /// <returns><code>true</code> if <paramref name="value"/> matches any of the patterns.</returns>
+        /// <returns><see langword="true" /> if <paramref name="value"/> matches any of the patterns.</returns>
         public static bool MatchesAny(StringSegment value, IList<StringSegment> patterns)
         {
             if (value == null)
@@ -282,7 +285,7 @@ namespace Microsoft.AspNetCore.Http
         /// Compares the equality of the Value property, ignoring case.
         /// </summary>
         /// <param name="other">The <see cref="HostString"/> to compare against.</param>
-        /// <returns><code>true</code> if they have the same value.</returns>
+        /// <returns><see langword="true" /> if they have the same value.</returns>
         public bool Equals(HostString other)
         {
             if (!HasValue && !other.HasValue)
@@ -296,8 +299,8 @@ namespace Microsoft.AspNetCore.Http
         /// Compares against the given object only if it is a HostString.
         /// </summary>
         /// <param name="obj">The <see cref="object"/> to compare against.</param>
-        /// <returns><code>true</code> if they have the same value.</returns>
-        public override bool Equals(object obj)
+        /// <returns><see langword="true" /> if they have the same value.</returns>
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -320,7 +323,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="left">The left parameter.</param>
         /// <param name="right">The right parameter.</param>
-        /// <returns><code>true</code> if both <see cref="HostString"/>'s have the same value.</returns>
+        /// <returns><see langword="true" /> if both <see cref="HostString"/>'s have the same value.</returns>
         public static bool operator ==(HostString left, HostString right)
         {
             return left.Equals(right);
@@ -331,7 +334,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="left">The left parameter.</param>
         /// <param name="right">The right parameter.</param>
-        /// <returns><code>true</code> if both <see cref="HostString"/>'s values are not equal.</returns>
+        /// <returns><see langword="true" /> if both <see cref="HostString"/>'s values are not equal.</returns>
         public static bool operator !=(HostString left, HostString right)
         {
             return !left.Equals(right);

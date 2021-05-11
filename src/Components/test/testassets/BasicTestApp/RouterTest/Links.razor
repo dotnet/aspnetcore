@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Routing
+﻿@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager NavigationManager
 <style type="text/css">
     a.active {
@@ -20,8 +20,12 @@
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
     <li><NavLink href="/subdir/LongPage1">Long page 1</NavLink></li>
     <li><NavLink href="/subdir/LongPage2">Long page 2</NavLink></li>
+    <li><NavLink href="/subdir/WithLazyAssembly" id="with-lazy-assembly">With lazy assembly</NavLink></li>
+    <li><NavLink href="/subdir/WithLazyLoadedRoutes" id="with-lazy-routes">With lazy loaded routes</NavLink></li>
     <li><NavLink href="PreventDefaultCases">preventDefault cases</NavLink></li>
+    <li><a href="/subdir/images/blazor_logo_1000x.png" download>Download Me</a></li>
     <li><NavLink>Null href never matches</NavLink></li>
+    <li><custom-link-with-shadow-root target-url="Other"></custom-link-with-shadow-root></li>
 </ul>
 
 <button id="do-navigation" @onclick=@(x => NavigationManager.NavigateTo("Other"))>

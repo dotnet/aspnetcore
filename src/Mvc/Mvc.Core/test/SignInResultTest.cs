@@ -46,6 +46,33 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public async Task ExecuteResultAsync_InvokesSignInAsyncOnAuthenticationManagerWithDefaultScheme()
+        {
+            // Arrange
+            var principal = new ClaimsPrincipal();
+            var httpContext = new Mock<HttpContext>();
+            var auth = new Mock<IAuthenticationService>();
+            auth
+                .Setup(c => c.SignInAsync(httpContext.Object, null, principal, null))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
+            var result = new SignInResult(principal);
+            var routeData = new RouteData();
+
+            var actionContext = new ActionContext(
+                httpContext.Object,
+                routeData,
+                new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            auth.Verify();
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_InvokesSignInAsyncOnConfiguredScheme()
         {
             // Arrange

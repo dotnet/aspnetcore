@@ -9,12 +9,20 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
+    /// <summary>
+    /// A middleware for overriding the HTTP method of an incoming POST request.
+    /// </summary>
     public class HttpMethodOverrideMiddleware
     {
         private const string xHttpMethodOverride = "X-Http-Method-Override";
         private readonly RequestDelegate _next;
         private readonly HttpMethodOverrideOptions _options;
 
+        /// <summary>
+        /// Create a new <see cref="HttpMethodOverrideMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="options">The <see cref="HttpMethodOverrideOptions"/> for configuring the middleware.</param>
         public HttpMethodOverrideMiddleware(RequestDelegate next, IOptions<HttpMethodOverrideOptions> options)
         {
             if (next == null)
@@ -29,9 +37,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _options = options.Value;
         }
 
+        /// <summary>
+        /// Executes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
         public async Task Invoke(HttpContext context)
         {
-            if (string.Equals(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsPost(context.Request.Method))
             {
                 if (_options.FormFieldName != null)
                 {

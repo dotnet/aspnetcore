@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Failure was due to these requirements not being met via <see cref="AuthorizationHandlerContext.Succeed(IAuthorizationRequirement)"/>.
         /// </summary>
-        public IEnumerable<IAuthorizationRequirement> FailedRequirements { get; private set; }
+        public IEnumerable<IAuthorizationRequirement> FailedRequirements { get; private set; } = Array.Empty<IAuthorizationRequirement>();
 
         /// <summary>
         /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail"/> being called.
@@ -31,7 +32,6 @@ namespace Microsoft.AspNetCore.Authorization
             => new AuthorizationFailure
             {
                 FailCalled = true,
-                FailedRequirements = new IAuthorizationRequirement[0]
             };
 
         /// <summary>

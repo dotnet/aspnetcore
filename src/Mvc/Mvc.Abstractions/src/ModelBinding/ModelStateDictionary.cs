@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// Represents the state of an attempt to bind values from an HTTP Request to an action method, which includes
     /// validation information.
     /// </summary>
-    public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry>
+    public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?>
     {
         // Make sure to update the doc headers if this value is changed.
         /// <summary>
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <see cref="ModelStateDictionary"/> tracks the number of model errors added by calls to
         /// <see cref="AddModelError(string, Exception, ModelMetadata)"/> or
         /// <see cref="TryAddModelError(string, Exception, ModelMetadata)"/>.
-        /// Once the value of <code>MaxAllowedErrors - 1</code> is reached, if another attempt is made to add an error,
+        /// Once the value of <c>MaxAllowedErrors - 1</c> is reached, if another attempt is made to add an error,
         /// the error message will be ignored and a <see cref="TooManyModelErrorsException"/> will be added.
         /// </para>
         /// <para>
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public KeyEnumerable Keys => new KeyEnumerable(this);
 
         /// <inheritdoc />
-        IEnumerable<string> IReadOnlyDictionary<string, ModelStateEntry>.Keys => Keys;
+        IEnumerable<string> IReadOnlyDictionary<string, ModelStateEntry?>.Keys => Keys;
 
         /// <summary>
         /// Gets the value sequence.
@@ -138,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public ValueEnumerable Values => new ValueEnumerable(this);
 
         /// <inheritdoc />
-        IEnumerable<ModelStateEntry> IReadOnlyDictionary<string, ModelStateEntry>.Values => Values;
+        IEnumerable<ModelStateEntry> IReadOnlyDictionary<string, ModelStateEntry?>.Values => Values;
 
         /// <summary>
         /// Gets a value that indicates whether any model state values in this model state dictionary is invalid or not validated.
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public ModelValidationState ValidationState => GetValidity(_root) ?? ModelValidationState.Valid;
 
         /// <inheritdoc />
-        public ModelStateEntry this[string key]
+        public ModelStateEntry? this[string key]
         {
             get
             {
@@ -297,6 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // "The value '' is not valid." (when no value was provided, not even an empty string) and
                 // "The supplied value is invalid for Int32." (when error is for an element or parameter).
                 var messageProvider = metadata.ModelBindingMessageProvider;
+
                 var name = metadata.DisplayName ?? metadata.PropertyName;
                 string errorMessage;
                 if (entry == null && name == null)
@@ -305,15 +307,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
                 else if (entry == null)
                 {
-                    errorMessage = messageProvider.UnknownValueIsInvalidAccessor(name);
+                    errorMessage = messageProvider.UnknownValueIsInvalidAccessor(name!);
                 }
                 else if (name == null)
                 {
-                    errorMessage = messageProvider.NonPropertyAttemptedValueIsInvalidAccessor(entry.AttemptedValue);
+                    errorMessage = messageProvider.NonPropertyAttemptedValueIsInvalidAccessor(entry.AttemptedValue!);
                 }
                 else
                 {
-                    errorMessage = messageProvider.AttemptedValueIsInvalidAccessor(entry.AttemptedValue, name);
+                    errorMessage = messageProvider.AttemptedValueIsInvalidAccessor(entry.AttemptedValue!, name);
                 }
 
                 return TryAddModelError(key, errorMessage);
@@ -511,7 +513,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="attemptedValue">
         /// The values of <paramref name="rawValue"/> in a comma-separated <see cref="string"/>.
         /// </param>
-        public void SetModelValue(string key, object rawValue, string attemptedValue)
+        public void SetModelValue(string key, object? rawValue, string? attemptedValue)
         {
             if (key == null)
             {
@@ -540,7 +542,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             // Avoid creating a new array for rawValue if there's only one value.
-            object rawValue;
+            object? rawValue;
             if (valueProviderResult == ValueProviderResult.None)
             {
                 rawValue = null;
@@ -573,10 +575,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        private ModelStateNode GetNode(string key)
+        private ModelStateNode? GetNode(string key)
         {
-            Debug.Assert(key != null);
-
             var current = _root;
             if (key.Length > 0)
             {
@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new StringSegment(key, keyStart, index - keyStart);
         }
 
-        private static ModelValidationState? GetValidity(ModelStateNode node)
+        private static ModelValidationState? GetValidity(ModelStateNode? node)
         {
             if (node == null)
             {
@@ -774,7 +774,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out ModelStateEntry value)
+        public bool TryGetValue(string key, [NotNullWhen(true)] out ModelStateEntry? value)
         {
             if (key == null)
             {
@@ -799,8 +799,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public Enumerator GetEnumerator() => new Enumerator(this, prefix: string.Empty);
 
         /// <inheritdoc />
-        IEnumerator<KeyValuePair<string, ModelStateEntry>>
-            IEnumerable<KeyValuePair<string, ModelStateEntry>>.GetEnumerator() => GetEnumerator();
+        IEnumerator<KeyValuePair<string, ModelStateEntry?>>
+            IEnumerable<KeyValuePair<string, ModelStateEntry?>>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -893,11 +893,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 SubKey = subKey;
             }
 
-            public List<ModelStateNode> ChildNodes { get; set; }
+            public List<ModelStateNode>? ChildNodes { get; set; }
 
-            public override IReadOnlyList<ModelStateEntry> Children => ChildNodes;
+            public override IReadOnlyList<ModelStateEntry>? Children => ChildNodes;
 
-            public string Key { get; set; }
+            public string Key { get; set; } = default!;
 
             public StringSegment SubKey { get; }
 
@@ -931,9 +931,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public ModelStateNode GetNode(StringSegment subKey)
+            public ModelStateNode? GetNode(StringSegment subKey)
             {
-                ModelStateNode modelStateNode = null;
+                ModelStateNode? modelStateNode = null;
                 if (subKey.Length == 0)
                 {
                     modelStateNode = this;
@@ -981,7 +981,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return modelStateNode;
             }
 
-            public override ModelStateEntry GetModelStateForProperty(string propertyName)
+            public override ModelStateEntry? GetModelStateForProperty(string propertyName)
                 => GetNode(new StringSegment(propertyName));
 
             private int BinarySearch(StringSegment searchKey)
@@ -1068,9 +1068,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, ModelStateEntry>>
         {
-            private readonly ModelStateNode _rootNode;
+            private readonly ModelStateNode? _rootNode;
             private ModelStateNode _modelStateNode;
-            private List<ModelStateNode> _nodes;
+            private List<ModelStateNode>? _nodes;
             private int _index;
             private bool _visitedRoot;
 
@@ -1093,7 +1093,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 _index = -1;
                 _rootNode = dictionary.GetNode(prefix);
-                _modelStateNode = null;
+                _modelStateNode = default!;
                 _nodes = null;
                 _visitedRoot = false;
             }
@@ -1141,7 +1141,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 while (_nodes.Count > 0)
                 {
                     var node = _nodes[0];
-                    if (_index == node.ChildNodes.Count - 1)
+                    if (_index == node.ChildNodes!.Count - 1)
                     {
                         // We've exhausted the current sublist.
                         _nodes.RemoveAt(0);
@@ -1173,9 +1173,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public void Reset()
             {
                 _index = -1;
-                _nodes.Clear();
+                _nodes?.Clear();
                 _visitedRoot = false;
-                _modelStateNode = null;
+                _modelStateNode = default!;
             }
         }
 
@@ -1218,7 +1218,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public KeyEnumerator(ModelStateDictionary dictionary, string prefix)
             {
                 _prefixEnumerator = new Enumerator(dictionary, prefix);
-                Current = null;
+                Current = default!;
             }
 
             /// <inheritdoc />
@@ -1240,7 +1240,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
                 else
                 {
-                    Current = null;
+                    Current = default!;
                 }
 
                 return result;
@@ -1250,7 +1250,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public void Reset()
             {
                 _prefixEnumerator.Reset();
-                Current = null;
+                Current = default!;
             }
         }
 
@@ -1293,7 +1293,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public ValueEnumerator(ModelStateDictionary dictionary, string prefix)
             {
                 _prefixEnumerator = new Enumerator(dictionary, prefix);
-                Current = null;
+                Current = default!;
             }
 
             /// <inheritdoc />
@@ -1315,7 +1315,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
                 else
                 {
-                    Current = null;
+                    Current = default!;
                 }
 
                 return result;
@@ -1325,7 +1325,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public void Reset()
             {
                 _prefixEnumerator.Reset();
-                Current = null;
+                Current = default!;
             }
         }
     }

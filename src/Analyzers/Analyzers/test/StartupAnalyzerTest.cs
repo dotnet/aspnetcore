@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Analyzers
         [Fact]
         public async Task StartupAnalyzer_UseAuthorizationConfiguredAsAChain_ReportsNoDiagnostics()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/15203
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/15203
             // Arrange
             var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthConfiguredCorrectlyChained));
 
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Analyzers
         [Fact]
         public async Task StartupAnalyzer_UseAuthorizationConfiguredBeforeUseRoutingChained_ReportsDiagnostics()
         {
-            // This one asserts a false negative for https://github.com/aspnet/AspNetCore/issues/15203.
+            // This one asserts a false negative for https://github.com/dotnet/aspnetcore/issues/15203.
             // We don't correctly identify chained calls, this test verifies the behavior.
             // Arrange
             var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthBeforeUseRoutingChained));

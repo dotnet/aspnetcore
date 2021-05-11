@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -19,7 +21,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Wasm.Authentication.Server;
 using Wasm.Authentication.Server.Data;
 using Xunit;
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate("/", noReload: true);
+            Browser.Manage().Window.Size = new Size(1024, 800);
             EnsureDatabaseCreated(_serverFixture.Host.Services);
             WaitUntilLoaded();
         }
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void WasmAuthentication_Loads()
         {
-            Assert.Equal("Wasm.Authentication.Client", Browser.Title);
+            Browser.Equal("Wasm.Authentication.Client", () => Browser.Title);
         }
 
         [Fact]
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(link, page);
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             FirstTimeRegister(userName, password);
 
@@ -96,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(link, page);
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             FirstTimeRegister(userName, password);
 
@@ -116,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Log in"), "/Identity/Account/Login");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             FirstTimeRegister(userName, password);
 
             ClickAndNavigate(By.PartialLinkText("Make admin"), "/new-admin");
@@ -131,7 +133,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void ClickAndNavigate(By link, string page)
         {
-            Browser.FindElement(link).Click();
+            Browser.Exists(link).Click();
             Browser.Contains(page, () => Browser.Url);
         }
 
@@ -141,12 +143,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
             // Need to navigate to fetch page
-            Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
+            Browser.Exists(By.PartialLinkText("Fetch data")).Click();
 
             // Can navigate to the 'fetch data' page
             ValidateFetchData();
@@ -158,11 +160,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("User"), "/Identity/Account/Login");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             FirstTimeRegister(userName, password);
 
             Browser.Contains("user", () => Browser.Url);
-            Browser.Equal($"Welcome {userName}", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal($"Welcome {userName}", () => Browser.Exists(By.TagName("h1")).Text);
 
             var claims = Browser.FindElements(By.CssSelector("p.claim"))
                 .Select(e =>
@@ -199,10 +201,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 "profile",
                 "Wasm.Authentication.ServerAPI"
             },
-            payload.Scopes);
+            payload.Scopes.OrderBy(id => id));
 
-            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text);
-            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text);
+            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text, CultureInfo.InvariantCulture);
+            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text, CultureInfo.InvariantCulture);
             Assert.True(currentTime.AddMinutes(50) < tokenExpiration);
             Assert.True(currentTime.AddMinutes(60) >= tokenExpiration);
         }
@@ -213,7 +215,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
@@ -226,7 +228,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void RegisterAndBack_DoesNotCause_RedirectLoop()
         {
-            Browser.FindElement(By.PartialLinkText("Register")).Click();
+            Browser.Exists(By.PartialLinkText("Register")).Click();
 
             // We will be redirected to the identity UI
             Browser.Contains("/Identity/Account/Register", () => Browser.Url);
@@ -239,7 +241,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void LoginAndBack_DoesNotCause_RedirectLoop()
         {
-            Browser.FindElement(By.PartialLinkText("Log in")).Click();
+            Browser.Exists(By.PartialLinkText("Log in")).Click();
 
             // We will be redirected to the identity UI
             Browser.Contains("/Identity/Account/Login", () => Browser.Url);
@@ -255,7 +257,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
@@ -268,7 +270,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
@@ -294,7 +296,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
             ValidateLoggedIn(userName);
@@ -333,11 +335,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void LoginCore(string userName, string password)
         {
-            Browser.FindElement(By.PartialLinkText("Login")).Click();
+            Browser.Exists(By.PartialLinkText("Login")).Click();
             Browser.Exists(By.Name("Input.Email"));
-            Browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
-            Browser.FindElement(By.Name("Input.Password")).SendKeys(password);
-            Browser.FindElement(By.Id("login-submit")).Click();
+            Browser.Exists(By.Name("Input.Email")).SendKeys(userName);
+            Browser.Exists(By.Name("Input.Password")).SendKeys(password);
+            Browser.Exists(By.Id("login-submit")).Click();
         }
 
         private void ValidateLogout()
@@ -345,7 +347,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.CssSelector("button.nav-link.btn.btn-link"));
 
             // Click logout button
-            Browser.FindElement(By.CssSelector("button.nav-link.btn.btn-link")).Click();
+            Browser.Exists(By.CssSelector("button.nav-link.btn.btn-link")).Click();
 
             Browser.Contains("/authentication/logged-out", () => Browser.Url);
             Browser.True(() => Browser.FindElements(By.TagName("p")).Any(e => e.Text == "You are logged out."));
@@ -355,7 +357,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Can navigate to the 'fetch data' page
             Browser.Contains("fetchdata", () => Browser.Url);
-            Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Weather forecast", () => Browser.Exists(By.TagName("h1")).Text);
 
             // Asynchronously loads and displays the table of weather forecasts
             Browser.Exists(By.CssSelector("table>tbody>tr"));
@@ -364,7 +366,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void FirstTimeRegister(string userName, string password)
         {
-            Browser.FindElement(By.PartialLinkText("Register as a new user")).Click();
+            Browser.Exists(By.PartialLinkText("Register as a new user")).Click();
             RegisterCore(userName, password);
             CompleteProfileDetails();
         }
@@ -373,17 +375,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.Exists(By.PartialLinkText("Home"));
             Browser.Contains("/preferences", () => Browser.Url);
-            Browser.FindElement(By.Id("color-preference")).SendKeys("Red");
-            Browser.FindElement(By.Id("submit-preference")).Click();
+            Browser.Exists(By.Id("color-preference")).SendKeys("Red");
+            Browser.Exists(By.Id("submit-preference")).Click();
         }
 
         private void RegisterCore(string userName, string password)
         {
             Browser.Exists(By.Name("Input.Email"));
-            Browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
-            Browser.FindElement(By.Name("Input.Password")).SendKeys(password);
-            Browser.FindElement(By.Name("Input.ConfirmPassword")).SendKeys(password);
-            Browser.FindElement(By.Id("registerSubmit")).Click();
+            Browser.Exists(By.Name("Input.Email")).SendKeys(userName);
+            Browser.Exists(By.Name("Input.Password")).SendKeys(password);
+            Browser.Exists(By.Name("Input.ConfirmPassword")).SendKeys(password);
+            Browser.Click(By.Id("registerSubmit"));
 
             // We will be redirected to the RegisterConfirmation
             Browser.Contains("/Identity/Account/RegisterConfirmation", () => Browser.Url);
@@ -399,17 +401,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
 
             // Now we can login
-            Browser.FindElement(By.PartialLinkText("Login")).Click();
+            Browser.Exists(By.PartialLinkText("Login")).Click();
             Browser.Exists(By.Name("Input.Email"));
-            Browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
-            Browser.FindElement(By.Name("Input.Password")).SendKeys(password);
-            Browser.FindElement(By.Id("login-submit")).Click();
+            Browser.Exists(By.Name("Input.Email")).SendKeys(userName);
+            Browser.Exists(By.Name("Input.Password")).SendKeys(password);
+            Browser.Exists(By.Id("login-submit")).Click();
         }
 
         private void WaitUntilLoaded(bool skipHeader = false)
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            Browser.Exists(By.TagName("app"));
+            Browser.True(() => Browser.Exists(By.TagName("app")).Text != "Loading...");
 
             if (!skipHeader)
             {

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Logging
 {
     internal static class RouteConstraintMatcherExtensions
     {
-        private static readonly Action<ILogger, object, string, IRouteConstraint, Exception> _constraintNotMatched;
+        private static readonly Action<ILogger, object, string, IRouteConstraint, Exception?> _constraintNotMatched;
 
         static RouteConstraintMatcherExtensions()
         {

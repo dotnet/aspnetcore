@@ -3,18 +3,24 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Static class that adds razor runtime compilation extension methods.
+    /// </summary>
     public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
     {
         /// <summary>
@@ -74,6 +80,23 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<IViewCompilerProvider, RuntimeViewCompilerProvider>();
+
+            var actionDescriptorProvider = services.FirstOrDefault(f =>
+                f.ServiceType == typeof(IActionDescriptorProvider) &&
+                f.ImplementationType == typeof(CompiledPageActionDescriptorProvider));
+
+            if (actionDescriptorProvider != null)
+            {
+                services.Remove(actionDescriptorProvider);
+
+                // Add PageActionDescriptorProvider and the matcher policy that supports runtime compilation.
+                // We only want to add support for this if we know AddRazorPages was called. In the absence of this, several services registered by Razor Pages
+                // will be absent. We'll use the presence of the CompiledPageActionDescriptorProvider service as a poor way to test this.
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
+
+                services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
+            }
 
             services.TryAddSingleton<RuntimeCompilationFileProvider>();
             services.TryAddSingleton<RazorReferenceManager>();

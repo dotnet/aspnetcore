@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,6 +21,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly ICollection<string> _originalValues;
         private readonly string[] _sortedValues;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="PrefixContainer"/>.
+        /// </summary>
+        /// <param name="values">The values for the container.</param>
         public PrefixContainer(ICollection<string> values)
         {
             if (values == null)
@@ -40,6 +46,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// Checks if a prefix is in the container.
+        /// </summary>
+        /// <param name="prefix">The prefix to check.</param>
+        /// <returns>True if the prefix is present.</returns>
         public bool ContainsPrefix(string prefix)
         {
             if (prefix == null)
@@ -60,10 +71,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return BinarySearch(prefix) > -1;
         }
 
-        // Given "foo.bar", "foo.hello", "something.other", foo[abc].baz and asking for prefix "foo" will return:
-        // - "bar"/"foo.bar"
-        // - "hello"/"foo.hello"
-        // - "abc"/"foo[abc]"
+        /// <summary>
+        /// Gets the keys from a prefix.
+        /// </summary>
+        /// <remarks>
+        /// Given "foo.bar", "foo.hello", "something.other", foo[abc].baz and asking for prefix "foo" will return:
+        /// - "bar"/"foo.bar"
+        /// - "hello"/"foo.hello"
+        /// - "abc"/"foo[abc]"
+        /// </remarks>
+        /// <param name="prefix">The prefix to enumerate.</param>
+        /// <returns>The keys for the prefix.</returns>
         public IDictionary<string, string> GetKeysFromPrefix(string prefix)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

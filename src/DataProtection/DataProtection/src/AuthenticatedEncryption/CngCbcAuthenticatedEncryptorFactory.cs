@@ -1,7 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -19,25 +23,32 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     {
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CngCbcAuthenticatedEncryptorFactory"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public CngCbcAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<CngCbcAuthenticatedEncryptorFactory>();
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        /// <inheritdoc />
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
-            var descriptor = key.Descriptor as CngCbcAuthenticatedEncryptorDescriptor;
-            if (descriptor == null)
+            if (key.Descriptor is not CngCbcAuthenticatedEncryptorDescriptor descriptor)
             {
                 return null;
             }
 
+            Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }
 
-        internal CbcAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [SupportedOSPlatform("windows")]
+        [return: NotNullIfNotNull("configuration")]
+        internal CbcAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
-            CngCbcAuthenticatedEncryptorConfiguration configuration)
+            CngCbcAuthenticatedEncryptorConfiguration? configuration)
         {
             if (configuration == null)
             {
@@ -51,6 +62,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 hmacAlgorithmHandle: GetHmacAlgorithmHandle(configuration));
         }
 
+        [SupportedOSPlatform("windows")]
         private BCryptAlgorithmHandle GetHmacAlgorithmHandle(CngCbcAuthenticatedEncryptorConfiguration configuration)
         {
             // basic argument checking
@@ -60,7 +72,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             }
 
             _logger.OpeningCNGAlgorithmFromProviderWithHMAC(configuration.HashAlgorithm, configuration.HashAlgorithmProvider);
-            BCryptAlgorithmHandle algorithmHandle = null;
+            BCryptAlgorithmHandle? algorithmHandle = null;
 
             // Special-case cached providers
             if (configuration.HashAlgorithmProvider == null)
@@ -84,6 +96,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             return algorithmHandle;
         }
 
+        [SupportedOSPlatform("windows")]
         private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(CngCbcAuthenticatedEncryptorConfiguration configuration)
         {
             // basic argument checking
@@ -98,7 +111,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             _logger.OpeningCNGAlgorithmFromProviderWithChainingModeCBC(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
 
-            BCryptAlgorithmHandle algorithmHandle = null;
+            BCryptAlgorithmHandle? algorithmHandle = null;
 
             // Special-case cached providers
             if (configuration.EncryptionAlgorithmProvider == null)

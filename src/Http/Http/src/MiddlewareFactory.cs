@@ -1,15 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Default implementation for <see cref="IMiddlewareFactory"/>.
+    /// </summary>
     public class MiddlewareFactory : IMiddlewareFactory
     {
         // The default middleware factory is just an IServiceProvider proxy.
@@ -17,16 +16,22 @@ namespace Microsoft.AspNetCore.Http
         // don't end up being singletons.
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="MiddlewareFactory"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The application services.</param>
         public MiddlewareFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public IMiddleware Create(Type middlewareType)
+        /// <inheritdoc/>
+        public IMiddleware? Create(Type middlewareType)
         {
             return _serviceProvider.GetRequiredService(middlewareType) as IMiddleware;
         }
 
+        /// <inheritdoc/>
         public void Release(IMiddleware middleware)
         {
             // The container owns the lifetime of the service

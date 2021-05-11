@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// This method will not mutate existing IKey instances. After calling this method,
         /// all existing IKey instances should be discarded, and GetAllKeys should be called again.
         /// </remarks>
-        void RevokeKey(Guid keyId, string reason = null);
+        void RevokeKey(Guid keyId, string? reason = null);
 
         /// <summary>
         /// Revokes all keys created before a specified date and persists the revocation to the
@@ -72,6 +72,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// This method will not mutate existing IKey instances. After calling this method,
         /// all existing IKey instances should be discarded, and GetAllKeys should be called again.
         /// </remarks>
-        void RevokeAllKeys(DateTimeOffset revocationDate, string reason = null);
+        void RevokeAllKeys(DateTimeOffset revocationDate, string? reason = null);
     }
 }

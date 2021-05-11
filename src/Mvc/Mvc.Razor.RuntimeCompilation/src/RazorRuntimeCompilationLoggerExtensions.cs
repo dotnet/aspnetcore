@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 
@@ -98,7 +99,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             _malformedPageDirective = LoggerMessage.Define<string, string[]>(
                 LogLevel.Warning,
                 new EventId(104, "MalformedPageDirective"),
-                "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}");
+                "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}",
+                skipEnabledCheck: true);
         }
 
         public static void ViewCompilerLocatedCompiledView(this ILogger logger, string view)
@@ -169,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 var messages = new string[diagnostics.Count];
                 for (var i = 0; i < diagnostics.Count; i++)
                 {
-                    messages[i] = diagnostics[i].GetMessage();
+                    messages[i] = diagnostics[i].GetMessage(CultureInfo.CurrentCulture);
                 }
 
                 _malformedPageDirective(logger, filePath, messages, null);

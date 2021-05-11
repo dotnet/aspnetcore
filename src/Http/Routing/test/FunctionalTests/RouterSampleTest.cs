@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using RoutingWebSite;
 using Xunit;
 
@@ -14,12 +15,15 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
     public class RouterSampleTest : IDisposable
     {
         private readonly HttpClient _client;
+        private readonly IHost _host;
         private readonly TestServer _testServer;
 
         public RouterSampleTest()
         {
-            var webHostBuilder = Program.GetWebHostBuilder(new[] { Program.RouterScenario, });
-            _testServer = new TestServer(webHostBuilder);
+            var hostBuilder = Program.GetHostBuilder(new[] { Program.RouterScenario, });
+            _host = hostBuilder.Build();
+            _testServer = _host.GetTestServer();
+            _host.Start();
             _client = _testServer.CreateClient();
             _client.BaseAddress = new Uri("http://localhost");
         }
@@ -96,6 +100,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         {
             _testServer.Dispose();
             _client.Dispose();
+            _host.Dispose();
         }
     }
 }

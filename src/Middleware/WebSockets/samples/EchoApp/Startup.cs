@@ -42,7 +42,7 @@ namespace EchoApp
                 }
                 else
                 {
-                    await next();
+                    await next(context);
                 }
             });
 

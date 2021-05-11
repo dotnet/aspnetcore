@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -31,24 +31,24 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             {
                 if (!identityResource.Properties.TryGetValue(ApplicationProfilesPropertyNames.Clients, out var clientList))
                 {
-                    _logger.LogInformation($"Identity resource '{identityResource.Name}' doesn't define a list of allowed applications.");
+                    _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForIdentityResource, "Identity resource '{IdentityResourceName}' doesn't define a list of allowed applications.", identityResource.Name);
                     continue;
                 }
 
                 var resourceClients = clientList.Split(DefaultClientListSeparator, StringSplitOptions.RemoveEmptyEntries);
                 if (resourceClients.Length == 0)
                 {
-                    _logger.LogInformation($"Identity resource '{identityResource.Name}' doesn't define a list of allowed applications.");
+                    _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForIdentityResource, "Identity resource '{IdentityResourceName}' doesn't define a list of allowed applications.", identityResource.Name);
                     continue;
                 }
 
                 if (resourceClients.Length == 1 && resourceClients[0] == ApplicationProfilesPropertyValues.AllowAllApplications)
                 {
-                    _logger.LogInformation($"Identity resource '{identityResource.Name}' allows all applications.");
+                    _logger.LogInformation(LoggerEventIds.AllApplicationsAllowedForIdentityResource, "Identity resource '{IdentityResourceName}' allows all applications.", identityResource.Name);
                 }
                 else
                 {
-                    _logger.LogInformation($"Identity resource '{identityResource.Name}' allows applications '{string.Join(" ", resourceClients)}'.");
+                    _logger.LogInformation(LoggerEventIds.ApplicationsAllowedForIdentityResource, "Identity resource '{IdentityResourceName}' allows applications '{ResourceClients}'.", identityResource.Name, string.Join(" ", resourceClients));
                 }
 
                 foreach (var client in options.Clients)
@@ -68,24 +68,24 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             {
                 if (!resource.Properties.TryGetValue(ApplicationProfilesPropertyNames.Clients, out var clientList))
                 {
-                    _logger.LogInformation($"Resource '{resource.Name}' doesn't define a list of allowed applications.");
+                    _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForApiResource, "Resource '{ApiResourceName}' doesn't define a list of allowed applications.", resource.Name);
                     continue;
                 }
 
                 var resourceClients = clientList.Split(DefaultClientListSeparator, StringSplitOptions.RemoveEmptyEntries);
                 if (resourceClients.Length == 0)
                 {
-                    _logger.LogInformation($"Resource '{resource.Name}' doesn't define a list of allowed applications.");
+                    _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForApiResource, "Resource '{ApiResourceName}' doesn't define a list of allowed applications.", resource.Name);
                     continue;
                 }
 
                 if (resourceClients.Length == 1 && resourceClients[0] == ApplicationProfilesPropertyValues.AllowAllApplications)
                 {
-                    _logger.LogInformation($"Resource '{resource.Name}' allows all applications.");
+                    _logger.LogInformation(LoggerEventIds.AllApplicationsAllowedForApiResource, "Resource '{ApiResourceName}' allows all applications.", resource.Name);
                 }
                 else
                 {
-                    _logger.LogInformation($"Resource '{resource.Name}' allows applications '{string.Join(" ", resourceClients)}'.");
+                    _logger.LogInformation(LoggerEventIds.ApplicationsAllowedForApiResource, "Resource '{ApiResourceName}' allows applications '{resourceClients}'.", resource.Name, string.Join(" ", resourceClients));
                 }
 
                 foreach (var client in options.Clients)
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
         {
             foreach (var scope in resource.Scopes)
             {
-                client.AllowedScopes.Add(scope.Name);
+                client.AllowedScopes.Add(scope);
             }
         }
     }

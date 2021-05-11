@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -47,7 +47,16 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     context.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
 
-                    await next();
+                    // DOTNET_MODIFIABLE_ASSEMBLIES is used by the runtime to initialize hot-reload specific environment variables and is configured
+                    // by the launching process (dotnet-watch / Visual Studio).
+                    // In Development, we'll transmit the environment variable to WebAssembly as a HTTP header. The bootstrapping code will read the header
+                    // and configure it as env variable for the wasm app.
+                    if (webHostEnvironment.IsDevelopment() &&  Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is not null)
+                    {
+                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES"));
+                    }
+
+                    await next(context);
                 });
 
                 subBuilder.UseMiddleware<ContentEncodingNegotiator>();
@@ -77,6 +86,7 @@ namespace Microsoft.AspNetCore.Builder
             AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
             AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
             AddMapping(contentTypeProvider, ".dat", MediaTypeNames.Application.Octet);
+            AddMapping(contentTypeProvider, ".blat", MediaTypeNames.Application.Octet);
 
             options.ContentTypeProvider = contentTypeProvider;
 
@@ -100,7 +110,7 @@ namespace Microsoft.AspNetCore.Builder
                     // When we revisit this, we should consider calculating the original content type and storing it
                     // in the request along with the original target path so that we don't have to calculate it here.
                     var originalPath = Path.GetFileNameWithoutExtension(requestPath.Value);
-                    if (contentTypeProvider.TryGetContentType(originalPath, out var originalContentType))
+                    if (originalPath != null && contentTypeProvider.TryGetContentType(originalPath, out var originalContentType))
                     {
                         fileContext.Context.Response.ContentType = originalContentType;
                     }

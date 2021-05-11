@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.AspNetCore.Components;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <typeparam name="TComponent">The component type.</typeparam>
         /// <param name="selector">The DOM element selector.</param>
-        public void Add<TComponent>(string selector) where TComponent : IComponent
+        public void Add<[DynamicallyAccessedMembers(Component)] TComponent>(string selector) where TComponent : IComponent
         {
             if (selector is null)
             {
@@ -33,7 +34,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
         /// <param name="selector">The DOM element selector.</param>
-        public void Add(Type componentType, string selector)
+        public void Add([DynamicallyAccessedMembers(Component)] Type componentType, string selector)
+        {
+            Add(componentType, selector, ParameterView.Empty);
+        }
+
+        /// <summary>
+        /// Adds a component mapping to the collection.
+        /// </summary>
+        /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
+        /// <param name="selector">The DOM element selector.</param>
+        /// <param name="parameters">The parameters to the root component.</param>
+        public void Add([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters)
         {
             if (componentType is null)
             {
@@ -45,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            Add(new RootComponentMapping(componentType, selector));
+            Add(new RootComponentMapping(componentType, selector, parameters));
         }
 
         /// <summary>

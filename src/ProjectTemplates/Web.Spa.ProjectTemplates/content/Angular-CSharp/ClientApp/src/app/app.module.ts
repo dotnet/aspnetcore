@@ -1,7 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+////#if (IndividualLocalAuth)
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+////#else
+import { HttpClientModule } from '@angular/common/http';
+////#endif
 import { RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';

@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
-using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Reading here puts us below the threshold
                 await connection.Transport.Input.ConsumeAsync(5);
 
-                await writeTask.AsTask().OrTimeout();
+                await writeTask.AsTask().DefaultTimeout();
             }
         }
 
@@ -188,8 +187,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var manager = CreateConnectionManager(LoggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 8, resumeWriterThreshold: 4);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions();
+                options.TransportMaxBufferSize = 8;
+                options.ApplicationMaxBufferSize = 8;
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = transportType;
 
                 using (var requestBody = new MemoryStream())
@@ -222,7 +223,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     var executeTask = dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
                     Assert.False(executeTask.IsCompleted);
                     await connection.Transport.Input.ConsumeAsync(10);
-                    await executeTask.OrTimeout();
+                    await executeTask.DefaultTimeout();
 
                     Assert.True(connection.Transport.Input.TryRead(out var result));
                     Assert.Equal("Hi", Encoding.UTF8.GetString(result.Buffer.ToArray()));
@@ -475,9 +476,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         cts.Cancel();
                     }
 
-                    await task.OrTimeout();
+                    await task.DefaultTimeout();
 
-                    await connection.ApplicationTask.OrTimeout();
+                    await connection.ApplicationTask.DefaultTimeout();
                 }
             }
         }
@@ -510,6 +511,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
+                    context.RequestServices = services.BuildServiceProvider();
 
                     var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.Use(next =>
@@ -529,7 +531,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     // Pretend the transport closed because the client disconnected
                     cts.Cancel();
 
-                    await task.OrTimeout();
+                    await task.DefaultTimeout();
 
                     // We've been gone longer than the expiration time
                     connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10));
@@ -539,7 +541,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     manager.Scan();
 
                     // The application task should complete gracefully
-                    await connection.ApplicationTask.OrTimeout();
+                    await connection.ApplicationTask.DefaultTimeout();
                 }
             }
         }
@@ -723,6 +725,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Connection.RemoteIpAddress = IPAddress.IPv6Any;
                     context.Connection.RemotePort = 43456;
                     context.SetEndpoint(new Endpoint(null, null, "TestName"));
+                    context.RequestServices = services.BuildServiceProvider();
 
                     var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseConnectionHandler<HttpContextConnectionHandler>();
@@ -942,12 +945,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
+                var services = new ServiceCollection();
+                services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
 
                 SetTransport(context, HttpTransportType.ServerSentEvents);
 
-                var services = new ServiceCollection();
-                services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
                 var app = builder.Build();
@@ -961,7 +964,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        public async Task SynchronusExceptionEndsConnection()
+        public async Task SynchronousExceptionEndsConnection()
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
@@ -976,11 +979,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 connection.TransportType = HttpTransportType.ServerSentEvents;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, HttpTransportType.ServerSentEvents);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<SynchronusExceptionConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, HttpTransportType.ServerSentEvents);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<SynchronusExceptionConnectionHandler>();
                 var app = builder.Build();
@@ -1004,10 +1007,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
                 var app = builder.Build();
@@ -1035,16 +1038,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 options.LongPolling.PollTimeout = TimeSpan.FromSeconds(2);
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }
@@ -1128,24 +1131,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.LongPolling;
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = MakeRequest("/foo", connection);
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 // First poll completes immediately
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
                 var sync = new SyncPoint();
                 context.Response.Body = new BlockingStream(sync);
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await sync.WaitForSyncPoint().OrTimeout();
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await sync.WaitForSyncPoint().DefaultTimeout();
                 // Cancel write to response body
                 connection.TryCancelSend(long.MaxValue);
                 sync.Continue();
-                await dispatcherTask.OrTimeout();
+                await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
             }
@@ -1161,10 +1164,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.ServerSentEvents;
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, connection.TransportType);
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, connection.TransportType);
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1172,12 +1175,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Response.Body = new BlockingStream(sync, isSSE: true);
                 var options = new HttpConnectionDispatcherOptions();
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await sync.WaitForSyncPoint().OrTimeout();
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await sync.WaitForSyncPoint().DefaultTimeout();
                 // Cancel write to response body
                 connection.TryCancelSend(long.MaxValue);
                 sync.Continue();
-                await dispatcherTask.OrTimeout();
+                await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
             }
@@ -1199,22 +1202,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 connection.TransportType = HttpTransportType.WebSockets;
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
                 var sync = new SyncPoint();
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, connection.TransportType, sync);
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, connection.TransportType, sync);
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await sync.WaitForSyncPoint().OrTimeout();
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await sync.WaitForSyncPoint().DefaultTimeout();
                 // Cancel write to response body
                 connection.TryCancelSend(long.MaxValue);
                 sync.Continue();
-                await dispatcherTask.OrTimeout();
+                await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
             }
@@ -1232,11 +1235,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, HttpTransportType.WebSockets);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, HttpTransportType.WebSockets);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
                 var app = builder.Build();
@@ -1245,7 +1248,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var task = dispatcher.ExecuteAsync(context, options, app);
 
-                await task.OrTimeout();
+                await task.DefaultTimeout();
             }
         }
 
@@ -1262,14 +1265,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context1 = MakeRequest("/foo", connection);
-                var context2 = MakeRequest("/foo", connection);
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var context1 = MakeRequest("/foo", connection, services);
+                var context2 = MakeRequest("/foo", connection, services);
 
                 SetTransport(context1, transportType);
                 SetTransport(context2, transportType);
 
-                var services = new ServiceCollection();
-                services.AddSingleton<TestConnectionHandler>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1290,7 +1293,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 manager.CloseConnections();
 
-                await request1.OrTimeout();
+                await request1.DefaultTimeout();
             }
         }
 
@@ -1305,11 +1308,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context1 = MakeRequest("/foo", connection);
-                var context2 = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context1 = MakeRequest("/foo", connection, services);
+                var context2 = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1333,9 +1336,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
                 // Wait for poll to be canceled
-                await request1.OrTimeout();
+                await request1.DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
+
+                count = 0;
+                // Wait until the second request has started internally
+                while (connection.TransportTask.IsCompleted && count < 50)
+                {
+                    count++;
+                    await Task.Delay(15);
+                }
+                if (count == 50)
+                {
+                    Assert.True(false, "Poll took too long to start");
+                }
                 Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 
                 Assert.False(request2.IsCompleted);
@@ -1357,11 +1372,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context1 = MakeRequest("/foo", connection);
-                var context2 = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context1 = MakeRequest("/foo", connection, services);
+                var context2 = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1373,7 +1388,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 // Manually control PreviousPollTask instead of using a real PreviousPollTask, because a real
                 // PreviousPollTask might complete too early when the second request cancels it.
-                var lastPollTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var lastPollTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection.PreviousPollTask = lastPollTcs.Task;
 
                 request1 = dispatcher.ExecuteAsync(context1, options, app);
@@ -1382,9 +1397,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.False(request1.IsCompleted);
                 Assert.False(request2.IsCompleted);
 
-                lastPollTcs.SetResult(null);
+                lastPollTcs.SetResult();
 
-                var completedTask = await Task.WhenAny(request1, request2).OrTimeout();
+                var completedTask = await Task.WhenAny(request1, request2).DefaultTimeout();
 
                 if (completedTask == request1)
                 {
@@ -1401,8 +1416,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 manager.CloseConnections();
 
-                await request1.OrTimeout();
-                await request2.OrTimeout();
+                await request1.DefaultTimeout();
+                await request2.DefaultTimeout();
             }
         }
 
@@ -1420,11 +1435,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, transportType);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, transportType);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1447,10 +1462,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1482,11 +1497,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, HttpTransportType.ServerSentEvents);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<BlockingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, HttpTransportType.ServerSentEvents);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<BlockingConnectionHandler>();
                 var app = builder.Build();
@@ -1517,10 +1532,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<BlockingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<BlockingConnectionHandler>();
                 var app = builder.Build();
@@ -1565,21 +1580,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
 
-                var context1 = MakeRequest("/foo", connection);
+                var context1 = MakeRequest("/foo", connection, services);
                 // This is the initial poll to make sure things are setup
                 var task1 = dispatcher.ExecuteAsync(context1, options, app);
                 Assert.True(task1.IsCompleted);
                 task1 = dispatcher.ExecuteAsync(context1, options, app);
-                var context2 = MakeRequest("/foo", connection);
+                var context2 = MakeRequest("/foo", connection, services);
                 var task2 = dispatcher.ExecuteAsync(context2, options, app);
 
                 // Task 1 should finish when request 2 arrives
-                await task1.OrTimeout();
+                await task1.DefaultTimeout();
 
                 // Send a message from the app to complete Task 2
                 await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World"));
 
-                await task2.OrTimeout();
+                await task2.DefaultTimeout();
 
                 // Verify the results
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
@@ -1603,11 +1618,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, transportType);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, transportType);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
                 var app = builder.Build();
@@ -1626,7 +1641,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task LongPollingKeepsWindowsIdentityBetweenRequests()
+        public async Task LongPollingKeepsWindowsPrincipalAndIdentityBetweenRequests()
         {
             using (StartVerifiableLog())
             {
@@ -1655,19 +1670,74 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var windowsIdentity = WindowsIdentity.GetAnonymous();
                 context.User = new WindowsPrincipal(windowsIdentity);
+                context.User.AddIdentity(new ClaimsIdentity());
 
                 // would get stuck if EndPoint was running
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
                 var currentUser = connection.User;
 
                 var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().OrTimeout();
-                await connectionHandlerTask.OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+                await connectionHandlerTask.DefaultTimeout();
 
                 // This is the important check
                 Assert.Same(currentUser, connection.User);
+                Assert.IsType<WindowsPrincipal>(currentUser);
+                Assert.Equal(2, connection.User.Identities.Count());
+
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task LongPollingKeepsWindowsIdentityWithoutWindowsPrincipalBetweenRequests()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddLogging();
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionToken;
+                values["negotiateVersion"] = "1";
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+                var builder = new ConnectionBuilder(sp);
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var windowsIdentity = WindowsIdentity.GetAnonymous();
+                context.User = new ClaimsPrincipal(windowsIdentity);
+                context.User.AddIdentity(new ClaimsIdentity());
+
+                // would get stuck if EndPoint was running
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                var currentUser = connection.User;
+
+                var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+                await connectionHandlerTask.DefaultTimeout();
+
+                // This is the important check
+                Assert.Same(currentUser, connection.User);
+                Assert.IsNotType<WindowsPrincipal>(currentUser);
+                Assert.Equal(2, connection.User.Identities.Count());
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }
@@ -1684,17 +1754,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1); // We don't care about the poll itself
 
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 Assert.True(connection.HasInherentKeepAlive);
 
@@ -1716,18 +1786,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, transportType);
-
                 var serviceCollection = new ServiceCollection();
                 serviceCollection.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, serviceCollection);
+                SetTransport(context, transportType);
+
                 var services = serviceCollection.BuildServiceProvider();
                 var builder = new ConnectionBuilder(services);
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
 
-                _ = dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                _ = dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 // Issue the delete request
                 var deleteContext = new DefaultHttpContext();
@@ -1737,7 +1807,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var ms = new MemoryStream();
                 deleteContext.Response.Body = ms;
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status400BadRequest, deleteContext.Response.StatusCode);
@@ -1757,10 +1827,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1780,19 +1850,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.False(pollTask.IsCompleted);
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
-                await pollTask.OrTimeout();
+                await pollTask.DefaultTimeout();
 
                 // Verify that everything shuts down
-                await connection.ApplicationTask.OrTimeout();
-                await connection.TransportTask.OrTimeout();
+                await connection.ApplicationTask.DefaultTimeout();
+                await connection.TransportTask.DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
 
-                await connection.DisposeAndRemoveTask.OrTimeout();
+                await connection.DisposeAndRemoveTask.DefaultTimeout();
 
                 // Verify the connection was removed from the manager
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
@@ -1810,17 +1880,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<TestConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1);
 
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 // Issue the delete request and make sure the poll completes
                 var deleteContext = new DefaultHttpContext();
@@ -1828,19 +1898,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
                 deleteContext.Request.Method = "DELETE";
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
 
                 // Verify that everything shuts down
-                await connection.ApplicationTask.OrTimeout();
-                await connection.TransportTask.OrTimeout();
+                await connection.ApplicationTask.DefaultTimeout();
+                await connection.TransportTask.DefaultTimeout();
 
                 Assert.NotNull(connection.DisposeAndRemoveTask);
 
-                await connection.DisposeAndRemoveTask.OrTimeout();
+                await connection.DisposeAndRemoveTask.DefaultTimeout();
 
                 // Verify the connection was removed from the manager
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
@@ -1853,20 +1923,23 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 2, resumeWriterThreshold: 1);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 2,
+                    ApplicationMaxBufferSize = 2
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 var pollTask = dispatcher.ExecuteAsync(context, options, app);
                 Assert.True(pollTask.IsCompleted);
@@ -1882,12 +1955,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.False(pollTask.IsCompleted);
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
-                await pollTask.OrTimeout();
+                await pollTask.DefaultTimeout();
 
                 // Verify that transport shuts down
-                await connection.TransportTask.OrTimeout();
+                await connection.TransportTask.DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
@@ -1910,42 +1983,42 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = manager.CreateConnection();
                 connection.TransportType = transportType;
 
-                var waitForMessageTcs1 = new TaskCompletionSource<object>();
-                var messageTcs1 = new TaskCompletionSource<object>();
-                var waitForMessageTcs2 = new TaskCompletionSource<object>();
-                var messageTcs2 = new TaskCompletionSource<object>();
+                var waitForMessageTcs1 = new TaskCompletionSource();
+                var messageTcs1 = new TaskCompletionSource();
+                var waitForMessageTcs2 = new TaskCompletionSource();
+                var messageTcs2 = new TaskCompletionSource();
                 ConnectionDelegate connectionDelegate = async c =>
                 {
-                    await waitForMessageTcs1.Task.OrTimeout();
-                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message1")).OrTimeout();
-                    messageTcs1.TrySetResult(null);
-                    await waitForMessageTcs2.Task.OrTimeout();
-                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message2")).OrTimeout();
-                    messageTcs2.TrySetResult(null);
+                    await waitForMessageTcs1.Task.DefaultTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message1")).DefaultTimeout();
+                    messageTcs1.TrySetResult();
+                    await waitForMessageTcs2.Task.DefaultTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message2")).DefaultTimeout();
+                    messageTcs2.TrySetResult();
                 };
                 {
                     var options = new HttpConnectionDispatcherOptions();
-                    var context = MakeRequest("/foo", connection);
-                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    var context = MakeRequest("/foo", connection, new ServiceCollection());
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).DefaultTimeout();
 
                     // second poll should have data
-                    waitForMessageTcs1.SetResult(null);
-                    await messageTcs1.Task.OrTimeout();
+                    waitForMessageTcs1.SetResult();
+                    await messageTcs1.Task.DefaultTimeout();
 
                     var ms = new MemoryStream();
                     context.Response.Body = ms;
                     // Now send the second poll
-                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).DefaultTimeout();
                     Assert.Equal("Message1", Encoding.UTF8.GetString(ms.ToArray()));
 
-                    waitForMessageTcs2.SetResult(null);
-                    await messageTcs2.Task.OrTimeout();
+                    waitForMessageTcs2.SetResult();
+                    await messageTcs2.Task.DefaultTimeout();
 
-                    context = MakeRequest("/foo", connection);
+                    context = MakeRequest("/foo", connection, new ServiceCollection());
                     ms.Seek(0, SeekOrigin.Begin);
                     context.Response.Body = ms;
                     // This is the third poll which gets the final message after the app is complete
-                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).DefaultTimeout();
                     Assert.Equal("Message2", Encoding.UTF8.GetString(ms.ToArray()));
                 }
             }
@@ -2000,8 +2073,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2011,7 +2089,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 SyncPoint streamCopySyncPoint = new SyncPoint();
 
@@ -2039,13 +2116,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await streamCopySyncPoint.WaitForSyncPoint();
 
                     // Start disposing. This will close the output and cause the write to error
-                    var disposeTask = connection.DisposeAsync().OrTimeout();
+                    var disposeTask = connection.DisposeAsync().DefaultTimeout();
 
                     // Continue writing on a completed writer
                     streamCopySyncPoint.Continue();
 
-                    await sendTask.OrTimeout();
-                    await disposeTask.OrTimeout();
+                    await sendTask.DefaultTimeout();
+                    await disposeTask.DefaultTimeout();
 
                     // Ensure response status is correctly set
                     Assert.Equal(404, context.Response.StatusCode);
@@ -2059,8 +2136,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2070,7 +2151,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 using (var responseBody = new MemoryStream())
                 using (var requestBody = new MemoryStream())
@@ -2090,17 +2170,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     requestBody.Seek(0, SeekOrigin.Begin);
 
                     // Write some data to the pipe to fill it up and make the next write wait
-                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).DefaultTimeout();
 
                     // Write. This will take the WriteLock and block because of back pressure
                     var sendTask = dispatcher.ExecuteAsync(context, options, app);
 
                     // Start disposing. This will take the StateLock and attempt to take the WriteLock
                     // Dispose will cancel pending flush and should unblock WriteLock
-                    await connection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
 
                     // Sends were unblocked
-                    await sendTask.OrTimeout();
+                    await sendTask.DefaultTimeout();
 
                     Assert.Equal(404, context.Response.StatusCode);
                 }
@@ -2113,8 +2193,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2124,7 +2208,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 using (var responseBody = new MemoryStream())
                 using (var requestBody = new MemoryStream())
@@ -2144,18 +2227,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     requestBody.Seek(0, SeekOrigin.Begin);
 
                     // Write some data to the pipe to fill it up and make the next write wait
-                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).DefaultTimeout();
 
                     // This will block until the pipe is unblocked
-                    var sendTask = dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                    var sendTask = dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
                     Assert.False(sendTask.IsCompleted);
 
-                    var pollContext = MakeRequest("/foo", connection);
+                    var pollContext = MakeRequest("/foo", connection, services);
                     // This should unblock the send that is waiting because of backpressure
                     // Testing deadlock regression where pipe backpressure would hold the same lock that poll would use
-                    await dispatcher.ExecuteAsync(pollContext, options, app).OrTimeout();
+                    await dispatcher.ExecuteAsync(pollContext, options, app).DefaultTimeout();
 
-                    await sendTask.OrTimeout();
+                    await sendTask.DefaultTimeout();
                 }
             }
         }
@@ -2186,19 +2269,328 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
 
-                var context = MakeRequest("/foo", connection);
+                var context = MakeRequest("/foo", connection, services);
 
                 // Initial poll will complete immediately
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
-                var pollContext = MakeRequest("/foo", connection);
+                var pollContext = MakeRequest("/foo", connection, services);
                 var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
                 // fail LongPollingTransport ReadAsync
                 connection.Transport.Output.Complete(new InvalidOperationException());
-                await pollTask.OrTimeout();
+                await pollTask.DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status500InternalServerError, pollContext.Response.StatusCode);
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out var _));
+            }
+        }
+
+        [Fact]
+        public async Task LongPollingConnectionClosingTriggersConnectionClosedToken()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 2,
+                    ApplicationMaxBufferSize = 2
+                };
+                var connection = manager.CreateConnection(options);
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+
+                var pollTask = dispatcher.ExecuteAsync(context, options, app);
+                Assert.True(pollTask.IsCompleted);
+
+                // Now send the second poll
+                pollTask = dispatcher.ExecuteAsync(context, options, app);
+
+                // Issue the delete request and make sure the poll completes
+                var deleteContext = new DefaultHttpContext();
+                deleteContext.Request.Path = "/foo";
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.Method = "DELETE";
+
+                Assert.False(pollTask.IsCompleted);
+
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
+
+                await pollTask.DefaultTimeout();
+
+                // Verify that transport shuts down
+                await connection.TransportTask.DefaultTimeout();
+
+                // Verify the response from the DELETE request
+                Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
+                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+                Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+
+                // Verify the connection not removed because application is hanging
+                Assert.True(manager.TryGetConnection(connection.ConnectionId, out _));
+            }
+        }
+
+        [Fact]
+        public async Task SSEConnectionClosingTriggersConnectionClosedToken()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.ServerSentEvents;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, connection.TransportType);
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+                _ = dispatcher.ExecuteAsync(context, options, app);
+
+                // Close the SSE connection
+                connection.Transport.Output.Complete();
+
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task WebSocketConnectionClosingTriggersConnectionClosedToken()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.WebSockets;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, HttpTransportType.WebSockets);
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+                options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
+
+                _ = dispatcher.ExecuteAsync(context, options, app);
+
+                var websocket = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+                await websocket.Accepted.DefaultTimeout();
+                await websocket.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken: default).DefaultTimeout();
+
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+            }
+        }
+
+        public class CustomHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
+        {
+            public CancellationToken RequestAborted { get; set; }
+
+            private CancellationTokenSource _cts;
+            public CustomHttpRequestLifetimeFeature()
+            {
+                _cts = new CancellationTokenSource();
+                RequestAborted = _cts.Token;
+            }
+
+            public void Abort()
+            {
+                _cts.Cancel();
+            }
+        }
+
+        [Fact]
+        public async Task AbortingConnectionAbortsHttpContextAndTriggersConnectionClosedToken()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.ServerSentEvents;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                var lifetimeFeature = new CustomHttpRequestLifetimeFeature();
+                context.Features.Set<IHttpRequestLifetimeFeature>(lifetimeFeature);
+                SetTransport(context, connection.TransportType);
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+                _ = dispatcher.ExecuteAsync(context, options, app);
+
+                connection.Abort();
+
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                connection.ConnectionClosed.Register(() => tcs.SetResult(null));
+                await tcs.Task.DefaultTimeout();
+
+                tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                lifetimeFeature.RequestAborted.Register(() => tcs.SetResult(null));
+                await tcs.Task.DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ServicesAvailableWithLongPolling()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<ServiceProviderConnectionHandler>();
+                services.AddSingleton(new MessageWrapper() { Buffer = new ReadOnlySequence<byte>(new byte[] { 1, 2, 3 }) });
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<ServiceProviderConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var context = MakeRequest("/foo", connection, services);
+
+                // Initial poll will complete immediately
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+                var pollContext = MakeRequest("/foo", connection, services);
+                var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
+
+                var memory = new Memory<byte>(new byte[10]);
+                pollContext.Response.Body.Position = 0;
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
+                Assert.Equal(new byte[] { 1, 2, 3 }, memory.Slice(0, 3).ToArray());
+
+                // Connection will use the original service provider so this will have no effect
+                services.AddSingleton(new MessageWrapper() { Buffer = new ReadOnlySequence<byte>(new byte[] { 4, 5, 6 }) });
+                pollContext = MakeRequest("/foo", connection, services);
+                pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
+
+                pollContext.Response.Body.Position = 0;
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
+                Assert.Equal(new byte[] { 1, 2, 3 }, memory.Slice(0, 3).ToArray());
+
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ServicesPreserveScopeWithLongPolling()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<ServiceProviderConnectionHandler>();
+                var iteration = 0;
+                services.AddScoped(typeof(MessageWrapper), _ =>
+                {
+                    iteration++;
+                    return new MessageWrapper() { Buffer = new ReadOnlySequence<byte>(new byte[] { (byte)(iteration + 1), (byte)(iteration + 2), (byte)(iteration + 3) }) };
+                });
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<ServiceProviderConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var context = MakeRequest("/foo", connection, services);
+
+                // Initial poll will complete immediately
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+                var pollContext = MakeRequest("/foo", connection, services);
+                var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
+
+                var memory = new Memory<byte>(new byte[10]);
+                pollContext.Response.Body.Position = 0;
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
+                Assert.Equal(new byte[] { 2, 3, 4 }, memory.Slice(0, 3).ToArray());
+
+                pollContext = MakeRequest("/foo", connection, services);
+                pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
+
+                pollContext.Response.Body.Position = 0;
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
+                Assert.Equal(new byte[] { 2, 3, 4 }, memory.Slice(0, 3).ToArray());
+
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task DisposeLongPollingConnectionDisposesServiceScope()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<ServiceProviderConnectionHandler>();
+                var iteration = 0;
+                services.AddScoped(typeof(MessageWrapper), _ =>
+                {
+                    iteration++;
+                    return new MessageWrapper() { Buffer = new ReadOnlySequence<byte>(new byte[] { (byte)(iteration + 1), (byte)(iteration + 2), (byte)(iteration + 3) }) };
+                });
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<ServiceProviderConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var context = MakeRequest("/foo", connection, services);
+
+                // Initial poll will complete immediately
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+                // ServiceScope will be disposed here
+                await connection.DisposeAsync().DefaultTimeout();
+
+                Assert.Throws<ObjectDisposedException>(() => connection.ServiceScope.ServiceProvider.GetService<MessageWrapper>());
             }
         }
 
@@ -2225,6 +2617,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 values["negotiateVersion"] = "1";
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
+                context.RequestServices = services.BuildServiceProvider();
 
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
@@ -2244,7 +2637,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private static DefaultHttpContext MakeRequest(string path, HttpConnectionContext connection, string format = null)
+        private static DefaultHttpContext MakeRequest(string path, HttpConnectionContext connection, IServiceCollection serviceCollection, string format = null)
         {
             var context = new DefaultHttpContext();
             context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
@@ -2260,6 +2653,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var qs = new QueryCollection(values);
             context.Request.Query = qs;
             context.Response.Body = new MemoryStream();
+            context.RequestServices = serviceCollection.BuildServiceProvider();
             return context;
         }
 
@@ -2280,10 +2674,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
         {
-            return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime());
+            return CreateConnectionManager(loggerFactory, null);
         }
 
-        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan disconnectTimeout)
+        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan? disconnectTimeout)
         {
             var connectionOptions = new ConnectionOptions();
             connectionOptions.DisconnectTimeout = disconnectTimeout;
@@ -2305,7 +2699,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     {
         public override Task OnConnectedAsync(ConnectionContext connection)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             return tcs.Task;
         }
     }
@@ -2371,13 +2765,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
     public class TestConnectionHandler : ConnectionHandler
     {
-        private TaskCompletionSource<object> _startedTcs = new TaskCompletionSource<object>();
+        private TaskCompletionSource _startedTcs = new TaskCompletionSource();
 
         public Task Started => _startedTcs.Task;
 
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
-            _startedTcs.TrySetResult(null);
+            _startedTcs.TrySetResult();
 
             while (true)
             {
@@ -2398,6 +2792,35 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
     }
 
+    public class ServiceProviderConnectionHandler : ConnectionHandler
+    {
+        public override async Task OnConnectedAsync(ConnectionContext connection)
+        {
+            while (true)
+            {
+                var result = await connection.Transport.Input.ReadAsync();
+
+                try
+                {
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+
+                    var context = connection.GetHttpContext();
+                    var message = context.RequestServices.GetService<MessageWrapper>();
+
+                    // Echo the results
+                    await connection.Transport.Output.WriteAsync(message.Buffer.ToArray());
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                }
+            }
+        }
+    }
+
     public class ResponseFeature : HttpResponseFeature
     {
         public override void OnCompleted(Func<object, Task> callback, object state)
@@ -2407,5 +2830,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public override void OnStarting(Func<object, Task> callback, object state)
         {
         }
+    }
+
+    public class MessageWrapper
+    {
+        public ReadOnlySequence<byte> Buffer { get; set; }
     }
 }

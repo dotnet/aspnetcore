@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "Angular",
-    "description": "Szablon projektu umożliwiający tworzenie aplikacji ASP.NET Core z użyciem platformy Angular."
+    "name": "Platforma ASP.NET Core ze strukturą Angular",
+    "description": "Szablon projektu służący do tworzenia aplikacji ASP.NET Core z użyciem platformy Angular"
   }
 }

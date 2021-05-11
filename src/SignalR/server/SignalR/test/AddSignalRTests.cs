@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,11 +79,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
             {
                 options.SupportedProtocols.Clear();
+                options.AddFilter(new CustomHubFilter());
             });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.SupportedProtocols.Count);
             Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols.Count);
+
+            Assert.Null(serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.HubFilters);
+            Assert.Single(serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.HubFilters);
         }
 
         [Fact]
@@ -105,6 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal(globalHubOptions.HandshakeTimeout, hubOptions.HandshakeTimeout);
             Assert.Equal(globalHubOptions.SupportedProtocols, hubOptions.SupportedProtocols);
             Assert.Equal(globalHubOptions.ClientTimeoutInterval, hubOptions.ClientTimeoutInterval);
+            Assert.Equal(globalHubOptions.MaximumParallelInvocationsPerClient, hubOptions.MaximumParallelInvocationsPerClient);
             Assert.True(hubOptions.UserHasSetValues);
         }
 
@@ -138,6 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 options.HandshakeTimeout = null;
                 options.SupportedProtocols = null;
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(1);
+                options.MaximumParallelInvocationsPerClient = 3;
             });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -149,6 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Null(globalOptions.KeepAliveInterval);
             Assert.Null(globalOptions.HandshakeTimeout);
             Assert.Null(globalOptions.SupportedProtocols);
+            Assert.Equal(3, globalOptions.MaximumParallelInvocationsPerClient);
             Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
         }
 
@@ -174,6 +182,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     Assert.Equal("messagepack", p);
                 });
+        }
+
+        [Fact]
+        public void ThrowsIfSetInvalidValueForMaxInvokes()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new HubOptions() { MaximumParallelInvocationsPerClient = 0 });
         }
     }
 
@@ -329,6 +343,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class CustomHubFilter : IHubFilter
+    {
+        public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
             throw new NotImplementedException();
         }

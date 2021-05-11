@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -16,14 +17,14 @@ namespace Microsoft.AspNetCore.Hosting
         /// Constructs the <see cref="HostingStartupAttribute"/> with the specified type.
         /// </summary>
         /// <param name="hostingStartupType">A type that implements <see cref="IHostingStartup"/>.</param>
-        public HostingStartupAttribute(Type hostingStartupType)
+        public HostingStartupAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type hostingStartupType)
         {
             if (hostingStartupType == null)
             {
                 throw new ArgumentNullException(nameof(hostingStartupType));
             }
 
-            if (!typeof(IHostingStartup).GetTypeInfo().IsAssignableFrom(hostingStartupType.GetTypeInfo()))
+            if (!typeof(IHostingStartup).IsAssignableFrom(hostingStartupType))
             {
                 throw new ArgumentException($@"""{hostingStartupType}"" does not implement {typeof(IHostingStartup)}.", nameof(hostingStartupType));
             }
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// The implementation of <see cref="IHostingStartup"/> that should be loaded when 
         /// starting an application.
         /// </summary>
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
         public Type HostingStartupType { get; }
     }
 }

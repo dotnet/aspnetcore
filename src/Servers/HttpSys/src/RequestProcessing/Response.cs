@@ -4,13 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
+
 using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -21,13 +26,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static bool SupportsGoAway = true;
 
         private ResponseState _responseState;
-        private string _reasonPhrase;
-        private ResponseBody _nativeStream;
+        private string? _reasonPhrase;
+        private ResponseBody? _nativeStream;
         private AuthenticationSchemes _authChallenges;
         private TimeSpan? _cacheTtl;
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApiTypes.HTTP_RESPONSE_V2 _nativeResponse;
+        private HeaderCollection? _trailers;
 
         internal Response(RequestContext requestContext)
         {
@@ -71,14 +77,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Http.Sys automatically sends 100 Continue responses when you read from the request body.
                 if (value <= 100 || 999 < value)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(Resources.Exception_InvalidStatusCode, value));
+                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(CultureInfo.CurrentCulture, Resources.Exception_InvalidStatusCode, value));
                 }
                 CheckResponseStarted();
                 _nativeResponse.Response_V1.StatusCode = (ushort)value;
             }
         }
 
-        public string ReasonPhrase
+        public string? ReasonPhrase
         {
             get { return _reasonPhrase; }
             set
@@ -116,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private string GetReasonPhrase(int statusCode)
         {
-            string reasonPhrase = ReasonPhrase;
+            string? reasonPhrase = ReasonPhrase;
             if (string.IsNullOrWhiteSpace(reasonPhrase))
             {
                 // If the user hasn't set this then it is generated on the fly if possible.
@@ -142,6 +148,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public HeaderCollection Headers { get; }
 
+        public HeaderCollection Trailers => _trailers ??= new HeaderCollection(checkTrailers: true) { IsReadOnly = BodyIsFinished };
+
+        internal bool HasTrailers => _trailers?.Count > 0;
+
+        // Trailers are supported on this OS, it's HTTP/2, and the app added a Trailer response header to announce trailers were intended.
+        // Needed to delay the completion of Content-Length responses.
+        internal bool TrailersExpected => HasTrailers
+            || (HttpApi.SupportsTrailers && Request.ProtocolVersion >= HttpVersion.Version20
+                    && Headers.ContainsKey(HeaderNames.Trailer));
+
         internal long ExpectedBodyLength
         {
             get { return _expectedBodyLength; }
@@ -165,6 +181,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 CheckResponseStarted();
                 _cacheTtl = value;
+            }
+        }
+
+        // The response is being finished with or without trailers. Mark them as readonly to inform
+        // callers if they try to add them too late. E.g. after Content-Length or CompleteAsync().
+        internal void MakeTrailersReadOnly()
+        {
+            if (_trailers != null)
+            {
+                _trailers.IsReadOnly = true;
             }
         }
 
@@ -214,6 +240,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        [MemberNotNull(nameof(_nativeStream))]
         private void EnsureResponseStream()
         {
             if (_nativeStream == null)
@@ -252,8 +279,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // What would we loose by bypassing HttpSendHttpResponse?
         //
         // TODO: Consider using the HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA flag for most/all responses rather than just Opaque.
-        internal unsafe uint SendHeaders(HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks,
-            ResponseStreamAsyncResult asyncResult,
+        internal unsafe uint SendHeaders(HttpApiTypes.HTTP_DATA_CHUNK[]? dataChunks,
+            ResponseStreamAsyncResult? asyncResult,
             HttpApiTypes.HTTP_FLAGS flags,
             bool isOpaqueUpgrade)
         {
@@ -264,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             uint statusCode;
             uint bytesSent;
-            List<GCHandle> pinnedHeaders = SerializeHeaders(isOpaqueUpgrade);
+            List<GCHandle>? pinnedHeaders = SerializeHeaders(isOpaqueUpgrade);
             try
             {
                 if (dataChunks != null)
@@ -313,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                 &bytesSent,
                                 IntPtr.Zero,
                                 0,
-                                asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
+                                asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped!,
                                 IntPtr.Zero);
 
                         // GoAway is only supported on later versions. Retry.
@@ -331,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                     &bytesSent,
                                     IntPtr.Zero,
                                     0,
-                                    asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
+                                    asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped!,
                                     IntPtr.Zero);
 
                             // Succeeded without GoAway, disable them.
@@ -372,14 +399,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             // Gather everything from the request that affects the response:
             var requestVersion = Request.ProtocolVersion;
-            var requestConnectionString = Request.Headers[HttpKnownHeaderNames.Connection];
+            var requestConnectionString = Request.Headers[HeaderNames.Connection];
             var isHeadRequest = Request.IsHeadMethod;
             var requestCloseSet = Matches(Constants.Close, requestConnectionString);
 
             // Gather everything the app may have set on the response:
             // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
-            var responseConnectionString = Headers[HttpKnownHeaderNames.Connection];
-            var transferEncodingString = Headers[HttpKnownHeaderNames.TransferEncoding];
+            var responseConnectionString = Headers[HeaderNames.Connection];
+            var transferEncodingString = Headers[HeaderNames.TransferEncoding];
             var responseContentLength = ContentLength;
             var responseCloseSet = Matches(Constants.Close, responseConnectionString);
             var responseChunkedSet = Matches(Constants.Chunked, transferEncodingString);
@@ -400,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _boundaryType = BoundaryType.ContentLength;
                 // ComputeLeftToWrite checks for HEAD requests when setting _leftToWrite
                 _expectedBodyLength = responseContentLength.Value;
-                if (_expectedBodyLength == writeCount && !isHeadRequest)
+                if (_expectedBodyLength == writeCount && !isHeadRequest && !TrailersExpected)
                 {
                     // A single write with the whole content-length. Http.Sys will set the content-length for us in this scenario.
                     // If we don't remove it then range requests served from cache will have two.
@@ -417,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (!isHeadRequest && statusCanHaveBody)
                 {
-                    Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
+                    Headers[HeaderNames.ContentLength] = Constants.Zero;
                 }
                 _boundaryType = BoundaryType.ContentLength;
                 _expectedBodyLength = 0;
@@ -425,11 +452,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else if (requestVersion == Constants.V1_1)
             {
                 _boundaryType = BoundaryType.Chunked;
-                Headers[HttpKnownHeaderNames.TransferEncoding] = Constants.Chunked;
+                Headers[HeaderNames.TransferEncoding] = Constants.Chunked;
             }
             else
             {
                 // v1.0 and the length cannot be determined, so we must close the connection after writing data
+                // Or v2.0 and chunking isn't required.
                 keepConnectionAlive = false;
                 _boundaryType = BoundaryType.Close;
             }
@@ -441,7 +469,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Note that if we don't add this header, Http.Sys will often do it for us.
                 if (!responseCloseSet)
                 {
-                    Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
+                    Headers.Append(HeaderNames.Connection, Constants.Close);
                 }
                 flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
                 if (responseCloseSet && requestVersion >= Constants.V2 && SupportsGoAway)
@@ -459,11 +487,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return string.Equals(knownValue, input?.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
-        private unsafe List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)
+        private unsafe List<GCHandle>? SerializeHeaders(bool isOpaqueUpgrade)
         {
             Headers.IsReadOnly = true; // Prohibit further modifications.
-            HttpApiTypes.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
-            HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
+            HttpApiTypes.HTTP_UNKNOWN_HEADER[]? unknownHeaders = null;
+            HttpApiTypes.HTTP_RESPONSE_INFO[]? knownHeaderInfo = null;
             List<GCHandle> pinnedHeaders;
             GCHandle gcHandle;
 
@@ -474,7 +502,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string headerName;
             string headerValue;
             int lookup;
-            byte[] bytes = null;
+            byte[]? bytes = null;
             pinnedHeaders = new List<GCHandle>();
 
             int numUnknownHeaders = 0;
@@ -608,7 +636,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return pinnedHeaders;
         }
 
-        private static void FreePinnedHeaders(List<GCHandle> pinnedHeaders)
+        private static void FreePinnedHeaders(List<GCHandle>? pinnedHeaders)
         {
             if (pinnedHeaders != null)
             {
@@ -620,6 +648,73 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                 }
             }
+        }
+
+        internal unsafe void SerializeTrailers(HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks, int currentChunk, List<GCHandle> pins)
+        {
+            Debug.Assert(currentChunk == dataChunks.Length - 1);
+            Debug.Assert(HasTrailers);
+            MakeTrailersReadOnly();
+            var trailerCount = 0;
+
+            foreach (var trailerPair in Trailers)
+            {
+                trailerCount += trailerPair.Value.Count;
+            }
+
+            var pinnedHeaders = new List<GCHandle>();
+
+            var unknownHeaders = new HttpApiTypes.HTTP_UNKNOWN_HEADER[trailerCount];
+            var gcHandle = GCHandle.Alloc(unknownHeaders, GCHandleType.Pinned);
+            pinnedHeaders.Add(gcHandle);
+            dataChunks[currentChunk].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkTrailers;
+            dataChunks[currentChunk].trailers.trailerCount = (ushort)trailerCount;
+            dataChunks[currentChunk].trailers.pTrailers = gcHandle.AddrOfPinnedObject();
+
+            try
+            {
+                var unknownHeadersOffset = 0;
+
+                foreach (var headerPair in Trailers)
+                {
+                    if (headerPair.Value.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    var headerName = headerPair.Key;
+                    var headerValues = headerPair.Value;
+
+                    for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
+                    {
+                        // Add Name
+                        var bytes = HeaderEncoding.GetBytes(headerName);
+                        unknownHeaders[unknownHeadersOffset].NameLength = (ushort)bytes.Length;
+                        gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        pinnedHeaders.Add(gcHandle);
+                        unknownHeaders[unknownHeadersOffset].pName = (byte*)gcHandle.AddrOfPinnedObject();
+
+                        // Add Value
+                        var headerValue = headerValues[headerValueIndex] ?? string.Empty;
+                        bytes = HeaderEncoding.GetBytes(headerValue);
+                        unknownHeaders[unknownHeadersOffset].RawValueLength = (ushort)bytes.Length;
+                        gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        pinnedHeaders.Add(gcHandle);
+                        unknownHeaders[unknownHeadersOffset].pRawValue = (byte*)gcHandle.AddrOfPinnedObject();
+                        unknownHeadersOffset++;
+                    }
+                }
+
+                Debug.Assert(unknownHeadersOffset == trailerCount);
+            }
+            catch
+            {
+                FreePinnedHeaders(pinnedHeaders);
+                throw;
+            }
+
+            // Success, keep the pins.
+            pins.AddRange(pinnedHeaders);
         }
 
         // Subset of ComputeHeaders
@@ -638,6 +733,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 throw new HttpSysException((int)errorCode);
             }
+        }
+
+        internal void MarkDelegated()
+        {
+            Abort();
+            _nativeStream?.MarkDelegated();
         }
 
         internal void CancelLastWrite()

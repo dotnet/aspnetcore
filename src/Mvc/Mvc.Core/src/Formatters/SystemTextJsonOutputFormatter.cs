@@ -2,14 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -40,7 +37,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (jsonSerializerOptions.Encoder is null)
             {
                 // If the user hasn't explicitly configured the encoder, use the less strict encoder that does not encode all non-ASCII characters.
-                jsonSerializerOptions = jsonSerializerOptions.Copy(JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
+                jsonSerializerOptions = new JsonSerializerOptions(jsonSerializerOptions)
+                {
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                };
             }
 
             return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
@@ -70,44 +70,50 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var httpContext = context.HttpContext;
 
-            var writeStream = GetWriteStream(httpContext, selectedEncoding);
-            try
-            {
-                // context.ObjectType reflects the declared model type when specified.
-                // For polymorphic scenarios where the user declares a return type, but returns a derived type,
-                // we want to serialize all the properties on the derived type. This keeps parity with
-                // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
-                var objectType = context.Object?.GetType() ?? context.ObjectType;
-                await JsonSerializer.SerializeAsync(writeStream, context.Object, objectType, SerializerOptions);
+            // context.ObjectType reflects the declared model type when specified.
+            // For polymorphic scenarios where the user declares a return type, but returns a derived type,
+            // we want to serialize all the properties on the derived type. This keeps parity with
+            // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
+            var objectType = context.Object?.GetType() ?? context.ObjectType ?? typeof(object);
 
-                // The transcoding streams use Encoders and Decoders that have internal buffers. We need to flush these
-                // when there is no more data to be written. Stream.FlushAsync isn't suitable since it's
-                // acceptable to Flush a Stream (multiple times) prior to completion.
-                if (writeStream is TranscodingWriteStream transcodingStream)
-                {
-                    await transcodingStream.FinalWriteAsync(CancellationToken.None);
-                }
-                await writeStream.FlushAsync();
-            }
-            finally
-            {
-                if (writeStream is TranscodingWriteStream transcodingStream)
-                {
-                    await transcodingStream.DisposeAsync();
-                }
-            }
-        }
-
-        private Stream GetWriteStream(HttpContext httpContext, Encoding selectedEncoding)
-        {
+            var responseStream = httpContext.Response.Body;
             if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
             {
-                // JsonSerializer does not write a BOM. Therefore we do not have to handle it
-                // in any special way.
-                return httpContext.Response.Body;
+                await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions);
+                await responseStream.FlushAsync();
             }
+            else
+            {
+                // JsonSerializer only emits UTF8 encoded output, but we need to write the response in the encoding specified by
+                // selectedEncoding
+                var transcodingStream = Encoding.CreateTranscodingStream(httpContext.Response.Body, selectedEncoding, Encoding.UTF8, leaveOpen: true);
 
-            return new TranscodingWriteStream(httpContext.Response.Body, selectedEncoding);
+                ExceptionDispatchInfo? exceptionDispatchInfo = null;
+                try
+                {
+                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, objectType, SerializerOptions);
+                    await transcodingStream.FlushAsync();
+                }
+                catch (Exception ex)
+                {
+                    // TranscodingStream may write to the inner stream as part of it's disposal.
+                    // We do not want this exception "ex" to be eclipsed by any exception encountered during the write. We will stash it and
+                    // explicitly rethrow it during the finally block.
+                    exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
+                }
+                finally
+                {
+                    try
+                    {
+                        await transcodingStream.DisposeAsync();
+                    }
+                    catch when (exceptionDispatchInfo != null)
+                    {
+                    }
+
+                    exceptionDispatchInfo?.Throw();
+                }
+            }
         }
     }
 }

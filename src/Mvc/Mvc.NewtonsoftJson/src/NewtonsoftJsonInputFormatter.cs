@@ -22,14 +22,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
-        private const int DefaultMemoryThreshold = 1024 * 30;
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
         private readonly MvcOptions _options;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
 
-        private ObjectPool<JsonSerializer> _jsonSerializerPool;
+        private ObjectPool<JsonSerializer>? _jsonSerializerPool;
 
         /// <summary>
         /// Initializes a new instance of <see cref="NewtonsoftJsonInputFormatter"/>.
@@ -124,7 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            var request = context.HttpContext.Request;
+            var httpContext = context.HttpContext;
+            var request = httpContext.Request;
 
             var suppressInputFormatterBuffering = _options.SuppressInputFormatterBuffering;
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously
                 // read everything into a buffer, and then seek back to the beginning.
-                var memoryThreshold = DefaultMemoryThreshold;
+                var memoryThreshold = _jsonOptions.InputFormatterMemoryBufferThreshold;
                 var contentLength = request.ContentLength.GetValueOrDefault();
                 if (contentLength > 0 && contentLength < memoryThreshold)
                 {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
                 // Ensure the file buffer stream is always disposed at the end of a request.
-                request.HttpContext.Response.RegisterForDispose(readStream);
+                httpContext.Response.RegisterForDispose(readStream);
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var successful = true;
-            Exception exception = null;
+            Exception? exception = null;
             object model;
 
             using (var streamReader = context.ReaderFactory(readStream, encoding))
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            if (!(exception is JsonException || exception is OverflowException || exception is FormatException))
+            if (exception is not null && exception is not (JsonException or OverflowException or FormatException))
             {
                 // At this point we've already recorded all exceptions as an entry in the ModelStateDictionary.
                 // We only need to rethrow an exception if we believe it needs to be handled by something further up
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             return InputFormatterResult.Failure();
 
-            void ErrorHandler(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
+            void ErrorHandler(object? sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
             {
                 successful = false;
 
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 if (addMember)
                 {
                     // Path.Member case (path.Length < member.Length) needs no further checks.
-                    if (path.Length == member.Length)
+                    if (path.Length == member!.Length)
                     {
                         // Add Member in Path.Memb case but not for Path.Path.
                         addMember = !string.Equals(path, member, StringComparison.Ordinal);
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// manage the lifetimes of <see cref="JsonSerializer"/> instances.
         /// </remarks>
         protected virtual void ReleaseJsonSerializer(JsonSerializer serializer)
-            => _jsonSerializerPool.Return(serializer);
+            => _jsonSerializerPool!.Return(serializer);
 
         private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
         {
@@ -355,13 +355,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     }
 
                     var propertyName = path.Substring(index, endIndex - index);
-                    if (metadata.Properties[propertyName] == null)
+                    var propertyMetadata = metadata.Properties[propertyName];
+                    if (propertyMetadata is null)
                     {
                         // Odd case but don't throw just because ErrorContext had an odd-looking path.
                         break;
                     }
-
-                    metadata = metadata.Properties[propertyName];
+                    metadata = propertyMetadata;
                     index = endIndex;
                 }
             }

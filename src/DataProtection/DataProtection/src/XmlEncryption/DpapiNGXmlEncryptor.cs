@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.Versioning;
 using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// <remarks>
     /// This API is only supported on Windows 8 / Windows Server 2012 and higher.
     /// </remarks>
+    [SupportedOSPlatform("windows")]
     public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
     {
         private readonly ILogger _logger;
@@ -107,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             using (var currentIdentity = WindowsIdentity.GetCurrent())
             {
                 // use the SID to create an SDDL string
-                return string.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity.User.Value);
+                return string.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity?.User?.Value);
             }
         }
     }

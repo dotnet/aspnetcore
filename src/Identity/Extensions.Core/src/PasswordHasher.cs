@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Identity
             _rng = options.Rng;
         }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
         // Compares two byte arrays for equality. The method is specifically written so that the loop is not optimized.
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static bool ByteArraysEqual(byte[] a, byte[] b)
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Identity
 
             // Hash the incoming password and verify it
             byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             return ByteArraysEqual(actualSubkey, expectedSubkey);
 #elif NETCOREAPP
             return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Identity
 
                 // Hash the incoming password and verify it
                 byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subkeyLength);
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
                 return ByteArraysEqual(actualSubkey, expectedSubkey);
 #elif NETCOREAPP
                 return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);

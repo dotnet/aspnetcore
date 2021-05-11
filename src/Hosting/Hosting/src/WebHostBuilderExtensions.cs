@@ -1,9 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +17,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Contains extensions for configuring an <see cref="IWebHostBuilder" />.
+    /// </summary>
     public static class WebHostBuilderExtensions
     {
         /// <summary>
@@ -23,7 +30,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name);
+            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!);
         }
 
         /// <summary>
@@ -34,7 +41,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name);
+            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!);
         }
 
         private static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp, string startupAssemblyName)
@@ -61,6 +68,49 @@ namespace Microsoft.AspNetCore.Hosting
             });
         }
 
+        /// <summary>
+        /// Specify a factory that creates the startup instance to be used by the web host.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="startupFactory">A delegate that specifies a factory for the startup class.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        /// <remarks>When using the il linker, all public methods of <typeparamref name="TStartup"/> are preserved. This should match the Startup type directly (and not a base type).</remarks>
+        public static IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]TStartup>(this IWebHostBuilder hostBuilder, Func<WebHostBuilderContext, TStartup> startupFactory) where TStartup : class
+        {
+            if (startupFactory == null)
+            {
+                throw new ArgumentNullException(nameof(startupFactory));
+            }
+
+            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
+
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
+            // Light up the GenericWebHostBuilder implementation
+            if (hostBuilder is ISupportsStartup supportsStartup)
+            {
+                return supportsStartup.UseStartup(startupFactory);
+            }
+
+            return hostBuilder
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddSingleton(typeof(IStartup), sp =>
+                    {
+                        var instance = startupFactory(context) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
+
+                        var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
+
+                        // Check if the instance implements IStartup before wrapping
+                        if (instance is IStartup startup)
+                        {
+                            return startup;
+                        }
+
+                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, instance.GetType(), hostingEnvironment.EnvironmentName, instance));
+                    });
+                });
+        }
 
         /// <summary>
         /// Specify the startup type to be used by the web host.
@@ -68,9 +118,14 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
         /// <param name="startupType">The <see cref="Type"/> to be used.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Type startupType)
+        public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, [DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
         {
-            var startupAssemblyName = startupType.GetTypeInfo().Assembly.GetName().Name;
+            if (startupType == null)
+            {
+                throw new ArgumentNullException(nameof(startupType));
+            }
+
+            var startupAssemblyName = startupType.Assembly.GetName().Name;
 
             hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
@@ -83,7 +138,7 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder
                 .ConfigureServices(services =>
                 {
-                    if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
+                    if (typeof(IStartup).IsAssignableFrom(startupType))
                     {
                         services.AddSingleton(typeof(IStartup), startupType);
                     }
@@ -104,7 +159,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
         /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseStartup<TStartup>(this IWebHostBuilder hostBuilder) where TStartup : class
+        public static IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)]TStartup>(this IWebHostBuilder hostBuilder) where TStartup : class
         {
             return hostBuilder.UseStartup(typeof(TStartup));
         }

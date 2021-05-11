@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,22 +29,22 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         }
 
         [JsonProperty(PropertyName = "type", NullValueHandling = NullValueHandling.Ignore)]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonProperty(PropertyName = "title", NullValueHandling = NullValueHandling.Ignore)]
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
         public int? Status { get; set; }
 
         [JsonProperty(PropertyName = "detail", NullValueHandling = NullValueHandling.Ignore)]
-        public string Detail { get; set; }
+        public string? Detail { get; set; }
 
         [JsonProperty(PropertyName = "instance", NullValueHandling = NullValueHandling.Ignore)]
-        public string Instance { get; set; }
+        public string? Instance { get; set; }
 
         [JsonExtensionData]
-        public IDictionary<string, object> Extensions { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+        public IDictionary<string, object?> Extensions { get; } = new Dictionary<string, object?>(StringComparer.Ordinal);
 
         public void CopyTo(ProblemDetails problemDetails)
         {

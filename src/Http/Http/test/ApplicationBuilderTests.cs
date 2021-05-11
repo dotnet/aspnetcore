@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
         public void BuildDoesNotCallMatchedEndpointWhenTerminated()
         {
             var builder = new ApplicationBuilder(null);
-            builder.Use((context, next) =>
+            builder.Run(context =>
             {
                 // Do not call next
                 return Task.CompletedTask;

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -21,24 +22,24 @@ namespace Microsoft.AspNetCore.Components
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
         };
 
-        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, null);
+        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
 
         private readonly ParameterViewLifetime _lifetime;
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
-        private readonly IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
+        private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
 
         internal ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
-            : this(lifetime, frames, ownerIndex, null)
+            : this(lifetime, frames, ownerIndex, Array.Empty<CascadingParameterState>())
         {
         }
 
-        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
+        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParameters)
         {
             _lifetime = lifetime;
             _frames = frames;
             _ownerIndex = ownerIndex;
-            _cascadingParametersOrNull = cascadingParametersOrNull;
+            _cascadingParameters = cascadingParameters;
         }
 
         /// <summary>
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Components
         public Enumerator GetEnumerator()
         {
             _lifetime.AssertNotExpired();
-            return new Enumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
+            return new Enumerator(_frames, _ownerIndex, _cascadingParameters);
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="parameterName">The name of the parameter.</param>
         /// <param name="result">Receives the result, if any.</param>
         /// <returns>True if a matching parameter was found; false otherwise.</returns>
-        public bool TryGetValue<TValue>(string parameterName, out TValue result)
+        public bool TryGetValue<TValue>(string parameterName, [MaybeNullWhen(false)] out TValue result)
         {
             foreach (var entry in this)
             {
@@ -87,8 +88,8 @@ namespace Microsoft.AspNetCore.Components
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <returns>The parameter value if found; otherwise the default value for the specified type.</returns>
-        public TValue GetValueOrDefault<TValue>(string parameterName)
-            => GetValueOrDefault<TValue>(parameterName, default);
+        public TValue? GetValueOrDefault<TValue>(string parameterName)
+            => GetValueOrDefault<TValue?>(parameterName, default);
 
         /// <summary>
         /// Gets the value of the parameter with the specified name, or a specified default value
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="defaultValue">The default value to return if no such parameter exists in the collection.</param>
         /// <returns>The parameter value if found; otherwise <paramref name="defaultValue"/>.</returns>
         public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue)
-            => TryGetValue<TValue>(parameterName, out TValue result) ? result : defaultValue;
+            => TryGetValue<TValue>(parameterName, out TValue? result) ? result : defaultValue;
 
         /// <summary>
         /// Returns a dictionary populated with the contents of the <see cref="ParameterView"/>.
@@ -113,6 +114,21 @@ namespace Microsoft.AspNetCore.Components
                 result[entry.Name] = entry.Value;
             }
             return result;
+        }
+
+        internal ParameterView Clone()
+        {
+            if (ReferenceEquals(_frames, _emptyFrames))
+            {
+                return Empty;
+            }
+
+            var numEntries = GetEntryCount();
+            var cloneBuffer = new RenderTreeFrame[1 + numEntries];
+            cloneBuffer[0] = RenderTreeFrame.PlaceholderChildComponentWithSubtreeLength(1 + numEntries);
+            _frames.AsSpan(1, numEntries).CopyTo(cloneBuffer.AsSpan(1));
+
+            return new ParameterView(Lifetime, cloneBuffer, _ownerIndex);
         }
 
         internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
@@ -140,8 +156,8 @@ namespace Microsoft.AspNetCore.Components
 
             var oldIndex = oldParameters._ownerIndex;
             var newIndex = _ownerIndex;
-            var oldEndIndexExcl = oldIndex + oldParameters._frames[oldIndex].ComponentSubtreeLength;
-            var newEndIndexExcl = newIndex + _frames[newIndex].ComponentSubtreeLength;
+            var oldEndIndexExcl = oldIndex + oldParameters._frames[oldIndex].ComponentSubtreeLengthField;
+            var newEndIndexExcl = newIndex + _frames[newIndex].ComponentSubtreeLengthField;
             while (true)
             {
                 // First, stop if we've reached the end of either subtree
@@ -160,21 +176,21 @@ namespace Microsoft.AspNetCore.Components
                     ref var newFrame = ref _frames[newIndex];
 
                     // Stop if we've reached the end of either subtree's sequence of attributes
-                    oldFinished = oldFrame.FrameType != RenderTreeFrameType.Attribute;
-                    newFinished = newFrame.FrameType != RenderTreeFrameType.Attribute;
+                    oldFinished = oldFrame.FrameTypeField != RenderTreeFrameType.Attribute;
+                    newFinished = newFrame.FrameTypeField != RenderTreeFrameType.Attribute;
                     if (oldFinished || newFinished)
                     {
                         return oldFinished == newFinished; // Same only if we have same number of parameters
                     }
                     else
                     {
-                        if (!string.Equals(oldFrame.AttributeName, newFrame.AttributeName, StringComparison.Ordinal))
+                        if (!string.Equals(oldFrame.AttributeNameField, newFrame.AttributeNameField, StringComparison.Ordinal))
                         {
                             return false; // Different names
                         }
 
-                        var oldValue = oldFrame.AttributeValue;
-                        var newValue = newFrame.AttributeValue;
+                        var oldValue = oldFrame.AttributeValueField;
+                        var newValue = newFrame.AttributeValueField;
                         if (ChangeDetection.MayHaveChanged(oldValue, newValue))
                         {
                             return false;
@@ -188,11 +204,7 @@ namespace Microsoft.AspNetCore.Components
         {
             builder.Clear();
 
-            var numEntries = 0;
-            foreach (var entry in this)
-            {
-                numEntries++;
-            }
+            var numEntries = GetEntryCount();
 
             // We need to prefix the captured frames with an "owner" frame that
             // describes the length of the buffer so that ParameterView
@@ -206,16 +218,27 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
+        private int GetEntryCount()
+        {
+            var numEntries = 0;
+            foreach (var _ in this)
+            {
+                numEntries++;
+            }
+
+            return numEntries;
+        }
+
         /// <summary>
         /// Creates a new <see cref="ParameterView"/> from the given <see cref="IDictionary{TKey, TValue}"/>.
         /// </summary>
         /// <param name="parameters">The <see cref="IDictionary{TKey, TValue}"/> with the parameters.</param>
         /// <returns>A <see cref="ParameterView"/>.</returns>
-        public static ParameterView FromDictionary(IDictionary<string, object> parameters)
+        public static ParameterView FromDictionary(IDictionary<string, object?> parameters)
         {
             var frames = new RenderTreeFrame[parameters.Count + 1];
-            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName)
-                .WithElementSubtreeLength(frames.Length);
+            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName);
+            frames[0].ElementSubtreeLengthField = frames.Length;
 
             var i = 0;
             foreach (var kvp in parameters)
@@ -301,7 +324,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 _frames = frames;
                 _ownerIndex = ownerIndex;
-                _ownerDescendantsEndIndexExcl = ownerIndex + _frames[ownerIndex].ElementSubtreeLength;
+                _ownerDescendantsEndIndexExcl = ownerIndex + _frames[ownerIndex].ElementSubtreeLengthField;
                 _currentIndex = ownerIndex;
                 _current = default;
             }
@@ -319,7 +342,7 @@ namespace Microsoft.AspNetCore.Components
 
                 // ... or if you get to its first non-attribute descendant (because attributes
                 // are always before any other type of descendant)
-                if (_frames[nextIndex].FrameType != RenderTreeFrameType.Attribute)
+                if (_frames[nextIndex].FrameTypeField != RenderTreeFrameType.Attribute)
                 {
                     return false;
                 }
@@ -327,7 +350,7 @@ namespace Microsoft.AspNetCore.Components
                 _currentIndex = nextIndex;
 
                 ref var frame = ref _frames[_currentIndex];
-                _current = new ParameterValue(frame.AttributeName, frame.AttributeValue, false);
+                _current = new ParameterValue(frame.AttributeNameField, frame.AttributeValueField, false);
 
                 return true;
             }
@@ -350,19 +373,13 @@ namespace Microsoft.AspNetCore.Components
 
             public bool MoveNext()
             {
-                // Bail out early if there are no cascading parameters
-                if (_cascadingParameters == null)
-                {
-                    return false;
-                }
-
                 var nextIndex = _currentIndex + 1;
                 if (nextIndex < _cascadingParameters.Count)
                 {
                     _currentIndex = nextIndex;
 
                     var state = _cascadingParameters[_currentIndex];
-                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue, true);
+                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue!, true);
                     return true;
                 }
                 else

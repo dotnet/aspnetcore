@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,6 +17,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -101,10 +101,10 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Act
             var content = new StringContent("Hello world");
-            var response = await client.PutAsync("http://localhost:12345", content).WithTimeout();
+            var response = await client.PutAsync("http://localhost:12345", content).DefaultTimeout();
 
             // Assert
-            Assert.Equal("Hello world PUT Response", await response.Content.ReadAsStringAsync().WithTimeout());
+            Assert.Equal("Hello world PUT Response", await response.Content.ReadAsStringAsync().DefaultTimeout());
         }
 
         [Fact]
@@ -119,10 +119,10 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Act
             var content = new StringContent("Hello world");
-            var response = await client.PostAsync("http://localhost:12345", content).WithTimeout();
+            var response = await client.PostAsync("http://localhost:12345", content).DefaultTimeout();
 
             // Assert
-            Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync().WithTimeout());
+            Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync().DefaultTimeout());
         }
 
         [Fact]
@@ -207,12 +207,12 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             // Act
-            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
-            await responseStartedSyncPoint.WaitForSyncPoint().WithTimeout();
+            await responseStartedSyncPoint.WaitForSyncPoint().DefaultTimeout();
             responseStartedSyncPoint.Continue();
 
-            var responseContent = await response.Content.ReadAsStreamAsync().WithTimeout();
+            var responseContent = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
             // Assert
 
@@ -220,24 +220,24 @@ namespace Microsoft.AspNetCore.TestHost
             await requestStreamSyncPoint.WaitForSyncPoint();
 
             byte[] buffer = new byte[1024];
-            var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            var length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
             Assert.Equal("STARTED", Encoding.UTF8.GetString(buffer, 0, length));
 
             // Send content and finish request body
-            await requestStream.WriteAsync(Encoding.UTF8.GetBytes("Hello world")).AsTask().WithTimeout();
-            await requestStream.FlushAsync().WithTimeout();
+            await requestStream.WriteAsync(Encoding.UTF8.GetBytes("Hello world")).AsTask().DefaultTimeout();
+            await requestStream.FlushAsync().DefaultTimeout();
             requestStreamSyncPoint.Continue();
 
             // Ensure content is received while request is in progress
-            length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
             Assert.Equal("Hello world POST Response", Encoding.UTF8.GetString(buffer, 0, length));
 
             // Request is ending
-            await requestEndingSyncPoint.WaitForSyncPoint().WithTimeout();
+            await requestEndingSyncPoint.WaitForSyncPoint().DefaultTimeout();
             requestEndingSyncPoint.Continue();
 
             // No more response content
-            length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
             Assert.Equal(0, length);
         }
 
@@ -293,12 +293,12 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             // Act
-            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
-            await responseStartedSyncPoint.WaitForSyncPoint().WithTimeout();
+            await responseStartedSyncPoint.WaitForSyncPoint().DefaultTimeout();
             responseStartedSyncPoint.Continue();
 
-            var responseContent = await response.Content.ReadAsStreamAsync().WithTimeout();
+            var responseContent = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
             // Assert
 
@@ -306,15 +306,15 @@ namespace Microsoft.AspNetCore.TestHost
             await requestStreamSyncPoint.WaitForSyncPoint();
 
             // Write to request
-            await requestStream.WriteAsync(Encoding.UTF8.GetBytes("SENT")).AsTask().WithTimeout();
-            await requestStream.FlushAsync().WithTimeout();
-            await responseReadSyncPoint.WaitForSyncPoint().WithTimeout();
+            await requestStream.WriteAsync(Encoding.UTF8.GetBytes("SENT")).AsTask().DefaultTimeout();
+            await requestStream.FlushAsync().DefaultTimeout();
+            await responseReadSyncPoint.WaitForSyncPoint().DefaultTimeout();
 
             // Cancel request. Disposing response must be used because SendAsync has finished.
             response.Dispose();
             responseReadSyncPoint.Continue();
 
-            await responseEndingSyncPoint.WaitForSyncPoint().WithTimeout();
+            await responseEndingSyncPoint.WaitForSyncPoint().DefaultTimeout();
             responseEndingSyncPoint.Continue();
 
             Assert.True(readCanceled);
@@ -350,15 +350,15 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             // Act
-            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
-            var responseContent = await response.Content.ReadAsStreamAsync().WithTimeout();
+            var responseContent = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
             // Assert
 
             // Read response
             byte[] buffer = new byte[1024];
-            var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            var length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
             Assert.Equal("POST Response", Encoding.UTF8.GetString(buffer, 0, length));
 
             // Send large content and block on back pressure
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 try
                 {
-                    await requestStream.WriteAsync(Encoding.UTF8.GetBytes(new string('!', 1024 * 1024 * 50))).AsTask().WithTimeout();
+                    await requestStream.WriteAsync(Encoding.UTF8.GetBytes(new string('!', 1024 * 1024 * 50))).AsTask().DefaultTimeout();
                     requestStreamTcs.SetResult(null);
                 }
                 catch (Exception ex)
@@ -378,10 +378,58 @@ namespace Microsoft.AspNetCore.TestHost
             responseEndingSyncPoint.Continue();
 
             // No more response content
-            length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
             Assert.Equal(0, length);
 
             await writeTask;
+        }
+
+        [Fact]
+        public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
+        {
+            // Arrange
+            var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            RequestDelegate appDelegate = async ctx =>
+            {
+                var pendingReadTask = ctx.Request.Body.ReadAsync(new byte[1024], 0, 1024);
+                ctx.Response.Headers["test-header"] = "true";
+                await ctx.Response.Body.FlushAsync();
+            };
+
+            Stream requestStream = null;
+
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
+            httpRequest.Version = new Version(2, 0);
+            httpRequest.Content = new PushContent(async stream =>
+            {
+                requestStream = stream;
+                await requestStreamTcs.Task;
+            });
+
+            // Act
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+
+            var responseContent = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("true", response.Headers.GetValues("test-header").Single());
+
+            // Read response
+            var ex = await Assert.ThrowsAsync<IOException>(async () =>
+            {
+                byte[] buffer = new byte[1024];
+                var length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
+            });
+            Assert.Equal("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex.InnerException.Message);
+
+            // Unblock request
+            requestStreamTcs.TrySetResult(null);
         }
 
         [Fact]
@@ -411,9 +459,9 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             // Act
-            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
-            var responseContent = await response.Content.ReadAsStreamAsync().WithTimeout();
+            var responseContent = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -421,7 +469,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Read response
             byte[] buffer = new byte[1024];
-            var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            var length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
             Assert.Equal(0, length);
 
             // Writing to request stream will fail because server is complete
@@ -462,9 +510,9 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             // Act
-            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
-            var responseContent = await response.Content.ReadAsStreamAsync().WithTimeout();
+            var responseContent = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
             // Assert
 
@@ -477,7 +525,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Send content and finish request body
             await ExceptionAssert.ThrowsAsync<OperationCanceledException>(
                 () => requestStream.WriteAsync(Encoding.UTF8.GetBytes("Hello world")).AsTask(),
-                "Flush was canceled on underlying PipeWriter.").WithTimeout();
+                "Flush was canceled on underlying PipeWriter.").DefaultTimeout();
 
             responseEndingSyncPoint.Continue();
             requestStreamSyncPoint.Continue();
@@ -514,6 +562,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
                 {
+                    Assert.False(ctx.Request.Headers.ContainsKey(HeaderNames.SecWebSocketProtocol));
                     var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
                     var receiveArray = new byte[1024];
                     while (true)
@@ -570,6 +619,58 @@ namespace Microsoft.AspNetCore.TestHost
             result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None);
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
             Assert.Equal(WebSocketState.Closed, clientSocket.State);
+
+            clientSocket.Dispose();
+        }
+
+        [Fact]
+        public async Task WebSocketSubProtocolsWorks()
+        {
+            // Arrange
+            RequestDelegate appDelegate = async ctx =>
+            {
+                if (ctx.WebSockets.IsWebSocketRequest)
+                {
+                    if (ctx.WebSockets.WebSocketRequestedProtocols.Contains("alpha") &&
+                        ctx.WebSockets.WebSocketRequestedProtocols.Contains("bravo"))
+                    {
+                        // according to rfc6455, the "server needs to include the same field and one of the selected subprotocol values"
+                        // however, this isn't enforced by either our server or client so it's possible to accept an arbitrary protocol.
+                        // Done here to demonstrate not "correct" behaviour, simply to show it's possible. Other clients may not allow this.
+                        var websocket = await ctx.WebSockets.AcceptWebSocketAsync("charlie");
+                        await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
+                    }
+                    else
+                    {
+                        var subprotocols = ctx.WebSockets.WebSocketRequestedProtocols.Any()
+                            ? string.Join(", ", ctx.WebSockets.WebSocketRequestedProtocols)
+                            : "<none>";
+                        var closeReason = "Unexpected subprotocols: " + subprotocols;
+                        var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
+                        await websocket.CloseAsync(WebSocketCloseStatus.InternalServerError, closeReason, CancellationToken.None);
+                    }
+                }
+            };
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(appDelegate);
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var client = server.CreateWebSocketClient();
+            client.SubProtocols.Add("alpha");
+            client.SubProtocols.Add("bravo");
+            var clientSocket = await client.ConnectAsync(new Uri("wss://localhost"), CancellationToken.None);
+            var buffer = new byte[1024];
+            var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+            Assert.Equal("Normal Closure", result.CloseStatusDescription);
+            Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
+            Assert.Equal("charlie", clientSocket.SubProtocol);
 
             clientSocket.Dispose();
         }
@@ -815,6 +916,49 @@ namespace Microsoft.AspNetCore.TestHost
             var resp = await client.GetAsync("/");
 
             Assert.Same(value, capturedValue);
+        }
+
+        [Fact]
+        public async Task SendAsync_Default_Protocol11()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(expected);
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+
+            // Act
+            var message = await client.SendAsync(request);
+            var actual = await message.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
+            Assert.Equal(new Version(1, 1), message.Version);
+        }
+
+        [Fact]
+        public async Task SendAsync_ExplicitlySet_Protocol20()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(expected);
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+            request.Version = new Version(2, 0);
+
+            // Act
+            var message = await client.SendAsync(request);
+            var actual = await message.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
+            Assert.Equal(new Version(2, 0), message.Version);
         }
     }
 }

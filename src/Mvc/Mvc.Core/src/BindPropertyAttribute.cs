@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -22,8 +23,8 @@ namespace Microsoft.AspNetCore.Mvc
         private static readonly Func<ActionContext, bool> _supportsAllRequests = (c) => true;
         private static readonly Func<ActionContext, bool> _supportsNonGetRequests = IsNonGetRequest;
 
-        private BindingSource _bindingSource;
-        private Type _binderType;
+        private BindingSource? _bindingSource;
+        private Type? _binderType;
 
         /// <summary>
         /// Gets or sets an indication the associated property should be bound in HTTP GET requests. If
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Subclass this attribute and set <see cref="BindingSource"/> if <see cref="BindingSource.Custom"/> is not
         /// correct for the specified (non-<see langword="null"/>) <see cref="IModelBinder"/> implementation.
         /// </remarks>
-        public Type BinderType
+        public Type? BinderType
         {
             get => _binderType;
             set
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// If <see cref="BinderType"/> is <see langword="null"/>, defaults to <see langword="null"/>. Otherwise,
         /// defaults to <see cref="BindingSource.Custom"/>. May be overridden in a subclass.
         /// </value>
-        public virtual BindingSource BindingSource
+        public virtual BindingSource? BindingSource
         {
             get
             {
@@ -76,14 +77,14 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         Func<ActionContext, bool> IRequestPredicateProvider.RequestPredicate
             => SupportsGet ? _supportsAllRequests : _supportsNonGetRequests;
 
         private static bool IsNonGetRequest(ActionContext context)
         {
-            return !string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
+            return !HttpMethods.IsGet(context.HttpContext.Request.Method);
         }
     }
 }

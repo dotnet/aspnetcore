@@ -1,0 +1,23 @@
+#nullable enable
+*REMOVED*Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+*REMOVED*Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object!>! dataTokens) -> void
+*REMOVED*Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+*REMOVED*Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string!
+*REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string!
+*REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string! routeName) -> void
+Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder
+Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
+Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
+static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapDelete(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapGet(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapMethods(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Collections.Generic.IEnumerable<string!>! httpMethods, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapPost(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapPut(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!

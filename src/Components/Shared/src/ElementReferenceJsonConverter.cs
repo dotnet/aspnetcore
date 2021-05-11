@@ -4,16 +4,23 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+#nullable enable
 namespace Microsoft.AspNetCore.Components
 {
     internal sealed class ElementReferenceJsonConverter : JsonConverter<ElementReference>
     {
         private static readonly JsonEncodedText IdProperty = JsonEncodedText.Encode("__internalId");
 
+        private readonly ElementReferenceContext _elementReferenceContext;
+
+        public ElementReferenceJsonConverter(ElementReferenceContext elementReferenceContext)
+        {
+            _elementReferenceContext = elementReferenceContext;
+        }
+
         public override ElementReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            string id = null;
+            string? id = null;
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
@@ -30,7 +37,7 @@ namespace Microsoft.AspNetCore.Components
                 }
                 else
                 {
-                    throw new JsonException($"Unexcepted JSON Token {reader.TokenType}.");
+                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}.");
                 }
             }
 
@@ -39,7 +46,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new JsonException("__internalId is required.");
             }
 
-            return new ElementReference(id);
+            return new ElementReference(id, _elementReferenceContext);
         }
 
         public override void Write(Utf8JsonWriter writer, ElementReference value, JsonSerializerOptions options)

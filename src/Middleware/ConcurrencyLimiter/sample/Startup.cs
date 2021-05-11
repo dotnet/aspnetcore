@@ -17,7 +17,7 @@ namespace ConcurrencyLimiterSample
         {
             services.AddStackPolicy(options =>
             {
-                options.MaxConcurrentRequests = 2; 
+                options.MaxConcurrentRequests = 2;
                 options.RequestQueueLimit = 25;
             });
         }
@@ -33,13 +33,17 @@ namespace ConcurrencyLimiterSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            new WebHostBuilder()
-                .UseKestrel()
-                .UseStartup<Startup>()
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    .UseStartup<Startup>();
+                })
                 .Build()
-                .Run();
+                .RunAsync();
         }
     }
 }

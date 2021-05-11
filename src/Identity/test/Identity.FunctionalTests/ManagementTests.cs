@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var client = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
             var manageIndex = await UserStories.SendEmailConfirmationLinkAsync(index);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var failedClient = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             var newEmail = "updatedEmail@example.com";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
@@ -132,19 +132,20 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var newClient = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = "!Test.Password1";
+            var password = "[PLACEHOLDER]-1a";
+            var newPassword = "[PLACEHOLDER]-1a-updated";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
             // Act 1
-            var changedPassword = await UserStories.ChangePasswordAsync(index, "!Test.Password1", "!Test.Password2");
+            var changedPassword = await UserStories.ChangePasswordAsync(index, password, newPassword);
 
             // Assert 1
             // RefreshSignIn generates a new security stamp claim
             AssertClaimsNotEqual(principals[0], principals[1], "AspNet.Identity.SecurityStamp");
 
             // Act 2
-            await UserStories.LoginExistingUserAsync(newClient, userName, "!Test.Password2");
+            await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
 
             // Assert 2
             // Signing in again with a different client uses the same security stamp claim
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             Assert.NotNull(principals[1].Identities.Single().Claims.Single(c => c.Type == ClaimTypes.AuthenticationMethod).Value);
 
             // Act 2
-            await UserStories.SetPasswordAsync(index, "!Test.Password2");
+            await UserStories.SetPasswordAsync(index, "[PLACEHOLDER]-1a-updated");
 
             // Assert 2
             // RefreshSignIn uses the same AuthenticationMethod claim value
@@ -188,7 +189,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             // Act & Assert 3
             // Can log in with the password set above
-            await UserStories.LoginExistingUserAsync(loginAfterSetPasswordClient, email, "!Test.Password2");
+            await UserStories.LoginExistingUserAsync(loginAfterSetPasswordClient, email, "[PLACEHOLDER]-1a-updated");
         }
 
         [Fact]
@@ -211,7 +212,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var email = $"{guid}@example.com";
 
             // Act
-            var index = await UserStories.RegisterNewUserAsync(client, email, "!TestPassword1");
+            var index = await UserStories.RegisterNewUserAsync(client, email, "[PLACEHOLDER]-1a");
             var linkLogin = await UserStories.LinkExternalLoginAsync(index, email);
             await UserStories.RemoveExternalLoginAsync(linkLogin, email);
 
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var newClient = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             // Act
             var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
@@ -295,7 +296,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             var index = social
                 ? await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email)
-                : await UserStories.RegisterNewUserAsync(client, email, "!TestPassword1");
+                : await UserStories.RegisterNewUserAsync(client, email, "[PLACEHOLDER]-1a");
 
             if (twoFactor)
             {
@@ -362,7 +363,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 

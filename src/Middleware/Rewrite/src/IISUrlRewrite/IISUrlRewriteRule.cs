@@ -8,23 +8,23 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
 {
     internal class IISUrlRewriteRule : IRule
     {
-        public string Name { get; }
+        public string? Name { get; }
         public UrlMatch InitialMatch { get; }
-        public ConditionCollection Conditions { get; }
+        public ConditionCollection? Conditions { get; }
         public UrlAction Action { get; }
         public bool Global { get; }
 
-        public IISUrlRewriteRule(string name,
+        public IISUrlRewriteRule(string? name,
             UrlMatch initialMatch,
-            ConditionCollection conditions,
+            ConditionCollection? conditions,
             UrlAction action)
             : this(name, initialMatch, conditions, action, false)
         {
         }
 
-        public IISUrlRewriteRule(string name,
+        public IISUrlRewriteRule(string? name,
             UrlMatch initialMatch,
-            ConditionCollection conditions,
+            ConditionCollection? conditions,
             UrlAction action,
             bool global)
         {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                 return;
             }
 
-            MatchResults condResult = null;
+            MatchResults? condResult = null;
             if (Conditions != null)
             {
                 condResult = ConditionEvaluator.Evaluate(Conditions, context, initMatchResults.BackReferences);

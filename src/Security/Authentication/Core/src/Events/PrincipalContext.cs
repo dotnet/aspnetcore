@@ -19,12 +19,12 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The authentication scheme.</param>
         /// <param name="options">The authentication options associated with the scheme.</param>
         /// <param name="properties">The authentication properties.</param>
-        protected PrincipalContext(HttpContext context, AuthenticationScheme scheme, TOptions options, AuthenticationProperties properties)
+        protected PrincipalContext(HttpContext context, AuthenticationScheme scheme, TOptions options, AuthenticationProperties? properties)
             : base(context, scheme, options, properties) { }
 
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> containing the user claims.
         /// </summary>
-        public virtual ClaimsPrincipal Principal { get; set; }
+        public virtual ClaimsPrincipal? Principal { get; set; }
     }
 }

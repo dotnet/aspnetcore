@@ -25,6 +25,16 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="SignOutResult"/> with the default sign out scheme.
+        /// specified authentication scheme and <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+        public SignOutResult(AuthenticationProperties properties)
+            : this(Array.Empty<string>(), properties)
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="SignOutResult"/> with the
         /// specified authentication scheme.
         /// </summary>
@@ -50,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="authenticationScheme">The authentication schemes to use when signing out the user.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-        public SignOutResult(string authenticationScheme, AuthenticationProperties properties)
+        public SignOutResult(string authenticationScheme, AuthenticationProperties? properties)
             : this(new[] { authenticationScheme }, properties)
         {
         }
@@ -61,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="authenticationSchemes">The authentication scheme to use when signing out the user.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-        public SignOutResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
+        public SignOutResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
         {
             AuthenticationSchemes = authenticationSchemes ?? throw new ArgumentNullException(nameof(authenticationSchemes));
             Properties = properties;
@@ -75,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
         public override async Task ExecuteResultAsync(ActionContext context)

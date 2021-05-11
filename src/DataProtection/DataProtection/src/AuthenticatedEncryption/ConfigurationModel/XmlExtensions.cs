@@ -6,6 +6,9 @@ using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
+    /// <summary>
+    /// Data protection extensions for <see cref="XElement"/>.
+    /// </summary>
     public static class XmlExtensions
     {
         internal static bool IsMarkedAsRequiringEncryption(this XElement element)

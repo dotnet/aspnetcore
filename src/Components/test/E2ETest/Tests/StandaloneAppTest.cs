@@ -14,11 +14,11 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class StandaloneAppTest
-        : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>, IDisposable
+        : ServerTestBase<BlazorWasmTestAppFixture<StandaloneApp.Program>>, IDisposable
     {
         public StandaloneAppTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<StandaloneApp.Program> serverFixture,
+            BlazorWasmTestAppFixture<StandaloneApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void HasHeading()
         {
-            Assert.Equal("Hello, world!", Browser.FindElement(By.TagName("h1")).Text);
+            Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
         }
 
         [Fact]
@@ -49,21 +49,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var mainHeaderSelector = By.TagName("h1");
 
             // Verify we start at home, with the home link highlighted
-            Assert.Equal("Hello, world!", Browser.FindElement(mainHeaderSelector).Text);
+            Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Home", item.Text.Trim()));
 
             // Click on the "counter" link
-            Browser.FindElement(By.LinkText("Counter")).Click();
+            Browser.Exists(By.LinkText("Counter")).Click();
 
             // Verify we're now on the counter page, with that nav link (only) highlighted
-            Assert.Equal("Counter", Browser.FindElement(mainHeaderSelector).Text);
+            Assert.Equal("Counter", Browser.Exists(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Counter", item.Text.Trim()));
 
             // Verify we can navigate back to home too
-            Browser.FindElement(By.LinkText("Home")).Click();
-            Assert.Equal("Hello, world!", Browser.FindElement(mainHeaderSelector).Text);
+            Browser.Exists(By.LinkText("Home")).Click();
+            Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Home", item.Text.Trim()));
         }
@@ -72,15 +72,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void HasCounterPage()
         {
             // Navigate to "Counter"
-            Browser.FindElement(By.LinkText("Counter")).Click();
-            Assert.Equal("Counter", Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Exists(By.LinkText("Counter")).Click();
+            Assert.Equal("Counter", Browser.Exists(By.TagName("h1")).Text);
 
             // Observe the initial value is zero
-            var countDisplayElement = Browser.FindElement(By.CssSelector("h1 + p"));
+            var countDisplayElement = Browser.Exists(By.CssSelector("h1 + p"));
             Assert.Equal("Current count: 0", countDisplayElement.Text);
 
             // Click the button; see it counts
-            var button = Browser.FindElement(By.CssSelector(".main button"));
+            var button = Browser.Exists(By.CssSelector(".main button"));
             button.Click();
             button.Click();
             button.Click();
@@ -91,13 +91,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void HasFetchDataPage()
         {
             // Navigate to "Fetch data"
-            Browser.FindElement(By.LinkText("Fetch data")).Click();
-            Assert.Equal("Weather forecast", Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Exists(By.LinkText("Fetch data")).Click();
+            Assert.Equal("Weather forecast", Browser.Exists(By.TagName("h1")).Text);
 
             // Wait until loaded
             var tableSelector = By.CssSelector("table.table");
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
-                driver => driver.FindElement(tableSelector) != null);
+            Browser.Exists(tableSelector);
 
             // Check the table is displayed correctly
             var rows = Browser.FindElements(By.CssSelector("table.table tbody tr"));
@@ -109,17 +108,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
         }
 
+        [Fact]
+        public void IsStarted()
+        {
+            // Read from property
+            var jsExecutor = (IJavaScriptExecutor)Browser;
+
+            var isStarted = jsExecutor.ExecuteScript("return window['__aspnetcore__testing__blazor_wasm__started__'];");
+            if (isStarted is null)
+            {
+                throw new InvalidOperationException("Blazor wasm started value not set");
+            }
+
+            // Confirm server has started
+            Assert.True((bool)isStarted);
+        }
+
         private void WaitUntilLoaded()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            var app = Browser.Exists(By.TagName("app"));
+            Browser.NotEqual("Loading...", () => app.Text);
         }
 
         public void Dispose()
         {
             // Make the tests run faster by navigating back to the home page when we are done
             // If we don't, then the next test will reload the whole page before it starts
-            Browser.FindElement(By.LinkText("Home")).Click();
+            Browser.Exists(By.LinkText("Home")).Click();
         }
     }
 }

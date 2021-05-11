@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Localization
 {
     internal static class RequestCultureProviderLoggerExtensions
     {
-        private static readonly Action<ILogger, string, IList<StringSegment>, Exception> _unsupportedCulture;
-        private static readonly Action<ILogger, string, IList<StringSegment>, Exception> _unsupportedUICulture;
+        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedCulture;
+        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedUICulture;
 
         static RequestCultureProviderLoggerExtensions()
         {

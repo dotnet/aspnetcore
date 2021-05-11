@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 
@@ -19,9 +22,9 @@ namespace Microsoft.AspNetCore.Routing
 
         private object _lock;
         private bool _initialized;
-        private T _value;
+        private T? _value;
 
-        private IDisposable _disposable;
+        private IDisposable? _disposable;
         private bool _disposed;
 
         public DataSourceDependentCache(EndpointDataSource dataSource, Func<IReadOnlyList<Endpoint>, T> initialize)
@@ -47,8 +50,10 @@ namespace Microsoft.AspNetCore.Routing
         // Note that we don't lock here, and think about that in the context of a 'push'. So when data gets 'pushed'
         // we start computing a new state, but we're still able to perform operations on the old state until we've
         // processed the update.
-        public T Value => _value;
+        [NotNullIfNotNull(nameof(_value))]
+        public T? Value => _value;
 
+        [MemberNotNull(nameof(_value))]
         public T EnsureInitialized()
         {
             return LazyInitializer.EnsureInitialized<T>(ref _value, ref _initialized, ref _lock, _initializer);

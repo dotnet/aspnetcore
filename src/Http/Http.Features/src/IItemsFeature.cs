@@ -5,8 +5,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Provides a key/value collection that can be used to share data within the scope of this request.
+    /// </summary>
     public interface IItemsFeature
     {
-        IDictionary<object, object> Items { get; set; }
+        /// <summary>
+        /// Gets or sets a a key/value collection that can be used to share data within the scope of this request.
+        /// </summary>
+        IDictionary<object, object?> Items { get; set; }
     }
 }

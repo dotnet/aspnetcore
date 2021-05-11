@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.SignalR.Client;
 
 #nullable enable
@@ -73,12 +74,12 @@ namespace Ignitor
                 Value = value
             };
 
-            var webEventDescriptor = new
+            var webEventDescriptor = new WebEventDescriptor
             {
                 BrowserRendererId = 0,
                 EventHandlerId = changeEventDescriptor.EventId,
-                EventArgsType = "change",
-                EventFieldInfo = new
+                EventName = "change",
+                EventFieldInfo = new EventFieldInfo
                 {
                     ComponentId = 0,
                     FieldValue = value
@@ -88,7 +89,7 @@ namespace Ignitor
             return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(args));
         }
 
-        internal Task ClickAsync(HubConnection connection)
+        public Task ClickAsync(HubConnection connection)
         {
             if (!Events.TryGetValue("click", out var clickEventDescriptor))
             {
@@ -100,11 +101,11 @@ namespace Ignitor
                 Type = clickEventDescriptor.EventName,
                 Detail = 1
             };
-            var webEventDescriptor = new
+            var webEventDescriptor = new WebEventDescriptor
             {
                 BrowserRendererId = 0,
                 EventHandlerId = clickEventDescriptor.EventId,
-                EventArgsType = "mouse",
+                EventName = "click",
             };
 
             return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(mouseEventArgs));
