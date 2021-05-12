@@ -347,6 +347,8 @@ namespace Microsoft.Extensions.Internal
         [SkipLocalsInit]
         public static string Base64UrlEncode(ReadOnlySpan<byte> input)
         {
+            const int StackAllocThreshold = 128;
+
             if (input.IsEmpty)
             {
                 return string.Empty;
@@ -355,8 +357,8 @@ namespace Microsoft.Extensions.Internal
             int bufferSize = GetArraySizeRequiredToEncode(input.Length);
 
             char[]? bufferToReturnToPool = null;
-            Span<char> buffer = bufferSize <= 128
-                ? stackalloc char[bufferSize]
+            Span<char> buffer = bufferSize <= StackAllocThreshold
+                ? stackalloc char[StackAllocThreshold]
                 : bufferToReturnToPool = ArrayPool<char>.Shared.Rent(bufferSize);
 
             var numBase64Chars = Base64UrlEncode(input, buffer);

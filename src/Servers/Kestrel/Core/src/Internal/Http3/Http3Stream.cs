@@ -744,7 +744,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool TryValidatePath(ReadOnlySpan<char> pathSegment)
         {
             // Must start with a leading slash
-            if (pathSegment.Length == 0 || pathSegment[0] != '/')
+            if (pathSegment.IsEmpty || pathSegment[0] != '/')
             {
                 Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
