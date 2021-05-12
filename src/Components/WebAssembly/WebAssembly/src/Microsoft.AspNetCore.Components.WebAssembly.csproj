@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side single-page applications (SPAs) with Blazor running under WebAssembly.</Description>
-    <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
