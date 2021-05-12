@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -28,6 +29,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Navigate("/", noReload: true);
         }
+
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
         [Fact]
         public void HasTitle()
