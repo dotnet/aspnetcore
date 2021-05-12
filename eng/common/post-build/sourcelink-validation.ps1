@@ -14,7 +14,7 @@ param(
 $global:RepoFiles = @{}
 
 # Maximum number of jobs to run in parallel
-$MaxParallelJobs = 6
+$MaxParallelJobs = 16
 
 # Wait time between check for system load
 $SecondsBetweenLoadChecks = 10

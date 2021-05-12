@@ -16,7 +16,7 @@
   <ItemGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
     <HelixPreCommand Include="call RunPowershell.cmd installPlaywrightReqs.ps1 || exit /b 1" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TestDependsOnIIS)' == 'true' AND '$(IsWindowsOnlyTest)' == 'true'">
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
@@ -35,10 +35,15 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TestDependsOnAspNetPackages)' == 'true' ">
+  <!-- $(TestDependsOnAspNetRuntime) implies $(TestDependsOnAspNetPackages). Separate for the App.UnitTests case. -->
+  <PropertyGroup Condition=" $(TestDependsOnAspNetRuntime) AND !$(TestDependsOnAspNetPackages) ">
+    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+  </PropertyGroup>
+  <ItemGroup Condition=" $(TestDependsOnAspNetPackages) ">
     <!-- Grab all shipping packages. -->
     <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
   </ItemGroup>
+
   <ItemGroup>
     <!-- Java test projects do not use xUnit. -->
     <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll"
@@ -68,7 +73,9 @@
   -->
   <Target Name="Helix">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\helix\helix.proj"
-             Properties="ProjectToBuild=$(MSBuildProjectFullPath)" />
+             Properties="Configuration=$(Configuration);
+                         ProjectToBuild=$(MSBuildProjectFullPath);
+                         RepoRoot=$(RepoRoot)" />
   </Target>
 
   <!-- Build the actual helix work items to send to helix queues -->
@@ -115,11 +122,6 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
-    <ZipDirectory Condition="'$(HelixUseArchive)' == 'true'" SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../$(HelixTestName).zip" Overwrite="true" />
-    <RemoveDir Condition="'$(HelixUseArchive)' == 'true'" Directories="$(PublishDir)" />
-  </Target>
-
   <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
     <PropertyGroup>
       <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
@@ -128,7 +130,7 @@
     </PropertyGroup>
 
     <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue;TestRunId" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue;TestRunId" />
 
     <!-- Isolate Helix tests from whatever happens to be in a parent directory. -->
     <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.empty.in"
@@ -171,8 +173,7 @@
     </ConvertToAbsolutePath>
     <ItemGroup>
       <HelixWorkItem Include="$(HelixTestName)">
-        <PayloadArchive Condition="'$(HelixUseArchive)' == 'true'">$(PublishAbsoluteDir)../$(HelixTestName).zip</PayloadArchive>
-        <PayloadDirectory Condition="'$(HelixUseArchive)' == 'false'">$(PublishAbsoluteDir)</PayloadDirectory>
+        <PayloadDirectory>$(PublishAbsoluteDir)</PayloadDirectory>
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>

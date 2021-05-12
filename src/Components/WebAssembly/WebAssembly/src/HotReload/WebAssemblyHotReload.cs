@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
         internal static async Task InitializeAsync()
         {
             // Determine if we're running under a hot reload environment (e.g. dotnet-watch).
-            // It's insufficient to know it the app can be hot reloaded (HotReloadEnvironment.IsEnabled),
-            // since the hot-reload agent might be unavilable.
+            // It's insufficient to know it the app can be hot reloaded (HotReloadFeature.IsSupported),
+            // since the hot-reload agent might be unavailable.
             if (Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") != "debug")
             {
                 return;
