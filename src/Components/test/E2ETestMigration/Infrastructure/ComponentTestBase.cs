@@ -21,10 +21,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                 componentType.FullName :
                 componentType.AssemblyQualifiedName;
             var testSelector = await page.WaitForSelectorAsync("#test-selector > select");
+            Assert.NotNull(testSelector);
 
             Output.WriteLine("Selecting test: " + componentTypeName);
 
-            var option = $"#test-selector > select > option[value='{componentTypeName}']";
             var selected = await page.SelectOptionAsync("#test-selector > select", componentTypeName);
             Assert.True(selected.Length == 1);
             Assert.Equal(componentTypeName, selected.First());
