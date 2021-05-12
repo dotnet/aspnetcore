@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -41,6 +42,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Navigate(_devHostServerFixture.RootUri, "/subdir", noReload: true);
             _appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
         }
+
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
         [Fact]
         public void CanSendAndReceiveBytes()
