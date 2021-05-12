@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 canvas.height = image.naturalHeight;
                 context.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
 
-                return canvas.toDataURL().split(',').pop();");
+                canvas.toDataURL().split(',').pop();");
 
             // Save the image file locally
             var file = TempFile.Create(_tempDirectory, "png", Convert.FromBase64String(base64));
