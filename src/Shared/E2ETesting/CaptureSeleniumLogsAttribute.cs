@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public override void After(MethodInfo methodUnderTest)
         {
-            var browser = BrowserTestBase.BrowserAccessor;
             var logs = BrowserTestBase.Logs;
             var output = BrowserTestBase.Output;
 
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     output.WriteLine($"{kind} Logs from Selenium:");
 
                     var entries = logs.GetLog(kind);
-                    foreach (LogEntry entry in entries)
+                    foreach (var entry in entries)
                     {
                         output.WriteLine($"[{entry.Timestamp}] - {entry.Level} - {entry.Message}");
                     }

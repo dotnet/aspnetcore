@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 {
     public class BrowserFixture : IAsyncLifetime
     {
-        private ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
+        private readonly ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new();
 
         public BrowserFixture(IMessageSink diagnosticsMessageSink)
         {
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         public async Task DisposeAsync()
         {
             var browsers = await Task.WhenAll(_browsers.Values);
-            foreach (var (browser, log) in browsers)
+            foreach (var (browser, _) in browsers)
             {
                 browser?.Quit();
                 browser?.Dispose();

@@ -14,9 +14,8 @@ namespace Microsoft.AspNetCore.E2ETesting
     [CaptureSeleniumLogs]
     public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     {
-        private static readonly AsyncLocal<IWebDriver> _asyncBrowser = new AsyncLocal<IWebDriver>();
-        private static readonly AsyncLocal<ILogs> _logs = new AsyncLocal<ILogs>();
-        private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
+        private static readonly AsyncLocal<ILogs> _logs = new();
+        private static readonly AsyncLocal<ITestOutputHelper> _output = new();
 
         private ExceptionDispatchInfo _exceptionDispatchInfo;
         private IWebDriver _browser;
@@ -44,8 +43,6 @@ namespace Microsoft.AspNetCore.E2ETesting
                 _browser = value;
             }
         }
-
-        public static IWebDriver BrowserAccessor => _asyncBrowser.Value;
 
         public static ILogs Logs => _logs.Value;
 
@@ -79,7 +76,6 @@ namespace Microsoft.AspNetCore.E2ETesting
             try
             {
                 var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, isolationContext);
-                _asyncBrowser.Value = browser;
                 _logs.Value = logs;
 
                 Browser = browser;
