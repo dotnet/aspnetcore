@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -51,20 +52,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Output.WriteLine("Loaded page");
 
             await MountTestComponentAsync<InputFileComponent>(page);
-            //Browser.MountTestComponent<InputFileComponent>();
 
             _page = page;
         }
 
-        [Fact]
-        public async Task CanUploadSingleSmallFile()
+        private async Task VerifyFile(TempFile file)
         {
-            // Create a temporary text file
-            var file = TempFile.Create(_tempDirectory, "txt", "This file was uploaded to the browser and read from .NET.");
-
             // Upload the file
-            var inputFile = await _page.QuerySelectorAsync("#input-file");
-            await inputFile.SetInputFilesAsync(file.Path);
+            await _page.SetInputFilesAsync("#input-file", file.Path);
 
             var fileContainer = await _page.WaitForSelectorAsync($"[id='file-{file.Name}']");
             Assert.NotNull(fileContainer);
@@ -87,141 +82,146 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(file.Text, await fileContentElement.GetTextContentAsync());
         }
 
-        //[Fact]
-        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26331")]
-        //public void CanUploadSingleLargeFile()
-        //{
-        //    // Create a large text file
-        //    var fileContentSizeInBytes = 1024 * 1024;
-        //    var contentBuilder = new StringBuilder();
+        private async Task VerifyFiles(IEnumerable<TempFile> files)
+        {
+            // Upload the files
+            var filePaths = files
+                .Select(i => i.Path)
+                .ToArray();
 
-        //    for (int i = 0; i < fileContentSizeInBytes; i++)
-        //    {
-        //        contentBuilder.Append((i % 10).ToString(CultureInfo.InvariantCulture));
-        //    }
+            await _page.SetInputFilesAsync("#input-file", filePaths);
 
-        //    var file = TempFile.Create(_tempDirectory, "txt", contentBuilder.ToString());
+            foreach (var file in files)
+            {
+                var fileContainer = await _page.WaitForSelectorAsync($"[id='file-{file.Name}']");
+                Assert.NotNull(fileContainer);
+                var fileNameElement = await fileContainer.QuerySelectorAsync("#file-name");
+                Assert.NotNull(fileNameElement);
+                var fileLastModifiedElement = await fileContainer.QuerySelectorAsync("#file-last-modified");
+                Assert.NotNull(fileLastModifiedElement);
+                var fileSizeElement = await fileContainer.QuerySelectorAsync("#file-size");
+                Assert.NotNull(fileSizeElement);
+                var fileContentTypeElement = await fileContainer.QuerySelectorAsync("#file-content-type");
+                Assert.NotNull(fileContentTypeElement);
+                var fileContentElement = await fileContainer.QuerySelectorAsync("#file-content");
+                Assert.NotNull(fileContentElement);
 
-        //    // Upload the file
-        //    var inputFile = Browser.Exists(By.Id("input-file"));
-        //    inputFile.SendKeys(file.Path);
+                // Validate that the file was uploaded correctly and all fields are present
+                Assert.False(string.IsNullOrWhiteSpace(await fileNameElement.GetTextContentAsync()));
+                Assert.NotEqual(default, DateTimeOffset.Parse(await fileLastModifiedElement.GetTextContentAsync(), CultureInfo.InvariantCulture));
+                Assert.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), await fileSizeElement.GetTextContentAsync());
+                Assert.Equal("text/plain", await fileContentTypeElement.GetTextContentAsync());
+                Assert.Equal(file.Text, await fileContentElement.GetTextContentAsync());
+            }
+        }
 
-        //    var fileContainer = Browser.Exists(By.Id($"file-{file.Name}"));
-        //    var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
-        //    var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
-        //    var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
-        //    var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
-        //    var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
+        [Fact]
+        public async Task CanUploadSingleSmallFile()
+        {
+            // Create a temporary text file
+            var file = TempFile.Create(_tempDirectory, "txt", "This file was uploaded to the browser and read from .NET.");
+            await VerifyFile(file);
+        }
 
-        //    // Validate that the file was uploaded correctly and all fields are present
-        //    Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-        //    Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
-        //    Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
-        //    Browser.Equal("text/plain", () => fileContentTypeElement.Text);
-        //    Browser.Equal(file.Text, () => fileContentElement.Text);
-        //}
+        [Fact]
+        public async Task CanUploadSingleLargeFile()
+        {
+            // Create a large text file
+            var fileContentSizeInBytes = 1024 * 1024;
+            var contentBuilder = new StringBuilder();
 
-        //[Fact]
-        //public void CanUploadMultipleFiles()
-        //{
-        //    // Create multiple small text files
-        //    var files = Enumerable.Range(1, 3)
-        //        .Select(i => TempFile.Create(_tempDirectory, "txt", $"Contents of file {i}."))
-        //        .ToList();
+            for (int i = 0; i < fileContentSizeInBytes; i++)
+            {
+                contentBuilder.Append((i % 10).ToString(CultureInfo.InvariantCulture));
+            }
 
-        //    // Upload each file
-        //    var inputFile = Browser.Exists(By.Id("input-file"));
-        //    inputFile.SendKeys(string.Join("\n", files.Select(f => f.Path)));
+            var file = TempFile.Create(_tempDirectory, "txt", contentBuilder.ToString());
 
-        //    // Validate that each file was uploaded correctly
-        //    Assert.All(files, file =>
-        //    {
-        //        var fileContainer = Browser.Exists(By.Id($"file-{file.Name}"));
-        //        var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
-        //        var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
-        //        var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
-        //        var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
-        //        var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
+            await VerifyFile(file);
+        }
 
-        //        // Validate that the file was uploaded correctly and all fields are present
-        //        Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-        //        Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
-        //        Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
-        //        Browser.Equal("text/plain", () => fileContentTypeElement.Text);
-        //        Browser.Equal(file.Text, () => fileContentElement.Text);
-        //    });
-        //}
+        [Fact]
+        public async Task CanUploadMultipleFiles()
+        {
+            // Create multiple small text files
+            var files = Enumerable.Range(1, 3)
+                .Select(i => TempFile.Create(_tempDirectory, "txt", $"Contents of file {i}."))
+                .ToList();
 
-        //[Fact]
-        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
-        //public void CanUploadAndConvertImageFile()
-        //{
-        //    var sourceImageId = "image-source";
+            await VerifyFiles(files);
+        }
 
-        //    // Get the source image base64
-        //    var base64 = Browser.ExecuteJavaScript<string>($@"
-        //        const canvas = document.createElement('canvas');
-        //        const context = canvas.getContext('2d');
-        //        const image = document.getElementById('{sourceImageId}');
+        [Fact]
+        public async Task CanUploadAndConvertImageFile()
+        {
+            var sourceImageId = "image-source";
 
-        //        canvas.width = image.naturalWidth;
-        //        canvas.height = image.naturalHeight;
-        //        context.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+            // Get the source image base64
+            var base64 = await _page.EvaluateAsync<string>($@"
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const image = document.getElementById('{sourceImageId}');
 
-        //        return canvas.toDataURL().split(',').pop();");
+                canvas.width = image.naturalWidth;
+                canvas.height = image.naturalHeight;
+                context.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
 
-        //    // Save the image file locally
-        //    var file = TempFile.Create(_tempDirectory, "png", Convert.FromBase64String(base64));
+                return canvas.toDataURL().split(',').pop();");
 
-        //    // Re-upload the image file (it will be converted to a JPEG and scaled to fix 640x480)
-        //    var inputFile = Browser.Exists(By.Id("input-image"));
-        //    inputFile.SendKeys(file.Path);
+            // Save the image file locally
+            var file = TempFile.Create(_tempDirectory, "png", Convert.FromBase64String(base64));
 
-        //    // Validate that the image was converted without error and is the correct size
-        //    var uploadedImage = Browser.Exists(By.Id("image-uploaded"));
+            // Re-upload the image file (it will be converted to a JPEG and scaled to fix 640x480)
+            var inputFile = await _page.QuerySelectorAsync("#input-image");
+            await inputFile.SetInputFilesAsync(file.Path);
 
-        //    Browser.Equal(480, () => uploadedImage.Size.Width);
-        //    Browser.Equal(480, () => uploadedImage.Size.Height);
-        //}
+            // Validate that the image was converted without error and is the correct size
+            var uploadedImage = await _page.WaitForSelectorAsync("#image-uploaded");
+            Assert.NotNull(uploadedImage);
+            var box = await uploadedImage.GetBoundingBoxAsync();
+            Assert.Equal(480, box.Height);
+            Assert.Equal(480, box.Width);
+        }
 
-        //[Fact]
-        //public void ThrowsWhenTooManyFilesAreSelected()
-        //{
-        //    var maxAllowedFilesElement = Browser.Exists(By.Id("max-allowed-files"));
-        //    maxAllowedFilesElement.Clear();
-        //    maxAllowedFilesElement.SendKeys("1\n");
+        protected async Task ClearAndType(string selector, string value)
+        {
+            await _page.EvalOnSelectorAsync(selector, "e => e.Value = ''");
+            var element = await _page.QuerySelectorAsync(selector);
+            await element.TypeAsync(value);
+        }
 
-        //    // Save two files locally
-        //    var file1 = TempFile.Create(_tempDirectory, "txt", "This is file 1.");
-        //    var file2 = TempFile.Create(_tempDirectory, "txt", "This is file 2.");
+        [Fact]
+        public async Task ThrowsWhenTooManyFilesAreSelected()
+        {
+            await ClearAndType("#max-allowed-files", "1\n");
 
-        //    // Select both files
-        //    var inputFile = Browser.Exists(By.Id("input-file"));
-        //    inputFile.SendKeys($"{file1.Path}\n{file2.Path}");
+            // Save two files locally
+            var file1 = TempFile.Create(_tempDirectory, "txt", "This is file 1.");
+            var file2 = TempFile.Create(_tempDirectory, "txt", "This is file 2.");
 
-        //    // Validate that the proper exception is thrown
-        //    var exceptionMessage = Browser.Exists(By.Id("exception-message"));
-        //    Browser.Equal("The maximum number of files accepted is 1, but 2 were supplied.", () => exceptionMessage.Text);
-        //}
+            // Select both files
+            await _page.SetInputFilesAsync("#input-file", new string[] { file1.Path, file2.Path });
 
-        //[Fact]
-        //public void ThrowsWhenOversizedFileIsSelected()
-        //{
-        //    var maxFileSizeElement = Browser.Exists(By.Id("max-file-size"));
-        //    maxFileSizeElement.Clear();
-        //    maxFileSizeElement.SendKeys("10\n");
+            // Validate that the proper exception is thrown
+            var exceptionMessage = await _page.QuerySelectorAsync("#exception-message");
+            Assert.Equal("The maximum number of files accepted is 1, but 2 were supplied.", await exceptionMessage.GetTextContentAsync());
+        }
 
-        //    // Save a file that exceeds the specified file size limit
-        //    var file = TempFile.Create(_tempDirectory, "txt", "This file is over 10 bytes long.");
+        [Fact]
+        public async Task ThrowsWhenOversizedFileIsSelected()
+        {
+            await ClearAndType("#max-file-size", "10\n");
 
-        //    // Select the file
-        //    var inputFile = Browser.Exists(By.Id("input-file"));
-        //    inputFile.SendKeys(file.Path);
+            // Save a file that exceeds the specified file size limit
+            var file = TempFile.Create(_tempDirectory, "txt", "This file is over 10 bytes long.");
 
-        //    // Validate that the proper exception is thrown
-        //    var exceptionMessage = Browser.Exists(By.Id("exception-message"));
-        //    Browser.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", () => exceptionMessage.Text);
-        //}
+            // Select the file
+            await _page.SetInputFilesAsync("#input-file", file.Path);
+
+            // Validate that the proper exception is thrown
+            var exceptionMessage = await _page.QuerySelectorAsync("#exception-message");
+            Assert.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", await exceptionMessage.GetTextContentAsync());
+        }
 
         public override void Dispose()
         {
