@@ -55,13 +55,11 @@ __UbuntuPackages+=" libcurl4-openssl-dev"
 __UbuntuPackages+=" libkrb5-dev"
 __UbuntuPackages+=" libssl-dev"
 __UbuntuPackages+=" zlib1g-dev"
-__UbuntuPackages+=" libldap2-dev"
 
 __AlpinePackages+=" curl-dev"
 __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
-__AlpinePackages+=" openldap-dev"
 
 __FreeBSDBase="12.1-RELEASE"
 __FreeBSDPkg="1.12.0"
@@ -70,13 +68,15 @@ __FreeBSDPackages+=" icu"
 __FreeBSDPackages+=" libinotify"
 __FreeBSDPackages+=" lttng-ust"
 __FreeBSDPackages+=" krb5"
-__FreeBSDPackages+=" libslapi-2.4"
 
 __IllumosPackages="icu-64.2nb2"
 __IllumosPackages+=" mit-krb5-1.16.2nb4"
 __IllumosPackages+=" openssl-1.1.1e"
 __IllumosPackages+=" zlib-1.2.11"
-__IllumosPackages+=" openldap-client-2.4.49"
+
+# ML.NET dependencies
+__UbuntuPackages+=" libomp5"
+__UbuntuPackages+=" libomp-dev"
 
 __UseMirror=0
 

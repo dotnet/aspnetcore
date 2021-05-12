@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         [InlineData("http", "example.com", "", "/foo", "?bar=1", "#col=2", "http://example.com/foo?bar=1#col=2")]
         [InlineData("http", "example.com", "/base", "/foo", "?bar=1", "#col=2", "http://example.com/base/foo?bar=1#col=2")]
         [InlineData("http", "example.com", "/base/", "/foo", "?bar=1", "#col=2", "http://example.com/base/foo?bar=1#col=2")]
+        [InlineData("http", "example.com", "/base/", "", "?bar=1", "#col=2", "http://example.com/base/?bar=1#col=2")]
         [InlineData("http", "example.com", "", "", "?bar=1", "#col=2", "http://example.com/?bar=1#col=2")]
         [InlineData("http", "example.com", "", "", "", "#frag?stillfrag/stillfrag", "http://example.com/#frag?stillfrag/stillfrag")]
         [InlineData("http", "example.com", "", "", "?q/stillq", "#frag?stillfrag/stillfrag", "http://example.com/?q/stillq#frag?stillfrag/stillfrag")]

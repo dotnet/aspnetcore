@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             Func<HttpMessageHandler, HttpMessageHandler> handlerFactory = handler => handler;
             Func<Task<string>> tokenProvider = () => Task.FromResult("");
+            Func<WebSocketConnectionContext, CancellationToken, ValueTask<WebSocket>> webSocketFactory = (context, token) => ValueTask.FromResult<WebSocket>(null);
             Action<ClientWebSocketOptions> webSocketConfig = options => { };
 
             var testValues = new Dictionary<string, object>
@@ -95,6 +97,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 { $"{nameof(HttpConnectionOptions.UseDefaultCredentials)}", true },
                 { $"{nameof(HttpConnectionOptions.DefaultTransferFormat)}", TransferFormat.Text },
                 { $"{nameof(HttpConnectionOptions.WebSocketConfiguration)}", webSocketConfig },
+                { $"{nameof(HttpConnectionOptions.WebSocketFactory)}", webSocketFactory },
             };
 
             var options = new HttpConnectionOptions();

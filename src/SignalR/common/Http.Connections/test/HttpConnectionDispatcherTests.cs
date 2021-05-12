@@ -187,8 +187,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var manager = CreateConnectionManager(LoggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 8, resumeWriterThreshold: 4);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions();
+                options.TransportMaxBufferSize = 8;
+                options.ApplicationMaxBufferSize = 8;
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = transportType;
 
                 using (var requestBody = new MemoryStream())
@@ -1921,8 +1923,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 2, resumeWriterThreshold: 1);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 2,
+                    ApplicationMaxBufferSize = 2
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -1934,7 +1940,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 var pollTask = dispatcher.ExecuteAsync(context, options, app);
                 Assert.True(pollTask.IsCompleted);
@@ -2068,8 +2073,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2079,7 +2089,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 SyncPoint streamCopySyncPoint = new SyncPoint();
 
@@ -2127,8 +2136,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2138,7 +2151,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 using (var responseBody = new MemoryStream())
                 using (var requestBody = new MemoryStream())
@@ -2181,8 +2193,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2192,7 +2208,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 using (var responseBody = new MemoryStream())
                 using (var requestBody = new MemoryStream())
@@ -2276,8 +2291,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 2, resumeWriterThreshold: 1);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 2,
+                    ApplicationMaxBufferSize = 2
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2289,7 +2308,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 var pollTask = dispatcher.ExecuteAsync(context, options, app);
                 Assert.True(pollTask.IsCompleted);

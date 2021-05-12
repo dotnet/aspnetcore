@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Components
         /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
         /// <param name="key">The key to use to persist the state.</param>
         /// <param name="instance">The instance to persist.</param>
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
         {
             if (key is null)
@@ -153,6 +154,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="key">The key used to persist the instance.</param>
         /// <param name="instance">The persisted instance.</param>
         /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         public bool TryTakeAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
         {
             if (key is null)

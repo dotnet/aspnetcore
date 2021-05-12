@@ -96,14 +96,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             if (configuration.EncryptionAlgorithmType == typeof(Aes))
             {
-                Func<Aes>? factory = null;
-                if (OSVersionUtil.IsWindows())
-                {
-                    // If we're on desktop CLR and running on Windows, use the FIPS-compliant implementation.
-                    factory = () => new AesCryptoServiceProvider();
-                }
-
-                return factory ?? Aes.Create;
+                return Aes.Create;
             }
             else
             {

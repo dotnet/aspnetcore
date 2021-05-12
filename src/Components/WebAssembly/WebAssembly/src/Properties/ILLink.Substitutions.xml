@@ -1,8 +1,7 @@
 <linker>
   <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly" >
-    <!-- HotReload will not be available in a trimmed app. We'll attempt to aggressively remove all references to it. -->
-    <type fullname="Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost">
-      <method signature="System.Threading.Tasks.Task InitializeHotReloadAsync()" body="stub" />
+    <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadFeature" feature="System.Diagnostics.Debugger.IsSupported" featurevalue="false">
+      <method signature="System.Boolean get_IsSupported()" body="stub" value="false"  />
     </type>
   </assembly>
 </linker>
