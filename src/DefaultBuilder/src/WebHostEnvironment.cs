@@ -38,14 +38,29 @@ namespace Microsoft.AspNetCore.Builder
             ResolveFileProviders(new Configuration());
         }
 
+        // For testing
+        internal WebHostEnvironment()
+        {
+            ApplicationName = default!;
+            EnvironmentName = default!;
+            ContentRootPath = default!;
+            WebRootPath = default!;
+            ContentRootFileProvider = default!;
+            WebRootFileProvider = default!;
+        }
+
         public void ApplyConfigurationSettings(IConfiguration configuration)
+        {
+            ReadConfigurationSettings(configuration);
+            ResolveFileProviders(configuration);
+        }
+
+        internal void ReadConfigurationSettings(IConfiguration configuration)
         {
             ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? ApplicationName;
             EnvironmentName = configuration[WebHostDefaults.EnvironmentKey] ?? EnvironmentName;
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey] ?? ContentRootPath;
             WebRootPath = configuration[WebHostDefaults.WebRootKey] ?? WebRootPath;
-
-            ResolveFileProviders(configuration);
         }
 
         public void ApplyEnvironmentSettings(IWebHostBuilder genericWebHostBuilder)
