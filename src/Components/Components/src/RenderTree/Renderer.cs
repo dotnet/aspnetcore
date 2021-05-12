@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -126,6 +127,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private async void RenderRootComponentsOnHotReload()
         {
+            // Before re-rendering the root component, also clear any well-known caches in the framework
+            _componentFactory.ClearCache();
+            ComponentProperties.ClearCache();
+
             await Dispatcher.InvokeAsync(() =>
             {
                 if (_rootComponents is null)

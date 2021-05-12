@@ -6,10 +6,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+[assembly: MetadataUpdateHandler(typeof(Microsoft.JSInterop.Infrastructure.DotNetDispatcher))]
 
 namespace Microsoft.JSInterop.Infrastructure
 {
@@ -424,6 +427,12 @@ namespace Microsoft.JSInterop.Infrastructure
 
             return assembly
                 ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
+        }
+
+        private static void ClearCache(Type[]? _)
+        {
+            _cachedMethodsByAssembly.Clear();
+            _cachedMethodsByType.Clear();
         }
 
         private readonly struct AssemblyKey : IEquatable<AssemblyKey>

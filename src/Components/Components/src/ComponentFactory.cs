@@ -11,7 +11,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
 {
-    internal class ComponentFactory
+    internal sealed class ComponentFactory
     {
         private static readonly BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Components
         {
             _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
         }
+
+        public void ClearCache() => _cachedInitializers.Clear();
 
         public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
         {
