@@ -7,9 +7,9 @@
   uid ""
 
 "@msgpack/msgpack@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-2.4.0.tgz#789c69301388a6a44a47ce654014ecd1703c8fcc"
-  integrity sha512-5qzv53J43V8GaYsaETs29Q0Ehw9Dog6SG18MASZRQDuZYXtA5T7pymGE2S40NL0X8sjl8+TybmRa5O8d45V7MQ==
+  version "2.6.3"
+  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-2.6.3.tgz#e0e3cdac43500624ee5a0f2f2503351d5862e46c"
+  integrity sha512-dSJ1TBB9Hreienm5SFVbpKIcRRekQNULxvbmDVXQwRCZWYCIxZ23X+FlFWkg1LmGG+DIQZXH+2IW01QwxofT/g==
 
 abort-controller@^3.0.0:
   version "3.0.0"
@@ -24,9 +24,9 @@ event-target-shim@^5.0.0:
   integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
 
 eventsource@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/eventsource/-/eventsource-1.0.7.tgz#8fbc72c93fcd34088090bc0a4e64f4b5cee6d8d0"
-  integrity sha512-4Ln17+vVT0k8aWq+t/bF5arcS3EpT9gYtW66EPacdj/mAFevznsnyoHLPy2BA8gbIQeIHoPsvwmfBftfcG//BQ==
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/eventsource/-/eventsource-1.1.0.tgz#00e8ca7c92109e94b0ddf32dac677d841028cfaf"
+  integrity sha512-VSJjT5oCNrFvCS6igjzPAt5hBzQ2qPBFIbJ03zLI9SE0mxwZpMw6BfJrbFHm1a141AavMEB8JHmBhWAd66PfCg==
   dependencies:
     original "^1.0.0"
 
@@ -92,6 +92,6 @@ url-parse@^1.4.3:
     requires-port "^1.0.0"
 
 ws@^7.4.3:
-  version "7.4.3"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.3.tgz#1f9643de34a543b8edb124bdcbc457ae55a6e5cd"
-  integrity sha512-hr6vCR76GsossIRsr8OLR9acVVm1jyfEWvhbNjtgPOrfvAlKzvyeg/P6r8RuDjRyrcQoPQT7K0DGEPc7Ae6jzA==
+  version "7.4.5"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.5.tgz#a484dd851e9beb6fdb420027e3885e8ce48986c1"
+  integrity sha512-xzyu3hFvomRfXKH8vOFMU3OguG6oOvhXMo3xsGy3xWExqaM2dxBbVxuD99O7m3ZUFMvvscsZDqxfgMaRr/Nr1g==
