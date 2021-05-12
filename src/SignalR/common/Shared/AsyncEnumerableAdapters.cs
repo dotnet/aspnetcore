@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             private async Task<bool> MoveNextAsyncAwaited()
             {
-                if (await _channel.WaitToReadAsync(_cancellationToken) && _channel.TryRead(out var item))
+                if (await _channel.WaitToReadAsync(_cancellationToken).ConfigureAwait(false) && _channel.TryRead(out var item))
                 {
                     Current = item;
                     return true;
