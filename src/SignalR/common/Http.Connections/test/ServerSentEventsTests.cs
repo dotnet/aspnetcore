@@ -131,25 +131,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        [Fact]
-        public async Task IncludesLongRunningHeader()
-        {
-            using (StartVerifiableLog())
-            {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-                var context = new DefaultHttpContext();
-
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
-
-                connection.Transport.Output.Complete();
-
-                await sse.ProcessRequestAsync(context, context.RequestAborted);
-
-                Assert.Equal("true", context.Response.Headers[CustomHeaderNames.LongRunning]);
-            }
-        }
-
         private class HttpBufferingFeature : StreamResponseBodyFeature
         {
             public bool ResponseBufferingDisabled { get; set; }

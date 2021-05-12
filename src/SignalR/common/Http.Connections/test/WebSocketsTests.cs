@@ -418,48 +418,5 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.True(messages.Received[1].EndOfMessage);
             }
         }
-
-        [Fact]
-        public async Task IncludesLongRunningHeader()
-        {
-            using (StartVerifiableLog())
-            {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(nameof(HttpConnectionContext)), pair.Transport, pair.Application);
-
-                using (var feature = new TestWebSocketConnectionFeature())
-                {
-                    var options = new WebSocketOptions
-                    {
-                        // We want to verify behavior without timeout affecting it
-                        CloseTimeout = TimeSpan.FromSeconds(20)
-                    };
-
-                    var ws = new WebSocketsServerTransport(options, connection.Application, connection, LoggerFactory);
-
-                    // Create an HttpContext
-                    var context = new DefaultHttpContext();
-                    context.Features.Set<IHttpWebSocketFeature>(feature);
-                    var transport = ws.ProcessRequestAsync(context, CancellationToken.None);
-
-                    await feature.Accepted.OrThrowIfOtherFails(transport);
-
-
-                    // Run the client socket
-                    var client = feature.Client.ExecuteAndCaptureFramesAsync();
-
-                    await feature.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None).DefaultTimeout();
-
-                    // close the client to server channel
-                    connection.Transport.Output.Complete();
-
-                    _ = await client.DefaultTimeout();
-
-                    await transport.DefaultTimeout();
-
-                    Assert.Equal("true", context.Response.Headers[CustomHeaderNames.LongRunning]);
-                }
-            }
-        }
     }
 }

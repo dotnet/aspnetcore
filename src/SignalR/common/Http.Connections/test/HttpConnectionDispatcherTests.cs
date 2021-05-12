@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -2078,7 +2079,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     TransportMaxBufferSize = 13,
                     ApplicationMaxBufferSize = 13
                 };
-                
+
                 var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
@@ -2591,6 +2592,40 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await connection.DisposeAsync().DefaultTimeout();
 
                 Assert.Throws<ObjectDisposedException>(() => connection.ServiceScope.Value.ServiceProvider.GetService<MessageWrapper>());
+            }
+        }
+
+        [Fact]
+        public async Task LongRunningActivityTagSetOnExecuteAsync()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.ServerSentEvents;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                var cts = new CancellationTokenSource();
+                context.RequestAborted = cts.Token;
+                SetTransport(context, HttpTransportType.ServerSentEvents);
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+
+                using var activity = new Activity("name");
+                activity.Start();
+
+                _ = dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+
+                Assert.Equal("true", Activity.Current.GetTagItem("long-running-name-tbd"));
+
+                connection.Transport.Output.Complete();
+
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
             }
         }
 
