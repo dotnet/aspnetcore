@@ -1,16 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Globalization;
-using System.Text.Json;
 using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 using PlaywrightSharp;
 using Xunit;
 using Xunit.Abstractions;
@@ -34,6 +30,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await base.InitializeCoreAsync(context);
 
             // On WebAssembly, page reloads are expensive so skip if possible
+            //Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+
             _browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
             var page = await _browser.NewPageAsync();
             var url = _serverFixture.RootUri + "subdir";
@@ -43,12 +41,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Output.WriteLine("Loaded page");
 
             await MountTestComponentAsync<BindCasesComponent>(page);
+            //Browser.Exists(By.Id("bind-cases"));
 
             _page = page;
-
-            //Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-            //Browser.MountTestComponent<BindCasesComponent>();
-            //Browser.Exists(By.Id("bind-cases"));
         }
 
         protected async Task<string> GetInputValue(string selector)
