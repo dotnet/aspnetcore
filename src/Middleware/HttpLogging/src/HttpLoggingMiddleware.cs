@@ -85,112 +85,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (options.ModifyRequestLog != null)
                 {
-                    var headerDictionary = new HeaderDictionary();
-                    var loggingContext = new HttpRequestLoggingContext(context, options, headerDictionary);
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
-                    {
-                        loggingContext.Protocol = request.Protocol;
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
-                    {
-                        loggingContext.Method = request.Method;
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
-                    {
-                        loggingContext.Scheme = request.Scheme;
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
-                    {
-                        loggingContext.PathBase = request.PathBase;
-                        loggingContext.Path = request.Path;
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
-                    {
-                        loggingContext.Query = request.QueryString.ToString();
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
-                    {
-                        FilterHeaders(headerDictionary, request.Headers, options._internalRequestHeaders);
-                    }
-
-                    await options.ModifyRequestLog(loggingContext);
-
-                    // Checking for null to make sure the key isn't logged if it isn't enabled.
-                    if (loggingContext.Protocol != null)
-                    {
-                        AddToList(list, nameof(request.Protocol), loggingContext.Protocol);
-                    }
-
-                    if (loggingContext.Method != null)
-                    {
-                        AddToList(list, nameof(request.Method), loggingContext.Method);
-                    }
-
-                    if (loggingContext.Scheme != null)
-                    {
-                        AddToList(list, nameof(request.Scheme), loggingContext.Scheme);
-                    }
-
-                    if (loggingContext.PathBase != null)
-                    {
-                        AddToList(list, nameof(request.PathBase), loggingContext.PathBase);
-                    }
-
-                    if (loggingContext.Path != null)
-                    {
-                        AddToList(list, nameof(request.Path), loggingContext.Path);
-                    }
-
-                    if (loggingContext.Query != null)
-                    {
-                        AddToList(list, nameof(request.QueryString), loggingContext.Query);
-                    }
-
-                    AddHeaders(list, headerDictionary);
-
-                    foreach (var item in loggingContext.Extra)
-                    {
-                        AddToList(list, item.Item1, item.Item2);
-                    }
+                    await HandleModifableRequestLog(context, options, request, list);
                 }
                 else
                 {
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
-                    {
-                        AddToList(list, nameof(request.Protocol), request.Protocol);
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
-                    {
-                        AddToList(list, nameof(request.Method), request.Method);
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
-                    {
-                        AddToList(list, nameof(request.Scheme), request.Scheme);
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
-                    {
-                        AddToList(list, nameof(request.PathBase), request.PathBase);
-                        AddToList(list, nameof(request.Path), request.Path);
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
-                    {
-                        AddToList(list, nameof(request.QueryString), request.QueryString.Value);
-                    }
-
-                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
-                    {
-                        FilterHeaders(list, request.Headers, options._internalRequestHeaders);
-                    }
+                    HandleFixedRequestLog(options, request, list);
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
@@ -279,6 +178,117 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     context.Request.Body = originalBody;
                 }
+            }
+        }
+
+        private static void HandleFixedRequestLog(HttpLoggingOptions options, HttpRequest request, List<KeyValuePair<string, string?>> list)
+        {
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+            {
+                AddToList(list, nameof(request.Protocol), request.Protocol);
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
+            {
+                AddToList(list, nameof(request.Method), request.Method);
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
+            {
+                AddToList(list, nameof(request.Scheme), request.Scheme);
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+            {
+                AddToList(list, nameof(request.PathBase), request.PathBase);
+                AddToList(list, nameof(request.Path), request.Path);
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+            {
+                AddToList(list, nameof(request.QueryString), request.QueryString.Value);
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+            {
+                FilterHeaders(list, request.Headers, options._internalRequestHeaders);
+            }
+        }
+
+        private static async Task HandleModifableRequestLog(HttpContext context, HttpLoggingOptions options, HttpRequest request, List<KeyValuePair<string, string?>> list)
+        {
+            var headerDictionary = new HeaderDictionary();
+            var loggingContext = new HttpRequestLoggingContext(context, options, headerDictionary);
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+            {
+                loggingContext.Protocol = request.Protocol;
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
+            {
+                loggingContext.Method = request.Method;
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
+            {
+                loggingContext.Scheme = request.Scheme;
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+            {
+                loggingContext.PathBase = request.PathBase;
+                loggingContext.Path = request.Path;
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+            {
+                loggingContext.Query = request.QueryString.Value;
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+            {
+                FilterHeaders(headerDictionary, request.Headers, options._internalRequestHeaders);
+            }
+
+            await options.ModifyRequestLog!(loggingContext);
+
+            // Checking for null to make sure the key isn't logged if it isn't enabled.
+            if (loggingContext.Protocol != null)
+            {
+                AddToList(list, nameof(request.Protocol), loggingContext.Protocol);
+            }
+
+            if (loggingContext.Method != null)
+            {
+                AddToList(list, nameof(request.Method), loggingContext.Method);
+            }
+
+            if (loggingContext.Scheme != null)
+            {
+                AddToList(list, nameof(request.Scheme), loggingContext.Scheme);
+            }
+
+            if (loggingContext.PathBase != null)
+            {
+                AddToList(list, nameof(request.PathBase), loggingContext.PathBase);
+            }
+
+            if (loggingContext.Path != null)
+            {
+                AddToList(list, nameof(request.Path), loggingContext.Path);
+            }
+
+            if (loggingContext.Query != null)
+            {
+                AddToList(list, nameof(request.QueryString), loggingContext.Query);
+            }
+
+            AddHeaders(list, headerDictionary);
+
+            foreach (var item in loggingContext.Extra)
+            {
+                AddToList(list, item.Item1, item.Item2);
             }
         }
 

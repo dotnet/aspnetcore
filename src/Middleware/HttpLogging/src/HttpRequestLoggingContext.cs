@@ -69,13 +69,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Extra messages that will be logged.
         /// </summary>
-        public List<(string, string)> Extra
-        {
-            get
-            {
-                _extra ??= new List<(string, string)>();
-                return _extra;
-            }
-        }
+        public List<(string, string)> Extra => _extra ??= new List<(string, string)>();
     }
 }
