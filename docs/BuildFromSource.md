@@ -39,7 +39,7 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 
 #### [Visual Studio 2019](https://visualstudio.com)
 
-Visual Studio 2019 (16.8) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
+Visual Studio 2019 (16.10 Preview 3) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 > :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).
