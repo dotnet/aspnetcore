@@ -2,8 +2,8 @@
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>2.1.27</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.27</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.1.28</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.28</MicrosoftNETCoreDotNetAppHostPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -15,7 +15,7 @@
     <!-- Determined by build tools -->
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">2.1.7-build-20210413.1</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">2.1.7-build-20210511.1</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <!-- These are package versions that should not be overridden or updated by automation. -->
