@@ -352,10 +352,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
+        [SkipLocalsInit]
         private bool TryValidatePath(ReadOnlySpan<char> pathSegment)
         {
             // Must start with a leading slash
-            if (pathSegment.Length == 0 || pathSegment[0] != '/')
+            if (pathSegment.IsEmpty || pathSegment[0] != '/')
             {
                 ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
                 return false;

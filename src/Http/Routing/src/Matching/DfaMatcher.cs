@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -27,6 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _isDefaultEndpointSelector = selector is DefaultEndpointSelector;
         }
 
+        [SkipLocalsInit]
         public sealed override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)

@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [SkipLocalsInit]
         private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding? customEncoding)
         {
             if (_contentLength.HasValue)
