@@ -260,40 +260,7 @@ function with_retries {
 }
 
 function GetDotNetInstallScript {
-  local root=$1
-  local install_script="$root/dotnet-install.sh"
-  local install_script_url="https://dot.net/$dotnetInstallScriptVersion/dotnet-install.sh"
-
-  if [[ ! -a "$install_script" ]]; then
-    mkdir -p "$root"
-
-    echo "Downloading '$install_script_url'"
-
-    # Use curl if available, otherwise use wget
-    if command -v curl > /dev/null; then
-      # first, try directly, if this fails we will retry with verbose logging
-      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
-        if command -v openssl &> /dev/null; then
-          echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
-          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
-        fi
-        echo "Will now retry the same URL with verbose logging."
-        with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
-          local exit_code=$?
-          Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
-          ExitWithExitCode $exit_code
-        }
-      }
-    else
-      with_retries wget -v -O "$install_script" "$install_script_url" || {
-        local exit_code=$?
-        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
-        ExitWithExitCode $exit_code
-      }
-    fi
-  fi
-  # return value
-  _GetDotNetInstallScript="$install_script"
+  _GetDotNetInstallScript="$repo_root/install-scripts/dotnet-install.sh"
 }
 
 function InitializeBuildTool {
