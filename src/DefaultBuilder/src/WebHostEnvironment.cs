@@ -38,14 +38,29 @@ namespace Microsoft.AspNetCore.Builder
             ResolveFileProviders(new Configuration());
         }
 
+        // For testing
+        internal WebHostEnvironment()
+        {
+            ApplicationName = default!;
+            EnvironmentName = default!;
+            ContentRootPath = default!;
+            WebRootPath = default!;
+            ContentRootFileProvider = default!;
+            WebRootFileProvider = default!;
+        }
+
         public void ApplyConfigurationSettings(IConfiguration configuration)
         {
-            ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? ApplicationName;
-            ContentRootPath = configuration[WebHostDefaults.ContentRootKey] ?? ContentRootPath;
-            EnvironmentName = configuration[WebHostDefaults.EnvironmentKey] ?? EnvironmentName;
-            WebRootPath = configuration[WebHostDefaults.ContentRootKey] ?? WebRootPath;
-
+            ReadConfigurationSettings(configuration);
             ResolveFileProviders(configuration);
+        }
+
+        internal void ReadConfigurationSettings(IConfiguration configuration)
+        {
+            ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? ApplicationName;
+            EnvironmentName = configuration[WebHostDefaults.EnvironmentKey] ?? EnvironmentName;
+            ContentRootPath = configuration[WebHostDefaults.ContentRootKey] ?? ContentRootPath;
+            WebRootPath = configuration[WebHostDefaults.WebRootKey] ?? WebRootPath;
         }
 
         public void ApplyEnvironmentSettings(IWebHostBuilder genericWebHostBuilder)
@@ -65,7 +80,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (Directory.Exists(WebRootPath))
             {
-                WebRootFileProvider = new PhysicalFileProvider(Path.Combine(ContentRootPath, WebRootPath));
+                WebRootFileProvider = new PhysicalFileProvider(WebRootPath);
             }
 
             if (this.IsDevelopment())
