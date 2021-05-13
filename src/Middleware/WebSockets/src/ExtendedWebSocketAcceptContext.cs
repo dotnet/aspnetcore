@@ -29,6 +29,16 @@ namespace Microsoft.AspNetCore.WebSockets
         /// <summary>
         ///
         /// </summary>
-        public WebSocketCreationOptions? WebSocketOptions { get; set; }
+        public bool DangerousEnableCompression { get; set; }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public bool ServerContextTakeover { get; set; } = true;
+
+        /// <summary>
+        ///
+        /// </summary>
+        public int ServerMaxWindowBits { get; set; } = 15;
     }
 }

@@ -18,22 +18,64 @@ namespace Microsoft.AspNetCore.WebSockets.Test
     {
         [Theory]
         [InlineData("permessage-deflate", "permessage-deflate")]
-        [InlineData("permessage-deflate; server_no_context_takeover", "permessage-deflate; server_no_context_takeover")]
+        //[InlineData("permessage-deflate; server_no_context_takeover", "permessage-deflate; server_no_context_takeover")]
         [InlineData("permessage-deflate; client_no_context_takeover", "permessage-deflate; client_no_context_takeover")]
         [InlineData("permessage-deflate; client_max_window_bits=9", "permessage-deflate; client_max_window_bits=9")]
         [InlineData("permessage-deflate; client_max_window_bits", "permessage-deflate; client_max_window_bits=15")]
         [InlineData("permessage-deflate; server_max_window_bits", "permessage-deflate; server_max_window_bits=15")]
         [InlineData("permessage-deflate; server_max_window_bits=10", "permessage-deflate; server_max_window_bits=10")]
-        [InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover", "permessage-deflate; server_max_window_bits=10; server_no_context_takeover")]
-        [InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover; client_no_context_takeover; client_max_window_bits=12", "permessage-deflate; server_max_window_bits=10; server_no_context_takeover; client_no_context_takeover; client_max_window_bits=12")]
-        public async Task CompressionNegotiationProducesCorrectHeader(string clientHeader, string expectedResponse)
+        //[InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover", "permessage-deflate; server_no_context_takeover; server_max_window_bits=10")]
+        //[InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover; client_no_context_takeover; client_max_window_bits=12", "permessage-deflate; server_no_context_takeover; client_no_context_takeover; client_max_window_bits=12; server_max_window_bits=10")]
+        public async Task CompressionNegotiationProducesCorrectHeaderWithDefaultOptions(string clientHeader, string expectedResponse)
         {
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
                 {
-                    WebSocketOptions = new WebSocketCreationOptions() { DangerousDeflateOptions = new WebSocketDeflateOptions() }
+                    DangerousEnableCompression = true
+                });
+            }))
+            {
+                using (var client = new HttpClient())
+                {
+                    var uri = new UriBuilder(new Uri($"ws://127.0.0.1:{port}/"));
+                    uri.Scheme = "http";
+
+                    // Craft a valid WebSocket Upgrade request
+                    using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                    {
+                        SetGenericWebSocketRequest(request);
+                        request.Headers.Add(HeaderNames.SecWebSocketExtensions, clientHeader);
+
+                        var response = await client.SendAsync(request);
+                        Assert.Equal(HttpStatusCode.SwitchingProtocols, response.StatusCode);
+                        Assert.Equal(expectedResponse, response.Headers.GetValues(HeaderNames.SecWebSocketExtensions).Aggregate((l, r) => $"{l}; {r}"));
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("permessage-deflate", "permessage-deflate; server_max_window_bits=14")]
+        //[InlineData("permessage-deflate; server_no_context_takeover", "permessage-deflate; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; client_no_context_takeover", "permessage-deflate; client_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; client_max_window_bits=9", "permessage-deflate; client_max_window_bits=9; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; client_max_window_bits", "permessage-deflate; client_max_window_bits=15; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_max_window_bits", "permessage-deflate; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_max_window_bits=14", "permessage-deflate; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_max_window_bits=10", "permessage-deflate; server_max_window_bits=10")]
+        //[InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover", "permessage-deflate; server_no_context_takeover; server_max_window_bits=10")]
+        [InlineData("permessage-deflate; server_max_window_bits=10; client_no_context_takeover; client_max_window_bits=12", "permessage-deflate; client_no_context_takeover; client_max_window_bits=12; server_max_window_bits=10")]
+        public async Task CompressionNegotiationProducesCorrectHeaderWithCustomOptions(string clientHeader, string expectedResponse)
+        {
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            {
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
+                {
+                        DangerousEnableCompression = true,
+                        ServerMaxWindowBits = 14
                 });
             }))
             {
@@ -85,8 +127,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [Theory]
-        [InlineData("permessage-deflate; server_max_window_bits=12")]
-        [InlineData("permessage-deflate; client_max_window_bits=12")]
+        [InlineData("permessage-deflate; server_max_window_bits=8")]
+        [InlineData("permessage-deflate; client_max_window_bits=8")]
         public async Task CompressionNegotiateNotAccepted(string clientHeader)
         {
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
@@ -94,14 +136,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
                 {
-                    WebSocketOptions = new WebSocketCreationOptions()
-                    {
-                        DangerousDeflateOptions = new WebSocketDeflateOptions()
-                        {
-                            ClientMaxWindowBits = 11,
-                            ServerMaxWindowBits = 11,
-                        }
-                    }
+                    DangerousEnableCompression = true,
+                    ServerMaxWindowBits = 11
                 });
             }))
             {
@@ -126,9 +162,9 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         [Theory]
         [InlineData("permessage-deflate; server_max_window_bits=16", "invalid server_max_window_bits used: 16")]
-        [InlineData("permessage-deflate; server_max_window_bits=8", "invalid server_max_window_bits used: 8")]
+        [InlineData("permessage-deflate; server_max_window_bits=7", "invalid server_max_window_bits used: 7")]
         [InlineData("permessage-deflate; client_max_window_bits=16", "invalid client_max_window_bits used: 16")]
-        [InlineData("permessage-deflate; client_max_window_bits=8", "invalid client_max_window_bits used: 8")]
+        [InlineData("permessage-deflate; client_max_window_bits=7", "invalid client_max_window_bits used: 7")]
         public async Task InvalidCompressionNegotiateThrows(string clientHeader, string errorMessage)
         {
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
@@ -136,10 +172,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var ex = await Assert.ThrowsAsync<WebSocketException>(() => context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
                 {
-                    WebSocketOptions = new WebSocketCreationOptions()
-                    {
-                        DangerousDeflateOptions = new WebSocketDeflateOptions(),
-                    }
+                    DangerousEnableCompression = true
                 }));
                 Assert.Equal(errorMessage, ex.Message);
             }))
@@ -162,10 +195,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [Theory]
-        [InlineData("permessage-deflate; server_max_window_bits=15, permessage-deflate; server_max_window_bits=12", "permessage-deflate; server_max_window_bits=12")]
-        [InlineData("permessage-deflate; server_max_window_bits=11, permessage-deflate; server_max_window_bits=12", "permessage-deflate; server_max_window_bits=11")]
-        [InlineData("permessage-deflate; client_max_window_bits=15, permessage-deflate; client_max_window_bits=12", "permessage-deflate; client_max_window_bits=12")]
-        [InlineData("permessage-deflate; client_max_window_bits=11, permessage-deflate; client_max_window_bits=14", "permessage-deflate; client_max_window_bits=11")]
+        [InlineData("permessage-deflate; server_max_window_bits=8, permessage-deflate; server_max_window_bits=13", "permessage-deflate; server_max_window_bits=13")]
+        [InlineData("permessage-deflate; client_max_window_bits=8, permessage-deflate; client_max_window_bits=13", "permessage-deflate; client_max_window_bits=13; server_max_window_bits=13")]
         public async Task CompressionNegotiationCanChooseExtension(string clientHeader, string expectedResponse)
         {
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
@@ -173,14 +204,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
                 {
-                    WebSocketOptions = new WebSocketCreationOptions()
-                    {
-                        DangerousDeflateOptions = new WebSocketDeflateOptions()
-                        {
-                            ServerMaxWindowBits = 13,
-                            ClientMaxWindowBits = 13
-                        }
-                    }
+                    DangerousEnableCompression = true,
+                    ServerMaxWindowBits = 13
                 });
             }))
             {
@@ -203,61 +228,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [Theory]
-        [InlineData("permessage-deflate; server_max_window_bits=12")]
-        [InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover")]
-        [InlineData("permessage-deflate; client_max_window_bits=9; server_no_context_takeover")]
-        [InlineData("permessage-deflate; client_max_window_bits=11; client_no_context_takeover")]
-        public async Task OptionsObjectNotModified(string clientHeader)
-        {
-            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
-            {
-                var options = new WebSocketCreationOptions()
-                {
-                    DangerousDeflateOptions = new WebSocketDeflateOptions()
-                    {
-                        ServerMaxWindowBits = 13,
-                        ClientMaxWindowBits = 12,
-                    },
-                    KeepAliveInterval = TimeSpan.FromSeconds(14),
-                    SubProtocol = "test"
-                };
-                var deflateOptions = options.DangerousDeflateOptions;
-                Assert.True(context.WebSockets.IsWebSocketRequest);
-                using var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
-                {
-                    WebSocketOptions = options
-                });
-
-                // Verify passed in options object is not modified
-                Assert.Same(deflateOptions, options.DangerousDeflateOptions);
-                Assert.Equal(13, options.DangerousDeflateOptions.ServerMaxWindowBits);
-                Assert.Equal(12, options.DangerousDeflateOptions.ClientMaxWindowBits);
-                Assert.True(options.DangerousDeflateOptions.ServerContextTakeover);
-                Assert.True(options.DangerousDeflateOptions.ClientContextTakeover);
-                Assert.Equal(TimeSpan.FromSeconds(14), options.KeepAliveInterval);
-                Assert.Equal("test", options.SubProtocol);
-            }))
-            {
-                using (var client = new HttpClient())
-                {
-                    var uri = new UriBuilder(new Uri($"ws://127.0.0.1:{port}/"));
-                    uri.Scheme = "http";
-
-                    // Craft a valid WebSocket Upgrade request
-                    using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
-                    {
-                        SetGenericWebSocketRequest(request);
-                        request.Headers.Add(HeaderNames.SecWebSocketExtensions, clientHeader);
-
-                        var response = await client.SendAsync(request);
-                        Assert.Equal(HttpStatusCode.SwitchingProtocols, response.StatusCode);
-                        Assert.True(response.Headers.Contains(HeaderNames.SecWebSocketExtensions));
-                    }
-                }
-            }
-        }
-
         // Smoke test that compression works, we aren't responsible for the specifics of the compression frames
         [Fact]
         public async Task CanSendAndReceiveCompressedData()
@@ -267,14 +237,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 using var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
                 {
-                    WebSocketOptions = new WebSocketCreationOptions()
-                    {
-                        DangerousDeflateOptions = new WebSocketDeflateOptions()
-                        {
-                            ServerMaxWindowBits = 13,
-                            ClientMaxWindowBits = 12,
-                        }
-                    }
+                    DangerousEnableCompression = true,
+                    ServerMaxWindowBits = 13
                 });
 
                 var serverBuffer = new byte[1024];
