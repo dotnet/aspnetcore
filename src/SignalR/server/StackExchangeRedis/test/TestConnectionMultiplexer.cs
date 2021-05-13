@@ -245,6 +245,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             Action<RedisChannel, RedisValue> handler = (channel, value) =>
             {
+                // Workaround for https://github.com/StackExchange/StackExchange.Redis/issues/969
                 // ChannelMessageQueue isn't mockable currently, this works around that by using private reflection
                 typeof(ChannelMessageQueue).GetMethod("Write", BindingFlags.NonPublic | BindingFlags.Instance)
                     .Invoke(messageQueue, new object[] { channel, value });
@@ -377,6 +378,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ChannelMessageQueue Subscribe(RedisChannel channel, CommandFlags flags = CommandFlags.None)
         {
+            // Workaround for https://github.com/StackExchange/StackExchange.Redis/issues/969
             var redisSubscriberType = typeof(RedisChannel).Assembly.GetType("StackExchange.Redis.RedisSubscriber");
             var ctor = typeof(ChannelMessageQueue).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
                 binder: null,
