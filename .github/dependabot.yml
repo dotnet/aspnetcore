@@ -1,0 +1,56 @@
+version: 2
+updates:
+  # Keep submodules up to date in 'main'.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Weekly interval opens PRs on Monday.
+      interval: "weekly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dotnet/aspnet-build"
+    labels:
+      - area-infrastructure
+      - dependencies
+
+  # Keep submodules up to date in 'release/*' branches. (Unfortunately Dependabot security PRs can't target these.)
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Monthly interval opens PRs on the first of s Month.
+      interval: "monthly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dotnet/aspnet-build"
+    labels:
+      - area-infrastructure
+      - dependencies
+    target-branch: "release/2.1"
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Monthly interval opens PRs on the first of s Month.
+      interval: "monthly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dotnet/aspnet-build"
+    labels:
+      - area-infrastructure
+      - dependencies
+    target-branch: "release/3.1"
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Monthly interval opens PRs on the first of s Month.
+      interval: "monthly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dotnet/aspnet-build"
+    labels:
+      - area-infrastructure
+      - dependencies
+    target-branch: "release/5.0"
