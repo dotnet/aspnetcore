@@ -42,7 +42,7 @@ namespace RepoTasks
             Buffer.BlockCopy(nameBytes, 0, hashBuffer, 16, nameBytes.Length);
             byte[] hash;
 
-            using (SHA256 sha256 = new SHA256Managed())
+            using (SHA256 sha256 = SHA256.Create())
             {
                 hash = sha256.ComputeHash(hashBuffer);
             }
