@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// This code uses a lot of `.then` instead of `await` and ESLint doesn't like it.
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@microsoft/signalr";
 import { DEFAULT_TIMEOUT_INTERVAL, eachHttpClient, eachTransport, ECHOENDPOINT_URL, ENDPOINT_BASE_URL, HTTPS_ECHOENDPOINT_URL, shouldRunHttpsTests } from "./Common";
 import { TestLogger } from "./TestLogger";
@@ -32,7 +29,7 @@ describe("connection", () => {
 
         connection.onreceive = async (data: any) => {
             if (data === message) {
-                connection.stop();
+                await connection.stop();
             }
         };
 
@@ -62,9 +59,9 @@ describe("connection", () => {
                         transport: transportType,
                     });
 
-                    connection.onreceive = (data: any) => {
+                    connection.onreceive = async (data: any) => {
                         if (data === message) {
-                            connection.stop();
+                            await connection.stop();
                         }
                     };
 
@@ -93,9 +90,9 @@ describe("connection", () => {
                     });
 
                     const closePromise = new PromiseSource();
-                    connection.onreceive = (data: any) => {
+                    connection.onreceive = async (data: any) => {
                         if (data === message) {
-                            connection.stop();
+                            await connection.stop();
                         }
                     };
 
@@ -129,9 +126,9 @@ describe("connection", () => {
                         transport: transportType,
                     });
 
-                    connection.onreceive = (data: any) => {
+                    connection.onreceive = async (data: any) => {
                         if (data === message) {
-                            connection.stop();
+                            await connection.stop();
                         }
                     };
 
@@ -206,7 +203,7 @@ describe("connection", () => {
 
                 connection.onreceive = async (data: any) => {
                     if (data === message) {
-                        connection.stop();
+                        await connection.stop();
                     }
                 };
 

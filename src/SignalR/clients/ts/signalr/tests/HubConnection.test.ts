@@ -1364,7 +1364,6 @@ class TestProtocol implements IHubProtocol {
         return [];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public writeMessage(message: HubMessage): any {
 
     }
@@ -1403,12 +1402,10 @@ class NullSubscriber<T> implements IStreamSubscriber<T> {
     private constructor() {
     }
 
-    /* eslint-disable @typescript-eslint/no-empty-function */
     public next(value: T): void {
     }
     public error(err: any): void {
     }
     public complete(): void {
     }
-    /* eslint-disable @typescript-eslint/no-empty-function */
 }

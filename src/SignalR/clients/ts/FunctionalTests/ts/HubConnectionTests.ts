@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// This code uses a lot of `.then` instead of `await` and ESLint doesn't like it.
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { getUserAgentHeader, Platform } from "@microsoft/signalr/dist/esm/Utils";
@@ -109,10 +106,10 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.on("CustomObject", (customObject) => {
+                hubConnection.on("CustomObject", async (customObject) => {
                     expect(customObject.Name).toBe("test");
                     expect(customObject.Value).toBe(42);
-                    hubConnection.stop();
+                    await hubConnection.stop();
                 });
 
                 hubConnection.onclose((error) => {
@@ -167,7 +164,6 @@ describe("hubConnection", () => {
 
                 await hubConnection.start();
                 const subscription = hubConnection.stream<string>("InfiniteStream").subscribe({
-                    /* eslint-disable @typescript-eslint/no-empty-function */
                     complete() {
                     },
                     async error(err) {
@@ -176,7 +172,6 @@ describe("hubConnection", () => {
                     },
                     next() {
                     },
-                    /* eslint-disable @typescript-eslint/no-empty-function */
                 });
 
                 subscription.dispose();

@@ -35,7 +35,7 @@
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "off", // use the settings from tsconfig for these
     "no-empty-function": "off",
-    "@typescript-eslint/no-empty-function": ["error", { "allow": ["private-constructors", "arrowFunctions"] }],
+    "@typescript-eslint/no-empty-function": "off",
     "no-constant-condition": "off",
 
     // Existing rules

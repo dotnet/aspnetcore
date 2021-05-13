@@ -495,7 +495,6 @@ describe("HttpConnection", () => {
                     sync.continue();
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 public close(): void {
                 }
             };

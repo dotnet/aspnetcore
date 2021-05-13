@@ -53,7 +53,6 @@ export class TestEventSource implements EventSource {
         throw new Error("Method not implemented.");
     }
 
-    /* eslint-disable @typescript-eslint/no-empty-function */
     public static callOnOpen(): void {
     }
 }
