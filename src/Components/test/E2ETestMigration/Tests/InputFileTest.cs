@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected async Task ClearAndType(string selector, string value)
         {
-            await _page.EvalOnSelectorAsync(selector, "e => e.Value = ''");
+            await _page.EvalOnSelectorAsync(selector, "e => e.value = ''");
             var element = await _page.QuerySelectorAsync(selector);
             await element.TypeAsync(value);
         }
