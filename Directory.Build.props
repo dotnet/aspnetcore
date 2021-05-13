@@ -2,8 +2,8 @@
   <Import Project="eng\Common.props" />
 
   <PropertyGroup>
-    <!-- $(RepoRoot) is normally set globally and Arcade overrides it to ensure a trailing slash. -->
-    <RepoRoot Condition=" '$(RepoRoot)' == '' ">$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisFileDirectory)'))</RepoRoot>
+    <!-- Ensure that the $(RepoRoot) property has a trailing slash. -->
+    <RepoRoot>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisFileDirectory)'))</RepoRoot>
 
     <RepositoryUrl>https://github.com/dotnet/aspnetcore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
