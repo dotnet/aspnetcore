@@ -56,10 +56,8 @@
     "@typescript-eslint/naming-convention": [
       "error",
       { "selector": ["class", "interface"], "format": ["PascalCase"] }, //match class-name in tslint
-      { "selector": "variable", "leadingUnderscore": "allow", "format": ["camelCase", "PascalCase", "UPPER_CASE"] }
-
-      // enable after
-      //{ "selector": "memberLike", "modifiers": ["private"], "format": ["camelCase"], "leadingUnderscore": "require" }
+      { "selector": "variable", "leadingUnderscore": "allow", "format": ["camelCase", "PascalCase", "UPPER_CASE"] },
+      { "selector": "memberLike", "modifiers": ["private"], "format": ["camelCase"], "leadingUnderscore": "require" }
     ],
     "spaced-comment": ["error", "always", {
       "line": {

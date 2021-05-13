@@ -31,6 +31,7 @@ export enum HubConnectionState {
 export class HubConnection {
     private readonly _cachedPingMessage: string | ArrayBuffer;
     // Needs to not start with _ for tests
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private readonly connection: IConnection;
     private readonly _logger: ILogger;
     private readonly _reconnectPolicy?: IRetryPolicy;
@@ -648,6 +649,7 @@ export class HubConnection {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
         // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.

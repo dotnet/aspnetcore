@@ -50,6 +50,7 @@ export class HttpConnection implements IConnection {
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
     // Needs to not start with _ to be available for tests
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private transport?: ITransport;
     private _startInternalPromise?: Promise<void>;
     private _stopPromise?: Promise<void>;
