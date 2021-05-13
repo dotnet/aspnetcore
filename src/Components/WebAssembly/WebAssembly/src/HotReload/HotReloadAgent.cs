@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/f67f46eba6d3bcf2b3054381851a975096652454/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
+// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/0304792ef1f53d64182bcfed2ea490e40983a5c5/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
 
 using System;
 using System.Collections.Concurrent;
@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.HotReload
     {
         private readonly Action<string> _log;
         private readonly AssemblyLoadEventHandler _assemblyLoad;
-        private readonly ConcurrentDictionary<Guid, IReadOnlyList<UpdateDelta>> _deltas = new();
+        private readonly ConcurrentDictionary<Guid, List<UpdateDelta>> _deltas = new();
         private readonly ConcurrentDictionary<Assembly, Assembly> _appliedAssemblies = new();
         private volatile UpdateHandlerActions? _handlerActions;
 
@@ -197,6 +197,10 @@ namespace Microsoft.Extensions.HotReload
                     {
                         System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
                     }
+
+                    // Additionally stash the deltas away so it may be applied to assemblies loaded later.
+                    var cachedDeltas = _deltas.GetOrAdd(item.ModuleId, static _ => new());
+                    cachedDeltas.Add(item);
                 }
 
                 handlerActions.ClearCache.ForEach(a => a(updatedTypes));
