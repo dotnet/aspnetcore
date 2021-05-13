@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         internal bool ForwardWindowsAuthentication { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the maximum unconsumed incoming bytes the server will buffer for incoming request body.
+        /// </summary>
+        internal int MaxRequestBodyBufferSize { get; set; } = 1024 * 1024; // Matches kestrel (sorta)
+
         internal string[] ServerAddresses { get; set; } = default!; // Set by configuration.
 
         // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
