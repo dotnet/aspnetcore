@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.TestHost
             _requestPipe = new Pipe();
 
             var responsePipe = new Pipe();
-            _responseReaderStream = new ResponseBodyReaderStream(responsePipe, ClientInitiatedAbort, () => _responseReadCompleteCallback?.Invoke(_httpContext));
+            _responseReaderStream = new ResponseBodyReaderStream(responsePipe, ClientInitiatedAbort, ResponseBodyReadComplete);
             _responsePipeWriter = new ResponseBodyPipeWriter(responsePipe, ReturnResponseMessageAsync);
             _responseFeature.Body = new ResponseBodyWriterStream(_responsePipeWriter, () => AllowSynchronousIO);
             _responseFeature.BodyWriter = _responsePipeWriter;
@@ -178,6 +178,11 @@ namespace Microsoft.AspNetCore.TestHost
             // Cancel any pending request async activity when the client aborts a duplex
             // streaming scenario by disposing the HttpResponseMessage.
             CancelRequestBody();
+        }
+
+        private void ResponseBodyReadComplete()
+        {
+            _responseReadCompleteCallback?.Invoke(_httpContext);
         }
 
         private bool RequestBodyReadInProgress()
