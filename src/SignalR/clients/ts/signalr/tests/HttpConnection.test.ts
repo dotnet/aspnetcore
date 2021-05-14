@@ -17,7 +17,7 @@ import { TestHttpClient } from "./TestHttpClient";
 import { TestTransport } from "./TestTransport";
 import { TestEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
-import { HeaderNames } from "signalr/src/HeaderNames";
+import { HeaderNames } from "../src/HeaderNames";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
