@@ -4,126 +4,145 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-// TODO: Microsft.Extensions.Configuration API Proposal
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Configuration is mutable configuration object. It is both a configuration builder and an IConfigurationRoot. 
+    /// Configuration is mutable configuration object. It is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
     /// As sources are added, it updates its current view of configuration. Once Build is called, configuration is frozen.
     /// </summary>
-    public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder
+    public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder, IDisposable
     {
-        private readonly ConfigurationBuilder _builder = new();
-        private IConfigurationRoot _configuration;
+        private readonly ConfigurationSources _sources;
+        private ConfigurationRoot _configurationRoot;
+
+        private ConfigurationReloadToken _changeToken = new();
+        private IDisposable? _changeTokenRegistration;
 
         /// <summary>
-        /// Gets or sets a configuration value.
-        /// </summary>
-        /// <param name="key">The configuration key.</param>
-        /// <returns>The configuration value.</returns>
-        public string this[string key] { get => _configuration[key]; set => _configuration[key] = value; }
-
-        /// <summary>
-        /// Gets a configuration sub-section with the specified key.
-        /// </summary>
-        /// <param name="key">The key of the configuration section.</param>
-        /// <returns>The <see cref="IConfigurationSection"/>.</returns>
-        /// <remarks>
-        ///     This method will never return <c>null</c>. If no matching sub-section is found with the specified key,
-        ///     an empty <see cref="IConfigurationSection"/> will be returned.
-        /// </remarks>
-        public IConfigurationSection GetSection(string key)
-        {
-            return _configuration.GetSection(key);
-        }
-
-        /// <summary>
-        /// Gets the immediate descendant configuration sub-sections.
-        /// </summary>
-        /// <returns>The configuration sub-sections.</returns>
-        public IEnumerable<IConfigurationSection> GetChildren() => _configuration.GetChildren();
-
-        IDictionary<string, object> IConfigurationBuilder.Properties => _builder.Properties;
-
-        // TODO: Handle modifications to Sources and keep the configuration root in sync
-        IList<IConfigurationSource> IConfigurationBuilder.Sources => Sources;
-
-        internal IList<IConfigurationSource> Sources { get; }
-
-        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => _configuration.Providers;
-
-        /// <summary>
-        /// Creates a new <see cref="Configuration"/>.
+        /// Creates an empty  mutable configuration object that is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
         /// </summary>
         public Configuration()
         {
-            _configuration = _builder.Build();
+            _sources = new ConfigurationSources(this);
 
-            var sources = new ConfigurationSources(_builder.Sources, UpdateConfigurationRoot);
+            // Make sure there's some default storage since there are no default providers.
+            this.AddInMemoryCollection();
 
-            Sources = sources;
+            Update();
         }
 
-        internal void ChangeBasePath(string path)
+        /// <summary>
+        /// Automatically update the <see cref="IConfiguration"/> on <see cref="IConfigurationBuilder"/> changes.
+        /// If <see langword="false"/>, <see cref="Update()"/> will manually update the <see cref="IConfiguration"/>.
+        /// </summary>
+        internal bool AutoUpdate { get; set; } = true;
+
+        /// <inheritdoc />
+        public string this[string key] { get => _configurationRoot[key]; set => _configurationRoot[key] = value; }
+
+        /// <inheritdoc />
+        public IConfigurationSection GetSection(string key) => new ConfigurationSection(this, key);
+
+        /// <inheritdoc />
+        public IEnumerable<IConfigurationSection> GetChildren() => GetChildrenImplementation(null);
+
+        IDictionary<string, object> IConfigurationBuilder.Properties { get; } = new Dictionary<string, object>();
+
+        IList<IConfigurationSource> IConfigurationBuilder.Sources => _sources;
+
+        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => _configurationRoot.Providers;
+
+        /// <summary>
+        /// Manually update the <see cref="IConfiguration"/> to reflect <see cref="IConfigurationBuilder"/> changes.
+        /// It is not necessary to call this if <see cref="AutoUpdate"/> is <see langword="true"/>.
+        /// </summary>
+        [MemberNotNull(nameof(_configurationRoot))]
+        internal void Update()
         {
-            this.SetBasePath(path);
-            UpdateConfigurationRoot();
+            var newConfiguration = BuildConfigurationRoot();
+            var prevConfiguration = _configurationRoot;
+
+            _configurationRoot = newConfiguration;
+
+            _changeTokenRegistration?.Dispose();
+            (prevConfiguration as IDisposable)?.Dispose();
+
+            _changeTokenRegistration = ChangeToken.OnChange(() => newConfiguration.GetReloadToken(), RaiseChanged);
+            RaiseChanged();
         }
 
-        internal void ChangeFileProvider(IFileProvider fileProvider)
+        /// <inheritdoc />
+        void IDisposable.Dispose()
         {
-            this.SetFileProvider(fileProvider);
-            UpdateConfigurationRoot();
-        }
-
-        private void UpdateConfigurationRoot()
-        {
-            var current = _configuration;
-            if (current is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-            _configuration = _builder.Build();
+            _changeTokenRegistration?.Dispose();
+            _configurationRoot?.Dispose();
         }
 
         IConfigurationBuilder IConfigurationBuilder.Add(IConfigurationSource source)
         {
-            Sources.Add(source);
+            _sources.Add(source ?? throw new ArgumentNullException(nameof(source)));
             return this;
         }
 
-        IConfigurationRoot IConfigurationBuilder.Build()
+        IConfigurationRoot IConfigurationBuilder.Build() => BuildConfigurationRoot();
+
+        IChangeToken IConfiguration.GetReloadToken() => _changeToken;
+
+        void IConfigurationRoot.Reload() => _configurationRoot.Reload();
+
+        private void NotifySourcesChanged()
         {
-            // No more modification is expected after this final build
-            UpdateConfigurationRoot();
-            return this;
+            if (AutoUpdate)
+            {
+                Update();
+            }
+        }
+        private ConfigurationRoot BuildConfigurationRoot()
+        {
+            var providers = new List<IConfigurationProvider>();
+            foreach (var source in _sources)
+            {
+                var provider = source.Build(this);
+                providers.Add(provider);
+            }
+            return new ConfigurationRoot(providers);
         }
 
-        IChangeToken IConfiguration.GetReloadToken()
+        private void RaiseChanged()
         {
-            // REVIEW: Is this correct?
-            return _configuration.GetReloadToken();
+            var previousToken = Interlocked.Exchange(ref _changeToken, new ConfigurationReloadToken());
+            previousToken.OnReload();
         }
 
-        void IConfigurationRoot.Reload()
+        /// <summary>
+        /// Gets the immediate children sub-sections of configuration root based on key.
+        /// </summary>
+        /// <param name="path">Key of a section of which children to retrieve.</param>
+        /// <returns>Immediate children sub-sections of section specified by key.</returns>
+        private IEnumerable<IConfigurationSection> GetChildrenImplementation(string? path)
         {
-            _configuration.Reload();
+            // From https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/Microsoft.Extensions.Configuration/src/InternalConfigurationRootExtensions.cs
+            return _configurationRoot.Providers
+                .Aggregate(Enumerable.Empty<string>(),
+                    (seed, source) => source.GetChildKeys(seed, path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(key => _configurationRoot.GetSection(path == null ? key : ConfigurationPath.Combine(path, key)));
         }
 
-        // On source modifications, we rebuild configuration
         private class ConfigurationSources : IList<IConfigurationSource>
         {
-            private readonly IList<IConfigurationSource> _sources;
-            private readonly Action _sourcesModified;
+            private readonly List<IConfigurationSource> _sources = new();
+            private readonly Configuration _config;
 
-            public ConfigurationSources(IList<IConfigurationSource> sources, Action sourcesModified)
+            public ConfigurationSources(Configuration config)
             {
-                _sources = sources;
-                _sourcesModified = sourcesModified;
+                _config = config;
             }
 
             public IConfigurationSource this[int index]
@@ -132,24 +151,24 @@ namespace Microsoft.AspNetCore.Builder
                 set
                 {
                     _sources[index] = value;
-                    _sourcesModified();
+                    _config.NotifySourcesChanged();
                 }
             }
 
             public int Count => _sources.Count;
 
-            public bool IsReadOnly => _sources.IsReadOnly;
+            public bool IsReadOnly => false;
 
             public void Add(IConfigurationSource item)
             {
                 _sources.Add(item);
-                _sourcesModified();
+                _config.NotifySourcesChanged();
             }
 
             public void Clear()
             {
                 _sources.Clear();
-                _sourcesModified();
+                _config.NotifySourcesChanged();
             }
 
             public bool Contains(IConfigurationSource item)
@@ -175,20 +194,20 @@ namespace Microsoft.AspNetCore.Builder
             public void Insert(int index, IConfigurationSource item)
             {
                 _sources.Insert(index, item);
-                _sourcesModified();
+                _config.NotifySourcesChanged();
             }
 
             public bool Remove(IConfigurationSource item)
             {
                 var removed = _sources.Remove(item);
-                _sourcesModified();
+                _config.NotifySourcesChanged();
                 return removed;
             }
 
             public void RemoveAt(int index)
             {
                 _sources.RemoveAt(index);
-                _sourcesModified();
+                _config.NotifySourcesChanged();
             }
 
             IEnumerator IEnumerable.GetEnumerator()

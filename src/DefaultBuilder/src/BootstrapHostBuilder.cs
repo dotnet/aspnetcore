@@ -13,21 +13,27 @@ namespace Microsoft.AspNetCore.Hosting
     // This exists solely to bootstrap the configuration
     internal class BootstrapHostBuilder : IHostBuilder
     {
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
-        private readonly HostBuilderContext _context;
         private readonly Configuration _configuration;
         private readonly WebHostEnvironment _environment;
+
+        private readonly HostBuilderContext _hostContext;
+
+        private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
+        private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
 
         public BootstrapHostBuilder(Configuration configuration, WebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
             _environment = webHostEnvironment;
-            _context = new HostBuilderContext(Properties)
+
+            _hostContext = new HostBuilderContext(Properties)
             {
                 Configuration = configuration,
                 HostingEnvironment = webHostEnvironment
             };
         }
+
+        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
         public IHost Build()
         {
@@ -37,9 +43,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
-            configureDelegate(_context, _configuration);
-            _environment.ApplyConfigurationSettings(_configuration);
-            _configuration.ChangeBasePath(_environment.ContentRootPath);
+            _configureAppActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
             return this;
         }
 
@@ -52,10 +56,13 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
-            configureDelegate(_configuration);
-            _environment.ApplyConfigurationSettings(_configuration);
-            _configuration.ChangeBasePath(_environment.ContentRootPath);
+            _configureHostActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
             return this;
+        }
+
+        public string? GetSetting(string key)
+        {
+            return _configuration[key];
         }
 
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
@@ -67,7 +74,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
         {
-            // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that chould change in the future.
+            // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
             // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
             return this;
         }
@@ -77,6 +84,27 @@ namespace Microsoft.AspNetCore.Hosting
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider
             // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
             return this;
+        }
+
+        internal void RunConfigurationCallbacks()
+        {
+            foreach (var configureHostAction in _configureHostActions)
+            {
+                configureHostAction(_configuration);
+            }
+
+            // Configuration doesn't auto-update during the bootstrap phase to reduce I/O,
+            // but we do need to update between host and app configuration so the right environment is used.
+            _configuration.Update();
+            _environment.ApplyConfigurationSettings(_configuration);
+
+            foreach (var configureAppAction in _configureAppActions)
+            {
+                configureAppAction(_hostContext, _configuration);
+            }
+
+            _configuration.Update();
+            _environment.ApplyConfigurationSettings(_configuration);
         }
     }
 }
