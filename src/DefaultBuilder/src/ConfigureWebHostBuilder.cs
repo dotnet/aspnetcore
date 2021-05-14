@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Builder
                 _environment.ContentRootPath = value;
                 _environment.ResolveFileProviders(_configuration);
 
-                _configuration.ChangeBasePath(value);
+                //_configuration.ChangeBasePath(value);
             }
             else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase))
             {
