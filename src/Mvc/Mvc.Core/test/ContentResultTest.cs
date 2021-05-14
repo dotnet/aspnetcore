@@ -348,7 +348,6 @@ namespace Microsoft.AspNetCore.Mvc
                 new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
                 new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<IHttpResponseStreamWriterFactory>(new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object));
             return services;
         }
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -81,9 +82,8 @@ namespace Microsoft.AspNetCore.Mvc
             if (Content != null)
             {
                 response.ContentLength = resolvedContentTypeEncoding.GetByteCount(Content);
-                var httpResponseStreamWriterFactory = httpContext.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
 
-                await using (var textWriter = httpResponseStreamWriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+                await using (var textWriter = new HttpResponseStreamWriter(response.Body, resolvedContentTypeEncoding))
                 {
                     await textWriter.WriteAsync(Content);
 
