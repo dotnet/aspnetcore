@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Hosting
     // This exists solely to bootstrap the configuration
     internal class BootstrapHostBuilder : IHostBuilder
     {
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
         private readonly HostBuilderContext _context;
         private readonly Configuration _configuration;
         private readonly WebHostEnvironment _environment;
@@ -28,6 +27,8 @@ namespace Microsoft.AspNetCore.Hosting
                 HostingEnvironment = webHostEnvironment
             };
         }
+
+        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
         public IHost Build()
         {

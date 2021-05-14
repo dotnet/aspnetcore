@@ -28,19 +28,22 @@ namespace Microsoft.AspNetCore.Builder
             // HACK: MVC and Identity do this horrible thing to get the hosting environment as an instance
             // from the service collection before it is built. That needs to be fixed...
             Environment = _environment = new WebHostEnvironment(callingAssembly);
+
             Services.AddSingleton(Environment);
 
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
             // the correct defaults.
             var bootstrapBuilder = new BootstrapHostBuilder(Configuration, _environment);
-            bootstrapBuilder.ConfigureDefaults(args);
             bootstrapBuilder.ConfigureWebHostDefaults(configure: _ => { });
+            bootstrapBuilder.ConfigureDefaults(args);
 
             Configuration.SetBasePath(_environment.ContentRootPath);
             Logging = new LoggingBuilder(Services);
             WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
             Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services);
+
+            Services.AddSingleton<IConfiguration>(Configuration);
 
             _deferredHostBuilder.ConfigureDefaults(args);
         }
