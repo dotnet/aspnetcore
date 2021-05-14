@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc
             MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize;
 
         [Fact]
-        public async Task ContentResult_Response_NullContent_SetsContentTypeAndEncoding()
+        public async Task ContentResult_ExecuteResultAsync_Response_NullContent_SetsContentTypeAndEncoding()
         {
             // Arrange
             var contentResult = new ContentResult
@@ -40,6 +40,28 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             await contentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            MediaTypeAssert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task ContentResult_ExecuteAsync_Response_NullContent_SetsContentTypeAndEncoding()
+        {
+            // Arrange
+            var contentResult = new ContentResult
+            {
+                Content = null,
+                ContentType = new MediaTypeHeaderValue("text/plain")
+                {
+                    Encoding = Encoding.Unicode
+                }.ToString()
+            };
+            var httpContext = GetHttpContext();
+            var actionContext = GetActionContext(httpContext);
+
+            // Act
+            await ((IResult)contentResult).ExecuteAsync(httpContext);
 
             // Assert
             MediaTypeAssert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
@@ -135,6 +157,36 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             await contentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var finalResponseContentType = httpContext.Response.ContentType;
+            Assert.Equal(expectedContentType, finalResponseContentType);
+            Assert.Equal(expectedContentData, memoryStream.ToArray());
+            Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
+        }
+
+        [Theory]
+        [MemberData(nameof(ContentResultContentTypeData))]
+        public async Task ContentResult_ExecuteAsync_SetContentTypeAndEncoding_OnResponse(
+           MediaTypeHeaderValue contentType,
+           string content,
+           string responseContentType,
+           string expectedContentType,
+           byte[] expectedContentData)
+        {
+            // Arrange
+            var contentResult = new ContentResult
+            {
+                Content = content,
+                ContentType = contentType?.ToString()
+            };
+            var httpContext = GetHttpContext();
+            var memoryStream = new MemoryStream();
+            httpContext.Response.Body = memoryStream;
+            httpContext.Response.ContentType = responseContentType;
+
+            // Act
+            await ((IResult)contentResult).ExecuteAsync(httpContext);
 
             // Assert
             var finalResponseContentType = httpContext.Response.ContentType;
@@ -246,6 +298,31 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(content, actualContent);
         }
 
+        [Theory]
+        [MemberData(nameof(ContentResult_WritesDataCorrectly_ForDifferentContentSizesData))]
+        public async Task ContentResult_ExecuteAsync_WritesDataCorrectly_ForDifferentContentSizes(string content, string contentType)
+        {
+            // Arrange
+            var contentResult = new ContentResult
+            {
+                Content = content,
+                ContentType = contentType
+            };
+            var httpContext = GetHttpContext();
+            var memoryStream = new MemoryStream();
+            httpContext.Response.Body = memoryStream;
+            var encoding = MediaTypeHeaderValue.Parse(contentType).Encoding;
+
+            // Act
+            await ((IResult)contentResult).ExecuteAsync(httpContext);
+
+            // Assert
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(memoryStream, encoding);
+            var actualContent = await streamReader.ReadToEndAsync();
+            Assert.Equal(content, actualContent);
+        }
+
         private static ActionContext GetActionContext(HttpContext httpContext)
         {
             var routeData = new RouteData();
@@ -270,6 +347,8 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<IActionResultExecutor<ContentResult>>(new ContentResultExecutor(
                 new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
                 new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<IHttpResponseStreamWriterFactory>(new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object));
             return services;
         }
 
