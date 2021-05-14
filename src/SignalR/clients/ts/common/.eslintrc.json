@@ -1,14 +1,15 @@
-module.exports = {
-  root: true,
-  parser: '@typescript-eslint/parser',
-  plugins: [
-    '@typescript-eslint',
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "jsdoc"
   ],
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
-  rules: {
+  "rules": {
     "@typescript-eslint/ban-types": [
       "error",
       {
@@ -36,6 +37,7 @@ module.exports = {
     "@typescript-eslint/no-empty-function": ["error", { "allow": ["private-constructors", "arrowFunctions"] }],
     "no-constant-condition": "off",
 
+    // Existing rules
     "max-len": ["error", { "code": 300 }],
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/interface-name-prefix": "off",
@@ -43,9 +45,34 @@ module.exports = {
     "max-classes-per-file": "off",
     "@typescript-eslint/no-floating-promises": "error",
     "no-empty": "off",
+    "no-bitwise": "off",
     "no-console": "off",
     "prefer-const": ["error", {
       "ignoreReadBeforeAssign": false
-    }]
+    }],
+
+    // rules on by default in TSLint and not on in ESLint
+    "@typescript-eslint/array-type": ["error", { "default": "array" }],
+    "@typescript-eslint/prefer-function-type": "warn",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      { "selector": ["class", "interface"], "format": ["PascalCase"] }, //match class-name in tslint
+      { "selector": "variable", "leadingUnderscore": "allow", "format": ["camelCase", "PascalCase", "UPPER_CASE"] }
+
+      // enable after
+      //{ "selector": "memberLike", "modifiers": ["private"], "format": ["camelCase"], "leadingUnderscore": "require" }
+    ],
+    "spaced-comment": ["error", "always", {
+      "line": {
+          "markers": ["/"],
+          "exceptions": ["-", "+"]
+      },
+      "block": {
+          "markers": ["!"],
+          "exceptions": ["*"],
+          "balanced": true
+      }
+    }],
+    "guard-for-in": "error"
   }
-};
+}

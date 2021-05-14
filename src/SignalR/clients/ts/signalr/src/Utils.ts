@@ -233,6 +233,7 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     return userAgent;
 }
 
+// eslint-disable-next-line spaced-comment
  /*#__PURE__*/ function getOsName(): string {
     if (Platform.isNode) {
         switch (process.platform) {
@@ -250,6 +251,7 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     }
 }
 
+// eslint-disable-next-line spaced-comment
  /*#__PURE__*/ function getRuntimeVersion(): string | undefined {
     if (Platform.isNode) {
         return process.versions.node;
