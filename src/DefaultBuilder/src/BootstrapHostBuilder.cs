@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             configureDelegate(_context, _configuration);
             _environment.ApplyConfigurationSettings(_configuration);
-            _configuration.ChangeBasePath(_environment.ContentRootPath);
+            //_configuration.ChangeBasePath(_environment.ContentRootPath);
             return this;
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             configureDelegate(_configuration);
             _environment.ApplyConfigurationSettings(_configuration);
-            _configuration.ChangeBasePath(_environment.ContentRootPath);
+            //_configuration.ChangeBasePath(_environment.ContentRootPath);
             return this;
         }
 

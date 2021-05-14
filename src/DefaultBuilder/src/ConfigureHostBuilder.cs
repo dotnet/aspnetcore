@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Builder
             configureDelegate(_hostConfiguration);
 
             _environment.ApplyConfigurationSettings(_hostConfiguration.Build());
-            Configuration.ChangeFileProvider(_environment.ContentRootFileProvider);
+            //Configuration.ChangeFileProvider(_environment.ContentRootFileProvider);
 
             return this;
         }
