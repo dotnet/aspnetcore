@@ -167,6 +167,10 @@ namespace Microsoft.AspNetCore.Builder
 
             _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
             {
+                // All the sources in builder.Sources should be in Configuration.Sources
+                // already thanks to the BootstrapHostBuilder.
+                builder.Sources.Clear();
+
                 foreach (var s in Configuration.Sources)
                 {
                     builder.Sources.Add(s);
