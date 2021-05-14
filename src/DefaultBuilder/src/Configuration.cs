@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Builder
 
         IDictionary<string, object> IConfigurationBuilder.Properties => _builder.Properties;
 
-        // TODO: Handle modifications to Sources and keep the configuration root in sync
         IList<IConfigurationSource> IConfigurationBuilder.Sources => Sources;
 
         internal IList<IConfigurationSource> Sources { get; }

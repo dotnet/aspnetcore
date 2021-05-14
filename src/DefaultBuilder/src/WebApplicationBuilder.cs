@@ -61,13 +61,13 @@ namespace Microsoft.AspNetCore.Builder
         public Configuration Configuration { get; } = new();
 
         /// <summary>
-        /// A collection of logging providers for the applicaiton to compose. This is useful for adding new logging providers.
+        /// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
         /// </summary>
         public ILoggingBuilder Logging { get; }
 
         /// <summary>
         /// An <see cref="IHostBuilder"/> for configuring server specific properties, but not building.
-        /// To build after configuruation, call <see cref="Build"/>.
+        /// To build after configuration, call <see cref="Build"/>.
         /// </summary>
         public ConfigureWebHostBuilder WebHost { get; }
 
