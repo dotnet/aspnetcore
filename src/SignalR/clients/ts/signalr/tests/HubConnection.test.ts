@@ -180,7 +180,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -208,7 +207,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", null)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -238,7 +236,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.invoke("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 

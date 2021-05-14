@@ -14,7 +14,6 @@ export class TestEventSource implements EventSource {
     public eventSourceInitDict?: EventSourceInit;
     public withCredentials: boolean = false;
 
-    // tslint:disable-next-line:variable-name
     private _onopen?: (evt: Event) => any;
     public openSet: PromiseSource = new PromiseSource();
     public set onopen(value: (evt: Event) => any) {
@@ -67,6 +66,7 @@ export class TestMessageEvent implements MessageEvent {
     }
     public data: any;
     public readonly origin!: string;
+    // eslint-disable-next-line @typescript-eslint/array-type
     public readonly ports!: ReadonlyArray<MessagePort>;
     public readonly source!: Window;
     public initMessageEvent(type: string, bubbles: boolean, cancelable: boolean, data: any, origin: string, lastEventId: string, source: Window): void {

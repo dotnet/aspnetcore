@@ -24,7 +24,6 @@ export class HandshakeProtocol {
     }
 
     public parseHandshakeResponse(data: any): [any, HandshakeResponseMessage] {
-        let responseMessage: HandshakeResponseMessage;
         let messageData: string;
         let remainingData: any;
 
@@ -61,7 +60,7 @@ export class HandshakeProtocol {
         if (response.type) {
             throw new Error("Expected a handshake response from the server.");
         }
-        responseMessage = response;
+        const responseMessage: HandshakeResponseMessage = response;
 
         // multiple messages could have arrived with handshake
         // return additional data to be parsed as usual, or null if all parsed

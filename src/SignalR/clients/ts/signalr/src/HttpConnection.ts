@@ -3,6 +3,7 @@
 
 import { DefaultHttpClient } from "./DefaultHttpClient";
 import { HttpError } from "./Errors";
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
@@ -50,6 +51,7 @@ export class HttpConnection implements IConnection {
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
     // Needs to not start with _ to be available for tests
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private transport?: ITransport;
     private _startInternalPromise?: Promise<void>;
     private _stopPromise?: Promise<void>;
@@ -307,7 +309,7 @@ export class HttpConnection implements IConnection {
         if (this._accessTokenFactory) {
             const token = await this._accessTokenFactory();
             if (token) {
-                headers[`Authorization`] = `Bearer ${token}`;
+                headers[HeaderNames.Authorization] = `Bearer ${token}`;
             }
         }
 

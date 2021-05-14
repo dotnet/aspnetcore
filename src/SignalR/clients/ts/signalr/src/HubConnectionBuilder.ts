@@ -13,7 +13,6 @@ import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
 import { Arg, ConsoleLogger } from "./Utils";
 
-// tslint:disable:object-literal-sort-keys
 const LogLevelNameMapping = {
     trace: LogLevel.Trace,
     debug: LogLevel.Debug,

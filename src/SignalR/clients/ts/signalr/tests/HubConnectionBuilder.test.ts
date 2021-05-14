@@ -30,7 +30,6 @@ const commonHttpOptions: IHttpConnectionOptions = {
 };
 
 // We use a different mapping table here to help catch any unintentional breaking changes.
-// tslint:disable:object-literal-sort-keys
 const ExpectedLogLevelMappings = {
     trace: LogLevel.Trace,
     debug: LogLevel.Debug,

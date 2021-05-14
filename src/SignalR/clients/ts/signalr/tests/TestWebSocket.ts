@@ -19,7 +19,6 @@ export class TestWebSocket {
     public static webSocket: TestWebSocket;
     public receivedData: (string | ArrayBuffer | Blob | ArrayBufferView)[];
 
-    // tslint:disable-next-line:variable-name
     private _onopen?: (this: WebSocket, evt: Event) => any;
     public openSet: PromiseSource = new PromiseSource();
     public set onopen(value: (this: WebSocket, evt: Event) => any) {
@@ -34,7 +33,6 @@ export class TestWebSocket {
         };
     }
 
-    // tslint:disable-next-line:variable-name
     private _onclose?: (this: WebSocket, evt: Event) => any;
     public closeSet: PromiseSource = new PromiseSource();
     public set onclose(value: (this: WebSocket, evt: Event) => any) {
@@ -68,12 +66,12 @@ export class TestWebSocket {
 
     public addEventListener<K extends "close" | "error" | "message" | "open">(type: K, listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): void;
     public addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
-    public addEventListener(type: any, listener: any, options?: any) {
+    public addEventListener(type: any, listener: any, options?: any): void {
         throw new Error("Method not implemented.");
     }
     public removeEventListener<K extends "close" | "error" | "message" | "open">(type: K, listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any, options?: boolean | EventListenerOptions | undefined): void;
     public removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions | undefined): void;
-    public removeEventListener(type: any, listener: any, options?: any) {
+    public removeEventListener(type: any, listener: any, options?: any): void {
         throw new Error("Method not implemented.");
     }
     public dispatchEvent(evt: Event): boolean {
