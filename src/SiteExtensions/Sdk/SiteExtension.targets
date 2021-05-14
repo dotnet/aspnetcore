@@ -41,7 +41,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <_TemplateFiles Include="$(MSBuildThisFileDirectory)\HostingStartup\*.cs*" />
+      <_TemplateFiles Include="$(MSBuildThisFileDirectory)HostingStartup\*.cs*" />
       <!--
         Always use Major.Minor.0 so that if we have to produce a new SiteExtension during a patch build it will still work for non-patch runtimes.
         i.e. 3.0.0 dotnet will search for 3.0.0 and below and wouldn't find a 3.0.1 folder path

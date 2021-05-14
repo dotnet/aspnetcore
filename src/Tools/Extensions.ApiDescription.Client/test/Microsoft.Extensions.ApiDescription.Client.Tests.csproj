@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="$(MSBuildProjectDirectory)\..\src\build\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="build" />
-    <Content Include="$(MSBuildProjectDirectory)\..\src\buildMultiTargeting\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="buildMultiTargeting" />
+    <Content Include="$(MSBuildThisFileDirectory)..\src\build\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="build" />
+    <Content Include="$(MSBuildThisFileDirectory)..\src\buildMultiTargeting\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="buildMultiTargeting" />
     <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
 
     <Reference Include="Microsoft.Extensions.ApiDescription.Client" />
