@@ -86,7 +86,6 @@
     "no-trailing-spaces": "error",
     "no-undef-init": "error",
     "no-unsafe-finally": "error",
-
     "no-unused-expressions": "off",
     "@typescript-eslint/no-unused-expressions": "error",
     "no-var": "error",

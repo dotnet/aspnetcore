@@ -240,7 +240,7 @@ describe("HttpConnection", () => {
         "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.",
         "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: " +
         "Error: WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled. ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
-        /* eslint-disable max-len */
+        /* eslint-enable max-len */
     });
 
     it("negotiate called again when transport fails to start and falls back", async () => {
