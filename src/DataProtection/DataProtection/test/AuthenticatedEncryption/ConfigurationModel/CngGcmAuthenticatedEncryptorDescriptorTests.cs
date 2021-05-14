@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             {
                 EncryptionAlgorithm = "enc-alg",
                 EncryptionAlgorithmKeySize = 2048
-            }, masterKey);
+            }, masterKey.ToSecret());
 
             // Act
             var retVal = descriptor.ExportToXml();
