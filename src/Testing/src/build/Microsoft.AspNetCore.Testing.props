@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <RepoRoot
-        Condition=" '$(RepoRoot)' == '' OR !HasTrailingSlash('$(RepoRoot)') "><RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..', '..'))</RepoRoot></RepoRoot>
+        Condition=" '$(RepoRoot)' == '' OR !HasTrailingSlash('$(RepoRoot)') ">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..', '..'))</RepoRoot>
 
     <!-- Priority: LoggingTestingDisableFileLogging > LoggingTestingFileLoggingDirectory > ASPNETCORE_TEST_LOG_DIR > Default location -->
     <LoggingTestingFileLoggingDirectory
