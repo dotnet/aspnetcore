@@ -112,7 +112,7 @@ describe("hubConnection", () => {
                 hubConnection.on("CustomObject", (customObject) => {
                     expect(customObject.Name).toBe("test");
                     expect(customObject.Value).toBe(42);
-                    hubConnection.stop();
+                    void hubConnection.stop();
                 });
 
                 hubConnection.onclose((error) => {
@@ -167,6 +167,7 @@ describe("hubConnection", () => {
 
                 await hubConnection.start();
                 const subscription = hubConnection.stream<string>("InfiniteStream").subscribe({
+                    /* eslint-disable @typescript-eslint/no-empty-function */
                     complete() {
                     },
                     async error(err) {
@@ -175,6 +176,7 @@ describe("hubConnection", () => {
                     },
                     next() {
                     },
+                    /* eslint-disable @typescript-eslint/no-empty-function */
                 });
 
                 subscription.dispose();
@@ -1056,6 +1058,7 @@ describe("hubConnection", () => {
     function getJwtToken(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const httpClient = new DefaultHttpClient(NullLogger.instance);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             httpClient.get(url).then((response) => {
                 if (response.statusCode >= 200 && response.statusCode < 300) {
                     resolve(response.content as string);

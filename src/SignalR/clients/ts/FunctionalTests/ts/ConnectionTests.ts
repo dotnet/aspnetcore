@@ -32,7 +32,7 @@ describe("connection", () => {
 
         connection.onreceive = async (data: any) => {
             if (data === message) {
-                connection.stop();
+                void connection.stop();
             }
         };
 
@@ -64,7 +64,7 @@ describe("connection", () => {
 
                     connection.onreceive = (data: any) => {
                         if (data === message) {
-                            connection.stop();
+                            void connection.stop();
                         }
                     };
 
@@ -95,7 +95,7 @@ describe("connection", () => {
                     const closePromise = new PromiseSource();
                     connection.onreceive = (data: any) => {
                         if (data === message) {
-                            connection.stop();
+                            void connection.stop();
                         }
                     };
 
@@ -104,7 +104,7 @@ describe("connection", () => {
                         // Search the logs for the message content
                         expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
                         // @ts-ignore: We don't use the _ or __ parameters intentionally.
-                        for (const [_, __, logMessage] of TestLogger.instance.currentLog.messages) {
+                        for (const [_1, _2, logMessage] of TestLogger.instance.currentLog.messages) {
                             expect(logMessage).not.toContain(message);
                         }
                         closePromise.resolve();
@@ -131,7 +131,7 @@ describe("connection", () => {
 
                     connection.onreceive = (data: any) => {
                         if (data === message) {
-                            connection.stop();
+                            void connection.stop();
                         }
                     };
 
@@ -142,7 +142,7 @@ describe("connection", () => {
                         let matches = 0;
                         expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
                         // @ts-ignore: We don't use the _ or __ parameters intentionally.
-                        for (const [_, __, logMessage] of TestLogger.instance.currentLog.messages) {
+                        for (const [_1, _2, logMessage] of TestLogger.instance.currentLog.messages) {
                             if (logMessage.indexOf(message) !== -1) {
                                 matches += 1;
                             }
@@ -206,7 +206,7 @@ describe("connection", () => {
 
                 connection.onreceive = async (data: any) => {
                     if (data === message) {
-                        connection.stop();
+                        void connection.stop();
                     }
                 };
 
