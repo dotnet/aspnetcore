@@ -3,6 +3,7 @@
 
 import { AbortController } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
@@ -111,14 +112,11 @@ export class LongPollingTransport implements ITransport {
             request.headers = {};
         }
         if (token) {
-            // eslint-disable-next-line @typescript-eslint/dot-notation
-            request.headers["Authorization"] = `Bearer ${token}`;
+            request.headers[HeaderNames.Authorization] = `Bearer ${token}`;
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/dot-notation
-        if (request.headers["Authorization"]) {
-            // eslint-disable-next-line @typescript-eslint/dot-notation
-            delete request.headers["Authorization"];
+        if (request.headers[HeaderNames.Authorization]) {
+            delete request.headers[HeaderNames.Authorization];
         }
     }
 

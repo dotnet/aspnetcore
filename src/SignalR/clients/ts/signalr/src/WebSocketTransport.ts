@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
@@ -59,8 +60,7 @@ export class WebSocketTransport implements ITransport {
                 headers[name] = value;
 
                 if (cookies) {
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
-                    headers[`Cookie`] = `${cookies}`;
+                    headers[HeaderNames.Cookie] = `${cookies}`;
                 }
 
                 // Only pass headers when in non-browser environments

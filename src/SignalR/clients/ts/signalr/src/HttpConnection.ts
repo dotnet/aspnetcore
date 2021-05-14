@@ -3,6 +3,7 @@
 
 import { DefaultHttpClient } from "./DefaultHttpClient";
 import { HttpError } from "./Errors";
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
@@ -308,8 +309,7 @@ export class HttpConnection implements IConnection {
         if (this._accessTokenFactory) {
             const token = await this._accessTokenFactory();
             if (token) {
-                // eslint-disable-next-line @typescript-eslint/dot-notation
-                headers["Authorization"] = `Bearer ${token}`;
+                headers[HeaderNames.Authorization] = `Bearer ${token}`;
             }
         }
 

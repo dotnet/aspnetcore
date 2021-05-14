@@ -17,6 +17,7 @@ import { TestHttpClient } from "./TestHttpClient";
 import { TestTransport } from "./TestTransport";
 import { TestEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
+import { HeaderNames } from "signalr/src/HeaderNames";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
@@ -753,8 +754,7 @@ describe("HttpConnection", () => {
                     .on("POST", () => ({ connectionId: "42", availableTransports: [availableTransport] }))
                     .on("GET", (r) => {
                         httpClientGetCount++;
-                        // eslint-disable-next-line @typescript-eslint/dot-notation
-                        const authorizationValue = r.headers!["Authorization"];
+                        const authorizationValue = r.headers![HeaderNames.Authorization];
                         if (httpClientGetCount === 1) {
                             if (authorizationValue) {
                                 fail("First long poll request should have a authorization header.");
