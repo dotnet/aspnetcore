@@ -26,7 +26,5 @@
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 </Project>
