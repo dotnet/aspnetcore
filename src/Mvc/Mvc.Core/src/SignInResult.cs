@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignInAsync"/>.
     /// </summary>
-    public class SignInResult : ActionResult
+    public class SignInResult : ActionResult, IResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="SignInResult"/> with the
@@ -85,12 +86,23 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            await ExecuteAsync(context.HttpContext);
+        }
+
+        private async Task ExecuteAsync(HttpContext httpContext)
+        {
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<SignInResult>();
 
             logger.SignInResultExecuting(AuthenticationScheme, Principal);
 
-            await context.HttpContext.SignInAsync(AuthenticationScheme, Principal, Properties);
+            await httpContext.SignInAsync(AuthenticationScheme, Principal, Properties);
+        }
+
+        /// <inheritdoc />
+        async Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            await ExecuteAsync(httpContext);
         }
     }
 }
