@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 /// is valid this way. Instead, we go for a straight-forward check on the tag
                 /// name that we are currently inspecting.
                 /// </remarks>
-                var isInvalidTag = content.Contains("head") 
-                    || content.Contains("meta")
-                    || content.Contains("title")
-                    || content.Contains("link")
-                    || content.Contains("base")
-                    || content.Contains("script")
-                    || content.Contains("style")
-                    || content.Contains("html");  
+                var isInvalidTag = content.Contains("head", StringComparison.OrdinalIgnoreCase) 
+                    || content.Contains("meta", StringComparison.OrdinalIgnoreCase)
+                    || content.Contains("title", StringComparison.OrdinalIgnoreCase)
+                    || content.Contains("link", StringComparison.OrdinalIgnoreCase)
+                    || content.Contains("base", StringComparison.OrdinalIgnoreCase)
+                    || content.Contains("script", StringComparison.OrdinalIgnoreCase)
+                    || content.Contains("style", StringComparison.OrdinalIgnoreCase)
+                    || content.Contains("html", StringComparison.OrdinalIgnoreCase);  
                 return isValidToken && !isInvalidTag;
             }
         }
