@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     var result = await parameterBinder.BindModelAsync(
                        pageContext,
                        bindingInfo.ModelBinder,
-                       valueProvider,
+                       valueProvider!,
                        property,
                        modelMetadata,
                        value: null,
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             return Bind;
 
-            async Task Bind(PageContext pageContext, IDictionary<string, object> arguments)
+            async Task Bind(PageContext pageContext, IDictionary<string, object?> arguments)
             {
                 var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(pageContext, pageContext.ValueProviderFactories);
                 if (!success)
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     var result = await parameterBinder.BindModelAsync(
                         pageContext,
                         bindingInfo.ModelBinder,
-                        valueProvider,
+                        valueProvider!,
                         parameter,
                         modelMetadata,
                         value: null,

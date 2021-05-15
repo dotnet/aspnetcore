@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -156,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             _pageFactoryExecuted(logger, pageName, pageType.Assembly.GetName().Name, null);
         }
 
-        public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object[] arguments)
+        public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object?[]? arguments)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
@@ -189,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        public static void ExecutedHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, IActionResult result)
+        public static void ExecutedHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, IActionResult? result)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {

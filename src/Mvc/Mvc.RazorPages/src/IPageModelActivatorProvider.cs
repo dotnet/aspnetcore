@@ -23,19 +23,24 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to dispose the activated Razor Page model.</returns>
-        Action<PageContext, object> CreateReleaser(CompiledPageActionDescriptor descriptor);
+        Action<PageContext, object>? CreateReleaser(CompiledPageActionDescriptor descriptor);
 
         /// <summary>
         /// Releases a Razor Page model asynchronously.
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to dispose the activated Razor Page model asynchronously.</returns>
-        Func<PageContext, object, ValueTask> CreateAsyncReleaser(CompiledPageActionDescriptor descriptor)
+        Func<PageContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor descriptor)
         {
             var releaser = CreateReleaser(descriptor);
+            if (releaser is null)
+            {
+                return null;
+            }
+
             return (context, model) =>
             {
-                releaser(context, model);
+                releaser.Invoke(context, model);
                 return default;
             };
         }

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Diagnostics;
@@ -12,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class PageRouteModelFactory
     {
-        private static readonly Action<ILogger, string, Exception> _unsupportedAreaPath;
+        private static readonly Action<ILogger, string, Exception?> _unsupportedAreaPath;
 
         private static readonly string IndexFileName = "Index" + RazorViewEngine.ViewExtension;
         private readonly RazorPagesOptions _options;
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             _normalizedAreaRootDirectory = "/Areas/";
         }
 
-        public PageRouteModel CreateRouteModel(string relativePath, string routeTemplate)
+        public PageRouteModel CreateRouteModel(string relativePath, string? routeTemplate)
         {
             var viewEnginePath = GetViewEnginePath(_normalizedRootDirectory, relativePath);
             var routeModel = new PageRouteModel(relativePath, viewEnginePath);
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return routeModel;
         }
 
-        public PageRouteModel CreateAreaRouteModel(string relativePath, string routeTemplate)
+        public PageRouteModel? CreateAreaRouteModel(string relativePath, string? routeTemplate)
         {
             if (!TryParseAreaPath(relativePath, out var areaResult))
             {
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return routeModel;
         }
 
-        private static void PopulateRouteModel(PageRouteModel model, string pageRoute, string routeTemplate)
+        private static void PopulateRouteModel(PageRouteModel model, string pageRoute, string? routeTemplate)
         {
             model.RouteValues.Add("page", model.ViewEnginePath);
 
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 // For pages without an override route, and ending in /Index.cshtml, we want to allow
                 // incoming routing, but force outgoing routes to match to the path sans /Index.
-                selectorModel.AttributeRouteModel.SuppressLinkGeneration = true;
+                selectorModel.AttributeRouteModel!.SuppressLinkGeneration = true;
 
                 var index = pageRoute.LastIndexOf('/');
                 var parentDirectoryPath = index == -1 ?
@@ -167,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             });
         }
 
-        private static SelectorModel CreateSelectorModel(string prefix, string routeTemplate)
+        private static SelectorModel CreateSelectorModel(string prefix, string? routeTemplate)
         {
             return new SelectorModel
             {

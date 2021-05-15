@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Support for writing functional tests for MVC applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -8,6 +8,7 @@
     <IsPackable>true</IsPackable>
     <!-- We're disable NU5100 explicitly bundling assemblies as tasks so they are not referenced when consumed. -->
     <NoWarn>NU5100</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
