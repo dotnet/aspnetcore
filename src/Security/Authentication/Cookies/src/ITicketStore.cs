@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
@@ -19,12 +20,29 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         Task<string> StoreAsync(AuthenticationTicket ticket);
 
         /// <summary>
+        /// Store the identity ticket and return the associated key.
+        /// </summary>
+        /// <param name="ticket">The identity information to store.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>The key that can be used to retrieve the identity later.</returns>
+        Task<string> StoreAsync(AuthenticationTicket ticket, CancellationToken cancellationToken) => StoreAsync(ticket);
+
+        /// <summary>
         /// Tells the store that the given identity should be updated.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="ticket"></param>
         /// <returns></returns>
         Task RenewAsync(string key, AuthenticationTicket ticket);
+
+        /// <summary>
+        /// Tells the store that the given identity should be updated.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="ticket"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task RenewAsync(string key, AuthenticationTicket ticket, CancellationToken cancellationToken) => RenewAsync(key);
 
         /// <summary>
         /// Retrieves an identity from the store for the given key.
@@ -34,10 +52,26 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         Task<AuthenticationTicket?> RetrieveAsync(string key);
 
         /// <summary>
+        /// Retrieves an identity from the store for the given key.
+        /// </summary>
+        /// <param name="key">The key associated with the identity.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>The identity associated with the given key, or <c>null</c> if not found.</returns>
+        Task<AuthenticationTicket?> RetrieveAsync(string key, CancellationToken cancellationToken) => RetrieveAsync(key);
+
+        /// <summary>
         /// Remove the identity associated with the given key.
         /// </summary>
         /// <param name="key">The key associated with the identity.</param>
         /// <returns></returns>
         Task RemoveAsync(string key);
+
+        /// <summary>
+        /// Remove the identity associated with the given key.
+        /// </summary>
+        /// <param name="key">The key associated with the identity.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task RemoveAsync(string key, CancellationToken cancellationToken) => RemoveAsync(key);
     }
 }
