@@ -2,7 +2,7 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 
-await using var app = WebApplication.Create(args);
+var app = WebApplication.Create(args);
 
 if (app.Environment.IsDevelopment())
 {
@@ -18,4 +18,4 @@ app.MapGet("/json", (Func<object>)Json);
 string SayHello(string name) => $"Hello, {name}!";
 app.MapGet("/hello/{name}", (Func<string, string>)SayHello);
 
-await app.RunAsync();
+app.Run();
