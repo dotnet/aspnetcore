@@ -18,6 +18,7 @@
     </GetCurrentProjectStaticWebAssetsDependsOn>
 
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

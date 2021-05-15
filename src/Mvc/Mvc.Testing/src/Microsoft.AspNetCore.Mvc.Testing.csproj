@@ -8,6 +8,7 @@
     <IsPackable>true</IsPackable>
     <!-- We're disable NU5100 explicitly bundling assemblies as tasks so they are not referenced when consumed. -->
     <NoWarn>NU5100</NoWarn>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

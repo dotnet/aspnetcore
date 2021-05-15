@@ -4,6 +4,7 @@
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>true</IsPackable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
