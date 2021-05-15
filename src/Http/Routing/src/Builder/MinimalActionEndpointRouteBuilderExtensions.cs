@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Builder
             const int defaultOrder = 0;
 
             var builder = new RouteEndpointBuilder(
-                RequestDelegateFactory.Create(action),
+                RequestDelegateFactory.Create(action, endpoints.ServiceProvider),
                 pattern,
                 defaultOrder)
             {
