@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.ForbidAsync"/>.
     /// </summary>
-    public class ForbidResult : ActionResult
+    public class ForbidResult : ActionResult, IResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ForbidResult"/>.
@@ -97,7 +98,18 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            await ExecuteAsync(context.HttpContext);
+        }
+
+        /// <inheritdoc />
+        async Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            await ExecuteAsync(httpContext);
+        }
+
+        private async Task ExecuteAsync(HttpContext httpContext)
+        {
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ForbidResult>();
 
             logger.ForbidResultExecuting(AuthenticationSchemes);
@@ -106,12 +118,12 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 for (var i = 0; i < AuthenticationSchemes.Count; i++)
                 {
-                    await context.HttpContext.ForbidAsync(AuthenticationSchemes[i], Properties);
+                    await httpContext.ForbidAsync(AuthenticationSchemes[i], Properties);
                 }
             }
             else
             {
-                await context.HttpContext.ForbidAsync(Properties);
+                await httpContext.ForbidAsync(Properties);
             }
         }
     }
