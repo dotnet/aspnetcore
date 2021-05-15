@@ -1283,9 +1283,28 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        private class EmptyServiceProvdier : IServiceProvider
+        private class EmptyServiceProvdier : IServiceScope, IServiceProvider, IServiceScopeFactory
         {
-            public object? GetService(Type serviceType) => null;
+            public IServiceProvider ServiceProvider => this;
+
+            public IServiceScope CreateScope()
+            {
+                return new EmptyServiceProvdier();
+            }
+
+            public void Dispose()
+            {
+
+            }
+
+            public object? GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IServiceScopeFactory))
+                {
+                    return this;
+                }
+                return null;
+            }
         }
 
         private class TestHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature

@@ -820,7 +820,7 @@ namespace Microsoft.AspNetCore.Http
         {
             public Type? JsonRequestBodyType { get; set; }
             public bool AllowEmptyRequestBody { get; set; }
-            public IServiceProvider? ServiceProvider { get; set; }
+            public IServiceProvider? ServiceProvider { get; init; }
 
             public bool UsingTempSourceString { get; set; }
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();

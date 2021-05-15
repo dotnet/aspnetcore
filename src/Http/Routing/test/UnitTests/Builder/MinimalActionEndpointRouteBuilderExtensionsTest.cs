@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
 
             [HttpMethod("ATTRIBUTE")]
             void TestAction()
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapGet_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapGet("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapPost_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapPost("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapPut_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapPut("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapDelete_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapDelete("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -146,6 +147,30 @@ namespace Microsoft.AspNetCore.Builder
             public HttpMethodAttribute(params string[] httpMethods)
             {
                 HttpMethods = httpMethods;
+            }
+        }
+
+        private class EmptyServiceProvdier : IServiceScope, IServiceProvider, IServiceScopeFactory
+        {
+            public IServiceProvider ServiceProvider => this;
+
+            public IServiceScope CreateScope()
+            {
+                return new EmptyServiceProvdier();
+            }
+
+            public void Dispose()
+            {
+
+            }
+
+            public object? GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IServiceScopeFactory))
+                {
+                    return this;
+                }
+                return null;
             }
         }
     }
