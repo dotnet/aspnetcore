@@ -100,9 +100,9 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        async Task IResult.ExecuteAsync(HttpContext httpContext)
+        Task IResult.ExecuteAsync(HttpContext httpContext)
         {
-            await ExecuteAsync(httpContext);
+            return ExecuteAsync(httpContext);
         }
 
         private async Task ExecuteAsync(HttpContext httpContext)
