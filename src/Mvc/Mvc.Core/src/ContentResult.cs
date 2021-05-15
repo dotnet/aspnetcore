@@ -82,17 +82,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (Content != null)
             {
                 response.ContentLength = resolvedContentTypeEncoding.GetByteCount(Content);
-
-                await using (var textWriter = new HttpResponseStreamWriter(response.Body, resolvedContentTypeEncoding))
-                {
-                    await textWriter.WriteAsync(Content);
-
-                    // Flushing the HttpResponseStreamWriter does not flush the underlying stream. This just flushes
-                    // the buffered text in the writer.
-                    // We do this rather than letting dispose handle it because dispose would call Write and we want
-                    // to call WriteAsync.
-                    await textWriter.FlushAsync();
-                }
+                await response.WriteAsync(Content, resolvedContentTypeEncoding);
             }
         }
     }
