@@ -8,6 +8,7 @@
     <!--#if Hosted -->
     <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
     <!--#endif -->
+    <Nullable Condition="'$(Nullable)' == 'true'">enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

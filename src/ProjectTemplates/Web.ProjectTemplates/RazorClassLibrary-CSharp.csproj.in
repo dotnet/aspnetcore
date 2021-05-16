@@ -4,6 +4,7 @@
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <AddRazorSupportForMvc Condition="'$(SupportPagesAndViews)' == 'True'">true</AddRazorSupportForMvc>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.RazorClassLibrary1</RootNamespace>
+    <Nullable Condition="'$(Nullable)' == 'true'">enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(SupportPagesAndViews)' == 'True'">

@@ -35,7 +35,7 @@
     "DefaultScope": {
       "longName": "default-scope",
       "shortName": ""
-    },    
+    },
     "Framework": {
       "longName": "framework"
     },
@@ -74,6 +74,10 @@
     },
     "DisableOpenAPI": {
       "longName": "no-openapi",
+      "shortName": ""
+    },
+    "Nullable": {
+      "longName": "nullable",
       "shortName": ""
     }
   },

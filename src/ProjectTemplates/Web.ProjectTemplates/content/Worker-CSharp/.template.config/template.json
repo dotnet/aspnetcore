@@ -67,6 +67,12 @@
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
+    },
+    "Nullable": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to enable nullable reference types for this project."
     }
   },
   "primaryOutputs": [

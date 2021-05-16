@@ -195,6 +195,12 @@
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
+    },
+    "Nullable": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to enable nullable reference types for this project."
     }
   },
   "tags": {

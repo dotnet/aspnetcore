@@ -19,7 +19,11 @@ namespace Company.WebApplication1.Pages
             _logger = logger;
         }
 
+#if (!Nullable)
         public string RequestId { get; set; }
+#else
+        public string? RequestId { get; set; }
+#endif
 
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 

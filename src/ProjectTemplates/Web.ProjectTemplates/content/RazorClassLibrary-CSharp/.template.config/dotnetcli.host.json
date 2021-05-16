@@ -12,6 +12,10 @@
     "SupportPagesAndViews": {
       "longName": "support-pages-and-views",
       "shortName": "s"
+    },
+    "Nullable": {
+      "longName": "nullable",
+      "shortName": ""
     }
   }
 }

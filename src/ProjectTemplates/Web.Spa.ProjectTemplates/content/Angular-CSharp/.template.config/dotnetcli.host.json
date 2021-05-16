@@ -27,6 +27,10 @@
     "NoHttps": {
       "longName": "no-https",
       "shortName": ""
+    },
+    "Nullable": {
+      "longName": "nullable",
+      "shortName": ""
     }
   },
   "usageExamples": [

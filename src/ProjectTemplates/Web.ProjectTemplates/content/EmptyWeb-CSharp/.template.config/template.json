@@ -112,6 +112,12 @@
       "datatype": "bool",
       "defaultValue": "false",
       "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
+    },
+    "Nullable": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to enable nullable reference types for this project."
     }
   },
   "primaryOutputs": [

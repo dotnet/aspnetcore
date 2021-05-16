@@ -13,7 +13,11 @@ namespace BlazorServerWeb_CSharp.Pages
     [IgnoreAntiforgeryToken]
     public class ErrorModel : PageModel
     {
+#if (!Nullable)
         public string RequestId { get; set; }
+#else
+        public string? RequestId { get; set; }
+#endif
 
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 

@@ -7,6 +7,7 @@
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorServerWeb_CSharp</RootNamespace>
+    <Nullable Condition="'$(Nullable)' == 'true'">enable</Nullable>
   </PropertyGroup>
 
   <!--#if (IndividualLocalAuth && !UseLocalDB) -->

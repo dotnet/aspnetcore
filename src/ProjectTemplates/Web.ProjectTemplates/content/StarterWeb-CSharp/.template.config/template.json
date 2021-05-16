@@ -364,6 +364,12 @@
     "GenerateApiOrGraph": {
         "type": "computed",
         "value": "(GenerateApi || GenerateGraph)"
+    },
+    "Nullable": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to enable nullable reference types for this project."
     }
   },
   "primaryOutputs": [

@@ -11,6 +11,10 @@
     "ExcludeLaunchSettings": {
       "longName": "exclude-launch-settings",
       "shortName": ""
+    },
+    "Nullable": {
+      "longName": "nullable",
+      "shortName": ""
     }
   },
   "usageExamples": [

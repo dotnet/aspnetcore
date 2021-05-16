@@ -8,6 +8,7 @@
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">ComponentsWebAssembly-CSharp.Server</RootNamespace>
     <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+    <Nullable Condition="'$(Nullable)' == 'true'">enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

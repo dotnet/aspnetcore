@@ -69,6 +69,12 @@
       "datatype": "bool",
       "defaultValue": "false",
       "description": "Whether to support adding traditional Razor pages and Views in addition to components to this library."
+    },
+    "Nullable": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to enable nullable reference types for this project."
     }
   },
   "primaryOutputs": [

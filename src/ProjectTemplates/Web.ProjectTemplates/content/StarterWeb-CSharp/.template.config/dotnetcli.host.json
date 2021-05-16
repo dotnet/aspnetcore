@@ -83,6 +83,10 @@
     "CallsMicrosoftGraph": {
         "longName": "calls-graph",
         "shortName": ""
+    },
+    "Nullable": {
+      "longName": "nullable",
+      "shortName": ""
     }
   },
   "usageExamples": [
