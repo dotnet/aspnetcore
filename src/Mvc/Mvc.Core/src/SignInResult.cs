@@ -79,30 +79,30 @@ namespace Microsoft.AspNetCore.Mvc
         public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            await ExecuteAsync(context.HttpContext);
-        }
-
-        private async Task ExecuteAsync(HttpContext httpContext)
-        {
-            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<SignInResult>();
-
-            logger.SignInResultExecuting(AuthenticationScheme, Principal);
-
-            await httpContext.SignInAsync(AuthenticationScheme, Principal, Properties);
+            return ExecuteAsync(context.HttpContext);
         }
 
         /// <inheritdoc />
         Task IResult.ExecuteAsync(HttpContext httpContext)
         {
             return ExecuteAsync(httpContext);
+        }
+
+        private Task ExecuteAsync(HttpContext httpContext)
+        {
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<SignInResult>();
+
+            logger.SignInResultExecuting(AuthenticationScheme, Principal);
+
+            return httpContext.SignInAsync(AuthenticationScheme, Principal, Properties);
         }
     }
 }
