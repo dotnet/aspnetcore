@@ -91,14 +91,14 @@ namespace Microsoft.AspNetCore.Mvc
         public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            await ExecuteAsync(context.HttpContext);
+            return ExecuteAsync(context.HttpContext);
         }
 
         /// <inheritdoc />
