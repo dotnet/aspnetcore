@@ -85,9 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             Assert.IsType<FileBufferingWriteStream>(writeStream);
 
-            // HACK: This we're trying to verify the settings are applied
-            var field = typeof(FileBufferingWriteStream).GetField("_memoryThreshold", BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.Equal(1, field.GetValue(writeStream));
+            Assert.Equal(1, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
         }
 
         [Fact]
@@ -119,9 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             Assert.IsType<FileBufferingWriteStream>(writeStream);
 
-            // HACK: This we're trying to verify the settings are applied
-            var field = typeof(FileBufferingWriteStream).GetField("_memoryThreshold", BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.Equal(2, field.GetValue(writeStream));
+            Assert.Equal(2, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
         }
 
         [Fact]
