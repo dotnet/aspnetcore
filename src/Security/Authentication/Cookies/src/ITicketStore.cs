@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Store the identity ticket and return the associated key.
         /// </summary>
         /// <param name="ticket">The identity information to store.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The key that can be used to retrieve the identity later.</returns>
         Task<string> StoreAsync(AuthenticationTicket ticket, CancellationToken cancellationToken) => StoreAsync(ticket);
 
@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         /// <param name="key"></param>
         /// <param name="ticket"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns></returns>
-        Task RenewAsync(string key, AuthenticationTicket ticket, CancellationToken cancellationToken) => RenewAsync(key);
+        Task RenewAsync(string key, AuthenticationTicket ticket, CancellationToken cancellationToken) => RenewAsync(key, ticket);
 
         /// <summary>
         /// Retrieves an identity from the store for the given key.
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Retrieves an identity from the store for the given key.
         /// </summary>
         /// <param name="key">The key associated with the identity.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The identity associated with the given key, or <c>null</c> if not found.</returns>
         Task<AuthenticationTicket?> RetrieveAsync(string key, CancellationToken cancellationToken) => RetrieveAsync(key);
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Remove the identity associated with the given key.
         /// </summary>
         /// <param name="key">The key associated with the identity.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns></returns>
         Task RemoveAsync(string key, CancellationToken cancellationToken) => RemoveAsync(key);
     }
