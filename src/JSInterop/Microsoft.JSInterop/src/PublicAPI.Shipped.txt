@@ -41,8 +41,11 @@ Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetInvocationInfo(str
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetObjectId.get -> long
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.MethodIdentifier.get -> string!
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult
+Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.DotNetInvocationResult(System.Exception! exception, string? errorKind) -> void
+Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.DotNetInvocationResult(object? result) -> void
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ErrorKind.get -> string?
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.Exception.get -> System.Exception?
+Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.Result.get -> object?
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.Success.get -> bool
 Microsoft.JSInterop.JSCallResultType
 Microsoft.JSInterop.JSCallResultType.Default = 0 -> Microsoft.JSInterop.JSCallResultType
