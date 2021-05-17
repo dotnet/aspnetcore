@@ -36,9 +36,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets or sets the maximum unconsumed incoming bytes the server will buffer for incoming request body.
         /// </summary>
-        /// <remarks>
+        /// <value>
         /// Defaults to 1 MB.
-        /// </remarks>
+        /// </value>
         public int MaxRequestBodyBufferSize { get; set; } = 1024 * 1024; // Matches kestrel (sorta)
 
         /// <summary>
