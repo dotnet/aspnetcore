@@ -26,3 +26,5 @@ Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.get -> s
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.get -> string!
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.IgnoreQueryString.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavLink.IgnoreQueryString.set -> void
