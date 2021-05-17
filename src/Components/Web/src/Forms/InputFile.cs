@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.Components.Forms
                 (Stream)new SharedBrowserFileStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
                 new RemoteBrowserFileStream(JSRuntime, _inputFileElement, file, Options.Value, cancellationToken);
 
-        internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
+        internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight, double? quality = null)
         {
-            var imageFile = await JSRuntime.InvokeAsync<BrowserFile>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
+            var imageFile = await JSRuntime.InvokeAsync<BrowserFile>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight, quality);
 
             if (imageFile is null)
             {

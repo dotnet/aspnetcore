@@ -56,7 +56,7 @@ function init(callbackWrapper: any, elem: InputElement): void {
   });
 }
 
-async function toImageFile(elem: InputElement, fileId: number, format: string, maxWidth: number, maxHeight: number): Promise<BrowserFile> {
+async function toImageFile(elem: InputElement, fileId: number, format: string, maxWidth: number, maxHeight: number, quality?: number): Promise<BrowserFile> {
   const originalFile = getFileById(elem, fileId);
 
   const loadedImage = await new Promise(function(resolve: (loadedImage: HTMLImageElement) => void): void {
@@ -76,7 +76,7 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     canvas.width = Math.round(loadedImage.width * chosenSizeRatio);
     canvas.height = Math.round(loadedImage.height * chosenSizeRatio);
     canvas.getContext('2d')?.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(resolve, format);
+    canvas.toBlob(resolve, format, quality);
   });
   const result: BrowserFile = {
     id: ++elem._blazorInputFileNextFileId,
