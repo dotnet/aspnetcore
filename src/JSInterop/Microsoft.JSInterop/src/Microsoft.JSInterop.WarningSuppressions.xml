@@ -5,6 +5,18 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.&lt;&gt;c__DisplayClass5_1.{BeginInvokeDotNet}b__0(System.Threading.Tasks.Task)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime,Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.Invoke(Microsoft.JSInterop.JSRuntime,Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo@,System.String)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
