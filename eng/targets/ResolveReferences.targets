@@ -110,8 +110,11 @@
     In addition, enforce use of Reference items for projects reference providers.
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
+    <!-- Dependency graph checks may include unexpected packages. Ignore this because it's not an error. -->
     <Error
-        Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
+        Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
+            '$(MSBuildRestoreSessionId)' != '' AND
+            @(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 "
         Text="Cannot reference &quot;%(Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
 
     <Error
