@@ -59,20 +59,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     errorMessage += $". For more details turn on detailed exceptions in '{nameof(CircuitOptions)}.{nameof(CircuitOptions.DetailedErrors)}'";
                 }
 
-                EndInvokeDotNetCore(invocationInfo.CallId, success: false, errorMessage);
+                _clientProxy.SendAsync("JS.EndInvokeDotNet",
+                    invocationInfo.CallId,
+                    /* success */ false,
+                    errorMessage);
             }
             else
             {
                 Log.InvokeDotNetMethodSuccess(_logger, invocationInfo);
-                EndInvokeDotNetCore(invocationInfo.CallId, success: true, invocationResult.Result);
+                _clientProxy.SendAsync("JS.EndInvokeDotNet",
+                    invocationInfo.CallId,
+                    /* success */ true,
+                    invocationResult.ResultJson);
             }
-        }
-
-        private void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
-        {
-            _clientProxy.SendAsync(
-                "JS.EndInvokeDotNet",
-                JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions));
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
@@ -126,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             internal static void BeginInvokeJS(ILogger logger, long asyncHandle, string identifier) =>
                 _beginInvokeJS(logger, asyncHandle, identifier, null);
 
-            internal static void InvokeDotNetMethodException(ILogger logger, in DotNetInvocationInfo invocationInfo , Exception exception)
+            internal static void InvokeDotNetMethodException(ILogger logger, in DotNetInvocationInfo invocationInfo, Exception exception)
             {
                 if (invocationInfo.AssemblyName != null)
                 {
