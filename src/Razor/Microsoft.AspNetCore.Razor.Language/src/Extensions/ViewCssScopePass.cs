@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 /// is valid this way. Instead, we go for a straight-forward check on the tag
                 /// name that we are currently inspecting.
                 /// </remarks>
-                var isInvalidTag = content.Contains("head", StringComparison.OrdinalIgnoreCase) 
-                    || content.Contains("meta", StringComparison.OrdinalIgnoreCase)
-                    || content.Contains("title", StringComparison.OrdinalIgnoreCase)
-                    || content.Contains("link", StringComparison.OrdinalIgnoreCase)
-                    || content.Contains("base", StringComparison.OrdinalIgnoreCase)
-                    || content.Contains("script", StringComparison.OrdinalIgnoreCase)
-                    || content.Contains("style", StringComparison.OrdinalIgnoreCase)
-                    || content.Contains("html", StringComparison.OrdinalIgnoreCase);  
+                var isInvalidTag = content.IndexOf("head", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("meta", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("title", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("link", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("base", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("script", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("style", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("html", StringComparison.OrdinalIgnoreCase) >= 0;
                 return isValidToken && !isInvalidTag;
             }
         }
