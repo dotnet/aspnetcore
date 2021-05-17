@@ -33,9 +33,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
-        private const int PauseWriterThreshold = 65536;
-        private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
-
+        
         protected readonly NativeSafeHandle _requestNativeHandle;
 
         private readonly IISServerOptions _options;
@@ -92,6 +90,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
         }
+
+        private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
+        private int ResumeWriterTheshold => PauseWriterThreshold / 2;
 
         public Version HttpVersion { get; set; } = default!;
         public string Scheme { get; set; } = default!;

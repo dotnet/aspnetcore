@@ -34,6 +34,14 @@ namespace Microsoft.AspNetCore.Builder
         public string? AuthenticationDisplayName { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum unconsumed incoming bytes the server will buffer for incoming request body.
+        /// </summary>
+        /// <value>
+        /// Defaults to 1 MB.
+        /// </value>
+        public int MaxRequestBodyBufferSize { get; set; } = 1024 * 1024; // Matches kestrel (sorta)
+
+        /// <summary>
         /// Used to indicate if the authentication handler should be registered. This is only done if ANCM indicates
         /// IIS has a non-anonymous authentication enabled, or for back compat with ANCMs that did not provide this information.
         /// </summary>
