@@ -10,7 +10,11 @@ namespace ComponentsWebAssembly_CSharp.Shared
 
         public int TemperatureC { get; set; }
 
+#if (!Nullable)
         public string Summary { get; set; }
+#else
+        public string? Summary { get; set; }
+#endif
 
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }
