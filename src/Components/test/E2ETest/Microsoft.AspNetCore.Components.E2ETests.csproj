@@ -47,10 +47,11 @@
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
 
+    <!-- TODO - turn this back on once the SDK is higher than 6.0.100-preview.5.21230.2: https://github.com/dotnet/aspnetcore/issues/32788
     <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
       Targets="Publish"
       Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
+      Condition="'$(TestTrimmedApps)' == 'true'" /> -->
 
     <ProjectReference
       Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
