@@ -148,7 +148,7 @@ while [[ $# -gt 0 ]]; do
         -pack)
             run_pack=true
             ;;
-        -public)
+        -publish)
             run_publish=true
             ;;
         -no-pack|-nopack)
