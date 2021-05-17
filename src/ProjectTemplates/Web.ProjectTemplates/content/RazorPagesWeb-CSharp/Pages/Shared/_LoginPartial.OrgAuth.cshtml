@@ -11,7 +11,7 @@
 
 <ul class="navbar-nav">
 @*#if (IndividualB2CAuth)
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity?.IsAuthenticated == true)
 {
         @if (!string.IsNullOrEmpty(options.EditProfilePolicyId))
         {
@@ -38,7 +38,7 @@ else
         </li>
 }
 #else
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity?.IsAuthenticated == true)
 {
         <li class="nav-item">
             <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
