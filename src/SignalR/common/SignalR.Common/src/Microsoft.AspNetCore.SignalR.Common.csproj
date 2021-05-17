@@ -25,8 +25,8 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
-  <ItemGrou
-       Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework) OR '$(MSBuildRestoreSessionId)' == ''">
+  <ItemGroup
+       Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
