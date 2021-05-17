@@ -498,7 +498,7 @@ function InitializeBuildTool() {
   if (Test-Path variable:global:_BuildTool) {
     # If the requested msbuild parameters do not match, clear the cached variables.
     if($global:_BuildTool.Contains('ExcludePrereleaseVS') -and $global:_BuildTool.ExcludePrereleaseVS -ne $excludePrereleaseVS) {
-      Remove-Item variable:global:_BuildTool
+      Remove-Item variable:global:_BuildTool 
       Remove-Item variable:global:_MSBuildExe
     } else {
       return $global:_BuildTool
@@ -555,7 +555,7 @@ function GetDefaultMSBuildEngine() {
 
 function GetNuGetPackageCachePath() {
   if ($env:NUGET_PACKAGES -eq $null) {
-    # Use local cache on CI to ensure deterministic build.
+    # Use local cache on CI to ensure deterministic build. 
     # Avoid using the http cache as workaround for https://github.com/NuGet/Home/issues/3116
     # use global cache in dev builds to avoid cost of downloading packages.
     # For directory normalization, see also: https://github.com/NuGet/Home/issues/7968
