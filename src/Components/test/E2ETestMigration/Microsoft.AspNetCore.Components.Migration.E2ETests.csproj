@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\E2ETest\Microsoft.AspNetCore.Components.E2ETests.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
