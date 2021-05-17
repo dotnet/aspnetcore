@@ -118,12 +118,14 @@ namespace Microsoft.JSInterop.Infrastructure
                     }
 
                     var result = TaskGenericsUtil.GetTaskResult(task);
-                    jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(result));
+                    var resultJson = JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
+                    jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
                 }, TaskScheduler.Current);
             }
             else
             {
-                var dispatchResult = new DotNetInvocationResult(syncResult);
+                var syncResultJson = JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
+                var dispatchResult = new DotNetInvocationResult(syncResultJson);
                 jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
         }
