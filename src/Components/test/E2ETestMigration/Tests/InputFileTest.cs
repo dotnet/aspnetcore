@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.False(string.IsNullOrWhiteSpace(await fileNameElement.GetTextContentAsync()));
             Assert.NotEqual(default, DateTimeOffset.Parse(await fileLastModifiedElement.GetTextContentAsync(), CultureInfo.InvariantCulture));
             Assert.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), await fileSizeElement.GetTextContentAsync());
-            Assert.Equal("text/plain", await fileContentTypeElement.GetTextContentAsync());
+            Assert.Equal("application/octet-stream", await fileContentTypeElement.GetTextContentAsync());
             Assert.Equal(file.Text, await fileContentElement.GetTextContentAsync());
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 Assert.False(string.IsNullOrWhiteSpace(await fileNameElement.GetTextContentAsync()));
                 Assert.NotEqual(default, DateTimeOffset.Parse(await fileLastModifiedElement.GetTextContentAsync(), CultureInfo.InvariantCulture));
                 Assert.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), await fileSizeElement.GetTextContentAsync());
-                Assert.Equal("text/plain", await fileContentTypeElement.GetTextContentAsync());
+                Assert.Equal("application/octet-stream", await fileContentTypeElement.GetTextContentAsync());
                 Assert.Equal(file.Text, await fileContentElement.GetTextContentAsync());
             }
         }
