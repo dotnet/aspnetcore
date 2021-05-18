@@ -1,23 +1,23 @@
-From 83c0f95c563fa6eb9b446f09166cac2c62ab6390 Mon Sep 17 00:00:00 2001
-From: dseefeld <dseefeld@microsoft.com>
-Date: Thu, 14 May 2020 16:29:28 +0000
-Subject: [PATCH 04/14] Remove Yarn dependency - not used in source-build
+From b8957fc9b7a160717aaba88680ed654a2430262a Mon Sep 17 00:00:00 2001
+From: John Luo <johluo@microsoft.com>
+Date: Tue, 18 May 2021 10:48:34 -0700
+Subject: [PATCH] Remove Yarn dependency - not used in source-build
 
 ---
  eng/targets/Npm.Common.targets                                 | 3 ---
  global.json                                                    | 1 -
  .../src/Microsoft.Authentication.WebAssembly.Msal.csproj       | 2 --
  ...oft.AspNetCore.Components.WebAssembly.Authentication.csproj | 2 --
- src/Shared/E2ETesting/E2ETesting.targets                       | 3 ---
- 5 files changed, 11 deletions(-)
+ src/Shared/E2ETesting/E2ETesting.targets                       | 2 --
+ 5 files changed, 10 deletions(-)
 
 diff --git a/eng/targets/Npm.Common.targets b/eng/targets/Npm.Common.targets
-index 696d23402b..6086dd0843 100644
+index 0604d1f0c0..6b5849c03a 100644
 --- a/eng/targets/Npm.Common.targets
 +++ b/eng/targets/Npm.Common.targets
 @@ -1,8 +1,5 @@
  <Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
- 
+
 -  <!-- Version of this SDK is set in global.json -->
 -  <Sdk Name="Yarn.MSBuild" />
 -
@@ -25,7 +25,7 @@ index 696d23402b..6086dd0843 100644
      <NormalizedPackageId>$(PackageId.Replace('@','').Replace('/','-'))</NormalizedPackageId>
      <PackageFileName>$(NormalizedPackageId)-$(PackageVersion).tgz</PackageFileName>
 diff --git a/global.json b/global.json
-index 501ba161bf..ee9dcaf4fa 100644
+index b84a06acea..06510aa9ea 100644
 --- a/global.json
 +++ b/global.json
 @@ -29,7 +29,6 @@
@@ -33,45 +33,44 @@ index 501ba161bf..ee9dcaf4fa 100644
    },
    "msbuild-sdks": {
 -    "Yarn.MSBuild": "1.22.10",
-    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21167.3",
-    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21167.3"
+     "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21261.2",
+     "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21261.2"
    }
 diff --git a/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj b/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
-index 939ba16f88..ea2c849ea3 100644
+index 1d260d7d3c..1e794f2265 100644
 --- a/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
 +++ b/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
 @@ -1,7 +1,5 @@
  <Project Sdk="Microsoft.NET.Sdk.Razor">
- 
+
 -  <Sdk Name="Yarn.MSBuild" />
 -
    <PropertyGroup>
      <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
      <Description>Authenticate your Blazor webassembly applications with Azure Active Directory and Azure Active Directory B2C</Description>
 diff --git a/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj b/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj
-index 21a2efba4e..b4a6a75446 100644
+index 88bc97fb01..fcb613b38a 100644
 --- a/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj
 +++ b/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj
 @@ -1,7 +1,5 @@
  <Project Sdk="Microsoft.NET.Sdk.Razor">
- 
+
 -  <Sdk Name="Yarn.MSBuild" />
 -
    <PropertyGroup>
      <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
      <Description>Build client-side authentication for single-page applications (SPAs).</Description>
 diff --git a/src/Shared/E2ETesting/E2ETesting.targets b/src/Shared/E2ETesting/E2ETesting.targets
-index 76ced2cce9..eaecb913a9 100644
+index 76ced2cce9..0eb94aaf2e 100644
 --- a/src/Shared/E2ETesting/E2ETesting.targets
 +++ b/src/Shared/E2ETesting/E2ETesting.targets
-@@ -1,7 +1,4 @@
+@@ -1,6 +1,4 @@
  <Project>
 -  <!-- Version of this SDK is set in global.json -->
 -  <Sdk Name="Yarn.MSBuild" />
--
+
    <!-- Make sure the settings files get copied to the test output folder. -->
    <ItemGroup>
-     <None Update="e2eTestSettings*.json">
--- 
-2.18.0
+--
+2.20.1.windows.1
 
