@@ -14,7 +14,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Configuration is mutable configuration object. It is both a configuration builder and an IConfigurationRoot. 
+    /// Configuration is mutable configuration object. It is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
     /// As sources are added, it updates its current view of configuration. Once Build is called, configuration is frozen.
     /// </summary>
     public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder, IDisposable
@@ -40,10 +40,13 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
+        /// <inheritdoc />
         public string this[string key] { get => ConfigurationRoot[key]; set => ConfigurationRoot[key] = value; }
 
+        /// <inheritdoc />
         public IConfigurationSection GetSection(string key) => new ConfigurationSection(this, key);
 
+        /// <inheritdoc />
         public IEnumerable<IConfigurationSection> GetChildren() => GetChildrenImplementation(null);
 
         IDictionary<string, object> IConfigurationBuilder.Properties => _properties;
@@ -53,12 +56,16 @@ namespace Microsoft.AspNetCore.Builder
 
         IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => ConfigurationRoot.Providers;
 
+        /// <summary>
+        /// Creates an empty  mutable configuration object that is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
+        /// </summary>
         public Configuration()
         {
             _properties = new ConfigurationProperties(this);
             Sources = new ConfigurationSources(this);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _changeTokenRegistration?.Dispose();
