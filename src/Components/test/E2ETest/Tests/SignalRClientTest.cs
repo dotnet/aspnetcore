@@ -40,8 +40,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.Id("signalr-client"));
         }
 
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27156")]
         public void SignalRClientWorksWithLongPolling()
         {
             Browser.Exists(By.Id("hub-url")).SendKeys(
