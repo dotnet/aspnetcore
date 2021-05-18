@@ -61,13 +61,9 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             get
             {
-                if (_features.Collection == null)
+                if (_features.Collection is null)
                 {
-                    if (_parsedValues == null)
-                    {
-                        _parsedValues = QueryCollection.Empty;
-                    }
-                    return _parsedValues;
+                    return _parsedValues ?? QueryCollection.Empty;
                 }
 
                 var current = HttpRequestFeature.QueryString;
@@ -211,6 +207,11 @@ namespace Microsoft.AspNetCore.Http.Features
             /// </summary>
             public void Append(string key, string value)
             {
+                if (key.Length == 0)
+                {
+                    return;
+                }
+
                 if (_accumulator is null)
                 {
                     _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
