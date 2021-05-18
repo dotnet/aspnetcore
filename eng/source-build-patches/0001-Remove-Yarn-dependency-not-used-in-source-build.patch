@@ -1,4 +1,4 @@
-From b8957fc9b7a160717aaba88680ed654a2430262a Mon Sep 17 00:00:00 2001
+From 96bb56ea0ea0ce6ca21ffc58d7843d7ccfab3d9b Mon Sep 17 00:00:00 2001
 From: John Luo <johluo@microsoft.com>
 Date: Tue, 18 May 2021 10:48:34 -0700
 Subject: [PATCH] Remove Yarn dependency - not used in source-build
@@ -17,7 +17,7 @@ index 0604d1f0c0..6b5849c03a 100644
 +++ b/eng/targets/Npm.Common.targets
 @@ -1,8 +1,5 @@
  <Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
-
+ 
 -  <!-- Version of this SDK is set in global.json -->
 -  <Sdk Name="Yarn.MSBuild" />
 -
@@ -25,7 +25,7 @@ index 0604d1f0c0..6b5849c03a 100644
      <NormalizedPackageId>$(PackageId.Replace('@','').Replace('/','-'))</NormalizedPackageId>
      <PackageFileName>$(NormalizedPackageId)-$(PackageVersion).tgz</PackageFileName>
 diff --git a/global.json b/global.json
-index b84a06acea..06510aa9ea 100644
+index 5a2b8a613d..fa6d0c7954 100644
 --- a/global.json
 +++ b/global.json
 @@ -29,7 +29,6 @@
@@ -33,8 +33,8 @@ index b84a06acea..06510aa9ea 100644
    },
    "msbuild-sdks": {
 -    "Yarn.MSBuild": "1.22.10",
-     "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21261.2",
-     "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21261.2"
+     "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21264.2",
+     "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21264.2"
    }
 diff --git a/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj b/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
 index 1d260d7d3c..1e794f2265 100644
@@ -42,7 +42,7 @@ index 1d260d7d3c..1e794f2265 100644
 +++ b/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
 @@ -1,7 +1,5 @@
  <Project Sdk="Microsoft.NET.Sdk.Razor">
-
+ 
 -  <Sdk Name="Yarn.MSBuild" />
 -
    <PropertyGroup>
@@ -54,7 +54,7 @@ index 88bc97fb01..fcb613b38a 100644
 +++ b/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj
 @@ -1,7 +1,5 @@
  <Project Sdk="Microsoft.NET.Sdk.Razor">
-
+ 
 -  <Sdk Name="Yarn.MSBuild" />
 -
    <PropertyGroup>
@@ -68,9 +68,9 @@ index 76ced2cce9..0eb94aaf2e 100644
  <Project>
 -  <!-- Version of this SDK is set in global.json -->
 -  <Sdk Name="Yarn.MSBuild" />
-
+ 
    <!-- Make sure the settings files get copied to the test output folder. -->
    <ItemGroup>
---
+-- 
 2.20.1.windows.1
 
