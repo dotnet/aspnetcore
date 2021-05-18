@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(result));
             }
 
-            var fileInfo = GetFileInformation(result);
+            var fileInfo = GetFileInformation(result, _hostingEnvironment);
             if (!fileInfo.Exists)
             {
                 throw new FileNotFoundException(
@@ -89,16 +89,26 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(result));
             }
 
+            return WriteFileAsyncInternal(context.HttpContext, fileInfo, range, rangeLength, Logger);
+        }
+
+        internal static Task WriteFileAsyncInternal(
+            HttpContext httpContext,
+            IFileInfo fileInfo,
+            RangeItemHeaderValue? range,
+            long rangeLength,
+            ILogger logger)
+        {
             if (range != null && rangeLength == 0)
             {
                 return Task.CompletedTask;
             }
 
-            var response = context.HttpContext.Response;
+            var response = httpContext.Response;
 
             if (range != null)
             {
-                Logger.WritingRangeToBody();
+                logger.WritingRangeToBody();
             }
 
             if (range != null)
@@ -113,9 +123,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 count: null);
         }
 
-        private IFileInfo GetFileInformation(VirtualFileResult result)
+        internal static IFileInfo GetFileInformation(VirtualFileResult result, IWebHostEnvironment hostingEnvironment)
         {
-            var fileProvider = GetFileProvider(result);
+            var fileProvider = GetFileProvider(result, hostingEnvironment);
             if (fileProvider is NullFileProvider)
             {
                 throw new InvalidOperationException(Resources.VirtualFileResultExecutor_NoFileProviderConfigured);
@@ -131,14 +141,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return fileInfo;
         }
 
-        private IFileProvider GetFileProvider(VirtualFileResult result)
+        internal static IFileProvider GetFileProvider(VirtualFileResult result, IWebHostEnvironment hostingEnvironment)
         {
             if (result.FileProvider != null)
             {
                 return result.FileProvider;
             }
 
-            result.FileProvider = _hostingEnvironment.WebRootFileProvider;
+            result.FileProvider = hostingEnvironment.WebRootFileProvider;
             return result.FileProvider;
         }
 
