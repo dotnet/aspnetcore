@@ -105,12 +105,13 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
             Assert.NotNull(activityFeature);
             Assert.NotNull(activityFeature.Activity);
+            Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.DisplayName);
             var initialActivity = Activity.Current;
 
             // Create nested dummy Activity
             using var _ = new ActivitySource("DummySource").StartActivity("DummyActivity");
 
-            Assert.Equal(initialActivity, activityFeature.Activity);
+            Assert.Same(initialActivity, activityFeature.Activity);
             Assert.NotEqual(Activity.Current, activityFeature.Activity);
 
             // Act/Assert

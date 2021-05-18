@@ -16,7 +16,8 @@ namespace CodeGenerator
                 "IHttpResponseBodyFeature",
                 "IRouteValuesFeature",
                 "IEndpointFeature",
-                "IServiceProvidersFeature"
+                "IServiceProvidersFeature",
+                "IHttpActivityFeature"
             };
 
             var commonFeatures = new[]

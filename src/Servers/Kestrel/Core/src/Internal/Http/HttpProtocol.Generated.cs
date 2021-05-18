@@ -208,6 +208,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIFormFeature;
                 }
+                else if (key == typeof(IHttpActivityFeature))
+                {
+                    feature = _currentIHttpActivityFeature;
+                }
                 else if (key == typeof(IHttpAuthenticationFeature))
                 {
                     feature = _currentIHttpAuthenticationFeature;
@@ -331,6 +335,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IFormFeature))
                 {
                     _currentIFormFeature = (IFormFeature?)value;
+                }
+                else if (key == typeof(IHttpActivityFeature))
+                {
+                    _currentIHttpActivityFeature = value;
                 }
                 else if (key == typeof(IHttpAuthenticationFeature))
                 {
@@ -457,6 +465,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IFormFeature))
             {
                 feature = Unsafe.As<IFormFeature?, TFeature?>(ref _currentIFormFeature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpActivityFeature))
+            {
+                feature = (TFeature?)_currentIHttpActivityFeature;
             }
             else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
             {
@@ -590,6 +602,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIFormFeature = Unsafe.As<TFeature?, IFormFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IHttpActivityFeature))
+            {
+                _currentIHttpActivityFeature = feature;
+            }
             else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
             {
                 _currentIHttpAuthenticationFeature = Unsafe.As<TFeature?, IHttpAuthenticationFeature?>(ref feature);
@@ -709,6 +725,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIFormFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IFormFeature), _currentIFormFeature);
+            }
+            if (_currentIHttpActivityFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpActivityFeature), _currentIHttpActivityFeature);
             }
             if (_currentIHttpAuthenticationFeature != null)
             {
