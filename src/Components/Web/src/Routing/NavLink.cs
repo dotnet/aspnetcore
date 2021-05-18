@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return false;
             }
 
-            var matchingUri = IgnoreQueryString? RemoveQueryString(currentUriAbsolute) : currentUriAbsolute;
+            var matchingUri = IgnoreQueryString ? RemoveQueryString(currentUriAbsolute) : currentUriAbsolute;
 
             if (EqualsHrefExactlyOrIfTrailingSlashAdded(matchingUri))
             {
