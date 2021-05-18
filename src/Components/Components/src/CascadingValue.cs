@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable warnings
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,18 +14,18 @@ namespace Microsoft.AspNetCore.Components
     public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
     {
         private RenderHandle _renderHandle;
-        private HashSet<ComponentState> _subscribers; // Lazily instantiated
+        private HashSet<ComponentState>? _subscribers; // Lazily instantiated
         private bool _hasSetParametersPreviously;
 
         /// <summary>
         /// The content to which the value should be provided.
         /// </summary>
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
         /// The value to be provided.
         /// </summary>
-        [Parameter] public TValue Value { get; set; }
+        [Parameter] public TValue? Value { get; set; }
 
         /// <summary>
         /// Optionally gives a name to the provided value. Descendant components
@@ -46,7 +44,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         [Parameter] public bool IsFixed { get; set; }
 
-        object ICascadingValueComponent.CurrentValue => Value;
+        object? ICascadingValueComponent.CurrentValue => Value;
 
         bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
 
@@ -135,7 +133,7 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string requestedName)
+        bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string? requestedName)
         {
             if (!requestedType.IsAssignableFrom(typeof(TValue)))
             {
@@ -167,12 +165,12 @@ namespace Microsoft.AspNetCore.Components
 
         void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
         {
-            _subscribers.Remove(subscriber);
+            _subscribers!.Remove(subscriber);
         }
 
         private void NotifySubscribers(in ParameterViewLifetime lifetime)
         {
-            foreach (var subscriber in _subscribers)
+            foreach (var subscriber in _subscribers!)
             {
                 subscriber.NotifyCascadingValueChanged(lifetime);
             }
