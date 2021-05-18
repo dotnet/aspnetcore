@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Builder
                 // already thanks to the BootstrapHostBuilder.
                 builder.Sources.Clear();
 
-                foreach (var s in Configuration.Sources)
+                foreach (var s in ((IConfigurationBuilder)Configuration).Sources)
                 {
                     builder.Sources.Add(s);
                 }

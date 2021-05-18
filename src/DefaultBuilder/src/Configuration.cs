@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -21,23 +20,13 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly ConfigurationSources _sources;
         private readonly IDictionary<string, object> _properties;
+        private ConfigurationRoot _configurationRoot;
 
-        private ConfigurationRoot? _configurationRoot;
         private ConfigurationReloadToken _changeToken = new();
         private IDisposable? _changeTokenRegistration;
 
-        private IConfigurationRoot ConfigurationRoot
-        {
-            get
-            {
-                UpdateConfiguration();
-                Debug.Assert(_configurationRoot is not null);
-                return _configurationRoot;
-            }
-        }
-
         /// <inheritdoc />
-        public string this[string key] { get => ConfigurationRoot[key]; set => ConfigurationRoot[key] = value; }
+        public string this[string key] { get => _configurationRoot[key]; set => _configurationRoot[key] = value; }
 
         /// <inheritdoc />
         public IConfigurationSection GetSection(string key) => new ConfigurationSection(this, key);
@@ -49,7 +38,7 @@ namespace Microsoft.AspNetCore.Builder
 
         IList<IConfigurationSource> IConfigurationBuilder.Sources => _sources;
 
-        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => ConfigurationRoot.Providers;
+        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => _configurationRoot.Providers;
 
         /// <summary>
         /// Creates an empty  mutable configuration object that is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
@@ -58,6 +47,10 @@ namespace Microsoft.AspNetCore.Builder
         {
             _properties = new ConfigurationProperties(this);
             _sources = new ConfigurationSources(this);
+
+            // _configurationRoot is set by UpdateConfiguration()
+            _configurationRoot = default!;
+            UpdateConfiguration();
         }
 
         /// <inheritdoc />
@@ -77,7 +70,7 @@ namespace Microsoft.AspNetCore.Builder
 
         IChangeToken IConfiguration.GetReloadToken() => _changeToken;
 
-        void IConfigurationRoot.Reload() => ConfigurationRoot.Reload();
+        void IConfigurationRoot.Reload() => _configurationRoot.Reload();
 
         private void UpdateConfiguration()
         {
@@ -118,11 +111,11 @@ namespace Microsoft.AspNetCore.Builder
         private IEnumerable<IConfigurationSection> GetChildrenImplementation(string? path)
         {
             // From https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/Microsoft.Extensions.Configuration/src/InternalConfigurationRootExtensions.cs
-            return ConfigurationRoot.Providers
+            return _configurationRoot.Providers
                 .Aggregate(Enumerable.Empty<string>(),
                     (seed, source) => source.GetChildKeys(seed, path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(key => ConfigurationRoot.GetSection(path == null ? key : ConfigurationPath.Combine(path, key)));
+                .Select(key => _configurationRoot.GetSection(path == null ? key : ConfigurationPath.Combine(path, key)));
         }
 
         private class ConfigurationSources : IList<IConfigurationSource>
@@ -222,8 +215,8 @@ namespace Microsoft.AspNetCore.Builder
                 get => _properties[key];
                 set
                 {
-                    _config.UpdateConfiguration();
                     _properties[key] = value;
+                    _config.UpdateConfiguration();
                 }
             }
 
