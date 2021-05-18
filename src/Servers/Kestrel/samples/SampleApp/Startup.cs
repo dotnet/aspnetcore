@@ -118,7 +118,7 @@ namespace SampleApp
                                     // Here you would check the name, select an appropriate cert, and provide a fallback or fail for null names.
                                     if (clientHelloInfo.ServerName != null && clientHelloInfo.ServerName != "localhost")
                                     {
-                                        throw new AuthenticationException($"The endpoint is not configured for sever name '{clientHelloInfo.ServerName}'.");
+                                        throw new AuthenticationException($"The endpoint is not configured for server name '{clientHelloInfo.ServerName}'.");
                                     }
 
                                     return new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions
