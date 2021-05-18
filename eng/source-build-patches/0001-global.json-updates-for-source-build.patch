@@ -1,14 +1,14 @@
-From 2089c0c2851fabd5b44e3216e8a4a2e5e7293a12 Mon Sep 17 00:00:00 2001
+From d070c95637ba2c26f51588088b9c1e76deed9623 Mon Sep 17 00:00:00 2001
 From: John Luo <johluo@microsoft.com>
-Date: Tue, 18 May 2021 12:03:16 -0700
-Subject: [PATCH] Support global.json on arm64 as well
+Date: Tue, 18 May 2021 16:08:50 -0700
+Subject: [PATCH] global.json updates for source-build
 
 ---
- global.json | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ global.json | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/global.json b/global.json
-index 5a2b8a613d..951a5f9fe3 100644
+index 5a2b8a613d..43723053ce 100644
 --- a/global.json
 +++ b/global.json
 @@ -5,13 +5,10 @@
@@ -26,6 +26,14 @@ index 5a2b8a613d..951a5f9fe3 100644
        "aspnetcore/x64": [
          "3.1.14"
        ]
+@@ -29,7 +26,6 @@
+     "xcopy-msbuild": "16.5.0-alpha"
+   },
+   "msbuild-sdks": {
+-    "Yarn.MSBuild": "1.22.10",
+     "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21264.2",
+     "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21264.2"
+   }
 -- 
 2.20.1.windows.1
 
