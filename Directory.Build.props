@@ -41,8 +41,7 @@
         '$(IsTestAssetProject)' == 'true' OR
         '$(IsBenchmarkProject)' == 'true' OR
         '$(IsUnitTestProject)' == 'true' OR
-        '$(IsSpecificationTestProject)' == 'true' OR
-        '$(IsOtherTestProject)' == 'true'">true</ExcludeFromSourceBuild>
+        '$(IsSpecificationTestProject)' == 'true'">true</ExcludeFromSourceBuild>
 
     <!--
       Following logic mimics core-setup approach as well as
