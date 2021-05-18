@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -150,6 +152,33 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 _logger.CookieSuppressed(key);
             }
+        }
+
+        public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var nonSuppressedValues = new List<KeyValuePair<string, string>>(keyValuePairs.Length);
+
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                var key = keyValuePair.Key;
+                var value = keyValuePair.Value;
+
+                if (ApplyAppendPolicy(ref key, ref value, options))
+                {
+                    nonSuppressedValues.Add(KeyValuePair.Create(key, value));
+                }
+                else
+                {
+                    _logger.CookieSuppressed(keyValuePair.Key);
+                }
+            }
+
+            Cookies.Append(CollectionsMarshal.AsSpan(nonSuppressedValues), options);
         }
 
         private bool ApplyAppendPolicy(ref string key, ref string value, CookieOptions options)

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
@@ -19,60 +18,37 @@ namespace Templates.Test
 {
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
-        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> fixture, ITestOutputHelper output)
-            : base(fixture)
+        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory)
+            : base(projectFactory)
         {
-            ProjectFactory = projectFactory; ;
-            Output = output;
-            BrowserContextInfo = new ContextInformation(CreateFactory(output));
         }
 
-        public ProjectFactoryFixture ProjectFactory { get; set; }
-        public ITestOutputHelper Output { get; }
-        public ContextInformation BrowserContextInfo { get; }
-        public Project Project { get; private set; }
-
+        public override string ProjectType { get; } = "blazorserver";
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+            var project = await CreateBuildPublishAsync("blazorservernoauth" + browserKind);
 
-            Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind.ToString(), Output);
-
-            var createResult = await Project.RunDotNetNewAsync("blazorserver");
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
-
-            var publishResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
-
-            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-            // later, while the opposite is not true.
-
-            var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
-
-            await using var browser = Fixture.BrowserManager.IsAvailable(browserKind) ?
-                await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
+            await using var browser = BrowserManager.IsAvailable(browserKind) ?
+                await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
                 null;
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -81,18 +57,18 @@ namespace Templates.Test
                 }
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -111,40 +87,24 @@ namespace Templates.Test
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+            var project = await CreateBuildPublishAsync("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""));
 
-            Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), Output);
-
-            var createResult = await Project.RunDotNetNewAsync("blazorserver", auth: "Individual", useLocalDB: useLocalDB);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
-
-            var publishResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
-
-            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-            // later, while the opposite is not true.
-
-            var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
-
-            var browser = !Fixture.BrowserManager.IsAvailable(browserKind) ?
+            var browser = !BrowserManager.IsAvailable(browserKind) ?
                 null :
-                await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -153,18 +113,18 @@ namespace Templates.Test
                 }
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -174,7 +134,7 @@ namespace Templates.Test
             }
         }
 
-        private async Task TestBasicNavigation(IPage page)
+        private async Task TestBasicNavigation(Project project, IPage page)
         {
             var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
                 (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
@@ -189,7 +149,7 @@ namespace Templates.Test
 
             await page.WaitForSelectorAsync("ul");
             // <title> element gets project ID injected into it during template execution
-            Assert.Equal(Project.ProjectName.Trim(), (await page.GetTitleAsync()).Trim());
+            Assert.Equal(project.ProjectName.Trim(), (await page.GetTitleAsync()).Trim());
 
             // Initially displays the home page
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
@@ -218,22 +178,8 @@ namespace Templates.Test
         [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", new string[] { "--calls-graph" })]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
-        public async Task BlazorServerTemplat_IdentityWeb_BuildAndPublish(string auth, string[] args)
-        {
-            Project = await ProjectFactory.GetOrCreateProject("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
+        public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
+            => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
 
-            var createResult = await Project.RunDotNetNewAsync("blazorserver", auth: auth, args: args);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
-
-            var publishResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
-
-            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-            // later, while the opposite is not true.
-
-            var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
-        }
     }
 }

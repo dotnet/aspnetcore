@@ -717,8 +717,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // Second reset
                 if (stream.RstStreamReceived)
                 {
-                    // Hard abort, do not allow any more frames on this stream.
-                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                    // https://tools.ietf.org/html/rfc7540#section-5.1
+                    // If RST_STREAM has already been received then the stream is in a closed state.
+                    // Additional frames (other than PRIORITY) are a stream error.
+                    // The server will usually send a RST_STREAM for a stream error, but RST_STREAM
+                    // shouldn't be sent in response to RST_STREAM to avoid a loop. 
+                    // The best course of action here is to do nothing.
+                    return Task.CompletedTask;
                 }
 
                 // No additional inbound header or data frames are allowed for this stream after receiving a reset.
@@ -1026,7 +1031,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
                     // fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header
                     // fields is malformed (Section 8.1.2.6).
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (_clientActiveStreamCount == _serverSettings.MaxConcurrentStreams)
@@ -1327,7 +1332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (IsConnectionSpecificHeaderField(name, value))
             {
-                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
@@ -1338,11 +1343,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
                     {
-                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailerNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                        throw new Http2ConnectionErrorException(CoreStrings.HttpErrorTrailerNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
                     }
                     else
                     {
-                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                        throw new Http2ConnectionErrorException(CoreStrings.HttpErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
                     }
                 }
             }
@@ -1398,13 +1403,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // All pseudo-header fields MUST appear in the header block before regular header fields.
                     // Any request or response that contains a pseudo-header field that appears in a header
                     // block after a regular header field MUST be treated as malformed (Section 8.1.2.6).
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.HttpErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
                 {
                     // Pseudo-header fields MUST NOT appear in trailers.
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailersContainPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.HttpErrorTrailersContainPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 _requestHeaderParsingState = RequestHeaderParsingState.PseudoHeaderFields;
@@ -1413,21 +1418,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // Endpoints MUST treat a request or response that contains undefined or invalid pseudo-header
                     // fields as malformed (Section 8.1.2.6).
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorUnknownPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.HttpErrorUnknownPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Status)
                 {
                     // Pseudo-header fields defined for requests MUST NOT appear in responses; pseudo-header fields
                     // defined for responses MUST NOT appear in requests.
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorResponsePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.HttpErrorResponsePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if ((_parsedPseudoHeaderFields & headerField) == headerField)
                 {
                     // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.3
                     // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorDuplicatePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.HttpErrorDuplicatePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Method)

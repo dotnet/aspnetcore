@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { DefaultHttpClient } from "./DefaultHttpClient";
+import { HttpError } from "./Errors";
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
@@ -49,6 +51,7 @@ export class HttpConnection implements IConnection {
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
     // Needs to not start with _ to be available for tests
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private transport?: ITransport;
     private _startInternalPromise?: Promise<void>;
     private _stopPromise?: Promise<void>;
@@ -306,7 +309,7 @@ export class HttpConnection implements IConnection {
         if (this._accessTokenFactory) {
             const token = await this._accessTokenFactory();
             if (token) {
-                headers[`Authorization`] = `Bearer ${token}`;
+                headers[HeaderNames.Authorization] = `Bearer ${token}`;
             }
         }
 
@@ -334,8 +337,15 @@ export class HttpConnection implements IConnection {
             }
             return negotiateResponse;
         } catch (e) {
-            this._logger.log(LogLevel.Error, "Failed to complete negotiation with the server: " + e);
-            return Promise.reject(e);
+            let errorMessage = "Failed to complete negotiation with the server: " + e;
+            if (e instanceof HttpError) {
+                if (e.statusCode === 404) {
+                    errorMessage = errorMessage + " Either this is not a SignalR endpoint or there is a proxy blocking the connection.";
+                }
+            }
+            this._logger.log(LogLevel.Error, errorMessage);
+
+            return Promise.reject(new Error(errorMessage));
         }
     }
 

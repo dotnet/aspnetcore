@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.ChallengeAsync"/>.
     /// </summary>
-    public class ChallengeResult : ActionResult
+    public class ChallengeResult : ActionResult, IResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ChallengeResult"/>.
@@ -90,14 +91,25 @@ namespace Microsoft.AspNetCore.Mvc
         public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            return ExecuteAsync(context.HttpContext);
+        }
+
+        /// <inheritdoc />
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            return ExecuteAsync(httpContext);
+        }
+
+        private async Task ExecuteAsync(HttpContext httpContext)
+        {
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ChallengeResult>();
 
             logger.ChallengeResultExecuting(AuthenticationSchemes);
@@ -106,12 +118,12 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 foreach (var scheme in AuthenticationSchemes)
                 {
-                    await context.HttpContext.ChallengeAsync(scheme, Properties);
+                    await httpContext.ChallengeAsync(scheme, Properties);
                 }
             }
             else
             {
-                await context.HttpContext.ChallengeAsync(Properties);
+                await httpContext.ChallengeAsync(Properties);
             }
         }
     }

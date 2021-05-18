@@ -403,6 +403,37 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
+        // related to issue https://github.com/dotnet/aspnetcore/issues/14453
+        public async Task CheckHealthAsync_CheckCanDependOnScopedService_per_check()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.Services.AddScoped<CantBeMultiThreadedService>();
+
+                b.AddCheck<CheckWithServiceNotMultiThreadDependency>("Test");
+                b.AddCheck<CheckWithServiceNotMultiThreadDependency>("Test2");
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Entries,
+                actual =>
+                {
+                    Assert.Equal("Test", actual.Key);
+                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+                },
+                actual =>
+                {
+                    Assert.Equal("Test2", actual.Key);
+                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+                });
+        }
+
+        [Fact]
         public async Task CheckHealthAsync_CheckCanDependOnSingletonService()
         {
             // Arrange
@@ -532,7 +563,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Assert
             Assert.False(hangs);
         }
-        
+
         [Fact]
         public async Task CheckHealthAsync_WithFailureStatus()
         {
@@ -584,6 +615,20 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         private class AnotherService { }
 
+        private class CantBeMultiThreadedService
+        {
+            private readonly object _lock = new();
+            private bool _wasUsed;
+            public void Check()
+            {
+                lock (_lock)
+                {
+                    if (_wasUsed) throw new InvalidOperationException("Should only used once");
+                    _wasUsed = true;
+                }
+            }
+        }
+
         private class CheckWithServiceDependency : IHealthCheck
         {
             public CheckWithServiceDependency(AnotherService _)
@@ -593,6 +638,30 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(HealthCheckResult.Healthy());
+            }
+        }
+
+        private class CheckWithServiceNotMultiThreadDependency : IHealthCheck
+        {
+            private readonly CantBeMultiThreadedService _service;
+
+            public CheckWithServiceNotMultiThreadDependency(CantBeMultiThreadedService service)
+            {
+                _service = service;
+            }
+
+            public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+            {
+                try
+                {
+                    _service.Check();
+                    return Task.FromResult(HealthCheckResult.Healthy());
+                }
+                catch (InvalidOperationException e)
+                {
+                    return Task.FromResult(HealthCheckResult.Unhealthy("failed", e));
+                }
+
             }
         }
 
@@ -607,7 +676,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 return Task.FromResult(HealthCheckResult.Healthy(data: data));
             }
         }
-        
+
         private class FailCapturingCheck : IHealthCheck
         {
             public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)

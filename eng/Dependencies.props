@@ -71,7 +71,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
-    <LatestPackageReference Include="System.Security.Cryptography.Cng" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />
@@ -115,7 +114,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-    <LatestPackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />

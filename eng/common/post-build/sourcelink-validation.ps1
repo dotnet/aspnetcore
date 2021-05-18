@@ -14,7 +14,9 @@ param(
 $global:RepoFiles = @{}
 
 # Maximum number of jobs to run in parallel
-$MaxParallelJobs = 6
+$MaxParallelJobs = 16
+
+$MaxRetries = 5
 
 # Wait time between check for system load
 $SecondsBetweenLoadChecks = 10
@@ -29,7 +31,10 @@ $ValidatePackage = {
   # Ensure input file exist
   if (!(Test-Path $PackagePath)) {
     Write-Host "Input file does not exist: $PackagePath"
-    return 1
+    return [pscustomobject]@{
+      result = 1
+      packagePath = $PackagePath
+    }
   }
 
   # Extensions for which we'll look for SourceLink information
@@ -59,7 +64,10 @@ $ValidatePackage = {
 
           # We ignore resource DLLs
           if ($FileName.EndsWith('.resources.dll')) {
-            return
+            return [pscustomobject]@{
+              result = 0
+              packagePath = $PackagePath
+            }
           }
 
           [System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, $TargetFile, $true)
@@ -91,36 +99,49 @@ $ValidatePackage = {
                     $Status = 200
                     $Cache = $using:RepoFiles
 
-                    if ( !($Cache.ContainsKey($FilePath)) ) {
-                      try {
-                        $Uri = $Link -as [System.URI]
-                      
-                        # Only GitHub links are valid
-                        if ($Uri.AbsoluteURI -ne $null -and ($Uri.Host -match 'github' -or $Uri.Host -match 'githubusercontent')) {
-                          $Status = (Invoke-WebRequest -Uri $Link -UseBasicParsing -Method HEAD -TimeoutSec 5).StatusCode
+                    $totalRetries = 0
+
+                    while ($totalRetries -lt $using:MaxRetries) {
+                      if ( !($Cache.ContainsKey($FilePath)) ) {
+                        try {
+                          $Uri = $Link -as [System.URI]
+                        
+                          # Only GitHub links are valid
+                          if ($Uri.AbsoluteURI -ne $null -and ($Uri.Host -match 'github' -or $Uri.Host -match 'githubusercontent')) {
+                            $Status = (Invoke-WebRequest -Uri $Link -UseBasicParsing -Method HEAD -TimeoutSec 5).StatusCode
+                          }
+                          else {
+                            # If it's not a github link, we want to break out of the loop and not retry.
+                            $Status = 0
+                            $totalRetries = $using:MaxRetries
+                          }
                         }
-                        else {
+                        catch {
+                          Write-Host $_
                           $Status = 0
                         }
                       }
-                      catch {
-                        write-host $_
-                        $Status = 0
-                      }
-                    }
 
-                    if ($Status -ne 200) {
-                      if ($NumFailedLinks -eq 0) {
-                        if ($FailedFiles.Value -eq 0) {
-                          Write-Host
+                      if ($Status -ne 200) {
+                        $totalRetries++
+                        
+                        if ($totalRetries -ge $using:MaxRetries) {
+                          if ($NumFailedLinks -eq 0) {
+                            if ($FailedFiles.Value -eq 0) {
+                              Write-Host
+                            }
+  
+                            Write-Host "`tFile $RealPath has broken links:"
+                          }
+  
+                          Write-Host "`t`tFailed to retrieve $Link"
+  
+                          $NumFailedLinks++
                         }
-
-                        Write-Host "`tFile $RealPath has broken links:"
                       }
-
-                      Write-Host "`t`tFailed to retrieve $Link"
-
-                      $NumFailedLinks++
+                      else {
+                        break
+                      }
                     }
                   }
               }
@@ -136,7 +157,7 @@ $ValidatePackage = {
         }
   }
   catch {
-  
+    Write-Host $_
   }
   finally {
     $zip.Dispose() 
@@ -220,6 +241,7 @@ function ValidateSourceLinkLinks {
   # Process each NuGet package in parallel
   Get-ChildItem "$InputPath\*.symbols.nupkg" |
     ForEach-Object {
+      Write-Host "Starting $($_.FullName)"
       Start-Job -ScriptBlock $ValidatePackage -ArgumentList $_.FullName | Out-Null
       $NumJobs = @(Get-Job -State 'Running').Count
       
@@ -266,6 +288,10 @@ function InstallSourcelinkCli {
 
 try {
   InstallSourcelinkCli
+
+  foreach ($Job in @(Get-Job)) {
+    Remove-Job -Id $Job.Id
+  }
 
   ValidateSourceLinkLinks 
 }

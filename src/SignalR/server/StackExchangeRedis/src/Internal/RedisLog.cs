@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
     internal static class RedisLog
     {
         private static readonly Action<ILogger, string, string, Exception?> _connectingToEndpoints =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(1, "ConnectingToEndpoints"), "Connecting to Redis endpoints: {Endpoints}. Using Server Name: {ServerName}");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(1, "ConnectingToEndpoints"), "Connecting to Redis endpoints: {Endpoints}. Using Server Name: {ServerName}", skipEnabledCheck: true);
 
         private static readonly Action<ILogger, Exception?> _connected =
             LoggerMessage.Define(LogLevel.Information, new EventId(2, "Connected"), "Connected to Redis.");
@@ -47,12 +47,9 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 
         public static void ConnectingToEndpoints(ILogger logger, EndPointCollection endpoints, string serverName)
         {
-            if (logger.IsEnabled(LogLevel.Information))
+            if (logger.IsEnabled(LogLevel.Information) && endpoints.Count > 0)
             {
-                if (endpoints.Count > 0)
-                {
-                    _connectingToEndpoints(logger, string.Join(", ", endpoints.Select(e => EndPointCollection.ToString(e))), serverName, null);
-                }
+                _connectingToEndpoints(logger, string.Join(", ", endpoints.Select(e => EndPointCollection.ToString(e))), serverName, null);
             }
         }
 

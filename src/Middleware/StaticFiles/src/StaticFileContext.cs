@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var responseHeaders = ResponseHeaders;
                 responseHeaders.LastModified = _lastModified;
                 responseHeaders.ETag = _etag;
-                responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
+                responseHeaders.Headers.AcceptRanges = "bytes";
             }
             if (statusCode == StatusCodes.Status200OK)
             {
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             try
             {
                 var logPath = !string.IsNullOrEmpty(_fileInfo.PhysicalPath) ? _fileInfo.PhysicalPath : SubPath;
-                _logger.SendingFileRange(_response.Headers[HeaderNames.ContentRange], logPath);
+                _logger.SendingFileRange(_response.Headers.ContentRange, logPath);
                 await _context.Response.SendFileAsync(_fileInfo, start, length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)

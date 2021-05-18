@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
@@ -25,6 +27,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// Sets up some state in session storage to allow for logouts from within the <see cref="RemoteAuthenticationDefaults.LogoutPath"/> page.
         /// </summary>
         /// <returns>A <see cref="ValueTask"/> that completes when the state has been saved to session storage.</returns>
+        [DynamicDependency(JsonSerialized, typeof(SignOutState))]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
+        // This should use JSON source generation
         public virtual ValueTask SetSignOutState()
         {
             return _jsRuntime.InvokeVoidAsync(
@@ -60,8 +65,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 return default;
             }
 
-            return JsonSerializer.Deserialize<SignOutState>(result, _serializationOptions);
+            return DeserializeSignOutState(result);
         }
+
+        [DynamicDependency(JsonSerialized, typeof(SignOutState))]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
+        // This should use JSON source generation
+        private SignOutState DeserializeSignOutState(string result) => JsonSerializer.Deserialize<SignOutState>(result, _serializationOptions);
 
         private ValueTask ClearSignOutState()
         {

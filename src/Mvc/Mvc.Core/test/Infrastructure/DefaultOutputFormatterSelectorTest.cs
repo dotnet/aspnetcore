@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            context.HttpContext.Request.Headers.Accept = "application/xml"; // This will not be used
 
             // Act
             var formatter = selector.SelectFormatter(
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            context.HttpContext.Request.Headers.Accept = "application/xml"; // This will not be used
 
             // Act
             var formatter = selector.SelectFormatter(
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            context.HttpContext.Request.Headers.Accept = "application/xml"; // This will not be used
 
             // Act
             var formatter = selector.SelectFormatter(
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
+            context.HttpContext.Request.Headers.Accept = acceptHeader;
 
             // Act
             var formatter = selector.SelectFormatter(
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom,application/custom";
+            context.HttpContext.Request.Headers.Accept = "text/custom,application/custom";
 
             // Act
             var formatter = selector.SelectFormatter(
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom,application/custom";
+            context.HttpContext.Request.Headers.Accept = "text/custom,application/custom";
 
             // Act
             var formatter = selector.SelectFormatter(
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom";
+            context.HttpContext.Request.Headers.Accept = "text/custom";
 
             // Act
             var formatter = selector.SelectFormatter(
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType: null,
                 @object: null);
 
-            context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom, text/custom2";
+            context.HttpContext.Request.Headers.Accept = "text/custom, text/custom2";
 
             var serverDefinedContentTypes = new MediaTypeCollection();
             serverDefinedContentTypes.Add("text/other");

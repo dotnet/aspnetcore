@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection
+    internal sealed partial class SocketConnection : TransportConnection
     {
-        private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
+        private static readonly int MinAllocBufferSize = PinnedBlockMemoryPool.BlockSize / 2;
 
         private readonly Socket _socket;
         private readonly ISocketsTrace _trace;
@@ -70,6 +70,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Set the transport and connection id
             Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
+
+            InitiaizeFeatures();
         }
 
         public PipeWriter Input => Application.Output;
@@ -156,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     if (bytesReceived == 0)
                     {
                         // FIN
-                        _trace.ConnectionReadFin(ConnectionId);
+                        _trace.ConnectionReadFin(this);
                         break;
                     }
 
@@ -168,14 +170,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                     if (paused)
                     {
-                        _trace.ConnectionPause(ConnectionId);
+                        _trace.ConnectionPause(this);
                     }
 
                     var result = await flushTask;
 
                     if (paused)
                     {
-                        _trace.ConnectionResume(ConnectionId);
+                        _trace.ConnectionResume(this);
                     }
 
                     if (result.IsCompleted || result.IsCanceled)
@@ -194,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
                 if (!_socketDisposed)
                 {
-                    _trace.ConnectionReset(ConnectionId);
+                    _trace.ConnectionReset(this);
                 }
             }
             catch (Exception ex)
@@ -207,14 +209,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 if (!_socketDisposed)
                 {
                     // This is unexpected if the socket hasn't been disposed yet.
-                    _trace.ConnectionError(ConnectionId, error);
+                    _trace.ConnectionError(this, error);
                 }
             }
             catch (Exception ex)
             {
                 // This is unexpected.
                 error = ex;
-                _trace.ConnectionError(ConnectionId, error);
+                _trace.ConnectionError(this, error);
             }
             finally
             {
@@ -265,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
-                _trace.ConnectionReset(ConnectionId);
+                _trace.ConnectionReset(this);
             }
             catch (Exception ex)
                 when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
@@ -278,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _trace.ConnectionError(ConnectionId, unexpectedError);
+                _trace.ConnectionError(this, unexpectedError);
             }
             finally
             {
@@ -330,8 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // ever observe the nondescript ConnectionAbortedException except for connection middleware attempting
                 // to half close the connection which is currently unsupported.
                 _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
-
-                _trace.ConnectionWriteFin(ConnectionId, _shutdownReason.Message);
+                _trace.ConnectionWriteFin(this, _shutdownReason.Message);
 
                 try
                 {

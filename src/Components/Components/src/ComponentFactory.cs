@@ -3,15 +3,15 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
 {
-    internal class ComponentFactory
+    internal sealed class ComponentFactory
     {
         private static readonly BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Components
         {
             _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
         }
+
+        public void ClearCache() => _cachedInitializers.Clear();
 
         public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
         {
@@ -56,16 +58,22 @@ namespace Microsoft.AspNetCore.Components
         private Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
         {
             // Do all the reflection up front
-            var injectableProperties =
-                MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags)
-                .Where(p => p.IsDefined(typeof(InjectAttribute)));
+            List<(string name, Type propertyType, PropertySetter setter)>? injectables = null;
+            foreach (var property in MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags))
+            {
+                if (!property.IsDefined(typeof(InjectAttribute)))
+                {
+                    continue;
+                }
 
-            var injectables = injectableProperties.Select(property =>
-            (
-                propertyName: property.Name,
-                propertyType: property.PropertyType,
-                setter: new PropertySetter(type, property)
-            )).ToArray();
+                injectables ??= new();
+                injectables.Add((property.Name, property.PropertyType, new PropertySetter(type, property)));
+            }
+
+            if (injectables is null)
+            {
+                return static (_, _) => { };
+            }
 
             return Initialize;
 

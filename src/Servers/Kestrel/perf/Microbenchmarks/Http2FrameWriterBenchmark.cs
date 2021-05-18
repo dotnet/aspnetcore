@@ -4,13 +4,13 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using BenchmarkDotNet.Attributes;
+
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _memoryPool = SlabMemoryPoolFactory.Create();
+            _memoryPool = PinnedBlockMemoryPoolFactory.Create();
 
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             _pipe = new Pipe(options);
@@ -47,8 +47,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
                 serviceContext);
 
             _responseHeaders = new HttpResponseHeaders();
-            _responseHeaders.HeaderContentType = "application/json";
-            _responseHeaders.HeaderContentLength = "1024";
+            var headers = (IHeaderDictionary)_responseHeaders;
+            headers.ContentType = "application/json";
+            headers.ContentLength = 1024;
         }
 
         [Benchmark]

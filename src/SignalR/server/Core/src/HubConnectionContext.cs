@@ -99,6 +99,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         internal HubCallerContext HubCallerContext { get; }
+        internal HubCallerClients HubCallerClients { get; set; } = null!;
 
         internal Exception? CloseException { get; private set; }
 

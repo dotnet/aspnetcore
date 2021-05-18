@@ -8,7 +8,7 @@ RazorDocument - [0..2)::2 - [@"]
                     Transition;[@];
                 CSharpImplicitExpressionBody - [1..1)::0
                     CSharpCodeBlock - [1..1)::0
-                        CSharpExpressionLiteral - [1..1)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                        CSharpExpressionLiteral - [1..1)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K15
                             Marker;[];
         MarkupTextLiteral - [1..2)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
             DoubleQuote;["];

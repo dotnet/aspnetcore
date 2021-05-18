@@ -59,7 +59,7 @@ namespace JwtBearerSample
                 var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                 if (authResult.Succeeded && authResult.Principal.Identity.IsAuthenticated)
                 {
-                    await next();
+                    await next(context);
                 }
                 else if (authResult.Failure != null)
                 {
@@ -92,7 +92,7 @@ namespace JwtBearerSample
                     else
                     {
                         response.ContentType = "application/json";
-                        response.Headers[HeaderNames.CacheControl] = "no-cache";
+                        response.Headers.CacheControl = "no-cache";
                         await response.StartAsync();
                         Serialize(Todos, response.BodyWriter);
                         await response.BodyWriter.FlushAsync();

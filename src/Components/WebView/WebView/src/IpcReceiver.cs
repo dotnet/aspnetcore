@@ -88,7 +88,8 @@ namespace Microsoft.AspNetCore.Components.WebView
         private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
         {
             var renderer = pageContext.Renderer;
-            var webEventData = WebEventData.Parse(renderer, eventDescriptor, eventArgs);
+            var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
+            var webEventData = WebEventData.Parse(renderer, jsonSerializerOptions, eventDescriptor, eventArgs);
             return renderer.DispatchEventAsync(
                 webEventData.EventHandlerId,
                 webEventData.EventFieldInfo,

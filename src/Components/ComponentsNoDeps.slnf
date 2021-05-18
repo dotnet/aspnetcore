@@ -53,6 +53,7 @@
       "src\\Components\\benchmarkapps\\Wasm.Performance\\Driver\\Wasm.Performance.Driver.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\TestApp\\Wasm.Performance.TestApp.csproj",
       "src\\Components\\test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
+      "src\\Components\\test\\E2ETestMigration\\Microsoft.AspNetCore.Components.Migration.E2ETests.csproj",
       "src\\Components\\test\\testassets\\BasicTestApp\\BasicTestApp.csproj",
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",

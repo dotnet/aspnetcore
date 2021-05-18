@@ -10,7 +10,7 @@ namespace System.Buffers
     /// </summary>
     internal sealed class MemoryPoolBlock : IMemoryOwner<byte>
     {
-        internal MemoryPoolBlock(SlabMemoryPool pool, int length)
+        internal MemoryPoolBlock(PinnedBlockMemoryPool pool, int length)
         {
             Pool = pool;
 
@@ -22,7 +22,7 @@ namespace System.Buffers
         /// <summary>
         /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
         /// </summary>
-        public SlabMemoryPool Pool { get; }
+        public PinnedBlockMemoryPool Pool { get; }
 
         public Memory<byte> Memory { get; }
 

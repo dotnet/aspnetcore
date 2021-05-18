@@ -100,6 +100,71 @@ namespace Microsoft.AspNetCore.Mvc
             auth.Verify();
         }
 
+        [Fact]
+        public async Task ExecuteAsync_NoArgsInvokesDefaultSignOut()
+        {
+            // Arrange
+            var httpContext = new Mock<HttpContext>();
+            var auth = new Mock<IAuthenticationService>();
+            auth
+                .Setup(c => c.SignOutAsync(httpContext.Object, null, null))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
+            var result = new SignOutResult();
+
+            // Act
+            await ((IResult)result).ExecuteAsync(httpContext.Object);
+
+            // Assert
+            auth.Verify();
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_InvokesSignOutAsyncOnAuthenticationManager()
+        {
+            // Arrange
+            var httpContext = new Mock<HttpContext>();
+            var auth = new Mock<IAuthenticationService>();
+            auth
+                .Setup(c => c.SignOutAsync(httpContext.Object, "", null))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
+            var result = new SignOutResult("", null);
+
+            // Act
+            await ((IResult)result).ExecuteAsync(httpContext.Object);
+
+            // Assert
+            auth.Verify();
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_InvokesSignOutAsyncOnAllConfiguredSchemes()
+        {
+            // Arrange
+            var authProperties = new AuthenticationProperties();
+            var httpContext = new Mock<HttpContext>();
+            var auth = new Mock<IAuthenticationService>();
+            auth
+                .Setup(c => c.SignOutAsync(httpContext.Object, "Scheme1", authProperties))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            auth
+                .Setup(c => c.SignOutAsync(httpContext.Object, "Scheme2", authProperties))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
+            var result = new SignOutResult(new[] { "Scheme1", "Scheme2" }, authProperties);
+
+            // Act
+            await ((IResult)result).ExecuteAsync(httpContext.Object);
+
+            // Assert
+            auth.Verify();
+        }
+
         private static IServiceProvider CreateServices(IAuthenticationService auth)
         {
             return new ServiceCollection()

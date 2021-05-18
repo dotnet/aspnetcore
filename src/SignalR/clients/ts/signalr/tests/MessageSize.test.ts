@@ -28,7 +28,7 @@ describe("Message size", () => {
             const hubConnection = createHubConnection(connection, logger);
             try {
                 // We don't actually care to wait for the send.
-                // tslint:disable-next-line:no-floating-promises
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 hubConnection.send("target", 1)
                     .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -50,7 +50,7 @@ describe("Message size", () => {
             const hubConnection = createHubConnection(connection, logger);
             try {
                 // We don't actually care to wait for the invoke.
-                // tslint:disable-next-line:no-floating-promises
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 hubConnection.invoke("target", 1)
                     .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -91,7 +91,7 @@ describe("Message size", () => {
             const hubConnection = createHubConnection(connection, logger);
             try {
                 // We don't actually care to wait for the invoke.
-                // tslint:disable-next-line:no-floating-promises
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 hubConnection.invoke("target", 1, new Subject())
                     .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 

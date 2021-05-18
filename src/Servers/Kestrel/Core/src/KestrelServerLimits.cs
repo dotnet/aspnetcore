@@ -33,8 +33,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         // Matches the default LimitRequestFields in Apache httpd.
         private int _maxRequestHeaderCount = 100;
 
-        // Matches the default http.sys connectionTimeout.
-        private TimeSpan _keepAliveTimeout = TimeSpan.FromMinutes(2);
+        // Slightly more than SocketHttpHandler's old PooledConnectionIdleTimeout of 2 minutes.
+        // https://github.com/dotnet/runtime/issues/52267
+        private TimeSpan _keepAliveTimeout = TimeSpan.FromSeconds(130);
 
         private TimeSpan _requestHeadersTimeout = TimeSpan.FromSeconds(30);
 
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to 8,192 bytes (8 KB).
         /// </summary>
         /// <remarks>
-        /// For HTTP/2 this measures the total size of the required pseudo headers
+        /// For HTTP/2 and HTTP/3 this measures the total size of the required pseudo headers
         /// :method, :scheme, :authority, and :path.
         /// </remarks>
         public int MaxRequestLineSize
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the keep-alive timeout.
-        /// Defaults to 2 minutes.
+        /// Defaults to 130 seconds.
         /// </summary>
         /// <remarks>
         /// </remarks>

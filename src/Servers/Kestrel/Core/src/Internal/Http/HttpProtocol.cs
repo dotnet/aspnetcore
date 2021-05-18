@@ -909,27 +909,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        public void ProduceContinue()
+        public ValueTask<FlushResult> ProduceContinueAsync()
         {
             if (HasResponseStarted)
             {
-                return;
+                return default;
             }
 
             if (_httpVersion != Http.HttpVersion.Http10 &&
                 ((IHeaderDictionary)HttpRequestHeaders).TryGetValue(HeaderNames.Expect, out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                ValueTask<FlushResult> vt = Output.Write100ContinueAsync();
-                if (vt.IsCompleted)
-                {
-                    vt.GetAwaiter().GetResult();
-                }
-                else
-                {
-                    vt.AsTask().GetAwaiter().GetResult();
-                }
+                return Output.Write100ContinueAsync();
             }
+
+            return default;
         }
 
         public Task InitializeResponseAsync(int firstWriteByteCount)

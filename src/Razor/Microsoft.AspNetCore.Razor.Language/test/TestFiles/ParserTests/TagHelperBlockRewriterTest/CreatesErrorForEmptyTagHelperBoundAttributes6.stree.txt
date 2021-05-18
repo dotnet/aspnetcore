@@ -13,7 +13,7 @@ RazorDocument - [0..29)::29 - [<myth bound='true' bound=  />]
                     MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [13..17)::4
-                        CSharpExpressionLiteral - [13..17)::4 - [true] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [13..17)::4 - [true] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                             Text;[true];
                     MarkupTextLiteral - [17..18)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
@@ -24,7 +24,7 @@ RazorDocument - [0..29)::29 - [<myth bound='true' bound=  />]
                         Text;[bound];
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [25..25)::0
-                        CSharpExpressionLiteral - [25..25)::0 - [] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [25..25)::0 - [] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                 MarkupMiscAttributeContent - [25..27)::2
                     MarkupTextLiteral - [25..27)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[  ];

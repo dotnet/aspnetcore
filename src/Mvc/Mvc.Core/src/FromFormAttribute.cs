@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Specifies that a parameter or property should be bound using form-data in the request body.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class FromFormAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider, IFromFormMetadata
+    public class FromFormAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
     {
         /// <inheritdoc />
         public BindingSource BindingSource => BindingSource.Form;

@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Rewrite
                 request.QueryString);
 
             response.StatusCode = statusCode;
-            response.Headers[HeaderNames.Location] = newUrl;
+            response.Headers.Location = newUrl;
             context.Result = RuleResult.EndResponse;
         }
     }

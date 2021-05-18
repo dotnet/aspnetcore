@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 Assert.True(httpContext.Request.CanHaveBody());
                 Assert.Null(httpContext.Request.ContentLength);
                 // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
-                Assert.Equal("chunked", httpContext.Request.Headers[HeaderNames.TransferEncoding]);
+                Assert.Equal("chunked", httpContext.Request.Headers.TransferEncoding);
                 return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
             });
 
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                httpContext.Response.Headers[HeaderNames.Connection] = "close";
+                httpContext.Response.Headers.Connection = "close";
                 return Task.FromResult(0);
             });
 
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                httpContext.Response.Headers[HeaderNames.Connection] = "close";
+                httpContext.Response.Headers.Connection = "close";
                 return Task.FromResult(0);
             });
 
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                httpContext.Response.Headers[HeaderNames.Connection] = "close";
+                httpContext.Response.Headers.Connection = "close";
                 return Task.FromResult(0);
             });
 

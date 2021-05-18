@@ -307,7 +307,7 @@
     <value>IHttpUpgradeFeature.UpgradeAsync was already called and can only be called once per connection.</value>
   </data>
   <data name="BadRequest_RequestBodyTooLarge" xml:space="preserve">
-    <value>Request body too large.</value>
+    <value>Request body too large. The max request body size is {maxRequestBodySize} bytes.</value>
   </data>
   <data name="MaxRequestBodySizeCannotBeModifiedAfterRead" xml:space="preserve">
     <value>The maximum request body size cannot be modified after the app has already started reading from the request body.</value>
@@ -390,34 +390,34 @@
   <data name="Http2ErrorStreamIdle" xml:space="preserve">
     <value>The client sent a {frameType} frame to idle stream ID {streamId}.</value>
   </data>
-  <data name="Http2ErrorTrailersContainPseudoHeaderField" xml:space="preserve">
+  <data name="HttpErrorTrailersContainPseudoHeaderField" xml:space="preserve">
     <value>The client sent trailers containing one or more pseudo-header fields.</value>
   </data>
-  <data name="Http2ErrorHeaderNameUppercase" xml:space="preserve">
+  <data name="HttpErrorHeaderNameUppercase" xml:space="preserve">
     <value>The client sent a header with uppercase characters in its name.</value>
   </data>
-  <data name="Http2ErrorTrailerNameUppercase" xml:space="preserve">
+  <data name="HttpErrorTrailerNameUppercase" xml:space="preserve">
     <value>The client sent a trailer with uppercase characters in its name.</value>
   </data>
   <data name="Http2ErrorHeadersWithTrailersNoEndStream" xml:space="preserve">
     <value>The client sent a HEADERS frame containing trailers without setting the END_STREAM flag.</value>
   </data>
-  <data name="Http2ErrorMissingMandatoryPseudoHeaderFields" xml:space="preserve">
+  <data name="HttpErrorMissingMandatoryPseudoHeaderFields" xml:space="preserve">
     <value>Request headers missing one or more mandatory pseudo-header fields.</value>
   </data>
-  <data name="Http2ErrorPseudoHeaderFieldAfterRegularHeaders" xml:space="preserve">
+  <data name="HttpErrorPseudoHeaderFieldAfterRegularHeaders" xml:space="preserve">
     <value>Pseudo-header field found in request headers after regular header fields.</value>
   </data>
-  <data name="Http2ErrorUnknownPseudoHeaderField" xml:space="preserve">
+  <data name="HttpErrorUnknownPseudoHeaderField" xml:space="preserve">
     <value>Request headers contain unknown pseudo-header field.</value>
   </data>
-  <data name="Http2ErrorResponsePseudoHeaderField" xml:space="preserve">
+  <data name="HttpErrorResponsePseudoHeaderField" xml:space="preserve">
     <value>Request headers contain response-specific pseudo-header field.</value>
   </data>
-  <data name="Http2ErrorDuplicatePseudoHeaderField" xml:space="preserve">
+  <data name="HttpErrorDuplicatePseudoHeaderField" xml:space="preserve">
     <value>Request headers contain duplicate pseudo-header field.</value>
   </data>
-  <data name="Http2ErrorConnectionSpecificHeaderField" xml:space="preserve">
+  <data name="HttpErrorConnectionSpecificHeaderField" xml:space="preserve">
     <value>Request headers contain connection-specific header field.</value>
   </data>
   <data name="AuthenticationFailed" xml:space="preserve">
@@ -679,5 +679,17 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http3ControlStreamErrorMultipleInboundStreams" xml:space="preserve">
     <value>The client created multiple inbound {streamType} streams for the connection.</value>
+  </data>
+  <data name="Http3StreamErrorRequestEndedNoHeaders" xml:space="preserve">
+    <value>Request stream ended without headers.</value>
+  </data>
+  <data name="Http3ControlStreamHeaderTimeout" xml:space="preserve">
+    <value>Reading the control stream header timed out.</value>
+  </data>
+  <data name="Http3ErrorControlStreamClientClosedInbound" xml:space="preserve">
+    <value>The client closed the connection control stream inbound to the server.</value>
+  </data>
+  <data name="Http3ControlStreamErrorUnsupportedType" xml:space="preserve">
+    <value>Stream type {type} is unsupported.</value>
   </data>
 </root>

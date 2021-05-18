@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,10 @@ namespace TestServer
             services.AddMvc();
             services.AddServerSideBlazor();
             services.AddSingleton<ResourceRequestLog>();
+
+            // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
+            // contention issues.
+            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,7 +52,7 @@ namespace TestServer
                         resourceRequestLog.AddRequest(context.Request);
                     }
 
-                    return next();
+                    return next(context);
                 });
 
                 app.UseStaticFiles();

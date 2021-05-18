@@ -465,7 +465,6 @@ namespace System.Net.Http.QPack
             return true;
         }
 
-        // TODO: use H3StaticTable?
         private int EncodeStatusCode(int statusCode, Span<byte> buffer)
         {
             switch (statusCode)
@@ -480,14 +479,16 @@ namespace System.Net.Http.QPack
                     EncodeStaticIndexedHeaderField(H3StaticTable.StatusIndex[statusCode], buffer, out var bytesWritten);
                     return bytesWritten;
                 default:
-                    // Send as Literal Header Field Without Indexing - Indexed Name
-                    buffer[0] = 0x08;
+                    // https://tools.ietf.org/html/draft-ietf-quic-qpack-21#section-4.5.4
+                    // Index is 63 - :status
+                    buffer[0] = 0b01011111;
+                    buffer[1] = 0b00110000;
 
                     ReadOnlySpan<byte> statusBytes = StatusCodes.ToStatusBytes(statusCode);
-                    buffer[1] = (byte)statusBytes.Length;
-                    statusBytes.CopyTo(buffer.Slice(2));
+                    buffer[2] = (byte)statusBytes.Length;
+                    statusBytes.CopyTo(buffer.Slice(3));
 
-                    return 2 + statusBytes.Length;
+                    return 3 + statusBytes.Length;
             }
         }
     }

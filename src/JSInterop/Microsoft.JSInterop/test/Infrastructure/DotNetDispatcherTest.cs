@@ -299,24 +299,6 @@ namespace Microsoft.JSInterop.Infrastructure
             Assert.Equal(expected, ex.Message);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12357")]
-        public void EndInvoke_AfterCancel()
-        {
-            // Arrange
-            var jsRuntime = new TestJSRuntime();
-            var testDTO = new TestDTO { StringVal = "Hello", IntVal = 4 };
-            var cts = new CancellationTokenSource();
-            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant", cts.Token);
-            var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, true, testDTO }, jsRuntime.JsonSerializerOptions);
-
-            // Act
-            cts.Cancel();
-            DotNetDispatcher.EndInvokeJS(jsRuntime, argsJson);
-
-            // Assert
-            Assert.True(task.IsCanceled);
-        }
-
         [Fact]
         public async Task EndInvoke_WithNullError()
         {
@@ -497,15 +479,14 @@ namespace Microsoft.JSInterop.Infrastructure
             // Assert: Correct completion information
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
             Assert.True(jsRuntime.LastCompletionResult.Success);
-            var result = Assert.IsType<object[]>(jsRuntime.LastCompletionResult.Result);
-            var resultDto1 = Assert.IsType<TestDTO>(result[0]);
+            var resultJson = Assert.IsType<string>(jsRuntime.LastCompletionResult.ResultJson);
+            var result = JsonSerializer.Deserialize<SomePublicType.InvokableAsyncMethodResult>(resultJson, jsRuntime.JsonSerializerOptions);
 
-            Assert.Equal("STRING VIA JSON", resultDto1.StringVal);
-            Assert.Equal(2000, resultDto1.IntVal);
+            Assert.Equal("STRING VIA JSON", result.SomeDTO.StringVal);
+            Assert.Equal(2000, result.SomeDTO.IntVal);
 
             // Assert: Second result value marshalled by ref
-            var resultDto2Ref = Assert.IsType<DotNetObjectReference<TestDTO>>(result[1]);
-            var resultDto2 = resultDto2Ref.Value;
+            var resultDto2 = result.SomeDTORef.Value;
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(2468, resultDto2.IntVal);
         }
@@ -805,23 +786,29 @@ namespace Microsoft.JSInterop.Infrastructure
             }
 
             [JSInvokable]
-            public async Task<object[]> InvokableAsyncMethod(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
+            public async Task<InvokableAsyncMethodResult> InvokableAsyncMethod(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
             {
                 await Task.Delay(50);
                 var dtoByRef = dtoByRefWrapper.Value;
-                return new object[]
+                return new InvokableAsyncMethodResult
                 {
-                    new TestDTO // Return via JSON
+                    SomeDTO = new TestDTO // Return via JSON
                     {
                         StringVal = dtoViaJson.StringVal.ToUpperInvariant(),
                         IntVal = dtoViaJson.IntVal * 2,
                     },
-                    DotNetObjectReference.Create(new TestDTO // Return by ref
+                    SomeDTORef = DotNetObjectReference.Create(new TestDTO // Return by ref
                     {
                         StringVal = dtoByRef.StringVal.ToUpperInvariant(),
                         IntVal = dtoByRef.IntVal * 2,
                     })
                 };
+            }
+
+            public class InvokableAsyncMethodResult
+            {
+                public TestDTO SomeDTO { get; set; }
+                public DotNetObjectReference<TestDTO> SomeDTORef { get; set; }
             }
         }
 

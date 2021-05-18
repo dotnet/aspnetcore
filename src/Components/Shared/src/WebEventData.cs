@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Web
     {
         // This class represents the second half of parsing incoming event data,
         // once the event ID (and possibly the type of the eventArgs) becomes known.
-        public static WebEventData Parse(Renderer renderer, string eventDescriptorJson, string eventArgsJson)
+        public static WebEventData Parse(Renderer renderer, JsonSerializerOptions jsonSerializerOptions, string eventDescriptorJson, string eventArgsJson)
         {
             WebEventDescriptor eventDescriptor;
             try
@@ -29,13 +29,14 @@ namespace Microsoft.AspNetCore.Components.Web
 
             return Parse(
                 renderer,
+                jsonSerializerOptions,
                 eventDescriptor,
                 eventArgsJson);
         }
 
-        public static WebEventData Parse(Renderer renderer, WebEventDescriptor eventDescriptor, string eventArgsJson)
+        public static WebEventData Parse(Renderer renderer, JsonSerializerOptions jsonSerializerOptions, WebEventDescriptor eventDescriptor, string eventArgsJson)
         {
-            var parsedEventArgs = ParseEventArgsJson(renderer, eventDescriptor.EventHandlerId, eventDescriptor.EventName, eventArgsJson);
+            var parsedEventArgs = ParseEventArgsJson(renderer, jsonSerializerOptions, eventDescriptor.EventHandlerId, eventDescriptor.EventName, eventArgsJson);
             return new WebEventData(
                 eventDescriptor.BrowserRendererId,
                 eventDescriptor.EventHandlerId,
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public EventArgs EventArgs { get; }
 
-        private static EventArgs ParseEventArgsJson(Renderer renderer, ulong eventHandlerId, string eventName, string eventArgsJson)
+        private static EventArgs ParseEventArgsJson(Renderer renderer, JsonSerializerOptions jsonSerializerOptions, ulong eventHandlerId, string eventName, string eventArgsJson)
         {
             try
             {
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
                 // For custom events, the args type is determined from the associated delegate
                 var eventArgsType = renderer.GetEventArgsType(eventHandlerId);
-                return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsType, JsonSerializerOptionsProvider.Options)!;
+                return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsType, jsonSerializerOptions)!;
             }
             catch (Exception e)
             {
@@ -78,6 +79,9 @@ namespace Microsoft.AspNetCore.Components.Web
             }
         }
 
+        [DynamicDependency(JsonSerialized, typeof(DataTransfer))]
+        [DynamicDependency(JsonSerialized, typeof(DataTransferItem))]
+        [DynamicDependency(JsonSerialized, typeof(TouchPoint))]
         private static bool TryDeserializeStandardWebEventArgs(string eventName, string eventArgsJson, [NotNullWhen(true)] out EventArgs? eventArgs)
         {
             // For back-compatibility, we recognize the built-in list of web event names and hard-code
@@ -215,6 +219,8 @@ namespace Microsoft.AspNetCore.Components.Web
             return null;
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members are preserved by DynamicDependencies.")]
+        // This should use JSON source generation
         static T Deserialize<[DynamicallyAccessedMembers(JsonSerialized)] T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options)!;
 
         private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson)

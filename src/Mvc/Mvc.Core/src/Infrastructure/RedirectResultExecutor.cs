@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 context.HttpContext.Response.StatusCode = result.Permanent ?
                     StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
-                context.HttpContext.Response.Headers[HeaderNames.Location] = destinationUrl;
+                context.HttpContext.Response.Headers.Location = destinationUrl;
             }
             else
             {

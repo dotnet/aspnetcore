@@ -33,7 +33,7 @@ namespace MiddlewareAnaysisSample
             app.Use((context, next) =>
             {
                 // No-op
-                return next();
+                return next(context);
             });
 
             app.Map("/map", subApp =>
@@ -74,7 +74,7 @@ namespace MiddlewareAnaysisSample
                 }
                 else
                 {
-                    await next();
+                    await next(context);
                 }
             });
 

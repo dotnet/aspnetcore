@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection
@@ -16,35 +16,72 @@ namespace Microsoft.AspNetCore.Components.Reflection
             [DynamicallyAccessedMembers(Component)] Type type,
             BindingFlags bindingFlags)
         {
-            var dictionary = new Dictionary<string, List<PropertyInfo>>();
+            var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
 
             Type? currentType = type;
 
             while (currentType != null)
             {
-                var properties = currentType.GetProperties(bindingFlags  | BindingFlags.DeclaredOnly);
+                var properties = currentType.GetProperties(bindingFlags | BindingFlags.DeclaredOnly);
                 foreach (var property in properties)
                 {
                     if (!dictionary.TryGetValue(property.Name, out var others))
                     {
-                        others = new List<PropertyInfo>();
-                        dictionary.Add(property.Name, others);
+                        dictionary.Add(property.Name, property);
                     }
-
-                    if (others.Any(other => other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition()))
+                    else if (!IsInheritedProperty(property, others))
                     {
-                        // This is an inheritance case. We can safely ignore the value of property since
-                        // we have seen a more derived value.
-                        continue;
+                        List<PropertyInfo> many;
+                        if (others is PropertyInfo single)
+                        {
+                            many = new List<PropertyInfo> { single };
+                            dictionary[property.Name] = many;
+                        }
+                        else
+                        {
+                            many = (List<PropertyInfo>)others;
+                        }
+                        many.Add(property);
                     }
-
-                    others.Add(property);
                 }
 
                 currentType = currentType.BaseType;
             }
 
-            return dictionary.Values.SelectMany(p => p);
+            foreach (var item in dictionary)
+            {
+                if (item.Value is PropertyInfo property)
+                {
+                    yield return property;
+                    continue;
+                }
+
+                var list = (List<PropertyInfo>)item.Value;
+                var count = list.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    yield return list[i];
+                }
+            }
+        }
+
+        private static bool IsInheritedProperty(PropertyInfo property, object others)
+        {
+            if (others is PropertyInfo single)
+            {
+                return single.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition();
+            }
+
+            var many = (List<PropertyInfo>)others;
+            foreach (var other in CollectionsMarshal.AsSpan(many))
+            {
+                if (other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition())
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

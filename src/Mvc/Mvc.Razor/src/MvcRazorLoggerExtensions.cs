@@ -41,7 +41,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _viewCompilerEndCodeGeneration = LoggerMessage.Define<string, double>(
                 LogLevel.Debug,
                 new EventId(2, "ViewCompilerEndCodeGeneration"),
-                "Code generation for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.");
+                "Code generation for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.",
+                skipEnabledCheck: true);
 
             _viewCompilerLocatedCompiledView = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -98,17 +99,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _generatedCodeToAssemblyCompilationEnd = LoggerMessage.Define<string, double>(
                 LogLevel.Debug,
                 new EventId(2, "GeneratedCodeToAssemblyCompilationEnd"),
-                "Compilation of the generated code for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.");
+                "Compilation of the generated code for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.",
+                skipEnabledCheck: true);
 
             _tagHelperComponentInitialized = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(2, "TagHelperComponentInitialized"),
-                "Tag helper component '{ComponentName}' initialized.");
+                "Tag helper component '{ComponentName}' initialized.",
+                skipEnabledCheck: true);
 
             _tagHelperComponentProcessed = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(3, "TagHelperComponentProcessed"),
-                "Tag helper component '{ComponentName}' processed.");
+                "Tag helper component '{ComponentName}' processed.",
+                skipEnabledCheck: true);
         }
 
         public static void ViewCompilerStartCodeGeneration(this ILogger logger, string filePath)
@@ -119,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public static void ViewCompilerEndCodeGeneration(this ILogger logger, string filePath, long startTimestamp)
         {
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
-            if (startTimestamp != 0)
+            if (startTimestamp != 0 && logger.IsEnabled(LogLevel.Debug))
             {
                 var currentTimestamp = Stopwatch.GetTimestamp();
                 var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
@@ -190,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public static void GeneratedCodeToAssemblyCompilationEnd(this ILogger logger, string filePath, long startTimestamp)
         {
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
-            if (startTimestamp != 0)
+            if (startTimestamp != 0 && logger.IsEnabled(LogLevel.Debug))
             {
                 var currentTimestamp = Stopwatch.GetTimestamp();
                 var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));

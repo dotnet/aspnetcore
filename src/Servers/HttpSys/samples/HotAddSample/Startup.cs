@@ -52,7 +52,7 @@ namespace HotAddSample
                     await context.Response.WriteAsync("</body></html>");
                     return;
                 }
-                await next();
+                await next(context);
             });
 
             app.Use(async (context, next) =>
@@ -76,7 +76,7 @@ namespace HotAddSample
                     await context.Response.WriteAsync("</body></html>");
                     return;
                 }
-                await next();
+                await next(context);
             });
 
             app.Run(async context =>

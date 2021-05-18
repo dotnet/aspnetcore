@@ -701,7 +701,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                                 {
                                     context.Connection.ClientCertificate = clientCertificate;
                                 }
-                                return next();
+                                return next(context);
                             });
 
 
@@ -712,7 +712,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
                             app.UseAuthentication();
 
-                            app.Use(async (context, next) =>
+                            app.Run(async (context) =>
                             {
                                 var request = context.Request;
                                 var response = context.Response;

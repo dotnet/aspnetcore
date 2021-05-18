@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -84,9 +83,6 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 DefaultAuthenticatedEncryptor = GetDefaultEncryptor(loggerFactory);
             }
-
-            // Currently hardcoded to a 512-bit KDK.
-            private const int NUM_BYTES_IN_KDK = 512 / 8;
 
             public IAuthenticatedEncryptor? DefaultAuthenticatedEncryptor { get; }
 

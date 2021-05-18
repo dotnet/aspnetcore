@@ -5,12 +5,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private Task _previousOnNavigateTask = Task.CompletedTask;
 
-        private readonly HashSet<Assembly> _assemblies = new HashSet<Assembly>();
+        private RouteKey _routeTableLastBuiltForRouteKey;
 
         private bool _onNavigateCalled = false;
 
@@ -93,6 +92,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             _baseUri = NavigationManager.BaseUri;
             _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
+
+            if  (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied += ClearRouteCaches;
+            }
         }
 
         /// <inheritdoc />
@@ -133,6 +137,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
+            if (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= ClearRouteCaches;
+            }
         }
 
         private static string StringUntilAny(string str, char[] chars)
@@ -145,15 +153,19 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private void RefreshRouteTable()
         {
-            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
-            var assembliesSet = new HashSet<Assembly>(assemblies);
+            var routeKey = new RouteKey(AppAssembly, AdditionalAssemblies);
 
-            if (!_assemblies.SetEquals(assembliesSet))
+            if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
             {
-                Routes = RouteTableFactory.Create(assemblies);
-                _assemblies.Clear();
-                _assemblies.UnionWith(assembliesSet);
+                _routeTableLastBuiltForRouteKey = routeKey;
+                Routes = RouteTableFactory.Create(routeKey);
             }
+        }
+
+        private void ClearRouteCaches()
+        {
+            RouteTableFactory.ClearCaches();
+            _routeTableLastBuiltForRouteKey = default;
         }
 
         internal virtual void Refresh(bool isNavigationIntercepted)

@@ -1148,7 +1148,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                                 }
                                 else
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

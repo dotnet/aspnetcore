@@ -152,10 +152,10 @@ export module DotNet {
 
   /**
    * Parses the given JSON string using revivers to restore args passed from .NET to JS.
-   * 
+   *
    * @param json The JSON stirng to parse.
    */
-  export function parseJsonWithRevivers(json: string): any {
+  function parseJsonWithRevivers(json: string): any {
     return json ? JSON.parse(json, (key, initialValue) => {
       // Invoke each reviver in order, passing the output from the previous reviver,
       // so that each one gets a chance to transform the value
@@ -339,10 +339,12 @@ export module DotNet {
      * Receives notification that an async call from JS to .NET has completed.
      * @param asyncCallId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
      * @param success A flag to indicate whether the operation completed successfully.
-     * @param resultOrExceptionMessage Either the operation result or an error message.
+     * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
      */
-    endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultOrExceptionMessage: any): void => {
-      const resultOrError = success ? resultOrExceptionMessage : new Error(resultOrExceptionMessage);
+    endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void => {
+      const resultOrError = success
+        ? parseJsonWithRevivers(resultJsonOrExceptionMessage)
+        : new Error(resultJsonOrExceptionMessage);
       completePendingCall(parseInt(asyncCallId), success, resultOrError);
     }
   }

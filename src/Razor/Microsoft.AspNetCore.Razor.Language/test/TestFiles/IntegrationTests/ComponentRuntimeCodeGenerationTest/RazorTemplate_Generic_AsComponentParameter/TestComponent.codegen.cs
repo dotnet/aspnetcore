@@ -41,7 +41,7 @@ namespace Test
 #line hidden
 #nullable disable
             __builder.OpenComponent<Test.MyComponent>(2);
-            __builder.AddAttribute(3, "PersonTemplate", new Microsoft.AspNetCore.Components.RenderFragment<Test.Person>(
+            __builder.AddAttribute(3, "PersonTemplate", (Microsoft.AspNetCore.Components.RenderFragment<Test.Person>)(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                               template

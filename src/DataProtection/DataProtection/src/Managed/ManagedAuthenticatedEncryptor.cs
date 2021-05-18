@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
 
         private byte[] CreateContextHeader()
         {
-            var EMPTY_ARRAY = new byte[0];
+            var EMPTY_ARRAY = Array.Empty<byte>();
             var EMPTY_ARRAY_SEGMENT = new ArraySegment<byte>(EMPTY_ARRAY);
 
             var retVal = new byte[checked(

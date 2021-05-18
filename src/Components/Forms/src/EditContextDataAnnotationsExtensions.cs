@@ -6,8 +6,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Components.HotReload;
+
+[assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -37,6 +41,13 @@ namespace Microsoft.AspNetCore.Components.Forms
             return new DataAnnotationsEventSubscriptions(editContext);
         }
 
+        private static event Action? OnClearCache;
+
+        private static void ClearCache(Type[]? _)
+        {
+            OnClearCache?.Invoke();
+        }
+
         private sealed class DataAnnotationsEventSubscriptions : IDisposable
         {
             private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
@@ -51,6 +62,11 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 _editContext.OnFieldChanged += OnFieldChanged;
                 _editContext.OnValidationRequested += OnValidationRequested;
+
+                if (HotReloadFeature.IsSupported)
+                {
+                    OnClearCache += ClearCache;
+                }
             }
 
             private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
@@ -67,7 +83,10 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                     Validator.TryValidateProperty(propertyValue, validationContext, results);
                     _messages.Clear(fieldIdentifier);
-                    _messages.Add(fieldIdentifier, results.Select(result => result.ErrorMessage!));
+                    foreach (var result in CollectionsMarshal.AsSpan(results))
+                    {
+                        _messages.Add(fieldIdentifier, result.ErrorMessage!);
+                    }
 
                     // We have to notify even if there were no messages before and are still no messages now,
                     // because the "state" that changed might be the completion of some async validation task
@@ -90,15 +109,16 @@ namespace Microsoft.AspNetCore.Components.Forms
                         continue;
                     }
 
-                    if (!validationResult.MemberNames.Any())
-                    {
-                        _messages.Add(new FieldIdentifier(_editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
-                        continue;
-                    }
-
+                    var hasMemberNames = false;
                     foreach (var memberName in validationResult.MemberNames)
                     {
+                        hasMemberNames = true;
                         _messages.Add(_editContext.Field(memberName), validationResult.ErrorMessage!);
+                    }
+
+                    if (!hasMemberNames)
+                    {
+                        _messages.Add(new FieldIdentifier(_editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
                     }
                 }
 
@@ -111,6 +131,11 @@ namespace Microsoft.AspNetCore.Components.Forms
                 _editContext.OnFieldChanged -= OnFieldChanged;
                 _editContext.OnValidationRequested -= OnValidationRequested;
                 _editContext.NotifyValidationStateChanged();
+
+                if (HotReloadFeature.IsSupported)
+                {
+                    OnClearCache -= ClearCache;
+                }
             }
 
             private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
@@ -127,6 +152,11 @@ namespace Microsoft.AspNetCore.Components.Forms
                 }
 
                 return propertyInfo != null;
+            }
+
+            internal void ClearCache()
+            {
+                _propertyInfoCache.Clear();
             }
         }
     }
