@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             using var listener = new ActivityListener
             {
-                ShouldListenTo = activitySource => (activitySource.Name == "Microsoft.AspNetCore.Hosting" ||
+                ShouldListenTo = activitySource => (activitySource.Name == "Microsoft.AspNetCore" ||
                                                     activitySource.Name == "DummySource"),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
             };
