@@ -16,11 +16,10 @@
     <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
     <NoWarn>$(NoWarn);RS0041</NoWarn>
 
-    <Nullable Condition="'$(Nullable)' == '' AND !('$(IsTestProject)' == 'true' OR
-        '$(IsTestAssetProject)' == 'true' OR
-        '$(ISBenchmarkProject)' == 'true' OR
-        '$(IsSampleProject)' == 'true' OR
-        '$(IsMicrobenchmarksProject)' == 'true')">enable</Nullable>
+    <Nullable Condition=" '$(Nullable)' == '' AND (
+        '$(IsImplementationProject)' == 'true' OR
+        '$(IsAnalyzersProject)' == true OR
+        '$(IsSpecificationTestProject)' == 'true') ">enable</Nullable>
 
     <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
     <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
