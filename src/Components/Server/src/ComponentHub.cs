@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Server
     // needs access to the circuit/application state to unblock the message loop. Using async in our
     // Hub methods allows us to ensure message delivery to the client before we abort the connection
     // in error cases.
-    internal sealed class ComponentHub : Hub
+    internal class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
         private readonly ServerComponentDeserializer _serverComponentSerializer;
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
+            if (!DeserializeComponentDescriptor(serializedComponentRecords, out var components))
             {
                 Log.InvalidInputData(_logger);
                 await NotifyClientError(Clients.Caller, $"The list of component records is not valid.");
@@ -251,7 +252,7 @@ namespace Microsoft.AspNetCore.Components.Server
         // See comment on error handling on the class definition.
         private async ValueTask<CircuitHost> GetActiveCircuitAsync([CallerMemberName] string callSite = "")
         {
-            var handle = (CircuitHandle)Context.Items[CircuitKey];
+            var handle = GetCircuitHandle();
             var circuitHost = handle?.CircuitHost;
             if (handle != null && circuitHost == null)
             {
@@ -275,12 +276,22 @@ namespace Microsoft.AspNetCore.Components.Server
             return circuitHost;
         }
 
-        private CircuitHost GetCircuit()
+        public virtual bool DeserializeComponentDescriptor(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
+        {
+            return _serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out descriptors);
+        }
+
+        public virtual CircuitHandle GetCircuitHandle()
+        {
+            return ((CircuitHandle)Context.Items[CircuitKey]);
+        } 
+
+        public virtual CircuitHost GetCircuit()
         {
             return ((CircuitHandle)Context.Items[CircuitKey])?.CircuitHost;
         }
 
-        private void SetCircuit(CircuitHost circuitHost)
+        public virtual void SetCircuit(CircuitHost circuitHost)
         {
             Context.Items[CircuitKey] = circuitHost?.Handle;
         }

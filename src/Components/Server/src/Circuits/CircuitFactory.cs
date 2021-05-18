@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _logger = _loggerFactory.CreateLogger<CircuitFactory>();
         }
 
-        public async ValueTask<CircuitHost> CreateCircuitHostAsync(
+        public virtual async ValueTask<CircuitHost> CreateCircuitHostAsync(
             IReadOnlyList<ComponentDescriptor> components,
             CircuitClientProxy client,
             string baseUri,
