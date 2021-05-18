@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             foreach (var file in files)
             {
-                var fileContainer = await _page.WaitForSelectorAsync($"[id='file-{file.Name}']");
+                var fileContainer = await _page.WaitForSelectorAsync($"#file-{file.Name}");
                 Assert.NotNull(fileContainer);
                 var fileNameElement = await fileContainer.QuerySelectorAsync("#file-name");
                 Assert.NotNull(fileNameElement);
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             private TempFile(string tempDirectory, string extension, byte[] contents)
             {
                 Name = $"{Guid.NewGuid():N}-{extension}";
-                Path = $"{tempDirectory}\\{Name}";
+                Path = System.IO.Path.Combine(tempDirectory, Name);
                 Contents = contents;
             }
 
