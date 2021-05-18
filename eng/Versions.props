@@ -262,6 +262,7 @@
     <MicrosoftAspNetCoreAppVersion>6.0.0-preview.3.21167.1</MicrosoftAspNetCoreAppVersion>
     <!-- Source build dependencies -->
     <NuGetVersioningPackageVersion>5.9.0</NuGetVersioningPackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>16.9.0</MicrosoftBuildFrameworkPackageVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">
