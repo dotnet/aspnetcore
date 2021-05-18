@@ -16,26 +16,22 @@
 /src/DefaultBuilder/**/PublicAPI.*Shipped.txt                                     @dotnet/aspnet-api-review @tratcher
 /src/Hosting/                                                                     @tratcher
 /src/Hosting/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher
-/src/Http/                                                                        @tratcher @jkotalik
-/src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @tratcher @jkotalik
+/src/Http/                                                                        @tratcher @BrennanConroy
+/src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @tratcher
 /src/Http/Routing/                                                                @javiercn
 /src/Http/Routing/**/PublicAPI.*Shipped.txt                                       @dotnet/aspnet-api-review @javiercn
 /src/HttpClientFactory/                                                           @juntaoluo
 /src/HttpClientFactory/**/PublicAPI.*Shipped.txt                                  @dotnet/aspnet-api-review @juntaoluo
-/src/Middleware/                                                                  @tratcher
+/src/Middleware/                                                                  @tratcher @BrennanConroy
 /src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @tratcher
-/src/Middleware/HttpsPolicy/                                                      @jkotalik
-/src/Middleware/HttpsPolicy/**/PublicAPI.*Shipped.txt                             @dotnet/aspnet-api-review @jkotalik
-/src/Middleware/Rewrite/                                                          @jkotalik
-/src/Middleware/Rewrite/**/PublicAPI.*Shipped.txt                                 @dotnet/aspnet-api-review @jkotalik
 /src/Mvc/                                                                         @pranavkm @javiercn
 /src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @pranavkm @javiercn
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                                                                    @tratcher
 /src/Security/**/PublicAPI.*Shipped.txt                                           @dotnet/aspnet-api-review @tratcher
-/src/Servers/                                                                     @tratcher @jkotalik @halter73
-/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @jkotalik @halter73
+/src/Servers/                                                                     @tratcher @halter73 @BrennanConroy
+/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @halter73
 /src/Shared/runtime/                                                              @dotnet/http
 /src/Shared/test/Shared.Tests/runtime/                                            @dotnet/http
 /src/SignalR/                                                                     @BrennanConroy @halter73
