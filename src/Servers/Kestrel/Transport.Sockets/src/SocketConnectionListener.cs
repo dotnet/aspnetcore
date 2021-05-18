@@ -98,9 +98,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 case FileHandleEndPoint fileHandle:
                     _socketHandle = new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true);
                     listenSocket = new Socket(_socketHandle);
+                    ConfigureSocket();
                     break;
                 case UnixDomainSocketEndPoint unix:
                     listenSocket = new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                    ConfigureSocket();
                     BindSocket();
                     break;
                 case IPEndPoint ip:
@@ -111,13 +113,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     {
                         listenSocket.DualMode = true;
                     }
+
+                    ConfigureSocket();
                     BindSocket();
                     break;
                 default:
                     listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    ConfigureSocket();
                     BindSocket();
                     break;
             }
+
+            void ConfigureSocket() => _options.ConfigureListenSocket?.Invoke(EndPoint, listenSocket);
 
             void BindSocket()
             {
@@ -154,6 +161,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     {
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
+
+                    _options.ConfigureAcceptSocket?.Invoke(EndPoint, acceptSocket);
 
                     var setting = _settings[_settingsIndex];
 

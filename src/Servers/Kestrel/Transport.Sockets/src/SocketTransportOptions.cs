@@ -3,6 +3,8 @@
 
 using System;
 using System.Buffers;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
@@ -64,6 +66,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// Test to make sure this setting helps performance.
         /// </remarks>
         public bool UnsafePreferInlineScheduling { get; set; }
+
+        /// <summary>
+        /// An action used to configure the listening socket before it is bound.
+        /// </summary>
+        public Action<EndPoint, Socket>? ConfigureListenSocket { get; set; }
+
+        /// <summary>
+        /// An action used to configure an accept socket before it's passed to the underlying connection.
+        /// </summary>
+        public Action<EndPoint, Socket>? ConfigureAcceptSocket { get; set; }
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
     }
