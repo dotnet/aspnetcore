@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
 
             KvpAccumulator accumulator = new();
-            int queryStringLength = queryString.Length;
+            var queryStringLength = queryString.Length;
 
             char[]? arryToReturnToPool = null;
             Span<char> query = (queryStringLength <= 128
@@ -139,17 +138,17 @@ namespace Microsoft.AspNetCore.Http.Features
 
             while (!query.IsEmpty)
             {
-                int delimiterIndex = query.IndexOf('&');
+                var delimiterIndex = query.IndexOf('&');
 
-                Span<char> querySegment = delimiterIndex >= 0
+                var querySegment = delimiterIndex >= 0
                     ? query.Slice(0, delimiterIndex)
                     : query;
 
-                int equalIndex = querySegment.IndexOf('=');
+                var equalIndex = querySegment.IndexOf('=');
 
                 if (equalIndex >= 0)
                 {
-                    int i = 0;
+                    var i = 0;
                     for (; i < querySegment.Length; ++i)
                     {
                         if (!char.IsWhiteSpace(querySegment[i]))
@@ -158,11 +157,11 @@ namespace Microsoft.AspNetCore.Http.Features
                         }
                     }
 
-                    Span<char> name = querySegment[i..equalIndex];
-                    Span<char> value = querySegment.Slice(equalIndex + 1);
+                    var name = querySegment[i..equalIndex];
+                    var value = querySegment.Slice(equalIndex + 1);
 
-                    name.ReplacePlusWithSpaceInPlace();
-                    value.ReplacePlusWithSpaceInPlace();
+                    SpanHelper.ReplacePlusWithSpaceInPlace(name);
+                    SpanHelper.ReplacePlusWithSpaceInPlace(value);
 
                     accumulator.Append(
                         Uri.UnescapeDataString(name.ToString()),
@@ -212,13 +211,12 @@ namespace Microsoft.AspNetCore.Http.Features
             /// </summary>
             public void Append(string key, string value)
             {
-                if (_accumulator == null)
+                if (_accumulator is null)
                 {
                     _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
                 }
 
-                StringValues values;
-                if (_accumulator.TryGetValue(key, out values))
+                if (_accumulator.TryGetValue(key, out var values))
                 {
                     if (values.Count == 0)
                     {
@@ -232,9 +230,9 @@ namespace Microsoft.AspNetCore.Http.Features
                     else
                     {
                         // Add zero count entry and move to data to expanding list dictionary
-                        _accumulator[key] = default(StringValues);
+                        _accumulator[key] = default;
 
-                        if (_expandingAccumulator == null)
+                        if (_expandingAccumulator is null)
                         {
                             _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(5, StringComparer.OrdinalIgnoreCase);
                         }
@@ -293,44 +291,44 @@ namespace Microsoft.AspNetCore.Http.Features
                 return _accumulator ?? new AdaptiveCapacityDictionary<string, StringValues>(0, StringComparer.OrdinalIgnoreCase);
             }
         }
-    }
 
-    internal static class MySpanExtensions
-    {
-        public static void ReplacePlusWithSpaceInPlace(this Span<char> span)
-            => ReplaceInPlace(span, '+', ' ');
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void ReplaceInPlace(this Span<char> span, char oldChar, char newChar)
+        private static class SpanHelper
         {
-            nint i = 0;
-            nint n = (nint)(uint)span.Length;
+            public static void ReplacePlusWithSpaceInPlace(Span<char> span)
+                => ReplaceInPlace(span, '+', ' ');
 
-            fixed (char* ptr = span)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe void ReplaceInPlace(Span<char> span, char oldChar, char newChar)
             {
-                ushort* pVec = (ushort*)ptr;
+                var i = (nint)0;
+                var n = (nint)(uint)span.Length;
 
-                if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
+                fixed (char* ptr = span)
                 {
-                    Vector128<ushort> vecOldChar = Vector128.Create((ushort)oldChar);
-                    Vector128<ushort> vecNewChar = Vector128.Create((ushort)newChar);
+                    var pVec = (ushort*)ptr;
 
-                    do
+                    if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
                     {
-                        Vector128<ushort> vec = Sse2.LoadVector128(pVec + i);
-                        Vector128<ushort> mask = Sse2.CompareEqual(vec, vecOldChar);
-                        Vector128<ushort> res = Sse41.BlendVariable(vec, vecNewChar, mask);
-                        Sse2.Store(pVec + i, res);
+                        var vecOldChar = Vector128.Create((ushort)oldChar);
+                        var vecNewChar = Vector128.Create((ushort)newChar);
 
-                        i += Vector128<ushort>.Count;
-                    } while (i <= n - Vector128<ushort>.Count);
-                }
+                        do
+                        {
+                            var vec = Sse2.LoadVector128(pVec + i);
+                            var mask = Sse2.CompareEqual(vec, vecOldChar);
+                            var res = Sse41.BlendVariable(vec, vecNewChar, mask);
+                            Sse2.Store(pVec + i, res);
 
-                for (; i < n; ++i)
-                {
-                    if (ptr[i] == oldChar)
+                            i += Vector128<ushort>.Count;
+                        } while (i <= n - Vector128<ushort>.Count);
+                    }
+
+                    for (; i < n; ++i)
                     {
-                        ptr[i] = newChar;
+                        if (ptr[i] == oldChar)
+                        {
+                            ptr[i] = newChar;
+                        }
                     }
                 }
             }
