@@ -371,6 +371,7 @@ if [ "$build_repo_tasks" = true ]; then
         -p:Configuration=Release \
         -p:Restore=$run_restore \
         -p:Build=true \
+        -bl:RepoTasks.binlog \
         -clp:NoSummary \
         ${toolset_build_args[@]+"${toolset_build_args[@]}"}
 fi
