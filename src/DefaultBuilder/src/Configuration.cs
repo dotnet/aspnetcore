@@ -19,16 +19,12 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder, IDisposable
     {
+        private readonly ConfigurationSources _sources;
+        private readonly IDictionary<string, object> _properties;
+
         private ConfigurationRoot? _configurationRoot;
         private ConfigurationReloadToken _changeToken = new();
         private IDisposable? _changeTokenRegistration;
-
-        // Needs to be a separate field, as it is not possible to initialize an explicitly implemented property in the constructor
-        // and we pass an instance method to the constructor used to initialize it, so cannot use a field initializer.
-        // On the other hand, if this is a separate class (not an enhanced version of the existing ConfigurationBuilder class)
-        // then we probably do want `Properties` to be an explicit interface implementation, so users looking to read configuration values
-        // don't get confused by it. So explicit backing field it is!
-        private readonly IDictionary<string, object> _properties;
 
         private IConfigurationRoot ConfigurationRoot
         {
@@ -51,8 +47,7 @@ namespace Microsoft.AspNetCore.Builder
 
         IDictionary<string, object> IConfigurationBuilder.Properties => _properties;
 
-        internal IList<IConfigurationSource> Sources { get; }
-        IList<IConfigurationSource> IConfigurationBuilder.Sources => Sources;
+        IList<IConfigurationSource> IConfigurationBuilder.Sources => _sources;
 
         IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => ConfigurationRoot.Providers;
 
@@ -62,7 +57,7 @@ namespace Microsoft.AspNetCore.Builder
         public Configuration()
         {
             _properties = new ConfigurationProperties(this);
-            Sources = new ConfigurationSources(this);
+            _sources = new ConfigurationSources(this);
         }
 
         /// <inheritdoc />
@@ -74,7 +69,7 @@ namespace Microsoft.AspNetCore.Builder
 
         IConfigurationBuilder IConfigurationBuilder.Add(IConfigurationSource source)
         {
-            Sources.Add(source ?? throw new ArgumentNullException(nameof(source)));
+            _sources.Add(source ?? throw new ArgumentNullException(nameof(source)));
             return this;
         }
 
@@ -101,7 +96,7 @@ namespace Microsoft.AspNetCore.Builder
         private ConfigurationRoot BuildConfigurationRoot()
         {
             var providers = new List<IConfigurationProvider>();
-            foreach (var source in Sources)
+            foreach (var source in _sources)
             {
                 IConfigurationProvider provider = source.Build(this);
                 providers.Add(provider);
