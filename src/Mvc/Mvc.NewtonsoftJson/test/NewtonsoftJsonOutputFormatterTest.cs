@@ -77,7 +77,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 Formatting = Formatting.Indented,
             };
             var expectedOutput = JsonConvert.SerializeObject(person, settings);
+#pragma warning disable CS0618 // Type or member is obsolete
             var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Act
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);

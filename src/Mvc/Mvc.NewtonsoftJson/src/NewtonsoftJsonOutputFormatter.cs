@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public NewtonsoftJsonOutputFormatter(
             JsonSerializerSettings serializerSettings,
             ArrayPool<char> charPool,
