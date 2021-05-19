@@ -73,14 +73,9 @@ namespace Microsoft.AspNetCore.Http.Features
 
                     var result = ParseNullableQueryInternal(current);
 
-                    if (result == null)
-                    {
-                        _parsedValues = QueryCollection.Empty;
-                    }
-                    else
-                    {
-                        _parsedValues = new QueryCollectionInternal(result);
-                    }
+                    _parsedValues = result is not null
+                        ? new QueryCollectionInternal(result)
+                        : QueryCollection.Empty;
                 }
                 return _parsedValues;
             }
@@ -165,7 +160,10 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
                 else
                 {
-                    accumulator.Append(querySegment);
+                    if (!querySegment.IsEmpty)
+                    {
+                        accumulator.Append(querySegment);
+                    }
                 }
 
                 if (delimiterIndex < 0)
@@ -207,11 +205,6 @@ namespace Microsoft.AspNetCore.Http.Features
             /// </summary>
             public void Append(string key, string value)
             {
-                if (key.Length == 0)
-                {
-                    return;
-                }
-
                 if (_accumulator is null)
                 {
                     _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
