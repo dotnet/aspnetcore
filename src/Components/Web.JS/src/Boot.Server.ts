@@ -106,6 +106,20 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', DotNet.jsCallDispatcher.endInvokeDotNetFromJS);
 
+  connection.on('JS.BeginTransmitStream', (streamId: number) => {
+    const readableStream = new ReadableStream({
+      start(controller) {
+        connection.stream('SendDotNetStreamToJS', streamId).subscribe({
+          next: (chunk: Uint8Array) => controller.enqueue(chunk),
+          complete: () => controller.close(),
+          error: (err) => controller.error(err),
+        });
+      }
+    });
+
+    DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);
+  });
+
   const renderQueue = RenderQueue.getOrCreate(logger);
   connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);

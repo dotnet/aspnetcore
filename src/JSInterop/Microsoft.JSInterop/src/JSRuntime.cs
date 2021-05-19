@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ namespace Microsoft.JSInterop
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
                     new JSObjectReferenceJsonConverter(this),
+                    new DotNetStreamReferenceJsonConverter(this),
                 }
             };
         }
@@ -173,6 +175,31 @@ namespace Microsoft.JSInterop
         protected internal abstract void EndInvokeDotNet(
             DotNetInvocationInfo invocationInfo,
             in DotNetInvocationResult invocationResult);
+
+        /// <summary>
+        /// Transmits the stream data from .NET to JS. Subclasses should override this method and provide
+        /// an implementation that transports the data to JS and calls DotNet.jsCallDispatcher.supplyDotNetStream.
+        /// </summary>
+        /// <param name="streamId">An identifier for the stream.</param>
+        /// <param name="stream">The stream.</param>
+        /// <param name="leaveOpen">A flag that indicates whether the stream should be left open after transmission. If false, the method should dispose the stream after transmission.</param>
+        protected internal virtual void BeginTransmittingStream(long streamId, Stream stream, bool leaveOpen)
+        {
+            if (!leaveOpen)
+            {
+                stream.Dispose();
+            }
+
+            throw new NotSupportedException("The current JS runtime does not support sending streams from .NET to JS.");
+        }
+
+        internal long BeginTransmittingStream(DotNetStreamReference dotNetStreamReference)
+        {
+            // It's fine to share the ID sequence
+            var streamId = Interlocked.Increment(ref _nextObjectReferenceId);
+            BeginTransmittingStream(streamId, dotNetStreamReference.Stream, dotNetStreamReference.LeaveOpen);
+            return streamId;
+        }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
         internal void EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)

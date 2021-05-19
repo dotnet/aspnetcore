@@ -346,7 +346,27 @@ export module DotNet {
         ? parseJsonWithRevivers(resultJsonOrExceptionMessage)
         : new Error(resultJsonOrExceptionMessage);
       completePendingCall(parseInt(asyncCallId), success, resultOrError);
-    }
+    },
+
+    /**
+     * Supplies a stream of data being sent from .NET.
+     *
+     * @param streamId The identifier previously passed to JSRuntime's BeginTransmittingStream in .NET code
+     * @param streamId The stream data.
+     */
+    supplyDotNetStream: (streamId: number, stream: ReadableStream) => {
+      if (_pendingStreams.has(streamId)) {
+        // The receiver is already waiting, so we can resolve the promise now and stop tracking this
+        const pendingStream = _pendingStreams.get(streamId)!;
+        _pendingStreams.delete(streamId);
+        pendingStream.resolve!(stream);
+      } else {
+        // The receiver hasn't started waiting yet, so track a pre-completed entry it can attach to later
+        const pendingStream = new PendingStream();
+        pendingStream.resolve!(stream);
+        _pendingStreams.set(streamId, pendingStream);
+      }
+    },
   }
 
   function formatError(error: any): string {
@@ -394,9 +414,17 @@ export module DotNet {
   }
 
   const dotNetObjectRefKey = '__dotNetObject';
+  const dotNetStreamRefKey = '__dotNetStream';
   attachReviver(function reviveDotNetObject(key: any, value: any) {
-    if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
-      return new DotNetObject(value.__dotNetObject);
+    if (value && typeof value === 'object') {
+      // At some point, instead of looking for different keys, we should have some common format
+      // like { __jsInteropType: 'object' } or { __jsInteropType: 'stream' } so that we only have
+      // to check a single property to determine whether it's a special thing.
+      if (value.hasOwnProperty(dotNetObjectRefKey)) {
+        return new DotNetObject(value.__dotNetObject);
+      } else if (value.hasOwnProperty(dotNetStreamRefKey)) {
+        return new DotNetStream(value.__dotNetStream)
+      }
     }
 
     // Unrecognized - let another reviver handle it
@@ -418,6 +446,50 @@ export module DotNet {
     // Unrecognized - let another reviver handle it
     return value;
   });
+
+  class DotNetStream {
+    private _streamPromise: Promise<ReadableStream>;
+
+    constructor(streamId: number) {
+      // This constructor runs when we're JSON-deserializing some value from the .NET side.
+      // At this point we might already have started receiving the stream, or maybe it will come later.
+      // We have to handle both possible orderings, but we can count on it coming eventually because
+      // it's not something the developer gets to control, and it would be an error if it doesn't.
+      if (_pendingStreams.has(streamId)) {
+        // We've already started receiving the stream, so no longer need to track it as pending
+        this._streamPromise = _pendingStreams.get(streamId)?.streamPromise!;
+        _pendingStreams.delete(streamId);
+      } else {
+        // We haven't started receiving it yet, so add an entry to track it as pending
+        const pendingStream = new PendingStream();
+        _pendingStreams.set(streamId, pendingStream);
+        this._streamPromise = pendingStream.streamPromise;
+      }
+    }
+
+    stream(): Promise<ReadableStream> {
+      return this._streamPromise;
+    }
+
+    async arrayBuffer(): Promise<ArrayBuffer> {
+      return new Response(await this.stream()).arrayBuffer();
+    }
+  }
+
+  const _pendingStreams = new Map<number, PendingStream>();
+
+  class PendingStream {
+    streamPromise: Promise<ReadableStream>;
+    resolve?: (value: ReadableStream) => void;
+    reject?: (reason: any) => void;
+
+    constructor() {
+      this.streamPromise = new Promise((resolve, reject) => {
+        this.resolve = resolve;
+        this.reject = reject;
+      });
+    }
+  }
 
   function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
     switch (resultType) {

@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.JSInterop.DotNetStreamReference
+Microsoft.JSInterop.DotNetStreamReference.Dispose() -> void
+Microsoft.JSInterop.DotNetStreamReference.DotNetStreamReference(System.IO.Stream! stream, bool leaveOpen = false) -> void
 Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ResultJson.get -> string?
 static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref System.Text.Json.Utf8JsonReader reader) -> long
@@ -28,3 +31,4 @@ static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JS
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object?[]? args) -> System.Threading.Tasks.ValueTask
 *REMOVED*static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object?[]? args) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.JSInterop.JSRuntime.BeginTransmittingStream(long streamId, System.IO.Stream! stream, bool leaveOpen) -> void

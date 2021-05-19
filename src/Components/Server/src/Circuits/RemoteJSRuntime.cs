@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly CircuitOptions _options;
         private readonly ILogger<RemoteJSRuntime> _logger;
         private CircuitClientProxy _clientProxy;
+        private ConcurrentDictionary<long, (Stream Stream, bool LeaveOpen)> _pendingStreams = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -87,6 +92,48 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
             _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
+        }
+
+        protected override void BeginTransmittingStream(long streamId, Stream stream, bool leaveOpen)
+        {
+            _ = TransmitStreamAsync(streamId, stream, leaveOpen);
+        }
+
+        private async Task TransmitStreamAsync(long streamId, Stream stream, bool leaveOpen)
+        {
+            if (!_pendingStreams.TryAdd(streamId, (stream, leaveOpen)))
+            {
+                throw new ArgumentException($"The stream {streamId} is already pending.");
+            }
+
+            // SignalR only supports streaming being initiated from the JS side, so we have to ask it to
+            // start the stream. We'll give it a maximum of 10 seconds to do so, after which we give up
+            // and discard it.
+            var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token;
+            cancellationToken.Register(() =>
+            {
+                // If by now the stream hasn't been claimed for sending, stop tracking it
+                if (_pendingStreams.TryRemove(streamId, out var timedOutStream) && !timedOutStream.LeaveOpen)
+                {
+                    timedOutStream.Stream.Dispose();
+                }
+            });
+            
+            await _clientProxy.SendAsync("JS.BeginTransmitStream", streamId);
+        }
+
+        public bool TryClaimPendingStreamForSending(long streamId, out Stream stream, out bool leaveOpen)
+        {
+            if (_pendingStreams.TryRemove(streamId, out var pendingStream))
+            {
+                (stream, leaveOpen) = pendingStream;
+                return true;
+            }
+            else
+            {
+                (stream, leaveOpen) = (default, default);
+                return false;
+            }
         }
 
         public static class Log

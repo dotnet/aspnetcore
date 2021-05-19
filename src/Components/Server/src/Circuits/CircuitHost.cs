@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Security.Claims;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -503,6 +505,39 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
             // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
             _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
+        }
+
+        public async Task SendDotNetStreamAsync(long streamId, ChannelWriter<ArraySegment<byte>> writer)
+        {
+            if (!JSRuntime.TryClaimPendingStreamForSending(streamId, out var stream, out var leaveOpen))
+            {
+                throw new InvalidOperationException($"The stream with ID {streamId} is not available. It may have timed out.");
+            }
+
+            try
+            {
+                var buffer = new byte[64 * 1024]; // TODO: Consider optimal chunk size, consider pooling
+                int bytesRead;
+                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    // We have to stop sending if the circuit disconnects. It doesn't stop otherwise.
+                    if (_disposed)
+                    {
+                        break;
+                    }
+
+                    // TODO: Is there any risk that, since there's no cancellation token here, the client could
+                    // make us pause indefinitely?
+                    await writer.WriteAsync(new ArraySegment<byte>(buffer, 0, bytesRead));
+                }
+            }
+            finally
+            {
+                if (!leaveOpen)
+                {
+                    stream?.Dispose();
+                }
+            }
         }
 
         private void AssertInitialized()
