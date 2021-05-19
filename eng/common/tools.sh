@@ -262,7 +262,7 @@ function with_retries {
 function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
-  local install_script_url="https://dot.net/$dotnetInstallScriptVersion/dotnet-install.sh"
+  local install_script_url="https://raw.githubusercontent.com/dotnet/install-scripts/7eeaccf9f21c798af87d8a137ce89de44b2681db/src/dotnet-install.sh"
 
   if [[ ! -a "$install_script" ]]; then
     mkdir -p "$root"
