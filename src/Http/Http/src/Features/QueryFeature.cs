@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Internal;
@@ -111,16 +112,8 @@ namespace Microsoft.AspNetCore.Http.Features
                 return null;
             }
 
-            KvpAccumulator accumulator = new();
-            var queryStringLength = queryString.Length;
-
-            char[]? arryToReturnToPool = null;
-            Span<char> query = (queryStringLength <= 128
-                ? stackalloc char[128]
-                : arryToReturnToPool = ArrayPool<char>.Shared.Rent(queryStringLength)
-            ).Slice(0, queryStringLength);
-
-            queryString.AsSpan().CopyTo(query);
+            var accumulator = new KvpAccumulator();
+            var query = queryString.AsSpan();
 
             if (query[0] == '?')
             {
@@ -148,15 +141,12 @@ namespace Microsoft.AspNetCore.Http.Features
                         }
                     }
 
-                    var name = querySegment[i..equalIndex];
-                    var value = querySegment.Slice(equalIndex + 1);
-
-                    SpanHelper.ReplacePlusWithSpaceInPlace(name);
-                    SpanHelper.ReplacePlusWithSpaceInPlace(value);
+                    var name = SpanHelper.ReplacePlusWithSpace(querySegment[i..equalIndex]);
+                    var value = SpanHelper.ReplacePlusWithSpace(querySegment.Slice(equalIndex + 1));
 
                     accumulator.Append(
-                        Uri.UnescapeDataString(name.ToString()),
-                        Uri.UnescapeDataString(value.ToString()));
+                        Uri.UnescapeDataString(name),
+                        Uri.UnescapeDataString(value));
                 }
                 else
                 {
@@ -174,17 +164,9 @@ namespace Microsoft.AspNetCore.Http.Features
                 query = query.Slice(delimiterIndex + 1);
             }
 
-            if (arryToReturnToPool is not null)
-            {
-                ArrayPool<char>.Shared.Return(arryToReturnToPool);
-            }
-
-            if (!accumulator.HasValues)
-            {
-                return null;
-            }
-
-            return accumulator.GetResults();
+            return accumulator.HasValues
+                ? accumulator.GetResults()
+                : null;
         }
 
         internal struct KvpAccumulator
@@ -288,40 +270,51 @@ namespace Microsoft.AspNetCore.Http.Features
 
         private static class SpanHelper
         {
-            public static void ReplacePlusWithSpaceInPlace(Span<char> span)
-                => ReplaceInPlace(span, '+', ' ');
+            private static readonly SpanAction<char, IntPtr> s_replacePlusWithSpace = ReplacePlusWithSpaceCore;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static unsafe void ReplaceInPlace(Span<char> span, char oldChar, char newChar)
+            public static unsafe string ReplacePlusWithSpace(ReadOnlySpan<char> span)
             {
-                var i = (nint)0;
-                var n = (nint)(uint)span.Length;
-
-                fixed (char* ptr = span)
+                fixed (char* ptr = &MemoryMarshal.GetReference(span))
                 {
-                    var pVec = (ushort*)ptr;
+                    return string.Create(span.Length, (IntPtr)ptr, s_replacePlusWithSpace);
+                }
+            }
+
+            private static unsafe void ReplacePlusWithSpaceCore(Span<char> buffer, IntPtr state)
+            {
+                fixed (char* ptr = &MemoryMarshal.GetReference(buffer))
+                {
+                    var input = (ushort*)state.ToPointer();
+                    var output = (ushort*)ptr;
+
+                    var i = (nint)0;
+                    var n = (nint)(uint)buffer.Length;
 
                     if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
                     {
-                        var vecOldChar = Vector128.Create((ushort)oldChar);
-                        var vecNewChar = Vector128.Create((ushort)newChar);
+                        var vecPlus = Vector128.Create((ushort)'+');
+                        var vecSpace = Vector128.Create((ushort)' ');
 
                         do
                         {
-                            var vec = Sse2.LoadVector128(pVec + i);
-                            var mask = Sse2.CompareEqual(vec, vecOldChar);
-                            var res = Sse41.BlendVariable(vec, vecNewChar, mask);
-                            Sse2.Store(pVec + i, res);
-
+                            var vec = Sse2.LoadVector128(input + i);
+                            var mask = Sse2.CompareEqual(vec, vecPlus);
+                            var res = Sse41.BlendVariable(vec, vecSpace, mask);
+                            Sse2.Store(output + i, res);
                             i += Vector128<ushort>.Count;
                         } while (i <= n - Vector128<ushort>.Count);
                     }
 
                     for (; i < n; ++i)
                     {
-                        if (ptr[i] == oldChar)
+                        if (input[i] != '+')
                         {
-                            ptr[i] = newChar;
+                            output[i] = input[i];
+                        }
+                        else
+                        {
+                            output[i] = ' ';
                         }
                     }
                 }
