@@ -11,6 +11,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <!-- Set this to false because there's nothing to reference here. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
 </Project>

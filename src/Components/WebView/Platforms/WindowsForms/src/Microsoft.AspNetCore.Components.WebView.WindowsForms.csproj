@@ -5,6 +5,7 @@
     <Description>Build Windows Forms applications with Blazor and WebView2.</Description>
     <UseWindowsForms>true</UseWindowsForms>
     <IsShippingPackage>true</IsShippingPackage>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

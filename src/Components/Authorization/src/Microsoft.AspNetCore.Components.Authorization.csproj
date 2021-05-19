@@ -6,6 +6,7 @@
     <Description>Authentication and authorization support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Trimmable>true</Trimmable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

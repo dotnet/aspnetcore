@@ -5,6 +5,7 @@
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShipping>true</IsShipping>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
