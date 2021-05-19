@@ -94,6 +94,10 @@ dotnet_diagnostic.CA1823.severity = warning
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = warning
 
+[**/HostFactoryResolver.cs]
+# CA1823: Use literals where appropriate
+dotnet_diagnostic.CA1802.severity = suggestion
+
 [**/{test,perf}/**.{cs,vb}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
