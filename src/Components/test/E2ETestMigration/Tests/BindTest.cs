@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.BrowserTesting;
@@ -25,6 +26,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         private IPage _page;
         private IBrowserContext _browser;
 
+        protected override Type TestComponent { get; } = typeof(BindCasesComponent);
+
         protected override async Task InitializeCoreAsync(TestContext context)
         {
             await base.InitializeCoreAsync(context);
@@ -40,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True(response.Ok, "Got: " + response.StatusText + "from: " + url);
             Output.WriteLine("Loaded page");
 
-            await MountTestComponentAsync<BindCasesComponent>(page);
+            await MountTestComponentAsync(page);
             //Browser.Exists(By.Id("bind-cases"));
 
             _page = page;

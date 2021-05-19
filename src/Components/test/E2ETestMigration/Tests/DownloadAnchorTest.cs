@@ -26,36 +26,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {            
         }
 
-        private IPage _page;
-        private IBrowserContext _browser;
-
-        protected override async Task InitializeCoreAsync(TestContext context)
-        {
-            await base.InitializeCoreAsync(context);
-
-            _browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
-            var page = await _browser.NewPageAsync();
-            var url = _serverFixture.RootUri + "subdir";
-            var response = await page.GoToAsync(url);
-
-            await MountTestComponentAsync<TestRouter>(page);
-            _page = page;
-        }
+        protected override Type TestComponent { get; } = typeof(TestRouter);
 
         [Fact]
         public async Task DownloadFileFromAnchor()
         {
             // Arrange
-            var initialUrl = _page.Url;
-            var downloadTask = _page.WaitForEventAsync(PageEvent.Download);
+            var initialUrl = TestPage.Url;
+            var downloadTask = TestPage.WaitForEventAsync(PageEvent.Download);
 
             // Act
             await Task.WhenAll(
                 downloadTask,
-                _page.ClickAsync("a[download]"));
+                TestPage.ClickAsync("a[download]"));
 
             // Assert URL should still be same as before click
-            Assert.Equal(initialUrl, _page.Url);
+            Assert.Equal(initialUrl, TestPage.Url);
 
             // Assert that the resource was downloaded            
             var download = downloadTask.Result.Download;

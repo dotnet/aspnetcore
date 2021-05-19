@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         private readonly BlazorWasmTestAppFixture<BasicTestApp.Program> _devHostServerFixture;
         readonly ServerFixture _apiServerFixture;
 
+        protected override Type TestComponent { get; } = typeof(BinaryHttpRequestsComponent);
+
         public BinaryHttpClientTest(
             BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
             BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
@@ -33,37 +35,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             _devHostServerFixture = devHostServerFixture;
             _devHostServerFixture.PathBase = "/subdir";
             _apiServerFixture = apiServerFixture;
+            MountUri = _devHostServerFixture.RootUri + "subdir";
         }
 
         [Fact]
         public async Task CanSendAndReceiveBytes()
         {
-            if (BrowserManager.IsAvailable(BrowserKind.Chromium))
-            {
-                await using var browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
-                var page = await browser.NewPageAsync();
-                var url = _devHostServerFixture.RootUri + "subdir";
-                var response = await page.GoToAsync(url);
+            var targetUri = new Uri(_apiServerFixture.RootUri, "/subdir/api/data");
+            await TestPage.TypeAsync("#request-uri", targetUri.AbsoluteUri);
+            await TestPage.ClickAsync("#send-request");
 
-                Assert.True(response.Ok, "Got: " + response.StatusText + "from: "+url);
-                Output.WriteLine("Loaded page");
+            var status = await TestPage.GetTextContentAsync("#response-status");
+            var statusText = await TestPage.GetTextContentAsync("#response-status-text");
+            var testOutcome = await TestPage.GetTextContentAsync("#test-outcome");
 
-                await MountTestComponentAsync<BinaryHttpRequestsComponent>(page);
-
-                var targetUri = new Uri(_apiServerFixture.RootUri, "/subdir/api/data");
-                await page.TypeAsync("#request-uri", targetUri.AbsoluteUri);
-                await page.ClickAsync("#send-request");
-
-                var status = await page.GetTextContentAsync("#response-status");
-                var statusText = await page.GetTextContentAsync("#response-status-text");
-                var testOutcome = await page.GetTextContentAsync("#test-outcome");
-
-                Assert.Equal("OK", status);
-                Assert.Equal("OK", statusText);
-                Assert.Equal("", testOutcome);
-
-                await page.CloseAsync();
-            }
+            Assert.Equal("OK", status);
+            Assert.Equal("OK", statusText);
+            Assert.Equal("", testOutcome);
         }
     }
 }

@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             : base(output)
         {
             _serverFixture = serverFixture;
+            MountUri = _serverFixture.RootUri + "subdir";
         }
 
         public void Navigate(string relativeUrl, bool noReload = false)
