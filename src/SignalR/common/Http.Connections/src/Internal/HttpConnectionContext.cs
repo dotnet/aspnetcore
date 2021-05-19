@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         internal Task? DisposeAndRemoveTask { get; set; }
 
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
-        internal IServiceScope? ServiceScope { get; set; }
+        internal AsyncServiceScope? ServiceScope { get; set; }
 
         public Task? TransportTask { get; set; }
 

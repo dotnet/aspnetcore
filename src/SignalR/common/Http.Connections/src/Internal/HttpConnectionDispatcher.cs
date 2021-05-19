@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             CloneUser(newHttpContext, context);
 
             connection.ServiceScope = context.RequestServices.CreateAsyncScope();
-            newHttpContext.RequestServices = connection.ServiceScope.ServiceProvider;
+            newHttpContext.RequestServices = connection.ServiceScope.Value.ServiceProvider;
 
             // REVIEW: This extends the lifetime of anything that got put into HttpContext.Items
             newHttpContext.Items = new Dictionary<object, object?>(context.Items);

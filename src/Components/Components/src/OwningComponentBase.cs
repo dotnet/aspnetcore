@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
     /// </remarks>
     public abstract class OwningComponentBase : ComponentBase, IDisposable
     {
-        private IServiceScope? _scope;
+        private AsyncServiceScope? _scope;
 
         [Inject] IServiceScopeFactory ScopeFactory { get; set; } = default!;
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components
                 }
 
                 _scope ??= ScopeFactory.CreateAsyncScope();
-                return _scope.ServiceProvider;
+                return _scope.Value.ServiceProvider;
             }
         }
 
