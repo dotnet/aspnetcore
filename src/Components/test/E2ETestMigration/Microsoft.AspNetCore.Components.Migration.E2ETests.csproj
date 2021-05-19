@@ -33,12 +33,6 @@
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
 
-    <ProjectReference
-      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
-      Targets="Publish"
-      Properties="PublishDir=$(OutputPath)helixcontent\BasicTestApp\"
-     />
-
   </ItemGroup>
 
   <ItemGroup>
@@ -81,6 +75,14 @@
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+        <ProjectToPublish Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
+    </ItemGroup>
+    <MSBuild
+      Projects="@ProjectToPublish"
+      Targets="Publish"
+      Properties="PublishDir=$(OutputPath)helixcontent\BasicTestApp\"
+     />
     <ItemGroup>
       <_PublishFiles Include="$(OutputPath).playwright\**\*.*" />
       <_PublishBasicFiles Include="$(OutputPath)helixcontent\BasicTestApp\**\*.*" />
