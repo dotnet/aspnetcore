@@ -150,6 +150,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private class TestComponentHub : ComponentHub
         {
             private bool circuitSet = false;
+
             public TestComponentHub(
                 ServerComponentDeserializer serializer,
                 IDataProtectionProvider dataProtectionProvider,
@@ -164,6 +165,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 circuitRegistry,
                 logger)
             { }
+
             public override CircuitHandle GetCircuitHandle()
             {
                 return null;
@@ -193,6 +195,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 return true;
             }
         }
+
         private class TestCircuitFactory : CircuitFactory
         {
             public TestCircuitFactory(
