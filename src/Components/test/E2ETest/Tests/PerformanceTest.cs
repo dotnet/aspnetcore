@@ -33,12 +33,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32788")]
         public void HasTitle()
         {
             Assert.Equal("E2EPerformance", Browser.Title);
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32788")]
         public void BenchmarksRunWithoutError()
         {
             // In CI, we only verify that the benchmarks run without throwing any
