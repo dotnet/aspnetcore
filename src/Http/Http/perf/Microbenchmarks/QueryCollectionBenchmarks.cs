@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Http
         private string _queryString;
         private string _singleValue;
         private string _singleValueWithPlus;
+        private string _encoded;
 
         [IterationSetup]
         public void Setup()
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Http
             _queryString = "?key1=value1&key2=value2&key3=value3&key4=&key5=";
             _singleValue = "?key1=value1";
             _singleValueWithPlus = "?key1=value1+value2+value3";
+            _encoded = "?key1=value%231";
         }
 
         [Benchmark(Description = "ParseNew")]
@@ -46,6 +48,13 @@ namespace Microsoft.AspNetCore.Http
             _ = QueryFeature.ParseNullableQueryInternal(_singleValueWithPlus);
         }
 
+        [Benchmark(Description = "ParseNew")]
+        [BenchmarkCategory("Encoded")]
+        public void ParseNewEncoded()
+        {
+            _ = QueryFeature.ParseNullableQueryInternal(_encoded);
+        }
+
         [Benchmark(Description = "QueryHelpersParse")]
         [BenchmarkCategory("QueryString")]
         public void QueryHelpersParse()
@@ -65,6 +74,13 @@ namespace Microsoft.AspNetCore.Http
         public void QueryHelpersParseSingleWithPlus()
         {
             _ = QueryHelpers.ParseNullableQuery(_singleValueWithPlus);
+        }
+
+        [Benchmark(Description = "QueryHelpersParse")]
+        [BenchmarkCategory("Encoded")]
+        public void QueryHelpersParseEncoded()
+        {
+            _ = QueryHelpers.ParseNullableQuery(_encoded);
         }
 
         [Benchmark]
