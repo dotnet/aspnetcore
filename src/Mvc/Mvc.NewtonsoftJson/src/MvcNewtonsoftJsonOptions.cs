@@ -49,6 +49,16 @@ namespace Microsoft.AspNetCore.Mvc
         /// <value>Defaults to 30Kb.</value>
         public int InputFormatterMemoryBufferThreshold { get; set; } = 1024 * 30;
 
+        /// <summary>
+        /// Gets the maximum size to buffer in memory when <see cref="MvcOptions.SuppressOutputFormatterBuffering"/> is not set.
+        /// <para>
+        /// <see cref="NewtonsoftJsonOutputFormatter"/> buffers the output stream by default, buffering up to a certain amount in memory, before buffering to disk.
+        /// This option configures the size in bytes that MVC will buffer in memory, before switching to disk.
+        /// </para>
+        /// </summary>
+        /// <value>Defaults to 30Kb.</value>
+        public int OutputFormatterMemoryBufferThreshold { get; set; } = 1024 * 30;
+
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
