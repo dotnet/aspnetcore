@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// write a file from a stream to the response.
     /// </summary>
-    public class FileStreamResult : FileResult
+    public class FileStreamResult : FileResult, IResult
     {
         private Stream _fileStream;
 
@@ -78,6 +79,11 @@ namespace Microsoft.AspNetCore.Mvc
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<FileStreamResult>>();
             return executor.ExecuteAsync(context, this);
+        }
+
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            throw new NotImplementedException();
         }
     }
 }

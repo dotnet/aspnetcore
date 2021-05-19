@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -90,8 +90,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal((long?)contentLength, sendFile.Length);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
@@ -109,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -125,8 +128,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(4, sendFile.Length);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
@@ -143,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -154,8 +160,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Null(sendFile.Length);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
@@ -173,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -249,8 +258,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_RangeRequested_PreconditionFailed()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task WriteFileAsync_RangeRequested_PreconditionFailed(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
@@ -265,7 +277,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -279,8 +291,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_RangeRequested_NotModified()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task WriteFileAsync_RangeRequested_NotModified(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
@@ -295,7 +310,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -310,8 +325,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Fact]
-        public async Task ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
@@ -326,7 +344,7 @@ namespace Microsoft.AspNetCore.Mvc
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(context);
+            await function(result, action == "ActionContext" ? context : httpContext);
 
             // Assert
             sendFileMock.Verify();
@@ -372,8 +390,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(contentLength, httpResponse.ContentLength);
         }
 
-        [Fact]
-        public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var expectedContentType = "text/foo; charset=us-ascii";
@@ -385,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(context);
+            await function(result, action == "ActionContext" ? context : httpContext);
 
             // Assert
             Assert.Equal(expectedContentType, httpContext.Response.ContentType);
@@ -395,8 +416,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(CancellationToken.None, sendFile.Token);
         }
 
-        [Fact]
-        public async Task ExecuteResultAsync_WorksWithAbsolutePaths()
+        [Theory]
+        [MemberData(nameof(GetActions))]
+        public async Task ExecuteResultAsync_WorksWithAbsolutePaths(
+            string action,
+            Func<PhysicalFileResult, object, Task> function)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine(".", "TestFiles", "FilePathResultTestFile.txt"));
@@ -409,7 +433,7 @@ namespace Microsoft.AspNetCore.Mvc
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(context);
+            await function(result, action == "ActionContext" ? context : httpContext);
 
             // Assert
             Assert.Equal(Path.GetFullPath(Path.Combine(".", "TestFiles", "FilePathResultTestFile.txt")), sendFile.Name);
@@ -477,7 +501,16 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.ThrowsAsync<FileNotFoundException>(() => result.ExecuteResultAsync(context));
         }
 
-        private class TestPhysicalFileResult : PhysicalFileResult
+        public static IEnumerable<object[]> GetActions()
+        {
+            return new List<object[]>
+            {
+                new object[] { "ActionContext", new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context)) },
+                new object[] { "HttpContext", new Func<PhysicalFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context)) },
+            };
+        }
+
+        private class TestPhysicalFileResult : PhysicalFileResult, IResult
         {
             public TestPhysicalFileResult(string filePath, string contentType)
                 : base(filePath, contentType)
@@ -488,6 +521,13 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 var executor = context.HttpContext.RequestServices.GetRequiredService<TestPhysicalFileResultExecutor>();
                 return executor.ExecuteAsync(context, this);
+            }
+
+            Task IResult.ExecuteAsync(HttpContext httpContext)
+            {
+                var lastModified = DateTimeOffset.MinValue.AddDays(1);
+                var fileLastModified = new DateTimeOffset(lastModified.Year, lastModified.Month, lastModified.Day, lastModified.Hour, lastModified.Minute, lastModified.Second, TimeSpan.FromSeconds(0));
+                return ExecuteAsyncInternal(httpContext, this, fileLastModified, 34);
             }
         }
 
