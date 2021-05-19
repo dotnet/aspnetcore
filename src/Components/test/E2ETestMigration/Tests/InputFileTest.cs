@@ -31,8 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
         }
 
-        private IPage _page;
-        private IBrowserContext _browser;
+        protected override Type TestComponent { get; } = typeof(InputFileComponent);
 
         protected override async Task InitializeCoreAsync(TestContext context)
         {
@@ -42,26 +41,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Directory.CreateDirectory(_tempDirectory);
 
             //Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-
-            _browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
-            var page = await _browser.NewPageAsync();
-            var url = _serverFixture.RootUri + "subdir";
-            var response = await page.GoToAsync(url);
-
-            Assert.True(response.Ok, "Got: " + response.StatusText + "from: " + url);
-            Output.WriteLine("Loaded page");
-
-            await MountTestComponentAsync<InputFileComponent>(page);
-
-            _page = page;
         }
 
         private async Task VerifyFile(TempFile file)
         {
             // Upload the file
-            await _page.SetInputFilesAsync("#input-file", file.Path);
+            await TestPage.SetInputFilesAsync("#input-file", file.Path);
 
-            var fileContainer = await _page.WaitForSelectorAsync($"#file-{file.Name}");
+            var fileContainer = await TestPage.WaitForSelectorAsync($"#file-{file.Name}");
             Assert.NotNull(fileContainer);
             var fileNameElement = await fileContainer.QuerySelectorAsync("#file-name");
             Assert.NotNull(fileNameElement);
@@ -89,11 +76,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .Select(i => i.Path)
                 .ToArray();
 
-            await _page.SetInputFilesAsync("#input-file", filePaths);
+            await TestPage.SetInputFilesAsync("#input-file", filePaths);
 
             foreach (var file in files)
             {
-                var fileContainer = await _page.WaitForSelectorAsync($"#file-{file.Name}");
+                var fileContainer = await TestPage.WaitForSelectorAsync($"#file-{file.Name}");
                 Assert.NotNull(fileContainer);
                 var fileNameElement = await fileContainer.QuerySelectorAsync("#file-name");
                 Assert.NotNull(fileNameElement);
@@ -157,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var sourceImageId = "image-source";
 
             // Get the source image base64
-            var base64 = await _page.EvaluateAsync<string>($@"
+            var base64 = await TestPage.EvaluateAsync<string>($@"
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
                 const image = document.getElementById('{sourceImageId}');
@@ -172,11 +159,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file = TempFile.Create(_tempDirectory, "png", Convert.FromBase64String(base64));
 
             // Re-upload the image file (it will be converted to a JPEG and scaled to fix 640x480)
-            var inputFile = await _page.QuerySelectorAsync("#input-image");
+            var inputFile = await TestPage.QuerySelectorAsync("#input-image");
             await inputFile.SetInputFilesAsync(file.Path);
 
             // Validate that the image was converted without error and is the correct size
-            var uploadedImage = await _page.WaitForSelectorAsync("#image-uploaded");
+            var uploadedImage = await TestPage.WaitForSelectorAsync("#image-uploaded");
             Assert.NotNull(uploadedImage);
             var box = await uploadedImage.GetBoundingBoxAsync();
             Assert.Equal(480, box.Height);
@@ -185,8 +172,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected async Task ClearAndType(string selector, string value)
         {
-            await _page.EvalOnSelectorAsync(selector, "e => e.value = ''");
-            var element = await _page.QuerySelectorAsync(selector);
+            await TestPage.EvalOnSelectorAsync(selector, "e => e.value = ''");
+            var element = await TestPage.QuerySelectorAsync(selector);
             await element.TypeAsync(value);
         }
 
@@ -200,10 +187,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file2 = TempFile.Create(_tempDirectory, "txt", "This is file 2.");
 
             // Select both files
-            await _page.SetInputFilesAsync("#input-file", new string[] { file1.Path, file2.Path });
+            await TestPage.SetInputFilesAsync("#input-file", new string[] { file1.Path, file2.Path });
 
             // Validate that the proper exception is thrown
-            var exceptionMessage = await _page.QuerySelectorAsync("#exception-message");
+            var exceptionMessage = await TestPage.QuerySelectorAsync("#exception-message");
             Assert.Equal("The maximum number of files accepted is 1, but 2 were supplied.", await exceptionMessage.GetTextContentAsync());
         }
 
@@ -216,10 +203,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file = TempFile.Create(_tempDirectory, "txt", "This file is over 10 bytes long.");
 
             // Select the file
-            await _page.SetInputFilesAsync("#input-file", file.Path);
+            await TestPage.SetInputFilesAsync("#input-file", file.Path);
 
             // Validate that the proper exception is thrown
-            var exceptionMessage = await _page.QuerySelectorAsync("#exception-message");
+            var exceptionMessage = await TestPage.QuerySelectorAsync("#exception-message");
             Assert.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", await exceptionMessage.GetTextContentAsync());
         }
 
