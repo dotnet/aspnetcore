@@ -25,7 +25,7 @@ namespace BasicWebSite.Controllers.ContentNegotiation
 
         public NormalController(ArrayPool<char> charPool)
         {
-            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions());
+            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions(), new MvcNewtonsoftJsonOptions());
         }
 
         public override void OnActionExecuted(ActionExecutedContext context)

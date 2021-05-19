@@ -6,9 +6,12 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         protected override TextOutputFormatter GetOutputFormatter()
         {
-            return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
         }
 
         [Fact]
@@ -47,6 +50,79 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
+        public async Task MvcJsonOptionsAreUsedToSetBufferThresholdFromServices()
+        {
+            // Arrange
+            var person = new User() { FullName = "John", age = 35 };
+            Stream writeStream = null;
+            var outputFormatterContext = GetOutputFormatterContext(person, typeof(User), writerFactory: (stream, encoding) =>
+            {
+                writeStream = stream;
+                return StreamWriter.Null;
+            });
+
+            var services = new ServiceCollection()
+                    .AddOptions()
+                    .Configure<MvcNewtonsoftJsonOptions>(o =>
+                    {
+                        o.OutputFormatterMemoryBufferThreshold = 1;
+                    })
+                    .BuildServiceProvider();
+
+            outputFormatterContext.HttpContext.RequestServices = services;
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented,
+            };
+            var expectedOutput = JsonConvert.SerializeObject(person, settings);
+#pragma warning disable CS0618 // Type or member is obsolete
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            // Act
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
+
+            // Assert
+            Assert.IsType<FileBufferingWriteStream>(writeStream);
+
+            Assert.Equal(1, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
+        }
+
+        [Fact]
+        public async Task MvcJsonOptionsAreUsedToSetBufferThreshold()
+        {
+            // Arrange
+            var person = new User() { FullName = "John", age = 35 };
+            Stream writeStream = null;
+            var outputFormatterContext = GetOutputFormatterContext(person, typeof(User), writerFactory: (stream, encoding) =>
+            {
+                writeStream = stream;
+                return StreamWriter.Null;
+            });
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented,
+            };
+            var expectedOutput = JsonConvert.SerializeObject(person, settings);
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions()
+            {
+                OutputFormatterMemoryBufferThreshold = 2
+            });
+
+            // Act
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
+
+            // Assert
+            Assert.IsType<FileBufferingWriteStream>(writeStream);
+
+            Assert.Equal(2, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
+        }
+
+        [Fact]
         public async Task ChangesTo_SerializerSettings_AffectSerialization()
         {
             // Arrange
@@ -59,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 Formatting = Formatting.Indented,
             };
             var expectedOutput = JsonConvert.SerializeObject(person, settings);
-            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
 
             // Act
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
@@ -277,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var beforeMessage = "Hello World";
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
             var memStream = new MemoryStream();
             var outputFormatterContext = GetOutputFormatterContext(
                 beforeMessage,
@@ -308,7 +384,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             stream.Setup(v => v.FlushAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             stream.SetupGet(s => s.CanWrite).Returns(true);
 
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
             var outputFormatterContext = GetOutputFormatterContext(
                 model,
                 typeof(string),
@@ -363,7 +439,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
         {
             public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)
-                : base(serializerSettings, ArrayPool<char>.Shared, new MvcOptions())
+                : base(serializerSettings, ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions())
             {
             }
 

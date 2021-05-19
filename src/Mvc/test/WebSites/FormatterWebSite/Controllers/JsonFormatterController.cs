@@ -27,7 +27,7 @@ namespace FormatterWebSite.Controllers
 
         public JsonFormatterController(ArrayPool<char> charPool)
         {
-            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions());
+            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions(), new MvcNewtonsoftJsonOptions());
         }
 
         public IActionResult ReturnsIndentedJson()
