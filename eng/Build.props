@@ -51,8 +51,11 @@
                       $(RepoRoot)src\Components\WebView\Samples\BlazorWinFormsApp\**\*.csproj;
                       $(RepoRoot)src\Components\WebView\Samples\BlazorWpfApp\**\*.csproj;
                       " />
-    
-    <!-- Skipping due to build race conditions for now -->
+
+    <!-- Projects won't build consistently. An SDK newer than 6.0.100-preview.5.21230.2 should fix the first.
+         See https://github.com/dotnet/aspnetcore/pull/32428 and https://github.com/dotnet/aspnetcore/issues/32788. -->
+    <ProjectToExclude Include="
+                      $(RepoRoot)src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
     <ProjectToExclude Include="
                       $(RepoRoot)src/Components/test/E2ETestMigration/Microsoft.AspNetCore.Components.Migration.E2ETests.csproj" />    
   </ItemGroup>
