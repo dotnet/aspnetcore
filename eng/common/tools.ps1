@@ -202,7 +202,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
     $maxRetries = 5
     $retries = 1
 
-    $uri = "https://dot.net/$dotnetInstallScriptVersion/dotnet-install.ps1"
+    $uri = "https://github.com/dotnet/install-scripts/blob/7eeaccf9f21c798af87d8a137ce89de44b2681db/src/dotnet-install.ps1"
 
     while($true) {
       try {
