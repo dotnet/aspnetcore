@@ -1,14 +1,14 @@
-From d070c95637ba2c26f51588088b9c1e76deed9623 Mon Sep 17 00:00:00 2001
+From d0c2069e7c81c5fbd5a27f786e5e3347ab9d4b95 Mon Sep 17 00:00:00 2001
 From: John Luo <johluo@microsoft.com>
-Date: Tue, 18 May 2021 16:08:50 -0700
-Subject: [PATCH] global.json updates for source-build
+Date: Wed, 19 May 2021 10:41:41 -0700
+Subject: [PATCH] global.json updates for source build
 
 ---
- global.json | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ global.json | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/global.json b/global.json
-index 5a2b8a613d..43723053ce 100644
+index 5a2b8a613d..951a5f9fe3 100644
 --- a/global.json
 +++ b/global.json
 @@ -5,13 +5,10 @@
@@ -26,14 +26,6 @@ index 5a2b8a613d..43723053ce 100644
        "aspnetcore/x64": [
          "3.1.14"
        ]
-@@ -29,7 +26,6 @@
-     "xcopy-msbuild": "16.5.0-alpha"
-   },
-   "msbuild-sdks": {
--    "Yarn.MSBuild": "1.22.10",
-     "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21264.2",
-     "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21264.2"
-   }
 -- 
 2.20.1.windows.1
 
