@@ -29,6 +29,12 @@
             const data = await streamRef.arrayBuffer();
             console.log(data.byteLength);
         }
+
+        async function getFileData() {
+            const streamRef = await DotNet.invokeMethodAsync('BlazorServerApp', 'GetFileData');
+            const data = await streamRef.arrayBuffer();
+            console.log(data.byteLength);
+        }
     </script>
 </body>
 </html>

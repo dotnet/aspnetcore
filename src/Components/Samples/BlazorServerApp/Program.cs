@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace BlazorServerApp
 {
@@ -24,5 +25,12 @@ namespace BlazorServerApp
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+
+        [JSInvokable]
+        public static DotNetStreamReference GetFileData()
+        {
+            var arbitraryFilename = typeof(Program).Assembly.Location;
+            return new DotNetStreamReference(File.OpenRead(arbitraryFilename));
+        }
     }
 }
