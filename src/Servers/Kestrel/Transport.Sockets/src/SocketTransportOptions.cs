@@ -73,9 +73,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public Action<EndPoint, Socket>? ConfigureListenSocket { get; set; }
 
         /// <summary>
-        /// An action used to configure an accept socket before it's passed to the underlying connection.
+        /// An action used to configure an accepted socket before it's passed to the underlying connection.
         /// </summary>
-        public Action<EndPoint, Socket>? ConfigureAcceptSocket { get; set; }
+        public Action<EndPoint, Socket>? ConfigureAcceptedSocket { get; set; }
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
     }

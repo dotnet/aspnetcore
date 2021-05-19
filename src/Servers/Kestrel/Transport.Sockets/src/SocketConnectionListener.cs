@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
 
-                    _options.ConfigureAcceptSocket?.Invoke(EndPoint, acceptSocket);
+                    _options.ConfigureAcceptedSocket?.Invoke(EndPoint, acceptSocket);
 
                     var setting = _settings[_settingsIndex];
 

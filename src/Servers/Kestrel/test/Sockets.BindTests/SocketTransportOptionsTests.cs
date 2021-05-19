@@ -36,20 +36,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(GetEndpoints))]
-        public async Task SocketTransportCallsConfigureAcceptSocket(EndPoint endpointToTest)
+        public async Task SocketTransportCallsConfigureAcceptedSocket(EndPoint endpointToTest)
         {
             var wasCalled = false;
-            void ConfigureAcceptSocket(EndPoint endpoint, Socket socket) => wasCalled = true;
+            void ConfigureAcceptedSocket(EndPoint endpoint, Socket socket) => wasCalled = true;
 
             using var host = CreateWebHost(
-                endpointToTest, options => options.ConfigureAcceptSocket = ConfigureAcceptSocket
+                endpointToTest, options => options.ConfigureAcceptedSocket = ConfigureAcceptedSocket
             );
             using var client = CreateHttpClient(endpointToTest);
             await host.StartAsync();
             var uri = host.GetUris().First();
             var response = await client.GetAsync(uri);
             response.EnsureSuccessStatusCode();
-            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.ConfigureAcceptSocket)} to be called.");
+            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.ConfigureAcceptedSocket)} to be called.");
             await host.StopAsync();
         }
 
