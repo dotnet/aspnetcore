@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void EnsureDatabaseCreated(IServiceProvider services)
         {
-            using var scope = services.CreateAsyncScope();
+            using var scope = services.CreateScope();
 
             var applicationDbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
             if (applicationDbContext?.Database?.GetPendingMigrations()?.Any() == true)
