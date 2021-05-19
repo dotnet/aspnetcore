@@ -124,6 +124,7 @@
 
         <NodeJsProjects Include="
                           $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
+                          $(RepoRoot)src\Components\test\E2ETest\Microsoft.AspNetCore.Components.E2ETests.csproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
                           $(RepoRoot)src\JSInterop\**\*.npmproj;
