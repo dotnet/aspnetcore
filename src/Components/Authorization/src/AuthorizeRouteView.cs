@@ -49,22 +49,22 @@ namespace Microsoft.AspNetCore.Components.Authorization
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
         [Parameter]
-        public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
+        public RenderFragment<AuthenticationState>? NotAuthorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
         [Parameter]
-        public RenderFragment Authorizing { get; set; }
+        public RenderFragment? Authorizing { get; set; }
 
         /// <summary>
         /// The resource to which access is being controlled.
         /// </summary>
         [Parameter]
-        public object Resource { get; set; }
+        public object? Resource { get; set; }
 
         [CascadingParameter]
-        private Task<AuthenticationState> ExistingCascadedAuthenticationState { get; set; }
+        private Task<AuthenticationState>? ExistingCascadedAuthenticationState { get; set; }
 
         /// <inheritdoc />
         protected override void Render(RenderTreeBuilder builder)
@@ -115,12 +115,12 @@ namespace Microsoft.AspNetCore.Components.Authorization
             RenderContentInDefaultLayout(builder, content);
         }
 
-        private class AuthorizeRouteViewCore : AuthorizeViewCore
+        private sealed class AuthorizeRouteViewCore : AuthorizeViewCore
         {
             [Parameter]
-            public RouteData RouteData { get; set; }
+            public RouteData RouteData { get; set; } = default!;
 
-            protected override IAuthorizeData[] GetAuthorizeData()
+            protected override IAuthorizeData[]? GetAuthorizeData()
                 => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageType);
         }
     }

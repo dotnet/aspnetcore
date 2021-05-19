@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
         /// An event that provides notification when the <see cref="AuthenticationState"/>
         /// has changed. For example, this event may be raised if a user logs in or out.
         /// </summary>
-        public event AuthenticationStateChangedHandler AuthenticationStateChanged;
+        public event AuthenticationStateChangedHandler? AuthenticationStateChanged;
 
         /// <summary>
         /// Raises the <see cref="AuthenticationStateChanged"/> event.
