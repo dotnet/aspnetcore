@@ -56,8 +56,6 @@
          See https://github.com/dotnet/aspnetcore/pull/32428 and https://github.com/dotnet/aspnetcore/issues/32788. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
-    <ProjectToExclude Include="
-                      $(RepoRoot)src/Components/test/E2ETestMigration/Microsoft.AspNetCore.Components.Migration.E2ETests.csproj" />    
   </ItemGroup>
 
   <Choose>
