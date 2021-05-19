@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var methodExecutor = descriptor.MethodExecutor;
 
             var disposeScope = true;
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var scope = _serviceScopeFactory.CreateAsyncScope();
             IHubActivator<THub>? hubActivator = null;
             THub? hub = null;
             try
