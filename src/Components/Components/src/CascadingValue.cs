@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Components
 
         void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
         {
-            _subscribers!.Remove(subscriber);
+            _subscribers?.Remove(subscriber);
         }
 
         private void NotifySubscribers(in ParameterViewLifetime lifetime)
