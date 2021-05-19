@@ -16,7 +16,8 @@ namespace CodeGenerator
                 "IHttpResponseBodyFeature",
                 "IRouteValuesFeature",
                 "IEndpointFeature",
-                "IServiceProvidersFeature"
+                "IServiceProvidersFeature",
+                "IHttpActivityFeature"
             };
 
             var commonFeatures = new[]
@@ -49,8 +50,7 @@ namespace CodeGenerator
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
                 "IHttpRequestBodyDetectionFeature",
-                "IHttpResetFeature",
-                "IHttpActivityFeature"
+                "IHttpResetFeature"
             };
 
             var allFeatures = alwaysFeatures
