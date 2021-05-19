@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public Action<EndPoint, Socket>? ConfigureListenSocket { get; set; }
 
         /// <summary>
-        /// An action used to configure an accepted socket before it's passed to the underlying connection.
+        /// An action used to configure an accepted socket before it's used.
         /// </summary>
         public Action<EndPoint, Socket>? ConfigureAcceptedSocket { get; set; }
 
