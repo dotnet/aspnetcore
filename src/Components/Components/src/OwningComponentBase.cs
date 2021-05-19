@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components
                     throw new ObjectDisposedException(GetType().Name);
                 }
 
-                _scope ??= ScopeFactory.CreateScope();
+                _scope ??= ScopeFactory.CreateAsyncScope();
                 return _scope.ServiceProvider;
             }
         }

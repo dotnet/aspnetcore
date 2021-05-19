@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
-            var scope = _serviceScopeFactory.CreateScope();
+            var scope = _serviceScopeFactory.CreateAsyncScope();
             connection.HubCallerClients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
 
             try
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
         {
-            var scope = _serviceScopeFactory.CreateScope();
+            var scope = _serviceScopeFactory.CreateAsyncScope();
 
             try
             {
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var methodExecutor = descriptor.MethodExecutor;
 
             var disposeScope = true;
-            var scope = _serviceScopeFactory.CreateScope();
+            var scope = _serviceScopeFactory.CreateAsyncScope();
             IHubActivator<THub>? hubActivator = null;
             THub? hub = null;
             try

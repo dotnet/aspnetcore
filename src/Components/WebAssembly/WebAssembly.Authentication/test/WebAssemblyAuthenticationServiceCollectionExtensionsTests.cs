@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            using var scope = host.Services.CreateScope();
+            using var scope = host.Services.CreateAsyncScope();
 
             // from the root scope.
             var rootOptions = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
