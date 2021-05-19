@@ -3,6 +3,12 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -11,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// write a file as the response.
     /// </summary>
-    public abstract class FileResult : ActionResult
+    public abstract class FileResult : ActionResult, IResult
     {
         private string? _fileDownloadName;
 
@@ -59,5 +65,39 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the value that enables range processing for the <see cref="FileResult"/>.
         /// </summary>
         public bool EnableRangeProcessing { get; set; }
+
+        /// <inheritdoc />
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<FileResult>();
+
+            var (range, rangeLenth, serveBody) = FileResultExecutorBase.SetHeadersAndLog(
+                httpContext,
+                this,
+                null,
+                EnableRangeProcessing,
+                LastModified,
+                EntityTag,
+                logger);
+
+            if (!serveBody || (range != null && rangeLenth == 0))
+            {
+                // No body to return or incorrect range data
+                return Task.CompletedTask;
+            }
+
+            if (range != null)
+            {
+                logger.WritingRangeToBody();
+            }
+
+            return FileResultExecutorBase.WriteFileAsync(httpContext, httpContext.Response.Body, range, rangeLenth);
+        }
     }
 }

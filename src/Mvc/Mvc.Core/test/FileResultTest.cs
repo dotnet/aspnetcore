@@ -268,13 +268,13 @@ namespace Microsoft.AspNetCore.Mvc
             httpRequestHeaders.IfUnmodifiedSince = lastModified;
             httpRequestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(1);
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
-
+            
             // Act
-            var state = fileResult.GetPreconditionState(
+            var state = FileResultExecutorBase.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(FileResultExecutorBase.PreconditionState.ShouldProcess, state);
@@ -307,13 +307,13 @@ namespace Microsoft.AspNetCore.Mvc
             httpRequestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue;
             httpRequestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(2);
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
-
+            
             // Act
-            var state = fileResult.GetPreconditionState(
+            var state = FileResultExecutorBase.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(FileResultExecutorBase.PreconditionState.PreconditionFailed, state);
@@ -344,13 +344,13 @@ namespace Microsoft.AspNetCore.Mvc
             };
             httpRequestHeaders.IfModifiedSince = lastModified;
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
-
+            
             // Act
-            var state = fileResult.GetPreconditionState(
+            var state = FileResultExecutorBase.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(FileResultExecutorBase.PreconditionState.NotModified, state);
@@ -372,13 +372,13 @@ namespace Microsoft.AspNetCore.Mvc
             httpRequestHeaders.IfRange = new RangeConditionHeaderValue(ifRangeString);
             httpRequestHeaders.IfModifiedSince = lastModified;
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
 
             // Act
-            var ifRangeIsValid = fileResult.IfRangeValid(
+            var ifRangeIsValid = FileResultExecutorBase.IfRangeValid(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(expected, ifRangeIsValid);
