@@ -76,32 +76,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             await using var scope = _serviceScopeFactory.CreateAsyncScope();
             connection.HubCallerClients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
 
+            var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+            var hub = hubActivator.Create();
             try
             {
-                var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                var hub = hubActivator.Create();
-                try
-                {
-                    InitializeHub(hub, connection);
+                InitializeHub(hub, connection);
 
-                    if (_onConnectedMiddleware != null)
-                    {
-                        var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
-                        await _onConnectedMiddleware(context);
-                    }
-                    else
-                    {
-                        await hub.OnConnectedAsync();
-                    }
-                }
-                finally
+                if (_onConnectedMiddleware != null)
                 {
-                    hubActivator.Release(hub);
+                    var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                    await _onConnectedMiddleware(context);
+                }
+                else
+                {
+                    await hub.OnConnectedAsync();
                 }
             }
             finally
             {
-                await scope.DisposeAsync();
+                hubActivator.Release(hub);
             }
         }
 
@@ -109,32 +102,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
+            var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+            var hub = hubActivator.Create();
             try
             {
-                var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                var hub = hubActivator.Create();
-                try
-                {
-                    InitializeHub(hub, connection);
+                InitializeHub(hub, connection);
 
-                    if (_onDisconnectedMiddleware != null)
-                    {
-                        var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
-                        await _onDisconnectedMiddleware(context, exception);
-                    }
-                    else
-                    {
-                        await hub.OnDisconnectedAsync(exception);
-                    }
-                }
-                finally
+                if (_onDisconnectedMiddleware != null)
                 {
-                    hubActivator.Release(hub);
+                    var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                    await _onDisconnectedMiddleware(context, exception);
+                }
+                else
+                {
+                    await hub.OnDisconnectedAsync(exception);
                 }
             }
             finally
             {
-                await scope.DisposeAsync();
+                hubActivator.Release(hub);
             }
         }
 
