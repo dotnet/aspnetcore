@@ -238,9 +238,11 @@ namespace Microsoft.AspNetCore.Components.Server
                 }
                 finally
                 {
-
                     // TODO: Don't send the exception to the client if detailed errors is off.
-                    // In that case, log detailed error info on the server only.
+                    // In that case, log detailed error info on the server only. From experiments it
+                    // doesn't seem like SignalR sends the actual exception info anyway, which is a
+                    // bit awkward because in development we would like it to show up. Maybe if we're
+                    // logging the detailed error info on the .NET side anyway that might be enough.
                     writer.Complete(localException);
                 }
             }

@@ -1,5 +1,17 @@
 ﻿@page "/"
+@inject IJSRuntime JS 
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<button @onclick="SendStream">Send stream</button>
+
+@code {
+    async Task SendStream()
+    {
+        using var data = new System.IO.MemoryStream(new byte[10 * 1024 * 1024]);
+        using var streamRef = new DotNetStreamReference(data);
+        await JS.InvokeVoidAsync("getTheStream", streamRef);
+    }
+} 

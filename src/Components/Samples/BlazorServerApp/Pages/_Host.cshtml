@@ -24,5 +24,11 @@
             });
         })()
     </script>
+    <script>
+        async function getTheStream(streamRef) {
+            const data = await streamRef.arrayBuffer();
+            console.log(data.byteLength);
+        }
+    </script>
 </body>
 </html>
