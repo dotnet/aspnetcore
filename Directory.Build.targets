@@ -62,7 +62,7 @@
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable
-        Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsUnitTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR
+        Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR
          '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsMicrobenchmarksProject)' == 'true') ">false</IsPackable>
   </PropertyGroup>
 
