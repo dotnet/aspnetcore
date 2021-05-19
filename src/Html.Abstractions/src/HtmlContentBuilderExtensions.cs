@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Html
         public static IHtmlContentBuilder AppendFormat(
             this IHtmlContentBuilder builder,
             string format,
-            params object[] args)
+            params object?[] args)
         {
             if (builder == null)
             {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Html
             this IHtmlContentBuilder builder,
             IFormatProvider formatProvider,
             string format,
-            params object[] args)
+            params object?[] args)
         {
             if (builder == null)
             {
