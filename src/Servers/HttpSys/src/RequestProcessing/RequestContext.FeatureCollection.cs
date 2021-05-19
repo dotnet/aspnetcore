@@ -40,7 +40,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpSysRequestInfoFeature,
         IHttpResponseTrailersFeature,
         IHttpResetFeature,
-        IHttpSysRequestDelegationFeature
+        IHttpSysRequestDelegationFeature,
+        IHttpActivityFeature
     {
         private IFeatureCollection? _features;
         private bool _enableResponseCaching;
@@ -601,6 +602,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         public bool CanDelegate => Request.CanDelegate;
+
+        public Activity? Activity { get; set; }
 
         internal async Task OnResponseStart()
         {

@@ -11,12 +11,7 @@ namespace Microsoft.AspNetCore.Hosting
     /// </summary>
     internal sealed class ActivityFeature : IHttpActivityFeature
     {
-        public ActivityFeature(Activity activity)
-        {
-            Activity = activity;
-        }
-
         /// <inheritdoc />
-        public Activity Activity { get; }
+        public Activity? Activity { get; set; }
     }
 }

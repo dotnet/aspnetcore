@@ -35,11 +35,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpBodyControlFeature,
                                             IHttpMaxRequestBodySizeFeature,
                                             IHttpResponseTrailersFeature,
-                                            IHttpResetFeature
+                                            IHttpResetFeature,
+                                            IHttpActivityFeature
     {
-        // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
-        // then the list of `implementedFeatures` in the generated code project MUST also be updated.
-
         private int _featureRevision;
         private string? _httpProtocolVersion;
         private X509Certificate2? _certificate;
@@ -498,6 +496,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             var serverVariableFeature = (IServerVariablesFeature)this;
             serverVariableFeature["IIS_EnableDynamicCompression"] = "0";
+        }
+
+        Activity? IHttpActivityFeature.Activity
+        {
+            get => Activity;
+            set => Activity = value;
         }
     }
 }

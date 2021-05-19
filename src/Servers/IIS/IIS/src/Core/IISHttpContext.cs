@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private bool HasStartedConsumingRequestBody { get; set; }
         public long? MaxRequestBodySize { get; set; }
+        private Activity? Activity { get; set; }
 
         protected void InitializeContext()
         {

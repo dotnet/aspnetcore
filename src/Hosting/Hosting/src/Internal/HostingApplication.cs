@@ -81,7 +81,14 @@ namespace Microsoft.AspNetCore.Hosting
             _diagnostics.BeginRequest(httpContext, hostContext);
             if (hostContext.Activity is not null)
             {
-                httpContext.Features.Set<IHttpActivityFeature>(new ActivityFeature(hostContext.Activity));
+                if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
+                {
+                    feature.Activity = hostContext.Activity;
+                }
+                else
+                {
+                    httpContext.Features.Set<IHttpActivityFeature>(new ActivityFeature() { Activity = hostContext.Activity });
+                }
             }
             return hostContext;
         }

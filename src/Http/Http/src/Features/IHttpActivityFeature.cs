@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IHttpActivityFeature
     {
         /// <summary>
-        /// Returns the <see cref="Activity"/> associated with the current request.
+        /// Returns the <see cref="Activity"/> associated with the current request if available.
         /// </summary>
-        Activity Activity { get; }
+        Activity? Activity { get; set; }
     }
 }
