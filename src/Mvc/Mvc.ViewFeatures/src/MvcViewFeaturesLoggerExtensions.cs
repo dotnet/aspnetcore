@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal static class MvcViewFeaturesLoggerExtensions
     {
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
-
         private static readonly Action<ILogger, string, string[], Exception> _viewComponentExecuting;
         private static readonly Action<ILogger, string, double, string, Exception> _viewComponentExecuted;
 

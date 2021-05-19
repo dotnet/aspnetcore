@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Localization
     /// </summary>
     public class CookieRequestCultureProvider : RequestCultureProvider
     {
-        private static readonly char _cookieSeparator = '|';
-        private static readonly string _culturePrefix = "c=";
-        private static readonly string _uiCulturePrefix = "uic=";
+        private const char _cookieSeparator = '|';
+        private const string _culturePrefix = "c=";
+        private const string _uiCulturePrefix = "uic=";
 
         /// <summary>
         /// Represent the default cookie name used to track the user's preferred culture information, which is ".AspNetCore.Culture".

@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 {
     internal static class ManifestParser
     {
-        private static readonly string DefaultManifestName = "Microsoft.Extensions.FileProviders.Embedded.Manifest.xml";
+        private const string DefaultManifestName = "Microsoft.Extensions.FileProviders.Embedded.Manifest.xml";
 
         public static EmbeddedFilesManifest Parse(Assembly assembly)
         {

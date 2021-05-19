@@ -12,12 +12,12 @@ namespace Microsoft.Extensions.WebEncoders.Sources
         /// <summary>
         /// Invalid {0}, {1} or {2} length.
         /// </summary>
-        internal static readonly string WebEncoders_InvalidCountOffsetOrLength = "Invalid {0}, {1} or {2} length.";
+        internal const string WebEncoders_InvalidCountOffsetOrLength = "Invalid {0}, {1} or {2} length.";
 
         /// <summary>
         /// Malformed input: {0} is an invalid input length.
         /// </summary>
-        internal static readonly string WebEncoders_MalformedInput = "Malformed input: {0} is an invalid input length.";
+        internal const string WebEncoders_MalformedInput = "Malformed input: {0} is an invalid input length.";
 
         /// <summary>
         /// Invalid {0}, {1} or {2} length.

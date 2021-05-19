@@ -12,7 +12,6 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal class DefaultTagHelperDescriptorFactory
     {
-        private const string DataDashPrefix = "data-";
         private const string TagHelperNameEnding = "TagHelper";
 
         private readonly INamedTypeSymbol _htmlAttributeNameAttributeSymbol;

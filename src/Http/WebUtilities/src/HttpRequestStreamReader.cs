@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.WebUtilities
     public class HttpRequestStreamReader : TextReader
     {
         private const int DefaultBufferSize = 1024;
-        private const int MinBufferSize = 128;
-        private const int MaxSharedBuilderCapacity = 360; // also the max capacity used in StringBuilderCache
 
         private Stream _stream;
         private readonly Encoding _encoding;

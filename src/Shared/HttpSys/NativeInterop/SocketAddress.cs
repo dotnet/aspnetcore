@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // it doesn't make sense to create a socket address with less tha
                 // 2 bytes, that's where we store the address family.
 
-                throw new ArgumentOutOfRangeException("size");
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
             _size = size;
             _buffer = new byte[((size / IntPtr.Size) + 2) * IntPtr.Size]; // sizeof DWORD
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // access
                 if (offset < 0 || offset >= Size)
                 {
-                    throw new ArgumentOutOfRangeException("offset");
+                    throw new ArgumentOutOfRangeException(nameof(offset));
                 }
                 return _buffer[offset];
             }

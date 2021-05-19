@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class AssemblyTestLog : IDisposable
     {
-        private static readonly string MaxPathLengthEnvironmentVariableName = "ASPNETCORE_TEST_LOG_MAXPATH";
-        private static readonly string LogFileExtension = ".log";
+        private const string MaxPathLengthEnvironmentVariableName = "ASPNETCORE_TEST_LOG_MAXPATH";
+        private const string LogFileExtension = ".log";
         private static readonly int MaxPathLength = GetMaxPathLength();
 
         private static readonly object _lock = new object();

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
 
-        private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
+        private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
         private readonly HttpConnectionContext _context;
@@ -721,7 +721,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // If RST_STREAM has already been received then the stream is in a closed state.
                     // Additional frames (other than PRIORITY) are a stream error.
                     // The server will usually send a RST_STREAM for a stream error, but RST_STREAM
-                    // shouldn't be sent in response to RST_STREAM to avoid a loop. 
+                    // shouldn't be sent in response to RST_STREAM to avoid a loop.
                     // The best course of action here is to do nothing.
                     return Task.CompletedTask;
                 }

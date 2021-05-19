@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 {
     public class Http1ConnectionBenchmark
     {
-        private const int InnerLoopCount = 512;
-
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
         private ReadOnlySequence<byte> _buffer;

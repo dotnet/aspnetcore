@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 {
     public class TemplateMatcherTests
     {
-        private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
-
         [Fact]
         public void TryMatch_Success()
         {
@@ -1129,14 +1127,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                     Assert.Equal(expected[key], values[key]);
                 }
             }
-        }
-
-        private static IInlineConstraintResolver GetInlineConstraintResolver()
-        {
-            var services = new ServiceCollection().AddOptions();
-            var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
         }
     }
 }

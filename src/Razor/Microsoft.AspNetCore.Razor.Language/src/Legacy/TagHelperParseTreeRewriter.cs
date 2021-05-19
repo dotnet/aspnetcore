@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Internal for testing.
             // Null characters are invalid markup for HTML attribute values.
-            internal static readonly string InvalidAttributeValueMarker = "\0";
+            internal const string InvalidAttributeValueMarker = "\0";
 
             private readonly RazorSourceDocument _source;
             private readonly string _tagHelperPrefix;

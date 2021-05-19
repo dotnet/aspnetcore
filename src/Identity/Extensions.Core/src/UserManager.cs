@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Identity
         private readonly Dictionary<string, IUserTwoFactorTokenProvider<TUser>> _tokenProviders =
             new Dictionary<string, IUserTwoFactorTokenProvider<TUser>>();
 
-        private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
 #if NETSTANDARD2_0 || NET461
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();

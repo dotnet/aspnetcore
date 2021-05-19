@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     // used with Matcher.
     internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        private static readonly IReadOnlyList<Endpoint> EmptyEndpoints = Array.Empty<Endpoint>();
-
         // We need to be able to run IActionConstraints on Endpoints that aren't associated
         // with an action. This is a sentinel value we use when the endpoint isn't from MVC.
         internal static readonly ActionDescriptor NonAction = new ActionDescriptor();

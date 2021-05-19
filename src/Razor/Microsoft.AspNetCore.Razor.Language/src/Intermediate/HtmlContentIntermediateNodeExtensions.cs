@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     internal static class HtmlContentIntermediateNodeExtensions
     {
-        private static readonly string HasEncodedContent = "HasEncodedContent";
+        private const string HasEncodedContent = "HasEncodedContent";
 
         public static bool IsEncoded(this HtmlContentIntermediateNode node)
         {

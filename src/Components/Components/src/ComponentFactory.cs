@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
 {
     internal sealed class ComponentFactory
     {
-        private static readonly BindingFlags _injectablePropertyBindingFlags
+        private const BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();

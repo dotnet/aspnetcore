@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     /// </summary>
     public class MessagePackHubProtocol : IHubProtocol
     {
-        private static readonly string ProtocolName = "messagepack";
-        private static readonly int ProtocolVersion = 1;
+        private const string ProtocolName = "messagepack";
+        private const int ProtocolVersion = 1;
         private readonly DefaultMessagePackHubProtocolWorker _worker;
 
         /// <inheritdoc />

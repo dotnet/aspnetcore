@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     [XmlRoot("problem", Namespace = "urn:ietf:rfc:7807")]
     public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappable
     {
-        private static readonly string ErrorKey = "MVC-Errors";
+        private const string ErrorKey = "MVC-Errors";
 
         /// <summary>
         /// Initializes a new instance of <see cref="ValidationProblemDetailsWrapper"/>.

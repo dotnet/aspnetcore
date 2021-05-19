@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private readonly static string KeepAlive = "keep-alive";
+        private const string KeepAlive = "keep-alive";
         private readonly static StringValues ConnectionValueKeepAlive = KeepAlive;
         private readonly static StringValues ConnectionValueClose = "close";
         private readonly static StringValues ConnectionValueUpgrade = HeaderNames.Upgrade;
