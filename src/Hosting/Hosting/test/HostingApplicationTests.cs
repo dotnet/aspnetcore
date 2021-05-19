@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        public void IHttpActivityFeatureIsCreated()
+        public void IHttpActivityFeatureIsPopulated()
         {
             var testSource = new ActivitySource(Path.GetRandomFileName());
             var dummySource = new ActivitySource(Path.GetRandomFileName());
@@ -156,6 +156,22 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             Assert.Same(initialActivity, activityFeature.Activity);
             Assert.NotEqual(Activity.Current, activityFeature.Activity);
+
+            // Act/Assert
+            hostingApplication.DisposeContext(context, null);
+        }
+
+        [Fact]
+        public void IHttpActivityFeatureIsNotPopulatedWithoutAListener()
+        {
+            var hostingApplication = CreateApplication();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpActivityFeature>(new TestHttpActivityFeature());
+            var context = hostingApplication.CreateContext(httpContext.Features);
+
+            var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
+            Assert.NotNull(activityFeature);
+            Assert.Null(activityFeature.Activity);
 
             // Act/Assert
             hostingApplication.DisposeContext(context, null);
