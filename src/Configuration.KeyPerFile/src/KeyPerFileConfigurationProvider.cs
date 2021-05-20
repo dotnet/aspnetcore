@@ -73,6 +73,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 if (Source.Optional || reload) // Always optional on reload
                 {
                     Data = data;
+                    OnReload();
                     return;
                 }
                 throw new DirectoryNotFoundException("The root directory for the FileProvider doesn't exist and is not optional.");
@@ -98,6 +99,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
             }
 
             Data = data;
+            OnReload();
         }
 
         private string GetDirectoryName()
