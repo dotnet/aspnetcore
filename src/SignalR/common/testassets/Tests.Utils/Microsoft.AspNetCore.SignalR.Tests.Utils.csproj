@@ -23,8 +23,6 @@
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
 </Project>

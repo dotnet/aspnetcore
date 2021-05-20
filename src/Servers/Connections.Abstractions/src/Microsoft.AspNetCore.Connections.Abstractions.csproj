@@ -16,7 +16,10 @@
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+  <!-- Special case building from source because Microsoft.Bcl.AsyncInterfaces isn't available for source builds. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR
+      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
+      ('$(MSBuildRestoreSessionId)' == '' AND '$(DotNetBuildFromSource)' != 'true') ">
     <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 

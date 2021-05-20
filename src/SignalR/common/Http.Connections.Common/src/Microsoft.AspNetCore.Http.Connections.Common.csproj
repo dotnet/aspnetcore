@@ -19,7 +19,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(MSBuildRestoreSessionId)' == ''" >
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
