@@ -348,6 +348,29 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             Assert.Empty(config.AsEnumerable());
         }
 
+        [Fact(Timeout = 2000)]
+        public async Task RaiseChangeEventAfterStartingWithEmptyDirectoryReloadOnChangeIsTrue()
+        {
+            var testFileProvider = new TestFileProvider();
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.ReloadOnChange = true;
+                }).Build();
+
+            var changeToken = config.GetReloadToken();
+            var changeTaskCompletion = new TaskCompletionSource<object>();
+            changeToken.RegisterChangeCallback(state =>
+                ((TaskCompletionSource<object>)state).TrySetResult(null), changeTaskCompletion);
+
+            testFileProvider.ChangeFiles(new TestFile("Secret1", "SecretValue1"));
+
+            await changeTaskCompletion.Task;
+
+            Assert.Equal("SecretValue1", config["Secret1"]);
+        }
 
         private sealed class MyOptions
         {
