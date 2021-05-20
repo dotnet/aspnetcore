@@ -75,7 +75,7 @@
     </ItemGroup>
     <MSBuild
       Projects="@(ProjectToPublish)"
-      Targets="Publish"
+      Targets="Restore;Publish"
       Properties="PublishDir=$(OutputPath)helixcontent\BasicTestApp\"
      />
     <ItemGroup>
