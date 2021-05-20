@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void OnLocationChanged_ReportsErrorForExceptionInUserCode()
         {
             Browser.MountTestComponent<NavigationFailureComponent>(); 
-            var targetButton = Browser.Exists(By.TagName("a"));   
+            var targetButton = Browser.Exists(By.Id("navigate-to-page"));   
 
             targetButton.Click();
 
