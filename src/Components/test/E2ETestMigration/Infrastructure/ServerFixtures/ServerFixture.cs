@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
     public abstract class ServerFixture : IDisposable
     {
-        private static readonly Lazy<Dictionary<string, string>> _projects = new Lazy<Dictionary<string, string>>(FindProjects);
-
         public Uri RootUri => _rootUriInitializer.Value;
 
         private readonly Lazy<Uri> _rootUriInitializer;
@@ -32,15 +30,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         public abstract void Dispose();
 
         protected abstract string StartAndGetRootUri();
-
-        private static Dictionary<string, string> FindProjects()
-        {
-            return typeof(ServerFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(m => m.Key.StartsWith("TestAssemblyApplication[", StringComparison.Ordinal))
-                .ToDictionary(m =>
-                    m.Key.Replace("TestAssemblyApplication", "").TrimStart('[').TrimEnd(']'),
-                    m => m.Value);
-        }
 
         public static string FindSampleOrTestSitePath(string projectName)
         {
