@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
             {
                 UserName = "Yolo"
             };
-            const string password = "Yol0Sw@g!";
+            const string password = "[PLACEHOLDER]-1a";
             var userManager = app.ApplicationServices.GetRequiredService<UserManager<PocoUser>>();
             var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<PocoUser>>();
 
