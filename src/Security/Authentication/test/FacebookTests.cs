@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         protected override void ConfigureDefaults(FacebookOptions o)
         {
             o.AppId = "whatever";
-            o.AppSecret = "whatever";
+            o.AppSecret = "PLACEHOLDER";
             o.SignInScheme = "auth1";
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddAuthentication().AddFacebook(o => o.SignInScheme = "Whatever"),
+                services => services.AddAuthentication().AddFacebook(o => o.SignInScheme = "PLACEHOLDER"),
                 async context =>
                 {
                     await Assert.ThrowsAsync<ArgumentException>("AppId", () => context.ChallengeAsync("Facebook"));

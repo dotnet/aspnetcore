@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         //    {
         //        UserName = "Yolo"
         //    };
-        //    const string password = "Yol0Sw@g!";
+        //    const string password = "[PLACEHOLDER]-1a";
         //    var userManager = app.ApplicationServices.GetRequiredService<ApplicationUserManager>();
         //    var HttpSignInManager = app.ApplicationServices.GetRequiredService<ApplicationHttpSignInManager>();
 
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-bogus1", false, false);
 
             // Assert
             Assert.False(result.Succeeded);
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
 
             // Act
-            var result = await helper.CheckPasswordSignInAsync(user, "bogus", false);
+            var result = await helper.CheckPasswordSignInAsync(user, "[PLACEHOLDER]-bogus1", false);
 
             // Assert
             Assert.False(result.Succeeded);
@@ -201,14 +201,14 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = SetupUserManager(user);
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
             SetupSignIn(context, auth, user.Id, isPersistent, loginProvider: null, amr: "pwd");
             var helper = SetupSignInManager(manager.Object, context);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-1a", isPersistent, false);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = SetupUserManager(user);
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = SetupSignInManager(manager.Object, context);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-1a", false, false);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = SetupUserManager(user);
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
 
             var context = new DefaultHttpContext();
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = SetupSignInManager(manager.Object, context);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-1a", false, false);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.SupportsUserTwoFactor).Returns(tfaEnabled).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
 
             if (tfaEnabled)
             {
@@ -291,9 +291,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var context = new DefaultHttpContext();
             var helper = SetupSignInManager(manager.Object, context);
-
-            // Act
-            var result = await helper.CheckPasswordSignInAsync(user, "password", false);
+            var result = await helper.CheckPasswordSignInAsync(user, "[PLACEHOLDER]-1a", false);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -310,14 +308,14 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = SetupUserManager(user);
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
 
             var context = new DefaultHttpContext();
             var helper = SetupSignInManager(manager.Object, context);
 
             // Act
-            var result = await helper.CheckPasswordSignInAsync(user, "password", false);
+            var result = await helper.CheckPasswordSignInAsync(user, "[PLACEHOLDER]-1a", false);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -344,7 +342,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.GetValidTwoFactorProvidersAsync(user)).Returns(Task.FromResult(providers)).Verifiable();
             manager.Setup(m => m.SupportsUserTwoFactor).Returns(true).Verifiable();
             manager.Setup(m => m.GetTwoFactorEnabledAsync(user)).ReturnsAsync(true).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.GetValidTwoFactorProvidersAsync(user)).ReturnsAsync(new string[1] { "Fake" }).Verifiable();
             var context = new DefaultHttpContext();
             var helper = SetupSignInManager(manager.Object, context);
@@ -354,7 +352,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                 It.IsAny<AuthenticationProperties>())).Returns(Task.FromResult(0)).Verifiable();
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-1a", false, false);
 
             // Assert
             Assert.False(result.Succeeded);
@@ -706,7 +704,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.SupportsUserTwoFactor).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
             SetupSignIn(context, auth);
@@ -717,7 +715,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = SetupSignInManager(manager.Object, context);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-1a", isPersistent, false);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -759,14 +757,14 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = SetupUserManager(user);
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
-            manager.Setup(m => m.CheckPasswordAsync(user, "bogus")).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-bogus1")).ReturnsAsync(false).Verifiable();
             var context = new Mock<HttpContext>();
             var logger = new TestLogger<SignInManager<PocoUser>>();
             var helper = SetupSignInManager(manager.Object, context.Object, logger);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
-            var checkResult = await helper.CheckPasswordSignInAsync(user, "bogus", false);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-bogus1", false, false);
+            var checkResult = await helper.CheckPasswordSignInAsync(user, "[PLACEHOLDER]-bogus1", false);
 
             // Assert
             Assert.False(result.Succeeded);
@@ -781,12 +779,12 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             // Setup
             var manager = MockHelpers.MockUserManager<PocoUser>();
-            manager.Setup(m => m.FindByNameAsync("bogus")).ReturnsAsync(default(PocoUser)).Verifiable();
+            manager.Setup(m => m.FindByNameAsync("unknown-username")).ReturnsAsync(default(PocoUser)).Verifiable();
             var context = new Mock<HttpContext>();
             var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
-            var result = await helper.PasswordSignInAsync("bogus", "bogus", false, false);
+            var result = await helper.PasswordSignInAsync("unknown-username", "[PLACEHOLDER]-bogus1", false, false);
 
             // Assert
             Assert.False(result.Succeeded);
@@ -808,12 +806,12 @@ namespace Microsoft.AspNetCore.Identity.Test
             }).Verifiable();
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).Returns(() => Task.FromResult(lockedout));
-            manager.Setup(m => m.CheckPasswordAsync(user, "bogus")).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-bogus1")).ReturnsAsync(false).Verifiable();
             var context = new Mock<HttpContext>();
             var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, true);
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-bogus1", false, true);
 
             // Assert
             Assert.False(result.Succeeded);
@@ -835,12 +833,12 @@ namespace Microsoft.AspNetCore.Identity.Test
             }).Verifiable();
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).Returns(() => Task.FromResult(lockedout));
-            manager.Setup(m => m.CheckPasswordAsync(user, "bogus")).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-bogus1")).ReturnsAsync(false).Verifiable();
             var context = new Mock<HttpContext>();
             var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
-            var result = await helper.CheckPasswordSignInAsync(user, "bogus", true);
+            var result = await helper.CheckPasswordSignInAsync(user, "[PLACEHOLDER]-bogus1", true);
 
             // Assert
             Assert.False(result.Succeeded);
@@ -859,13 +857,13 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.IsEmailConfirmedAsync(user)).ReturnsAsync(confirmed).Verifiable();
             if (confirmed)
             {
-                manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+                manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
             }
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
             if (confirmed)
             {
-                manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+                manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
                 SetupSignIn(context, auth, user.Id, isPersistent: null, loginProvider: null, amr: "pwd");
             }
             var identityOptions = new IdentityOptions();
@@ -874,7 +872,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = SetupSignInManager(manager.Object, context, logger, identityOptions);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user, "password", false, false);
+            var result = await helper.PasswordSignInAsync(user, "[PLACEHOLDER]-1a", false, false);
 
             // Assert
 
@@ -919,7 +917,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var auth = MockAuth(context);
             if (confirmed)
             {
-                manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+                manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
                 SetupSignIn(context, auth, user.Id, isPersistent: null, loginProvider: null, amr: "pwd");
             }
 
@@ -929,7 +927,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = SetupSignInManager(manager.Object, context, logger, identityOptions);
 
             // Act
-            var result = await helper.PasswordSignInAsync(user, "password", false, false);
+            var result = await helper.PasswordSignInAsync(user, "[PLACEHOLDER]-1a", false, false);
 
             // Assert
             Assert.Equal(confirmed, result.Succeeded);
