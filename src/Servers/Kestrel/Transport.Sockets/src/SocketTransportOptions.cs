@@ -70,9 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         /// <summary>
         /// A function used to create a new <see cref="Socket"/> to listen with. If
-        /// not set, <see cref="CreateDefaultListenSocket" /> is called instead.
+        /// not set, <see cref="CreateDefaultListenSocket" /> is used.
         /// </summary>
-        public Func<EndPoint, Socket>? CreateListenSocket { get; set; }
+        public Func<EndPoint, Socket> CreateListenSocket { get; set; } = CreateDefaultListenSocket;
 
         /// <summary>
         /// Creates a default instance of <see cref="Socket"/> for the given <see cref="EndPoint"/>
