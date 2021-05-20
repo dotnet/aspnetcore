@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -57,6 +58,15 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
                 context.HasDiagnosticListener = hasDiagnosticListener;
+
+                if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
+                {
+                    feature.Activity = context.Activity;
+                }
+                else
+                {
+                    httpContext.Features.Set<IHttpActivityFeature>(new ActivityFeature() { Activity = context.Activity });
+                }
             }
 
             if (diagnosticListenerEnabled)
