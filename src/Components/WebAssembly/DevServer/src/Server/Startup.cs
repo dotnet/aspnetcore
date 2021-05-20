@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
                 {
                     if (context.Request.PathBase == pathBase)
                     {
-                        return next();
+                        return next(context);
                     }
                     else
                     {

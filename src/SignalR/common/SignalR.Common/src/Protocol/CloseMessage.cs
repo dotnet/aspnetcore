@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <summary>
         /// Gets the optional error message.
         /// </summary>
-        public string Error { get; }
+        public string? Error { get; }
 
         /// <summary>
         /// If <see langword="false"/>, clients with automatic reconnects enabled should not attempt to automatically reconnect after receiving the <see cref="CloseMessage"/>.
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// Initializes a new instance of the <see cref="CloseMessage"/> class with an optional error message and <see cref="AllowReconnect"/> set to <see langword="false"/>.
         /// </summary>
         /// <param name="error">An optional error message.</param>
-        public CloseMessage(string error)
+        public CloseMessage(string? error)
             : this(error, allowReconnect: false)
         {
         }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <see langword="true"/>, if client with automatic reconnects enabled should attempt to reconnect after receiving the <see cref="CloseMessage"/>;
         /// <see langword="false"/>, if the client should not try to reconnect whether or not automatic reconnects are enabled.
         /// </param>
-        public CloseMessage(string error, bool allowReconnect)
+        public CloseMessage(string? error, bool allowReconnect)
         {
             Error = error;
             AllowReconnect = allowReconnect;

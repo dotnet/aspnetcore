@@ -25,7 +25,7 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
 
     if (g_fInShutdown)
     {
-        // Avoid receiving two shutudown notifications.
+        // Avoid receiving two shutdown notifications.
         return GL_NOTIFICATION_CONTINUE;
     }
 

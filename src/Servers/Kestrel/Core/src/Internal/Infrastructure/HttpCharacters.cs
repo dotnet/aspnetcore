@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static class HttpCharacters
     {
-        private static readonly int _tableSize = 128;
+        private const int _tableSize = 128;
         private static readonly bool[] _alphaNumeric = InitializeAlphaNumeric();
         private static readonly bool[] _authority = InitializeAuthority();
         private static readonly bool[] _token = InitializeToken();
@@ -166,13 +166,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static int IndexOfInvalidTokenChar(byte* s, int length)
+        public static int IndexOfInvalidTokenChar(ReadOnlySpan<byte> span)
         {
             var token = _token;
 
-            for (var i = 0; i < length; i++)
+            for (var i = 0; i < span.Length; i++)
             {
-                var c = s[i];
+                var c = span[i];
                 if (c >= (uint)token.Length || !token[c])
                 {
                     return i;

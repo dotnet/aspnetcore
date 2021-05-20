@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -98,6 +99,28 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Act
             var actual = factoryProvider.CreateModelDisposer(descriptor);
+
+            // Assert
+            Assert.Same(disposer, actual);
+        }
+
+        [Fact]
+        public void CreateAsyncModelDisposer_ReturnsDisposerFromModelActivatorProvider()
+        {
+            // Arrange
+            var descriptor = new CompiledPageActionDescriptor
+            {
+                ModelTypeInfo = typeof(SimpleModel).GetTypeInfo()
+            };
+            var pageContext = new PageContext();
+            var modelActivatorProvider = new Mock<IPageModelActivatorProvider>();
+            Func<PageContext, object, ValueTask> disposer = (_, __) => default;
+            modelActivatorProvider.Setup(p => p.CreateAsyncReleaser(descriptor))
+                .Returns(disposer);
+            var factoryProvider = CreateModelFactoryProvider(modelActivatorProvider.Object);
+
+            // Act
+            var actual = factoryProvider.CreateAsyncModelDisposer(descriptor);
 
             // Assert
             Assert.Same(disposer, actual);

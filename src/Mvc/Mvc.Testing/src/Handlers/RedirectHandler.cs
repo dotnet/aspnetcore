@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             var originalRequestContent = HasBody(request) ? await DuplicateRequestContent(request) : null;
             CopyRequestHeaders(request.Headers, redirectRequest.Headers);
             var response = await base.SendAsync(request, cancellationToken);
-            while (IsRedirect(response) && remainingRedirects >= 0)
+            while (IsRedirect(response) && remainingRedirects > 0)
             {
                 remainingRedirects--;
                 UpdateRedirectRequest(response, redirectRequest, originalRequestContent);
@@ -134,14 +134,18 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             HttpContent originalContent)
         {
             var location = response.Headers.Location;
-            if (!location.IsAbsoluteUri)
+            if (location != null)
             {
-                location = new Uri(
-                    new Uri(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority)),
-                    location);
+                if (!location.IsAbsoluteUri)
+                {
+                    location = new Uri(
+                        new Uri(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority)),
+                        location);
+                }
+
+                redirect.RequestUri = location;
             }
 
-            redirect.RequestUri = location;
             if (!ShouldKeepVerb(response))
             {
                 redirect.Method = HttpMethod.Get;
@@ -152,9 +156,10 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
                 redirect.Content = originalContent;
             }
 
-            foreach (var property in response.RequestMessage.Properties)
+            foreach (var property in response.RequestMessage.Options)
             {
-                redirect.Properties.Add(property.Key, property.Value);
+                var key = new HttpRequestOptionsKey<object>(property.Key);
+                redirect.Options.Set(key, property.Value);
             }
         }
 

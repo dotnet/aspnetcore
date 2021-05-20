@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 {
     public class TemplateBinderTests
     {
-        private readonly IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
-
         public static TheoryData EmptyAndNullDefaultValues =>
             new TheoryData<string, RouteValueDictionary, RouteValueDictionary, string>
             {
@@ -1380,7 +1378,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             Assert.Equal(expected, boundTemplate);
         }
 
-        // Regression test for aspnet/AspNetCore#4212
+        // Regression test for dotnet/aspnetcore#4212
         //
         // An ambient value should be used to satisfy a required value even if if we're discarding
         // ambient values.
@@ -1442,14 +1440,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
             // Assert
             Assert.Equal(expected, boundTemplate);
-        }
-
-        private static IInlineConstraintResolver GetInlineConstraintResolver()
-        {
-            var services = new ServiceCollection().AddOptions();
-            var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
         }
 
         private class PathAndQuery

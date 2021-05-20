@@ -78,7 +78,9 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             };
             var dataOut = default(DATA_BLOB);
 
+#if NETSTANDARD2_0
             RuntimeHelpers.PrepareConstrainedRegions();
+#endif
 
             try
             {
@@ -168,7 +170,9 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                     {
                         var handleAcquired = false;
 
+#if NETSTANDARD2_0
                         RuntimeHelpers.PrepareConstrainedRegions();
+#endif
 
                         try
                         {
@@ -217,7 +221,9 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             };
             var dataOut = default(DATA_BLOB);
 
+#if NETSTANDARD2_0
             RuntimeHelpers.PrepareConstrainedRegions();
+#endif
 
             try
             {
@@ -290,7 +296,9 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             {
                 var handleAcquired = false;
 
+#if NETSTANDARD2_0
                 RuntimeHelpers.PrepareConstrainedRegions();
+#endif
 
                 try
                 {

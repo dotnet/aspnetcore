@@ -1,0 +1,23 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\Tools\\Extensions.ApiDescription.Client\\src\\Microsoft.Extensions.ApiDescription.Client.csproj",
+      "src\\Tools\\Extensions.ApiDescription.Client\\test\\Microsoft.Extensions.ApiDescription.Client.Tests.csproj",
+      "src\\Tools\\Extensions.ApiDescription.Server\\src\\Microsoft.Extensions.ApiDescription.Server.csproj",
+      "src\\Tools\\FirstRunCertGenerator\\src\\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj",
+      "src\\Tools\\FirstRunCertGenerator\\test\\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj",
+      "src\\Tools\\GetDocumentInsider\\src\\GetDocument.Insider.csproj",
+      "src\\Tools\\Microsoft.dotnet-openapi\\src\\Microsoft.dotnet-openapi.csproj",
+      "src\\Tools\\Microsoft.dotnet-openapi\\test\\dotnet-microsoft.openapi.Tests.csproj",
+      "src\\Tools\\dotnet-dev-certs\\src\\dotnet-dev-certs.csproj",
+      "src\\Tools\\dotnet-getdocument\\src\\dotnet-getdocument.csproj",
+      "src\\Tools\\dotnet-sql-cache\\src\\dotnet-sql-cache.csproj",
+      "src\\Tools\\dotnet-user-secrets\\src\\dotnet-user-secrets.csproj",
+      "src\\Tools\\dotnet-user-secrets\\test\\dotnet-user-secrets.Tests.csproj",
+      "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
+      "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj"
+    ]
+  }
+}

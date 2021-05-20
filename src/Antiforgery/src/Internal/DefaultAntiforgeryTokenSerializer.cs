@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 {
     internal class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
     {
-        private static readonly string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
+        private const string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
         private const byte TokenVersion = 0x01;
 
         private readonly IDataProtector _cryptoSystem;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         {
             var serializationContext = _pool.Get();
 
-            Exception innerException = null;
+            Exception? innerException = null;
             try
             {
                 var count = serializedToken.Length;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Antiforgery
          *   |    `- Username: UTF-8 string with 7-bit integer length prefix
          *   `- AdditionalData: UTF-8 string with 7-bit integer length prefix
          */
-        private static AntiforgeryToken Deserialize(BinaryReader reader)
+        private static AntiforgeryToken? Deserialize(BinaryReader reader)
         {
             // we can only consume tokens of the same serialized version that we generate
             var embeddedVersion = reader.ReadByte();
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             {
                 var writer = serializationContext.Writer;
                 writer.Write(TokenVersion);
-                writer.Write(token.SecurityToken.GetData());
+                writer.Write(token.SecurityToken!.GetData());
                 writer.Write(token.IsCookieToken);
 
                 if (!token.IsCookieToken)
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                     else
                     {
                         writer.Write(false /* isClaimsBased */);
-                        writer.Write(token.Username);
+                        writer.Write(token.Username!);
                     }
 
                     writer.Write(token.AdditionalData);

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     {
         private readonly IOptions<RemoteAuthenticationOptions<TProviderOptions>> _options;
 
-        public DefaultRemoteApplicationPathsProvider(IOptions<RemoteAuthenticationOptions<TProviderOptions>> options)
+        public DefaultRemoteApplicationPathsProvider(IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options)
         {
             _options = options;
         }

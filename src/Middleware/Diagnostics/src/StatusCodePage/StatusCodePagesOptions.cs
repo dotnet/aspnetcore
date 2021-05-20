@@ -11,10 +11,14 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Options for StatusCodePagesMiddleware.
+    /// Options for <see cref="StatusCodePagesMiddleware"/>.
     /// </summary>
     public class StatusCodePagesOptions
     {
+        /// <summary>
+        /// Creates a default <see cref="StatusCodePagesOptions"/> which produces a plaintext response
+        /// containing the status code and the reason phrase.
+        /// </summary>
         public StatusCodePagesOptions()
         {
             HandleAsync = context =>
@@ -43,6 +47,9 @@ namespace Microsoft.AspNetCore.Builder
                                                                     internetExplorerWorkaround);
         }
 
+        /// <summary>
+        /// The handler that generates the response body for the given <see cref="StatusCodeContext"/>. By default this produces a plain text response that includes the status code.
+        /// </summary>
         public Func<StatusCodeContext, Task> HandleAsync { get; set; }
     }
 }

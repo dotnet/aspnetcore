@@ -1,6 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -11,10 +14,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     // to break the cycle. Later when the 'real' binder is created we set Inner to point to that.
     internal class PlaceholderBinder : IModelBinder
     {
-        public IModelBinder Inner { get; set; }
+        public IModelBinder? Inner { get; set;  }
 
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            Debug.Assert(Inner is not null, "Inner must be resolved before BindModelAsync can be called.");
+
             return Inner.BindModelAsync(bindingContext);
         }
     }

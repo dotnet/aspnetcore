@@ -19,11 +19,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the confirmation operation.</returns>
         public async virtual Task<bool> IsConfirmedAsync(UserManager<TUser> manager, TUser user)
         {
-            if (!await manager.IsEmailConfirmedAsync(user))
-            {
-                return false;
-            }
-            return true;
+            return await manager.IsEmailConfirmedAsync(user);
         }
     }
 }

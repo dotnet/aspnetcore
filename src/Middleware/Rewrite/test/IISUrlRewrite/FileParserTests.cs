@@ -57,11 +57,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewrite>";
 
             var condList = new ConditionCollection();
-            condList.Add(new Condition
-            {
-                Input = new InputParser().ParseInputString("{HTTPS}"),
-                Match = new RegexMatch(new Regex("^OFF$"), false)
-            });
+            condList.Add(new Condition(new InputParser().ParseInputString("{HTTPS}"), new RegexMatch(new Regex("^OFF$"), false)));
 
             var expected = new List<IISUrlRewriteRule>();
             expected.Add(CreateTestRule(condList,
@@ -101,11 +97,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewrite>";
 
             var condList = new ConditionCollection();
-            condList.Add(new Condition
-            {
-                Input = new InputParser().ParseInputString("{HTTPS}"),
-                Match = new RegexMatch(new Regex("^OFF$"), false)
-            });
+            condList.Add(new Condition(new InputParser().ParseInputString("{HTTPS}"), new RegexMatch(new Regex("^OFF$"), false)));
 
             var expected = new List<IISUrlRewriteRule>();
             expected.Add(CreateTestRule(condList,
@@ -166,7 +158,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                                 <rule name=""redirect-aspnet-mvc"" enabled=""true"" stopProcessing=""true"">
                                     <match url=""^aspnet/Mvc"" />
                                     <conditions logicalGrouping=""MatchAll"" trackAllCaptures=""false"" />
-                                    <action type=""Redirect"" url=""https://github.com/aspnet/AspNetCore"" />
+                                    <action type=""Redirect"" url=""https://github.com/dotnet/aspnetcore"" />
                                 </rule>
                             </rules>
                         </rewrite>";

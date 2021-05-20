@@ -13,6 +13,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Kestrel <see cref="IWebHostBuilder"/> extensions.
+    /// </summary>
     public static class WebHostBuilderKestrelExtensions
     {
         /// <summary>
@@ -32,7 +35,7 @@ namespace Microsoft.AspNetCore.Hosting
                 services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
 
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
-                services.AddSingleton<IServer, KestrelServer>();
+                services.AddSingleton<IServer, KestrelServerImpl>();
             });
         }
 

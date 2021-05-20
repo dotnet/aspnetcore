@@ -29,17 +29,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public abstract class RazorPageBase : IRazorPage
     {
         private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
-        private StringWriter _valueBuffer;
-        private ITagHelperFactory _tagHelperFactory;
-        private IViewBufferScope _bufferScope;
-        private TextWriter _pageWriter;
+        private StringWriter? _valueBuffer;
+        private ITagHelperFactory? _tagHelperFactory;
+        private IViewBufferScope? _bufferScope;
+        private TextWriter? _pageWriter;
         private AttributeInfo _attributeInfo;
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
-        private IUrlHelper _urlHelper;
+        private IUrlHelper? _urlHelper;
 
-        public virtual ViewContext ViewContext { get; set; }
+        /// <inheritdoc/>
+        public virtual ViewContext ViewContext { get; set; } = default!;
 
-        public string Layout { get; set; }
+        /// <inheritdoc/>
+        public string? Layout { get; set; }
 
         /// <summary>
         /// Gets the <see cref="TextWriter"/> that the page is writing output to.
@@ -62,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public string Path { get; set; }
+        public string Path { get; set; } = default!;
 
         /// <inheritdoc />
         public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; } =
@@ -71,40 +73,40 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the dynamic view data dictionary.
         /// </summary>
-        public dynamic ViewBag => ViewContext?.ViewBag;
+        public dynamic ViewBag => ViewContext?.ViewBag!;
 
         /// <inheritdoc />
         public bool IsLayoutBeingRendered { get; set; }
 
         /// <inheritdoc />
-        public IHtmlContent BodyContent { get; set; }
+        public IHtmlContent? BodyContent { get; set; }
 
         /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
+        public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
         /// </summary>
         [RazorInject]
-        public DiagnosticSource DiagnosticSource { get; set; }
+        public DiagnosticSource DiagnosticSource { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
         /// handles non-<see cref="IHtmlContent"/> C# expressions.
         /// </summary>
         [RazorInject]
-        public HtmlEncoder HtmlEncoder { get; set; }
+        public HtmlEncoder HtmlEncoder { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
         /// </summary>
-        public virtual ClaimsPrincipal User => ViewContext?.HttpContext?.User;
+        public virtual ClaimsPrincipal User => ViewContext.HttpContext.User;
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
         /// </summary>
         /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
-        public ITempDataDictionary TempData => ViewContext?.TempData;
+        public ITempDataDictionary TempData => ViewContext?.TempData!;
 
         private Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
 
@@ -136,6 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <inheritdoc/>
         public abstract Task ExecuteAsync();
 
         /// <summary>
@@ -268,6 +271,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
             }
 
+            Debug.Assert(_valueBuffer is not null);
+
             var content = _valueBuffer.ToString();
             _valueBuffer.GetStringBuilder().Clear();
 
@@ -278,6 +283,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return content;
         }
 
+        /// <summary>
+        /// Puts a text writer on the stack.
+        /// </summary>
+        /// <param name="writer"></param>
         // Internal for unit testing.
         protected internal virtual void PushWriter(TextWriter writer)
         {
@@ -291,6 +300,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             viewContext.Writer = writer;
         }
 
+        /// <summary>
+        /// Return a text writer from the stack.
+        /// </summary>
+        /// <returns>The text writer.</returns>
         // Internal for unit testing.
         protected internal virtual TextWriter PopWriter()
         {
@@ -300,6 +313,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return writer;
         }
 
+        /// <summary>
+        /// Returns a href for the given content path.
+        /// </summary>
+        /// <param name="contentPath">The content path.</param>
+        /// <returns>The href for the contentPath.</returns>
         public virtual string Href(string contentPath)
         {
             if (contentPath == null)
@@ -310,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (_urlHelper == null)
             {
                 var viewContext = ViewContext;
-                var services = viewContext?.HttpContext.RequestServices;
+                var services = viewContext.HttpContext.RequestServices;
                 var factory = services.GetRequiredService<IUrlHelperFactory>();
                 _urlHelper = factory.GetUrlHelper(viewContext);
             }
@@ -326,7 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="section">The delegate to execute when rendering the section.</param>
         /// <remarks>This is a temporary placeholder method to support ASP.NET Core 2.0.0 editor code generation.</remarks>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        protected void DefineSection(string name, Func<object, Task> section)
+        protected void DefineSection(string name, Func<object?, Task> section)
             => DefineSection(name, () => section(null /* writer */));
 
         /// <summary>
@@ -354,14 +372,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             SectionWriters[name] = section;
         }
 
-
         /// <summary>
         /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="object"/> to write.</param>
-        public virtual void Write(object value)
+        public virtual void Write(object? value)
         {
-            if (value == null || value == HtmlString.Empty)
+            if (value is null || value == HtmlString.Empty)
             {
                 return;
             }
@@ -399,7 +416,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void Write(string value)
+        public virtual void Write(string? value)
         {
             var writer = Output;
             var encoder = HtmlEncoder;
@@ -416,9 +433,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="object"/> to write.</param>
-        public virtual void WriteLiteral(object value)
+        public virtual void WriteLiteral(object? value)
         {
-            if (value == null)
+            if (value is null)
             {
                 return;
             }
@@ -430,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void WriteLiteral(string value)
+        public virtual void WriteLiteral(string? value)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -438,6 +455,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Begins writing out an attribute.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <param name="suffixOffset">The suffix offset.</param>
+        /// <param name="attributeValuesCount">The attribute values count.</param>
         public virtual void BeginWriteAttribute(
             string name,
             string prefix,
@@ -466,10 +492,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Writes out an attribute value.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="valueOffset">The value offset.</param>
+        /// <param name="valueLength">The value length.</param>
+        /// <param name="isLiteral">Whether the attribute is a literal.</param>
         public void WriteAttributeValue(
             string prefix,
             int prefixOffset,
-            object value,
+            object? value,
             int valueOffset,
             int valueLength,
             bool isLiteral)
@@ -511,6 +546,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Ends writing an attribute.
+        /// </summary>
         public virtual void EndWriteAttribute()
         {
             if (!_attributeInfo.Suppressed)
@@ -519,6 +557,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Begins adding html attribute values.
+        /// </summary>
+        /// <param name="executionContext">The <see cref="TagHelperExecutionContext"/>.</param>
+        /// <param name="attributeName">The name of the attribute.</param>
+        /// <param name="attributeValuesCount">The number of attribute values.</param>
+        /// <param name="attributeValueStyle">The <see cref="HtmlAttributeValueStyle"/>.</param>
         public void BeginAddHtmlAttributeValues(
             TagHelperExecutionContext executionContext,
             string attributeName,
@@ -532,10 +577,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 attributeValueStyle);
         }
 
+        /// <summary>
+        /// Add an html attribute value.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <param name="valueOffset">The value offset.</param>
+        /// <param name="valueLength">The value length.</param>
+        /// <param name="isLiteral">Whether the attribute is a literal.</param>
         public void AddHtmlAttributeValue(
-            string prefix,
+            string? prefix,
             int prefixOffset,
-            object value,
+            object? value,
             int valueOffset,
             int valueLength,
             bool isLiteral)
@@ -587,6 +641,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Ends adding html attribute values.
+        /// </summary>
+        /// <param name="executionContext">The <see cref="TagHelperExecutionContext"/>.</param>
         public void EndAddHtmlAttributeValues(TagHelperExecutionContext executionContext)
         {
             if (!_tagHelperAttributeInfo.Suppressed)
@@ -630,7 +688,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
 
             await Output.FlushAsync();
-            await ViewContext?.HttpContext.Response.Body.FlushAsync();
+            await ViewContext.HttpContext.Response.Body.FlushAsync();
             return HtmlString.Empty;
         }
 
@@ -651,22 +709,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return HtmlString.Empty;
         }
 
-        private void WriteUnprefixedAttributeValue(object value, bool isLiteral)
+        private void WriteUnprefixedAttributeValue(object? value, bool isLiteral)
         {
-            var stringValue = value as string;
-
             // The extra branching here is to ensure that we call the Write*To(string) overload where possible.
-            if (isLiteral && stringValue != null)
+            if (value is string stringValue)
             {
-                WriteLiteral(stringValue);
+                if (isLiteral)
+                {
+                    WriteLiteral(stringValue);
+                }
+                else
+                {
+                    Write(stringValue);
+                }
             }
             else if (isLiteral)
             {
                 WriteLiteral(value);
-            }
-            else if (stringValue != null)
-            {
-                Write(stringValue);
             }
             else
             {
@@ -681,24 +740,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             EndContext();
         }
 
+        /// <inheritdoc />
         public abstract void BeginContext(int position, int length, bool isLiteral);
 
+        /// <inheritdoc />
         public abstract void EndContext();
 
-        private bool IsBoolFalseOrNullValue(string prefix, object value)
+        private static bool IsBoolFalseOrNullValue(string? prefix, object? value)
         {
             return string.IsNullOrEmpty(prefix) &&
-                (value == null ||
-                (value is bool && !(bool)value));
+                (value is null ||
+                (value is bool boolValue && !boolValue));
         }
 
-        private bool IsBoolTrueWithEmptyPrefixValue(string prefix, object value)
+        private static bool IsBoolTrueWithEmptyPrefixValue(string? prefix, object? value)
         {
             // If the value is just the bool 'true', use the attribute name as the value.
             return string.IsNullOrEmpty(prefix) &&
-                (value is bool && (bool)value);
+                (value is bool boolValue && boolValue);
         }
 
+        /// <inheritdoc />
         public abstract void EnsureRenderedBodyOrSections();
 
         private struct AttributeInfo

@@ -133,14 +133,20 @@ docker run \
     -t \
     -e TF_BUILD \
     -e BUILD_NUMBER \
+    -e BUILD_BUILDID \
+    -e SYSTEM_TEAMPROJECT \
     -e BUILD_BUILDNUMBER \
+    -e BUILD_REPOSITORY_NAME \
     -e BUILD_REPOSITORY_URI \
+    -e BUILD_REPOSITORY_NAME \
     -e BUILD_SOURCEVERSION \
     -e BUILD_SOURCEBRANCH \
+    -e SYSTEM_DEFINITIONID \
+    -e SYSTEM_TEAMFOUNDATIONCOLLECTIONURI \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
     -v "$DIR:$DIR" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
-    ./build.sh \
+    ./eng/build.sh \
     ${build_args[@]+"${build_args[@]}"}

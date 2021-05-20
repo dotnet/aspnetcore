@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,10 +28,6 @@ namespace Microsoft.AspNetCore.Mvc
         public FileContentResult(byte[] fileContents, string contentType)
             : this(fileContents, MediaTypeHeaderValue.Parse(contentType))
         {
-            if (fileContents == null)
-            {
-                throw new ArgumentNullException(nameof(fileContents));
-            }
         }
 
         /// <summary>
@@ -41,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public FileContentResult(byte[] fileContents, MediaTypeHeaderValue contentType)
-            : base(contentType?.ToString())
+            : base(contentType.ToString())
         {
             if (fileContents == null)
             {
@@ -57,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc
         public byte[] FileContents
         {
             get => _fileContents;
+            [MemberNotNull(nameof(_fileContents))]
             set
             {
                 if (value == null)

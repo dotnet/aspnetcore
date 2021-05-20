@@ -1,21 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 {
     internal static class ConditionEvaluator
     {
-        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, BackReferenceCollection backReferences)
+        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, BackReferenceCollection? backReferences)
         {
             return Evaluate(conditions, context, backReferences, trackAllCaptures: false);
         }
 
-        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, BackReferenceCollection backReferences, bool trackAllCaptures)
+        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, BackReferenceCollection? backReferences, bool trackAllCaptures)
         {
-            BackReferenceCollection prevBackReferences = null;
-            MatchResults condResult = null;
+            BackReferenceCollection? prevBackReferences = null;
+            MatchResults? condResult = null;
             var orSucceeded = false;
             foreach (var condition in conditions)
             {
@@ -42,14 +43,15 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 
                 if (condResult.Success && trackAllCaptures && prevBackReferences != null)
                 {
-                    prevBackReferences.Add(currentBackReferences);
+                    prevBackReferences.Add(condResult.BackReferences);
                     currentBackReferences = prevBackReferences;
                 }
 
                 prevBackReferences = currentBackReferences;
             }
 
-            return new MatchResults { BackReferences = prevBackReferences, Success = condResult.Success };
+            Debug.Assert(condResult != null, "ConditionEvaluator must be passed at least one condition to evaluate.");
+            return new MatchResults(condResult.Success, prevBackReferences);
         }
     }
 }

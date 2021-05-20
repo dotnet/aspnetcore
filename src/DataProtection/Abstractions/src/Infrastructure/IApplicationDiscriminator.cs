@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.DataProtection.Infrastructure
         /// An identifier that uniquely discriminates this application from all other
         /// applications on the machine.
         /// </summary>
-        string Discriminator { get; }
+        string? Discriminator { get; }
     }
 }

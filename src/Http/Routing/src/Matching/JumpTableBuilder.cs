@@ -1,13 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal static class JumpTableBuilder
     {
-        public static readonly int InvalidDestination = -1;
+        public const int InvalidDestination = -1;
 
         public static JumpTable Build(int defaultDestination, int exitDestination, (string text, int destination)[] pathEntries)
         {
@@ -84,7 +85,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 fallback = new DictionaryJumpTable(defaultDestination, exitDestination, pathEntries);
             }
 
-            return new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback);
+            // Use the ILEmitTrieJumpTable if the IL is going to be compiled (not interpreted)
+            if (RuntimeFeature.IsDynamicCodeCompiled)
+            {
+                return new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback);
+            }
+
+            return fallback;
         }
     }
 }

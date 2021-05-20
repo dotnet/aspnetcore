@@ -34,8 +34,12 @@ namespace Microsoft.AspNetCore.Authentication.Google
         }
 
         /// <summary>
-        /// access_type. Set to 'offline' to request a refresh token.
+        /// Indicates whether your application can refresh access tokens when the user is not present at the browser.
+        /// Valid values are <c>online</c>, which is the default value, and <c>offline</c>.
+        /// <para>
+        /// Set the value to offline if your application needs to refresh access tokens when the user is not present at the browser.
+        /// </para>
         /// </summary>
-        public string AccessType { get; set; }
+        public string? AccessType { get; set; }
     }
 }

@@ -1,22 +1,31 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
 {
     public class ElementReferenceJsonConverterTest
     {
-        private readonly ElementReferenceJsonConverter Converter = new ElementReferenceJsonConverter();
+        private readonly ElementReferenceContext ElementReferenceContext;
+        private readonly ElementReferenceJsonConverter Converter;
+
+        public ElementReferenceJsonConverterTest()
+        {
+            ElementReferenceContext = Mock.Of<ElementReferenceContext>();
+            Converter = new ElementReferenceJsonConverter(ElementReferenceContext);
+        }
 
         [Fact]
         public void Serializing_Works()
         {
             // Arrange
-            var elementReference = ElementReference.CreateWithUniqueId();
+            var elementReference = ElementReference.CreateWithUniqueId(ElementReferenceContext);
             var expected = $"{{\"__internalId\":\"{elementReference.Id}\"}}";
             var memoryStream = new MemoryStream();
             var writer = new Utf8JsonWriter(memoryStream);
@@ -34,7 +43,7 @@ namespace Microsoft.AspNetCore.Components
         public void Deserializing_Works()
         {
             // Arrange
-            var id = ElementReference.CreateWithUniqueId().Id;
+            var id = ElementReference.CreateWithUniqueId(ElementReferenceContext).Id;
             var json = $"{{\"__internalId\":\"{id}\"}}";
             var bytes = Encoding.UTF8.GetBytes(json);
             var reader = new Utf8JsonReader(bytes);
@@ -51,7 +60,7 @@ namespace Microsoft.AspNetCore.Components
         public void Deserializing_WithFormatting_Works()
         {
             // Arrange
-            var id = ElementReference.CreateWithUniqueId().Id;
+            var id = ElementReference.CreateWithUniqueId(ElementReferenceContext).Id;
             var json =
 @$"{{
     ""__internalId"": ""{id}""

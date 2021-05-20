@@ -6,6 +6,9 @@ declare interface MONO {
   loaded_files: string[];
   mono_wasm_runtime_ready (): void;
   mono_wasm_setenv (name: string, value: string): void;
+  mono_wasm_load_data_archive(data: Uint8Array, prefix: string): void;
+  mono_wasm_load_bytes_into_heap (data: Uint8Array): Pointer;
+  mono_wasm_load_icu_data(heapAddress: Pointer): boolean;
 }
 
 // Mono uses this global to hold low-level interop APIs
@@ -18,6 +21,7 @@ declare interface BINDING {
   mono_array_to_js_array<TInput, TOutput>(array: System_Array<TInput>) : Array<TOutput>;
   conv_string(dotnetString: System_String | null): string | null;
   bind_static_method(fqn: string, signature?: string): Function;
+  call_assembly_entry_point(assemblyName: string, args: any[], signature: any): Promise<any>;
   unbox_mono_obj(object: System_Object): any;
 }
 

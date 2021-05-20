@@ -1,27 +1,18 @@
-namespace Company.WebApplication1
-
 open System
-open System.Collections.Generic
-open System.IO
-open System.Linq
-open System.Threading.Tasks
-open Microsoft.AspNetCore
-open Microsoft.AspNetCore.Hosting
-open Microsoft.Extensions.Configuration
+open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.Hosting
-open Microsoft.Extensions.Logging
 
-module Program =
-    let exitCode = 0
+[<EntryPoint>]
+let main args =
+    let builder = WebApplication.CreateBuilder(args)
+    let app = builder.Build()
 
-    let CreateHostBuilder args =
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(fun webBuilder ->
-                webBuilder.UseStartup<Startup>() |> ignore
-            )
+    if app.Environment.IsDevelopment() then
+        app.UseDeveloperExceptionPage() |> ignore
 
-    [<EntryPoint>]
-    let main args =
-        CreateHostBuilder(args).Build().Run()
+    app.MapGet("/", Func<string>(fun () -> "Hello World!")) |> ignore
 
-        exitCode
+    app.Run()
+
+    0 // Exit code
+

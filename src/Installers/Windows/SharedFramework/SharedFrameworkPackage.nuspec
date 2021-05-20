@@ -7,11 +7,12 @@
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
         <license type="expression">$PackageLicenseExpression$</license>
-        <projectUrl>https://github.com/aspnet/aspnetcore</projectUrl>
+        <projectUrl>https://github.com/dotnet/aspnetcore</projectUrl>
         <icon>$PackageIcon$</icon>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>$MAJOR$.$MINOR$ ASP.NET Core TargetingPack ($ARCH$) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</description>
         <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+        <serviceable>true</serviceable>
     </metadata>
     <files>
         <file src="$ASPNETCORE_RUNTIME_MSI$" />

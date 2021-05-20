@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC default tag helpers. Contains tag helpers for anchor tags, HTML input elements, caching, scripts, links (for CSS), and more.</Description>
@@ -7,6 +7,7 @@
     <PackageTags>aspnetcore;aspnetcoremvc;taghelper;taghelpers</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.Equal(ModelBindingResult.Failed(), bindingContext.Result);
             Assert.Empty(bindingContext.ModelState);
-            Assert.Equal(2, sink.Writes.Count());
+            Assert.Equal(3, sink.Writes.Count());
         }
 
         [Theory]

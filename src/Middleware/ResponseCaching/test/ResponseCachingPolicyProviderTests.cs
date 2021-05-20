@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = HttpMethods.Get;
-            context.HttpContext.Request.Headers[HeaderNames.Authorization] = "Basic plaintextUN:plaintextPW";
+            context.HttpContext.Request.Headers.Authorization = "Placeholder";
 
             Assert.False(new ResponseCachingPolicyProvider().AttemptResponseCaching(context));
             TestUtils.AssertLoggedMessages(
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = HttpMethods.Get;
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 NoStore = true
             }.ToString();
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = HttpMethods.Get;
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 NoCache = true
             }.ToString();
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = HttpMethods.Get;
-            context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
+            context.HttpContext.Request.Headers.Pragma = "no-cache";
 
             Assert.False(new ResponseCachingPolicyProvider().AllowCacheLookup(context));
             TestUtils.AssertLoggedMessages(
@@ -132,8 +132,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = HttpMethods.Get;
-            context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = "max-age=10";
+            context.HttpContext.Request.Headers.Pragma = "no-cache";
+            context.HttpContext.Request.Headers.CacheControl = "max-age=10";
 
             Assert.True(new ResponseCachingPolicyProvider().AllowCacheLookup(context));
             Assert.Empty(sink.Writes);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = HttpMethods.Get;
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 NoStore = true
             }.ToString();
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true
             }.ToString();
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
                 NoCache = true
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
                 NoStore = true
@@ -219,11 +219,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue";
+            context.HttpContext.Response.Headers.SetCookie = "cookieName=cookieValue";
 
             Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
@@ -236,11 +236,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.Vary] = "*";
+            context.HttpContext.Response.Headers.Vary = "*";
 
             Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
                 Private = true
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = statusCode;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true
             }.ToString();
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = statusCode;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true
             }.ToString();
@@ -365,13 +365,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true
             }.ToString();
 
             var utcNow = DateTimeOffset.UtcNow;
-            context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
             context.ResponseTime = DateTimeOffset.MaxValue;
 
             Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
@@ -384,14 +384,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true
             }.ToString();
             var utcNow = DateTimeOffset.UtcNow;
-            context.HttpContext.Response.Headers[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(utcNow);
 
-            context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
             context.ResponseTime = utcNow;
 
             Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
@@ -407,13 +407,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
                 MaxAge = TimeSpan.FromSeconds(10)
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
-            context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(9);
 
             Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
@@ -427,13 +427,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
                 MaxAge = TimeSpan.FromSeconds(10)
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
-            context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(10);
 
             Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
@@ -449,13 +449,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
                 MaxAge = TimeSpan.FromSeconds(10),
                 SharedMaxAge = TimeSpan.FromSeconds(15)
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(11);
 
             Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
@@ -469,13 +469,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            context.HttpContext.Response.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
                 MaxAge = TimeSpan.FromSeconds(10),
                 SharedMaxAge = TimeSpan.FromSeconds(5)
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(5);
 
             Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true,
                 MaxAge = TimeSpan.FromSeconds(10)
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(utcNow);
 
             Assert.True(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             Assert.Empty(sink.Writes);
@@ -571,7 +571,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true,
                 MaxAge = TimeSpan.FromSeconds(10)
             }.ToString();
-            context.HttpContext.Response.Headers[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
+            context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(utcNow);
 
             Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
@@ -628,7 +628,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 MinFresh = TimeSpan.FromSeconds(2)
             }.ToString();
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 MaxAge = TimeSpan.FromSeconds(5)
             }.ToString();
@@ -674,7 +674,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 MaxAge = TimeSpan.FromSeconds(5),
                 MaxStale = true, // This value must be set to true in order to specify MaxStaleLimit
@@ -698,7 +698,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 MaxAge = TimeSpan.FromSeconds(5),
                 MaxStale = true // No value specified means a MaxStaleLimit of infinity
@@ -721,7 +721,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 MaxAge = TimeSpan.FromSeconds(5),
                 MaxStale = true, // This value must be set to true in order to specify MaxStaleLimit
@@ -745,7 +745,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 MaxAge = TimeSpan.FromSeconds(5),
                 MaxStale = true, // This value must be set to true in order to specify MaxStaleLimit
@@ -770,7 +770,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
-            context.HttpContext.Request.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+            context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
             {
                 MaxAge = TimeSpan.FromSeconds(5),
                 MaxStale = true, // This value must be set to true in order to specify MaxStaleLimit

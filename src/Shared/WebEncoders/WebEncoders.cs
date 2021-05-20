@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
 using System;
 #if NETCOREAPP
 using System.Buffers;
 #endif
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.WebEncoders.Sources;
 
 #if WebEncoders_In_WebUtilities
@@ -25,8 +27,6 @@ namespace Microsoft.Extensions.Internal
 #endif
     static class WebEncoders
     {
-        private static readonly byte[] EmptyBytes = new byte[0];
-
         /// <summary>
         /// Decodes a base64url-encoded string.
         /// </summary>
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Internal
             // Special-case empty input
             if (count == 0)
             {
-                return EmptyBytes;
+                return Array.Empty<byte>();
             }
 
             // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
@@ -116,7 +116,7 @@ namespace Microsoft.Extensions.Internal
 
             if (count == 0)
             {
-                return EmptyBytes;
+                return Array.Empty<byte>();
             }
 
             // Assumption: input is base64url encoded without padding and contains no whitespace.
@@ -344,8 +344,11 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="input">The binary input to encode.</param>
         /// <returns>The base64url-encoded form of <paramref name="input"/>.</returns>
+        [SkipLocalsInit]
         public static string Base64UrlEncode(ReadOnlySpan<byte> input)
         {
+            const int StackAllocThreshold = 128;
+
             if (input.IsEmpty)
             {
                 return string.Empty;
@@ -353,9 +356,9 @@ namespace Microsoft.Extensions.Internal
 
             int bufferSize = GetArraySizeRequiredToEncode(input.Length);
 
-            char[] bufferToReturnToPool = null;
-            Span<char> buffer = bufferSize <= 128
-                ? stackalloc char[bufferSize]
+            char[]? bufferToReturnToPool = null;
+            Span<char> buffer = bufferSize <= StackAllocThreshold
+                ? stackalloc char[StackAllocThreshold]
                 : bufferToReturnToPool = ArrayPool<char>.Shared.Rent(bufferSize);
 
             var numBase64Chars = Base64UrlEncode(input, buffer);
@@ -404,22 +407,6 @@ namespace Microsoft.Extensions.Internal
             return charsWritten;
         }
 #endif
-
-        private static int GetNumBase64PaddingCharsInString(string str)
-        {
-            // Assumption: input contains a well-formed base64 string with no whitespace.
-
-            // base64 guaranteed have 0 - 2 padding characters.
-            if (str[str.Length - 1] == '=')
-            {
-                if (str[str.Length - 2] == '=')
-                {
-                    return 2;
-                }
-                return 1;
-            }
-            return 0;
-        }
 
         private static int GetNumBase64PaddingCharsToAddForDecode(int inputLength)
         {

@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

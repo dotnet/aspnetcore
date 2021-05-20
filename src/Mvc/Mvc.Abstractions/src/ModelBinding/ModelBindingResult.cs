@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -19,18 +18,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             return new ModelBindingResult(model: null, isModelSet: false);
         }
-        
+
         /// <summary>
         /// Creates a <see cref="ModelBindingResult"/> representing a successful model binding operation.
         /// </summary>
         /// <param name="model">The model value. May be <c>null.</c></param>
         /// <returns>A <see cref="ModelBindingResult"/> representing a successful model bind.</returns>
-        public static ModelBindingResult Success(object model)
+        public static ModelBindingResult Success(object? model)
         {
-            return new ModelBindingResult( model, isModelSet: true);
+            return new ModelBindingResult(model, isModelSet: true);
         }
 
-        private ModelBindingResult(object model, bool isModelSet)
+        private ModelBindingResult(object? model, bool isModelSet)
         {
             Model = model;
             IsModelSet = isModelSet;
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the model associated with this context.
         /// </summary>
-        public object Model { get; }
+        public object? Model { get; }
 
         /// <summary>
         /// <para>
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public bool IsModelSet { get; }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ModelBindingResult?;
             if (other == null)
@@ -69,11 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
+            var hashCodeCombiner = new HashCode();
             hashCodeCombiner.Add(IsModelSet);
             hashCodeCombiner.Add(Model);
 
-            return hashCodeCombiner.CombinedHash;
+            return hashCodeCombiner.ToHashCode();
         }
 
         /// <inheritdoc />

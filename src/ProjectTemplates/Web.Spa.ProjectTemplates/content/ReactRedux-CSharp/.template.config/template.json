@@ -6,8 +6,8 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux",
-  "precedence": "6000",
-  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux.CSharp.3.1",
+  "precedence": "8000",
+  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux.CSharp.6.0",
   "name": "ASP.NET Core with React.js and Redux",
   "preferNameDirectory": true,
   "primaryOutputs": [
@@ -87,12 +87,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.1",
-          "description": "Target netcoreapp3.1"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "replaces": "netcoreapp3.1",
-      "defaultValue": "netcoreapp3.1"
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "HostIdentifier": {
       "type": "bind",

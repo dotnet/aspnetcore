@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 {
     public class HtmlRendererTest
     {
-        protected readonly Func<string, string> _encoder = (string t) => HtmlEncoder.Default.Encode(t);
+        protected readonly HtmlEncoder _encoder = HtmlEncoder.Default;
 
         [Fact]
         public void RenderComponentAsync_CanRenderEmptyElement()
@@ -289,7 +290,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.AddAttribute(3, "value", "b");
                 rtb.AddAttribute(4, "unrelated-attribute-after", "c");
 
-                foreach (var optionValue in new[] { "a", "b", "c"})
+                foreach (var optionValue in new[] { "a", "b", "c" })
                 {
                     rtb.OpenElement(5, "option");
                     rtb.AddAttribute(6, "unrelated-attribute", "a");
@@ -620,7 +621,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "p");
-                builder.AddContent(1, Value.ToString());
+                builder.AddContent(1, Value.ToString(CultureInfo.InvariantCulture));
                 builder.CloseElement();
                 if (!Nested)
                 {
@@ -650,7 +651,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "p");
-                builder.AddContent(1, Value.ToString());
+                builder.AddContent(1, Value.ToString(CultureInfo.InvariantCulture));
                 builder.CloseElement();
             }
         }

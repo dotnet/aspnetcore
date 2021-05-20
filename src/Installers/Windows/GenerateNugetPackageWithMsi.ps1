@@ -25,9 +25,8 @@ if (-not (Test-Path $NuGetDir)) {
 }
 
 if (-not (Test-Path $NuGetExe)) {
-    # Using 5.3.0 to workaround https://github.com/NuGet/Home/issues/5016
     Write-Output "Downloading nuget.exe to $NuGetExe"
-    wget https://dist.nuget.org/win-x86-commandline/v5.3.0/nuget.exe -OutFile $NuGetExe
+    wget https://dist.nuget.org/win-x86-commandline/v5.6.0/nuget.exe -OutFile $NuGetExe
 }
 
 & $NuGetExe pack $NuspecFile `

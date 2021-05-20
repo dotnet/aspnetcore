@@ -6,14 +6,14 @@ namespace Microsoft.AspNetCore.Components.Web
     // Shared interop constants
     internal static class BrowserNavigationManagerInterop
     {
-        private static readonly string Prefix = "Blazor._internal.navigationManager.";
+        private const string Prefix = "Blazor._internal.navigationManager.";
 
-        public static readonly string EnableNavigationInterception = Prefix + "enableNavigationInterception";
+        public const string EnableNavigationInterception = Prefix + "enableNavigationInterception";
 
-        public static readonly string GetLocationHref = Prefix + "getUnmarshalledLocationHref";
+        public const string GetLocationHref = Prefix + "getUnmarshalledLocationHref";
 
-        public static readonly string GetBaseUri = Prefix + "getUnmarshalledBaseURI";
+        public const string GetBaseUri = Prefix + "getUnmarshalledBaseURI";
 
-        public static readonly string NavigateTo = Prefix + "navigateTo";
+        public const string NavigateTo = Prefix + "navigateTo";
     }
 }

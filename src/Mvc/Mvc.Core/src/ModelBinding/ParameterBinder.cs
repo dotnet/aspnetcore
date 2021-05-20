@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Threading.Tasks;
@@ -82,13 +84,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
         /// <param name="value">The initial model value.</param>
         /// <returns>The result of model binding.</returns>
-        public virtual async Task<ModelBindingResult> BindModelAsync(
+        public virtual Task<ModelBindingResult> BindModelAsync(
             ActionContext actionContext,
             IModelBinder modelBinder,
             IValueProvider valueProvider,
             ParameterDescriptor parameter,
             ModelMetadata metadata,
-            object value)
+            object? value)
+            => BindModelAsync(actionContext, modelBinder, valueProvider, parameter, metadata, value, container: null).AsTask();
+
+        /// <summary>
+        /// Binds a model specified by <paramref name="parameter"/> using <paramref name="value"/> as the initial value.
+        /// </summary>
+        /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
+        /// <param name="modelBinder">The <see cref="IModelBinder"/>.</param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/>.</param>
+        /// <param name="parameter">The <see cref="ParameterDescriptor"/></param>
+        /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
+        /// <param name="value">The initial model value.</param>
+        /// <param name="container">The container for the model.</param>
+        /// <returns>The result of model binding.</returns>
+        public virtual async ValueTask<ModelBindingResult> BindModelAsync(
+            ActionContext actionContext,
+            IModelBinder modelBinder,
+            IValueProvider valueProvider,
+            ParameterDescriptor parameter,
+            ModelMetadata metadata,
+            object? value,
+            object? container)
         {
             if (actionContext == null)
             {
@@ -164,7 +187,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     parameter,
                     metadata,
                     modelBindingContext,
-                    modelBindingResult);
+                    modelBindingResult,
+                    container);
 
                 Logger.DoneAttemptingToValidateParameterOrProperty(parameter, metadata);
             }
@@ -192,7 +216,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ParameterDescriptor parameter,
             ModelMetadata metadata,
             ModelBindingContext modelBindingContext,
-            ModelBindingResult modelBindingResult)
+            ModelBindingResult modelBindingResult,
+            object? container)
         {
             RecalculateModelMetadata(parameter, modelBindingResult, ref metadata);
 
@@ -211,7 +236,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     modelBindingContext.ValidationState,
                     modelBindingContext.ModelName,
                     modelBindingResult.Model,
-                    metadata);
+                    metadata,
+                    container);
             }
             else if (metadata.IsRequired)
             {
@@ -240,7 +266,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     modelBindingContext.ValidationState,
                     modelName,
                     modelBindingResult.Model,
-                    metadata);
+                    metadata,
+                    container);
             }
         }
 
@@ -255,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (!modelBindingResult.IsModelSet ||
                 modelBindingResult.Model == null ||
-                !(_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider))
+                _modelMetadataProvider is not ModelMetadataProvider modelMetadataProvider)
             {
                 return;
             }

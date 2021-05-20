@@ -6,19 +6,30 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Owin
 {
+    /// <summary>
+    /// OWIN WebSocket accept context.
+    /// </summary>
     public class OwinWebSocketAcceptContext : WebSocketAcceptContext
     {
         private IDictionary<string, object> _options;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
+        /// </summary>
         public OwinWebSocketAcceptContext() : this(new Dictionary<string, object>(1))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
+        /// </summary>
+        /// <param name="options">OWIN WebSocket options.</param>
         public OwinWebSocketAcceptContext(IDictionary<string, object> options)
         {
             _options = options;
         }
 
+        /// <inheritdocs />
         public override string SubProtocol
         {
             get
@@ -40,6 +51,9 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <summary>
+        /// Gets OWIN WebSocket options.
+        /// </summary>
         public IDictionary<string, object> Options
         {
             get { return _options; }

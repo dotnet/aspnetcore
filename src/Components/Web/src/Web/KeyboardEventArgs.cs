@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Components.Web
         /// Otherwise, it's one of the key value strings specified in 'Key values'.
         /// If the key can't be identified, this is the string "Unidentified"
         /// </summary>
-        public string Key { get; set; }
+        public string Key { get; set; } = default!;
 
         /// <summary>
         /// Holds a string that identifies the physical key being pressed.
         /// The value is not affected by the current keyboard layout or modifier state, so a particular key will always return the same value.
         /// </summary>
-        public string Code { get; set; }
+        public string Code { get; set; } = default!;
 
         /// <summary>
         /// The location of the key on the device.
@@ -57,6 +57,6 @@ namespace Microsoft.AspNetCore.Components.Web
         /// <summary>
         /// Gets or sets the type of the event.
         /// </summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = default!;
     }
 }

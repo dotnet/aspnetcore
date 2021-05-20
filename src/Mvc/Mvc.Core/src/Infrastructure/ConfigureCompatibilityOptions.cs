@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// by application code.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
+    [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
+        DiagnosticId = "ASP5001",
+        UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
     public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOptions<TOptions>
         where TOptions : class, IEnumerable<ICompatibilitySwitch>
     {

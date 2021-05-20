@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanUpdateValuesMatchedByType()
         {
-            var currentCount = Browser.FindElement(By.Id("current-count"));
-            var incrementButton = Browser.FindElement(By.Id("increment-count"));
+            var currentCount = Browser.Exists(By.Id("current-count"));
+            var incrementButton = Browser.Exists(By.Id("increment-count"));
 
             // We have the correct initial value
             Browser.Equal("100", () => currentCount.Text);
@@ -44,35 +44,35 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("102", () => currentCount.Text);
 
             // Didn't re-render unrelated descendants
-            Assert.Equal("1", Browser.FindElement(By.Id("receive-by-interface-num-renders")).Text);
+            Assert.Equal("1", Browser.Exists(By.Id("receive-by-interface-num-renders")).Text);
         }
 
         [Fact]
         public void CanUpdateValuesMatchedByName()
         {
-            var currentFlag1Value = Browser.FindElement(By.Id("flag-1"));
-            var currentFlag2Value = Browser.FindElement(By.Id("flag-2"));
+            var currentFlag1Value = Browser.Exists(By.Id("flag-1"));
+            var currentFlag2Value = Browser.Exists(By.Id("flag-2"));
 
             Browser.Equal("False", () => currentFlag1Value.Text);
             Browser.Equal("False", () => currentFlag2Value.Text);
 
             // Observe that the correct cascading parameter updates
-            Browser.FindElement(By.Id("toggle-flag-1")).Click();
+            Browser.Exists(By.Id("toggle-flag-1")).Click();
             Browser.Equal("True", () => currentFlag1Value.Text);
             Browser.Equal("False", () => currentFlag2Value.Text);
-            Browser.FindElement(By.Id("toggle-flag-2")).Click();
+            Browser.Exists(By.Id("toggle-flag-2")).Click();
             Browser.Equal("True", () => currentFlag1Value.Text);
             Browser.Equal("True", () => currentFlag2Value.Text);
 
             // Didn't re-render unrelated descendants
-            Assert.Equal("1", Browser.FindElement(By.Id("receive-by-interface-num-renders")).Text);
+            Assert.Equal("1", Browser.Exists(By.Id("receive-by-interface-num-renders")).Text);
         }
 
         [Fact]
         public void CanUpdateFixedValuesMatchedByInterface()
         {
-            var currentCount = Browser.FindElement(By.Id("current-count"));
-            var decrementButton = Browser.FindElement(By.Id("decrement-count"));
+            var currentCount = Browser.Exists(By.Id("current-count"));
+            var decrementButton = Browser.Exists(By.Id("decrement-count"));
 
             // We have the correct initial value
             Browser.Equal("100", () => currentCount.Text);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("98", () => currentCount.Text);
 
             // Didn't re-render descendants
-            Assert.Equal("1", Browser.FindElement(By.Id("receive-by-interface-num-renders")).Text);
+            Assert.Equal("1", Browser.Exists(By.Id("receive-by-interface-num-renders")).Text);
         }
     }
 }

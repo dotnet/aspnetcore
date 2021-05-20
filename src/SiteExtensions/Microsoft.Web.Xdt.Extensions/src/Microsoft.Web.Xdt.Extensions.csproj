@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <Description>Additional functionality for Xdt transforms.</Description>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
     <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        public Type Type { get; set; }
+        public Type? Type { get; set; }
 
         /// <summary>
         /// Gets or sets the supported response content types. Used to set <see cref="ObjectResult.ContentTypes"/>.
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
         {
-            var completeArgs = new List<string>();
+            var completeArgs = new List<string>(args.Length + 1);
             completeArgs.Add(firstArg);
             completeArgs.AddRange(args);
             var contentTypes = new MediaTypeCollection();

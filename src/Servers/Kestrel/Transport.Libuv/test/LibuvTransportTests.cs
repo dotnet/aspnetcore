@@ -9,10 +9,13 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
@@ -184,19 +187,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 return context.Response.WriteAsync("Hello World");
             });
 
-            listenOptions.UseHttpServer(serviceContext, testApplication, HttpProtocols.Http1);
+            listenOptions.UseHttpServer(serviceContext, testApplication, Core.HttpProtocols.Http1);
 
             var transportContext = new TestLibuvTransportContext
             {
+#pragma warning disable CS0618
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }
+#pragma warning restore CS0618
             };
 
             await using var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
             await transport.BindAsync();
             listenOptions.EndPoint = transport.EndPoint;
 
-            var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
-            var acceptTask = dispatcher.StartAcceptingConnections(transport);
+            var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
+            var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, c => listenOptions.Build()(c), transportConnectionManager);
+            var acceptTask = dispatcher.StartAcceptingConnections(new GenericConnectionListener(transport));
 
             using (var client = new HttpClient())
             {
@@ -218,10 +224,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             await acceptTask;
 
-            if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default))
+            if (!await transportConnectionManager.CloseAllConnectionsAsync(default))
             {
-                await serviceContext.ConnectionManager.AbortAllConnectionsAsync();
+                await transportConnectionManager.AbortAllConnectionsAsync();
             }
+        }
+
+        private class GenericConnectionListener : IConnectionListener<ConnectionContext>
+        {
+            private readonly IConnectionListener _connectionListener;
+
+            public GenericConnectionListener(IConnectionListener connectionListener)
+            {
+                _connectionListener = connectionListener;
+            }
+
+            public EndPoint EndPoint => _connectionListener.EndPoint;
+
+            public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+                 => _connectionListener.AcceptAsync(cancellationToken);
+
+            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+                => _connectionListener.UnbindAsync();
+
+            public ValueTask DisposeAsync()
+                => _connectionListener.DisposeAsync();
         }
     }
 }

@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -73,6 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="MissingBindRequiredValueAccessor"/> property.
         /// </summary>
         /// <param name="missingBindRequiredValueAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_missingBindRequiredValueAccessor))]
         public void SetMissingBindRequiredValueAccessor(Func<string, string> missingBindRequiredValueAccessor)
         {
             if (missingBindRequiredValueAccessor == null)
@@ -90,6 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="MissingKeyOrValueAccessor"/> property.
         /// </summary>
         /// <param name="missingKeyOrValueAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_missingKeyOrValueAccessor))]
         public void SetMissingKeyOrValueAccessor(Func<string> missingKeyOrValueAccessor)
         {
             if (missingKeyOrValueAccessor == null)
@@ -107,6 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="MissingRequestBodyRequiredValueAccessor"/> property.
         /// </summary>
         /// <param name="missingRequestBodyRequiredValueAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_missingRequestBodyRequiredValueAccessor))]
         public void SetMissingRequestBodyRequiredValueAccessor(Func<string> missingRequestBodyRequiredValueAccessor)
         {
             if (missingRequestBodyRequiredValueAccessor == null)
@@ -124,6 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="ValueMustNotBeNullAccessor"/> property.
         /// </summary>
         /// <param name="valueMustNotBeNullAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_valueMustNotBeNullAccessor))]
         public void SetValueMustNotBeNullAccessor(Func<string, string> valueMustNotBeNullAccessor)
         {
             if (valueMustNotBeNullAccessor == null)
@@ -141,6 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="AttemptedValueIsInvalidAccessor"/> property.
         /// </summary>
         /// <param name="attemptedValueIsInvalidAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_attemptedValueIsInvalidAccessor))]
         public void SetAttemptedValueIsInvalidAccessor(Func<string, string, string> attemptedValueIsInvalidAccessor)
         {
             if (attemptedValueIsInvalidAccessor == null)
@@ -158,6 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="NonPropertyAttemptedValueIsInvalidAccessor"/> property.
         /// </summary>
         /// <param name="nonPropertyAttemptedValueIsInvalidAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_nonPropertyAttemptedValueIsInvalidAccessor))]
         public void SetNonPropertyAttemptedValueIsInvalidAccessor(
             Func<string, string> nonPropertyAttemptedValueIsInvalidAccessor)
         {
@@ -176,6 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="UnknownValueIsInvalidAccessor"/> property.
         /// </summary>
         /// <param name="unknownValueIsInvalidAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_unknownValueIsInvalidAccessor))]
         public void SetUnknownValueIsInvalidAccessor(Func<string, string> unknownValueIsInvalidAccessor)
         {
             if (unknownValueIsInvalidAccessor == null)
@@ -193,6 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="NonPropertyUnknownValueIsInvalidAccessor"/> property.
         /// </summary>
         /// <param name="nonPropertyUnknownValueIsInvalidAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_nonPropertyUnknownValueIsInvalidAccessor))]
         public void SetNonPropertyUnknownValueIsInvalidAccessor(Func<string> nonPropertyUnknownValueIsInvalidAccessor)
         {
             if (nonPropertyUnknownValueIsInvalidAccessor == null)
@@ -210,6 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="ValueIsInvalidAccessor"/> property.
         /// </summary>
         /// <param name="valueIsInvalidAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_valueIsInvalidAccessor))]
         public void SetValueIsInvalidAccessor(Func<string, string> valueIsInvalidAccessor)
         {
             if (valueIsInvalidAccessor == null)
@@ -227,6 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="ValueMustBeANumberAccessor"/> property.
         /// </summary>
         /// <param name="valueMustBeANumberAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_valueMustBeANumberAccessor))]
         public void SetValueMustBeANumberAccessor(Func<string, string> valueMustBeANumberAccessor)
         {
             if (valueMustBeANumberAccessor == null)
@@ -244,6 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Sets the <see cref="NonPropertyValueMustBeANumberAccessor"/> property.
         /// </summary>
         /// <param name="nonPropertyValueMustBeANumberAccessor">The value to set.</param>
+        [MemberNotNull(nameof(_nonPropertyValueMustBeANumberAccessor))]
         public void SetNonPropertyValueMustBeANumberAccessor(Func<string> nonPropertyValueMustBeANumberAccessor)
         {
             if (nonPropertyValueMustBeANumberAccessor == null)

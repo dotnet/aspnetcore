@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor WebAssembly 应用",
+    "description": "用于创建 Blazor 应用的项目模板，该应用在 WebAssembly 上运行且可选择由 ASP.NET Core 应用托管。此模板可用于具有丰富动态用户界面(UI)的 Web 应用。",
+    "parameter.Hosted.name": "ASP.NET Core 托管(_H)",
+    "parameter.PWA.name": "渐进式 Web 应用程序(_P)"
+  }
+}

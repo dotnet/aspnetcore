@@ -3,85 +3,85 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection
 {
     internal class MemberAssignment
     {
         public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
-            Type type, BindingFlags bindingFlags)
+            [DynamicallyAccessedMembers(Component)] Type type,
+            BindingFlags bindingFlags)
         {
-            var dictionary = new Dictionary<string, List<PropertyInfo>>();
+            var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
 
-            while (type != null)
+            Type? currentType = type;
+
+            while (currentType != null)
             {
-                var properties = type.GetProperties(bindingFlags)
-                    .Where(prop => prop.DeclaringType == type);
+                var properties = currentType.GetProperties(bindingFlags | BindingFlags.DeclaredOnly);
                 foreach (var property in properties)
                 {
                     if (!dictionary.TryGetValue(property.Name, out var others))
                     {
-                        others = new List<PropertyInfo>();
-                        dictionary.Add(property.Name, others);
+                        dictionary.Add(property.Name, property);
                     }
-
-                    if (others.Any(other => other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition()))
+                    else if (!IsInheritedProperty(property, others))
                     {
-                        // This is an inheritance case. We can safely ignore the value of property since
-                        // we have seen a more derived value.
-                        continue;
+                        List<PropertyInfo> many;
+                        if (others is PropertyInfo single)
+                        {
+                            many = new List<PropertyInfo> { single };
+                            dictionary[property.Name] = many;
+                        }
+                        else
+                        {
+                            many = (List<PropertyInfo>)others;
+                        }
+                        many.Add(property);
                     }
-
-                    others.Add(property);
                 }
 
-                type = type.BaseType;
+                currentType = currentType.BaseType;
             }
 
-            return dictionary.Values.SelectMany(p => p);
+            foreach (var item in dictionary)
+            {
+                if (item.Value is PropertyInfo property)
+                {
+                    yield return property;
+                    continue;
+                }
+
+                var list = (List<PropertyInfo>)item.Value;
+                var count = list.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    yield return list[i];
+                }
+            }
         }
 
-        public static IPropertySetter CreatePropertySetter(Type targetType, PropertyInfo property, bool cascading)
+        private static bool IsInheritedProperty(PropertyInfo property, object others)
         {
-            if (property.SetMethod == null)
+            if (others is PropertyInfo single)
             {
-                throw new InvalidOperationException($"Cannot provide a value for property " +
-                    $"'{property.Name}' on type '{targetType.FullName}' because the property " +
-                    $"has no setter.");
+                return single.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition();
             }
 
-            return (IPropertySetter)Activator.CreateInstance(
-                typeof(PropertySetter<,>).MakeGenericType(targetType, property.PropertyType),
-                property.SetMethod,
-                cascading);
-        }
-
-        class PropertySetter<TTarget, TValue> : IPropertySetter
-        {
-            private readonly Action<TTarget, TValue> _setterDelegate;
-
-            public PropertySetter(MethodInfo setMethod, bool cascading)
+            var many = (List<PropertyInfo>)others;
+            foreach (var other in CollectionsMarshal.AsSpan(many))
             {
-                _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
-                    typeof(Action<TTarget, TValue>), setMethod);
-                Cascading = cascading;
-            }
-
-            public bool Cascading { get; }
-
-            public void SetValue(object target, object value)
-            {
-                if (value == null)
+                if (other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition())
                 {
-                    _setterDelegate((TTarget)target, default);
-                }
-                else
-                {
-                    _setterDelegate((TTarget)target, (TValue)value);
+                    return true;
                 }
             }
+
+            return false;
         }
     }
 }

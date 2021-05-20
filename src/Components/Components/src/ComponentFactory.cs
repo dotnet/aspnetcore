@@ -3,32 +3,37 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
 {
-    /// <remarks>
-    /// The <see cref="Instance"/> property on this type is used as a static global cache. Ensure any changes to this type
-    /// are thread safe and can be safely cached statically.
-    /// </remarks>
-    internal class ComponentFactory
+    internal sealed class ComponentFactory
     {
-        private static readonly BindingFlags _injectablePropertyBindingFlags
+        private const BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers
-            = new ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>>();
+        private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
 
-        public static readonly ComponentFactory Instance = new ComponentFactory();
+        private readonly IComponentActivator _componentActivator;
 
-        public IComponent InstantiateComponent(IServiceProvider serviceProvider, Type componentType)
+        public ComponentFactory(IComponentActivator componentActivator)
         {
-            var instance = Activator.CreateInstance(componentType);
-            if (!(instance is IComponent component))
+            _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
+        }
+
+        public void ClearCache() => _cachedInitializers.Clear();
+
+        public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
+        {
+            var component = _componentActivator.CreateInstance(componentType);
+            if (component is null)
             {
-                throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
+                // The default activator will never do this, but an externally-supplied one might
+                throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
             }
 
             PerformPropertyInjection(serviceProvider, component);
@@ -50,19 +55,25 @@ namespace Microsoft.AspNetCore.Components
             initializer(serviceProvider, instance);
         }
 
-        private Action<IServiceProvider, IComponent> CreateInitializer(Type type)
+        private Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
         {
             // Do all the reflection up front
-            var injectableProperties =
-                MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags)
-                .Where(p => p.IsDefined(typeof(InjectAttribute)));
+            List<(string name, Type propertyType, PropertySetter setter)>? injectables = null;
+            foreach (var property in MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags))
+            {
+                if (!property.IsDefined(typeof(InjectAttribute)))
+                {
+                    continue;
+                }
 
-            var injectables = injectableProperties.Select(property =>
-            (
-                propertyName: property.Name,
-                propertyType: property.PropertyType,
-                setter: MemberAssignment.CreatePropertySetter(type, property, cascading: false)
-            )).ToArray();
+                injectables ??= new();
+                injectables.Add((property.Name, property.PropertyType, new PropertySetter(type, property)));
+            }
+
+            if (injectables is null)
+            {
+                return static (_, _) => { };
+            }
 
             return Initialize;
 

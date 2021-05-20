@@ -75,7 +75,7 @@
 
     <!-- Registration -->
     <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
-    <BundleRegFamily>.NET Core</BundleRegFamily>
+    <BundleRegFamily>.NET</BundleRegFamily>
 
     <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>

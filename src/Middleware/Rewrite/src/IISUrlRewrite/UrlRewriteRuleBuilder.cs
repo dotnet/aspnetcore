@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
     {
         private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public bool Enabled { get; set; }
         public bool Global { get; set; }
         public UriMatchPart UriMatchPart => Global ? UriMatchPart.Full : UriMatchPart.Path;
 
-        private UrlMatch _initialMatch;
-        private ConditionCollection _conditions;
-        private UrlAction _action;
+        private UrlMatch? _initialMatch;
+        private ConditionCollection? _conditions;
+        private UrlAction? _action;
 
         public IISUrlRewriteRule Build()
         {

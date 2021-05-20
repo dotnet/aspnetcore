@@ -42,7 +42,7 @@ namespace Ignitor
             foreach (var kvp in Components)
             {
                 var component = kvp.Value;
-                if (TryGetElementFromChildren(component, out element))
+                if (TryGetElementFromChildren(component, id, out element))
                 {
                     return true;
                 }
@@ -50,31 +50,31 @@ namespace Ignitor
 
             element = null;
             return false;
+        }
 
-            bool TryGetElementFromChildren(Node node, out ElementNode? foundNode)
+        bool TryGetElementFromChildren(Node node, string id, [NotNullWhen(true)] out ElementNode? foundNode)
+        {
+            if (node is ElementNode elementNode &&
+                elementNode.Attributes.TryGetValue("id", out var elementId) &&
+                elementId.ToString() == id)
             {
-                if (node is ElementNode elementNode &&
-                    elementNode.Attributes.TryGetValue("id", out var elementId) &&
-                    elementId?.ToString() == id)
-                {
-                    foundNode = elementNode;
-                    return true;
-                }
+                foundNode = elementNode;
+                return true;
+            }
 
-                if (node is ContainerNode containerNode)
+            if (node is ContainerNode containerNode)
+            {
+                for (var i = 0; i < containerNode.Children.Count; i++)
                 {
-                    for (var i = 0; i < containerNode.Children.Count; i++)
+                    if (TryGetElementFromChildren(containerNode.Children[i], id, out foundNode))
                     {
-                        if (TryGetElementFromChildren(containerNode.Children[i], out foundNode))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
-
-                foundNode = null;
-                return false;
             }
+
+            foundNode = null;
+            return false;
         }
 
         private void UpdateComponent(RenderBatch batch, int componentId, ArrayBuilderSegment<RenderTreeEdit> edits)
@@ -149,7 +149,7 @@ namespace Ignitor
                             var node = parent.Children[childIndexAtCurrentDepth + siblingIndex];
                             if (node is ElementNode element)
                             {
-                                var attributeName = edit.RemovedAttributeName;
+                                var attributeName = edit.RemovedAttributeName!;
 
                                 // First try to remove any special property we use for this attribute
                                 if (!TryApplySpecialProperty(batch, element, attributeName, default))
@@ -259,13 +259,19 @@ namespace Ignitor
 
                 case RenderTreeFrameType.Region:
                     {
-                        return InsertFrameRange(batch, parent, childIndex, frames, frameIndex + 1, frameIndex + CountDescendantFrames(frame));
+                        return InsertFrameRange(batch, parent, childIndex, frames, frameIndex + 1, frameIndex + frame.RegionSubtreeLength);
                     }
 
                 case RenderTreeFrameType.ElementReferenceCapture:
                     {
-                        // No action for reference captures.
-                        break;
+                        if (parent is ElementNode)
+                        {
+                            return 0; // A "capture" is a child in the diff, but has no node in the DOM
+                        }
+                        else
+                        {
+                            throw new Exception("Reference capture frames can only be children of element frames.");
+                        }
                     }
 
                 case RenderTreeFrameType.Markup:
@@ -316,7 +322,8 @@ namespace Ignitor
         {
             // Note: we don't handle SVG here
             var newElement = new ElementNode(frame.ElementName);
-            parent.InsertLogicalChild(newElement, childIndex);
+
+            var inserted = false;
 
             // Apply attributes
             for (var i = frameIndex + 1; i < frameIndex + frame.ElementSubtreeLength; i++)
@@ -328,11 +335,20 @@ namespace Ignitor
                 }
                 else
                 {
+                    parent.InsertLogicalChild(newElement, childIndex);
+                    inserted = true;
+
                     // As soon as we see a non-attribute child, all the subsequent child frames are
                     // not attributes, so bail out and insert the remnants recursively
                     InsertFrameRange(batch, newElement, 0, frames, i, frameIndex + frame.ElementSubtreeLength);
                     break;
                 }
+            }
+
+            // this element did not have any children, so it's not inserted yet.
+            if (!inserted)
+            {
+                parent.InsertLogicalChild(newElement, childIndex);
             }
         }
 

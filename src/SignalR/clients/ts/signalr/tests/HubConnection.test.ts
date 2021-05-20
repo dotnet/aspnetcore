@@ -134,6 +134,25 @@ describe("HubConnection", () => {
                 }
             });
         });
+
+        it("does not send pings for connection with inherentKeepAlive", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection(true, true);
+                const hubConnection = createHubConnection(connection, logger);
+
+                hubConnection.keepAliveIntervalInMilliseconds = 5;
+
+                try {
+                    await hubConnection.start();
+                    await delayUntil(500);
+
+                    const numPings = connection.sentData.filter((s) => JSON.parse(s).type === MessageType.Ping).length;
+                    expect(numPings).toEqual(0);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
     });
 
     describe("stop", () => {
@@ -161,7 +180,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -172,7 +190,6 @@ describe("HubConnection", () => {
                             "arg",
                             42,
                         ],
-                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -190,7 +207,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", null)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -201,7 +217,6 @@ describe("HubConnection", () => {
                             "arg",
                             null,
                         ],
-                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -221,7 +236,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.invoke("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -233,7 +247,6 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
-                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -986,7 +999,6 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
-                        streamIds: [],
                         target: "testStream",
                         type: MessageType.StreamInvocation,
                     });
@@ -1285,7 +1297,7 @@ describe("HubConnection", () => {
                     const timeoutInMilliseconds = 400;
                     hubConnection.serverTimeoutInMilliseconds = timeoutInMilliseconds;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
@@ -1315,7 +1327,7 @@ describe("HubConnection", () => {
                 try {
                     hubConnection.serverTimeoutInMilliseconds = 100;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
@@ -1360,15 +1372,15 @@ class TestProtocol implements IHubProtocol {
 class TestObserver implements IStreamSubscriber<any> {
     public readonly closed: boolean = false;
     public itemsReceived: any[];
-    private itemsSource: PromiseSource<any[]>;
+    private _itemsSource: PromiseSource<any[]>;
 
     get completed(): Promise<any[]> {
-        return this.itemsSource.promise;
+        return this._itemsSource.promise;
     }
 
     constructor() {
         this.itemsReceived = [];
-        this.itemsSource = new PromiseSource<any[]>();
+        this._itemsSource = new PromiseSource<any[]>();
     }
 
     public next(value: any) {
@@ -1376,11 +1388,11 @@ class TestObserver implements IStreamSubscriber<any> {
     }
 
     public error(err: any) {
-        this.itemsSource.reject(new Error(err));
+        this._itemsSource.reject(new Error(err));
     }
 
     public complete() {
-        this.itemsSource.resolve(this.itemsReceived);
+        this._itemsSource.resolve(this.itemsReceived);
     }
 }
 

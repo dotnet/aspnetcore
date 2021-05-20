@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Internal
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Internal
     internal sealed class ReusableUtf8JsonWriter
     {
         [ThreadStatic]
-        private static ReusableUtf8JsonWriter _cachedInstance;
+        private static ReusableUtf8JsonWriter? _cachedInstance;
 
         private readonly Utf8JsonWriter _writer;
 
@@ -20,7 +21,13 @@ namespace Microsoft.AspNetCore.Internal
 
         public ReusableUtf8JsonWriter(IBufferWriter<byte> stream)
         {
-            _writer = new Utf8JsonWriter(stream, new JsonWriterOptions() { SkipValidation = true });
+            _writer = new Utf8JsonWriter(stream, new JsonWriterOptions()
+            {
+#if !DEBUG
+                SkipValidation = true,
+#endif
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
         }
 
         public static ReusableUtf8JsonWriter Get(IBufferWriter<byte> stream)

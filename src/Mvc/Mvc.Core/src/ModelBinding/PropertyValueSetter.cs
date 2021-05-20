@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System.Collections.Generic;
 using System.Reflection;
@@ -9,19 +11,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     internal static class PropertyValueSetter
     {
         private static readonly MethodInfo CallPropertyAddRangeOpenGenericMethod =
-            typeof(PropertyValueSetter).GetMethod(nameof(CallPropertyAddRange), BindingFlags.NonPublic | BindingFlags.Static);
+            typeof(PropertyValueSetter).GetMethod(nameof(CallPropertyAddRange), BindingFlags.NonPublic | BindingFlags.Static)!;
 
         public static void SetValue(
             ModelMetadata metadata,
             object instance,
-            object value)
+            object? value)
         {
             if (!metadata.IsReadOnly)
             {
                 // Handle settable property. Do not set the property to null if the type is a non-nullable type.
                 if (value != null || metadata.IsReferenceOrNullableType)
                 {
-                    metadata.PropertySetter(instance, value);
+                    metadata.PropertySetter!(instance, value);
                 }
 
                 return;
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return;
             }
 
-            var target = metadata.PropertyGetter(instance);
+            var target = metadata.PropertyGetter!(instance);
             if (value == null || target == null)
             {
                 // Nothing to do when source or target is null.
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Handle a read-only collection property.
             var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
-                metadata.ElementMetadata.ModelType);
+                metadata.ElementMetadata!.ModelType);
             propertyAddRange.Invoke(obj: null, parameters: new[] { target, value });
         }
 

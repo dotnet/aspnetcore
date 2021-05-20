@@ -128,6 +128,30 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void OmitsAttributeIfNotFoundButValueIsOmissible()
+        {
+            // Arrange
+            var valuePropName = "testprop";
+            var renderer = new TestRenderer();
+            var builder = new RenderTreeBuilder();
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "eventname", (Action)(() => { }));
+            builder.SetUpdatesAttributeName(valuePropName);
+            builder.CloseElement();
+            var frames = builder.GetFrames();
+            frames.Array[1] = frames.Array[1].WithAttributeEventHandlerId(123);
+
+            // Act
+            RenderTreeUpdater.UpdateToMatchClientState(builder, 123, false);
+            frames = builder.GetFrames();
+
+            // Assert
+            Assert.Collection(frames.AsEnumerable(),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "eventname", v => Assert.IsType<Action>(v), 1));
+        }
+
+        [Fact]
         public void ExpandsAllAncestorsWhenAddingAttribute()
         {
             // Arrange

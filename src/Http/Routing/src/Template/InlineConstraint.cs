@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Routing.Template
             Constraint = constraint;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="InlineConstraint"/> instance given a <see cref="RoutePatternParameterPolicyReference"/>.
+        /// </summary>
+        /// <param name="other">A <see cref="RoutePatternParameterPolicyReference"/> instance.</param>
         public InlineConstraint(RoutePatternParameterPolicyReference other)
         {
             if (other == null)
@@ -32,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 throw new ArgumentNullException(nameof(other));
             }
 
-            Constraint = other.Content;
+            Constraint = other.Content!;
         }
 
         /// <summary>

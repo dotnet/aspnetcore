@@ -19,11 +19,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             : base(context, scheme, options, properties)
             => Principal = user;
 
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
+        /// </summary>
+        public OpenIdConnectMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectMessage"/> that contains the tokens received after redeeming the code at the token endpoint.
         /// </summary>
-        public OpenIdConnectMessage TokenEndpointResponse { get; set; }
+        public OpenIdConnectMessage TokenEndpointResponse { get; set; } = default!;
     }
 }

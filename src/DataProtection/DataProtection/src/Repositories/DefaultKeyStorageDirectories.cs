@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     internal sealed class DefaultKeyStorageDirectories : IDefaultKeyStorageDirectories
     {
-        private static readonly Lazy<DirectoryInfo> _defaultDirectoryLazy = new Lazy<DirectoryInfo>(GetKeyStorageDirectoryImpl);
+        private static readonly Lazy<DirectoryInfo?> _defaultDirectoryLazy = new Lazy<DirectoryInfo?>(GetKeyStorageDirectoryImpl);
 
         private DefaultKeyStorageDirectories()
         {
@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// This property can return null if no suitable default key storage directory can
         /// be found, such as the case when the user profile is unavailable.
         /// </remarks>
-        public DirectoryInfo GetKeyStorageDirectory() => _defaultDirectoryLazy.Value;
+        public DirectoryInfo? GetKeyStorageDirectory() => _defaultDirectoryLazy.Value;
 
-        private static DirectoryInfo GetKeyStorageDirectoryImpl()
+        private static DirectoryInfo? GetKeyStorageDirectoryImpl()
         {
             DirectoryInfo retVal;
 
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
         }
 
-        public DirectoryInfo GetKeyStorageDirectoryForAzureWebSites()
+        public DirectoryInfo? GetKeyStorageDirectoryForAzureWebSites()
         {
             // Azure Web Sites needs to be treated specially, as we need to store the keys in a
             // correct persisted location. We use the existence of the %WEBSITE_INSTANCE_ID% env

@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
@@ -23,5 +24,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to dispose the activated Razor Page model.</returns>
         Action<PageContext, object> CreateReleaser(CompiledPageActionDescriptor descriptor);
+
+        /// <summary>
+        /// Releases a Razor Page model asynchronously.
+        /// </summary>
+        /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
+        /// <returns>The delegate used to dispose the activated Razor Page model asynchronously.</returns>
+        Func<PageContext, object, ValueTask> CreateAsyncReleaser(CompiledPageActionDescriptor descriptor)
+        {
+            var releaser = CreateReleaser(descriptor);
+            return (context, model) =>
+            {
+                releaser(context, model);
+                return default;
+            };
+        }
     }
 }

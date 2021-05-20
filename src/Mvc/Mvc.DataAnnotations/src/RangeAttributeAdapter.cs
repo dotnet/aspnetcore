@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         private readonly string _max;
         private readonly string _min;
 
-        public RangeAttributeAdapter(RangeAttribute attribute, IStringLocalizer stringLocalizer)
+        public RangeAttributeAdapter(RangeAttribute attribute, IStringLocalizer? stringLocalizer)
             : base(attribute, stringLocalizer)
         {
             // This will trigger the conversion of Attribute.Minimum and Attribute.Maximum.
@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // Validate a randomly selected number.
             attribute.IsValid(3); 
 
-            _max = Convert.ToString(Attribute.Maximum, CultureInfo.InvariantCulture);
-            _min = Convert.ToString(Attribute.Minimum, CultureInfo.InvariantCulture);
+            _max = Convert.ToString(Attribute.Maximum, CultureInfo.InvariantCulture)!;
+            _min = Convert.ToString(Attribute.Minimum, CultureInfo.InvariantCulture)!;
         }
 
         public override void AddValidation(ClientModelValidationContext context)

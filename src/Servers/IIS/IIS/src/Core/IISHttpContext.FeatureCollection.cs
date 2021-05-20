@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext : IFeatureCollection,
                                             IHttpRequestFeature,
+                                            IHttpRequestBodyDetectionFeature,
                                             IHttpResponseFeature,
                                             IHttpResponseBodyFeature,
                                             IHttpUpgradeFeature,
@@ -31,16 +33,18 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IServerVariablesFeature,
                                             ITlsConnectionFeature,
                                             IHttpBodyControlFeature,
-                                            IHttpMaxRequestBodySizeFeature
+                                            IHttpMaxRequestBodySizeFeature,
+                                            IHttpResponseTrailersFeature,
+                                            IHttpResetFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
 
         private int _featureRevision;
-        private string _httpProtocolVersion = null;
-        private X509Certificate2 _certificate;
+        private string? _httpProtocolVersion;
+        private X509Certificate2? _certificate;
 
-        private List<KeyValuePair<Type, object>> MaybeExtra;
+        private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         public void ResetFeatureCollection()
         {
@@ -49,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _featureRevision++;
         }
 
-        private object ExtraFeatureGet(Type key)
+        private object? ExtraFeatureGet(Type key)
         {
             if (MaybeExtra == null)
             {
@@ -66,50 +70,45 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return null;
         }
 
-        private void ExtraFeatureSet(Type key, object value)
+        private void ExtraFeatureSet(Type key, object? value)
         {
-            if (MaybeExtra == null)
+            if (value == null)
             {
-                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
-            }
-
-            for (var i = 0; i < MaybeExtra.Count; i++)
-            {
-                if (MaybeExtra[i].Key == key)
+                if (MaybeExtra == null)
                 {
-                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
                     return;
                 }
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {
+                    if (MaybeExtra[i].Key == key)
+                    {
+                        MaybeExtra.RemoveAt(i);
+                        return;
+                    }
+                }
             }
-            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            else
+            {
+                if (MaybeExtra == null)
+                {
+                    MaybeExtra = new List<KeyValuePair<Type, object>>(2);
+                }
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {
+                    if (MaybeExtra[i].Key == key)
+                    {
+                        MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
+                        return;
+                    }
+                }
+                MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            }
         }
 
         string IHttpRequestFeature.Protocol
         {
-            get
-            {
-                if (_httpProtocolVersion == null)
-                {
-                    var protocol = HttpVersion;
-                    if (protocol.Major == 1 && protocol.Minor == 1)
-                    {
-                        _httpProtocolVersion = "HTTP/1.1";
-                    }
-                    else if (protocol.Major == 1 && protocol.Minor == 0)
-                    {
-                        _httpProtocolVersion = "HTTP/1.0";
-                    }
-                    else
-                    {
-                        _httpProtocolVersion = "HTTP/" + protocol.ToString(2);
-                    }
-                }
-                return _httpProtocolVersion;
-            }
-            set
-            {
-                _httpProtocolVersion = value;
-            }
+            get => _httpProtocolVersion ??= HttpProtocol.GetHttpProtocol(HttpVersion);
+            set => _httpProtocolVersion = value;
         }
 
         string IHttpRequestFeature.Scheme
@@ -160,13 +159,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => RequestBody = value;
         }
 
+        bool IHttpRequestBodyDetectionFeature.CanHaveBody => RequestCanHaveBody;
+
         int IHttpResponseFeature.StatusCode
         {
             get => StatusCode;
             set => StatusCode = value;
         }
 
-        string IHttpResponseFeature.ReasonPhrase
+        string? IHttpResponseFeature.ReasonPhrase
         {
             get => ReasonPhrase;
             set => ReasonPhrase = value;
@@ -214,33 +215,74 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
             => SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
 
-        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteResponseBodyAsync();
-
         // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
         // any unflushed data gets flushed.
-        protected Task CompleteResponseBodyAsync()
+        Task IHttpResponseBodyFeature.CompleteAsync()
         {
             if (ResponsePipeWrapper != null)
             {
-                return ResponsePipeWrapper.CompleteAsync().AsTask();
+                var completeAsyncValueTask = ResponsePipeWrapper.CompleteAsync();
+                if (!completeAsyncValueTask.IsCompletedSuccessfully)
+                {
+                    return CompleteResponseBodyAwaited(completeAsyncValueTask);
+                }
+                completeAsyncValueTask.GetAwaiter().GetResult();
             }
 
-            return Task.CompletedTask;
+            if (!HasResponseStarted)
+            {
+                var initializeTask = InitializeResponse(flushHeaders: false);
+                if (!initializeTask.IsCompletedSuccessfully)
+                {
+                    return CompleteInitializeResponseAwaited(initializeTask);
+                }
+            }
+
+            // Completing the body output will trigger a final flush to IIS.
+            // We'd rather not bypass the bodyoutput to flush, to guarantee we avoid
+            // calling flush twice at the same time.
+            // awaiting the writeBodyTask guarantees the response has finished the final flush.
+            _bodyOutput.Complete();
+            return _writeBodyTask!;
         }
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => true;
+        private async Task CompleteResponseBodyAwaited(ValueTask completeAsyncTask)
+        {
+            await completeAsyncTask;
+
+            if (!HasResponseStarted)
+            {
+                await InitializeResponse(flushHeaders: false);
+            }
+
+            _bodyOutput.Complete();
+            await _writeBodyTask!;
+        }
+
+        private async Task CompleteInitializeResponseAwaited(Task initializeTask)
+        {
+            await initializeTask;
+
+            _bodyOutput.Complete();
+            await _writeBodyTask!;
+        }
+
+        // Http/2 does not support the upgrade mechanic.
+        // Http/1.x upgrade requests may have a request body, but that's not allowed in our main scenario (WebSockets) and much
+        // more complicated to support. See https://tools.ietf.org/html/rfc7230#section-6.7, https://tools.ietf.org/html/rfc7540#section-3.2
+        bool IHttpUpgradeFeature.IsUpgradableRequest => !RequestCanHaveBody && HttpVersion < System.Net.HttpVersion.Version20;
 
         bool IFeatureCollection.IsReadOnly => false;
 
         int IFeatureCollection.Revision => _featureRevision;
 
-        ClaimsPrincipal IHttpAuthenticationFeature.User
+        ClaimsPrincipal? IHttpAuthenticationFeature.User
         {
             get => User;
             set => User = value;
         }
 
-        string IServerVariablesFeature.this[string variableName]
+        string? IServerVariablesFeature.this[string variableName]
         {
             get
             {
@@ -252,7 +294,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // Synchronize access to native methods that might run in parallel with IO loops
                 lock (_contextLock)
                 {
-                    return NativeMethods.HttpTryGetServerVariable(_pInProcessHandler, variableName, out var value) ? value : null;
+                    return NativeMethods.HttpTryGetServerVariable(_requestNativeHandle, variableName, out var value) ? value : null;
                 }
             }
             set
@@ -262,26 +304,31 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
                 }
 
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 // Synchronize access to native methods that might run in parallel with IO loops
                 lock (_contextLock)
                 {
-                    NativeMethods.HttpSetServerVariable(_pInProcessHandler, variableName, value);
+                    NativeMethods.HttpSetServerVariable(_requestNativeHandle, variableName, value);
                 }
             }
         }
 
-        object IFeatureCollection.this[Type key]
+        object? IFeatureCollection.this[Type key]
         {
             get => FastFeatureGet(key);
             set => FastFeatureSet(key, value);
         }
 
-        TFeature IFeatureCollection.Get<TFeature>()
+        TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {
-            return (TFeature)FastFeatureGet(typeof(TFeature));
+            return (TFeature?)FastFeatureGet(typeof(TFeature));
         }
 
-        void IFeatureCollection.Set<TFeature>(TFeature instance)
+        void IFeatureCollection.Set<TFeature>(TFeature? instance) where TFeature : default
         {
             FastFeatureSet(typeof(TFeature), instance);
         }
@@ -326,19 +373,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             HasStartedConsumingRequestBody = false;
 
             // Upgrade async will cause the stream processing to go into duplex mode
-            AsyncIO = new WebSocketsAsyncIOEngine(_contextLock, _pInProcessHandler);
+            AsyncIO = new WebSocketsAsyncIOEngine(this, _requestNativeHandle);
 
             await InitializeResponse(flushHeaders: true);
 
             return _streams.Upgrade();
         }
 
-        Task<X509Certificate2> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        Task<X509Certificate2?> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(((ITlsConnectionFeature)this).ClientCertificate);
         }
 
-        unsafe X509Certificate2 ITlsConnectionFeature.ClientCertificate
+        unsafe X509Certificate2? ITlsConnectionFeature.ClientCertificate
         {
             get
             {
@@ -397,9 +444,53 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
+        {
+            // Check version is above 2.
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
+            {
+                return this;
+            }
+
+            return null;
+        }
+
+        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        {
+            get => ResponseTrailers ??= HttpResponseTrailers;
+            set => ResponseTrailers = value;
+        }
+
+        internal IHttpResetFeature? GetResetFeature()
+        {
+            // Check version is above 2.
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
+            {
+                return this;
+            }
+
+            return null;
+        }
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            if (errorCode < 0)
+            {
+                throw new ArgumentOutOfRangeException("'errorCode' cannot be negative");
+            }
+
+            SetResetCode(errorCode);
+            AbortIO(clientDisconnect: false);
+        }
+
+        internal unsafe void SetResetCode(int errorCode)
+        {
+            NativeMethods.HttpResetStream(_requestNativeHandle, (ulong)errorCode);
+        }
+
         void IHttpResponseBodyFeature.DisableBuffering()
         {
-            NativeMethods.HttpDisableBuffering(_pInProcessHandler);
+            NativeMethods.HttpDisableBuffering(_requestNativeHandle);
             DisableCompression();
         }
 

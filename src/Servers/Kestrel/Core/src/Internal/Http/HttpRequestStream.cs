@@ -88,43 +88,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
-            var task = ReadAsync(buffer, offset, count, default, state);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback.Invoke(t));
-            }
-            return task;
+            return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);   
         }
 
         /// <inheritdoc />
         public override int EndRead(IAsyncResult asyncResult)
         {
-            return ((Task<int>)asyncResult).GetAwaiter().GetResult();
-        }
-
-        private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
-        {
-            var tcs = new TaskCompletionSource<int>(state);
-            var task = ReadAsync(buffer, offset, count, cancellationToken);
-            task.ContinueWith((task2, state2) =>
-            {
-                var tcs2 = (TaskCompletionSource<int>)state2;
-                if (task2.IsCanceled)
-                {
-                    tcs2.SetCanceled();
-                }
-                else if (task2.IsFaulted)
-                {
-                    tcs2.SetException(task2.Exception);
-                }
-                else
-                {
-                    tcs2.SetResult(task2.Result);
-                }
-            }, tcs, cancellationToken);
-            return tcs.Task;
+            return TaskToApm.End<int>(asyncResult);
         }
 
         private ValueTask<int> ReadAsyncWrapper(Memory<byte> destination, CancellationToken cancellationToken)
@@ -139,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+        private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -150,19 +122,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     throw new OperationCanceledException("The read was canceled");
                 }
 
-                var readableBuffer = result.Buffer;
-                var readableBufferLength = readableBuffer.Length;
+                var buffer = result.Buffer;
+                var length = buffer.Length;
 
-                var consumed = readableBuffer.End;
+                var consumed = buffer.End;
                 try
                 {
-                    if (readableBufferLength != 0)
+                    if (length != 0)
                     {
-                        var actual = (int)Math.Min(readableBufferLength, buffer.Length);
+                        var actual = (int)Math.Min(length, destination.Length);
 
-                        var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
+                        var slice = actual == length ? buffer : buffer.Slice(0, actual);
                         consumed = slice.End;
-                        slice.CopyTo(buffer.Span);
+                        slice.CopyTo(destination.Span);
 
                         return actual;
                     }
@@ -193,37 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
             }
 
-            return CopyToAsyncInternal(destination, cancellationToken);
-        }
-
-        private async Task CopyToAsyncInternal(Stream destination, CancellationToken cancellationToken)
-        {
-            while (true)
-            {
-                var result = await _pipeReader.ReadAsync(cancellationToken);
-                var readableBuffer = result.Buffer;
-                var readableBufferLength = readableBuffer.Length;
-
-                try
-                {
-                    if (readableBufferLength != 0)
-                    {
-                        foreach (var memory in readableBuffer)
-                        {
-                            await destination.WriteAsync(memory, cancellationToken);
-                        }
-                    }
-
-                    if (result.IsCompleted)
-                    {
-                        return;
-                    }
-                }
-                finally
-                {
-                    _pipeReader.AdvanceTo(readableBuffer.End);
-                }
-            }
+            return _pipeReader.CopyToAsync(destination, cancellationToken);
         }
     }
 }

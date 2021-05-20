@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -31,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             IModelValidatorProvider validatorProvider,
             ValidatorCache validatorCache,
             IModelMetadataProvider metadataProvider,
-            ValidationStateDictionary validationState)
+            ValidationStateDictionary? validationState)
         {
             if (actionContext == null)
             {
@@ -59,19 +62,60 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             _currentPath = new ValidationStack();
         }
 
+        /// <summary>
+        /// The model validator provider.
+        /// </summary>
         protected IModelValidatorProvider ValidatorProvider { get; }
+
+        /// <summary>
+        /// The model metadata provider.
+        /// </summary>
         protected IModelMetadataProvider MetadataProvider { get; }
 
+        /// <summary>
+        /// The validator cache.
+        /// </summary>
         protected ValidatorCache Cache { get; }
-        protected ActionContext Context { get; }
-        protected ModelStateDictionary ModelState { get; }
-        protected ValidationStateDictionary ValidationState { get; }
 
-        protected object Container { get; set; }
-        protected string Key { get; set; }
-        protected object Model { get; set; }
-        protected ModelMetadata Metadata { get; set; }
-        protected IValidationStrategy Strategy { get; set; }
+        /// <summary>
+        /// The action context.
+        /// </summary>
+        protected ActionContext Context { get; }
+
+        /// <summary>
+        /// The model state.
+        /// </summary>
+        protected ModelStateDictionary ModelState { get; }
+
+        /// <summary>
+        /// The validation state.
+        /// </summary>
+        protected ValidationStateDictionary? ValidationState { get; }
+
+        /// <summary>
+        /// The container.
+        /// </summary>
+        protected object? Container { get; set; }
+
+        /// <summary>
+        /// The key.
+        /// </summary>
+        protected string? Key { get; set; }
+
+        /// <summary>
+        /// The model.
+        /// </summary>
+        protected object? Model { get; set; }
+
+        /// <summary>
+        /// The model metadata.
+        /// </summary>
+        protected ModelMetadata? Metadata { get; set; }
+
+        /// <summary>
+        /// The validation strategy.
+        /// </summary>
+        protected IValidationStrategy? Strategy { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum depth to constrain the validation visitor when validating.
@@ -104,15 +148,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public bool ValidateComplexTypesIfChildValidationFails { get; set; }
 
         /// <summary>
-        ///  Gets or sets a value that determines if <see cref="ValidationVisitor"/> can short circuit validation when a model
-        ///  does not have any associated validators.
-        /// </summary>
-        /// <value>The default value is <see langword="true"/>.</value>
-        /// <remarks>This property is currently ignored.</remarks>
-        [Obsolete("This property is deprecated and is no longer used by the runtime.")]
-        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; } = true;
-
-        /// <summary>
         /// Validates a object.
         /// </summary>
         /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
@@ -132,8 +167,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="model">The model object.</param>
         /// <param name="alwaysValidateAtTopLevel">If <c>true</c>, applies validation rules even if the top-level value is <c>null</c>.</param>
         /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
-        public virtual bool Validate(ModelMetadata metadata, string key, object model, bool alwaysValidateAtTopLevel)
+        public virtual bool Validate(ModelMetadata? metadata, string? key, object? model, bool alwaysValidateAtTopLevel)
+            => Validate(metadata, key, model, alwaysValidateAtTopLevel, container: null);
+
+        /// <summary>
+        /// Validates a object.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
+        /// <param name="key">The model prefix key.</param>
+        /// <param name="model">The model object.</param>
+        /// <param name="alwaysValidateAtTopLevel">If <c>true</c>, applies validation rules even if the top-level value is <c>null</c>.</param>
+        /// <param name="container">The model container.</param>
+        /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
+        public virtual bool Validate(ModelMetadata? metadata, string? key, object? model, bool alwaysValidateAtTopLevel, object? container)
         {
+            if (container != null && metadata!.MetadataKind != ModelMetadataKind.Property)
+            {
+                throw new ArgumentException(Resources.FormatValidationVisitor_ContainerCannotBeSpecified(metadata.MetadataKind));
+            }
+
             if (model == null && key != null && !alwaysValidateAtTopLevel)
             {
                 var entry = ModelState[key];
@@ -148,7 +200,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return true;
             }
 
-            return Visit(metadata, key, model);
+            // Container is non-null only when validation top-level properties. Start off by treating "container" as the "Model" instance.
+            // Invoking StateManager.Recurse later in this invocation will result in it being correctly used as the container instance during the
+            // validation of "model".
+            Model = container;
+            return Visit(metadata!, key, model);
         }
 
         /// <summary>
@@ -157,6 +213,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <returns><c>true</c> if the node is valid, otherwise <c>false</c>.</returns>
         protected virtual bool ValidateNode()
         {
+            Debug.Assert(Key != null);
+            Debug.Assert(Metadata != null);
             var state = ModelState.GetValidationState(Key);
 
             // Rationale: we might see the same model state key used for two different objects.
@@ -170,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 {
                     var context = new ModelValidationContext(
                         Context,
-                        Metadata,
+                        Metadata!,
                         MetadataProvider,
                         Container,
                         Model);
@@ -213,7 +271,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             }
         }
 
-        protected virtual bool Visit(ModelMetadata metadata, string key, object model)
+        /// <summary>
+        /// Validate something in a model.
+        /// </summary>
+        /// <param name="metadata">The model metadata.</param>
+        /// <param name="key">The key to validate.</param>
+        /// <param name="model">The model to validate.</param>
+        /// <see langword="true"/> if the specified model key is valid, otherwise <see langword="false"/>.
+        /// <returns>Whether the the specified model key is valid.</returns>
+        protected virtual bool Visit(ModelMetadata metadata, string? key, object? model)
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
@@ -223,12 +289,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return true;
             }
 
+            bool result;
+            try
+            {
+                // Throws InvalidOperationException if the object graph is too deep
+                result = VisitImplementation(ref metadata, ref key, model);
+            }
+            finally
+            {
+                _currentPath.Pop(model);
+            }
+            return result;
+        }
+
+        private bool VisitImplementation(ref ModelMetadata metadata, ref string? key, object? model)
+        {
             if (MaxValidationDepth != null && _currentPath.Count > MaxValidationDepth)
             {
                 // Non cyclic but too deep an object graph.
-
-                // Pop the current model to make ValidationStack.Dispose happy
-                _currentPath.Pop(model);
 
                 string message;
                 switch (metadata.MetadataKind)
@@ -264,7 +342,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             {
                 // Use the key on the entry, because we might not have entries in model state.
                 SuppressValidation(entry.Key);
-                _currentPath.Pop(model);
                 return true;
             }
             // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
@@ -272,6 +349,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             else if (metadata.HasValidators == false &&
                 ModelState.GetFieldValidationState(key) != ModelValidationState.Invalid)
             {
+                if (metadata.BoundConstructor != null)
+                {
+                    metadata.ThrowIfRecordTypeHasValidationOnProperties();
+                }
+
                 // No validators will be created for this graph of objects. Mark it as valid if it wasn't previously validated.
                 var entries = ModelState.FindKeysWithPrefix(key);
                 foreach (var item in entries)
@@ -282,13 +364,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     }
                 }
 
-                _currentPath.Pop(model);
                 return true;
             }
 
-            using (StateManager.Recurse(this, key ?? string.Empty, metadata, model, strategy))
+            using (StateManager.Recurse(this, key ?? string.Empty, metadata, model, strategy!))
             {
-                if (Metadata.IsEnumerableType)
+                if (Metadata!.IsEnumerableType)
                 {
                     return VisitComplexType(DefaultCollectionValidationStrategy.Instance);
                 }
@@ -302,12 +383,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             }
         }
 
-        // Covers everything VisitSimpleType does not i.e. both enumerations and complex types.
+        /// <summary>
+        /// Validate complex types, this covers everything VisitSimpleType does not i.e. both enumerations and complex types.
+        /// </summary>
+        /// <param name="defaultStrategy">The default validation strategy to use.</param>
+        /// <returns><see langword="true" /> if valid, otherwise <see langword="false" />.</returns>
         protected virtual bool VisitComplexType(IValidationStrategy defaultStrategy)
         {
             var isValid = true;
 
-            if (Model != null && Metadata.ValidateChildren)
+            if (Model != null && Metadata!.ValidateChildren)
             {
                 var strategy = Strategy ?? defaultStrategy;
                 isValid = VisitChildren(strategy);
@@ -317,7 +402,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 // Suppress validation for the entries matching this prefix. This will temporarily set
                 // the current node to 'skipped' but we're going to visit it right away, so subsequent
                 // code will set it to 'valid' or 'invalid'
-                SuppressValidation(Key);
+                SuppressValidation(Key!);
             }
 
             // Double-checking HasReachedMaxErrors just in case this model has no properties.
@@ -330,19 +415,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             return isValid;
         }
 
+        /// <summary>
+        /// Validate a simple type.
+        /// </summary>
+        /// <returns>True if valie.</returns>
         protected virtual bool VisitSimpleType()
         {
             if (ModelState.HasReachedMaxErrors)
             {
-                SuppressValidation(Key);
+                SuppressValidation(Key!);
                 return false;
             }
 
             return ValidateNode();
         }
 
+        /// <summary>
+        /// Validate all the child nodes using the specified strategy.
+        /// </summary>
+        /// <param name="strategy">The validation strategy.</param>
+        /// <returns><see langword="true" /> if all children are valid, otherwise <see langword="false" />.</returns>
         protected virtual bool VisitChildren(IValidationStrategy strategy)
         {
+            Debug.Assert(Metadata is not null && Key is not null && Model is not null);
+
             var isValid = true;
             var enumerator = strategy.GetChildren(Metadata, Key, Model);
             var parentEntry = new ValidationEntry(Metadata, Key, Model);
@@ -364,6 +460,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             return isValid;
         }
 
+        /// <summary>
+        /// Supress validation for a given key.
+        /// </summary>
+        /// <param name="key">The key to supress.</param>
         protected virtual void SuppressValidation(string key)
         {
             if (key == null)
@@ -383,7 +483,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             }
         }
 
-        protected virtual ValidationStateEntry GetValidationEntry(object model)
+        /// <summary>
+        /// Get the validation entry for the model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <returns>The validation state entry for the model.</returns>
+        protected virtual ValidationStateEntry? GetValidationEntry(object? model)
         {
             if (model == null || ValidationState == null)
             {
@@ -394,24 +499,35 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             return entry;
         }
 
+        /// <summary>
+        /// State manager used for by <see cref="ValidationVisitor"/>.
+        /// </summary>
         protected readonly struct StateManager : IDisposable
         {
             private readonly ValidationVisitor _visitor;
-            private readonly object _container;
+            private readonly object? _container;
             private readonly string _key;
             private readonly ModelMetadata _metadata;
             private readonly object _model;
-            private readonly object _newModel;
             private readonly IValidationStrategy _strategy;
 
+            /// <summary>
+            /// Set up a state manager from a visitor.
+            /// </summary>
+            /// <param name="visitor">The visitor.</param>
+            /// <param name="key">The key.</param>
+            /// <param name="metadata">The metadata.</param>
+            /// <param name="model">The model.</param>
+            /// <param name="strategy">The strategy.</param>
+            /// <returns>A StateManager setup for recursion.</returns>
             public static StateManager Recurse(
                 ValidationVisitor visitor,
                 string key,
                 ModelMetadata metadata,
-                object model,
+                object? model,
                 IValidationStrategy strategy)
             {
-                var recursifier = new StateManager(visitor, model);
+                var recursifier = new StateManager(visitor, null);
 
                 visitor.Container = visitor.Model;
                 visitor.Key = key;
@@ -422,18 +538,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return recursifier;
             }
 
-            public StateManager(ValidationVisitor visitor, object newModel)
+            /// <summary>
+            /// Initialize a new <see cref="StateManager"/>.
+            /// </summary>
+            /// <param name="visitor">The visitor.</param>
+            /// <param name="newModel">The model to validate.</param>
+            public StateManager(ValidationVisitor visitor, object? newModel)
             {
                 _visitor = visitor;
-                _newModel = newModel;
 
                 _container = _visitor.Container;
-                _key = _visitor.Key;
-                _metadata = _visitor.Metadata;
-                _model = _visitor.Model;
-                _strategy = _visitor.Strategy;
+                _key = _visitor.Key!;
+                _metadata = _visitor.Metadata!;
+                _model = _visitor.Model!;
+                _strategy = _visitor.Strategy!;
             }
 
+            /// <inheritdoc/>
             public void Dispose()
             {
                 _visitor.Container = _container;
@@ -441,8 +562,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 _visitor.Metadata = _metadata;
                 _visitor.Model = _model;
                 _visitor.Strategy = _strategy;
-
-                _visitor._currentPath.Pop(_newModel);
             }
         }
     }

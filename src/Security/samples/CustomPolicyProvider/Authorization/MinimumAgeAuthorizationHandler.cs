@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ namespace CustomPolicyProvider
         // Check whether a given MinimumAgeRequirement is satisfied or not for a particular context
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, MinimumAgeRequirement requirement)
         {
-            // Log as a warning so that it's very clear in sample output which authorization policies 
+            // Log as a warning so that it's very clear in sample output which authorization policies
             // (and requirements/handlers) are in use
             _logger.LogWarning("Evaluating authorization requirement for age >= {age}", requirement.Age);
 
@@ -29,7 +30,7 @@ namespace CustomPolicyProvider
             if (dateOfBirthClaim != null)
             {
                 // If the user has a date of birth claim, check their age
-                var dateOfBirth = Convert.ToDateTime(dateOfBirthClaim.Value);
+                var dateOfBirth = Convert.ToDateTime(dateOfBirthClaim.Value, CultureInfo.InvariantCulture);
                 var age = DateTime.Now.Year - dateOfBirth.Year;
                 if (dateOfBirth > DateTime.Now.AddYears(-age))
                 {

@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Provides access to the HTTP request lifetime operations.
+    /// </summary>
     public interface IHttpRequestLifetimeFeature
     {
         /// <summary>

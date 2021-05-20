@@ -22,7 +22,7 @@ namespace RepoTasks
         /// status, it will try to download the file from `PrivateUri`.
         /// </summary>
         public string PrivateUri { get; set; }
-        
+
         /// <summary>
         /// Suffix for the private URI in base64 form (for SAS compatibility)
         /// </summary>
@@ -100,7 +100,7 @@ namespace RepoTasks
 
             Log.LogMessage(MessageImportance.High, $"Attempting download '{source}' to '{target}'");
 
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) })
             {
                 for (int retryNumber = 0; retryNumber < MaxRetries; retryNumber++)
                 {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,8 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// </summary>
     public class CookieTempDataProvider : ITempDataProvider
     {
+        /// <summary>
+        /// The name of the cookie.
+        /// </summary>
         public static readonly string CookieName = ".AspNetCore.Mvc.CookieTempDataProvider";
-        private static readonly string Purpose = "Microsoft.AspNetCore.Mvc.CookieTempDataProviderToken.v1";
+        private const string Purpose = "Microsoft.AspNetCore.Mvc.CookieTempDataProviderToken.v1";
 
         private readonly IDataProtector _dataProtector;
         private readonly ILogger _logger;
@@ -27,6 +30,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly ChunkingCookieManager _chunkingCookieManager;
         private readonly CookieTempDataProviderOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CookieTempDataProvider"/>.
+        /// </summary>
+        /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="options">The <see cref="CookieTempDataProviderOptions"/>.</param>
+        /// <param name="tempDataSerializer">The <see cref="TempDataSerializer"/>.</param>
         public CookieTempDataProvider(
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
@@ -40,6 +50,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _options = options.Value;
         }
 
+        /// <summary>
+        /// Loads the temp data from the request.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <returns>The temp data.</returns>
         public IDictionary<string, object> LoadTempData(HttpContext context)
         {
             if (context == null)
@@ -53,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 //
                 // Since TempData is a best-effort system, we don't want to throw and get a 500 if the cookie is
                 // bad, we will just clear it and ignore the exception. The common case that we've identified for
-                // this is misconfigured data protection settings, which can cause the key used to create the 
+                // this is misconfigured data protection settings, which can cause the key used to create the
                 // cookie to no longer be available.
                 try
                 {
@@ -85,6 +100,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Save the temp data to the request.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="values">The values.</param>
         public void SaveTempData(HttpContext context, IDictionary<string, object> values)
         {
             if (context == null)

@@ -1,19 +1,40 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
+    /// <summary>
+    /// Cache for <see cref="IClientModelValidator"/>s.
+    /// </summary>
     public class ClientValidatorCache
     {
         private readonly ConcurrentDictionary<ModelMetadata, CacheEntry> _cacheEntries = new ConcurrentDictionary<ModelMetadata, CacheEntry>();
 
+        /// <summary>
+        /// Gets the <see cref="IClientModelValidator"/> for the metadata from the cache, using the validatorProvider to create when needed.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> being validated.</param>
+        /// <param name="validatorProvider">The <see cref="IClientModelValidatorProvider"/> which will be used to create validators when needed.</param>
+        /// <returns>The list of <see cref="IClientModelValidator"/>s.</returns>
         public IReadOnlyList<IClientModelValidator> GetValidators(ModelMetadata metadata, IClientModelValidatorProvider validatorProvider)
         {
+            if (metadata.MetadataKind == ModelMetadataKind.Property &&
+                metadata.ContainerMetadata?.BoundConstructor != null &&
+                metadata.ContainerMetadata.BoundConstructorPropertyMapping.TryGetValue(metadata, out var parameter))
+            {
+                // "metadata" typically points to properties. When working with record types, we want to read validation details from the
+                // constructor parameter instead. So let's switch it out.
+                metadata = parameter;
+            }
+
             if (_cacheEntries.TryGetValue(metadata, out var entry))
             {
                 return GetValidatorsFromEntry(entry, metadata, validatorProvider);
@@ -56,12 +77,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         private IReadOnlyList<IClientModelValidator> GetValidatorsFromEntry(CacheEntry entry, ModelMetadata metadata, IClientModelValidatorProvider validationProvider)
         {
-            Debug.Assert(entry.Validators != null || entry.Items != null);
-
             if (entry.Validators != null)
             {
                 return entry.Validators;
             }
+
+            Debug.Assert(entry.Items != null);
 
             var items = new List<ClientValidatorItem>(entry.Items.Count);
             for (var i = 0; i < entry.Items.Count; i++)
@@ -107,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             var validators = new IClientModelValidator[count];
             var clientValidatorIndex = 0;
-            for (int i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count; i++)
             {
                 var validator = items[i].Validator;
                 if (validator != null)
@@ -133,9 +154,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 Validators = null;
             }
 
-            public IReadOnlyList<IClientModelValidator> Validators { get; }
+            public IReadOnlyList<IClientModelValidator>? Validators { get; }
 
-            public List<ClientValidatorItem> Items { get; }
+            public List<ClientValidatorItem>? Items { get; }
         }
     }
 }

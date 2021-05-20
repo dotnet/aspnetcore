@@ -6,22 +6,42 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
+    /// <summary>
+    /// A descriptor for an action of a controller.
+    /// </summary>
     [DebuggerDisplay("{DisplayName}")]
     public class ControllerActionDescriptor : ActionDescriptor
     {
-        public string ControllerName { get; set; }
+        /// <summary>
+        /// The name of the controller.
+        /// </summary>
+        public string ControllerName { get; set; } = default!;
 
-        public virtual string ActionName { get; set; }
+        /// <summary>
+        /// The name of the action.
+        /// </summary>
+        public virtual string ActionName { get; set; } = default!;
 
-        public MethodInfo MethodInfo { get; set; }
+        /// <summary>
+        /// The <see cref="MethodInfo"/>.
+        /// </summary>
+        public MethodInfo MethodInfo { get; set; } = default!;
 
-        public TypeInfo ControllerTypeInfo { get; set; }
+        /// <summary>
+        /// The <see cref="TypeInfo"/> of the controller..
+        /// </summary>
+        public TypeInfo ControllerTypeInfo { get; set; } = default!;
 
-        public override string DisplayName
+        // Cache entry so we can avoid an external cache
+        internal ControllerActionInvokerCacheEntry? CacheEntry { get; set; }
+
+        /// <inheritdoc />
+        public override string? DisplayName
         {
             get
             {
@@ -35,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                         ControllerTypeInfo.Assembly.GetName().Name);
                 }
 
-                return base.DisplayName;
+                return base.DisplayName!;
             }
 
             set

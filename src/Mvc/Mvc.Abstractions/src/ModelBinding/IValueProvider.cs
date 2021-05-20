@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Retrieves a value object using the specified key.
         /// </summary>
         /// <param name="key">The key of the value object to retrieve.</param>
-        /// <returns>The value object for the specified key. If the exact key is not found, null.</returns>
+        /// <returns>The value object for the specified key. If the exact key is not found, <see cref="ValueProviderResult.None" />.</returns>
         ValueProviderResult GetValue(string key);
     }
 }

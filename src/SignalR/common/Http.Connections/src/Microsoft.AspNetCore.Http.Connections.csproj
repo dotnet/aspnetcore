@@ -4,7 +4,9 @@
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +24,7 @@
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,8 +34,9 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
     <Reference Include="System.Security.Principal.Windows" />
+
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

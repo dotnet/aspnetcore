@@ -1,30 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.E2ETests</TestGroupName>
 
-    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
 
     <!-- Run on platforms where we support Selenium -->
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
+    <SkipTests Condition="'$(SeleniumE2ETestsSupported)' == 'true'">false</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
 
     <OutputPath />
 
-    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
-
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
-
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+
+    <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
+    <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,7 +34,6 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Ignitor" />
   </ItemGroup>
 
@@ -43,17 +41,39 @@
     <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\MonoSanityClient\MonoSanityClient.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\MonoSanity\MonoSanity.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
+
+    <!-- TODO - turn this back on once the SDK is higher than 6.0.100-preview.5.21230.2: https://github.com/dotnet/aspnetcore/issues/32788
+    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\"
+      Condition="'$(TestTrimmedApps)' == 'true'" /> -->
+
+    <ProjectReference
+      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
+  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
 
   <ItemGroup>
     <!-- Shared descriptor infrastructure with MVC -->
@@ -61,6 +81,19 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentSerializationSettings.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentMarker.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Shared\SignalR\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestTrimmedApps</_Parameter1>
+      <_Parameter2>$(TestTrimmedApps)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

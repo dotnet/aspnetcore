@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void KeepAliveTimeoutDefault()
         {
-            Assert.Equal(TimeSpan.FromMinutes(2), new KestrelServerLimits().KeepAliveTimeout);
+            Assert.Equal(TimeSpan.FromSeconds(130), new KestrelServerLimits().KeepAliveTimeout);
         }
 
         [Theory]
@@ -333,11 +333,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(int.MinValue)]
         [InlineData(-1)]
-        [InlineData(0)]
         public void Http2HeaderTableSizeInvalid(int value)
         {
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().Http2.HeaderTableSize = value);
-            Assert.StartsWith(CoreStrings.GreaterThanZeroRequired, ex.Message);
+            Assert.StartsWith(CoreStrings.GreaterThanOrEqualToZeroRequired, ex.Message);
         }
 
         [Fact]

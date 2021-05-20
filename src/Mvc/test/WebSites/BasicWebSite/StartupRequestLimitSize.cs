@@ -17,8 +17,7 @@ namespace BasicWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
-                .AddNewtonsoftJson()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddNewtonsoftJson();
             services.ConfigureBaseWebSiteAuthPolicies();
         }
 
@@ -36,7 +35,7 @@ namespace BasicWebSite
                     httpContext.Request.Body,
                     testHttpMaxRequestBodySizeFeature);
 
-                return next();
+                return next(httpContext);
             });
 
             app.UseRouting();

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Buffers;
 using System.IO;
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <summary>
         /// The default size of created char buffers.
         /// </summary>
-        public static readonly int DefaultBufferSize = 1024; // 1KB - results in a 4KB byte array for UTF8.
+        public const int DefaultBufferSize = 1024; // 1KB - results in a 4KB byte array for UTF8.
 
         private readonly ArrayPool<byte> _bytePool;
         private readonly ArrayPool<char> _charPool;

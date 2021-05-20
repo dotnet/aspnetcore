@@ -4,15 +4,21 @@ MsgPack support for SignalR for ASP.NET Core
 
 ```bash
 npm install @microsoft/signalr-protocol-msgpack
-```
-or
-```bash
+# or
 yarn add @microsoft/signalr-protocol-msgpack
+```
+
+To try previews of the next version, use the `next` tag on NPM:
+
+```bash
+npm install @microsoft/signalr-protocol-msgpack@next
+# or
+yarn add @microsoft/signalr-protocol-msgpack@next
 ```
 
 ## Usage
 
-See the [SignalR Documentation](https://docs.microsoft.com/en-us/aspnet/core/signalr) at docs.microsoft.com for documentation on the latest release. [API Reference Documentation](https://docs.microsoft.com/javascript/api/%40aspnet/signalr-protocol-msgpack/?view=signalr-js-latest) is also available on docs.microsoft.com.
+See the [SignalR Documentation](https://docs.microsoft.com/aspnet/core/signalr) at docs.microsoft.com for documentation on the latest release. [API Reference Documentation](https://docs.microsoft.com/javascript/api/%40aspnet/signalr-protocol-msgpack/?view=signalr-js-latest) is also available on docs.microsoft.com.
 
 ### Browser
 

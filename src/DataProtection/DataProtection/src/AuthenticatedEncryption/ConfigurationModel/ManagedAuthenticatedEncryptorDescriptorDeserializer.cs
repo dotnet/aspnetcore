@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             var configuration = new ManagedAuthenticatedEncryptorConfiguration();
 
-            var encryptionElement = element.Element("encryption");
-            configuration.EncryptionAlgorithmType = FriendlyNameToType((string)encryptionElement.Attribute("algorithm"));
-            configuration.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
+            var encryptionElement = element.Element("encryption")!;
+            configuration.EncryptionAlgorithmType = FriendlyNameToType((string)encryptionElement.Attribute("algorithm")!);
+            configuration.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength")!;
 
-            var validationElement = element.Element("validation");
-            configuration.ValidationAlgorithmType = FriendlyNameToType((string)validationElement.Attribute("algorithm"));
+            var validationElement = element.Element("validation")!;
+            configuration.ValidationAlgorithmType = FriendlyNameToType((string)validationElement.Attribute("algorithm")!);
 
-            Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
+            Secret masterKey = ((string)element.Element("masterKey")!).ToSecret();
 
             return new ManagedAuthenticatedEncryptorDescriptor(configuration, masterKey);
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             }
             else
             {
-                return Type.GetType(typeName, throwOnError: true);
+                return Type.GetType(typeName, throwOnError: true)!;
             }
         }
     }

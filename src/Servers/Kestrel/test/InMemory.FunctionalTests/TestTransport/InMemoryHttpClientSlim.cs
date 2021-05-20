@@ -10,6 +10,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 {
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 var status = GetStatus(response);
                 new HttpResponseMessage(status).EnsureSuccessStatusCode();
 
-                var body = response.Substring(response.IndexOf("\r\n\r\n") + 4);
+                var body = response.Substring(response.IndexOf("\r\n\r\n", StringComparison.Ordinal) + 4);
                 return body;
             }
         }
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 throw new InvalidDataException($"No StatusCode found in '{response}'");
             }
 
-            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength));
+            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
         }
 
         private static async Task<Stream> GetStream(Stream rawStream, Uri requestUri, bool validateCertificate)
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     validateCertificate ? null : (RemoteCertificateValidationCallback)((a, b, c, d) => true));
 
                 await sslStream.AuthenticateAsClientAsync(requestUri.Host, clientCertificates: null,
-                    enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                    enabledSslProtocols: SslProtocols.None,
                     checkCertificateRevocation: validateCertificate).ConfigureAwait(false);
                 return sslStream;
             }

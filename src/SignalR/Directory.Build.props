@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;signalr</PackageTags>
   </PropertyGroup>
@@ -21,7 +20,6 @@
     <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
 </Project>

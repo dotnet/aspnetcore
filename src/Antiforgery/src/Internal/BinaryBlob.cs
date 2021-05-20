@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Antiforgery
     [DebuggerDisplay("{DebuggerString}")]
     internal sealed class BinaryBlob : IEquatable<BinaryBlob>
     {
-        private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
         private readonly byte[] _data;
 
         // Generates a new token using a specified bit length.
@@ -29,11 +28,11 @@ namespace Microsoft.AspNetCore.Antiforgery
         {
             if (bitLength < 32 || bitLength % 8 != 0)
             {
-                throw new ArgumentOutOfRangeException("bitLength");
+                throw new ArgumentOutOfRangeException(nameof(bitLength));
             }
             if (data == null || data.Length != bitLength / 8)
             {
-                throw new ArgumentOutOfRangeException("data");
+                throw new ArgumentOutOfRangeException(nameof(data));
             }
 
             _data = data;
@@ -60,12 +59,12 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as BinaryBlob);
         }
 
-        public bool Equals(BinaryBlob other)
+        public bool Equals(BinaryBlob? other)
         {
             if (other == null)
             {
@@ -92,7 +91,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         private static byte[] GenerateNewToken(int bitLength)
         {
             var data = new byte[bitLength / 8];
-            _randomNumberGenerator.GetBytes(data);
+            RandomNumberGenerator.Fill(data);
             return data;
         }
 

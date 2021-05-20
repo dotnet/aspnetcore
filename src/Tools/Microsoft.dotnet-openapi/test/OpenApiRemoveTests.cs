@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.OpenApi.Tests;
 using Microsoft.Extensions.Tools.Internal;
 using Xunit;
@@ -14,7 +15,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
     {
         public OpenApiRemoveTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
         public async Task OpenApi_Remove_File()
         {
             var nswagJsonFile = "openapi.json";
@@ -29,8 +30,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var add = GetApplication();
             var run = add.Execute(new[] { "add", "file", nswagJsonFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -45,8 +45,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var remove = GetApplication();
             var removeRun = remove.Execute(new[] { "remove", nswagJsonFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, removeRun);
+            AssertNoErrors(removeRun);
 
             // csproj contents
             csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -61,7 +60,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             Assert.False(File.Exists(Path.Combine(_tempDir.Root, nswagJsonFile)));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
         public async Task OpenApi_Remove_ViaUrl()
         {
             _tempDir
@@ -74,8 +73,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var add = GetApplication();
             var run = add.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -90,8 +88,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var remove = GetApplication();
             var removeRun = remove.Execute(new[] { "remove", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, removeRun);
+            AssertNoErrors(removeRun);
 
             // csproj contents
             csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -103,7 +100,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             Assert.DoesNotContain($"<OpenApiReference", removedContent);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12738")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12738")]
         public async Task OpenApi_Remove_Project()
         {
             _tempDir
@@ -125,8 +122,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var refProjFile = Path.Join(refProj.Root, $"{refProjName}.csproj");
             var run = app.Execute(new[] { "add", "project", refProjFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             using (var csprojStream = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj")).OpenRead())
@@ -140,8 +136,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var remove = GetApplication();
             run = app.Execute(new[] { "remove", refProjFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             using (var csprojStream = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj")).OpenRead())
@@ -153,7 +148,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
         public async Task OpenApi_Remove_Multiple()
         {
             var nswagJsonFile = "openapi.json";
@@ -170,20 +165,17 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var add = GetApplication();
             var run = add.Execute(new[] { "add", "file", nswagJsonFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             add = GetApplication();
             run = add.Execute(new[] { "add", "file", swagFile2 });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var remove = GetApplication();
             var removeRun = remove.Execute(new[] { "remove", nswagJsonFile, swagFile2 });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, removeRun);
+            AssertNoErrors(removeRun);
 
             // csproj contents
             var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));

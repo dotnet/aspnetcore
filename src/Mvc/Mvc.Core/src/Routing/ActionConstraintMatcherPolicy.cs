@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.Collections.Generic;
@@ -17,8 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     // used with Matcher.
     internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        private static readonly IReadOnlyList<Endpoint> EmptyEndpoints = Array.Empty<Endpoint>();
-
         // We need to be able to run IActionConstraints on Endpoints that aren't associated
         // with an action. This is a sentinel value we use when the endpoint isn't from MVC.
         internal static readonly ActionDescriptor NonAction = new ActionDescriptor();
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 var endpoint = endpoints[i];
                 var action = endpoint.Metadata.GetMetadata<ActionDescriptor>();
-                if (action?.ActionConstraints?.Count > 0 && HasSignificantActionConstraint(action))
+                if (action?.ActionConstraints is IList<IActionConstraintMetadata> { Count: > 0} constraints && HasSignificantActionConstraint(constraints))
                 {
                     // We need to check for some specific action constraint implementations.
                     // We've implemented consumes, and HTTP method support inside endpoint routing, so
@@ -58,11 +57,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             return false;
 
-            bool HasSignificantActionConstraint(ActionDescriptor a)
+            bool HasSignificantActionConstraint(IList<IActionConstraintMetadata> constraints)
             {
-                for (var i = 0; i < a.ActionConstraints.Count; i++)
+                for (var i = 0; i < constraints.Count; i++)
                 {
-                    var actionConstraint = a.ActionConstraints[i];
+                    var actionConstraint = constraints[i];
                     if (actionConstraint.GetType() == typeof(HttpMethodActionConstraint))
                     {
                         // This one is OK, we implement this in endpoint routing.
@@ -107,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // This is almost the same as the code in ActionSelector, but we can't really share the logic
         // because we need to track the index of each candidate - and, each candidate has its own route
         // values.
-        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)> EvaluateActionConstraints(
+        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraints(
             HttpContext httpContext,
             CandidateSet candidateSet)
         {
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     var endpoint = candidate.Endpoint;
                     var actionDescriptor = endpoint.Metadata.GetMetadata<ActionDescriptor>();
 
-                    IReadOnlyList<IActionConstraint> constraints = Array.Empty<IActionConstraint>();
+                    IReadOnlyList<IActionConstraint>? constraints = Array.Empty<IActionConstraint>();
                     if (actionDescriptor != null)
                     {
                         constraints = _actionConstraintCache.GetActionConstraints(httpContext, actionDescriptor);
@@ -159,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return EvaluateActionConstraintsCore(httpContext, candidateSet, items, startingOrder: null);
         }
 
-        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)> EvaluateActionConstraintsCore(
+        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraintsCore(
             HttpContext httpContext,
             CandidateSet candidateSet,
             IReadOnlyList<(int index, ActionSelectorCandidate candidate)> items,
@@ -222,11 +221,23 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         {
                             foundMatchingConstraint = true;
 
+                            ref var candidate = ref candidateSet[item.index];
+
+                            var routeData = new RouteData(candidate.Values!);
+
+                            var dataTokens = candidate.Endpoint.Metadata.GetMetadata<IDataTokensMetadata>()?.DataTokens;
+
+                            if (dataTokens != null)
+                            {
+                                // Set the data tokens if there are any for this candidate
+                                routeData.PushState(router: null, values: null, dataTokens: new RouteValueDictionary(dataTokens));
+                            }
+
                             // Before we run the constraint, we need to initialize the route values.
                             // In endpoint routing, the route values are per-endpoint.
                             constraintContext.RouteContext = new RouteContext(httpContext)
                             {
-                                RouteData = new RouteData(candidateSet[item.index].Values),
+                                RouteData = routeData,
                             };
                             if (!constraint.Accept(constraintContext))
                             {

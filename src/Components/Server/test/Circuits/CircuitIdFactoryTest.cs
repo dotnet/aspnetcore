@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public void CreateCircuitId_Generates_GeneratesDifferentIds_ForSuccesiveCalls()
+        public void CreateCircuitId_Generates_GeneratesDifferentIds_ForSuccessiveCalls()
         {
             // Arrange
             var factory = TestCircuitIdFactory.CreateTestFactory();

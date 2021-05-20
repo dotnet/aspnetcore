@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing
@@ -85,6 +87,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "This type comes from the ConstraintMap.")]
         private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type parameterPolicyType, string argumentString)
         {
             ConstructorInfo activationConstructor = null;
@@ -100,9 +103,7 @@ namespace Microsoft.AspNetCore.Routing
             }
             else
             {
-                var arguments = !string.IsNullOrEmpty(argumentString)
-                    ? argumentString.Split(',').Select(argument => argument.Trim()).ToArray()
-                    : Array.Empty<string>();
+                var arguments = argumentString?.Split(',', StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
 
                 // We want to find the constructors that match the number of passed in arguments
                 // We either want a single match, or a single best match. The best match is the one with the most

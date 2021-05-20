@@ -1,14 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@microsoft/signalr";
+import { HttpClient, HttpTransportType, IHubProtocol, JsonHubProtocol } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { TestLogger } from "./TestLogger";
 
-// On slower CI machines, these tests sometimes take longer than 5s
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 20 * 1000;
+import { FetchHttpClient } from "@microsoft/signalr/dist/esm/FetchHttpClient";
+import { Platform } from "@microsoft/signalr/dist/esm/Utils";
+import { XhrHttpClient } from "@microsoft/signalr/dist/esm/XhrHttpClient";
 
+export const DEFAULT_TIMEOUT_INTERVAL: number = 40 * 1000;
 export let ENDPOINT_BASE_URL: string = "";
 export let ENDPOINT_BASE_HTTPS_URL: string = "";
+
+// On slower CI machines, these tests sometimes take longer than 5s
+jasmine.DEFAULT_TIMEOUT_INTERVAL = DEFAULT_TIMEOUT_INTERVAL;
 
 if (typeof window !== "undefined" && (window as any).__karma__) {
     const args = (window as any).__karma__.config.args as string[];
@@ -18,12 +24,13 @@ if (typeof window !== "undefined" && (window as any).__karma__) {
 
     for (let i = 0; i < args.length; i += 1) {
         switch (args[i]) {
-            case "--server":
+            case "--server": {
                 i += 1;
                 const urls = args[i].split(";");
                 httpServer = urls[1];
                 httpsServer = urls[0];
                 break;
+            }
             case "--sauce":
                 sauce = true;
                 break;
@@ -74,13 +81,13 @@ export function getHttpTransportTypes(): HttpTransportType[] {
     return transportTypes;
 }
 
-export function eachTransport(action: (transport: HttpTransportType) => void) {
+export function eachTransport(action: (transport: HttpTransportType) => void): void {
     getHttpTransportTypes().forEach((t) => {
         return action(t);
     });
 }
 
-export function eachTransportAndProtocol(action: (transport: HttpTransportType, protocol: IHubProtocol) => void) {
+export function eachTransportAndProtocol(action: (transport: HttpTransportType, protocol: IHubProtocol) => void): void {
     const protocols: IHubProtocol[] = [new JsonHubProtocol()];
     // Run messagepack tests in Node and Browsers that support binary content (indicated by the presence of responseType property)
     if (typeof XMLHttpRequest === "undefined" || typeof new XMLHttpRequest().responseType === "string") {
@@ -98,8 +105,33 @@ export function eachTransportAndProtocol(action: (transport: HttpTransportType, 
     });
 }
 
+export function eachTransportAndProtocolAndHttpClient(action: (transport: HttpTransportType, protocol: IHubProtocol, httpClient: HttpClient) => void): void {
+    eachTransportAndProtocol((transport, protocol) => {
+        getHttpClients().forEach((httpClient) => {
+            action(transport, protocol, httpClient);
+        });
+    });
+}
+
 export function getGlobalObject(): any {
     return typeof window !== "undefined" ? window : global;
+}
+
+export function getHttpClients(): HttpClient[] {
+    const httpClients: HttpClient[] = [];
+    if (typeof XMLHttpRequest !== "undefined") {
+        httpClients.push(new XhrHttpClient(TestLogger.instance));
+    }
+    if (typeof fetch !== "undefined" || Platform.isNode) {
+        httpClients.push(new FetchHttpClient(TestLogger.instance));
+    }
+    return httpClients;
+}
+
+export function eachHttpClient(action: (transport: HttpClient) => void): void {
+    return getHttpClients().forEach((t) => {
+        return action(t);
+    });
 }
 
 // Run test in Node or Chrome, but not on macOS

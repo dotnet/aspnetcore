@@ -1,11 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
-    internal class QueryStringHelper
+    internal static class QueryStringHelper
     {
         public static string GetParameter(string queryString, string key)
         {

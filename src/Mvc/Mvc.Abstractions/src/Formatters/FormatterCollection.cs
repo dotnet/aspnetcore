@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// Represents a collection of formatters.
     /// </summary>
     /// <typeparam name="TFormatter">The type of formatters in the collection.</typeparam>
-    public class FormatterCollection<TFormatter> : Collection<TFormatter>
+    public class FormatterCollection<TFormatter> : Collection<TFormatter> where TFormatter : notnull
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FormatterCollection{TFormatter}"/> class that is empty.

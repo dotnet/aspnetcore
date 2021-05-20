@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <Description>Support for storing keys using Entity Framework Core.</Description>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection;entityframeworkcore</PackageTags>
-    <IsShippingPackage>true</IsShippingPackage>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Net.Http.Headers;
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="format">The format value.</param>
         /// <returns>The media type for input format.</returns>
-        public string GetMediaTypeMappingForFormat(string format)
+        public string? GetMediaTypeMappingForFormat(string format)
         {
             if (string.IsNullOrEmpty(format))
             {
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (contentType.Type == "*" || contentType.SubType == "*")
             {
                 throw new ArgumentException(
-                    string.Format(Resources.FormatterMappings_NotValidMediaType, contentType),
+                    string.Format(CultureInfo.CurrentCulture, Resources.FormatterMappings_NotValidMediaType, contentType),
                     nameof(contentType));
             }
         }
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (format == ".")
                 {
-                    throw new ArgumentException(string.Format(Resources.Format_NotValid, format), nameof(format));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Format_NotValid, format), nameof(format));
                 }
 
                 format = format.Substring(1);

@@ -38,7 +38,9 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return newHandle;
         }
 
+#if NETSTANDARD2_0
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+#endif
         private void AllocateImpl(IntPtr cb)
         {
             handle = Marshal.AllocHGlobal(cb); // actually calls LocalAlloc

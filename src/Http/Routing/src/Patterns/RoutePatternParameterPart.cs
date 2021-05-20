@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     {
         internal RoutePatternParameterPart(
             string parameterName,
-            object @default,
+            object? @default,
             RoutePatternParameterKind parameterKind,
             RoutePatternParameterPolicyReference[] parameterPolicies)
             : this(parameterName, @default, parameterKind, parameterPolicies, encodeSlashes: true)
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         internal RoutePatternParameterPart(
             string parameterName,
-            object @default,
+            object? @default,
             RoutePatternParameterKind parameterKind,
             RoutePatternParameterPolicyReference[] parameterPolicies,
             bool encodeSlashes)
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <summary>
         /// Gets the default value of this route parameter. May be null.
         /// </summary>
-        public object Default { get; }
+        public object? Default { get; }
 
         /// <summary>
         /// Returns <c>true</c> if this part is a catch-all parameter.

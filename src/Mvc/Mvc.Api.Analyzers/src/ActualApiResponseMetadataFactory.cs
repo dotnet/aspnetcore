@@ -101,6 +101,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
                 case ObjectCreationExpressionSyntax creation:
                     {
+                        if (creation.ArgumentList == null)
+                        {
+                            throw new ArgumentNullException(nameof(creation.ArgumentList));
+                        }
                         // Read values from 'return new StatusCodeResult(200) case.
                         var result = InspectMethodArguments(semanticModel, creation, creation.ArgumentList, cancellationToken);
                         statusCode = result.statusCode ?? statusCode;
@@ -126,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private static (int? statusCode, ITypeSymbol? returnType) InspectInitializers(
             in ApiControllerSymbolCache symbolCache,
             SemanticModel semanticModel,
-            InitializerExpressionSyntax initializer,
+            InitializerExpressionSyntax? initializer,
             CancellationToken cancellationToken)
         {
             int? statusCode = null;
@@ -198,9 +202,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return (statusCode, typeSymbol);
         }
 
-        private static ITypeSymbol GetExpressionObjectType(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
+        private static ITypeSymbol? GetExpressionObjectType(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
         {
             var typeInfo = semanticModel.GetTypeInfo(expression, cancellationToken);
+            
             return typeInfo.Type;
         }
 
@@ -271,14 +276,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             for (var i = 0; i < property.ExplicitInterfaceImplementations.Length; i++)
             {
-                if (property.ExplicitInterfaceImplementations[i] == statusCodeActionResultStatusProperty)
+                if (SymbolEqualityComparer.Default.Equals(property.ExplicitInterfaceImplementations[i], statusCodeActionResultStatusProperty))
                 {
                     return true;
                 }
             }
 
             var implementedProperty = property.ContainingType.FindImplementationForInterfaceMember(statusCodeActionResultStatusProperty);
-            return implementedProperty == property;
+            return SymbolEqualityComparer.Default.Equals(implementedProperty, property);
         }
 
         private static bool HasAttributeNamed(ISymbol symbol, string attributeName)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
@@ -22,9 +23,6 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         static string noncePrefix = "OpenIdConnect." + "Nonce.";
         static string nonceDelimiter = ".";
         const string DefaultHost = @"https://example.com";
-        const string Logout = "/logout";
-        const string Signin = "/signin";
-        const string Signout = "/signout";
 
         /// <summary>
         /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
@@ -78,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix));
+            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal));
             Assert.Contains("path=/signin-oidc", nonce);
         }
 
@@ -104,7 +102,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix));
+            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal));
             Assert.Contains("path=/", nonce);
         }
 
@@ -129,7 +127,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/signin-oidc", correlation);
         }
 
@@ -155,7 +153,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/", correlation);
         }
 
@@ -364,6 +362,27 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var remoteSignOutTransaction = await server.SendAsync(DefaultHost + "/signout-oidc?iss=test&sid=something", signInTransaction.AuthenticationCookieValue);
             Assert.Equal(HttpStatusCode.OK, remoteSignOutTransaction.Response.StatusCode);
             Assert.Contains(remoteSignOutTransaction.Response.Headers, h => h.Key == "Set-Cookie");
+        }
+
+        [Fact]
+        public void MapInboundClaimsDefaultsToTrue()
+        {
+            var options = new OpenIdConnectOptions();
+            Assert.True(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.True(jwtHandler.MapInboundClaims);
+        }
+
+        [Fact]
+        public void MapInboundClaimsCanBeSetToFalse()
+        {
+            var options = new OpenIdConnectOptions();
+            options.MapInboundClaims = false;
+            Assert.False(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.False(jwtHandler.MapInboundClaims);
         }
 
         // Test Cases for calculating the expiration time of cookie from cookie name

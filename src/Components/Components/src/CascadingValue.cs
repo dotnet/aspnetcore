@@ -14,18 +14,18 @@ namespace Microsoft.AspNetCore.Components
     public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
     {
         private RenderHandle _renderHandle;
-        private HashSet<ComponentState> _subscribers; // Lazily instantiated
+        private HashSet<ComponentState>? _subscribers; // Lazily instantiated
         private bool _hasSetParametersPreviously;
 
         /// <summary>
         /// The content to which the value should be provided.
         /// </summary>
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
         /// The value to be provided.
         /// </summary>
-        [Parameter] public TValue Value { get; set; }
+        [Parameter] public TValue? Value { get; set; }
 
         /// <summary>
         /// Optionally gives a name to the provided value. Descendant components
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components
         /// If no name is specified, then descendant components will receive the
         /// value based the type of value they are requesting.
         /// </summary>
-        [Parameter] public string Name { get; set; }
+        [Parameter] public string? Name { get; set; }
 
         /// <summary>
         /// If true, indicates that <see cref="Value"/> will not change. This is a
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         [Parameter] public bool IsFixed { get; set; }
 
-        object ICascadingValueComponent.CurrentValue => Value;
+        object? ICascadingValueComponent.CurrentValue => Value;
 
         bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
 
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components
 
             _hasSetParametersPreviously = true;
 
-            // It's OK for the value to be null, but some "Value" param must be suppled
+            // It's OK for the value to be null, but some "Value" param must be supplied
             // because it serves no useful purpose to have a <CascadingValue> otherwise.
             if (!hasSuppliedValue)
             {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string requestedName)
+        bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string? requestedName)
         {
             if (!requestedType.IsAssignableFrom(typeof(TValue)))
             {
@@ -165,12 +165,12 @@ namespace Microsoft.AspNetCore.Components
 
         void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
         {
-            _subscribers.Remove(subscriber);
+            _subscribers?.Remove(subscriber);
         }
 
         private void NotifySubscribers(in ParameterViewLifetime lifetime)
         {
-            foreach (var subscriber in _subscribers)
+            foreach (var subscriber in _subscribers!)
             {
                 subscriber.NotifyCascadingValueChanged(lifetime);
             }

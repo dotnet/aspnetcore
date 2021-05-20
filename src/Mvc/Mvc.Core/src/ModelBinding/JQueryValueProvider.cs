@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         IKeyRewriterValueProvider
     {
         private readonly IDictionary<string, StringValues> _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JQueryValueProvider"/> class.
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         protected JQueryValueProvider(
             BindingSource bindingSource,
             IDictionary<string, StringValues> values,
-            CultureInfo culture)
+            CultureInfo? culture)
             : base(bindingSource)
         {
             if (bindingSource == null)
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="CultureInfo"/> associated with the values.
         /// </summary>
-        public CultureInfo Culture { get; }
+        public CultureInfo? Culture { get; }
 
         /// <inheritdoc />
         protected PrefixContainer PrefixContainer
@@ -98,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <see cref="IValueProvider"/> with rewritten keys (if original contains brackets) or duplicate keys
         /// (that <see cref="FormValueProvider"/> will match).
         /// </remarks>
-        public IValueProvider Filter()
+        public IValueProvider? Filter()
         {
             return null;
         }

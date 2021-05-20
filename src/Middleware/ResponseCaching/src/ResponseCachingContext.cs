@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
@@ -63,7 +65,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     _parsedResponseDate = true;
                     DateTimeOffset date;
-                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers[HeaderNames.Date].ToString(), out date))
+                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers.Date.ToString(), out date))
                     {
                         _responseDate = date;
                     }
@@ -90,7 +92,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     _parsedResponseExpires = true;
                     DateTimeOffset expires;
-                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers[HeaderNames.Expires].ToString(), out expires))
+                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers.Expires.ToString(), out expires))
                     {
                         _responseExpires = expires;
                     }
@@ -110,7 +112,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 if (!_parsedResponseSharedMaxAge)
                 {
                     _parsedResponseSharedMaxAge = true;
-                    HeaderUtilities.TryParseSeconds(HttpContext.Response.Headers[HeaderNames.CacheControl], CacheControlHeaderValue.SharedMaxAgeString, out _responseSharedMaxAge);
+                    HeaderUtilities.TryParseSeconds(HttpContext.Response.Headers.CacheControl, CacheControlHeaderValue.SharedMaxAgeString, out _responseSharedMaxAge);
                 }
                 return _responseSharedMaxAge;
             }
@@ -123,7 +125,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 if (!_parsedResponseMaxAge)
                 {
                     _parsedResponseMaxAge = true;
-                    HeaderUtilities.TryParseSeconds(HttpContext.Response.Headers[HeaderNames.CacheControl], CacheControlHeaderValue.MaxAgeString, out _responseMaxAge);
+                    HeaderUtilities.TryParseSeconds(HttpContext.Response.Headers.CacheControl, CacheControlHeaderValue.MaxAgeString, out _responseMaxAge);
                 }
                 return _responseMaxAge;
             }
