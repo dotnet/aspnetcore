@@ -106,6 +106,21 @@ namespace Microsoft.AspNetCore.Http.Features
         }
 
         [Fact]
+        public void ParseQueryWithThreefoldKeysGroups()
+        {
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?key1=valueA&key2=valueB&key1=valueC&key1=valueD" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Equal(2, queryCollection.Count);
+            Assert.Equal(new[] { "valueA", "valueC", "valueD" }, queryCollection["key1"]);
+            Assert.Equal("valueB", queryCollection["key2"].FirstOrDefault());
+        }
+
+        [Fact]
         public void ParseQueryWithEmptyValuesWorks()
         {
             var features = new FeatureCollection();

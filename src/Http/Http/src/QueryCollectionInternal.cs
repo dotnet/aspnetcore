@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Internal;
@@ -14,25 +13,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     internal class QueryCollectionInternal : IQueryCollection
     {
-        /// <summary>
-        /// Gets an empty <see cref="QueryCollectionInternal"/>.
-        /// </summary>
-        public static readonly QueryCollectionInternal Empty = new QueryCollectionInternal();
-        private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
-        private static readonly Enumerator EmptyEnumerator = new Enumerator();
-        // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
-        private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
-
-        private AdaptiveCapacityDictionary<string, StringValues>? Store { get; }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="QueryCollectionInternal"/>.
-        /// </summary>
-        public QueryCollectionInternal()
-        {
-        }
+        private AdaptiveCapacityDictionary<string, StringValues> Store { get; }
 
         /// <summary>
         /// Initializes a new instance of <see cref="QueryCollection"/>.
@@ -44,89 +25,29 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Creates a shallow copy of the specified <paramref name="store"/>.
-        /// </summary>
-        /// <param name="store">The <see cref="QueryCollection"/> to clone.</param>
-        public QueryCollectionInternal(QueryCollectionInternal store)
-        {
-            Store = store.Store;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="QueryCollection"/>.
-        /// </summary>
-        /// <param name="capacity">The initial number of query items that this instance can contain.</param>
-        public QueryCollectionInternal(int capacity)
-        {
-            Store = new AdaptiveCapacityDictionary<string, StringValues>(capacity, StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
         /// Gets the associated set of values from the collection.
         /// </summary>
         /// <param name="key">The key name.</param>
         /// <returns>the associated value from the collection as a StringValues or StringValues.Empty if the key is not present.</returns>
-        public StringValues this[string key]
-        {
-            get
-            {
-                if (Store == null)
-                {
-                    return StringValues.Empty;
-                }
-
-                if (TryGetValue(key, out var value))
-                {
-                    return value;
-                }
-                return StringValues.Empty;
-            }
-        }
+        public StringValues this[string key] => TryGetValue(key, out var value) ? value : StringValues.Empty;
 
         /// <summary>
         /// Gets the number of elements contained in the <see cref="QueryCollection" />;.
         /// </summary>
         /// <returns>The number of elements contained in the <see cref="QueryCollection" />.</returns>
-        public int Count
-        {
-            get
-            {
-                if (Store == null)
-                {
-                    return 0;
-                }
-                return Store.Count;
-            }
-        }
+        public int Count => Store.Count;
 
         /// <summary>
         /// Gets the collection of query names in this instance.
         /// </summary>
-        public ICollection<string> Keys
-        {
-            get
-            {
-                if (Store == null)
-                {
-                    return EmptyKeys;
-                }
-                return Store.Keys;
-            }
-        }
+        public ICollection<string> Keys => Store.Keys;
 
         /// <summary>
         /// Determines whether the <see cref="QueryCollection" /> contains a specific key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>true if the <see cref="QueryCollection" /> contains a specific key; otherwise, false.</returns>
-        public bool ContainsKey(string key)
-        {
-            if (Store == null)
-            {
-                return false;
-            }
-            return Store.ContainsKey(key);
-        }
+        public bool ContainsKey(string key) => Store.ContainsKey(key);
 
         /// <summary>
         /// Retrieves a value from the collection.
@@ -134,57 +55,26 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <returns>true if the <see cref="QueryCollection" /> contains the key; otherwise, false.</returns>
-        public bool TryGetValue(string key, out StringValues value)
-        {
-            if (Store == null)
-            {
-                value = default(StringValues);
-                return false;
-            }
-            return Store.TryGetValue(key, out value);
-        }
+        public bool TryGetValue(string key, out StringValues value) => Store.TryGetValue(key, out value);
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>An <see cref="Enumerator" /> object that can be used to iterate through the collection.</returns>
-        public Enumerator GetEnumerator()
-        {
-            if (Store == null || Store.Count == 0)
-            {
-                // Non-boxed Enumerator
-                return EmptyEnumerator;
-            }
-            return new Enumerator(Store.GetEnumerator());
-        }
+        public Enumerator GetEnumerator() => new Enumerator(Store.GetEnumerator());
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>An <see cref="IEnumerator{T}" /> object that can be used to iterate through the collection.</returns>
         IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
-        {
-            if (Store == null || Store.Count == 0)
-            {
-                // Non-boxed Enumerator
-                return EmptyIEnumeratorType;
-            }
-            return Store.GetEnumerator();
-        }
+            => Store.GetEnumerator();
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>An <see cref="IEnumerator" /> object that can be used to iterate through the collection.</returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            if (Store == null || Store.Count == 0)
-            {
-                // Non-boxed Enumerator
-                return EmptyIEnumerator;
-            }
-            return Store.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => Store.GetEnumerator();
 
         /// <summary>
         /// Enumerates a <see cref="QueryCollection"/>.
@@ -218,30 +108,14 @@ namespace Microsoft.AspNetCore.Http
             /// <summary>
             /// Gets the element at the current position of the enumerator.
             /// </summary>
-            public KeyValuePair<string, StringValues> Current
-            {
-                get
-                {
-                    if (_notEmpty)
-                    {
-                        return _dictionaryEnumerator.Current;
-                    }
-                    return default(KeyValuePair<string, StringValues>);
-                }
-            }
+            public KeyValuePair<string, StringValues> Current => _notEmpty ? _dictionaryEnumerator.Current : default;
 
             /// <inheritdoc />
             public void Dispose()
             {
             }
 
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
+            object IEnumerator.Current => Current;
 
             void IEnumerator.Reset()
             {

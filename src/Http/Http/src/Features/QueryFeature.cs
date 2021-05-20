@@ -132,16 +132,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
                 if (equalIndex >= 0)
                 {
-                    var i = 0;
-                    for (; i < querySegment.Length; ++i)
-                    {
-                        if (!char.IsWhiteSpace(querySegment[i]))
-                        {
-                            break;
-                        }
-                    }
-
-                    var name = SpanHelper.ReplacePlusWithSpace(querySegment[i..equalIndex]);
+                    var name = SpanHelper.ReplacePlusWithSpace(querySegment.Slice(0, equalIndex));
                     var value = SpanHelper.ReplacePlusWithSpace(querySegment.Slice(equalIndex + 1));
 
                     accumulator.Append(
@@ -210,11 +201,12 @@ namespace Microsoft.AspNetCore.Http.Features
 
                         if (_expandingAccumulator is null)
                         {
-                            _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(5, StringComparer.OrdinalIgnoreCase);
+                            _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(capacity: 5, StringComparer.OrdinalIgnoreCase);
                         }
 
-                        // Already 5 entries so use starting allocated as 10; then use List's expansion mechanism for more
-                        var list = new List<string>(10);
+                        // Already 3 (2 existing + the new one) entries so use starting allocated as 6; then use List's expansion
+                        // mechanism for more
+                        var list = new List<string>(capacity: 6);
 
                         list.AddRange(values);
                         list.Add(value);

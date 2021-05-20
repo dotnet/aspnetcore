@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Internal
         internal KeyValuePair<TKey, TValue>[]? _arrayStorage;
         private int _count;
         internal Dictionary<TKey, TValue>? _dictionaryStorage;
-        private IEqualityComparer<TKey> _comparer;
+        private readonly IEqualityComparer<TKey> _comparer;
 
         /// <summary>
         /// Creates an empty <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/>.
@@ -620,7 +620,6 @@ namespace Microsoft.AspNetCore.Internal
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ContainsKeyArray(TKey key) => TryFindItem(key, out _);
-
 
         /// <inheritdoc />
         public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
