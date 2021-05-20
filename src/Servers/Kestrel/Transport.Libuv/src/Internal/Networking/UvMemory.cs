@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     /// <summary>
     /// Summary description for UvMemory
     /// </summary>
-    public abstract class UvMemory : SafeHandle
+    internal abstract class UvMemory : SafeHandle
     {
         protected LibuvFunctions _uv;
         protected int _threadId;
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             Debug.Assert(closed || !IsClosed, "Handle is closed");
             Debug.Assert(!IsInvalid, "Handle is invalid");
-            Debug.Assert(_threadId == Thread.CurrentThread.ManagedThreadId, "ThreadId is incorrect");
+            Debug.Assert(_threadId == Environment.CurrentManagedThreadId, "ThreadId is incorrect");
         }
 
         unsafe public static THandle FromIntPtr<THandle>(IntPtr handle)

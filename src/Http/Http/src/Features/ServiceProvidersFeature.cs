@@ -5,8 +5,12 @@ using System;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IServiceProvidersFeature"/>.
+    /// </summary>
     public class ServiceProvidersFeature : IServiceProvidersFeature
     {
-        public IServiceProvider RequestServices { get; set; }
+        /// <inheritdoc />
+        public IServiceProvider RequestServices { get; set; } = default!;
     }
 }

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -15,19 +17,9 @@ namespace Microsoft.Extensions.Internal
         public PropertyActivator(
             PropertyInfo propertyInfo,
             Func<TContext, object> valueAccessor)
-        {
-            if (propertyInfo == null)
-            {
-                throw new ArgumentNullException(nameof(propertyInfo));
-            }
-
-            if (valueAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(valueAccessor));
-            }
-
-            PropertyInfo = propertyInfo;
-            _valueAccessor = valueAccessor;
+        {          
+            PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo)); 
+            _valueAccessor = valueAccessor ?? throw new ArgumentNullException(nameof(valueAccessor)); 
             _fastPropertySetter = PropertyHelper.MakeFastPropertySetter(propertyInfo);
         }
 
@@ -101,7 +93,7 @@ namespace Microsoft.Extensions.Internal
 
             if (!includeNonPublic)
             {
-                properties = properties.Where(property => property.SetMethod.IsPublic);
+                properties = properties.Where(property => property.SetMethod is { IsPublic: true });
             }
 
             return properties.Select(createActivateInfo).ToArray();

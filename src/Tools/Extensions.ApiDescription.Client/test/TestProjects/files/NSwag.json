@@ -1,0 +1,183 @@
+{
+  "x-generator": "NSwag v11.18.6.0 (NJsonSchema v9.10.67.0 (Newtonsoft.Json v11.0.0.0))",
+  "swagger": "2.0",
+  "info": {
+    "title": "My Title",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5000",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json-patch+json",
+    "application/json",
+    "text/json",
+    "application/*+json",
+    "application/xml",
+    "text/xml",
+    "application/*+xml"
+  ],
+  "produces": [
+    "text/plain",
+    "application/json",
+    "text/json",
+    "application/xml",
+    "text/xml"
+  ],
+  "paths": {
+    "/api/Values/matches": {
+      "post": {
+        "tags": [
+          "Values"
+        ],
+        "operationId": "Values_Matches",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json",
+          "application/xml",
+          "text/xml",
+          "application/*+xml"
+        ],
+        "parameters": [
+          {
+            "name": "possibilities",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "x-nullable": true
+          },
+          {
+            "type": "integer",
+            "name": "comparisonType",
+            "in": "query",
+            "x-schema": {
+              "$ref": "#/definitions/StringComparison"
+            },
+            "x-nullable": false,
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Values": {
+      "get": {
+        "tags": [
+          "Values"
+        ],
+        "operationId": "Values_Get",
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Values"
+        ],
+        "operationId": "Values_Post",
+        "consumes": [
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "value",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Values/too": {
+      "get": {
+        "tags": [
+          "Values"
+        ],
+        "operationId": "Values_GetToo",
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/Model"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "StringComparison": {
+      "type": "integer",
+      "description": "",
+      "x-enumNames": [
+        "CurrentCulture",
+        "CurrentCultureIgnoreCase",
+        "InvariantCulture",
+        "InvariantCultureIgnoreCase",
+        "Ordinal",
+        "OrdinalIgnoreCase"
+      ],
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "Model": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "userName": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

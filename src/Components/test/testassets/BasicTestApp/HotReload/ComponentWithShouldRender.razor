@@ -1,0 +1,8 @@
+<h4>Component with ShouldRender=false was rendered @(++RenderCount) time(s).</h4>
+
+@code
+{
+    int RenderCount = 0;
+
+    protected override bool ShouldRender() => false;
+}

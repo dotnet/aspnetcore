@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Internal;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -12,14 +14,14 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// produce an HTTP response with the given response status code.
     /// </summary>
-    public class StatusCodeResult : ActionResult
+    public class StatusCodeResult : ActionResult, IResult, IClientErrorActionResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
         /// with the given <paramref name="statusCode"/>.
         /// </summary>
         /// <param name="statusCode">The HTTP status code of the response.</param>
-        public StatusCodeResult(int statusCode)
+        public StatusCodeResult([ActionResultStatusCode] int statusCode)
         {
             StatusCode = statusCode;
         }
@@ -29,6 +31,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public int StatusCode { get; }
 
+        int? IStatusCodeActionResult.StatusCode => StatusCode;
+
         /// <inheritdoc />
         public override void ExecuteResult(ActionContext context)
         {
@@ -37,12 +41,28 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var factory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            Execute(context.HttpContext);
+        }
+
+        /// <summary>
+        /// Sets the status code on the HTTP response.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
+        /// <returns>A task that represents the asynchronous execute operation.</returns>
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            Execute(httpContext);
+            return Task.CompletedTask;
+        }
+
+        private void Execute(HttpContext httpContext)
+        {
+            var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = factory.CreateLogger<StatusCodeResult>();
 
             logger.HttpStatusCodeResultExecuting(StatusCode);
 
-            context.HttpContext.Response.StatusCode = StatusCode;
+            httpContext.Response.StatusCode = StatusCode;
         }
     }
 }

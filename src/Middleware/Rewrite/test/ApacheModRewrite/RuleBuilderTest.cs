@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
+using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests

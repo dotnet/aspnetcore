@@ -18,11 +18,16 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private readonly IDataProtectionProvider _dp;
 
+        /// <summary>
+        /// Initializes the <see cref="OAuthPostConfigureOptions{TOptions, THandler}"/>.
+        /// </summary>
+        /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
         public OAuthPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;
         }
 
+        /// <inheritdoc />
         public void PostConfigure(string name, TOptions options)
         {
             options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
@@ -37,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options.StateDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(THandler).FullName, name, "v1");
+                    typeof(THandler).FullName!, name, "v1");
                 options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
         }

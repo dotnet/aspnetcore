@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -1023,7 +1028,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Valid()
+        public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_Valid()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -1060,7 +1065,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Invalid()
+        public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_Invalid()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -1100,7 +1105,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_NoData()
+        public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_NoData()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -1488,6 +1493,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public string Control { get; set; }
 
             [ValidateSometimes(nameof(Control))]
+            [Range(0, 10)]
             public int ControlLength => Control.Length;
         }
 
@@ -1571,6 +1577,53 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
         }
 
+        // This type has a IPropertyValidationFilter declared on a property, but no validators.
+        // We should expect validation to short-circuit
+        private class ValidateSomePropertiesSometimesWithoutValidation
+        {
+            public string Control { get; set; }
+
+            [ValidateSometimes(nameof(Control))]
+            public int ControlLength => Control.Length;
+        }
+
+        [Fact]
+        public async Task PropertyToSometimesSkip_IsNotValidated_IfNoValidationAttributesExistButPropertyValidationFilterExists()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor
+            {
+                Name = "parameter",
+                ParameterType = typeof(ValidateSomePropertiesSometimesWithoutValidation),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var modelState = testContext.ModelState;
+
+            // Add an entry for the ControlLength property so that we can observe Skipped versus Valid states.
+            modelState.SetModelValue(
+                nameof(ValidateSomePropertiesSometimes.ControlLength),
+                rawValue: null,
+                attemptedValue: null);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+            var model = Assert.IsType<ValidateSomePropertiesSometimesWithoutValidation>(result.Model);
+            Assert.Null(model.Control);
+
+            // Note this Exception is not thrown earlier.
+            Assert.Throws<NullReferenceException>(() => model.ControlLength);
+
+            Assert.True(modelState.IsValid);
+            var kvp = Assert.Single(modelState);
+            Assert.Equal(nameof(ValidateSomePropertiesSometimesWithoutValidation.ControlLength), kvp.Key);
+            Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+        }
+
         private class Order11
         {
             public IEnumerable<Address> ShippingAddresses { get; set; }
@@ -1652,7 +1705,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task FromBody_JToken_ExcludedFromValidation()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(new TestMvcOptions().Value);
+            var options = new TestMvcOptions().Value;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(options);
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -1665,11 +1719,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext(
-                request =>
+                updateRequest: request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello\" }"));
                     request.ContentType = "application/json";
-                });
+                },
+                mvcOptions: options);
 
             var httpContext = testContext.HttpContext;
             var modelState = testContext.ModelState;
@@ -1701,7 +1756,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         // basically result in clearing out all model errors, which is BAD.
         //
         // The fix is to treat non-user-input as have a key of null, which means that the MSD
-        // isn't even examined when it comes to supressing validation.
+        // isn't even examined when it comes to suppressing validation.
         [Fact]
         public async Task CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors()
         {
@@ -1837,6 +1892,550 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             [StringLength(5)]
             public string Message { get; set; }
         }
+
+        [Fact]
+        public async Task Validation_NoAttributeInGraphOfObjects_WithDefaultValidatorProviders()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order12),
+                BindingInfo = new BindingInfo
+                {
+                    BindingSource = BindingSource.Body
+                },
+            };
+
+            var input = new Order12
+            {
+                Id = 10,
+                OrderFile = new byte[40],
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(input)));
+                request.ContentType = "application/json";
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order12>(modelBindingResult.Model);
+            Assert.Equal(input.Id, model.Id);
+            Assert.Equal(input.OrderFile, model.OrderFile);
+            Assert.Null(model.RelatedOrders);
+
+            Assert.Empty(modelState);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+        }
+
+        private class Order12
+        {
+            public int Id { get; set; }
+
+            public byte[] OrderFile { get; set; }
+
+            public IList<Order12> RelatedOrders { get; set; }
+        }
+
+        [Fact]
+        public async Task Validation_ListOfType_NoValidatorOnParameter()
+        {
+            // Arrange
+            var parameterInfo = GetType().GetMethod(nameof(Validation_ListOfType_NoValidatorOnParameterTestMethod), BindingFlags.NonPublic | BindingFlags.Static)
+                .GetParameters()
+                .First();
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForParameter(parameterInfo);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?[0]=1&[1]=2");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<int>>(modelBindingResult.Model);
+            Assert.Equal(new[] { 1, 2 }, model);
+
+            Assert.False(modelMetadata.HasValidators);
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "[0]").Value;
+            Assert.Equal("1", entry.AttemptedValue);
+            Assert.Equal("1", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "[1]").Value;
+            Assert.Equal("2", entry.AttemptedValue);
+            Assert.Equal("2", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        private static void Validation_ListOfType_NoValidatorOnParameterTestMethod(List<int> parameter) { }
+
+        [Fact]
+        public async Task Validation_ListOfType_ValidatorOnParameter()
+        {
+            // Arrange
+            var parameterInfo = GetType().GetMethod(nameof(Validation_ListOfType_ValidatorOnParameterTestMethod), BindingFlags.NonPublic | BindingFlags.Static)
+                .GetParameters()
+                .First();
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForParameter(parameterInfo);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?[0]=1&[1]=2");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<int>>(modelBindingResult.Model);
+            Assert.Equal(new[] { 1, 2 }, model);
+
+            Assert.True(modelMetadata.HasValidators);
+
+            Assert.False(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "").Value;
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "[0]").Value;
+            Assert.Equal("1", entry.AttemptedValue);
+            Assert.Equal("1", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "[1]").Value;
+            Assert.Equal("2", entry.AttemptedValue);
+            Assert.Equal("2", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        private static void Validation_ListOfType_ValidatorOnParameterTestMethod([ConsistentMinLength(3)] List<int> parameter) { }
+
+        private class ConsistentMinLength : ValidationAttribute
+        {
+            private readonly int _length;
+
+            public ConsistentMinLength(int length)
+            {
+                _length = length;
+            }
+
+            public override bool IsValid(object value)
+            {
+                return value is ICollection collection && collection.Count >= _length;
+            }
+        }
+
+        [Fact]
+        public async Task Validation_CollectionOfType_ValidatorOnElement()
+        {
+            // Arrange
+            var parameterInfo = GetType().GetMethod(nameof(Validation_CollectionOfType_ValidatorOnElementTestMethod), BindingFlags.NonPublic | BindingFlags.Static)
+                .GetParameters()
+                .First();
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForParameter(parameterInfo);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?p[0].Id=1&p[1].Id=2");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Collection<InvalidEvenIds>>(modelBindingResult.Model);
+            Assert.Equal(1, model[0].Id);
+            Assert.Equal(2, model[1].Id);
+
+            Assert.True(modelMetadata.HasValidators);
+
+            Assert.False(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "p[0].Id").Value;
+            Assert.Equal("1", entry.AttemptedValue);
+            Assert.Equal("1", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "p[1]").Value;
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "p[1].Id").Value;
+            Assert.Equal("2", entry.AttemptedValue);
+            Assert.Equal("2", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        private static void Validation_CollectionOfType_ValidatorOnElementTestMethod(Collection<InvalidEvenIds> p) { }
+
+        public class InvalidEvenIds : IValidatableObject
+        {
+            public int Id { get; set; }
+
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            {
+                if (Id % 2 == 0)
+                {
+                    yield return new ValidationResult("Failed validation");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Validation_DictionaryType_NoValidators()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(IDictionary<string, int>)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[0].Key=key0&parameter[0].Value=10");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, int>>(modelBindingResult.Model);
+            Assert.Collection(
+                model.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal("key0", kvp.Key);
+                    Assert.Equal(10, kvp.Value);
+                });
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter[0].Key").Value;
+            Assert.Equal("key0", entry.AttemptedValue);
+            Assert.Equal("key0", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter[0].Value").Value;
+            Assert.Equal("10", entry.AttemptedValue);
+            Assert.Equal("10", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        [Fact]
+        public async Task Validation_DictionaryType_ValueHasValidators()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, NeverValid>)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[0].Key=key0&parameter[0].Value.NeverValidProperty=value0");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, NeverValid>>(modelBindingResult.Model);
+            Assert.Collection(
+                model.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal("key0", kvp.Key);
+                    Assert.Equal("value0", kvp.Value.NeverValidProperty);
+                });
+
+            Assert.False(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter[0].Key").Value;
+            Assert.Equal("key0", entry.AttemptedValue);
+            Assert.Equal("key0", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter[0].Value.NeverValidProperty").Value;
+            Assert.Equal("value0", entry.AttemptedValue);
+            Assert.Equal("value0", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter[0].Value").Value;
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            Assert.Single(entry.Errors);
+        }
+
+        [Fact]
+        public async Task Validation_TopLevelProperty_NoValidation()
+        {
+            // Arrange
+            var modelType = typeof(Validation_TopLevelPropertyController);
+            var propertyInfo = modelType.GetProperty(nameof(Validation_TopLevelPropertyController.Model));
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForProperty(propertyInfo, propertyInfo.PropertyType);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = propertyInfo.Name,
+                ParameterType = propertyInfo.PropertyType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Model.Id=12");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Validation_TopLevelPropertyModel>(modelBindingResult.Model);
+            Assert.Equal(12, model.Id);
+
+            Assert.False(modelMetadata.HasValidators);
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Model.Id").Value;
+            Assert.Equal("12", entry.AttemptedValue);
+            Assert.Equal("12", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        public class Validation_TopLevelPropertyModel
+        {
+            public int Id { get; set; }
+        }
+
+        private class Validation_TopLevelPropertyController
+        {
+            public Validation_TopLevelPropertyModel Model { get; set; }
+        }
+
+        [Fact]
+        public async Task Validation_TopLevelProperty_ValidationOnProperty()
+        {
+            // Arrange
+            var modelType = typeof(Validation_TopLevelProperty_ValidationOnPropertyController);
+            var propertyInfo = modelType.GetProperty(nameof(Validation_TopLevelProperty_ValidationOnPropertyController.Model));
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForProperty(propertyInfo, propertyInfo.PropertyType);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = propertyInfo.Name,
+                ParameterType = propertyInfo.PropertyType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Model.Id=12");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Validation_TopLevelPropertyModel>(modelBindingResult.Model);
+            Assert.Equal(12, model.Id);
+
+            Assert.True(modelMetadata.HasValidators);
+
+            Assert.False(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Model.Id").Value;
+            Assert.Equal("12", entry.AttemptedValue);
+            Assert.Equal("12", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "Model").Value;
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+        }
+
+        public class Validation_TopLevelProperty_ValidationOnPropertyController
+        {
+            [CustomValidation(typeof(Validation_TopLevelProperty_ValidationOnPropertyController), nameof(Validate))]
+            public Validation_TopLevelPropertyModel Model { get; set; }
+
+            public static ValidationResult Validate(ValidationContext context)
+            {
+                return new ValidationResult("Invalid result");
+            }
+        }
+
+        [Fact]
+        public async Task Validation_InfinitelyRecursiveType_NoValidators()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(RecursiveModel)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Property1=8");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<RecursiveModel>(modelBindingResult.Model);
+            Assert.Equal(8, model.Property1);
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Property1").Value;
+            Assert.Equal("8", entry.AttemptedValue);
+            Assert.Equal("8", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        public class RecursiveModel
+        {
+            public int Property1 { get; set; }
+
+            public RecursiveModel Property2 { get; set; }
+
+            public RecursiveModel Property3 => new RecursiveModel { Property1 = Property1 };
+        }
+
+        [Fact]
+        public async Task Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameter()
+        {
+            // Arrange
+            var parameterInfo = GetType().GetMethod(nameof(Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameterMethod), BindingFlags.NonPublic | BindingFlags.Static)
+                .GetParameters()
+                .First();
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForParameter(parameterInfo);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Property1=8");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<RecursiveModel>(modelBindingResult.Model);
+            Assert.Equal(8, model.Property1);
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Property1").Value;
+            Assert.Equal("8", entry.AttemptedValue);
+            Assert.Equal("8", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        private static void Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameterMethod([Required] RecursiveModel model) { }
 
         private static void AssertRequiredError(string key, ModelError error)
         {

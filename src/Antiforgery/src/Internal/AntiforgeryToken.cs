@@ -1,16 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public sealed class AntiforgeryToken
+    internal sealed class AntiforgeryToken
     {
         internal const int SecurityTokenBitLength = 128;
         internal const int ClaimUidBitLength = 256;
 
         private string _additionalData = string.Empty;
         private string _username = string.Empty;
-        private BinaryBlob _securityToken;
+        private BinaryBlob? _securityToken;
 
         public string AdditionalData
         {
@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
         }
 
-        public BinaryBlob ClaimUid { get; set; }
+        public BinaryBlob? ClaimUid { get; set; }
 
         public bool IsCookieToken { get; set; }
 
-        public BinaryBlob SecurityToken
+        public BinaryBlob? SecurityToken
         {
             get
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
         }
 
-        public string Username
+        public string? Username
         {
             get { return _username; }
             set

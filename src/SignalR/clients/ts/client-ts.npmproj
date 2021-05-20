@@ -1,11 +1,15 @@
 <Project>
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <!-- The 'build' script for this package just build signalr and signalr-protocol-msgpack, so don't invoke build here. -->
     <IsBuildable>false</IsBuildable>
-    <IsTestProject>true</IsTestProject>
+    <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

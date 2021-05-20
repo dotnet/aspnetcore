@@ -1,0 +1,3 @@
+is_global = true
+
+dotnet_diagnostic.xUnit1026.severity = suggestion

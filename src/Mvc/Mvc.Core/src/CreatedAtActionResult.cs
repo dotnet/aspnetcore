@@ -8,14 +8,18 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// An <see cref="ActionResult"/> that returns a Created (201) response with a Location header.
     /// </summary>
+    [DefaultStatusCode(DefaultStatusCode)]
     public class CreatedAtActionResult : ObjectResult
     {
+        private const int DefaultStatusCode = StatusCodes.Status201Created;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CreatedAtActionResult"/> with the values
         /// provided.
@@ -25,37 +29,37 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to format in the entity body.</param>
         public CreatedAtActionResult(
-            string actionName,
-            string controllerName,
-            object routeValues,
-            object value)
+            string? actionName,
+            string? controllerName,
+            object? routeValues,
+            [ActionResultObjectValue] object? value)
             : base(value)
         {
             ActionName = actionName;
             ControllerName = controllerName;
             RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
-            StatusCode = StatusCodes.Status201Created;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper" /> used to generate URLs.
         /// </summary>
-        public IUrlHelper UrlHelper { get; set; }
+        public IUrlHelper? UrlHelper { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the action to use for generating the URL.
         /// </summary>
-        public string ActionName { get; set; }
+        public string? ActionName { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the controller to use for generating the URL.
         /// </summary>
-        public string ControllerName { get; set; }
+        public string? ControllerName { get; set; }
 
         /// <summary>
         /// Gets or sets the route data to use for generating the URL.
         /// </summary>
-        public RouteValueDictionary RouteValues { get; set; }
+        public RouteValueDictionary? RouteValues { get; set; }
 
         /// <inheritdoc />
         public override void OnFormatting(ActionContext context)
@@ -88,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
-            context.HttpContext.Response.Headers[HeaderNames.Location] = url;
+            context.HttpContext.Response.Headers.Location = url;
         }
     }
 }

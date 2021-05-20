@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class SendUtils
     {
-        public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger)
+        public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken = default)
         {
             Log.SendStarted(logger);
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                             // rather than buffer the entire response. This gives a small perf boost.
                             // Note that it is important to dispose of the response when doing this to
                             // avoid leaving the connection open.
-                            using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                            using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                             {
                                 response.EnsureSuccessStatusCode();
                             }
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _buffer = buffer;
             }
 
-            protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
             {
                 return stream.WriteAsync(_buffer).AsTask();
             }
@@ -111,22 +111,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _sendStarted =
+            private static readonly Action<ILogger, Exception?> _sendStarted =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(100, "SendStarted"), "Starting the send loop.");
 
-            private static readonly Action<ILogger, Exception> _sendStopped =
+            private static readonly Action<ILogger, Exception?> _sendStopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(101, "SendStopped"), "Send loop stopped.");
 
-            private static readonly Action<ILogger, Exception> _sendCanceled =
+            private static readonly Action<ILogger, Exception?> _sendCanceled =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(102, "SendCanceled"), "Send loop canceled.");
 
-            private static readonly Action<ILogger, long, Uri, Exception> _sendingMessages =
+            private static readonly Action<ILogger, long, Uri, Exception?> _sendingMessages =
                 LoggerMessage.Define<long, Uri>(LogLevel.Debug, new EventId(103, "SendingMessages"), "Sending {Count} bytes to the server using url: {Url}.");
 
-            private static readonly Action<ILogger, Exception> _sentSuccessfully =
+            private static readonly Action<ILogger, Exception?> _sentSuccessfully =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(104, "SentSuccessfully"), "Message(s) sent successfully.");
 
-            private static readonly Action<ILogger, Exception> _noMessages =
+            private static readonly Action<ILogger, Exception?> _noMessages =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(105, "NoMessages"), "No messages in batch to send.");
 
             private static readonly Action<ILogger, Uri, Exception> _errorSending =

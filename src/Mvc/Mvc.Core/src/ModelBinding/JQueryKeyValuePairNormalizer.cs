@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
-    // Normalizes keys, in a keyvaluepair collection, from jQuery format to a format that MVC understands.
+    // Normalizes keys, in a KeyValuePair collection, from jQuery format to a format that MVC understands.
     internal static class JQueryKeyValuePairNormalizer
     {
         public static IDictionary<string, StringValues> GetValues(

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity
     // See http://tools.ietf.org/html/rfc3548#section-5
     internal static class Base32
     {
-        private static readonly string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        private const string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
         public static string ToBase32(byte[] input)
         {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Identity
             uint b1, b2, b3, b4, b5;
 
             int retVal;
-            switch (offset - input.Length)
+            switch (input.Length - offset)
             {
                 case 1: retVal = 2; break;
                 case 2: retVal = 4; break;

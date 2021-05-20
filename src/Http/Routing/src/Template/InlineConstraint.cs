@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class InlineConstraint
     {
         /// <summary>
-        /// Creates a new <see cref="InlineConstraint"/>.
+        /// Creates a new instance of <see cref="InlineConstraint"/>.
         /// </summary>
         /// <param name="constraint">The constraint text.</param>
         public InlineConstraint(string constraint)
@@ -22,6 +23,20 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             Constraint = constraint;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="InlineConstraint"/> instance given a <see cref="RoutePatternParameterPolicyReference"/>.
+        /// </summary>
+        /// <param name="other">A <see cref="RoutePatternParameterPolicyReference"/> instance.</param>
+        public InlineConstraint(RoutePatternParameterPolicyReference other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            Constraint = other.Content!;
         }
 
         /// <summary>

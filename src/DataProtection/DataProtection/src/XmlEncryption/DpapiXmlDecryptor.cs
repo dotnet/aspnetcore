@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// Creates a new instance of a <see cref="DpapiXmlDecryptor"/>.
         /// </summary>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public DpapiXmlDecryptor(IServiceProvider services)
+        public DpapiXmlDecryptor(IServiceProvider? services)
         {
             CryptoUtil.AssertPlatformIsWindows();
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(encryptedElement));
             }
 
-            _logger?.DecryptingSecretElementUsingWindowsDPAPI();
+            _logger.DecryptingSecretElementUsingWindowsDPAPI();
 
             try
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 //   <value>{base64}</value>
                 // </encryptedKey>
 
-                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value")!);
                 using (var secret = DpapiSecretSerializerHelper.UnprotectWithDpapi(protectedSecret))
                 {
                     return secret.ToXElement();
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             {
                 // It's OK for us to log the error, as we control the exception, and it doesn't contain
                 // sensitive information.
-                _logger?.ExceptionOccurredTryingToDecryptElement(ex);
+                _logger.ExceptionOccurredTryingToDecryptElement(ex);
                 throw;
             }
         }

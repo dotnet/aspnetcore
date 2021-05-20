@@ -1,19 +1,28 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// Collection of <see cref="IPageConvention"/>.
+    /// </summary>
     public class PageConventionCollection : Collection<IPageConvention>
     {
+        private readonly IServiceProvider _serviceProvider;
+        private MvcOptions _mvcOptions;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PageConventionCollection"/> class that is empty.
         /// </summary>
         public PageConventionCollection()
+            : this((IServiceProvider)null)
         {
         }
 
@@ -25,6 +34,21 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public PageConventionCollection(IList<IPageConvention> conventions)
             : base(conventions)
         {
+        }
+
+        internal PageConventionCollection(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        internal MvcOptions MvcOptions
+        {
+            get
+            {
+                // Avoid eagerly getting to the MvcOptions from the options setup for RazorPagesOptions.
+                _mvcOptions ??= _serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
+                return _mvcOptions;
+            }
         }
 
         /// <summary>
@@ -261,7 +285,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         // Internal for unit testing
-        internal static void EnsureValidPageName(string pageName)
+        internal static void EnsureValidPageName(string pageName, string argumentName = "pageName")
         {
             if (string.IsNullOrEmpty(pageName))
             {

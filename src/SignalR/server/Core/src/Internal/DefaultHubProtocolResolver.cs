@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public class DefaultHubProtocolResolver : IHubProtocolResolver
+    internal class DefaultHubProtocolResolver : IHubProtocolResolver
     {
         private readonly ILogger<DefaultHubProtocolResolver> _logger;
         private readonly List<IHubProtocol> _hubProtocols;
@@ -23,20 +23,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _logger = logger ?? NullLogger<DefaultHubProtocolResolver>.Instance;
             _availableProtocols = new Dictionary<string, IHubProtocol>(StringComparer.OrdinalIgnoreCase);
 
-            // We might get duplicates in _hubProtocols, but we're going to check it and throw in just a sec.
-            _hubProtocols = availableProtocols.ToList();
-            foreach (var protocol in _hubProtocols)
+            foreach (var protocol in availableProtocols)
             {
-                if (_availableProtocols.ContainsKey(protocol.Name))
-                {
-                    throw new InvalidOperationException($"Multiple Hub Protocols with the name '{protocol.Name}' were registered.");
-                }
                 Log.RegisteredSignalRProtocol(_logger, protocol.Name, protocol.GetType());
-                _availableProtocols.Add(protocol.Name, protocol);
+                _availableProtocols[protocol.Name] = protocol;
             }
+            _hubProtocols = _availableProtocols.Values.ToList();
         }
 
-        public virtual IHubProtocol GetProtocol(string protocolName, IReadOnlyList<string> supportedProtocols)
+        public virtual IHubProtocol? GetProtocol(string protocolName, IReadOnlyList<string>? supportedProtocols)
         {
             protocolName = protocolName ?? throw new ArgumentNullException(nameof(protocolName));
 
@@ -54,10 +49,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private static class Log
         {
             // Category: DefaultHubProtocolResolver
-            private static readonly Action<ILogger, string, Type, Exception> _registeredSignalRProtocol =
+            private static readonly Action<ILogger, string, Type, Exception?> _registeredSignalRProtocol =
                 LoggerMessage.Define<string, Type>(LogLevel.Debug, new EventId(1, "RegisteredSignalRProtocol"), "Registered SignalR Protocol: {ProtocolName}, implemented by {ImplementationType}.");
 
-            private static readonly Action<ILogger, string, Exception> _foundImplementationForProtocol =
+            private static readonly Action<ILogger, string, Exception?> _foundImplementationForProtocol =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "FoundImplementationForProtocol"), "Found protocol implementation for requested protocol: {ProtocolName}.");
 
             public static void RegisteredSignalRProtocol(ILogger logger, string protocolName, Type implementationType)

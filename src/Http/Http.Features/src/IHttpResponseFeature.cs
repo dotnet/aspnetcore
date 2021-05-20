@@ -13,36 +13,43 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IHttpResponseFeature
     {
         /// <summary>
-        /// The status-code as defined in RFC 7230. The default value is 200.
+        /// Gets or sets the status-code as defined in RFC 7230.
         /// </summary>
+        /// <value>Defaults to <c>200</c>.</value>
         int StatusCode { get; set; }
 
         /// <summary>
-        /// The reason-phrase as defined in RFC 7230. Note this field is no longer supported by HTTP/2.
+        /// Gets or sets the reason-phrase as defined in RFC 7230. Note this field is no longer supported by HTTP/2.
         /// </summary>
-        string ReasonPhrase { get; set; }
+        string? ReasonPhrase { get; set; }
 
         /// <summary>
-        /// The response headers to send. Headers with multiple values will be emitted as multiple headers.
+        /// Gets or sets the response headers to send. Headers with multiple values will be emitted as multiple headers.
         /// </summary>
         IHeaderDictionary Headers { get; set; }
 
         /// <summary>
-        /// The <see cref="Stream"/> for writing the response body.
+        /// Gets or sets the <see cref="Stream"/> for writing the response body.
         /// </summary>
+        [Obsolete("Use IHttpResponseBodyFeature.Stream instead.", error: false)]
         Stream Body { get; set; }
 
         /// <summary>
-        /// Indicates if the response has started. If true, the <see cref="StatusCode"/>,
+        /// Gets a value that indicates if the response has started.
+        /// <para>
+        /// If <see langword="true"/>, the <see cref="StatusCode"/>,
         /// <see cref="ReasonPhrase"/>, and <see cref="Headers"/> are now immutable, and
-        /// OnStarting should no longer be called.
+        /// <see cref="OnStarting(Func{object, Task}, object)"/> should no longer be called.
+        /// </para>
         /// </summary>
         bool HasStarted { get; }
 
         /// <summary>
-        /// Registers a callback to be invoked just before the response starts. This is the
-        /// last chance to modify the <see cref="Headers"/>, <see cref="StatusCode"/>, or
+        /// Registers a callback to be invoked just before the response starts.
+        /// <para>
+        /// This is the last chance to modify the <see cref="Headers"/>, <see cref="StatusCode"/>, or
         /// <see cref="ReasonPhrase"/>.
+        /// </para>
         /// </summary>
         /// <param name="callback">The callback to invoke when starting the response.</param>
         /// <param name="state">The state to pass into the callback.</param>

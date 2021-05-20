@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Model name.
         /// </summary>
-        string Name { get; }
+        string? Name { get; }
     }
 }

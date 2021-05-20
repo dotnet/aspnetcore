@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.DataProtection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
+using ExtResources = Microsoft.AspNetCore.DataProtection.Extensions.Resources;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
+
     public class TimeLimitedDataProtectorTests
     {
         private const string TimeLimitedPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 => timeLimitedProtector.UnprotectCore(new byte[] { 0x10, 0x11 }, now, out var _));
 
             // Assert
-            Assert.Equal(Resources.FormatTimeLimitedDataProtector_PayloadExpired(expectedExpiration), ex.Message);
+            Assert.Equal(ExtResources.FormatTimeLimitedDataProtector_PayloadExpired(expectedExpiration), ex.Message);
         }
 
         [Fact]
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 => timeLimitedProtector.Unprotect(new byte[] { 0x10, 0x11 }, out var _));
 
             // Assert
-            Assert.Equal(Resources.TimeLimitedDataProtector_PayloadInvalid, ex.Message);
+            Assert.Equal(ExtResources.TimeLimitedDataProtector_PayloadInvalid, ex.Message);
         }
 
         [Fact]

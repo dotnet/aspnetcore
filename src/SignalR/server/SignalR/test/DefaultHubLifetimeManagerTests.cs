@@ -2,162 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.SignalR.Specification.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class DefaultHubLifetimeManagerTests
+    public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
     {
-        [Fact]
-        public async Task SendAllAsyncWritesToAllConnectionsOutput()
+        public override HubLifetimeManager<Hub> CreateNewHubLifetimeManager()
         {
-            using (var client1 = new TestClient())
-            using (var client2 = new TestClient())
-            {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
-                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
-
-                var message = Assert.IsType<InvocationMessage>(client1.TryRead());
-                Assert.Equal("Hello", message.Target);
-                Assert.Single(message.Arguments);
-                Assert.Equal("World", (string)message.Arguments[0]);
-
-                message = Assert.IsType<InvocationMessage>(client2.TryRead());
-                Assert.Equal("Hello", message.Target);
-                Assert.Single(message.Arguments);
-                Assert.Equal("World", (string)message.Arguments[0]);
-            }
-        }
-
-        [Fact]
-        public async Task SendAllAsyncDoesNotWriteToDisconnectedConnectionsOutput()
-        {
-            using (var client1 = new TestClient())
-            using (var client2 = new TestClient())
-            {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
-                await manager.OnDisconnectedAsync(connection2).OrTimeout();
-
-                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
-
-                var message = Assert.IsType<InvocationMessage>(client1.TryRead());
-                Assert.Equal("Hello", message.Target);
-                Assert.Single(message.Arguments);
-                Assert.Equal("World", (string)message.Arguments[0]);
-
-                Assert.Null(client2.TryRead());
-            }
-        }
-
-        [Fact]
-        public async Task SendGroupAsyncWritesToAllConnectionsInGroupOutput()
-        {
-            using (var client1 = new TestClient())
-            using (var client2 = new TestClient())
-            {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
-                await manager.AddToGroupAsync(connection1.ConnectionId, "gunit").OrTimeout();
-
-                await manager.SendGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
-
-                var message = Assert.IsType<InvocationMessage>(client1.TryRead());
-                Assert.Equal("Hello", message.Target);
-                Assert.Single(message.Arguments);
-                Assert.Equal("World", (string)message.Arguments[0]);
-
-                Assert.Null(client2.TryRead());
-            }
-        }
-
-        [Fact]
-        public async Task SendGroupExceptAsyncDoesNotWriteToExcludedConnections()
-        {
-            using (var client1 = new TestClient())
-            using (var client2 = new TestClient())
-            {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
-                await manager.AddToGroupAsync(connection1.ConnectionId, "gunit").OrTimeout();
-                await manager.AddToGroupAsync(connection2.ConnectionId, "gunit").OrTimeout();
-
-                await manager.SendGroupExceptAsync("gunit", "Hello", new object[] { "World" }, new []{ connection2.ConnectionId }).OrTimeout();
-
-                var message = Assert.IsType<InvocationMessage>(client1.TryRead());
-                Assert.Equal("Hello", message.Target);
-                Assert.Single(message.Arguments);
-                Assert.Equal("World", (string)message.Arguments[0]);
-
-                Assert.Null(client2.TryRead());
-            }
-        }
-
-        [Fact]
-        public async Task SendConnectionAsyncWritesToConnectionOutput()
-        {
-            using (var client = new TestClient())
-            {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-                var connection = HubConnectionContextUtils.Create(client.Connection);
-
-                await manager.OnConnectedAsync(connection).OrTimeout();
-
-                await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
-
-                var message = Assert.IsType<InvocationMessage>(client.TryRead());
-                Assert.Equal("Hello", message.Target);
-                Assert.Single(message.Arguments);
-                Assert.Equal("World", (string)message.Arguments[0]);
-            }
-        }
-
-        [Fact]
-        public async Task SendConnectionAsyncOnNonExistentConnectionNoops()
-        {
-            var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-            await manager.SendConnectionAsync("NotARealConnectionId", "Hello", new object[] { "World" }).OrTimeout();
-        }
-
-        [Fact]
-        public async Task AddGroupOnNonExistentConnectionNoops()
-        {
-            var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-            await manager.AddToGroupAsync("NotARealConnectionId", "MyGroup").OrTimeout();
-        }
-
-        [Fact]
-        public async Task RemoveGroupOnNonExistentConnectionNoops()
-        {
-            var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-            await manager.RemoveFromGroupAsync("NotARealConnectionId", "MyGroup").OrTimeout();
+            return new DefaultHubLifetimeManager<Hub>(new Logger<DefaultHubLifetimeManager<Hub>>(NullLoggerFactory.Instance));
         }
 
         [Fact]
@@ -166,32 +26,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager.OnConnectedAsync(connection2).DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendAllAsync("Hello", new object[] { "World" }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendAllAsync("Hello", new object[] { "World" }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
+                await sendTask.DefaultTimeout();
                 var message = Assert.IsType<InvocationMessage>(client1.TryRead());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
-
+                await tcs.Task.DefaultTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
             }
         }
@@ -202,27 +56,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager.OnConnectedAsync(connection2).DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendAllExceptAsync("Hello", new object[] { "World" }, new List<string> { connection1.ConnectionId }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendAllExceptAsync("Hello", new object[] { "World" }, new List<string> { connection1.ConnectionId }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                await sendTask.DefaultTimeout();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
-
+                await tcs.Task.DefaultTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
                 Assert.Null(client1.TryRead());
             }
@@ -233,24 +82,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (var client1 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendConnectionAsync(connection1.ConnectionId, "Hello", new object[] { "World" }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendConnectionAsync(connection1.ConnectionId, "Hello", new object[] { "World" }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                await sendTask.DefaultTimeout();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
+                await tcs.Task.DefaultTimeout();
             }
         }
 
@@ -259,24 +104,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (var client1 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendConnectionsAsync(new List<string> { connection1.ConnectionId }, "Hello", new object[] { "World" }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendConnectionsAsync(new List<string> { connection1.ConnectionId }, "Hello", new object[] { "World" }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                await sendTask.DefaultTimeout();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
+                await tcs.Task.DefaultTimeout();
             }
         }
 
@@ -285,26 +126,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (var client1 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-
-                await manager.AddToGroupAsync(connection1.ConnectionId, "group").OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager.AddToGroupAsync(connection1.ConnectionId, "group").DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendGroupAsync("group", "Hello", new object[] { "World" }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendGroupAsync("group", "Hello", new object[] { "World" }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                await sendTask.DefaultTimeout();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
+                await tcs.Task.DefaultTimeout();
             }
         }
 
@@ -314,30 +150,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
-                await manager.AddToGroupAsync(connection1.ConnectionId, "group").OrTimeout();
-                await manager.AddToGroupAsync(connection2.ConnectionId, "group").OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager.OnConnectedAsync(connection2).DefaultTimeout();
+                await manager.AddToGroupAsync(connection1.ConnectionId, "group").DefaultTimeout();
+                await manager.AddToGroupAsync(connection2.ConnectionId, "group").DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendGroupExceptAsync("group", "Hello", new object[] { "World" }, new List<string> { connection1.ConnectionId }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendGroupExceptAsync("group", "Hello", new object[] { "World" }, new List<string> { connection1.ConnectionId }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                await sendTask.DefaultTimeout();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
-
+                await tcs.Task.DefaultTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
                 Assert.Null(client1.TryRead());
             }
@@ -348,26 +178,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (var client1 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-
-                await manager.AddToGroupAsync(connection1.ConnectionId, "group").OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager.AddToGroupAsync(connection1.ConnectionId, "group").DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendGroupsAsync(new List<string> { "group" }, "Hello", new object[] { "World" }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendGroupsAsync(new List<string> { "group" }, "Hello", new object[] { "World" }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                await sendTask.DefaultTimeout();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
+                await tcs.Task.DefaultTimeout();
             }
         }
 
@@ -377,32 +202,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection, userIdentifier: "user");
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection, userIdentifier: "user");
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager.OnConnectedAsync(connection2).DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendUserAsync("user", "Hello", new object[] { "World" }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendUserAsync("user", "Hello", new object[] { "World" }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
+                await sendTask.DefaultTimeout();
                 var message = Assert.IsType<InvocationMessage>(client1.TryRead());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
-
+                await tcs.Task.DefaultTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
             }
         }
@@ -413,47 +232,27 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient(pauseWriterThreshold: 2))
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var manager = CreateNewHubLifetimeManager();
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection, userIdentifier: "user1");
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection, userIdentifier: "user2");
-
-                await manager.OnConnectedAsync(connection1).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
+                await manager.OnConnectedAsync(connection1).DefaultTimeout();
+                await manager.OnConnectedAsync(connection2).DefaultTimeout();
                 var cts = new CancellationTokenSource();
-                var sendTask = manager.SendUsersAsync(new List<string> { "user1", "user2" }, "Hello", new object[] { "World" }, cts.Token).OrTimeout();
-
+                var sendTask = manager.SendUsersAsync(new List<string> { "user1", "user2" }, "Hello", new object[] { "World" }, cts.Token).DefaultTimeout();
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
-                await sendTask.OrTimeout();
-
+                await sendTask.DefaultTimeout();
                 var message = Assert.IsType<InvocationMessage>(client1.TryRead());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
-
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
-                await tcs.Task.OrTimeout();
-
+                await tcs.Task.DefaultTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
-            }
-        }
-
-        private class MyHub : Hub
-        {
-
-        }
-
-        private class MockChannel: Channel<HubMessage>
-        {
-
-            public MockChannel(ChannelWriter<HubMessage> writer = null)
-            {
-                Writer = writer;
             }
         }
     }

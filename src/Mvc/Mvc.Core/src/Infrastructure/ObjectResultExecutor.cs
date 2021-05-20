@@ -1,15 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -24,10 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IOptions<MvcOptions> mvcOptions)
         {
             if (formatterSelector == null)
             {
@@ -84,51 +89,66 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(result));
             }
 
-            // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
-            // then the one set on ObjectResult takes precedence over the Response object
-            if (result.ContentTypes == null || result.ContentTypes.Count == 0)
-            {
-                var responseContentType = context.HttpContext.Response.ContentType;
-                if (!string.IsNullOrEmpty(responseContentType))
-                {
-                    if (result.ContentTypes == null)
-                    {
-                        result.ContentTypes = new MediaTypeCollection();
-                    }
-
-                    result.ContentTypes.Add(responseContentType);
-                }
-            }
+            InferContentTypes(context, result);
 
             var objectType = result.DeclaredType;
+
             if (objectType == null || objectType == typeof(object))
             {
                 objectType = result.Value?.GetType();
             }
 
+            var value = result.Value;
+            return ExecuteAsyncCore(context, result, objectType, value);
+        }
+
+        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type? objectType, object? value)
+        {
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
                 WriterFactory,
                 objectType,
-                result.Value);
+                value);
 
             var selectedFormatter = FormatterSelector.SelectFormatter(
-                formatterContext, 
-                (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(), 
+                formatterContext,
+                (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(),
                 result.ContentTypes);
             if (selectedFormatter == null)
             {
                 // No formatter supports this.
-                Logger.NoFormatter(formatterContext);
+                Logger.NoFormatter(formatterContext, result.ContentTypes);
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return Task.CompletedTask;
             }
 
-            Logger.ObjectResultExecuting(result.Value);
+            Logger.ObjectResultExecuting(result, value);
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
         }
+
+        private static void InferContentTypes(ActionContext context, ObjectResult result)
+        {
+            Debug.Assert(result.ContentTypes != null);
+
+            // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
+            // then the one set on ObjectResult takes precedence over the Response object
+            var responseContentType = context.HttpContext.Response.ContentType;
+            if (result.ContentTypes.Count == 0 && !string.IsNullOrEmpty(responseContentType))
+            {
+                result.ContentTypes.Add(responseContentType);
+            }
+
+            if (result.Value is ProblemDetails)
+            {
+                result.ContentTypes.Add("application/problem+json");
+                result.ContentTypes.Add("application/problem+xml");
+            }
+        }
+
+        // Removed Log.
+        // new EventId(1, "BufferingAsyncEnumerable")
     }
 }

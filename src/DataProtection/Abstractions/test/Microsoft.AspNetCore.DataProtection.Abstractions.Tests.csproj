@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetFxTargetFramework);$(DefaultNetCoreTargetFramework)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

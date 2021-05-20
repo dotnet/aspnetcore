@@ -16,13 +16,20 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
         public TwoFactorAuthentication(HttpClient client, IHtmlDocument twoFactor, DefaultUIContext context)
             : base(client, twoFactor, context)
         {
-            if (!Context.TwoFactorEnabled)
+            if (Context.CookiePolicyAccepted)
             {
-                _enableAuthenticatorLink = HtmlAssert.HasLink("#enable-authenticator", twoFactor);
+                if (!Context.TwoFactorEnabled)
+                {
+                    _enableAuthenticatorLink = HtmlAssert.HasLink("#enable-authenticator", twoFactor);
+                }
+                else
+                {
+                    _resetAuthenticatorLink = HtmlAssert.HasLink("#reset-authenticator", twoFactor);
+                }
             }
             else
             {
-                _resetAuthenticatorLink = HtmlAssert.HasLink("#reset-authenticator", twoFactor);
+                Assert.Contains("You must accept the policy before you can enable two factor authentication.", twoFactor.DocumentElement.TextContent);
             }
         }
 

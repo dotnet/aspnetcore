@@ -1,0 +1,72 @@
+version: 2
+updates:
+  # Keep submodules up to date in 'main'.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Weekly interval opens PRs on Monday.
+      interval: "weekly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dougbu"
+      - "juntaoluo"
+      - "wtgodbe"
+    commit-message:
+      prefix: "[main] "
+      include: scope
+    labels:
+      - area-infrastructure
+
+  # Keep submodules up to date in 'release/*' branches. (Unfortunately Dependabot security PRs can't target these.)
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Monthly interval opens PRs on the first of s Month.
+      interval: "monthly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dougbu"
+      - "juntaoluo"
+      - "wtgodbe"
+    commit-message:
+      prefix: "[release/2.1] "
+      include: scope
+    labels:
+      - area-infrastructure
+    target-branch: "release/2.1"
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Monthly interval opens PRs on the first of s Month.
+      interval: "monthly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dougbu"
+      - "juntaoluo"
+      - "wtgodbe"
+    commit-message:
+      prefix: "[release/3.1] "
+      include: scope
+    labels:
+      - area-infrastructure
+    target-branch: "release/3.1"
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      # Monthly interval opens PRs on the first of s Month.
+      interval: "monthly"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "dougbu"
+      - "juntaoluo"
+      - "wtgodbe"
+    commit-message:
+      prefix: "[release/5.0] "
+      include: scope
+    labels:
+      - area-infrastructure
+    target-branch: "release/5.0"

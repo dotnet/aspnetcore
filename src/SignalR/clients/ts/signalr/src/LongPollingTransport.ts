@@ -3,40 +3,50 @@
 
 import { AbortController } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, sendMessage } from "./Utils";
-
-const SHUTDOWN_TIMEOUT = 5 * 1000;
+import { Arg, getDataDetail, getUserAgentHeader, sendMessage } from "./Utils";
 
 // Not exported from 'index', this type is internal.
 /** @private */
 export class LongPollingTransport implements ITransport {
-    private readonly httpClient: HttpClient;
-    private readonly accessTokenFactory: () => string | Promise<string>;
-    private readonly logger: ILogger;
-    private readonly logMessageContent: boolean;
+    private readonly _httpClient: HttpClient;
+    private readonly _accessTokenFactory: (() => string | Promise<string>) | undefined;
+    private readonly _logger: ILogger;
+    private readonly _logMessageContent: boolean;
+    private readonly _withCredentials: boolean;
+    private readonly _pollAbort: AbortController;
+    private readonly _headers: MessageHeaders;
 
-    private url: string;
-    private pollAbort: AbortController;
-    private shutdownTimer: any; // We use 'any' because this is an object in NodeJS. But it still gets passed to clearTimeout, so it doesn't really matter
-    private shutdownTimeout: number;
-    private running: boolean;
-    private stopped: boolean;
+    private _url?: string;
+    private _running: boolean;
+    private _receiving?: Promise<void>;
+    private _closeError?: Error;
+
+    public onreceive: ((data: string | ArrayBuffer) => void) | null;
+    public onclose: ((error?: Error) => void) | null;
 
     // This is an internal type, not exported from 'index' so this is really just internal.
-    public get pollAborted() {
-        return this.pollAbort.aborted;
+    public get pollAborted(): boolean {
+        return this._pollAbort.aborted;
     }
 
-    constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean, shutdownTimeout?: number) {
-        this.httpClient = httpClient;
-        this.accessTokenFactory = accessTokenFactory || (() => null);
-        this.logger = logger;
-        this.pollAbort = new AbortController();
-        this.logMessageContent = logMessageContent;
-        this.shutdownTimeout = shutdownTimeout || SHUTDOWN_TIMEOUT;
+    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, logMessageContent: boolean, withCredentials: boolean, headers: MessageHeaders) {
+        this._httpClient = httpClient;
+        this._accessTokenFactory = accessTokenFactory;
+        this._logger = logger;
+        this._pollAbort = new AbortController();
+        this._logMessageContent = logMessageContent;
+        this._withCredentials = withCredentials;
+        this._headers = headers;
+
+        this._running = false;
+
+        this.onreceive = null;
+        this.onclose = null;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -44,166 +54,183 @@ export class LongPollingTransport implements ITransport {
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
 
-        this.url = url;
+        this._url = url;
 
-        this.logger.log(LogLevel.Trace, "(LongPolling transport) Connecting");
+        this._logger.log(LogLevel.Trace, "(LongPolling transport) Connecting.");
 
-        if (transferFormat === TransferFormat.Binary && (typeof new XMLHttpRequest().responseType !== "string")) {
-            // This will work if we fix: https://github.com/aspnet/SignalR/issues/742
+        // Allow binary format on Node and Browsers that support binary content (indicated by the presence of responseType property)
+        if (transferFormat === TransferFormat.Binary &&
+            (typeof XMLHttpRequest !== "undefined" && typeof new XMLHttpRequest().responseType !== "string")) {
             throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
         }
 
+        const [name, value] = getUserAgentHeader();
+        const headers = { [name]: value, ...this._headers };
+
         const pollOptions: HttpRequest = {
-            abortSignal: this.pollAbort.signal,
-            headers: {},
-            timeout: 90000,
+            abortSignal: this._pollAbort.signal,
+            headers,
+            timeout: 100000,
+            withCredentials: this._withCredentials,
         };
 
         if (transferFormat === TransferFormat.Binary) {
             pollOptions.responseType = "arraybuffer";
         }
 
-        const token = await this.accessTokenFactory();
-        this.updateHeaderToken(pollOptions, token);
-
-        let closeError: Error;
+        const token = await this._getAccessToken();
+        this._updateHeaderToken(pollOptions, token);
 
         // Make initial long polling request
         // Server uses first long polling request to finish initializing connection and it returns without data
         const pollUrl = `${url}&_=${Date.now()}`;
-        this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}`);
-        const response = await this.httpClient.get(pollUrl, pollOptions);
+        this._logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}.`);
+        const response = await this._httpClient.get(pollUrl, pollOptions);
         if (response.statusCode !== 200) {
-            this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
+            this._logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}.`);
 
             // Mark running as false so that the poll immediately ends and runs the close logic
-            closeError = new HttpError(response.statusText, response.statusCode);
-            this.running = false;
+            this._closeError = new HttpError(response.statusText || "", response.statusCode);
+            this._running = false;
         } else {
-            this.running = true;
+            this._running = true;
         }
 
-        // tslint:disable-next-line:no-floating-promises
-        this.poll(this.url, pollOptions, closeError);
-        return Promise.resolve();
+        this._receiving = this._poll(this._url, pollOptions);
     }
 
-    private updateHeaderToken(request: HttpRequest, token: string) {
+    private async _getAccessToken(): Promise<string | null> {
+        if (this._accessTokenFactory) {
+            return await this._accessTokenFactory();
+        }
+
+        return null;
+    }
+
+    private _updateHeaderToken(request: HttpRequest, token: string | null) {
+        if (!request.headers) {
+            request.headers = {};
+        }
         if (token) {
-            // tslint:disable-next-line:no-string-literal
-            request.headers["Authorization"] = `Bearer ${token}`;
+            request.headers[HeaderNames.Authorization] = `Bearer ${token}`;
             return;
         }
-        // tslint:disable-next-line:no-string-literal
-        if (request.headers["Authorization"]) {
-            // tslint:disable-next-line:no-string-literal
-            delete request.headers["Authorization"];
+        if (request.headers[HeaderNames.Authorization]) {
+            delete request.headers[HeaderNames.Authorization];
         }
     }
 
-    private async poll(url: string, pollOptions: HttpRequest, closeError: Error): Promise<void> {
+    private async _poll(url: string, pollOptions: HttpRequest): Promise<void> {
         try {
-            while (this.running) {
+            while (this._running) {
                 // We have to get the access token on each poll, in case it changes
-                const token = await this.accessTokenFactory();
-                this.updateHeaderToken(pollOptions, token);
+                const token = await this._getAccessToken();
+                this._updateHeaderToken(pollOptions, token);
 
                 try {
                     const pollUrl = `${url}&_=${Date.now()}`;
-                    this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}`);
-                    const response = await this.httpClient.get(pollUrl, pollOptions);
+                    this._logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}.`);
+                    const response = await this._httpClient.get(pollUrl, pollOptions);
 
                     if (response.statusCode === 204) {
-                        this.logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server");
+                        this._logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server.");
 
-                        this.running = false;
+                        this._running = false;
                     } else if (response.statusCode !== 200) {
-                        this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
+                        this._logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}.`);
 
                         // Unexpected status code
-                        closeError = new HttpError(response.statusText, response.statusCode);
-                        this.running = false;
+                        this._closeError = new HttpError(response.statusText || "", response.statusCode);
+                        this._running = false;
                     } else {
                         // Process the response
                         if (response.content) {
-                            this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this.logMessageContent)}`);
+                            this._logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this._logMessageContent)}.`);
                             if (this.onreceive) {
                                 this.onreceive(response.content);
                             }
                         } else {
                             // This is another way timeout manifest.
-                            this.logger.log(LogLevel.Trace, "(LongPolling transport) Poll timed out, reissuing.");
+                            this._logger.log(LogLevel.Trace, "(LongPolling transport) Poll timed out, reissuing.");
                         }
                     }
                 } catch (e) {
-                    if (!this.running) {
-                        // Log but disregard errors that occur after we were stopped by DELETE
-                        this.logger.log(LogLevel.Trace, `(LongPolling transport) Poll errored after shutdown: ${e.message}`);
+                    if (!this._running) {
+                        // Log but disregard errors that occur after stopping
+                        this._logger.log(LogLevel.Trace, `(LongPolling transport) Poll errored after shutdown: ${e.message}`);
                     } else {
                         if (e instanceof TimeoutError) {
                             // Ignore timeouts and reissue the poll.
-                            this.logger.log(LogLevel.Trace, "(LongPolling transport) Poll timed out, reissuing.");
+                            this._logger.log(LogLevel.Trace, "(LongPolling transport) Poll timed out, reissuing.");
                         } else {
                             // Close the connection with the error as the result.
-                            closeError = e;
-                            this.running = false;
+                            this._closeError = e;
+                            this._running = false;
                         }
                     }
                 }
             }
         } finally {
-            // Indicate that we've stopped so the shutdown timer doesn't get registered.
-            this.stopped = true;
+            this._logger.log(LogLevel.Trace, "(LongPolling transport) Polling complete.");
 
-            // Clean up the shutdown timer if it was registered
-            if (this.shutdownTimer) {
-                clearTimeout(this.shutdownTimer);
+            // We will reach here with pollAborted==false when the server returned a response causing the transport to stop.
+            // If pollAborted==true then client initiated the stop and the stop method will raise the close event after DELETE is sent.
+            if (!this.pollAborted) {
+                this._raiseOnClose();
             }
-
-            // Fire our onclosed event
-            if (this.onclose) {
-                this.logger.log(LogLevel.Trace, `(LongPolling transport) Firing onclose event. Error: ${closeError || "<undefined>"}`);
-                this.onclose(closeError);
-            }
-
-            this.logger.log(LogLevel.Trace, "(LongPolling transport) Transport finished.");
         }
     }
 
     public async send(data: any): Promise<void> {
-        if (!this.running) {
+        if (!this._running) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "LongPolling", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(this._logger, "LongPolling", this._httpClient, this._url!, this._accessTokenFactory, data, this._logMessageContent, this._withCredentials, this._headers);
     }
 
     public async stop(): Promise<void> {
-        // Send a DELETE request to stop the poll
+        this._logger.log(LogLevel.Trace, "(LongPolling transport) Stopping polling.");
+
+        // Tell receiving loop to stop, abort any current request, and then wait for it to finish
+        this._running = false;
+        this._pollAbort.abort();
+
         try {
-            this.running = false;
-            this.logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this.url}.`);
+            await this._receiving;
+
+            // Send DELETE to clean up long polling on the server
+            this._logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this._url}.`);
+
+            const headers = {};
+            const [name, value] = getUserAgentHeader();
+            headers[name] = value;
 
             const deleteOptions: HttpRequest = {
-                headers: {},
+                headers: { ...headers, ...this._headers },
+                withCredentials: this._withCredentials,
             };
-            const token = await this.accessTokenFactory();
-            this.updateHeaderToken(deleteOptions, token);
-            await this.httpClient.delete(this.url, deleteOptions);
+            const token = await this._getAccessToken();
+            this._updateHeaderToken(deleteOptions, token);
+            await this._httpClient.delete(this._url!, deleteOptions);
 
-            this.logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request accepted.");
+            this._logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request sent.");
         } finally {
-            // Abort the poll after the shutdown timeout if the server doesn't stop the poll.
-            if (!this.stopped) {
-                this.shutdownTimer = setTimeout(() => {
-                    this.logger.log(LogLevel.Warning, "(LongPolling transport) server did not terminate after DELETE request, canceling poll.");
+            this._logger.log(LogLevel.Trace, "(LongPolling transport) Stop finished.");
 
-                    // Abort any outstanding poll
-                    this.pollAbort.abort();
-                }, this.shutdownTimeout);
-            }
+            // Raise close event here instead of in polling
+            // It needs to happen after the DELETE request is sent
+            this._raiseOnClose();
         }
     }
 
-    public onreceive: (data: string | ArrayBuffer) => void;
-    public onclose: (error?: Error) => void;
+    private _raiseOnClose() {
+        if (this.onclose) {
+            let logMessage = "(LongPolling transport) Firing onclose event.";
+            if (this._closeError) {
+                logMessage += " Error: " + this._closeError;
+            }
+            this._logger.log(LogLevel.Trace, logMessage);
+            this.onclose(this._closeError);
+        }
+    }
 }

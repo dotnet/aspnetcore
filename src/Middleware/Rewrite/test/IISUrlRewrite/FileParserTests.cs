@@ -1,13 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
+using Microsoft.AspNetCore.Rewrite.UrlMatches;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             AssertUrlRewriteRuleEquality(expected, res);
@@ -58,11 +57,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewrite>";
 
             var condList = new ConditionCollection();
-            condList.Add(new Condition
-            {
-                Input = new InputParser().ParseInputString("{HTTPS}"),
-                Match = new RegexMatch(new Regex("^OFF$"), false)
-            });
+            condList.Add(new Condition(new InputParser().ParseInputString("{HTTPS}"), new RegexMatch(new Regex("^OFF$"), false)));
 
             var expected = new List<IISUrlRewriteRule>();
             expected.Add(CreateTestRule(condList,
@@ -72,7 +67,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             AssertUrlRewriteRuleEquality(expected, res);
@@ -102,11 +97,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewrite>";
 
             var condList = new ConditionCollection();
-            condList.Add(new Condition
-            {
-                Input = new InputParser().ParseInputString("{HTTPS}"),
-                Match = new RegexMatch(new Regex("^OFF$"), false)
-            });
+            condList.Add(new Condition(new InputParser().ParseInputString("{HTTPS}"), new RegexMatch(new Regex("^OFF$"), false)));
 
             var expected = new List<IISUrlRewriteRule>();
             expected.Add(CreateTestRule(condList,
@@ -121,7 +112,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             AssertUrlRewriteRuleEquality(expected, res);
@@ -150,12 +141,33 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewrite>";
 
             // act
-            var rules = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var rules = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             Assert.Equal(2, rules.Count);
             Assert.True(rules[0].Global);
             Assert.False(rules[1].Global);
+        }
+
+        [Fact]
+        public void Should_skip_empty_conditions()
+        {
+            // arrange
+            var xml = @"<rewrite>
+                            <rules>
+                                <rule name=""redirect-aspnet-mvc"" enabled=""true"" stopProcessing=""true"">
+                                    <match url=""^aspnet/Mvc"" />
+                                    <conditions logicalGrouping=""MatchAll"" trackAllCaptures=""false"" />
+                                    <action type=""Redirect"" url=""https://github.com/dotnet/aspnetcore"" />
+                                </rule>
+                            </rules>
+                        </rewrite>";
+
+            // act
+            var rules = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
+
+            // assert
+            Assert.Null(rules[0].Conditions);
         }
 
         // Creates a rule with appropriate default values of the url rewrite rule.

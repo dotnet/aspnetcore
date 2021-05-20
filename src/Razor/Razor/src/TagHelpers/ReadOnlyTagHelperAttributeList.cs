@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// </summary>
     public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHelperAttribute>
     {
-        private static readonly IReadOnlyList<TagHelperAttribute> EmptyList = new TagHelperAttribute[0];
-
         /// <summary>
         /// Instantiates a new instance of <see cref="ReadOnlyTagHelperAttributeList"/> with an empty
         /// collection.
@@ -54,11 +52,15 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 }
 
                 // Perf: Avoid allocating enumerator
-                for (var i = 0; i < Items.Count; i++)
+                var items = Items;
+                // Read interface .Count once rather than per iteration
+                var itemsCount = items.Count;
+                for (var i = 0; i < itemsCount; i++)
                 {
-                    if (NameEquals(name, Items[i]))
+                    var attribute = items[i];
+                    if (NameEquals(name, attribute))
                     {
-                        return Items[i];
+                        return attribute;
                     }
                 }
 
@@ -126,19 +128,23 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             // Perf: Avoid allocating enumerator
             List<TagHelperAttribute> matchedAttributes = null;
-            for (var i = 0; i < Items.Count; i++)
+            var items = Items;
+            // Read interface .Count once rather than per iteration
+            var itemsCount = items.Count;
+            for (var i = 0; i < itemsCount; i++)
             {
-                if (NameEquals(name, Items[i]))
+                var attribute = items[i];
+                if (NameEquals(name, attribute))
                 {
                     if (matchedAttributes == null)
                     {
                         matchedAttributes = new List<TagHelperAttribute>();
                     }
 
-                    matchedAttributes.Add(Items[i]);
+                    matchedAttributes.Add(attribute);
                 }
             }
-            attributes = matchedAttributes ?? EmptyList;
+            attributes = matchedAttributes ?? (IReadOnlyList<TagHelperAttribute>)Array.Empty<TagHelperAttribute>();
 
             return matchedAttributes != null;
         }
@@ -158,9 +164,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            for (var i = 0; i < Items.Count; i++)
+            var items = Items;
+            // Read interface .Count once rather than per iteration
+            var itemsCount = items.Count;
+            for (var i = 0; i < itemsCount; i++)
             {
-                if (NameEquals(name, Items[i]))
+                if (NameEquals(name, items[i]))
                 {
                     return i;
                 }

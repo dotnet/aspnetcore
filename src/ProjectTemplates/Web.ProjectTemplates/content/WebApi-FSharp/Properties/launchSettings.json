@@ -1,0 +1,44 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    //#if (WindowsAuth)
+    "windowsAuthentication": true,
+    "anonymousAuthentication": false,
+    //#else
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    //#endif
+    "iisExpress": {
+      "applicationUrl": "http://localhost:8080",
+      //#if(NoHttps)
+      "sslPort": 0
+      //#else
+      "sslPort": 44300
+      //#endif
+    }
+  },
+  "profiles": {
+    "Company.WebApplication1": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "weatherforecast",
+      //#if(NoHttps)
+      "applicationUrl": "http://localhost:5000",
+      //#else
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      //#endif
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "weatherforecast",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.StackTrace.Sources;
 
@@ -38,5 +41,15 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
         /// Request headers.
         /// </summary>
         public IDictionary<string, StringValues> Headers { get; set; }
+
+        /// <summary>
+        /// Request route values.
+        /// </summary>
+        public RouteValueDictionary RouteValues { get; set; }
+
+        /// <summary>
+        /// Request endpoint.
+        /// </summary>
+        public EndpointModel Endpoint { get; set; }
     }
 }

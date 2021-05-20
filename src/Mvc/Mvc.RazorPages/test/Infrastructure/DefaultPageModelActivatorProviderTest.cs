@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -109,6 +110,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.Null(releaser);
         }
 
+        [Theory]
+        [InlineData(typeof(SimpleModel))]
+        [InlineData(typeof(object))]
+        public void CreateAsyncReleaser_ReturnsNullForModelsThatDoNotImplementDisposable(Type pageType)
+        {
+            // Arrange
+            var context = new PageContext();
+            var activator = new DefaultPageModelActivatorProvider();
+            var actionDescriptor = new CompiledPageActionDescriptor
+            {
+                PageTypeInfo = pageType.GetTypeInfo(),
+            };
+
+            // Act
+            var releaser = activator.CreateAsyncReleaser(actionDescriptor);
+
+            // Assert
+            Assert.Null(releaser);
+        }
+
         [Fact]
         public void CreateReleaser_CreatesDelegateThatDisposesDisposableTypes()
         {
@@ -129,6 +150,70 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Assert
             Assert.True(model.Disposed);
+        }
+
+        [Fact]
+        public void CreateAsyncReleaser_CreatesDelegateThatDisposesDisposableTypes()
+        {
+            // Arrange
+            var context = new PageContext();
+            var viewContext = new ViewContext();
+            var activator = new DefaultPageModelActivatorProvider();
+            var model = new DisposableModel();
+
+            // Act & Assert
+            var disposer = activator.CreateAsyncReleaser(new CompiledPageActionDescriptor
+            {
+                ModelTypeInfo = model.GetType().GetTypeInfo()
+            });
+            Assert.NotNull(disposer);
+            disposer(context, model);
+
+            // Assert
+            Assert.True(model.Disposed);
+        }
+
+        [Fact]
+        public async Task CreateAsyncReleaser_CreatesDelegateThatDisposesAsyncDisposableTypes()
+        {
+            // Arrange
+            var context = new PageContext();
+            var viewContext = new ViewContext();
+            var activator = new DefaultPageModelActivatorProvider();
+            var model = new AsyncDisposableModel();
+
+            // Act & Assert
+            var disposer = activator.CreateAsyncReleaser(new CompiledPageActionDescriptor
+            {
+                ModelTypeInfo = model.GetType().GetTypeInfo()
+            });
+            Assert.NotNull(disposer);
+            await disposer(context, model);
+
+            // Assert
+            Assert.True(model.Disposed);
+        }
+
+        [Fact]
+        public async Task CreateAsyncReleaser_CreatesDelegateThatPrefersAsyncDisposeAsyncOverDispose()
+        {
+            // Arrange
+            var context = new PageContext();
+            var viewContext = new ViewContext();
+            var activator = new DefaultPageModelActivatorProvider();
+            var model = new DisposableAndAsyncDisposableModel();
+
+            // Act & Assert
+            var disposer = activator.CreateAsyncReleaser(new CompiledPageActionDescriptor
+            {
+                ModelTypeInfo = model.GetType().GetTypeInfo()
+            });
+            Assert.NotNull(disposer);
+            await disposer(context, model);
+
+            // Assert
+            Assert.True(model.AsyncDisposed);
+            Assert.False(model.SyncDisposed);
         }
 
         private class SimpleModel
@@ -152,6 +237,34 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             public void Dispose()
             {
                 Disposed = true;
+            }
+        }
+
+        private class AsyncDisposableModel : IAsyncDisposable
+        {
+            public bool Disposed { get; private set; }
+
+            public ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return default;
+            }
+        }
+
+        private class DisposableAndAsyncDisposableModel : IDisposable, IAsyncDisposable
+        {
+            public bool AsyncDisposed { get; private set; }
+            public bool SyncDisposed { get; private set; }
+
+            public void Dispose()
+            {
+                SyncDisposed = true;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                AsyncDisposed = true;
+                return default;
             }
         }
     }

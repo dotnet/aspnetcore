@@ -1,13 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class DefaultPageModelFactoryProvider : IPageModelFactoryProvider
+    internal class DefaultPageModelFactoryProvider : IPageModelFactoryProvider
     {
         private static readonly Func<PropertyInfo, PropertyActivator<PageContext>> _createActivateInfo =
             CreateActivateInfo;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _modelActivator = modelActivator;
         }
 
-        public virtual Func<PageContext, object> CreateModelFactory(CompiledPageActionDescriptor descriptor)
+        public Func<PageContext, object> CreateModelFactory(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public virtual Action<PageContext, object> CreateModelDisposer(CompiledPageActionDescriptor descriptor)
+        public Action<PageContext, object> CreateModelDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -62,6 +63,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             return _modelActivator.CreateReleaser(descriptor);
+        }
+
+        public Func<PageContext, object, ValueTask> CreateAsyncModelDisposer(CompiledPageActionDescriptor descriptor)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (descriptor.ModelTypeInfo == null)
+            {
+                return null;
+            }
+
+            return _modelActivator.CreateAsyncReleaser(descriptor);
         }
 
         private static PropertyActivator<PageContext> CreateActivateInfo(PropertyInfo property) =>

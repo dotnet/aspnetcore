@@ -1,20 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP server that uses the Windows HTTP Server API.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;weblistener;httpsys</PackageTags>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+
+    <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" LinkBase="ServerInfrastructure\StringUtilities.cs" />
+    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Win32.Registry" />

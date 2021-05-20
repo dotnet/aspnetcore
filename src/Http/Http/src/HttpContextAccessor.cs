@@ -5,20 +5,41 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Provides an implementation of <see cref="IHttpContextAccessor" /> based on the current execution context. 
+    /// </summary>
     public class HttpContextAccessor : IHttpContextAccessor
     {
-        private static AsyncLocal<HttpContext> _httpContextCurrent = new AsyncLocal<HttpContext>();
+        private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
-        public HttpContext HttpContext
+        /// <inheritdoc/>
+        public HttpContext? HttpContext
         {
             get
             {
-                return _httpContextCurrent.Value;
+                return  _httpContextCurrent.Value?.Context;
             }
             set
             {
-                _httpContextCurrent.Value = value;
+                var holder = _httpContextCurrent.Value;
+                if (holder != null)
+                {
+                    // Clear current HttpContext trapped in the AsyncLocals, as its done.
+                    holder.Context = null;
+                }
+
+                if (value != null)
+                {
+                    // Use an object indirection to hold the HttpContext in the AsyncLocal,
+                    // so it can be cleared in all ExecutionContexts when its cleared.
+                    _httpContextCurrent.Value = new HttpContextHolder { Context = value };
+                }
             }
+        }
+
+        private class HttpContextHolder
+        {
+            public HttpContext? Context;
         }
     }
 }

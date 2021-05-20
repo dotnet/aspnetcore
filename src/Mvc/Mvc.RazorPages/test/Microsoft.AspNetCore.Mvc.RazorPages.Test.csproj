@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TestCommon" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TestDiagnosticListener" />
+    <Compile Include="..\..\Mvc.Core\test\Routing\ActionEndpointDataSourceBaseTest.cs" Link="Infrastructure\ActionEndpointDataSourceBaseTest.cs" />
+  </ItemGroup>
 
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <ProjectReference Include="..\..\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+    <ProjectReference Include="..\..\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
   </ItemGroup>
 
 </Project>

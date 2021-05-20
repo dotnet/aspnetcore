@@ -1,0 +1,24 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+@inject NavigationManager NavigationManager
+
+<h3>NavigateOnSubmit</h3>
+
+<EditForm Model="@this" OnValidSubmit="NavigateToPage">
+    <input @onblur="HandleBlur" id="text-input"/>
+</EditForm>
+
+@code {
+    public string Name { get; set; }
+
+    public void NavigateToPage()
+    {
+        NavigationManager.NavigateTo("/subdir");
+    }
+
+    public void HandleBlur()
+    {
+        Console.WriteLine("Inside HandleBlur...");
+    }
+
+}

@@ -7,17 +7,28 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// A model for attribute routes.
+    /// </summary>
     public class AttributeRouteModel
     {
         private static readonly AttributeRouteModel _default = new AttributeRouteModel();
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AttributeRoute"/>.
+        /// </summary>
         public AttributeRouteModel()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AttributeRoute"/> using the specified <paramref name="templateProvider"/>.
+        /// </summary>
+        /// <param name="templateProvider">The <see cref="IRouteTemplateProvider"/>.</param>
         public AttributeRouteModel(IRouteTemplateProvider templateProvider)
         {
             if (templateProvider == null)
@@ -31,6 +42,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Name = templateProvider.Name;
         }
 
+        /// <summary>
+        /// Copy constructor for <see cref="AttributeRoute"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="AttributeRouteModel"/> to copy.</param>
         public AttributeRouteModel(AttributeRouteModel other)
         {
             if (other == null)
@@ -46,13 +61,25 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             SuppressPathMatching = other.SuppressPathMatching;
         }
 
-        public IRouteTemplateProvider Attribute { get;}
+        /// <summary>
+        /// Gets the <see cref="IRouteTemplateProvider"/>.
+        /// </summary>
+        public IRouteTemplateProvider? Attribute { get; }
 
-        public string Template { get; set; }
+        /// <summary>
+        /// Gets or sets the attribute route template.
+        /// </summary>
+        public string? Template { get; set; }
 
+        /// <summary>
+        /// Gets or sets the route order.
+        /// </summary>
         public int? Order { get; set; }
 
-        public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the route name.
+        /// </summary>
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value that determines if this model participates in link generation.
@@ -64,6 +91,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public bool SuppressPathMatching { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that determines if this route template for this model overrides the route template at the parent scope.
+        /// </summary>
         public bool IsAbsoluteTemplate => Template != null && IsOverridePattern(Template);
 
         /// <summary>
@@ -75,9 +105,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <returns>A new instance of <see cref="AttributeRouteModel"/> that represents the
         /// combination of the two <see cref="AttributeRouteModel"/> instances or <c>null</c> if both
         /// parameters are <c>null</c>.</returns>
-        public static AttributeRouteModel CombineAttributeRouteModel(
-            AttributeRouteModel left,
-            AttributeRouteModel right)
+        public static AttributeRouteModel? CombineAttributeRouteModel(
+            AttributeRouteModel? left,
+            AttributeRouteModel? right)
         {
             right = right ?? _default;
 
@@ -112,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <param name="prefix">The prefix.</param>
         /// <param name="template">The route template.</param>
         /// <returns>The combined pattern.</returns>
-        public static string CombineTemplates(string prefix, string template)
+        public static string? CombineTemplates(string? prefix, string? template)
         {
             var result = CombineCore(prefix, template);
             return CleanTemplate(result);
@@ -126,14 +156,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <remarks>
         /// Route templates starting with "~/" or "/" can be used to override the prefix.
         /// </remarks>
-        public static bool IsOverridePattern(string template)
+        public static bool IsOverridePattern(string? template)
         {
             return template != null &&
                 (template.StartsWith("~/", StringComparison.Ordinal) ||
                 template.StartsWith("/", StringComparison.Ordinal));
         }
 
-        private static string ChooseName(
+        private static string? ChooseName(
             AttributeRouteModel left,
             AttributeRouteModel right)
         {
@@ -147,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private static string CombineCore(string left, string right)
+        private static string? CombineCore(string? left, string? right)
         {
             if (left == null && right == null)
             {
@@ -162,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 return right;
             }
 
-            if (left.EndsWith("/", StringComparison.Ordinal))
+            if (left!.EndsWith("/", StringComparison.Ordinal))
             {
                 return left + right;
             }
@@ -171,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return left + "/" + right;
         }
 
-        private static bool IsEmptyLeftSegment(string template)
+        private static bool IsEmptyLeftSegment(string? template)
         {
             return template == null ||
                 template.Equals(string.Empty, StringComparison.Ordinal) ||
@@ -179,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 template.Equals("/", StringComparison.Ordinal);
         }
 
-        private static string CleanTemplate(string result)
+        private static string? CleanTemplate(string? result)
         {
             if (result == null)
             {
@@ -219,12 +249,31 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return result.Substring(startIndex, subStringLength);
         }
 
-        public static string ReplaceTokens(string template, IDictionary<string, string> values)
+        /// <summary>
+        /// Replaces the tokens in the template with the provided values.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="values">The token values to use.</param>
+        /// <returns>A new string with the replaced values.</returns>
+        public static string ReplaceTokens(string template, IDictionary<string, string?> values)
+        {
+            return ReplaceTokens(template, values, routeTokenTransformer: null);
+        }
+
+        /// <summary>
+        /// Replaces the tokens in the template with the provided values and route token transformer.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="values">The token values to use.</param>
+        /// <param name="routeTokenTransformer">The route token transformer.</param>
+        /// <returns>A new string with the replaced values.</returns>
+        public static string ReplaceTokens(string template, IDictionary<string, string?> values, IOutboundParameterTransformer? routeTokenTransformer)
         {
             var builder = new StringBuilder();
             var state = TemplateParserState.Plaintext;
 
             int? tokenStart = null;
+            var scope = 0;
 
             // We'll run the loop one extra time with 'null' to detect the end of the string.
             for (var i = 0; i <= template.Length; i++)
@@ -235,6 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     case TemplateParserState.Plaintext:
                         if (c == '[')
                         {
+                            scope++;
                             state = TemplateParserState.SeenLeft;
                             break;
                         }
@@ -315,6 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                         }
                         else if (c == ']')
                         {
+                            --scope;
                             state = TemplateParserState.InsideToken | TemplateParserState.SeenRight;
                             break;
                         }
@@ -347,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                             throw new InvalidOperationException(message);
                         }
                     case TemplateParserState.InsideToken | TemplateParserState.SeenRight:
-                        if (c == ']')
+                        if (c == ']' && scope == 0)
                         {
                             // This is an escaped right-bracket
                             state = TemplateParserState.InsideToken;
@@ -357,7 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                         {
                             // This is the end of a replacement token.
                             var token = template
-                                .Substring(tokenStart.Value, i - tokenStart.Value - 1)
+                                .Substring(tokenStart!.Value, i - tokenStart.Value - 1)
                                 .Replace("[[", "[")
                                 .Replace("]]", "]");
 
@@ -369,6 +420,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                                     token,
                                     string.Join(", ", values.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase)));
                                 throw new InvalidOperationException(message);
+                            }
+
+                            if (routeTokenTransformer != null)
+                            {
+                                value = routeTokenTransformer.TransformOutbound(value);
                             }
 
                             builder.Append(value);
@@ -391,6 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                                 state = TemplateParserState.Plaintext;
                             }
 
+                            scope = 0;
                             tokenStart = null;
                             break;
                         }

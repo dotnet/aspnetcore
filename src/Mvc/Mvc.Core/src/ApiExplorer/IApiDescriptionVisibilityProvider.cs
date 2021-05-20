@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public interface IApiDescriptionVisibilityProvider
     {
         /// <summary>
-        /// If <c>false</c> then no <c>ApiDescription</c> objects will be created for the associated controller
+        /// If <c>true</c> then no <c>ApiDescription</c> objects will be created for the associated controller
         /// or action.
         /// </summary>
         bool IgnoreApi { get; }

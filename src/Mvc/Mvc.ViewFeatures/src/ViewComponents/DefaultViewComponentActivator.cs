@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Internal;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -13,9 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     /// <remarks>
     /// The <see cref="DefaultViewComponentActivator"/> can provide the current instance of
     /// <see cref="ViewComponentContext"/> to a public property of a view component marked
-    /// with <see cref="ViewComponentContextAttribute"/>. 
+    /// with <see cref="ViewComponentContextAttribute"/>.
     /// </remarks>
-    public class DefaultViewComponentActivator : IViewComponentActivator
+    internal class DefaultViewComponentActivator : IViewComponentActivator
     {
         private readonly ITypeActivatorCache _typeActivatorCache;
 
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         }
 
         /// <inheritdoc />
-        public virtual object Create(ViewComponentContext context)
+        public object Create(ViewComponentContext context)
         {
             if (context == null)
             {
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             var componentType = context.ViewComponentDescriptor.TypeInfo;
-            
+
             if (componentType == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         }
 
         /// <inheritdoc />
-        public virtual void Release(ViewComponentContext context, object viewComponent)
+        public void Release(ViewComponentContext context, object viewComponent)
         {
             if (context == null)
             {
@@ -72,11 +73,31 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new InvalidOperationException(nameof(viewComponent));
             }
 
-            var disposable = viewComponent as IDisposable;
-            if (disposable != null)
+            if (viewComponent is IDisposable disposable)
             {
                 disposable.Dispose();
             }
+        }
+
+        public ValueTask ReleaseAsync(ViewComponentContext context, object viewComponent)
+        {
+            if (context == null)
+            {
+                throw new InvalidOperationException(nameof(context));
+            }
+
+            if (viewComponent == null)
+            {
+                throw new InvalidOperationException(nameof(viewComponent));
+            }
+
+            if (viewComponent is IAsyncDisposable disposable)
+            {
+                return disposable.DisposeAsync();
+            }
+
+            Release(context, viewComponent);
+            return default;
         }
     }
 }

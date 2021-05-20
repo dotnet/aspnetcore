@@ -13,7 +13,7 @@ namespace System.Net.WebSockets
     {
         public static ValueTask SendAsync(this WebSocket webSocket, ReadOnlySequence<byte> buffer, WebSocketMessageType webSocketMessageType, CancellationToken cancellationToken = default)
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP
             if (buffer.IsSingleSegment)
             {
                 return webSocket.SendAsync(buffer.First, webSocketMessageType, endOfMessage: true, cancellationToken);
@@ -39,22 +39,28 @@ namespace System.Net.WebSockets
         private static async ValueTask SendMultiSegmentAsync(WebSocket webSocket, ReadOnlySequence<byte> buffer, WebSocketMessageType webSocketMessageType, CancellationToken cancellationToken = default)
         {
             var position = buffer.Start;
+            // Get a segment before the loop so we can be one segment behind while writing
+            // This allows us to do a non-zero byte write for the endOfMessage = true send
+            buffer.TryGet(ref position, out var prevSegment);
             while (buffer.TryGet(ref position, out var segment))
             {
-#if NETCOREAPP2_1
-                await webSocket.SendAsync(segment, webSocketMessageType, endOfMessage: false, cancellationToken);
+#if NETCOREAPP
+                await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: false, cancellationToken);
 #else
-                var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
+                var isArray = MemoryMarshal.TryGetArray(prevSegment, out var arraySegment);
                 Debug.Assert(isArray);
                 await webSocket.SendAsync(arraySegment, webSocketMessageType, endOfMessage: false, cancellationToken);
 #endif
+                prevSegment = segment;
             }
 
-            // Empty end of message frame
-#if NETCOREAPP2_1
-            await webSocket.SendAsync(Memory<byte>.Empty, webSocketMessageType, endOfMessage: true, cancellationToken);
+            // End of message frame
+#if NETCOREAPP
+            await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: true, cancellationToken);
 #else
-            await webSocket.SendAsync(new ArraySegment<byte>(Array.Empty<byte>()), webSocketMessageType, endOfMessage: true, cancellationToken);
+            var isArrayEnd = MemoryMarshal.TryGetArray(prevSegment, out var arraySegmentEnd);
+            Debug.Assert(isArrayEnd);
+            await webSocket.SendAsync(arraySegmentEnd, webSocketMessageType, endOfMessage: true, cancellationToken);
 #endif
         }
     }

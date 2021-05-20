@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
         /// <returns>A task.</returns>
-        Task SignOutAsync(AuthenticationProperties properties);
+        Task SignOutAsync(AuthenticationProperties? properties);
     }
 
 }

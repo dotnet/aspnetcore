@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the key used to get or add the property from value from <see cref="ViewDataDictionary"/>.
         /// When unspecified, the key is the property name.
         /// </summary>
-        public string Key { get; set; }
+        public string? Key { get; set; }
     }
 }

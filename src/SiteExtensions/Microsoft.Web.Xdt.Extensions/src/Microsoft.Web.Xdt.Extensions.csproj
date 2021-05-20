@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Additional functionality for Xdt transforms.</Description>
+    <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
+    <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
+    <IsPackable>false</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Xdt" />
+  </ItemGroup>
+
+</Project>

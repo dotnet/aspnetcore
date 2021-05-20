@@ -174,4 +174,10 @@
   <data name="BindingSource_FormFile" xml:space="preserve">
     <value>FormFile</value>
   </data>
+  <data name="BinderType_MustBeIModelBinder" xml:space="preserve">
+    <value>The type '{0}' must implement '{1}' to be used as a model binder.</value>
+  </data>
+  <data name="RecordTypeHasValidationOnProperties" xml:space="preserve">
+    <value>Record type '{0}' has validation metadata defined on property '{1}' that will be ignored. '{1}' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.</value>
+  </data>
 </root>

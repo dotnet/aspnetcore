@@ -2,24 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Extension methods for the IIS Out-Of-Process.
+    /// </summary>
     public static class WebHostBuilderIISExtensions
     {
         // These are defined as ASPNETCORE_ environment variables by IIS's AspNetCoreModule.
-        private static readonly string ServerPort = "PORT";
-        private static readonly string ServerPath = "APPL_PATH";
-        private static readonly string PairingToken = "TOKEN";
-        private static readonly string IISAuth = "IIS_HTTPAUTH";
-        private static readonly string IISWebSockets = "IIS_WEBSOCKETS_SUPPORTED";
+        private const string ServerPort = "PORT";
+        private const string ServerPath = "APPL_PATH";
+        private const string PairingToken = "TOKEN";
+        private const string IISAuth = "IIS_HTTPAUTH";
+        private const string IISWebSockets = "IIS_WEBSOCKETS_SUPPORTED";
 
         /// <summary>
         /// Configures the port and base path the server should listen on when running behind AspNetCoreModule.
@@ -82,9 +84,14 @@ namespace Microsoft.AspNetCore.Hosting
 
                 hostBuilder.ConfigureServices(services =>
                 {
-                    // Delay register the url so users don't accidently overwrite it.
+                    // Delay register the url so users don't accidentally overwrite it.
                     hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
                     hostBuilder.PreferHostingUrls(true);
+                    services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
+                    {
+                        IsEnabled = enableAuth,
+                        AuthenticationScheme = IISDefaults.AuthenticationScheme
+                    });
                     services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken, new PathString(path), isWebSocketsSupported));
                     services.Configure<ForwardedHeadersOptions>(options =>
                     {

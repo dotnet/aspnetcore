@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <summary>
         /// The endpoint Kestrel will bind to if nothing else is specified.
         /// </summary>
-        public static readonly string DefaultServerAddress = "http://localhost:5000";
+        public const string DefaultServerAddress = "http://localhost:5000";
 
         /// <summary>
         /// The endpoint Kestrel will bind to if nothing else is specified and a default certificate is available.
         /// </summary>
-        public static readonly string DefaultServerHttpsAddress = "https://localhost:5001";
+        public const string DefaultServerHttpsAddress = "https://localhost:5001";
 
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.
@@ -37,7 +37,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public const string ServerName = "Kestrel";
 
         public static readonly TimeSpan RequestBodyDrainTimeout = TimeSpan.FromSeconds(5);
-
-        public static readonly ArraySegment<byte> EmptyData = new ArraySegment<byte>(new byte[0]);
     }
 }

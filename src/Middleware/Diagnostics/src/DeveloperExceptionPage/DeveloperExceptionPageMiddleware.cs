@@ -4,21 +4,25 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.Internal;
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
-    /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
+    /// Captures synchronous and asynchronous exceptions from the pipeline and generates error responses.
     /// </summary>
     public class DeveloperExceptionPageMiddleware
     {
@@ -28,6 +32,8 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly IFileProvider _fileProvider;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
+        private readonly Func<ErrorContext, Task> _exceptionHandler;
+        private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -37,12 +43,14 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <param name="loggerFactory"></param>
         /// <param name="hostingEnvironment"></param>
         /// <param name="diagnosticSource"></param>
+        /// <param name="filters"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
-            IHostingEnvironment hostingEnvironment,
-            DiagnosticSource diagnosticSource)
+            IWebHostEnvironment hostingEnvironment,
+            DiagnosticSource diagnosticSource,
+            IEnumerable<IDeveloperPageExceptionFilter> filters)
         {
             if (next == null)
             {
@@ -54,12 +62,24 @@ namespace Microsoft.AspNetCore.Diagnostics
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (filters == null)
+            {
+                throw new ArgumentNullException(nameof(filters));
+            }
+
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
             _diagnosticSource = diagnosticSource;
-            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
+            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
+            _exceptionHandler = DisplayException;
+
+            foreach (var filter in filters.Reverse())
+            {
+                var nextFilter = _exceptionHandler;
+                _exceptionHandler = errorContext => filter.HandleExceptionAsync(errorContext, nextFilter);
+            }
         }
 
         /// <summary>
@@ -88,7 +108,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     context.Response.Clear();
                     context.Response.StatusCode = 500;
 
-                    await DisplayException(context, ex);
+                    await _exceptionHandler(new ErrorContext(context, ex));
 
                     if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.UnhandledException"))
                     {
@@ -107,25 +127,43 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
-        private Task DisplayException(HttpContext context, Exception ex)
+        private Task DisplayException(ErrorContext errorContext)
         {
-            var compilationException = ex as ICompilationException;
-            if (compilationException != null)
+            var httpContext = errorContext.HttpContext;
+            var headers = httpContext.Request.GetTypedHeaders();
+            var acceptHeader = headers.Accept;
+
+            // If the client does not ask for HTML just format the exception as plain text
+            if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textHtmlMediaType)))
             {
-                return DisplayCompilationException(context, compilationException);
+                httpContext.Response.ContentType = "text/plain";
+
+                var sb = new StringBuilder();
+                sb.AppendLine(errorContext.Exception.ToString());
+                sb.AppendLine();
+                sb.AppendLine("HEADERS");
+                sb.AppendLine("=======");
+                foreach (var pair in httpContext.Request.Headers)
+                {
+                    sb.AppendLine($"{pair.Key}: {pair.Value}");
+                }
+
+                return httpContext.Response.WriteAsync(sb.ToString());
             }
 
-            return DisplayRuntimeException(context, ex);
+            if (errorContext.Exception is ICompilationException compilationException)
+            {
+                return DisplayCompilationException(httpContext, compilationException);
+            }
+
+            return DisplayRuntimeException(httpContext, errorContext.Exception);
         }
 
         private Task DisplayCompilationException(
             HttpContext context,
             ICompilationException compilationException)
         {
-            var model = new CompilationErrorPageModel
-            {
-                Options = _options,
-            };
+            var model = new CompilationErrorPageModel(_options);
 
             var errorPage = new CompilationErrorPage
             {
@@ -145,11 +183,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 }
 
                 var stackFrames = new List<StackFrameSourceCodeInfo>();
-                var exceptionDetails = new ExceptionDetails
-                {
-                    StackFrames = stackFrames,
-                    ErrorMessage = compilationFailure.FailureSummary,
-                };
+                var exceptionDetails = new ExceptionDetails(compilationFailure.FailureSummary!, stackFrames);
                 model.ErrorDetails.Add(exceptionDetails);
                 model.CompiledContent.Add(compilationFailure.CompiledContent);
 
@@ -192,6 +226,27 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         private Task DisplayRuntimeException(HttpContext context, Exception ex)
         {
+            var endpoint = context.Features.Get<IEndpointFeature>()?.Endpoint;
+
+            EndpointModel? endpointModel = null;
+            if (endpoint != null)
+            {
+                endpointModel = new EndpointModel();
+                endpointModel.DisplayName = endpoint.DisplayName;
+
+                if (endpoint is RouteEndpoint routeEndpoint)
+                {
+                    endpointModel.RoutePattern = routeEndpoint.RoutePattern.RawText;
+                    endpointModel.Order = routeEndpoint.Order;
+
+                    var httpMethods = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods;
+                    if (httpMethods != null)
+                    {
+                        endpointModel.HttpMethods = string.Join(", ", httpMethods);
+                    }
+                }
+            }
+
             var request = context.Request;
 
             var model = new ErrorPageModel
@@ -200,7 +255,9 @@ namespace Microsoft.AspNetCore.Diagnostics
                 ErrorDetails = _exceptionDetailsProvider.GetDetails(ex),
                 Query = request.Query,
                 Cookies = request.Cookies,
-                Headers = request.Headers
+                Headers = request.Headers,
+                RouteValues = request.RouteValues,
+                Endpoint = endpointModel
             };
 
             var errorPage = new ErrorPage(model);

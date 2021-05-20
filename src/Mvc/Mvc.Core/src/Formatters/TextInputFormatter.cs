@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// An <see cref="Encoding"/> based on <paramref name="context"/>'s
         /// character set. <c>null</c> if no supported encoding was found.
         /// </returns>
-        protected Encoding SelectCharacterEncoding(InputFormatterContext context)
+        protected Encoding? SelectCharacterEncoding(InputFormatterContext context)
         {
             if (context == null)
             {
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var requestContentType = context.HttpContext.Request.ContentType;
-            var requestMediaType = requestContentType == null ? default(MediaType) : new MediaType(requestContentType);
+            var requestMediaType = string.IsNullOrEmpty(requestContentType) ? default : new MediaType(requestContentType);
             if (requestMediaType.Charset.HasValue)
             {
                 // Create Encoding based on requestMediaType.Charset to support charset aliases and custom Encoding

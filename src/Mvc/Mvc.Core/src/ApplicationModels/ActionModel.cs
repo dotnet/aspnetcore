@@ -13,9 +13,17 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// An application model for controller actions.
+    /// </summary>
     [DebuggerDisplay("{DisplayName}")]
     public class ActionModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ActionModel"/>.
+        /// </summary>
+        /// <param name="actionMethod">The action <see cref="MethodInfo"/>.</param>
+        /// <param name="attributes">The attributes associated with the action.</param>
         public ActionModel(
             MethodInfo actionMethod,
             IReadOnlyList<object> attributes)
@@ -36,11 +44,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(attributes);
             Filters = new List<IFilterMetadata>();
             Parameters = new List<ParameterModel>();
-            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             Properties = new Dictionary<object, object>();
             Selectors = new List<SelectorModel>();
         }
 
+        /// <summary>
+        /// Copy constructor for <see cref="ActionModel"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="ActionModel"/> to copy.</param>
         public ActionModel(ActionModel other)
         {
             if (other == null)
@@ -50,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             ActionMethod = other.ActionMethod;
             ActionName = other.ActionName;
+            RouteParameterTransformer = other.RouteParameterTransformer;
 
             // Not making a deep copy of the controller, this action still belongs to the same controller.
             Controller = other.Controller;
@@ -58,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
             Properties = new Dictionary<object, object>(other.Properties);
-            RouteValues = new Dictionary<string, string>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
+            RouteValues = new Dictionary<string, string?>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
 
             // Make a deep copy of other 'model' types.
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
@@ -66,9 +79,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Selectors = new List<SelectorModel>(other.Selectors.Select(s => new SelectorModel(s)));
         }
 
+        /// <summary>
+        /// Gets the action <see cref="MethodInfo"/>.
+        /// </summary>
         public MethodInfo ActionMethod { get; }
 
-        public string ActionName { get; set; }
+        /// <summary>
+        /// Gets the action name.
+        /// </summary>
+        public string ActionName { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ApiExplorerModel"/> for this action.
@@ -82,13 +101,37 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
+        /// <summary>
+        /// Gets the attributes associated with the action.
+        /// </summary>
         public IReadOnlyList<object> Attributes { get; }
 
-        public ControllerModel Controller { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="ControllerModel"/>.
+        /// </summary>
+        public ControllerModel Controller { get; set; } = default!;
 
+        /// <summary>
+        /// Gets the <see cref="IFilterMetadata"/> instances associated with the action.
+        /// </summary>
         public IList<IFilterMetadata> Filters { get; }
 
+        /// <summary>
+        /// Gets the parameters associated with this action.
+        /// </summary>
         public IList<ParameterModel> Parameters { get; }
+
+        /// <summary>
+        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform 
+        /// built-in route parameters such as <c>action</c>, <c>controller</c>, and <c>area</c> as well as
+        /// additional parameters specified by <see cref="RouteValues"/> into static segments in the route template.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This feature only applies when using endpoint routing.
+        /// </para>
+        /// </remarks>
+        public IOutboundParameterTransformer? RouteParameterTransformer { get; set; }
 
         /// <summary>
         /// Gets a collection of route values that must be present in the 
@@ -107,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <see cref="ControllerModel.RouteValues"/>.
         /// </para>
         /// </remarks>
-        public IDictionary<string, string> RouteValues { get; }
+        public IDictionary<string, string?> RouteValues { get; }
 
         /// <summary>
         /// Gets a set of properties associated with the action.
@@ -123,8 +166,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         string ICommonModel.Name => ActionName;
 
+        /// <summary>
+        /// Gets the <see cref="SelectorModel"/> instances.
+        /// </summary>
         public IList<SelectorModel> Selectors { get; }
 
+        /// <summary>
+        /// Gets the action display name.
+        /// </summary>
         public string DisplayName
         {
             get

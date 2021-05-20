@@ -5,16 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:AuthenticationManager.ChallengeAsync"/>.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.ChallengeAsync"/>.
     /// </summary>
-    public class ChallengeResult : ActionResult
+    public class ChallengeResult : ActionResult, IResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ChallengeResult"/>.
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(AuthenticationProperties properties)
+        public ChallengeResult(AuthenticationProperties? properties)
             : this(Array.Empty<string>(), properties)
         {
         }
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(string authenticationScheme, AuthenticationProperties properties)
+        public ChallengeResult(string authenticationScheme, AuthenticationProperties? properties)
             : this(new[] { authenticationScheme }, properties)
         {
         }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
+        public ChallengeResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
         {
             AuthenticationSchemes = authenticationSchemes;
             Properties = properties;
@@ -88,17 +88,28 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            return ExecuteAsync(context.HttpContext);
+        }
+
+        /// <inheritdoc />
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            return ExecuteAsync(httpContext);
+        }
+
+        private async Task ExecuteAsync(HttpContext httpContext)
+        {
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ChallengeResult>();
 
             logger.ChallengeResultExecuting(AuthenticationSchemes);
@@ -107,12 +118,12 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 foreach (var scheme in AuthenticationSchemes)
                 {
-                    await context.HttpContext.ChallengeAsync(scheme, Properties);
+                    await httpContext.ChallengeAsync(scheme, Properties);
                 }
             }
             else
             {
-                await context.HttpContext.ChallengeAsync(Properties);
+                await httpContext.ChallengeAsync(Properties);
             }
         }
     }

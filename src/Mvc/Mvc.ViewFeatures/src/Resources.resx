@@ -259,15 +259,6 @@
   <data name="ViewComponentResult_NameOrTypeMustBeSet" xml:space="preserve">
     <value>Either the '{0}' or '{1}' property must be set in order to invoke a view component.</value>
   </data>
-  <data name="TempData_CannotDeserializeToken" xml:space="preserve">
-    <value>Cannot deserialize {0} of type '{1}'.</value>
-  </data>
-  <data name="TempData_CannotSerializeDictionary" xml:space="preserve">
-    <value>The '{0}' cannot serialize a dictionary with a key of type '{1}'. The key must be of type '{2}'.</value>
-  </data>
-  <data name="TempData_CannotSerializeType" xml:space="preserve">
-    <value>The '{0}' cannot serialize an object of type '{1}'.</value>
-  </data>
   <data name="Dictionary_DuplicateKey" xml:space="preserve">
     <value>The collection already contains an entry with key '{0}'.</value>
   </data>
@@ -286,10 +277,28 @@
   <data name="ViewEnginesAreRequired" xml:space="preserve">
     <value>'{0}.{1}' must not be empty. At least one '{2}' is required to locate a view for rendering.</value>
   </data>
-  <data name="TempDataProperties_InvalidType" xml:space="preserve">
-    <value>The '{0}.{1}' property with {2} is invalid.</value>
-  </data>
   <data name="TempDataProperties_PublicGetterSetter" xml:space="preserve">
     <value>The '{0}.{1}' property with {2} is invalid. A property using {2} must have a public getter and setter.</value>
+  </data>
+  <data name="TempDataProperties_InvalidType" xml:space="preserve">
+    <value>TempData serializer '{0}' cannot serialize property '{1}.{2}' of type '{3}'.</value>
+  </data>
+  <data name="DeserializingTempData" xml:space="preserve">
+    <value>Deserializing TempDataDictionary</value>
+  </data>
+  <data name="SerializingTempData" xml:space="preserve">
+    <value>Serializing TempDataDictionary</value>
+  </data>
+  <data name="TempData_CannotSerializeType" xml:space="preserve">
+    <value>The '{0}' cannot serialize an object of type '{1}'.</value>
+  </data>
+  <data name="TempData_CannotDeserializeType" xml:space="preserve">
+    <value>Unsupported data type '{0}'.</value>
+  </data>
+  <data name="UnsupportedRenderMode" xml:space="preserve">
+    <value>Unsupported RenderMode '{0}'.</value>
+  </data>
+  <data name="AsyncDisposableViewsNotSupported" xml:space="preserve">
+    <value>Views implementing '{0}' are not supported.</value>
   </data>
 </root>

@@ -35,9 +35,9 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(new DateTimeOffset(), result);
         }
 
-        public static IEnumerable<object[]> InvalidStringData()
+        public static IEnumerable<object?[]> InvalidStringData()
         {
-            yield return new object[] { null };
+            yield return new object?[] { null };
             yield return new object[] { string.Empty };
             yield return new object[] { "  " };
             yield return new object[] { "!!Sunday, 06-Nov-94 08:49:37 GMT" };

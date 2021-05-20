@@ -71,6 +71,12 @@ namespace Microsoft.Extensions.SecretManager.Tools
 
             var reporter = CreateReporter(options.IsVerbose);
 
+            if (options.Command is InitCommandFactory initCmd)
+            {
+                initCmd.Execute(new CommandContext(null, reporter, _console), _workingDirectory);
+                return 0;
+            }
+
             string userSecretsId;
             try
             {

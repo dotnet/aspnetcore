@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public static class HubReflectionHelper
+    internal static class HubReflectionHelper
     {
         private static readonly Type[] _excludeInterfaces = new[] { typeof(IDisposable) };
 
@@ -32,13 +32,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static bool IsHubMethod(MethodInfo methodInfo)
         {
-            var baseDefinition = methodInfo.GetBaseDefinition().DeclaringType;
+            var baseDefinition = methodInfo.GetBaseDefinition().DeclaringType!;
             if (typeof(object) == baseDefinition || methodInfo.IsSpecialName)
             {
                 return false;
             }
 
-            var baseType = baseDefinition.GetTypeInfo().IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
+            var baseType = baseDefinition.IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
             return typeof(Hub) != baseType;
         }
     }

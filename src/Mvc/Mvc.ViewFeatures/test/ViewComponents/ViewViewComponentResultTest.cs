@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class ViewViewComponentResultTest
     {
         private readonly ITempDataDictionary _tempDataDictionary =
-            new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
+            new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
         [Fact]
         public void Execute_RendersPartialViews()
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void Execute_ResolvesView_AndWritesDiagnosticSource()
+        public void Execute_ResolvesView_AndWritesDiagnosticListener()
         {
             // Arrange
             var view = new Mock<IView>(MockBehavior.Strict);
@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Mvc
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine)))
                 .Returns(viewEngine.Object);
-            serviceProvider.Setup(p => p.GetService(typeof(DiagnosticSource)))
+            serviceProvider.Setup(p => p.GetService(typeof(DiagnosticListener)))
                 .Returns(new DiagnosticListener("Test"));
 
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Mvc
             diagnosticSource.SubscribeWithAdapter(diagnosticListener);
 
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(s => s.GetService(typeof(DiagnosticSource))).Returns(diagnosticSource);
+            serviceProvider.Setup(s => s.GetService(typeof(DiagnosticListener))).Returns(diagnosticSource);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceProvider.Object;
@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc
                 actionContext,
                 view,
                 viewData,
-                new TempDataDictionary(httpContext, new SessionStateTempDataProvider()),
+                new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

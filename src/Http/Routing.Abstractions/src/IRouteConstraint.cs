@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing
     /// Defines the contract that a class must implement in order to check whether a URL parameter
     /// value is valid for a constraint.
     /// </summary>
-    public interface IRouteConstraint
+    public interface IRouteConstraint : IParameterPolicy
     {
         /// <summary>
         /// Determines whether the URL parameter contains a valid value for this constraint.
@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Routing
         /// </param>
         /// <returns><c>true</c> if the URL parameter contains a valid value; otherwise, <c>false</c>.</returns>
         bool Match(
-            HttpContext httpContext,
-            IRouter route,
+            HttpContext? httpContext,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection);

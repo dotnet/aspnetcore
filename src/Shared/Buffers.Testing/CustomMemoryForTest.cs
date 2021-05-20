@@ -31,13 +31,13 @@ namespace System.Buffers
                 return new Memory<T>(_array, _offset, _length);
             }
         }
-        
+
         public void Dispose()
         {
             if (_disposed)
                 return;
 
-            _array = null;
+            _array = null!;
             _disposed = true;
         }
     }

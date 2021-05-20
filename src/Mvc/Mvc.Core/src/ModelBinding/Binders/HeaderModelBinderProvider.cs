@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class HeaderModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -32,23 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelMetadata = context.Metadata;
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<HeaderModelBinderProvider>();
-
-            var options = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
-            if (!options.AllowBindingHeaderValuesToNonStringModelTypes)
-            {
-                if (modelMetadata.ModelType == typeof(string) ||
-                    modelMetadata.ElementType == typeof(string))
-                {
-                    return new HeaderModelBinder(loggerFactory);
-                }
-                else
-                {
-                    logger.CannotCreateHeaderModelBinderCompatVersion_2_0(modelMetadata.ModelType);
-                }
-
-                return null;
-            }
-
 
             if (!IsSimpleType(modelMetadata))
             {

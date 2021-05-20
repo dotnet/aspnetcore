@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failure">The failure exception.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static new HandleRequestResult Fail(Exception failure, AuthenticationProperties properties)
+        public static new HandleRequestResult Fail(Exception failure, AuthenticationProperties? properties)
         {
             return new HandleRequestResult() { Failure = failure, Properties = properties };
         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failureMessage">The failure message.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static new HandleRequestResult Fail(string failureMessage, AuthenticationProperties properties)
+        public static new HandleRequestResult Fail(string failureMessage, AuthenticationProperties? properties)
             => Fail(new Exception(failureMessage), properties);
 
         /// <summary>
@@ -91,6 +91,15 @@ namespace Microsoft.AspNetCore.Authentication
         public static HandleRequestResult SkipHandler()
         {
             return new HandleRequestResult() { Skipped = true };
+        }
+
+        /// <summary>
+        /// Indicates that there were no results produced during authentication.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public new static HandleRequestResult NoResult()
+        {
+            return new HandleRequestResult() { None = true };
         }
     }
 }

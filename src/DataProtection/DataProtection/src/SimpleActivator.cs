@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection
@@ -13,14 +12,16 @@ namespace Microsoft.AspNetCore.DataProtection
     /// </summary>
     internal class SimpleActivator : IActivator
     {
+        private static readonly Type[] _serviceProviderTypeArray = { typeof(IServiceProvider) };
+
         /// <summary>
         /// A default <see cref="SimpleActivator"/> whose wrapped <see cref="IServiceProvider"/> is null.
         /// </summary>
         internal static readonly SimpleActivator DefaultWithoutServices = new SimpleActivator(null);
 
-        private readonly IServiceProvider _services;
+        private readonly IServiceProvider? _services;
 
-        public SimpleActivator(IServiceProvider services)
+        public SimpleActivator(IServiceProvider? services)
         {
             _services = services;
         }
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.DataProtection
         public virtual object CreateInstance(Type expectedBaseType, string implementationTypeName)
         {
             // Would the assignment even work?
-            var implementationType = Type.GetType(implementationTypeName, throwOnError: true);
+            var implementationType = Type.GetType(implementationTypeName, throwOnError: true)!;
             expectedBaseType.AssertIsAssignableFrom(implementationType);
 
             // If no IServiceProvider was specified, prefer .ctor() [if it exists]
@@ -37,12 +38,12 @@ namespace Microsoft.AspNetCore.DataProtection
                 var ctorParameterless = implementationType.GetConstructor(Type.EmptyTypes);
                 if (ctorParameterless != null)
                 {
-                    return Activator.CreateInstance(implementationType);
+                    return Activator.CreateInstance(implementationType)!;
                 }
             }
 
             // If an IServiceProvider was specified or if .ctor() doesn't exist, prefer .ctor(IServiceProvider) [if it exists]
-            var ctorWhichTakesServiceProvider = implementationType.GetConstructor(new Type[] { typeof(IServiceProvider) });
+            var ctorWhichTakesServiceProvider = implementationType.GetConstructor(_serviceProviderTypeArray);
             if (ctorWhichTakesServiceProvider != null)
             {
                 return ctorWhichTakesServiceProvider.Invoke(new[] { _services });
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             // Finally, prefer .ctor() as an ultimate fallback.
             // This will throw if the ctor cannot be called.
-            return Activator.CreateInstance(implementationType);
+            return Activator.CreateInstance(implementationType)!;
         }
     }
 }

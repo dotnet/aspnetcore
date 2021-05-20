@@ -2,17 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.ServiceProcess;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting.WindowsServices
 {
     /// <summary>
     ///     Provides an implementation of a Windows service that hosts ASP.NET Core.
     /// </summary>
+    [DesignerCategory("Code")]
     public class WebHostService : ServiceBase
     {
-        private IWebHost _host;
+        private readonly IWebHost _host;
         private bool _stopRequestedByWindows;
 
         /// <summary>
@@ -24,14 +27,28 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
             _host = host ?? throw new ArgumentNullException(nameof(host));
         }
 
+        /// <summary>
+        /// This method is not intended for direct use. Its sole purpose is to allow
+        /// the service to be started by the tests.
+        /// </summary>
+        internal void Start() => OnStart(Array.Empty<string>());
+
+        /// <inheritdoc />
         protected sealed override void OnStart(string[] args)
         {
             OnStarting(args);
 
+            _host.Start();
+
+            OnStarted();
+
+            // Register callback for application stopping after we've
+            // started the service, because otherwise we might introduce unwanted
+            // race conditions.
             _host
                 .Services
-                .GetRequiredService<IApplicationLifetime>()
-                .ApplicationStopped
+                .GetRequiredService<IHostApplicationLifetime>()
+                .ApplicationStopping
                 .Register(() =>
                 {
                     if (!_stopRequestedByWindows)
@@ -39,12 +56,9 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
                         Stop();
                     }
                 });
-
-            _host.Start();
-
-            OnStarted();
         }
 
+        /// <inheritdoc />
         protected sealed override void OnStop()
         {
             _stopRequestedByWindows = true;

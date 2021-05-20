@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <summary>
         /// The <see cref="WsFederationMessage"/> from the request, if any.
         /// </summary>
-        public WsFederationMessage ProtocolMessage { get; set; }
+        public WsFederationMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// The <see cref="Exception"/> that triggered this event.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception Exception { get; set; } = default!;
     }
 }

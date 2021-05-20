@@ -9,8 +9,24 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Use to evaluate if all route parameter values match their constraints.
+    /// </summary>
     public static class RouteConstraintMatcher
     {
+        /// <summary>
+        /// Determines if <paramref name="routeValues"/> match the provided <paramref name="constraints"/>.
+        /// </summary>
+        /// <param name="constraints">The constraints for the route.</param>
+        /// <param name="routeValues">The route parameter values extracted from the matched route.</param>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="route">The router that this constraint belongs to.</param>
+        /// <param name="routeDirection">
+        /// Indicates whether the constraint check is performed
+        /// when the incoming request is handled or when a URL is generated.
+        /// </param>
+        /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
+        /// <returns><see langword="true"/> if the all route values match their constraints.</returns>
         public static bool Match(
             IDictionary<string, IRouteConstraint> constraints,
             RouteValueDictionary routeValues,
@@ -51,10 +67,9 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     if (routeDirection.Equals(RouteDirection.IncomingRequest))
                     {
-                        object routeValue;
-                        routeValues.TryGetValue(kvp.Key, out routeValue);
+                        routeValues.TryGetValue(kvp.Key, out var routeValue);
 
-                        logger.RouteValueDoesNotMatchConstraint(routeValue, kvp.Key, kvp.Value);
+                        logger.ConstraintNotMatched(routeValue!, kvp.Key, kvp.Value);
                     }
 
                     return false;

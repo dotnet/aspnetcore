@@ -1,11 +1,11 @@
-import { ILogger, LogLevel } from "@aspnet/signalr";
+import { ILogger, LogLevel } from "@microsoft/signalr";
 
 // Since JavaScript modules are file-based, we can just pull in utilities from the
 // main library directly even if they aren't exported.
-import { ConsoleLogger } from "@aspnet/signalr/dist/esm/Utils";
+import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils";
 
 export class TestLog {
-    public messages: Array<[Date, LogLevel, string]> = [];
+    public messages: [Date, LogLevel, string][] = [];
 
     public addMessage(timestamp: Date, logLevel: LogLevel, message: string): void {
         this.messages.push([timestamp, logLevel, message]);
@@ -33,7 +33,7 @@ export class TestLog {
 
 export class TestLogger implements ILogger {
     public static instance: TestLogger = new TestLogger();
-    private static consoleLogger: ConsoleLogger = new ConsoleLogger(LogLevel.Trace);
+    private static _consoleLogger: ConsoleLogger = new ConsoleLogger(LogLevel.Trace);
 
     public currentLog: TestLog = new TestLog();
 
@@ -41,21 +41,11 @@ export class TestLogger implements ILogger {
         this.currentLog.addMessage(new Date(), logLevel, message);
 
         // Also write to browser console
-        TestLogger.consoleLogger.log(logLevel, message);
+        TestLogger._consoleLogger.log(logLevel, message);
     }
 
-    public static saveLogsAndReset(testName: string): TestLog {
+    public static saveLogsAndReset(): TestLog {
         const currentLog = TestLogger.instance.currentLog;
-
-        // Stash the messages in a global to help people review them
-        if (window) {
-            const win = window as any;
-            if (!win.TestLogMessages) {
-                win.TestLogMessages = {};
-            }
-            win.TestLogMessages[testName] = currentLog;
-        }
-
         TestLogger.instance.currentLog = new TestLog();
         return currentLog;
     }

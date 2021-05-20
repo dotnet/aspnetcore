@@ -12,30 +12,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class HttpUtilitiesTest
     {
         [Theory]
-        [InlineData("CONNECT / HTTP/1.1", true, "CONNECT", HttpMethod.Connect)]
-        [InlineData("DELETE / HTTP/1.1", true, "DELETE", HttpMethod.Delete)]
-        [InlineData("GET / HTTP/1.1", true, "GET", HttpMethod.Get)]
-        [InlineData("HEAD / HTTP/1.1", true, "HEAD", HttpMethod.Head)]
-        [InlineData("PATCH / HTTP/1.1", true, "PATCH", HttpMethod.Patch)]
-        [InlineData("POST / HTTP/1.1", true, "POST", HttpMethod.Post)]
-        [InlineData("PUT / HTTP/1.1", true, "PUT", HttpMethod.Put)]
-        [InlineData("OPTIONS / HTTP/1.1", true, "OPTIONS", HttpMethod.Options)]
-        [InlineData("TRACE / HTTP/1.1", true, "TRACE", HttpMethod.Trace)]
-        [InlineData("GET/ HTTP/1.1", false, null, HttpMethod.Custom)]
-        [InlineData("get / HTTP/1.1", false, null, HttpMethod.Custom)]
-        [InlineData("GOT / HTTP/1.1", false, null, HttpMethod.Custom)]
-        [InlineData("ABC / HTTP/1.1", false, null, HttpMethod.Custom)]
-        [InlineData("PO / HTTP/1.1", false, null, HttpMethod.Custom)]
-        [InlineData("PO ST / HTTP/1.1", false, null, HttpMethod.Custom)]
-        [InlineData("short ", false, null, HttpMethod.Custom)]
-        public void GetsKnownMethod(string input, bool expectedResult, string expectedKnownString, HttpMethod expectedMethod)
+        [InlineData("CONNECT / HTTP/1.1", true, "CONNECT", (int)HttpMethod.Connect)]
+        [InlineData("DELETE / HTTP/1.1", true, "DELETE", (int)HttpMethod.Delete)]
+        [InlineData("GET / HTTP/1.1", true, "GET", (int)HttpMethod.Get)]
+        [InlineData("HEAD / HTTP/1.1", true, "HEAD", (int)HttpMethod.Head)]
+        [InlineData("PATCH / HTTP/1.1", true, "PATCH", (int)HttpMethod.Patch)]
+        [InlineData("POST / HTTP/1.1", true, "POST", (int)HttpMethod.Post)]
+        [InlineData("PUT / HTTP/1.1", true, "PUT", (int)HttpMethod.Put)]
+        [InlineData("OPTIONS / HTTP/1.1", true, "OPTIONS", (int)HttpMethod.Options)]
+        [InlineData("TRACE / HTTP/1.1", true, "TRACE", (int)HttpMethod.Trace)]
+        [InlineData("GET/ HTTP/1.1", false, null, (int)HttpMethod.Custom)]
+        [InlineData("get / HTTP/1.1", false, null, (int)HttpMethod.Custom)]
+        [InlineData("GOT / HTTP/1.1", false, null, (int)HttpMethod.Custom)]
+        [InlineData("ABC / HTTP/1.1", false, null, (int)HttpMethod.Custom)]
+        [InlineData("PO / HTTP/1.1", false, null, (int)HttpMethod.Custom)]
+        [InlineData("PO ST / HTTP/1.1", false, null, (int)HttpMethod.Custom)]
+        [InlineData("short ", false, null, (int)HttpMethod.Custom)]
+        public void GetsKnownMethod(string input, bool expectedResult, string expectedKnownString, int intExpectedMethod)
         {
+            var expectedMethod = (HttpMethod)intExpectedMethod;
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
-            HttpMethod knownMethod;
-            var result = block.GetKnownMethod(out knownMethod, out var length);
+            var result = block.GetKnownMethod(out var knownMethod, out var length);
 
             string toString = null;
             if (knownMethod != HttpMethod.Custom)
@@ -52,16 +52,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", true, HttpUtilities.Http10Version, HttpVersion.Http10)]
-        [InlineData("HTTP/1.1\r", true, HttpUtilities.Http11Version, HttpVersion.Http11)]
-        [InlineData("HTTP/3.0\r", false, null, HttpVersion.Unknown)]
-        [InlineData("http/1.0\r", false, null, HttpVersion.Unknown)]
-        [InlineData("http/1.1\r", false, null, HttpVersion.Unknown)]
-        [InlineData("short ", false, null, HttpVersion.Unknown)]
-        public void GetsKnownVersion(string input, bool expectedResult, string expectedKnownString, HttpVersion version)
+        [InlineData("HTTP/1.0\r", true, "HTTP/1.0", (int)HttpVersion.Http10)]
+        [InlineData("HTTP/1.1\r", true, "HTTP/1.1", (int)HttpVersion.Http11)]
+        [InlineData("HTTP/3.0\r", false, null, (int)HttpVersion.Unknown)]
+        [InlineData("http/1.0\r", false, null, (int)HttpVersion.Unknown)]
+        [InlineData("http/1.1\r", false, null, (int)HttpVersion.Unknown)]
+        [InlineData("short ", false, null, (int)HttpVersion.Unknown)]
+        public void GetsKnownVersion(string input, bool expectedResult, string expectedKnownString, int intVersion)
         {
+            var version = (HttpVersion)intVersion;
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
             var result = block.GetKnownVersion(out HttpVersion knownVersion, out var length);
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             get
             {
-                return new TheoryData<string>() {
+                return new TheoryData<string> {
                     "z",
                     "1",
                     "y:1",
@@ -170,8 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(HostHeaderData))]
         public void ValidHostHeadersParsed(string host)
         {
-            HttpUtilities.ValidateHostHeader(host);
-            // Shouldn't throw
+            Assert.True(HttpUtilities.IsHostHeaderValid(host));
         }
 
         public static TheoryData<string> HostHeaderInvalidData
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             get
             {
                 // see https://tools.ietf.org/html/rfc7230#section-5.4
-                var data = new TheoryData<string>() {
+                var data = new TheoryData<string> {
                     "[]", // Too short
                     "[::]", // Too short
                     "[ghijkl]", // Non-hex
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(HostHeaderInvalidData))]
         public void InvalidHostHeadersRejected(string host)
         {
-            Assert.Throws<BadHttpRequestException>(() => HttpUtilities.ValidateHostHeader(host));
+            Assert.False(HttpUtilities.IsHostHeaderValid(host));
         }
     }
 }

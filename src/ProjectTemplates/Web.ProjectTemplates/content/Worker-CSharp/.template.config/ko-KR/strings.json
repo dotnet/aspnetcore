@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "작업자 서비스",
+    "description": "Worker Service를 만드는 데 사용하는 빈 프로젝트 템플릿입니다."
+  }
+}

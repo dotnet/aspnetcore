@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct SockAddr
+    internal struct SockAddr
     {
         // this type represents native memory occupied by sockaddr struct
         // https://msdn.microsoft.com/en-us/library/windows/desktop/ms740496(v=vs.85).aspx
@@ -64,11 +64,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             // Quick calculate the port by mask the field and locate the byte 3 and byte 4
             // and then shift them to correct place to form a int.
             var port = ((int)(_field0 & 0x00FF0000) >> 8) | (int)((_field0 & 0xFF000000) >> 24);
-            
+
             int family = (int)_field0;
             if (PlatformApis.IsDarwin)
             {
-                // see explaination in example 4
+                // see explanation in example 4
                 family = family >> 8;
             }
             family = family & 0xFF;

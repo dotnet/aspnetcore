@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <PropertyGroup>
+    <_IsMicrosoftNETCoreApp20OrOlder>false</_IsMicrosoftNETCoreApp20OrOlder>
+    <_IsMicrosoftNETCoreApp20OrOlder Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+      $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0')) ">true</_IsMicrosoftNETCoreApp20OrOlder>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(OpenApiGenerateDocuments)' == '' ">
+    <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+    <OpenApiGenerateDocuments Condition=" $(_IsMicrosoftNETCoreApp20OrOlder) " />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == '' ">
+    <OpenApiGenerateDocumentsOnBuild>$(OpenApiGenerateDocuments)</OpenApiGenerateDocumentsOnBuild>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_OpenApiDocumentsCache>$(BaseIntermediateOutputPath)$(MSBuildProjectName).OpenApiFiles.cache</_OpenApiDocumentsCache>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
+    <ProjectCapability Include="OpenApiGenerateDocuments" />
+  </ItemGroup>
+
+  <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
+    <!-- E.g. a client project has @(OpenApiProjectReference) item for project that does not support doc generation. -->
+    <Error Condition=" '$(OpenApiGenerateDocuments)' != 'true' "
+        Text="OpenAPI document generation is disabled. Add '&lt;OpenApiGenerateDocuments>true&lt;/OpenApiGenerateDocuments>' to the project." />
+    <!-- E.g. project set $(OpenApiGenerateDocuments) to 'true' but TFM is not supported. -->
+    <Error
+        Condition=" $(_IsMicrosoftNETCoreApp20OrOlder) "
+        Text="OpenAPI document generation is not supported when targeting netcoreapp2.0 or earlier. Disable the feature or move to a later target framework." />
+    <!-- E.g. project set $(OpenApiGenerateDocumentsOnBuild) to 'false' but did not invoke GenerateOpenApiDocuments. -->
+    <Error Condition=" !Exists('$(_OpenApiDocumentsCache)' )"
+        Text="$(_OpenApiDocumentsCache) file does not exist. Add '&lt;OpenApiGenerateDocumentsOnBuild>true&lt;/OpenApiGenerateDocumentsOnBuild>' to the project or call the GenerateOpenApiDocuments target." />
+
+    <ReadLinesFromFile File="$(_OpenApiDocumentsCache)">
+      <Output TaskParameter="Lines" ItemName="_OpenApiProjectDocuments" />
+    </ReadLinesFromFile>
+
+    <!-- Fallback error in case something slips through the insider's error checking. -->
+    <Error Condition=" '@(_OpenApiProjectDocuments)' == '' "
+        Text="Application does not have any registered documents. Update its 'Startup' class to register a document." />
+  </Target>
+
+  <Target Name="GenerateOpenApiDocuments" Inputs="$(TargetPath)" Outputs="$(_OpenApiDocumentsCache)">
+    <!-- E.g. project sets $(OpenApiGenerateDocumentsOnBuild) to 'true' but $(OpenApiGenerateDocuments) is 'false'. -->
+    <Error Condition=" '$(OpenApiGenerateDocuments)' != 'true' "
+        Text="OpenAPI document generation is disabled. Add '&lt;OpenApiGenerateDocuments>true&lt;/OpenApiGenerateDocuments>' to the project." />
+    <!-- E.g. project sets $(OpenApiGenerateDocuments) to 'true' but TFM is not supported. -->
+    <Error
+        Condition=" $(_IsMicrosoftNETCoreApp20OrOlder) "
+        Text="OpenAPI document generation is not supported when targeting netcoreapp2.0 or earlier. Disable the feature or move to a later target framework." />
+
+    <PropertyGroup>
+      <_Command>dotnet "$(MSBuildThisFileDirectory)../tools/dotnet-getdocument.dll" --assembly "$(TargetPath)"</_Command>
+      <_Command>$(_Command) --file-list "$(_OpenApiDocumentsCache)" --framework "$(TargetFrameworkMoniker)"</_Command>
+      <_Command>$(_Command) --output "$(OpenApiDocumentsDirectory.TrimEnd('\'))" --project "$(MSBuildProjectName)"</_Command>
+      <_Command Condition=" '$(ProjectAssetsFile)' != '' ">$(_Command) --assets-file "$(ProjectAssetsFile)"</_Command>
+      <_Command Condition=" '$(PlatformTarget)' != '' ">$(_Command) --platform "$(PlatformTarget)"</_Command>
+      <_Command Condition=" '$(PlatformTarget)' == '' AND '$(Platform)' != '' ">$(_Command) --platform "$(Platform)"</_Command>
+      <_Command Condition=" '$(RuntimeIdentifier)' != '' ">$(_Command) --runtime "$(RuntimeIdentifier)"</_Command>
+      <_Command>$(_Command) $(OpenApiGenerateDocumentsOptions)</_Command>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="%0AGenerateOpenApiDocuments:" />
+    <Message Importance="high" Text="  $(_Command)" />
+    <Exec Command="$(_Command)" LogStandardErrorAsError="true" />
+  </Target>
+
+  <!-- Unless this is an inner build or default timing is disabled, tie document retrieval into the build. -->
+
+  <Target Name="_GenerateOpenApiDocuments"
+      BeforeTargets="Build"
+      Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
+      DependsOnTargets="GenerateOpenApiDocuments" />
+</Project>

@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -14,10 +15,10 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class MvcRazorPagesMvcBuilderExtensions
     {
         /// <summary>
-        /// Configures a set of <see cref="RazorViewEngineOptions"/> for the application.
+        /// Configures a set of <see cref="RazorPagesOptions"/> for the application.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
-        /// <param name="setupAction">An action to configure the <see cref="RazorViewEngineOptions"/>.</param>
+        /// <param name="setupAction">An action to configure the <see cref="RazorPagesOptions"/>.</param>
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddRazorPagesOptions(
             this IMvcBuilder builder,

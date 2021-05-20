@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Platforma ASP.NET Core z biblioteką React.js",
+    "description": "Szablon projektu służący do tworzenia aplikacji ASP.NET Core z użyciem biblioteki React.js"
+  }
+}

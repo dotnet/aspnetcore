@@ -1,13 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -21,20 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IModelBinder _keyBinder;
         private readonly IModelBinder _valueBinder;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Creates a new <see cref="KeyValuePair{TKey, TValue}"/>.</para>
-        /// </summary>
-        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
-        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
-            : this(keyBinder, valueBinder, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="KeyValuePair{TKey, TValue}"/>.
@@ -75,16 +60,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _logger.AttemptingToBindModel(bindingContext);
 
             var keyModelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "Key");
-            var keyResult = await TryBindStrongModel<TKey>(bindingContext, _keyBinder, "Key", keyModelName);
+            var keyResult = await TryBindStrongModel<TKey?>(bindingContext, _keyBinder, "Key", keyModelName);
 
             var valueModelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "Value");
-            var valueResult = await TryBindStrongModel<TValue>(bindingContext, _valueBinder, "Value", valueModelName);
+            var valueResult = await TryBindStrongModel<TValue?>(bindingContext, _valueBinder, "Value", valueModelName);
 
             if (keyResult.IsModelSet && valueResult.IsModelSet)
             {
-                var model = new KeyValuePair<TKey, TValue>(
-                    ModelBindingHelper.CastOrDefault<TKey>(keyResult.Model),
-                    ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model));
+                var model = new KeyValuePair<TKey?, TValue?>(
+                    ModelBindingHelper.CastOrDefault<TKey?>(keyResult.Model),
+                    ModelBindingHelper.CastOrDefault<TValue?>(valueResult.Model));
 
                 bindingContext.Result = ModelBindingResult.Success(model);
                 _logger.DoneAttemptingToBindModel(bindingContext);
@@ -113,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // default 'empty' model and return it.
             if (bindingContext.IsTopLevelObject)
             {
-                var model = new KeyValuePair<TKey, TValue>();
+                var model = new KeyValuePair<TKey?, TValue?>();
                 bindingContext.Result = ModelBindingResult.Success(model);
             }
             _logger.DoneAttemptingToBindModel(bindingContext);
@@ -125,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             string propertyName,
             string propertyModelName)
         {
-            var propertyModelMetadata = bindingContext.ModelMetadata.Properties[propertyName];
+            var propertyModelMetadata = bindingContext.ModelMetadata.Properties[propertyName]!;
 
             using (bindingContext.EnterNestedScope(
                 modelMetadata: propertyModelMetadata,

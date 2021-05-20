@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,75 +8,75 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class SocketSender : IDisposable
+    internal sealed class SocketSender : SocketAwaitableEventArgs
     {
-        private readonly Socket _socket;
-        private readonly SocketAsyncEventArgs _eventArgs = new SocketAsyncEventArgs();
-        private readonly SocketAwaitable _awaitable;
+        private List<ArraySegment<byte>>? _bufferList;
 
-        private List<ArraySegment<byte>> _bufferList;
-
-        public SocketSender(Socket socket, PipeScheduler scheduler)
+        public SocketSender(PipeScheduler scheduler) : base(scheduler)
         {
-            _socket = socket;
-            _awaitable = new SocketAwaitable(scheduler);
-            _eventArgs.UserToken = _awaitable;
-            _eventArgs.Completed += (_, e) => ((SocketAwaitable)e.UserToken).Complete(e.BytesTransferred, e.SocketError);
         }
 
-        public SocketAwaitable SendAsync(ReadOnlySequence<byte> buffers)
+        public ValueTask<int> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
-                return SendAsync(buffers.First);
+                return SendAsync(socket, buffers.First);
             }
 
-#if NETCOREAPP2_1
-            if (!_eventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
-#else
-            if (_eventArgs.Buffer != null)
-#endif
+            SetBufferList(buffers);
+
+            if (socket.SendAsync(this))
             {
-                _eventArgs.SetBuffer(null, 0, 0);
+                return new ValueTask<int>(this, 0);
             }
 
-            _eventArgs.BufferList = GetBufferList(buffers);
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
 
-            if (!_socket.SendAsync(_eventArgs))
-            {
-                _awaitable.Complete(_eventArgs.BytesTransferred, _eventArgs.SocketError);
-            }
-
-            return _awaitable;
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
 
-        private SocketAwaitable SendAsync(ReadOnlyMemory<byte> memory)
+        public void Reset()
         {
-            // The BufferList getter is much less expensive then the setter.
-            if (_eventArgs.BufferList != null)
+            // We clear the buffer and buffer list before we put it back into the pool
+            // it's a small performance hit but it removes the confusion when looking at dumps to see this still
+            // holds onto the buffer when it's back in the pool
+            if (BufferList != null)
             {
-                _eventArgs.BufferList = null;
+                BufferList = null;
+
+                _bufferList?.Clear();
             }
-
-#if NETCOREAPP2_1
-            _eventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
-#else
-            var segment = memory.GetArray();
-
-            _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
-#endif
-            if (!_socket.SendAsync(_eventArgs))
+            else
             {
-                _awaitable.Complete(_eventArgs.BytesTransferred, _eventArgs.SocketError);
+                SetBuffer(null, 0, 0);
             }
-
-            return _awaitable;
         }
 
-        private List<ArraySegment<byte>> GetBufferList(ReadOnlySequence<byte> buffer)
+        private ValueTask<int> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
+        {
+            SetBuffer(MemoryMarshal.AsMemory(memory));
+
+            if (socket.SendAsync(this))
+            {
+                return new ValueTask<int>(this, 0);
+            }
+
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
+        }
+
+        private void SetBufferList(in ReadOnlySequence<byte> buffer)
         {
             Debug.Assert(!buffer.IsEmpty);
             Debug.Assert(!buffer.IsSingleSegment);
@@ -85,23 +85,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 _bufferList = new List<ArraySegment<byte>>();
             }
-            else
-            {
-                // Buffers are pooled, so it's OK to root them until the next multi-buffer write.
-                _bufferList.Clear();
-            }
 
             foreach (var b in buffer)
             {
                 _bufferList.Add(b.GetArray());
             }
 
-            return _bufferList;
-        }
-
-        public void Dispose()
-        {
-            _eventArgs.Dispose();
+            // The act of setting this list, sets the buffers in the internal buffer list
+            BufferList = _bufferList;
         }
     }
 }

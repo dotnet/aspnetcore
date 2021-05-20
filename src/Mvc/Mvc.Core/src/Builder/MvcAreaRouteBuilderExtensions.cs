@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Builder
             this IRouteBuilder routeBuilder,
             string name,
             string areaName,
-            string template)
+            string? template)
         {
             MapAreaRoute(routeBuilder, name, areaName, template, defaults: null, constraints: null, dataTokens: null);
             return routeBuilder;
@@ -50,8 +50,8 @@ namespace Microsoft.AspNetCore.Builder
             this IRouteBuilder routeBuilder,
             string name,
             string areaName,
-            string template,
-            object defaults)
+            string? template,
+            object? defaults)
         {
             MapAreaRoute(routeBuilder, name, areaName, template, defaults, constraints: null, dataTokens: null);
             return routeBuilder;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds a route to the <see cref="IRouteBuilder"/> with the given MVC area with the specified
-        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>, 
+        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>,
         /// <paramref name="defaults"/>, and <paramref name="constraints"/>.
         /// </summary>
         /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>
@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Builder
             this IRouteBuilder routeBuilder,
             string name,
             string areaName,
-            string template,
-            object defaults,
-            object constraints)
+            string? template,
+            object? defaults,
+            object? constraints)
         {
             MapAreaRoute(routeBuilder, name, areaName, template, defaults, constraints, dataTokens: null);
             return routeBuilder;
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds a route to the <see cref="IRouteBuilder"/> with the given MVC area with the specified
-        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>, 
+        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
         /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>
@@ -113,10 +113,10 @@ namespace Microsoft.AspNetCore.Builder
             this IRouteBuilder routeBuilder,
             string name,
             string areaName,
-            string template,
-            object defaults,
-            object constraints,
-            object dataTokens)
+            string? template,
+            object? defaults,
+            object? constraints,
+            object? dataTokens)
         {
             if (routeBuilder == null)
             {

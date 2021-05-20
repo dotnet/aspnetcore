@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <summary>
         /// Gets or sets the Twitter User ID.
         /// </summary>
-        public string UserId { get; set; }
+        public string UserId { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the Twitter screen name.
         /// </summary>
-        public string ScreenName { get; set; }
+        public string ScreenName { get; set; } = default!;
     }
 }

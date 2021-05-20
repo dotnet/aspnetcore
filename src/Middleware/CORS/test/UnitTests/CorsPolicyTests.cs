@@ -25,6 +25,20 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Empty(corsPolicy.Origins);
             Assert.Null(corsPolicy.PreflightMaxAge);
             Assert.NotNull(corsPolicy.IsOriginAllowed);
+            Assert.True(corsPolicy.IsDefaultIsOriginAllowed);
+        }
+
+        [Fact]
+        public void IsDefaultIsOriginAllowed_IsFalseAfterSettingIsOriginAllowed()
+        {
+            // Arrange
+            var policy = new CorsPolicy();
+
+            // Act
+            policy.IsOriginAllowed = origin => true;
+
+            // Assert
+            Assert.False(policy.IsDefaultIsOriginAllowed);
         }
 
         [Fact]
@@ -41,7 +55,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             // Assert
             Assert.Equal(
-                $"PreflightMaxAge must be greater than or equal to 0.{Environment.NewLine}Parameter name: value",
+                $"PreflightMaxAge must be greater than or equal to 0. (Parameter 'value')",
                 exception.Message);
         }
 

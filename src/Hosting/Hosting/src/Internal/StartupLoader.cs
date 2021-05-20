@@ -3,14 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class StartupLoader
+    internal class StartupLoader
     {
         // Creates an <see cref="StartupMethods"/> instance with the actions to run for configuring the application services and the
         // request pipeline of the application.
@@ -34,18 +36,17 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         //     ConfigureContainer
         //   ConfigureContainerFilter2
         // ConfigureContainerFilter1
-        // 
+        //
         // If the Startup class ConfigureServices returns an <see cref="IServiceProvider"/> and there is at least an <see cref="IStartupConfigureServicesFilter"/> registered we
         // throw as the filters can't be applied.
-        public static StartupMethods LoadMethods(IServiceProvider hostingServiceProvider, Type startupType, string environmentName)
+        public static StartupMethods LoadMethods(IServiceProvider hostingServiceProvider, [DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName, object? instance = null)
         {
             var configureMethod = FindConfigureDelegate(startupType, environmentName);
 
             var servicesMethod = FindConfigureServicesDelegate(startupType, environmentName);
             var configureContainerMethod = FindConfigureContainerDelegate(startupType, environmentName);
 
-            object instance = null;
-            if (!configureMethod.MethodInfo.IsStatic || (servicesMethod != null && !servicesMethod.MethodInfo.IsStatic))
+            if (instance == null && (!configureMethod.MethodInfo.IsStatic || (servicesMethod?.MethodInfo != null && !servicesMethod.MethodInfo.IsStatic)))
             {
                 instance = ActivatorUtilities.GetServiceOrCreateInstance(hostingServiceProvider, startupType);
             }
@@ -54,12 +55,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // going to be used for anything.
             var type = configureContainerMethod.MethodInfo != null ? configureContainerMethod.GetContainerType() : typeof(object);
 
-            var builder = (ConfigureServicesDelegateBuilder) Activator.CreateInstance(
+            var builder = (ConfigureServicesDelegateBuilder)Activator.CreateInstance(
                 typeof(ConfigureServicesDelegateBuilder<>).MakeGenericType(type),
                 hostingServiceProvider,
                 servicesMethod,
                 configureContainerMethod,
-                instance);
+                instance)!;
 
             return new StartupMethods(instance, configureMethod.Build(instance), builder.Build());
         }
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             public abstract Func<IServiceCollection, IServiceProvider> Build();
         }
 
-        private class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder
+        private class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
         {
             public ConfigureServicesDelegateBuilder(
                 IServiceProvider hostingServiceProvider,
@@ -104,19 +105,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
                     // The ConfigureContainer pipeline needs an Action<TContainerBuilder> as source, so we just adapt the
                     // signature with this function.
-                    void Source(TContainerBuilder containerBuilder) => 
+                    void Source(TContainerBuilder containerBuilder) =>
                         action(containerBuilder);
 
                     // The ConfigureContainerBuilder.ConfigureContainerFilters expects an Action<object> as value, but our pipeline
                     // produces an Action<TContainerBuilder> given a source, so we wrap it on an Action<object> that internally casts
                     // the object containerBuilder to TContainerBuilder to match the expected signature of our ConfigureContainer pipeline.
-                    void Target(object containerBuilder) => 
+                    void Target(object containerBuilder) =>
                         BuildStartupConfigureContainerFiltersPipeline(Source)((TContainerBuilder)containerBuilder);
                 }
             }
 
             Func<IServiceCollection, IServiceProvider> ConfigureServices(
-                Func<IServiceCollection, IServiceProvider> configureServicesCallback,
+                Func<IServiceCollection, IServiceProvider?> configureServicesCallback,
                 Action<object> configureContainerCallback)
             {
                 return ConfigureServicesWithContainerConfiguration;
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 IServiceProvider ConfigureServicesWithContainerConfiguration(IServiceCollection services)
                 {
                     // Call ConfigureServices, if that returned an IServiceProvider, we're done
-                    IServiceProvider applicationServiceProvider = configureServicesCallback.Invoke(services);
+                    var applicationServiceProvider = configureServicesCallback.Invoke(services);
 
                     if (applicationServiceProvider != null)
                     {
@@ -151,13 +152,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
-            private Func<IServiceCollection, IServiceProvider> BuildStartupServicesFilterPipeline(Func<IServiceCollection, IServiceProvider> startup)
+            private Func<IServiceCollection, IServiceProvider?> BuildStartupServicesFilterPipeline(Func<IServiceCollection, IServiceProvider?> startup)
             {
                 return RunPipeline;
 
-                IServiceProvider RunPipeline(IServiceCollection services)
+                IServiceProvider? RunPipeline(IServiceCollection services)
                 {
-                    var filters = HostingServiceProvider.GetRequiredService<IEnumerable<IStartupConfigureServicesFilter>>().Reverse().ToArray();
+#pragma warning disable CS0612 // Type or member is obsolete
+                    var filters = HostingServiceProvider.GetRequiredService<IEnumerable<IStartupConfigureServicesFilter>>()
+#pragma warning restore CS0612 // Type or member is obsolete
+                        .ToArray();
 
                     // If there are no filters just run startup (makes IServiceProvider ConfigureServices(IServiceCollection services) work.
                     if (filters.Length == 0)
@@ -166,7 +170,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
 
                     Action<IServiceCollection> pipeline = InvokeStartup;
-                    for (int i = 0; i < filters.Length; i++)
+                    for (int i = filters.Length - 1; i >= 0; i--)
                     {
                         pipeline = filters[i].ConfigureServices(pipeline);
                     }
@@ -182,9 +186,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                         if (filters.Length > 0 && result != null)
                         {
                             // public IServiceProvider ConfigureServices(IServiceCollection serviceCollection) is not compatible with IStartupServicesFilter;
+#pragma warning disable CS0612 // Type or member is obsolete
                             var message = $"A ConfigureServices method that returns an {nameof(IServiceProvider)} is " +
                                 $"not compatible with the use of one or more {nameof(IStartupConfigureServicesFilter)}. " +
                                 $"Use a void returning ConfigureServices method instead or a ConfigureContainer method.";
+#pragma warning restore CS0612 // Type or member is obsolete
                             throw new InvalidOperationException(message);
                         };
                     }
@@ -198,14 +204,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 void RunPipeline(TContainerBuilder containerBuilder)
                 {
                     var filters = HostingServiceProvider
-                        .GetRequiredService<IEnumerable<IStartupConfigureContainerFilter<TContainerBuilder>>>()
-                        .Reverse()
-                        .ToArray();
+#pragma warning disable CS0612 // Type or member is obsolete
+                        .GetRequiredService<IEnumerable<IStartupConfigureContainerFilter<TContainerBuilder>>>();
+#pragma warning restore CS0612 // Type or member is obsolete
 
                     Action<TContainerBuilder> pipeline = InvokeConfigureContainer;
-                    for (int i = 0; i < filters.Length; i++)
+                    foreach (var filter in filters.Reverse())
                     {
-                        pipeline = filters[i].ConfigureContainer(pipeline);
+                        pipeline = filter.ConfigureContainer(pipeline);
                     }
 
                     pipeline(containerBuilder);
@@ -215,20 +221,23 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "We're warning at the entry point. This is an implementation detail.")]
         public static Type FindStartupType(string startupAssemblyName, string environmentName)
         {
             if (string.IsNullOrEmpty(startupAssemblyName))
             {
                 throw new ArgumentException(
-                    string.Format("A startup method, startup type or startup assembly is required. If specifying an assembly, '{0}' cannot be null or empty.",
-                    nameof(startupAssemblyName)),
-                    nameof(startupAssemblyName));
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        "A startup method, startup type or startup assembly is required. If specifying an assembly, '{0}' cannot be null or empty.",
+                        nameof(startupAssemblyName)),
+                        nameof(startupAssemblyName));
             }
 
             var assembly = Assembly.Load(new AssemblyName(startupAssemblyName));
             if (assembly == null)
             {
-                throw new InvalidOperationException(String.Format("The assembly '{0}' failed to load.", startupAssemblyName));
+                throw new InvalidOperationException($"The assembly '{startupAssemblyName}' failed to load.");
             }
 
             var startupNameWithEnv = "Startup" + environmentName;
@@ -258,7 +267,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             if (type == null)
             {
-                throw new InvalidOperationException(String.Format("A type named '{0}' or '{1}' could not be found in assembly '{2}'.",
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    "A type named '{0}' or '{1}' could not be found in assembly '{2}'.",
                     startupNameWithEnv,
                     startupNameWithoutEnv,
                     startupAssemblyName));
@@ -267,26 +278,31 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return type;
         }
 
-        private static ConfigureBuilder FindConfigureDelegate(Type startupType, string environmentName)
+        internal static ConfigureBuilder FindConfigureDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
-            var configureMethod = FindMethod(startupType, "Configure{0}", environmentName, typeof(void), required: true);
+            var configureMethod = FindMethod(startupType, "Configure{0}", environmentName, typeof(void), required: true)!;
             return new ConfigureBuilder(configureMethod);
         }
 
-        private static ConfigureContainerBuilder FindConfigureContainerDelegate(Type startupType, string environmentName)
+        internal static ConfigureContainerBuilder FindConfigureContainerDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
             var configureMethod = FindMethod(startupType, "Configure{0}Container", environmentName, typeof(void), required: false);
             return new ConfigureContainerBuilder(configureMethod);
         }
 
-        private static ConfigureServicesBuilder FindConfigureServicesDelegate(Type startupType, string environmentName)
+        internal static bool HasConfigureServicesIServiceProviderDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
+        {
+            return null != FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false);
+        }
+
+        internal static ConfigureServicesBuilder FindConfigureServicesDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
             var servicesMethod = FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false)
                 ?? FindMethod(startupType, "Configure{0}Services", environmentName, typeof(void), required: false);
             return new ConfigureServicesBuilder(servicesMethod);
         }
 
-        private static MethodInfo FindMethod(Type startupType, string methodName, string environmentName, Type returnType = null, bool required = true)
+        private static MethodInfo? FindMethod([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string methodName, string environmentName, Type? returnType = null, bool required = true)
         {
             var methodNameWithEnv = string.Format(CultureInfo.InvariantCulture, methodName, environmentName);
             var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");
@@ -295,14 +311,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithEnv, StringComparison.OrdinalIgnoreCase)).ToList();
             if (selectedMethods.Count > 1)
             {
-                throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithEnv));
+                throw new InvalidOperationException($"Having multiple overloads of method '{methodNameWithEnv}' is not supported.");
             }
             if (selectedMethods.Count == 0)
             {
                 selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithNoEnv, StringComparison.OrdinalIgnoreCase)).ToList();
                 if (selectedMethods.Count > 1)
                 {
-                    throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithNoEnv));
+                    throw new InvalidOperationException($"Having multiple overloads of method '{methodNameWithNoEnv}' is not supported.");
                 }
             }
 
@@ -311,7 +327,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (required)
                 {
-                    throw new InvalidOperationException(string.Format("A public method named '{0}' or '{1}' could not be found in the '{2}' type.",
+                    throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        "A public method named '{0}' or '{1}' could not be found in the '{2}' type.",
                         methodNameWithEnv,
                         methodNameWithNoEnv,
                         startupType.FullName));
@@ -323,7 +341,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (required)
                 {
-                    throw new InvalidOperationException(string.Format("The '{0}' method in the type '{1}' must have a return type of '{2}'.",
+                    throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        "The '{0}' method in the type '{1}' must have a return type of '{2}'.",
                         methodInfo.Name,
                         startupType.FullName,
                         returnType.Name));

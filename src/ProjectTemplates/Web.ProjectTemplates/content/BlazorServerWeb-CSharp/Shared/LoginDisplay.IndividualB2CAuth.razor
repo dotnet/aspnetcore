@@ -1,0 +1,30 @@
+﻿@using Microsoft.Identity.Web
+@using Microsoft.Extensions.Options
+@inject IOptionsMonitor<MicrosoftIdentityOptions> microsoftIdentityOptions
+
+<AuthorizeView>
+    <Authorized>
+        @if (canEditProfile)
+        {
+            <a href="MicrosoftIdentity/Account/EditProfile">Hello, @context.User.Identity.Name!</a>
+        }
+        else
+        {
+            <text>Hello, @context.User.Identity.Name!</text>
+        }
+        <a href="MicrosoftIdentity/Account/SignOut">Log out</a>
+    </Authorized>
+    <NotAuthorized>
+        <a href="MicrosoftIdentity/Account/SignIn">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private bool canEditProfile;
+
+    protected override void OnInitialized()
+    {
+        var options = microsoftIdentityOptions.CurrentValue;
+        canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
+    }
+}

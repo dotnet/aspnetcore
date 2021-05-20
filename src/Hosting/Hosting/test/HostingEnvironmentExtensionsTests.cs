@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Tests
@@ -13,9 +14,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void SetsFullPathToWwwroot()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
-            env.Initialize(Path.GetFullPath("."), new WebHostOptions() { WebRoot = "testroot" });
+            var webHostOptions = CreateWebHostOptions();
+            webHostOptions.WebRoot = "testroot";
+
+            env.Initialize(Path.GetFullPath("."), webHostOptions);
 
             Assert.Equal(Path.GetFullPath("."), env.ContentRootPath);
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
@@ -26,9 +30,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void DefaultsToWwwrootSubdir()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
-            env.Initialize(Path.GetFullPath("testroot"), new WebHostOptions());
+            env.Initialize(Path.GetFullPath("testroot"), CreateWebHostOptions());
 
             Assert.Equal(Path.GetFullPath("testroot"), env.ContentRootPath);
             Assert.Equal(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), env.WebRootPath);
@@ -39,9 +43,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void DefaultsToNullFileProvider()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
-            env.Initialize(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), new WebHostOptions());
+            env.Initialize(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), CreateWebHostOptions());
 
             Assert.Equal(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), env.ContentRootPath);
             Assert.Null(env.WebRootPath);
@@ -52,12 +56,22 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void OverridesEnvironmentFromConfig()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
             env.EnvironmentName = "SomeName";
 
-            env.Initialize(Path.GetFullPath("."), new WebHostOptions() { Environment = "NewName" });
+            var webHostOptions = CreateWebHostOptions();
+            webHostOptions.Environment = "NewName";
+
+            env.Initialize(Path.GetFullPath("."), webHostOptions);
 
             Assert.Equal("NewName", env.EnvironmentName);
+        }
+
+        private WebHostOptions CreateWebHostOptions(IConfiguration configuration = null, string applicationNameFallback = null)
+        {
+            return new WebHostOptions(
+                configuration ?? Mock.Of<IConfiguration>(),
+                applicationNameFallback: applicationNameFallback);
         }
     }
 }

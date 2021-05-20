@@ -1,17 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-    <IsTestAssetProject>true</IsTestAssetProject>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Resx files are embedded data -->
+    <GenerateResxSource>false</GenerateResxSource>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <ProjectReference Include="..\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+
   </ItemGroup>
 </Project>

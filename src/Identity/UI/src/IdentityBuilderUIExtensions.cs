@@ -1,10 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -30,7 +34,7 @@ namespace Microsoft.AspNetCore.Identity
         public static IdentityBuilder AddDefaultUI(this IdentityBuilder builder)
         {
             builder.AddSignInManager();
-            AddRelatedParts(builder);
+            builder.Services.AddMvc();
 
             builder.Services.ConfigureOptions(
                 typeof(IdentityDefaultUIConfigureOptions<>)
@@ -40,29 +44,37 @@ namespace Microsoft.AspNetCore.Identity
             return builder;
         }
 
-        private static void AddRelatedParts(IdentityBuilder builder)
+        private static Assembly GetApplicationAssembly(IdentityBuilder builder)
         {
-            // For preview1, we don't have a good mechanism to plug in additional parts.
-            // We need to provide API surface to allow libraries to plug in existing parts
-            // that were optionally added.
-            // Challenges here are:
-            // * Discovery of the parts.
-            // * Ordering of the parts.
-            // * Loading of the assembly in memory.
+            // Whis is the same logic that MVC follows to find the application assembly.
+            var environment = builder.Services.Where(d => d.ServiceType == typeof(IWebHostEnvironment)).ToArray();
+            var applicationName = ((IWebHostEnvironment)environment.LastOrDefault()?.ImplementationInstance)
+                .ApplicationName;
 
-            var mvcBuilder = builder.Services
-                .AddMvc()
-                .ConfigureApplicationPartManager(partManager =>
-                {
-                    var thisAssembly = typeof(IdentityBuilderUIExtensions).Assembly;
-                    var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
-                    var relatedParts = relatedAssemblies.SelectMany(CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts);
+            var appAssembly = Assembly.Load(applicationName);
+            return appAssembly;
+        }
 
-                    foreach (var part in relatedParts)
-                    {
-                        partManager.ApplicationParts.Add(part);
-                    }
-                });
+        private static bool TryResolveUIFramework(Assembly assembly, out UIFramework uiFramework)
+        {
+            uiFramework = default;
+
+            var metadata = assembly.GetCustomAttributes<UIFrameworkAttribute>()
+                .SingleOrDefault()?.UIFramework; // Bootstrap4 is the default
+            if (metadata == null)
+            {
+                return false;
+            }
+
+            // If we find the metadata there must be a valid framework here.
+            if (!Enum.TryParse<UIFramework>(metadata, ignoreCase: true, out uiFramework))
+            {
+                var enumValues = string.Join(", ", Enum.GetNames(typeof(UIFramework)).Select(v => $"'{v}'"));
+                throw new InvalidOperationException(
+                    $"Found an invalid value for the 'IdentityUIFrameworkVersion'. Valid values are {enumValues}");
+            }
+
+            return true;
         }
     }
 }

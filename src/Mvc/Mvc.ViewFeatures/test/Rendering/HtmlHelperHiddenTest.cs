@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -465,7 +464,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void HiddenWithViewDataErrors_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[input-validation-error some-class]]"" id=""HtmlEncode[[Property1]]""" +
+            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[some-class input-validation-error]]"" id=""HtmlEncode[[Property1]]""" +
                            @" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelStateValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
             var attributes = new Dictionary<string, object>
@@ -729,7 +728,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void HiddenForWithViewDataErrors_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[input-validation-error some-class]]"" id=""HtmlEncode[[Property1]]"" " +
+            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[some-class input-validation-error]]"" id=""HtmlEncode[[Property1]]"" " +
                            @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelStateValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
             var attributes = new Dictionary<string, object>

@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.Extensions.Primitives;
 
@@ -14,37 +19,57 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal unsafe class NativeRequestContext : IDisposable
     {
         private const int AlignmentPadding = 8;
+        private const int DefaultBufferSize = 4096 - AlignmentPadding;
         private IntPtr _originalBufferAddress;
+        private bool _useLatin1;
         private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
-        private byte[] _backingBuffer;
+        private readonly IMemoryOwner<byte>? _backingBuffer;
+        private MemoryHandle _memoryHandle;
         private int _bufferAlignment;
-        private SafeNativeOverlapped _nativeOverlapped;
         private bool _permanentlyPinned;
+        private bool _disposed;
+
+        [MemberNotNullWhen(false, nameof(_backingBuffer))]
+        private bool PermanentlyPinned => _permanentlyPinned;
 
         // To be used by HttpSys
-        internal NativeRequestContext(SafeNativeOverlapped nativeOverlapped,
-            int bufferAlignment,
-            HttpApiTypes.HTTP_REQUEST* nativeRequest,
-            byte[] backingBuffer,
-            ulong requestId)
+        internal NativeRequestContext(MemoryPool<byte> memoryPool, uint? bufferSize, ulong requestId)
         {
-            _nativeOverlapped = nativeOverlapped;
-            _bufferAlignment = bufferAlignment;
-            _nativeRequest = nativeRequest;
-            _backingBuffer = backingBuffer;
+            // TODO:
+            // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
+            // are different than for ARM processors. We have seen 4 - byte - aligned buffers allocated on
+            // virtual x64/x86 machines which were accepted by HttpReceiveHttpRequest without errors. In
+            // these cases the buffer alignment may cause reading values at invalid offset. Setting buffer
+            // alignment to 0 for now.
+            // 
+            // _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
+            _bufferAlignment = 0;
+
+            var newSize = (int)(bufferSize ?? DefaultBufferSize) + AlignmentPadding;
+            if (newSize <= memoryPool.MaxBufferSize)
+            {
+                _backingBuffer = memoryPool.Rent(newSize);
+            }
+            else
+            {
+                // No size limit
+                _backingBuffer = MemoryPool<byte>.Shared.Rent(newSize);
+            }
+            _backingBuffer.Memory.Span.Clear();
+            _memoryHandle = _backingBuffer.Memory.Pin();
+            _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
+
             RequestId = requestId;
         }
 
         // To be used by IIS Integration.
-        internal NativeRequestContext(HttpApiTypes.HTTP_REQUEST* request)
+        internal NativeRequestContext(HttpApiTypes.HTTP_REQUEST* request, bool useLatin1)
         {
+            _useLatin1 = useLatin1;
             _nativeRequest = request;
             _bufferAlignment = 0;
             _permanentlyPinned = true;
         }
-
-
-        internal SafeNativeOverlapped NativeOverlapped => _nativeOverlapped;
 
         internal HttpApiTypes.HTTP_REQUEST* NativeRequest
         {
@@ -88,31 +113,43 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
+        internal bool IsHttp2 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
+
+        // Assumes memory isn't pinned. Will fail if called by IIS.
         internal uint Size
         {
-            get { return (uint)_backingBuffer.Length - AlignmentPadding; }
+            get
+            {
+                Debug.Assert(_backingBuffer != null);
+                return (uint)_backingBuffer.Memory.Length - AlignmentPadding;
+            }
         }
 
         // ReleasePins() should be called exactly once.  It must be called before Dispose() is called, which means it must be called
         // before an object (Request) which closes the RequestContext on demand is returned to the application.
         internal void ReleasePins()
         {
-            Debug.Assert(_nativeRequest != null || _backingBuffer == null, "RequestContextBase::ReleasePins()|ReleasePins() called twice.");
+            Debug.Assert(_nativeRequest != null, "RequestContextBase::ReleasePins()|ReleasePins() called twice.");
             _originalBufferAddress = (IntPtr)_nativeRequest;
+            _memoryHandle.Dispose();
+            _memoryHandle = default;
             _nativeRequest = null;
-            _nativeOverlapped?.Dispose();
-            _nativeOverlapped = null;
         }
 
         public virtual void Dispose()
         {
-            Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
-            _nativeOverlapped?.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
+                _memoryHandle.Dispose();
+                _backingBuffer?.Dispose();
+            }
         }
 
         // These methods require the HTTP_REQUEST to still be pinned in its original location.
 
-        internal string GetVerb()
+        internal string? GetVerb()
         {
             var verb = NativeRequest->Verb;
             if (verb > HttpApiTypes.HTTP_VERB.HttpVerbUnknown && verb < HttpApiTypes.HTTP_VERB.HttpVerbMaximum)
@@ -121,13 +158,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else if (verb == HttpApiTypes.HTTP_VERB.HttpVerbUnknown && NativeRequest->pUnknownVerb != null)
             {
-                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength);
+                // Never use Latin1 for the VERB
+                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength, useLatin1: false);
             }
 
             return null;
         }
 
-        internal string GetRawUrl()
+        internal string? GetRawUrl()
         {
             if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
             {
@@ -136,17 +174,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal byte[] GetRawUrlInBytes()
+        internal Span<byte> GetRawUrlInBytes()
         {
             if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
             {
-                var result = new byte[NativeRequest->RawUrlLength];
-                Marshal.Copy((IntPtr)NativeRequest->pRawUrl, result, 0, NativeRequest->RawUrlLength);
-
-                return result;
+                return new Span<byte>(NativeRequest->pRawUrl, NativeRequest->RawUrlLength);
             }
 
-            return null;
+            return default;
         }
 
         internal CookedUrl GetCookedUrl()
@@ -156,6 +191,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal Version GetVersion()
         {
+            if (IsHttp2)
+            {
+                return Constants.V2;
+            }
             var major = NativeRequest->Version.MajorVersion;
             var minor = NativeRequest->Version.MinorVersion;
             if (major == 1 && minor == 1)
@@ -178,10 +217,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 var info = &requestInfo[i];
                 if (info != null
-                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
                 {
-                    return true;
+                    var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                    if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -196,20 +238,42 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 var info = &requestInfo[i];
                 if (info != null
-                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
                 {
-                    // Duplicates AccessToken
-                    var identity = new WindowsIdentity(info->pInfo->AccessToken, GetAuthTypeFromRequest(info->pInfo->AuthType));
+                    var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                    if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    {
+                        // Duplicates AccessToken
+                        var identity = new WindowsIdentity(authInfo->AccessToken, GetAuthTypeFromRequest(authInfo->AuthType));
 
-                    // Close the original
-                    UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(info->pInfo->AccessToken);
+                        // Close the original
+                        UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(authInfo->AccessToken);
 
-                    return new WindowsPrincipal(identity);
+                        return new WindowsPrincipal(identity);
+                    }
                 }
             }
 
             return new WindowsPrincipal(WindowsIdentity.GetAnonymous()); // Anonymous / !IsAuthenticated
+        }
+
+        internal HttpApiTypes.HTTP_SSL_PROTOCOL_INFO GetTlsHandshake()
+        {
+            var requestInfo = NativeRequestV2->pRequestInfo;
+            var infoCount = NativeRequestV2->RequestInfoCount;
+
+            for (int i = 0; i < infoCount; i++)
+            {
+                var info = &requestInfo[i];
+                if (info != null
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
+                {
+                    var authInfo = (HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo;
+                    return *authInfo;
+                }
+            }
+
+            return default;
         }
 
         private static string GetAuthTypeFromRequest(HttpApiTypes.HTTP_REQUEST_AUTH_TYPE input)
@@ -234,15 +298,15 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         // These methods are for accessing the request structure after it has been unpinned. They need to adjust addresses
         // in case GC has moved the original object.
 
-        internal string GetKnownHeader(HttpSysRequestHeader header)
+        internal string? GetKnownHeader(HttpSysRequestHeader header)
         {
-            if (_permanentlyPinned)
+            if (PermanentlyPinned)
             {
                 return GetKnowHeaderHelper(header, 0, _nativeRequest);
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
@@ -251,17 +315,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        private string GetKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
+        private string? GetKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
         {
             int headerIndex = (int)header;
-            string value = null;
+            string? value = null;
 
             HttpApiTypes.HTTP_KNOWN_HEADER* pKnownHeader = (&request->Headers.KnownHeaders) + headerIndex;
             // For known headers, when header value is empty, RawValueLength will be 0 and
             // pRawValue will point to empty string ("\0")
             if (pKnownHeader->RawValueLength > 0)
             {
-                value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength);
+                value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength, _useLatin1);
             }
 
             return value;
@@ -269,14 +333,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal void GetUnknownHeaders(IDictionary<string, StringValues> unknownHeaders)
         {
-            if (_permanentlyPinned)
+            if (PermanentlyPinned)
             {
                 GetUnknownHeadersHelper(unknownHeaders, 0, _nativeRequest);
             }
             else
             {
                 // Return value.
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
@@ -299,11 +363,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     // pRawValue will be null.
                     if (pUnknownHeader->pName != null && pUnknownHeader->NameLength > 0)
                     {
-                        var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength);
+                        var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength, _useLatin1);
                         string headerValue;
                         if (pUnknownHeader->pRawValue != null && pUnknownHeader->RawValueLength > 0)
                         {
-                            headerValue = HeaderEncoding.GetString(pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength);
+                            headerValue = HeaderEncoding.GetString(pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength, _useLatin1);
                         }
                         else
                         {
@@ -318,25 +382,25 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal SocketAddress GetRemoteEndPoint()
+        internal SocketAddress? GetRemoteEndPoint()
         {
             return GetEndPoint(localEndpoint: false);
         }
 
-        internal SocketAddress GetLocalEndPoint()
+        internal SocketAddress? GetLocalEndPoint()
         {
             return GetEndPoint(localEndpoint: true);
         }
 
-        private SocketAddress GetEndPoint(bool localEndpoint)
+        private SocketAddress? GetEndPoint(bool localEndpoint)
         {
-            if (_permanentlyPinned)
+            if (PermanentlyPinned)
             {
                 return GetEndPointHelper(localEndpoint, _nativeRequest, (byte *)0);
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     return GetEndPointHelper(localEndpoint, request, pMemoryBlob);
@@ -344,7 +408,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        private SocketAddress GetEndPointHelper(bool localEndpoint, HttpApiTypes.HTTP_REQUEST* request, byte* pMemoryBlob)
+        private SocketAddress? GetEndPointHelper(bool localEndpoint, HttpApiTypes.HTTP_REQUEST* request, byte* pMemoryBlob)
         {
             var source = localEndpoint ? (byte*)request->Address.pLocalAddress : (byte*)request->Address.pRemoteAddress;
 
@@ -356,7 +420,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return CopyOutAddress(address);
         }
 
-        private static SocketAddress CopyOutAddress(IntPtr address)
+        private static SocketAddress? CopyOutAddress(IntPtr address)
         {
             ushort addressFamily = *((ushort*)address);
             if (addressFamily == (ushort)AddressFamily.InterNetwork)
@@ -390,13 +454,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
         {
             // Return value.
-            if (_permanentlyPinned)
+            if (PermanentlyPinned)
             {
                 return GetChunksHelper(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size, 0, _nativeRequest);
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
@@ -450,6 +514,89 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 dataChunkIndex = -1;
             }
             return dataRead;
+        }
+
+        internal IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo()
+        {
+            if (PermanentlyPinned)
+            {
+                return GetRequestInfo((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetRequestInfo(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        // Assumes memory isn't pinned. Will fail if called by IIS.
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            var count = nativeRequest->RequestInfoCount;
+            if (count == 0)
+            {
+                return ImmutableDictionary<int, ReadOnlyMemory<byte>>.Empty;
+            }
+
+            var info = new Dictionary<int, ReadOnlyMemory<byte>>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var requestInfo = nativeRequest->pRequestInfo[i];
+                var offset = (long)requestInfo.pInfo - (long)baseAddress;
+                info.Add(
+                    (int)requestInfo.InfoType,
+                    _backingBuffer!.Memory.Slice((int)offset, (int)requestInfo.InfoLength));
+            }
+
+            return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
+        }
+
+        internal X509Certificate2? GetClientCertificate()
+        {
+            if (PermanentlyPinned)
+            {
+                return GetClientCertificate((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetClientCertificate(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        // Throws CryptographicException
+        private X509Certificate2? GetClientCertificate(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            var request = nativeRequest->Request;
+            long fixup = (byte*)nativeRequest - (byte*)baseAddress;
+            if (request.pSslInfo == null)
+            {
+                return null;
+            }
+
+            var sslInfo = (HttpApiTypes.HTTP_SSL_INFO*)((byte*)request.pSslInfo + fixup);
+            if (sslInfo->SslClientCertNegotiated == 0 || sslInfo->pClientCertInfo == null)
+            {
+                return null;
+            }
+
+            var clientCertInfo = (HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO*)((byte*)sslInfo->pClientCertInfo + fixup);
+            if (clientCertInfo->pCertEncoded == null)
+            {
+                return null;
+            }
+
+            var clientCert = clientCertInfo->pCertEncoded + fixup;
+            byte[] certEncoded = new byte[clientCertInfo->CertEncodedSize];
+            Marshal.Copy((IntPtr)clientCert, certEncoded, 0, certEncoded.Length);
+            return new X509Certificate2(certEncoded);
         }
     }
 }

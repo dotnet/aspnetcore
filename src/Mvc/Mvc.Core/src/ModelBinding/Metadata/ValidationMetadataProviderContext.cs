@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -27,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             Key = key;
             Attributes = attributes.Attributes;
+            ParameterAttributes = attributes.ParameterAttributes;
             PropertyAttributes = attributes.PropertyAttributes;
             TypeAttributes = attributes.TypeAttributes;
 
@@ -44,14 +47,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public ModelMetadataIdentity Key { get; }
 
         /// <summary>
+        /// Gets the parameter attributes.
+        /// </summary>
+        public IReadOnlyList<object>? ParameterAttributes { get; }
+
+        /// <summary>
         /// Gets the property attributes.
         /// </summary>
-        public IReadOnlyList<object> PropertyAttributes { get; }
+        public IReadOnlyList<object>? PropertyAttributes { get; }
 
         /// <summary>
         /// Gets the type attributes.
         /// </summary>
-        public IReadOnlyList<object> TypeAttributes { get; }
+        public IReadOnlyList<object>? TypeAttributes { get; }
 
         /// <summary>
         /// Gets the <see cref="Metadata.ValidationMetadata"/>.

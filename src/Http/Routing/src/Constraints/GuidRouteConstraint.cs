@@ -16,22 +16,12 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     {
         /// <inheritdoc />
         public bool Match(
-            HttpContext httpContext,
-            IRouter route,
+            HttpContext? httpContext,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -42,17 +32,15 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object value;
-            if (values.TryGetValue(routeKey, out value) && value != null)
+            if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 if (value is Guid)
                 {
                     return true;
                 }
 
-                Guid result;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return Guid.TryParse(valueString, out result);
+                return Guid.TryParse(valueString, out _);
             }
 
             return false;

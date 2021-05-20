@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>
+      Components for performing health checks using EntityFrameworkCore.
+    </Description>
+    <TargetFramework>net5.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>diagnostics;healthchecks;entityframeworkcore</PackageTags>
+    <BaseNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</BaseNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+  </ItemGroup>
+
+</Project>

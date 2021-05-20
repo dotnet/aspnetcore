@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Dynamic;
@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _clientProxy = clientProxy;
         }
 
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object?[]? args, out object? result)
         {
-            result = _clientProxy.SendCoreAsync(binder.Name, args);
+            result = _clientProxy.SendCoreAsync(binder.Name, args!);
             return true;
         }
     }

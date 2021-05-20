@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
@@ -40,14 +40,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public PhysicalFileResult(string fileName, MediaTypeHeaderValue contentType)
-            : base(contentType?.ToString())
+            : base(contentType.ToString())
         {
-            if (fileName == null)
-            {
-                throw new ArgumentNullException(nameof(fileName));
-            }
-
-            FileName = fileName;
+            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }
 
         /// <summary>
@@ -56,15 +51,8 @@ namespace Microsoft.AspNetCore.Mvc
         public string FileName
         {
             get => _fileName;
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _fileName = value;
-            }
+            [MemberNotNull(nameof(_fileName))]
+            set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <inheritdoc />

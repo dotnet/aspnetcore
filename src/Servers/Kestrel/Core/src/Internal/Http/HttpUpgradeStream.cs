@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class HttpUpgradeStream : Stream
+    internal sealed class HttpUpgradeStream : Stream
     {
         private readonly Stream _requestStream;
         private readonly Stream _responseStream;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _responseStream.Close();
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
         }
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _requestStream.EndRead(asyncResult);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);
         }
@@ -145,12 +145,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _requestStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             return _requestStream.ReadAsync(destination, cancellationToken);
         }
-#endif
 
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
@@ -162,12 +160,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _responseStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             return _responseStream.WriteAsync(source, cancellationToken);
         }
-#endif
 
         public override long Seek(long offset, SeekOrigin origin)
         {

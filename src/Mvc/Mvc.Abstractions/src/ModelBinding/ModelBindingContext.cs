@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets a model name which is explicitly set using an <see cref="IModelNameProvider"/>.
         /// </summary>
-        public abstract string BinderModelName { get; set; }
+        public abstract string? BinderModelName { get; set; }
 
         /// <summary>
         /// Gets or sets a value which represents the <see cref="ModelBinding.BindingSource"/> associated with the
         /// <see cref="Model"/>.
         /// </summary>
-        public abstract BindingSource BindingSource { get; set; }
+        public abstract BindingSource? BindingSource { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the current field being bound.
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> associated with this context.
         /// </summary>
-        public virtual HttpContext HttpContext => ActionContext?.HttpContext;
+        public virtual HttpContext HttpContext => ActionContext?.HttpContext!;
 
         /// <summary>
         /// Gets or sets an indication that the current binder is handling the top-level object.
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// The <see cref="Model"/> will typically be set for a binding operation that works
         /// against a pre-existing model object to update certain properties.
         /// </remarks>
-        public abstract object Model { get; set; }
+        public abstract object? Model { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata for the model associated with this context.
@@ -66,6 +66,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <see cref="IValueProvider"/> during model binding.
         /// </summary>
         public abstract string ModelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the top-level model. This is not reset to <see cref="string.Empty"/> when value
+        /// providers have no match for that model.
+        /// </summary>
+        public string OriginalModelName { get; protected set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelStateEntry"/> values
@@ -88,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets or sets a predicate which will be evaluated for each property to determine if the property
         /// is eligible for model binding.
         /// </summary>
-        public abstract Func<ModelMetadata, bool> PropertyFilter { get; set; }
+        public abstract Func<ModelMetadata, bool>? PropertyFilter { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ValidationStateDictionary"/>. Used for tracking validation state to
@@ -117,8 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract ModelBindingResult Result { get; set; }
 
         /// <summary>
-        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding
-        /// properties or collection items.
+        /// Pushes a layer of state onto this context. <see cref="IModelBinder"/> implementations will call this as
+        /// part of recursion when binding properties or collection items.
         /// </summary>
         /// <param name="modelMetadata">
         /// <see cref="ModelBinding.ModelMetadata"/> to assign to the <see cref="ModelMetadata"/> property.
@@ -134,11 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelMetadata modelMetadata,
             string fieldName,
             string modelName,
-            object model);
+            object? model);
 
         /// <summary>
-        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding
-        /// properties or collection items.
+        /// Pushes a layer of state onto this context. <see cref="IModelBinder"/> implementations will call this as
+        /// part of recursion when binding properties or collection items.
         /// </summary>
         /// <returns>
         /// A <see cref="NestedScope"/> scope object which should be used in a <c>using</c> statement where
@@ -156,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// by caller when child binding context state should be popped off of
         /// the <see cref="ModelBindingContext"/>.
         /// </summary>
-        public struct NestedScope : IDisposable
+        public readonly struct NestedScope : IDisposable
         {
             private readonly ModelBindingContext _context;
 

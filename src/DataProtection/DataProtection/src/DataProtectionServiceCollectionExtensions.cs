@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
@@ -9,8 +12,8 @@ using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -67,6 +70,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (OSVersionUtil.IsWindows())
             {
+                // Assertion for platform compat analyzer
+                Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                 services.TryAddSingleton<IRegistryPolicyResolver, RegistryPolicyResolver>();
             }
 
@@ -77,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IKeyManager, XmlKeyManager>();
             services.TryAddSingleton<IApplicationDiscriminator, HostingApplicationDiscriminator>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, DataProtectionStartupFilter>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, DataProtectionHostedService>());
 
             // Internal services
             services.TryAddSingleton<IDefaultKeyResolver, DefaultKeyResolver>();

@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -18,6 +20,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the key used to get or add the property from value from <see cref="ITempDataDictionary"/>.
         /// When unspecified, the key is derived from the property name.
         /// </summary>
-        public string Key { get; set; }
+        public string? Key { get; set; }
     }
 }

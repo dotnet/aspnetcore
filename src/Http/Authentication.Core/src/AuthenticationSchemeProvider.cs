@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -49,11 +50,14 @@ namespace Microsoft.AspNetCore.Authentication
 
         private readonly IDictionary<string, AuthenticationScheme> _schemes;
         private readonly List<AuthenticationScheme> _requestHandlers;
+        // Used as a safe return value for enumeration apis
+        private IEnumerable<AuthenticationScheme> _schemesCopy = Array.Empty<AuthenticationScheme>();
+        private IEnumerable<AuthenticationScheme> _requestHandlersCopy = Array.Empty<AuthenticationScheme>();
 
-        private Task<AuthenticationScheme> GetDefaultSchemeAsync()
+        private Task<AuthenticationScheme?> GetDefaultSchemeAsync()
             => _options.DefaultScheme != null
             ? GetSchemeAsync(_options.DefaultScheme)
-            : Task.FromResult<AuthenticationScheme>(null);
+            : Task.FromResult<AuthenticationScheme?>(null);
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
@@ -61,7 +65,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.</returns>
-        public virtual Task<AuthenticationScheme> GetDefaultAuthenticateSchemeAsync()
+        public virtual Task<AuthenticationScheme?> GetDefaultAuthenticateSchemeAsync()
             => _options.DefaultAuthenticateScheme != null
             ? GetSchemeAsync(_options.DefaultAuthenticateScheme)
             : GetDefaultSchemeAsync();
@@ -72,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        public virtual Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync()
+        public virtual Task<AuthenticationScheme?> GetDefaultChallengeSchemeAsync()
             => _options.DefaultChallengeScheme != null
             ? GetSchemeAsync(_options.DefaultChallengeScheme)
             : GetDefaultSchemeAsync();
@@ -83,7 +87,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="GetDefaultChallengeSchemeAsync"/> .
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        public virtual Task<AuthenticationScheme> GetDefaultForbidSchemeAsync()
+        public virtual Task<AuthenticationScheme?> GetDefaultForbidSchemeAsync()
             => _options.DefaultForbidScheme != null
             ? GetSchemeAsync(_options.DefaultForbidScheme)
             : GetDefaultChallengeSchemeAsync();
@@ -94,7 +98,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.</returns>
-        public virtual Task<AuthenticationScheme> GetDefaultSignInSchemeAsync()
+        public virtual Task<AuthenticationScheme?> GetDefaultSignInSchemeAsync()
             => _options.DefaultSignInScheme != null
             ? GetSchemeAsync(_options.DefaultSignInScheme)
             : GetDefaultSchemeAsync();
@@ -102,10 +106,10 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
-        /// Otherwise this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> if that supoorts sign out.
+        /// Otherwise this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> if that supports sign out.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        public virtual Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync()
+        public virtual Task<AuthenticationScheme?> GetDefaultSignOutSchemeAsync()
             => _options.DefaultSignOutScheme != null
             ? GetSchemeAsync(_options.DefaultSignOutScheme)
             : GetDefaultSignInSchemeAsync();
@@ -115,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="name">The name of the authenticationScheme.</param>
         /// <returns>The scheme or null if not found.</returns>
-        public virtual Task<AuthenticationScheme> GetSchemeAsync(string name)
+        public virtual Task<AuthenticationScheme?> GetSchemeAsync(string name)
             => Task.FromResult(_schemes.ContainsKey(name) ? _schemes[name] : null);
 
         /// <summary>
@@ -123,7 +127,35 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <returns>The schemes in priority order for request handling</returns>
         public virtual Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync()
-            => Task.FromResult<IEnumerable<AuthenticationScheme>>(_requestHandlers);
+            => Task.FromResult(_requestHandlersCopy);
+
+        /// <summary>
+        /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
+        /// </summary>
+        /// <param name="scheme">The scheme.</param>
+        /// <returns>true if the scheme was added successfully.</returns>
+        public virtual bool TryAddScheme(AuthenticationScheme scheme)
+        {
+            if (_schemes.ContainsKey(scheme.Name))
+            {
+                return false;
+            }
+            lock (_lock)
+            {
+                if (_schemes.ContainsKey(scheme.Name))
+                {
+                    return false;
+                }
+                if (typeof(IAuthenticationRequestHandler).IsAssignableFrom(scheme.HandlerType))
+                {
+                    _requestHandlers.Add(scheme);
+                    _requestHandlersCopy = _requestHandlers.ToArray();
+                }
+                _schemes[scheme.Name] = scheme;
+                _schemesCopy = _schemes.Values.ToArray();
+                return true;
+            }
+        }
 
         /// <summary>
         /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
@@ -137,15 +169,10 @@ namespace Microsoft.AspNetCore.Authentication
             }
             lock (_lock)
             {
-                if (_schemes.ContainsKey(scheme.Name))
+                if (!TryAddScheme(scheme))
                 {
                     throw new InvalidOperationException("Scheme already exists: " + scheme.Name);
                 }
-                if (typeof(IAuthenticationRequestHandler).IsAssignableFrom(scheme.HandlerType))
-                {
-                    _requestHandlers.Add(scheme);
-                }
-                _schemes[scheme.Name] = scheme;
             }
         }
 
@@ -164,13 +191,18 @@ namespace Microsoft.AspNetCore.Authentication
                 if (_schemes.ContainsKey(name))
                 {
                     var scheme = _schemes[name];
-                    _requestHandlers.Remove(scheme);
+                    if (_requestHandlers.Remove(scheme))
+                    {
+                        _requestHandlersCopy = _requestHandlers.ToArray();
+                    }
                     _schemes.Remove(name);
+                    _schemesCopy = _schemes.Values.ToArray();
                 }
             }
         }
 
+        /// <inheritdoc />
         public virtual Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
-            => Task.FromResult<IEnumerable<AuthenticationScheme>>(_schemes.Values);
+            => Task.FromResult(_schemesCopy);
     }
 }

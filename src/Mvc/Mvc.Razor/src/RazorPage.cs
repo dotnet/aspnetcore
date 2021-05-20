@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
         private bool _ignoreBody;
-        private HashSet<string> _ignoredSections;
+        private HashSet<string>? _ignoredSections;
 
         /// <summary>
         /// An <see cref="HttpContext"/> representing the current request execution.
         /// </summary>
-        public HttpContext Context => ViewContext?.HttpContext;
+        public HttpContext Context => ViewContext?.HttpContext!;
 
         /// <summary>
         /// In a Razor layout page, renders the portion of a content page that is not within a named section.
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
-        public HtmlString RenderSection(string name)
+        public HtmlString? RenderSection(string name)
         {
             if (name == null)
             {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
-        public HtmlString RenderSection(string name, bool required)
+        public HtmlString? RenderSection(string name, bool required)
         {
             if (name == null)
             {
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
-        public Task<HtmlString> RenderSectionAsync(string name)
+        public Task<HtmlString?> RenderSectionAsync(string name)
         {
             if (name == null)
             {
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// value does not represent the rendered content.</remarks>
         /// <exception cref="InvalidOperationException">if <paramref name="required"/> is <c>true</c> and the section
         /// was not registered using the <c>@section</c> in the Razor page.</exception>
-        public Task<HtmlString> RenderSectionAsync(string name, bool required)
+        public Task<HtmlString?> RenderSectionAsync(string name, bool required)
         {
             if (name == null)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return RenderSectionAsyncCore(name, required);
         }
 
-        private async Task<HtmlString> RenderSectionAsyncCore(string sectionName, bool required)
+        private async Task<HtmlString?> RenderSectionAsyncCore(string sectionName, bool required)
         {
             if (_renderedSections.Contains(sectionName))
             {
@@ -196,11 +196,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             else if (required)
             {
                 // If the section is not found, and it is not optional, throw an error.
-                var message = Resources.FormatSectionNotDefined(
-                    ViewContext.ExecutingFilePath,
-                    sectionName,
-                    ViewContext.View.Path);
-                throw new InvalidOperationException(message);
+                var viewContext = ViewContext;
+                throw new InvalidOperationException(
+                    Resources.FormatSectionNotDefined(
+                        viewContext.ExecutingFilePath,
+                        sectionName,
+                        viewContext.View.Path));
             }
             else
             {
@@ -220,21 +221,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(sectionName));
             }
 
-            if (!PreviousSectionWriters.ContainsKey(sectionName))
+            if (PreviousSectionWriters.ContainsKey(sectionName))
             {
-                // If the section is not defined, throw an error.
-                throw new InvalidOperationException(Resources.FormatSectionNotDefined(
-                    ViewContext.ExecutingFilePath,
-                    sectionName,
-                    ViewContext.View.Path));
-            }
+                if (_ignoredSections == null)
+                {
+                    _ignoredSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                }
 
-            if (_ignoredSections == null)
-            {
-                _ignoredSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _ignoredSections.Add(sectionName);
             }
-
-            _ignoredSections.Add(sectionName);
         }
 
         /// <inheritdoc />
@@ -273,39 +268,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <inheritdoc/>
         public override void BeginContext(int position, int length, bool isLiteral)
         {
-            const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    BeginContextEvent,
-                    new
-                    {
-                        httpContext = Context,
-                        path = Path,
-                        position = position,
-                        length = length,
-                        isLiteral = isLiteral,
-                    });
-            }
+            // noop
         }
 
+        /// <inheritdoc/>
         public override void EndContext()
         {
-            const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    EndContextEvent,
-                    new
-                    {
-                        httpContext = Context,
-                        path = Path,
-                    });
-            }
+            // noop
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)

@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <UserSecretsId>aspnet-ApiAuthSample-12ED8ECC-9EF1-4D31-87B4-1405B3198E5E</UserSecretsId>
+    <!-- We are a package that depends on the shared framework, this allows us to
+         avoid errors during restore -->
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Remove the reference to Microsoft.AspNetCore.App from IdentityServer4 -->
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
+    <Reference Include="Microsoft.AspNetCore.CookiePolicy" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Identity.UI" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+    <Reference Include="Microsoft.AspNetCore.Rewrite" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+
+</Project>

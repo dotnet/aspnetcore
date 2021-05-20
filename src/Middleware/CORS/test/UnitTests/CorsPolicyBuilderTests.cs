@@ -129,6 +129,39 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public void WithOrigins_NormalizesOrigins()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder("http://www.EXAMPLE.com", "HTTPS://example2.com");
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.Equal(new List<string>() { "http://www.example.com", "https://example2.com" }, corsPolicy.Origins);
+        }
+
+        [Fact]
+        public void WithOrigins_ThrowsIfArgumentNull()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            string[] args = null;
+
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
+        }
+
+        [Fact]
+        public void WithOrigins_ThrowsIfArgumentArrayContainsNull()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            string[] args = new string[] { null };
+
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
+        }
+
+        [Fact]
         public void AllowAnyOrigin_AllowsAny()
         {
             // Arrange
@@ -170,6 +203,20 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var corsPolicy = builder.Build();
             Assert.True(corsPolicy.IsOriginAllowed("http://test.example.com"));
+        }
+
+        [Fact]
+        public void SetIsOriginAllowedToAllowWildcardSubdomains_DoesNotAllowRootDomain()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder("http://*.example.com");
+
+            // Act
+            builder.SetIsOriginAllowedToAllowWildcardSubdomains();
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.False(corsPolicy.IsOriginAllowed("http://example.com"));
         }
 
         [Fact]
@@ -274,7 +321,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.True(corsPolicy.SupportsCredentials);
         }
 
-
         [Fact]
         public void DisallowCredential_SetsSupportsCredentials_ToFalse()
         {
@@ -287,6 +333,100 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var corsPolicy = builder.Build();
             Assert.False(corsPolicy.SupportsCredentials);
+        }
+
+        [Fact]
+        public void Build_ThrowsIfConfiguredToAllowAnyOriginWithCredentials()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder()
+                .AllowAnyOrigin()
+                .AllowCredentials();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            // Assert
+            Assert.Equal(Resources.InsecureConfiguration, ex.Message);
+        }
+
+        [Theory]
+        [InlineData("Some-String", "some-string")]
+        [InlineData("x:\\Test", "x:\\test")]
+        [InlineData("FTP://Some-url", "ftp://some-url")]
+        public void GetNormalizedOrigin_ReturnsLowerCasedValue_IfStringIsNotHttpOrHttpsUrl(string origin, string expected)
+        {
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(expected, normalizedOrigin);
+        }
+
+        [Fact]
+        public void GetNormalizedOrigin_DoesNotAddPort_IfUriDoesNotSpecifyOne()
+        {
+            // Arrange
+            var origin = "http://www.example.com";
+
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(origin, normalizedOrigin);
+        }
+
+        [Fact]
+        public void GetNormalizedOrigin_LowerCasesScheme()
+        {
+            // Arrange
+            var origin = "HTTP://www.example.com";
+
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal("http://www.example.com", normalizedOrigin);
+        }
+
+        [Fact]
+        public void GetNormalizedOrigin_LowerCasesHost()
+        {
+            // Arrange
+            var origin = "http://www.Example.Com";
+
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal("http://www.example.com", normalizedOrigin);
+        }
+
+        [Theory]
+        [InlineData("http://www.Example.com:80", "http://www.example.com:80")]
+        [InlineData("https://www.Example.com:8080", "https://www.example.com:8080")]
+        public void GetNormalizedOrigin_PreservesPort_ForNonIdnHosts(string origin, string expected)
+        {
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(expected, normalizedOrigin);
+        }
+
+        [Theory]
+        [InlineData("http://Bücher.example", "http://xn--bcher-kva.example")]
+        [InlineData("http://Bücher.example.com:83", "http://xn--bcher-kva.example.com:83")]
+        [InlineData("https://example.қаз", "https://example.xn--80ao21a")]
+        // Note that in following case, the default port (443 for HTTPS) is not preserved.
+        [InlineData("https://www.example.இந்தியா:443", "https://www.example.xn--xkc2dl3a5ee0h")]
+        public void GetNormalizedOrigin_ReturnsPunyCodedOrigin(string origin, string expected)
+        {
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(expected, normalizedOrigin);
         }
     }
 }

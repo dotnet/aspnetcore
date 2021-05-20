@@ -8,12 +8,12 @@
 // Not exported from index.
 /** @private */
 export class AbortController implements AbortSignal {
-    private isAborted: boolean = false;
-    public onabort: () => void;
+    private _isAborted: boolean = false;
+    public onabort: (() => void) | null = null;
 
-    public abort() {
-        if (!this.isAborted) {
-            this.isAborted = true;
+    public abort(): void {
+        if (!this._isAborted) {
+            this._isAborted = true;
             if (this.onabort) {
                 this.onabort();
             }
@@ -25,7 +25,7 @@ export class AbortController implements AbortSignal {
     }
 
     get aborted(): boolean {
-        return this.isAborted;
+        return this._isAborted;
     }
 }
 
@@ -34,5 +34,5 @@ export interface AbortSignal {
     /** Indicates if the request has been aborted. */
     aborted: boolean;
     /** Set this to a handler that will be invoked when the request is aborted. */
-    onabort: () => void;
+    onabort: (() => void) | null;
 }

@@ -2,21 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport } from "./ITransport";
+import { EventSourceConstructor, WebSocketConstructor } from "./Polyfills";
 
-/** Options provided to the 'withUrl' method on {@link @aspnet/signalr.HubConnectionBuilder} to configure options for the HTTP-based transports. */
+/** Options provided to the 'withUrl' method on {@link @microsoft/signalr.HubConnectionBuilder} to configure options for the HTTP-based transports. */
 export interface IHttpConnectionOptions {
-    /** An {@link @aspnet/signalr.HttpClient} that will be used to make HTTP requests. */
+    /** {@link @microsoft/signalr.MessageHeaders} containing custom headers to be sent with every HTTP request. Note, setting headers in the browser will not work for WebSockets or the ServerSentEvents stream. */
+    headers?: MessageHeaders;
+
+    /** An {@link @microsoft/signalr.HttpClient} that will be used to make HTTP requests. */
     httpClient?: HttpClient;
 
-    /** An {@link @aspnet/signalr.HttpTransportType} value specifying the transport to use for the connection. */
+    /** An {@link @microsoft/signalr.HttpTransportType} value specifying the transport to use for the connection. */
     transport?: HttpTransportType | ITransport;
 
     /** Configures the logger used for logging.
      *
-     * Provide an {@link @aspnet/signalr.ILogger} instance, and log messages will be logged via that instance. Alternatively, provide a value from
-     * the {@link @aspnet/signalr.LogLevel} enumeration and a default logger which logs to the Console will be configured to log messages of the specified
+     * Provide an {@link @microsoft/signalr.ILogger} instance, and log messages will be logged via that instance. Alternatively, provide a value from
+     * the {@link @microsoft/signalr.LogLevel} enumeration and a default logger which logs to the Console will be configured to log messages of the specified
      * level (or higher).
      */
     logger?: ILogger | LogLevel;
@@ -35,7 +40,29 @@ export interface IHttpConnectionOptions {
 
     /** A boolean indicating if negotiation should be skipped.
      *
-     * Negotiation can only be skipped when the {@link @aspnet/signalr.IHttpConnectionOptions.transport} property is set to 'HttpTransportType.WebSockets'.
+     * Negotiation can only be skipped when the {@link @microsoft/signalr.IHttpConnectionOptions.transport} property is set to 'HttpTransportType.WebSockets'.
      */
     skipNegotiation?: boolean;
+
+    // Used for unit testing and code spelunkers
+    /** A constructor that can be used to create a WebSocket.
+     *
+     * @internal
+     */
+    WebSocket?: WebSocketConstructor;
+
+    // Used for unit testing and code spelunkers
+    /** A constructor that can be used to create an EventSource.
+     *
+     * @internal
+     */
+    EventSource?: EventSourceConstructor;
+
+    /**
+     * Default value is 'true'.
+     * This controls whether credentials such as cookies are sent in cross-site requests.
+     *
+     * Cookies are used by many load-balancers for sticky sessions which is required when your app is deployed with multiple servers.
+     */
+    withCredentials?: boolean;
 }

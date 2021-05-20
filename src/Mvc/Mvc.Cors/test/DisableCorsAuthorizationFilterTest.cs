@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
             // Assert
             var statusCodeResult = Assert.IsType<StatusCodeResult>(authorizationFilterContext.Result);
-            Assert.Equal(StatusCodes.Status200OK, statusCodeResult.StatusCode);
+            Assert.Equal(StatusCodes.Status204NoContent, statusCodeResult.StatusCode);
         }
     }
 }

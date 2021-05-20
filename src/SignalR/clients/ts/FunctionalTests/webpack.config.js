@@ -1,8 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
+const webpack = require('webpack');
 const path = require("path");
-const webpack = require("../common/node_modules/webpack");
 
 module.exports = {
     entry: path.resolve(__dirname, "ts", "index.ts"),
@@ -34,9 +33,14 @@ module.exports = {
     output: {
         filename: 'signalr-functional-tests.js',
         path: path.resolve(__dirname, "wwwroot", "dist"),
-    },
+    },  
+    plugins: [
+        new webpack.ProvidePlugin({
+          process: 'process/browser',
+        }),
+      ],
     externals: {
-        "@aspnet/signalr": "signalR",
-        "@aspnet/signalr-protocol-msgpack": "signalR.protocols.msgpack",
+        "@microsoft/signalr": "signalR",
+        "@microsoft/signalr-protocol-msgpack": "signalR.protocols.msgpack",
     },
 };

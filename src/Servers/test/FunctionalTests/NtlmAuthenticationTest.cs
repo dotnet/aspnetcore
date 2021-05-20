@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -20,36 +20,29 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys, ServerType.Kestrel)
+                .WithTfms(Tfm.Default)
+                .WithAllHostingModels();
+
         [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        // In theory it could work on these platforms but the client would need non-default credentials.
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public async Task NtlmAuthentication(ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType,
-            HostingModel hostingModel = HostingModel.OutOfProcess,
-            string additionalPublishParameters = "")
+        public async Task NtlmAuthentication(TestVariant variant)
         {
-            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            var testName = $"NtlmAuthentication_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "NtlmAuthentication.config", nginxConfig: null),
-                    SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = "netcoreapp2.1",
-                    ApplicationType = applicationType,
-                    HostingModel = hostingModel,
-                    AdditionalPublishParameters = additionalPublishParameters
                 };
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
                     var httpClient = deploymentResult.HttpClient;
@@ -74,7 +67,14 @@ namespace ServerComparison.FunctionalTests
                         response = await httpClient.GetAsync("/Restricted");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                        Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        if (variant.Server == ServerType.Kestrel)
+                        {
+                            Assert.DoesNotContain("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        }
+                        else
+                        {
+                            Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        }
                         Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
                         logger.LogInformation("Testing /Forbidden");

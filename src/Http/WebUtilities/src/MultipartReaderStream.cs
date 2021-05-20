@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    internal class MultipartReaderStream : Stream
+    internal sealed class MultipartReaderStream : Stream
     {
         private readonly MultipartBoundary _boundary;
         private readonly BufferedReadStream _innerStream;
@@ -151,9 +151,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (_observedLength < _position)
             {
                 _observedLength = _position;
-                if (LengthLimit.HasValue && _observedLength > LengthLimit.Value)
+                if (LengthLimit.HasValue && _observedLength > LengthLimit.GetValueOrDefault())
                 {
-                    throw new InvalidDataException($"Multipart body length limit {LengthLimit.Value} exceeded.");
+                    throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
                 }
             }
             return read;
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     return UpdatePosition(read);
                 }
 
-                var length = _boundary.BoundaryBytes.Length;
+                var length = _boundary.BoundaryBytes!.Length;
                 Debug.Assert(matchCount == length);
 
                 // "The boundary may be followed by zero or more characters of
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 matchOffset = segment1.Offset;
                 while (matchOffset < segmentEndMinusMatchBytesLength)
                 {
-                    var lookaheadTailChar = segment1.Array[matchOffset + matchBytesLengthMinusOne];
+                    var lookaheadTailChar = segment1.Array![matchOffset + matchBytesLengthMinusOne];
                     if (lookaheadTailChar == matchBytesLastByte &&
                         CompareBuffers(segment1.Array, matchOffset, matchBytes, 0, matchBytesLengthMinusOne) == 0)
                     {
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var countLimit = segmentEnd - matchOffset;
                 for (matchCount = 0; matchCount < matchBytes.Length && matchCount < countLimit; matchCount++)
                 {
-                    if (matchBytes[matchCount] != segment1.Array[matchOffset + matchCount])
+                    if (matchBytes[matchCount] != segment1.Array![matchOffset + matchCount])
                     {
                         matchCount = 0;
                         break;

@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Localization
 {
@@ -13,9 +12,9 @@ namespace Microsoft.AspNetCore.Localization
     /// </summary>
     public class CookieRequestCultureProvider : RequestCultureProvider
     {
-        private static readonly char[] _cookieSeparator = new[] { '|' };
-        private static readonly string _culturePrefix = "c=";
-        private static readonly string _uiCulturePrefix = "uic=";
+        private const char _cookieSeparator = '|';
+        private const string _culturePrefix = "c=";
+        private const string _uiCulturePrefix = "uic=";
 
         /// <summary>
         /// Represent the default cookie name used to track the user's preferred culture information, which is ".AspNetCore.Culture".
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Localization
         public string CookieName { get; set; } = DefaultCookieName;
 
         /// <inheritdoc />
-        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+        public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -45,7 +44,7 @@ namespace Microsoft.AspNetCore.Localization
 
             var providerResultCulture = ParseCookieValue(cookie);
 
-            return Task.FromResult(providerResultCulture);
+            return Task.FromResult<ProviderCultureResult?>(providerResultCulture);
         }
 
         /// <summary>
@@ -60,9 +59,7 @@ namespace Microsoft.AspNetCore.Localization
                 throw new ArgumentNullException(nameof(requestCulture));
             }
 
-            var seperator = _cookieSeparator[0].ToString();
-
-            return string.Join(seperator,
+            return string.Join(_cookieSeparator,
                 $"{_culturePrefix}{requestCulture.Culture.Name}",
                 $"{_uiCulturePrefix}{requestCulture.UICulture.Name}");
         }
@@ -73,7 +70,7 @@ namespace Microsoft.AspNetCore.Localization
         /// </summary>
         /// <param name="value">The cookie value to parse.</param>
         /// <returns>The <see cref="RequestCulture"/> or <c>null</c> if parsing fails.</returns>
-        public static ProviderCultureResult ParseCookieValue(string value)
+        public static ProviderCultureResult? ParseCookieValue(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -90,7 +87,8 @@ namespace Microsoft.AspNetCore.Localization
             var potentialCultureName = parts[0];
             var potentialUICultureName = parts[1];
 
-            if (!potentialCultureName.StartsWith(_culturePrefix) || !potentialUICultureName.StartsWith(_uiCulturePrefix))
+            if (!potentialCultureName.StartsWith(_culturePrefix, StringComparison.Ordinal) || !
+                potentialUICultureName.StartsWith(_uiCulturePrefix, StringComparison.Ordinal))
             {
                 return null;
             }
@@ -109,8 +107,7 @@ namespace Microsoft.AspNetCore.Localization
                 // Value for culture but not for UI culture so default to culture value for both
                 uiCultureName = cultureName;
             }
-
-            if (cultureName == null && uiCultureName != null)
+            else if (cultureName == null && uiCultureName != null)
             {
                 // Value for UI culture but not for culture so default to UI culture value for both
                 cultureName = uiCultureName;

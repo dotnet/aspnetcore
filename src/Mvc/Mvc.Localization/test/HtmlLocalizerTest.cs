@@ -60,21 +60,21 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
                 yield return new object[] { "Bonjour {0} {{{{ }}", new object[] { "test" }, "Bonjour HtmlEncode[[test]] {{ }" };
                 yield return new object[] { "Bonjour {{0}}", new object[] { "{0}" }, "Bonjour {0}" };
                 yield return new object[] { "Bonjour {0:x}", new object[] { 10 }, "Bonjour HtmlEncode[[a]]" };
-                yield return new object[] { "Bonjour {0:x}}}", new object[] { 10 }, "Bonjour HtmlEncode[[x}]]" };
+                yield return new object[] { "Bonjour {0:x}}}", new object[] { 10 }, "Bonjour HtmlEncode[[a]]}" };
                 yield return new object[] { "Bonjour {{0:x}}", new object[] { 10 }, "Bonjour {0:x}" };
-                yield return new object[] { "{{ Bonjour {{{0:x}}}", new object[] { 10 }, "{ Bonjour {HtmlEncode[[x}]]" };
-                yield return new object[] { "}} Bonjour {{{0:x}}}", new object[] { 10 }, "} Bonjour {HtmlEncode[[x}]]" };
+                yield return new object[] { "{{ Bonjour {{{0:x}}}", new object[] { 10 }, "{ Bonjour {HtmlEncode[[a]]}" };
+                yield return new object[] { "}} Bonjour {{{0:x}}}", new object[] { 10 }, "} Bonjour {HtmlEncode[[a]]}" };
                 yield return new object[] { "}} Bonjour", new object[] { }, "} Bonjour" };
                 yield return new object[] { "{{ {0} }}", new object[] { 10 }, "{ HtmlEncode[[10]] }" };
                 yield return new object[] {
                     "Bonjour {{{0:x}}} {1:yyyy}",
                     new object[] { 10, new DateTime(2015, 10, 10) },
-                    "Bonjour {HtmlEncode[[x}]] HtmlEncode[[2015]]"
+                    "Bonjour {HtmlEncode[[a]]} HtmlEncode[[2015]]"
                 };
                 yield return new object[] {
                     "Bonjour {{{0:x}}} Bienvenue {{1:yyyy}}",
                     new object[] { 10, new DateTime(2015, 10, 10) },
-                    "Bonjour {HtmlEncode[[x}]] Bienvenue {1:yyyy}"
+                    "Bonjour {HtmlEncode[[a]]} Bienvenue {1:yyyy}"
                 };
                 yield return new object[] { // padding happens after encoding
                     "Bonjour {0,6} Bienvenue {{1:yyyy}}",
@@ -86,11 +86,11 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
                     new object[] { 10, new DateTime(2015, 10, 10) },
                     "Bonjour     HtmlEncode[[10]] Bienvenue {1:yyyy}"
                 };
-                yield return new object[] { "{0:{{000}}}", new object[] { 10 }, "HtmlEncode[[{010}]]" };
+                yield return new object[] { "{0:000}", new object[] { 10 }, "HtmlEncode[[010]]" };
                 yield return new object[] {
-                    "Bonjour {0:'{{characters that should be escaped}}b'###'b'}",
+                    "Bonjour {0:'characters that should be escaped b'###'b'}",
                     new object[] { 10 },
-                    "Bonjour HtmlEncode[[{characters that should be escaped}b10b]]"
+                    "Bonjour HtmlEncode[[characters that should be escaped b10b]]"
                 };
             }
         }
@@ -207,12 +207,12 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void HtmlLocalizer_WithCulture_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var stringLocalizer = new TestStringLocalizer();
+            var stringLocalizer = new TestStringLocalizer(new CultureInfo("fr"));
 
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
 
             // Act
-            var actualLocalizedHtmlString = htmlLocalizer.WithCulture(new CultureInfo("fr"))["John"];
+            var actualLocalizedHtmlString = htmlLocalizer["John"];
 
             // Assert
             Assert.Equal("Bonjour John", actualLocalizedHtmlString.Value);

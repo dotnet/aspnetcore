@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -36,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddDataAnnotationsLocalization(
             this IMvcBuilder builder,
-            Action<MvcDataAnnotationsLocalizationOptions> setupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? setupAction)
         {
             if (builder == null)
             {

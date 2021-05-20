@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETCOREAPP2_0
-// Rfc2898DeriveBytes in .NET Standard 2.0 only supports SHA1
-
+#if NETCOREAPP
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
@@ -16,8 +14,6 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
     /// </summary>
     internal sealed class NetCorePbkdf2Provider : IPbkdf2Provider
     {
-        private static readonly ManagedPbkdf2Provider _fallbackProvider = new ManagedPbkdf2Provider();
-
         public byte[] DeriveKey(string password, byte[] salt, KeyDerivationPrf prf, int iterationCount, int numBytesRequested)
         {
             Debug.Assert(password != null);
@@ -25,21 +21,6 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
             Debug.Assert(iterationCount > 0);
             Debug.Assert(numBytesRequested > 0);
 
-            if (salt.Length < 8)
-            {
-                // Rfc2898DeriveBytes enforces the 8 byte recommendation.
-                // To maintain compatibility, we call into ManagedPbkdf2Provider for salts shorter than 8 bytes
-                // because we can't use Rfc2898DeriveBytes with this salt.
-                return _fallbackProvider.DeriveKey(password, salt, prf, iterationCount, numBytesRequested);
-            }
-            else
-            {
-                return DeriveKeyImpl(password, salt, prf, iterationCount, numBytesRequested);
-            }
-        }
-
-        private static byte[] DeriveKeyImpl(string password, byte[] salt, KeyDerivationPrf prf, int iterationCount, int numBytesRequested)
-        {
             HashAlgorithmName algorithmName;
             switch (prf)
             {
@@ -56,16 +37,8 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
                     throw new ArgumentOutOfRangeException();
             }
 
-            var passwordBytes = Encoding.UTF8.GetBytes(password);
-            using (var rfc = new Rfc2898DeriveBytes(passwordBytes, salt, iterationCount, algorithmName))
-            {
-                return rfc.GetBytes(numBytesRequested);
-            }
+            return Rfc2898DeriveBytes.Pbkdf2(password, salt, iterationCount, algorithmName, numBytesRequested);
         }
     }
 }
-
-#elif NETSTANDARD2_0
-#else
-#error Update target frameworks
 #endif

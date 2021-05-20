@@ -20,7 +20,7 @@ export class JsonHubProtocol implements IHubProtocol {
     /** @inheritDoc */
     public readonly transferFormat: TransferFormat = TransferFormat.Text;
 
-    /** Creates an array of {@link @aspnet/signalr.HubMessage} objects from the specified serialized representation.
+    /** Creates an array of {@link @microsoft/signalr.HubMessage} objects from the specified serialized representation.
      *
      * @param {string} input A string containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
@@ -50,13 +50,13 @@ export class JsonHubProtocol implements IHubProtocol {
             }
             switch (parsedMessage.type) {
                 case MessageType.Invocation:
-                    this.isInvocationMessage(parsedMessage);
+                    this._isInvocationMessage(parsedMessage);
                     break;
                 case MessageType.StreamItem:
-                    this.isStreamItemMessage(parsedMessage);
+                    this._isStreamItemMessage(parsedMessage);
                     break;
                 case MessageType.Completion:
-                    this.isCompletionMessage(parsedMessage);
+                    this._isCompletionMessage(parsedMessage);
                     break;
                 case MessageType.Ping:
                     // Single value, no need to validate
@@ -75,7 +75,7 @@ export class JsonHubProtocol implements IHubProtocol {
         return hubMessages;
     }
 
-    /** Writes the specified {@link @aspnet/signalr.HubMessage} to a string and returns it.
+    /** Writes the specified {@link @microsoft/signalr.HubMessage} to a string and returns it.
      *
      * @param {HubMessage} message The message to write.
      * @returns {string} A string containing the serialized representation of the message.
@@ -84,35 +84,35 @@ export class JsonHubProtocol implements IHubProtocol {
         return TextMessageFormat.write(JSON.stringify(message));
     }
 
-    private isInvocationMessage(message: InvocationMessage): void {
-        this.assertNotEmptyString(message.target, "Invalid payload for Invocation message.");
+    private _isInvocationMessage(message: InvocationMessage): void {
+        this._assertNotEmptyString(message.target, "Invalid payload for Invocation message.");
 
         if (message.invocationId !== undefined) {
-            this.assertNotEmptyString(message.invocationId, "Invalid payload for Invocation message.");
+            this._assertNotEmptyString(message.invocationId, "Invalid payload for Invocation message.");
         }
     }
 
-    private isStreamItemMessage(message: StreamItemMessage): void {
-        this.assertNotEmptyString(message.invocationId, "Invalid payload for StreamItem message.");
+    private _isStreamItemMessage(message: StreamItemMessage): void {
+        this._assertNotEmptyString(message.invocationId, "Invalid payload for StreamItem message.");
 
         if (message.item === undefined) {
             throw new Error("Invalid payload for StreamItem message.");
         }
     }
 
-    private isCompletionMessage(message: CompletionMessage): void {
+    private _isCompletionMessage(message: CompletionMessage): void {
         if (message.result && message.error) {
             throw new Error("Invalid payload for Completion message.");
         }
 
         if (!message.result && message.error) {
-            this.assertNotEmptyString(message.error, "Invalid payload for Completion message.");
+            this._assertNotEmptyString(message.error, "Invalid payload for Completion message.");
         }
 
-        this.assertNotEmptyString(message.invocationId, "Invalid payload for Completion message.");
+        this._assertNotEmptyString(message.invocationId, "Invalid payload for Completion message.");
     }
 
-    private assertNotEmptyString(value: any, errorMessage: string): void {
+    private _assertNotEmptyString(value: any, errorMessage: string): void {
         if (typeof value !== "string" || value === "") {
             throw new Error(errorMessage);
         }

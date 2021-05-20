@@ -3,16 +3,15 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public static class PlatformApis
+    internal static class PlatformApis
     {
-        public static bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        public static bool IsWindows { get; } = OperatingSystem.IsWindows();
 
-        public static bool IsDarwin { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+        public static bool IsDarwin { get; } = OperatingSystem.IsMacOS();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long VolatileRead(ref long value)

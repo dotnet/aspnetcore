@@ -35,22 +35,24 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         }
 
         [Fact]
-        public void PopulateFeature_PopulatesRazorViewAttributeFromTypeAssembly()
+        public void PopulateFeature_PopulatesRazorCompiledItemsFromTypeAssembly()
         {
             // Arrange
             var item1 = Mock.Of<RazorCompiledItem>(i => i.Identifier == "Item1" && i.Type == typeof(TestView));
             var item2 = Mock.Of<RazorCompiledItem>(i => i.Identifier == "Item2" && i.Type == typeof(TestPage));
 
-            var attribute1 = new RazorViewAttribute("Item1", typeof(TestView));
-            var attribute2 = new RazorViewAttribute("Item2", typeof(TestPage));
-
-            var assembly = new TestAssembly(new[] { attribute1, attribute2 });
+            var assembly = new TestAssembly(new[] 
+            {
+                new RazorCompiledItemAttribute(typeof(TestView), "mvc.1.0.razor-page", "Item1"),
+                new RazorCompiledItemAttribute(typeof(TestView), "mvc.1.0.razor-view", "Item1"),
+            });
 
             var part1 = new AssemblyPart(assembly);
             var part2 = new Mock<ApplicationPart>();
             part2
                 .As<IRazorCompiledItemProvider>()
-                .Setup(p => p.CompiledItems).Returns(new[] { item1, item2, });
+                .Setup(p => p.CompiledItems)
+                .Returns(new[] { item1, item2, });
             var featureProvider = new RazorCompiledItemFeatureProvider();
             var feature = new ViewsFeature();
 

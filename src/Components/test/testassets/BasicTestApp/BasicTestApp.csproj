@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Must be defined before ReferenceFromSource.props is imported -->
+    <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
+
+    <!-- Resx generation on Resources.resx only -->
+    <GenerateResxSource>false</GenerateResxSource>
+
+    <!-- Project supports more than one language -->
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
+    <StaticWebAssetBasePath>/subdir</StaticWebAssetBasePath>
+
+    <!-- Avoid spending time brotli compression publish output.-->
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.Net.Http.Json" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+    <ProjectReference Include="..\LazyTestContentPackage\LazyTestContentPackage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.dll" />
+  </ItemGroup>
+
+  <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->
+  <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedApps)' == 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\subdir', 'subdir').Replace('subdir/subdir', 'subdir'))" />
+
+      <ResolvedFileToPublish
+        Include="@(ResolvedFileToPublish)"
+        RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', '_content').Replace('subdir/subdir', '_content'))"
+        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', 'subdir/_content').Contains('subdir/_content'))" />
+    </ItemGroup>
+  </Target>
+
+</Project>
+

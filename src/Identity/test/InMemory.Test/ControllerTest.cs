@@ -4,7 +4,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.Extensions.Configuration;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
             {
                 UserName = "Yolo"
             };
-            const string password = "Yol0Sw@g!";
+            const string password = "[PLACEHOLDER]-1a";
             var userManager = app.ApplicationServices.GetRequiredService<UserManager<PocoUser>>();
             var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<PocoUser>>();
 

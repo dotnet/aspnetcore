@@ -3,19 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         // use it on all the rest of the tests.
         private static readonly Assembly _resourcesAssembly = typeof(BasicTests).GetTypeInfo().Assembly;
 
-        public BasicTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public BasicTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }
@@ -47,11 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -71,11 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Theory]
@@ -99,11 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -123,11 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -145,11 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -265,8 +247,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonHelperWithSettings_RendersJson_WithNamesUnchanged()
         {
             // Arrange
-            var json = "{\"id\":9000,\"FullName\":\"John <b>Smith</b>\"}";
+            var json = "{\"id\":9000,\"FullName\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
+                CultureInfo.InvariantCulture,
                 @"<script type=""text/javascript"">
     var json = {0};
 </script>",
@@ -280,15 +263,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedBody, actualBody.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
         public async Task JsonHelperWithSettings_RendersJson_WithSnakeCaseNames()
         {
             // Arrange
-            var json = "{\"id\":9000,\"full_name\":\"John <b>Smith</b>\"}";
+            var json = "{\"id\":9000,\"full_name\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
+                CultureInfo.InvariantCulture,
                 @"<script type=""text/javascript"">
     var json = {0};
 </script>",
@@ -302,7 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedBody, actualBody.Trim(), ignoreLineEndingDifferences: true);
         }
 
         public static IEnumerable<object[]> HtmlHelperLinkGenerationData
@@ -382,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var expected = "ConventionalRoute - Hello from mypage";
 
             // Act
-            var response = await Client.GetStringAsync("/PageRoute/ConventionalRoute/mypage");
+            var response = await Client.GetStringAsync("/PageRoute/ConventionalRouteView/mypage");
 
             // Assert
             Assert.Equal(expected, response.Trim());
@@ -395,7 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var expected = "AttributeRoute - Hello from test-page";
 
             // Act
-            var response = await Client.GetStringAsync("/PageRoute/Attribute/test-page");
+            var response = await Client.GetStringAsync("/PageRoute/AttributeView/test-page");
 
             // Assert
             Assert.Equal(expected, response.Trim());
@@ -444,7 +428,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetStringAsync(url);
 
             // Assert
-            var result = JsonConvert.DeserializeObject<Product>(response);
+            var result = JsonSerializer.Deserialize<Product>(response, TestJsonSerializerOptionsProvider.Options);
             Assert.Equal(10, result.SampleInt);
         }
 
@@ -452,13 +436,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ActionMethod_ReturningSequenceOfObjectsWrappedInActionResultOfT()
         {
             // Arrange
-            var url = "ActionResultOfT/GetProductsAsync";
+            var url = "ActionResultOfT/GetProducts";
 
             // Act
             var response = await Client.GetStringAsync(url);
 
             // Assert
-            var result = JsonConvert.DeserializeObject<Product[]>(response);
+            var result = JsonSerializer.Deserialize<Product[]>(response, TestJsonSerializerOptionsProvider.Options);
             Assert.Equal(2, result.Length);
         }
 
@@ -477,16 +461,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Act
             var response = await Client.GetStringAsync("Home/GetAssemblyPartData");
-            var assemblyParts = JsonConvert.DeserializeObject<IList<string>>(response);
+            var assemblyParts = JsonSerializer.Deserialize<IList<string>>(response, TestJsonSerializerOptionsProvider.Options);
             var expected = new[]
             {
                 "BasicWebSite",
+                "Microsoft.AspNetCore.Components.Server",
+                "Microsoft.AspNetCore.SpaServices",
+                "Microsoft.AspNetCore.SpaServices.Extensions",
                 "Microsoft.AspNetCore.Mvc.TagHelpers",
                 "Microsoft.AspNetCore.Mvc.Razor",
             };
 
             // Assert
-            Assert.Equal(expected, assemblyParts);
+            //
+            // We don't keep track the explicit list of assemblies that show up here
+            // because this can change as we work on the product. All we care about is
+            // that BasicWebSite is first, and that everything after it is a Microsoft.
+            Assert.True(assemblyParts.Count > 2);
+            Assert.Equal("BasicWebSite", assemblyParts[0]);
+            for (var i = 1; i < assemblyParts.Count; i++)
+            {
+                Assert.StartsWith("Microsoft.", assemblyParts[i]);
+            }
         }
 
         [Fact]
@@ -536,7 +532,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<BindPropertyControllerData>(content);
+            var data = JsonSerializer.Deserialize<BindPropertyControllerData>(content, TestJsonSerializerOptionsProvider.Options);
 
             Assert.Equal("TestName", data.Name);
             Assert.Equal(10, data.Id);
@@ -559,7 +555,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<BindPropertyControllerData>(content);
+            var data = JsonSerializer.Deserialize<BindPropertyControllerData>(content, TestJsonSerializerOptionsProvider.Options);
 
             Assert.Equal(10, data.Id);
             Assert.Null(data.IdFromRoute);
@@ -581,7 +577,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<BindPropertyControllerData>(content);
+            var data = JsonSerializer.Deserialize<BindPropertyControllerData>(content, TestJsonSerializerOptionsProvider.Options);
 
             Assert.Null(data.BindNeverProperty);
         }
@@ -614,6 +610,51 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("OnGetTestName", content);
+        }
+
+        [Fact]
+        public async Task BindPropertiesAppliesValidation()
+        {
+            // Act
+            var response = await Client.GetAsync("BindPropertiesWithValidation/Action?Password=Test&ConfirmPassword=different");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+
+            Assert.Collection(
+                problem.Errors.OrderBy(e => e.Key),
+                kvp =>
+                {
+                    Assert.Equal("ConfirmPassword", kvp.Key);
+                    Assert.Equal("Password and confirm password do not match.", Assert.Single(kvp.Value));
+                },
+                kvp =>
+                {
+                    Assert.Equal("UserName", kvp.Key);
+                    Assert.Equal("User name is required.", Assert.Single(kvp.Value));
+                });
+        }
+
+        [Fact]
+        public async Task InvalidForm_ResultsInModelError()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Home/Product");
+            request.Content = new MultipartFormDataContent();
+
+            var response = await Client.SendAsync(request);
+
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var content =   await response.Content.ReadAsStringAsync();
+            var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(content, TestJsonSerializerOptionsProvider.Options);
+            Assert.Collection(
+                problemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Empty(kvp.Key);
+                    Assert.Equal("Failed to read the request form. Form section has invalid Content-Disposition value: ", string.Join(" ", kvp.Value));
+                });
         }
 
         public class BindPropertyControllerData

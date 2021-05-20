@@ -1,0 +1,405 @@
+﻿<h3 id="bind-cases">Bind cases</h3>
+
+@* There are a mix of cases here using bind and bind-value for coverage *@
+
+<h2>Textbox</h2>
+<p>
+    Initially blank:
+    <input id="textbox-initially-blank" @bind="textboxInitiallyBlankValue" />
+    <span id="textbox-initially-blank-value">@textboxInitiallyBlankValue</span>
+    <input id="textbox-initially-blank-mirror" @bind="textboxInitiallyBlankValue" readonly />
+    <button id="textbox-initially-blank-setnull" @onclick="@(() => { textboxInitiallyBlankValue = null; })">Set null</button>
+</p>
+<p>
+    Initially populated:
+    <input id="textbox-initially-populated" @bind="textboxInitiallyPopulatedValue" />
+    <span id="textbox-initially-populated-value">@textboxInitiallyPopulatedValue</span>
+    <input id="textbox-initially-populated-mirror" @bind="textboxInitiallyPopulatedValue" readonly />
+    <button id="textbox-initially-populated-setnull" @onclick="@(() => { textboxInitiallyPopulatedValue = null; })">Set null</button>
+</p>
+<p>
+    Bind with value-suffix, Initially populated:
+    <input id="bind-with-suffix-textbox-initially-populated" @bind-value="textboxInitiallyPopulatedValue" />
+    <span id="bind-with-suffix-textbox-initially-populated-value">@textboxInitiallyPopulatedValue</span>
+    <input type="text" id="bind-with-suffix-textbox-initially-populated-mirror" @bind-value="textboxInitiallyPopulatedValue" readonly />
+    <button id="bind-with-suffix-textbox-initially-populated-setnull" @onclick="@(() => { textboxInitiallyPopulatedValue = null; })">Set null</button>
+</p>
+
+<h2>Numeric Textboxes</h2>
+<p>
+    int:
+    <input id="textbox-int" @bind="textboxIntValue" type="number" />
+    <span id="textbox-int-value">@textboxIntValue</span>
+    <input id="textbox-int-mirror" @bind="textboxIntValue" readonly />
+</p>
+<p>
+    Nullable int:
+    <input id="textbox-nullable-int" @bind-value="textboxNullableIntValue" type="number" />
+    <span id="textbox-nullable-int-value">@textboxNullableIntValue</span>
+    <input id="textbox-nullable-int-mirror" @bind="textboxNullableIntValue" readonly />
+</p>
+<p>
+    long:
+    <input id="textbox-long" @bind="textboxLongValue" type="number" />
+    <span id="textbox-long-value">@textboxLongValue</span>
+    <input id="textbox-long-mirror" @bind="textboxLongValue" readonly />
+</p>
+<p>
+    Nullable long:
+    <input id="textbox-nullable-long" @bind="textboxNullableLongValue" type="number" />
+    <span id="textbox-nullable-long-value">@textboxNullableLongValue</span>
+    <input id="textbox-nullable-long-mirror" @bind="textboxNullableLongValue" readonly />
+</p>
+<p>
+    short:
+    <input id="textbox-short" @bind="textboxShortValue" type="number" />
+    <span id="textbox-short-value">@textboxShortValue</span>
+    <input id="textbox-short-mirror" @bind="textboxShortValue" readonly />
+</p>
+<p>
+    Nullable short:
+    <input id="textbox-nullable-short" @bind="textboxNullableShortValue" type="number" />
+    <span id="textbox-nullable-short-value">@textboxNullableShortValue</span>
+    <input id="textbox-nullable-short-mirror" @bind="textboxNullableShortValue" readonly />
+</p>
+<p>
+    float:
+    <input id="textbox-float" @bind-value="textboxFloatValue" type="number" />
+    <span id="textbox-float-value">@textboxFloatValue</span>
+    <input id="textbox-float-mirror" @bind="textboxFloatValue" readonly />
+</p>
+<p>
+    Nullable float:
+    <input id="textbox-nullable-float" @bind="textboxNullableFloatValue" type="number" />
+    <span id="textbox-nullable-float-value">@textboxNullableFloatValue</span>
+    <input id="textbox-nullable-float-mirror" @bind="textboxNullableFloatValue" readonly />
+</p>
+<p>
+    double:
+    <input id="textbox-double" @bind="textboxDoubleValue" type="number" />
+    <span id="textbox-double-value">@textboxDoubleValue</span>
+    <input id="textbox-double-mirror" @bind="textboxDoubleValue" readonly />
+</p>
+<p>
+    Nullable double:
+    <input id="textbox-nullable-double" @bind="textboxNullableDoubleValue" type="number" />
+    <span id="textbox-nullable-double-value">@textboxNullableDoubleValue</span>
+    <input id="textbox-nullable-double-mirror" @bind="textboxNullableDoubleValue" readonly />
+</p>
+<p>
+    decimal:
+    <input id="textbox-decimal" @bind-value="textboxDecimalValue" type="number" />
+    <span id="textbox-decimal-value">@textboxDecimalValue</span>
+    <input id="textbox-decimal-mirror" @bind="textboxDecimalValue" readonly />
+</p>
+<p>
+    Nullable decimal:
+    <input id="textbox-nullable-decimal" @bind="textboxNullableDecimalValue" type="number" />
+    <span id="textbox-nullable-decimal-value">@textboxNullableDecimalValue</span>
+    <input id="textbox-nullable-decimal-mirror" @bind="textboxNullableDecimalValue" readonly />
+</p>
+<p>
+    decimal (invalid-input):
+    <input id="textbox-decimal-invalid" @bind="textboxDecimalInvalidValue" />
+    <span id="textbox-decimal-invalid-value">@textboxDecimalInvalidValue</span>
+    <input id="textbox-decimal-invalid-mirror" @bind="textboxDecimalInvalidValue" readonly />
+</p>
+<p>
+    Nullable decimal (invalid-input):
+    <input id="textbox-nullable-decimal-invalid" @bind="textboxNullableDecimalInvalidValue" />
+    <span id="textbox-nullable-decimal-invalid-value">@textboxNullableDecimalInvalidValue</span>
+    <input id="textbox-nullable-decimal-invalid-mirror" @bind="textboxNullableDecimalInvalidValue" readonly />
+</p>
+
+<p>
+    Generic bind (int):
+    <BindGenericComponent Id="textbox-generic-int" @bind-Value="textboxGenericIntValue" />
+    <span id="textbox-generic-int-value">@textboxGenericIntValue</span>
+    <input id="textbox-generic-int-mirror" @bind="textboxGenericIntValue" readonly />
+</p>
+<p>
+    Generic bind (guid):
+    <BindGenericComponent Id="textbox-generic-guid" @bind-Value="textboxGenericGuidValue" />
+    <span id="textbox-generic-guid-value">@textboxGenericGuidValue</span>
+    <input id="textbox-generic-guid-mirror" @bind="textboxGenericGuidValue" readonly />
+</p>
+
+<h2>Date Textboxes (type=text)</h2>
+<p>
+    DateTime:
+    <input id="textbox-datetime" @bind="textboxDateTimeValue" type="text" />
+    <span id="textbox-datetime-value">@textboxDateTimeValue</span>
+    <input id="textbox-datetime-mirror" @bind="textboxDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime:
+    <input id="textbox-nullable-datetime" @bind-value="textboxNullableDateTimeValue" type="text" />
+    <span id="textbox-nullable-datetime-value">@textboxNullableDateTimeValue</span>
+    <input id="textbox-nullable-datetime-mirror" @bind="textboxNullableDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime (invalid input):
+    <input id="textbox-nullable-datetime-invalid" @bind="textboxNullableDateTimeInvalidValue" type="text" />
+    <span id="textbox-nullable-datetime-invalid-value">@textboxNullableDateTimeInvalidValue</span>
+    <input id="textbox-nullable-datetime-invalid-mirror" @bind="textboxNullableDateTimeInvalidValue" readonly />
+</p>
+<p>
+    DateTimeOffset:
+    <input id="textbox-datetimeoffset" @bind="textboxDateTimeOffsetValue" type="text" />
+    <span id="textbox-datetimeoffset-value">@textboxDateTimeOffsetValue</span>
+    <input id="textbox-datetimeoffset-mirror" @bind="textboxDateTimeOffsetValue" readonly />
+</p>
+<p>
+    DateTimeOffset (invalid input):
+    <input id="textbox-datetimeoffset-invalid" @bind="textboxDateTimeOffsetInvalidValue" type="text" />
+    <span id="textbox-datetimeoffset-invalid-value">@textboxDateTimeOffsetInvalidValue</span>
+    <input id="textbox-datetimeoffset-invalid-mirror" @bind="textboxDateTimeOffsetInvalidValue" readonly />
+</p>
+<p>
+    Nullable DateTimeOffset:
+    <input id="textbox-nullable-datetimeoffset" @bind="textboxNullableDateTimeOffsetValue" type="text" />
+    <span id="textbox-nullable-datetimeoffset-value">@textboxNullableDateTimeOffsetValue</span>
+    <input id="textbox-nullable-datetimeoffset-mirror" @bind="textboxNullableDateTimeOffsetValue" readonly />
+</p>
+<p>
+    DateTime (format):
+    <input id="textbox-datetime-format" @bind-value="textboxDateTimeFormatValue" type="text" @bind-value:format="MM-dd" />
+    <span id="textbox-datetime-format-value">@textboxDateTimeFormatValue</span>
+    <input id="textbox-datetime-format-mirror" @bind="textboxDateTimeFormatValue" readonly />
+</p>
+<p>
+    DateTime (format):
+    <input id="textbox-datetime-format-invalid" @bind="textboxDateTimeFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-datetime-format-invalid-value">@textboxDateTimeFormatValue</span>
+    <input id="textbox-datetime-format-invalid-mirror" @bind="textboxDateTimeFormatValue" readonly />
+</p>
+<p>
+    DateTime (format / invalid value):
+    <input id="textbox-datetime-format-invalid" @bind-value="textboxDateTimeFormatInvalidValue" type="text" @bind-value:format="MM-dd" />
+    <span id="textbox-datetime-format-invalid-value">@textboxDateTimeFormatInvalidValue</span>
+    <input id="textbox-datetime-format-invalid-mirror" @bind="textboxDateTimeFormatInvalidValue" readonly />
+</p>
+<p>
+    Nullable DateTime (format):
+    <input id="textbox-nullable-datetime-format" @bind="textboxNullableDateTimeFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-datetime-format-value">@textboxNullableDateTimeFormatValue</span>
+    <input id="textbox-nullable-datetime-format-mirror" @bind="textboxNullableDateTimeFormatValue" readonly />
+</p>
+<p>
+    DateTimeOffset (format):
+    <input id="textbox-datetimeoffset-format" @bind="textboxDateTimeOffsetFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-datetimeoffset-format-value">@textboxDateTimeOffsetFormatValue</span>
+    <input id="textbox-datetimeoffset-format-mirror" @bind="textboxDateTimeOffsetFormatValue" readonly />
+</p>
+<p>
+    Nullable DateTimeOffset (format):
+    <input id="textbox-nullable-datetimeoffset-format" @bind="textboxNullableDateTimeOffsetFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-datetimeoffset-format-value">@textboxNullableDateTimeOffsetFormatValue</span>
+    <input id="textbox-nullable-datetimeoffset-format-mirror" @bind="textboxNullableDateTimeOffsetFormatValue" readonly />
+</p>
+<p>
+    Nullable DateTimeOffset (format / invalid value):
+    <input id="textbox-nullable-datetimeoffset-format-invalid" @bind="textboxNullableDateTimeOffsetFormatInvalidValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-datetimeoffset-format-invalid-value">@textboxNullableDateTimeOffsetFormatInvalidValue</span>
+    <input id="textbox-nullable-datetimeoffset-format-invalid-mirror" @bind="textboxNullableDateTimeOffsetFormatInvalidValue" readonly />
+</p>
+
+<h2>Text Area</h2>
+<p>
+    Initially blank:
+    <textarea id="textarea-initially-blank" @bind="textAreaInitiallyBlankValue"></textarea>
+    <span id="textarea-initially-blank-value">@textAreaInitiallyBlankValue</span>
+</p>
+<p>
+    Initially populated:
+    <textarea id="textarea-initially-populated" @bind="textAreaInitiallyPopulatedValue"></textarea>
+    <span id="textarea-initially-populated-value">@textAreaInitiallyPopulatedValue</span>
+</p>
+
+<h2>Checkbox</h2>
+<p>
+    Initially null:
+    <input id="checkbox-initially-null" @bind="checkboxInitiallyNullValue" type="checkbox" />
+    <span id="checkbox-initially-null-value">@checkboxInitiallyNullValue</span>
+    <button id="checkbox-initially-null-invert" @onclick="@(() => { checkboxInitiallyNullValue = !checkboxInitiallyNullValue; })">Invert</button>
+</p>
+<p>
+    Initially unchecked:
+    <input id="checkbox-initially-unchecked" @bind="checkboxInitiallyUncheckedValue" type="checkbox" />
+    <span id="checkbox-initially-unchecked-value">@checkboxInitiallyUncheckedValue</span>
+    <button id="checkbox-initially-unchecked-invert" @onclick="@(() => { checkboxInitiallyUncheckedValue = !checkboxInitiallyUncheckedValue; })">Invert</button>
+</p>
+<p>
+    Initially checked:
+    <input id="checkbox-initially-checked" @bind="checkboxInitiallyCheckedValue" type="checkbox" />
+    <span id="checkbox-initially-checked-value">@checkboxInitiallyCheckedValue</span>
+    <button id="checkbox-initially-checked-invert" @onclick="@(() => { checkboxInitiallyCheckedValue = !checkboxInitiallyCheckedValue; })">Invert</button>
+</p>
+
+<h2>Select</h2>
+<p>
+    <select id="select-box" @bind="selectValue">
+        <optgroup label="Some choices">
+            <!-- Show it also works with optgroup -->
+            <option value=@string.Empty>Empty value</option>
+            <option value="@variableValue">Variable value</option>
+            <option value=@SelectableValue.First>First choice</option>
+            <option value=@SelectableValue.Second>Second choice</option>
+            <option value=@SelectableValue.Third>Third choice</option>
+            @if (includeFourthOption)
+            {
+                <option value=@SelectableValue.Fourth>Fourth choice</option>
+            }
+        </optgroup>
+    </select>
+    <span id="select-box-value">@selectValue</span>
+    <button id="select-box-add-option" @onclick="AddAndSelectNewSelectOption">Add and select new item</button>
+    <button id="change-variable-value" @onclick="ChangeVariableValueToSixth">Change variable value to Sixth.</button>
+</p>
+
+<h2>Select (markup block)</h2>
+<p>
+    <select id="select-markup-box" @bind="selectMarkupValue">
+        <optgroup label="Some choices">
+            <option value="">Empty value</option>
+            <option value="First">First choice</option>
+            <option value="Second">Second choice</option>
+            <option value="Third">Third choice</option>
+        </optgroup>
+    </select>
+    <span id="select-markup-box-value">@selectMarkupValue</span>
+</p>
+
+<h2>Time related inputs (datetime-local, month, time)</h2>
+<h3>datetime-local</h3>
+<p>
+    DateTime:
+    <input id="datetime-local-textbox-datetime" @bind="dateTimeLocalTextboxDateTimeValue" type="datetime-local" />
+    <span id="datetime-local-textbox-datetime-value">@dateTimeLocalTextboxDateTimeValue</span>
+    <input id="datetime-local-textbox-datetime-mirror" @bind="dateTimeLocalTextboxDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime:
+    <input id="datetime-local-textbox-nullable-datetime" @bind-value="dateTimeLocalTextboxNullableDateTimeValue" type="datetime-local" />
+    <span id="datetime-local-textbox-nullable-datetime-value">@dateTimeLocalTextboxNullableDateTimeValue</span>
+    <input id="datetime-local-textbox-nullable-datetime-mirror" @bind="dateTimeLocalTextboxNullableDateTimeValue" readonly />
+</p>
+
+<h3>month</h3>
+<p>
+    DateTime:
+    <input id="month-textbox-datetime" @bind="monthTextboxDateTimeValue" type="month" />
+    <span id="month-textbox-datetime-value">@monthTextboxDateTimeValue</span>
+    <input id="month-textbox-datetime-mirror" @bind="monthTextboxDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime:
+    <input id="month-textbox-nullable-datetime" @bind-value="monthTextboxNullableDateTimeValue" type="month" />
+    <span id="month-textbox-nullable-datetime-value">@monthTextboxNullableDateTimeValue</span>
+    <input id="month-textbox-nullable-datetime-mirror" @bind="monthTextboxNullableDateTimeValue" readonly />
+</p>
+
+<h3>time</h3>
+<p>
+    DateTime:
+    <input id="time-textbox-datetime" @bind="timeTextboxDateTimeValue" type="time" />
+    <span id="time-textbox-datetime-value">@timeTextboxDateTimeValue</span>
+    <input id="time-textbox-datetime-mirror" @bind="timeTextboxDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime:
+    <input id="time-textbox-nullable-datetime" @bind-value="timeTextboxNullableDateTimeValue" type="time" />
+    <span id="time-textbox-nullable-datetime-value">@timeTextboxNullableDateTimeValue</span>
+    <input id="time-textbox-nullable-datetime-mirror" @bind="timeTextboxNullableDateTimeValue" readonly />
+</p>
+
+<h3>time with step (supports seconds)</h3>
+<p>
+    DateTime:
+    <input id="time-step-textbox-datetime" @bind="timeStepTextboxDateTimeValue" type="time" step="1" />
+    <span id="time-step-textbox-datetime-value">@timeStepTextboxDateTimeValue</span>
+    <input id="time-step-textbox-datetime-mirror" @bind="timeStepTextboxDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime:
+    <input id="time-step-textbox-nullable-datetime" @bind-value="timeStepTextboxNullableDateTimeValue" type="time" step="1" />
+    <span id="time-step-textbox-nullable-datetime-value">@timeStepTextboxNullableDateTimeValue</span>
+    <input id="time-step-textbox-nullable-datetime-mirror" @bind="timeStepTextboxNullableDateTimeValue" readonly />
+</p>
+
+@code {
+    string textboxInitiallyBlankValue = null;
+    string textboxInitiallyPopulatedValue = "Hello";
+
+    string textAreaInitiallyBlankValue = null;
+    string textAreaInitiallyPopulatedValue = "Hello";
+
+    bool? checkboxInitiallyNullValue = null;
+    bool checkboxInitiallyUncheckedValue = false;
+    bool checkboxInitiallyCheckedValue = true;
+
+    int textboxIntValue = -42;
+    int? textboxNullableIntValue = null;
+    long textboxLongValue = 3_000_000_000;
+    long? textboxNullableLongValue = null;
+    short textboxShortValue = -42;
+    short? textboxNullableShortValue = null;
+    float textboxFloatValue = 3.141f;
+    float? textboxNullableFloatValue = null;
+    double textboxDoubleValue = 3.14159265359d;
+    double? textboxNullableDoubleValue = null;
+    decimal textboxDecimalValue = 0.0000000000000000000000000001M;
+    decimal? textboxNullableDecimalValue = null;
+    decimal textboxDecimalInvalidValue = 0.0000000000000000000000000001M;
+    decimal? textboxNullableDecimalInvalidValue = null;
+
+    int textboxGenericIntValue = -42;
+    Guid textboxGenericGuidValue = Guid.Empty;
+
+    DateTime textboxDateTimeValue = new DateTime(1985, 3, 4);
+    DateTime? textboxNullableDateTimeValue = null;
+    DateTimeOffset textboxDateTimeOffsetValue = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+    DateTimeOffset? textboxNullableDateTimeOffsetValue = null;
+
+    DateTime? textboxNullableDateTimeInvalidValue = null;
+    DateTimeOffset textboxDateTimeOffsetInvalidValue = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+
+    DateTime textboxDateTimeFormatValue = new DateTime(1985, 3, 4);
+    DateTime? textboxNullableDateTimeFormatValue = null;
+    DateTimeOffset textboxDateTimeOffsetFormatValue = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+    DateTimeOffset? textboxNullableDateTimeOffsetFormatValue = null;
+
+    DateTime textboxDateTimeFormatInvalidValue = new DateTime(1985, 3, 4);
+    DateTimeOffset? textboxNullableDateTimeOffsetFormatInvalidValue = null;
+
+    DateTime dateTimeLocalTextboxDateTimeValue = new DateTime(1985, 3, 4);
+    DateTime? dateTimeLocalTextboxNullableDateTimeValue = null;
+
+    DateTime monthTextboxDateTimeValue = new DateTime(1985, 3, 4);
+    DateTime? monthTextboxNullableDateTimeValue = null;
+
+    DateTime timeTextboxDateTimeValue = DateTime.Now.Date.Add(new TimeSpan(8, 5, 0));
+    DateTime? timeTextboxNullableDateTimeValue = null;
+
+    DateTime timeStepTextboxDateTimeValue = DateTime.Now.Date.Add(new TimeSpan(8, 5, 30));
+    DateTime? timeStepTextboxNullableDateTimeValue = null;
+
+    bool includeFourthOption = false;
+    enum SelectableValue { First, Second, Third, Fourth, Fifth, Sixth }
+    SelectableValue? selectValue = SelectableValue.Second;
+    SelectableValue? selectMarkupValue = SelectableValue.Second;
+
+    SelectableValue variableValue = SelectableValue.Fifth;
+
+    void AddAndSelectNewSelectOption()
+    {
+        includeFourthOption = true;
+        selectValue = SelectableValue.Fourth;
+    }
+
+    void ChangeVariableValueToSixth()
+    {
+        selectValue = SelectableValue.Sixth;
+        variableValue = SelectableValue.Sixth;
+    }
+}

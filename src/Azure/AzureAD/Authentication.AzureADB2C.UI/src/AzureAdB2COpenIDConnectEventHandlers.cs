@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 {
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     internal class AzureADB2COpenIDConnectEventHandlers
     {
         private IDictionary<string, string> _policyToIssuerAddress =
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
         public Task OnRemoteFailure(RemoteFailureContext context)
         {
             context.HandleResponse();
-            // Handle the error code that Azure Active Directory B2C throws when trying to reset a password from the login page 
+            // Handle the error code that Azure Active Directory B2C throws when trying to reset a password from the login page
             // because password reset is not supported by a "sign-up or sign-in policy".
             // Below is a sample error message:
             // 'access_denied', error_description: 'AADB2C90118: The user has forgotten their password.
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
             if (context.Failure is OpenIdConnectProtocolException && context.Failure.Message.Contains("AADB2C90118"))
             {
                 // If the user clicked the reset password link, redirect to the reset password route
-                context.Response.Redirect($"/AzureADB2C/Account/ResetPassword/{SchemeName}");
+                context.Response.Redirect($"{context.Request.PathBase}/AzureADB2C/Account/ResetPassword/{SchemeName}");
             }
             // Access denied errors happen when a user cancels an action on the Azure Active Directory B2C UI. We just redirect back to
             // the main page in that case.
@@ -75,11 +76,11 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
             // ', error_uri: 'error_uri is null'.
             else if (context.Failure is OpenIdConnectProtocolException && context.Failure.Message.Contains("access_denied"))
             {
-                context.Response.Redirect("/");
+                context.Response.Redirect($"{context.Request.PathBase}/");
             }
             else
             {
-                context.Response.Redirect("/AzureADB2C/Account/Error");
+                context.Response.Redirect($"{context.Request.PathBase}/AzureADB2C/Account/Error");
             }
 
             return Task.CompletedTask;

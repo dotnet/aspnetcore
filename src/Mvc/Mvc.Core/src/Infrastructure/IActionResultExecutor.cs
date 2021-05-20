@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -12,14 +14,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     /// <typeparam name="TResult">The type of <see cref="IActionResult"/>.</typeparam>
     /// <remarks>
-    /// Implementions of <see cref="IActionResultExecutor{TResult}"/> are typically called by the
+    /// Implementations of <see cref="IActionResultExecutor{TResult}"/> are typically called by the
     /// <see cref="IActionResult.ExecuteResultAsync(ActionContext)"/> method of the corresponding action result type.
     /// Implementations should be registered as singleton services.
     /// </remarks>
-    public interface IActionResultExecutor<in TResult> where TResult : IActionResult
+    public interface IActionResultExecutor<in TResult> where TResult : notnull, IActionResult
     {
         /// <summary>
-        /// Asynchronously excecutes the action result, by modifying the <see cref="HttpResponse"/>.
+        /// Asynchronously executes the action result, by modifying the <see cref="HttpResponse"/>.
         /// </summary>
         /// <param name="context">The <see cref="ActionContext"/> associated with the current request."/></param>
         /// <param name="result">The action result to execute.</param>

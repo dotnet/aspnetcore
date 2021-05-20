@@ -16,6 +16,53 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     public class TagHelperExecutionContextTest
     {
         [Fact]
+        public async Task SetOutputContentAsync_CanHandleExceptionThrowingChildContent()
+        {
+            // Arrange
+            var calledEnd = false;
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                tagMode: TagMode.StartTagAndEndTag,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => throw new Exception(),
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () =>
+                {
+                    calledEnd = true;
+                    return new DefaultTagHelperContent();
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(async () => await executionContext.SetOutputContentAsync());
+            Assert.True(calledEnd);
+        }
+
+        [Fact]
+        public async Task GetChildContentAsync_CanHandleExceptionThrowingChildContent()
+        {
+            // Arrange
+            var calledEnd = false;
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                tagMode: TagMode.StartTagAndEndTag,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => throw new Exception(),
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () =>
+                {
+                    calledEnd = true;
+                    return new DefaultTagHelperContent();
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(
+                async () => await executionContext.GetChildContentAsync(useCachedResult: false, encoder: null));
+            Assert.True(calledEnd);
+        }
+
+        [Fact]
         public async Task SetOutputContentAsync_SetsOutputsContent()
         {
             // Arrange

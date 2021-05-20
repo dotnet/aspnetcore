@@ -32,12 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 return false;
             }
 
-            if (method.ReceiverType != HtmlHelperType)
-            {
-                return false;
-            }
-
-            if (method.ContainingType != HtmlHelperPartialExtensionsType)
+            if (!SymbolEqualityComparer.Default.Equals(method.ContainingType, HtmlHelperPartialExtensionsType))
             {
                 return false;
             }

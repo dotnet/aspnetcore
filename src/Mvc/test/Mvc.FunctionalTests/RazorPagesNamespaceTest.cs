@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RazorPagesNamespaceTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
+    public class RazorPagesNamespaceTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting>>
     {
-        public RazorPagesNamespaceTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
+        public RazorPagesNamespaceTest(MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
             Client = factory.CreateDefaultClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<RazorPagesWebSite.Startup>();
+            builder.UseStartup<RazorPagesWebSite.StartupWithoutEndpointRouting>();
 
         public HttpClient Client { get; }
 
@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await Client.GetStringAsync("http://localhost/DefaultNamespace");
 
             // Assert
-            Assert.Equal("AspNetCore", content.Trim());
+            Assert.Equal("AspNetCoreGeneratedDocument", content.Trim());
         }
-        
+
         [Fact]
         public async Task Page_ImportedNamespace_UsedFromViewImports()
         {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal("CustomNamespace.Nested.Folder", content.Trim());
         }
-        
+
         [Fact]
         public async Task Page_OverrideNamespace_SetByPage()
         {

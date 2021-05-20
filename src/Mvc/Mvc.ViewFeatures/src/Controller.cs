@@ -1,14 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -17,15 +18,15 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public abstract class Controller : ControllerBase, IActionFilter, IAsyncActionFilter, IDisposable
     {
-        private ITempDataDictionary _tempData;
-        private DynamicViewData _viewBag;
-        private ViewDataDictionary _viewData;
+        private ITempDataDictionary? _tempData;
+        private DynamicViewData? _viewBag;
+        private ViewDataDictionary? _viewData;
 
         /// <summary>
         /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="ViewResult"/> and <see cref="ViewBag"/>.
         /// </summary>
         /// <remarks>
-        /// By default, this property is intiailized when <see cref="Controllers.IControllerActivator"/> activates
+        /// By default, this property is initialized when <see cref="Controllers.IControllerActivator"/> activates
         /// controllers.
         /// <para>
         /// This property can be accessed after the controller has been activated, for example, in a controller action
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), ControllerContext.ModelState);
                 }
 
-                return _viewData;
+                return _viewData!;
             }
             set
             {
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _tempData = factory?.GetTempData(HttpContext);
                 }
 
-                return _tempData;
+                return _tempData!;
             }
             set
             {
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="viewName">The name or path of the view that is rendered to the response.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewResult View(string viewName)
+        public virtual ViewResult View(string? viewName)
         {
             return View(viewName, model: ViewData.Model);
         }
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the view.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewResult View(object model)
+        public virtual ViewResult View(object? model)
         {
             return View(viewName: null, model: model);
         }
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the view.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewResult View(string viewName, object model)
+        public virtual ViewResult View(string? viewName, object? model)
         {
             ViewData.Model = model;
 
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="viewName">The name or path of the partial view that is rendered to the response.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual PartialViewResult PartialView(string viewName)
+        public virtual PartialViewResult PartialView(string? viewName)
         {
             return PartialView(viewName, model: ViewData.Model);
         }
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the partial view.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual PartialViewResult PartialView(object model)
+        public virtual PartialViewResult PartialView(object? model)
         {
             return PartialView(viewName: null, model: model);
         }
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the partial view.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual PartialViewResult PartialView(string viewName, object model)
+        public virtual PartialViewResult PartialView(string? viewName, object? model)
         {
             ViewData.Model = model;
 
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewComponentResult ViewComponent(string componentName, object arguments)
+        public virtual ViewComponentResult ViewComponent(string componentName, object? arguments)
         {
             return new ViewComponentResult
             {
@@ -271,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewComponentResult ViewComponent(Type componentType, object arguments)
+        public virtual ViewComponentResult ViewComponent(Type componentType, object? arguments)
         {
             return new ViewComponentResult
             {
@@ -290,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>
         /// to JSON format for the response.</returns>
         [NonAction]
-        public virtual JsonResult Json(object data)
+        public virtual JsonResult Json(object? data)
         {
             return new JsonResult(data);
         }
@@ -300,20 +301,21 @@ namespace Microsoft.AspNetCore.Mvc
         /// to JSON.
         /// </summary>
         /// <param name="data">The object to serialize.</param>
-        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
-        /// the formatter.</param>
+        /// <param name="serializerSettings">The serializer settings to be used by the formatter.
+        /// <para>
+        /// When using <c>System.Text.Json</c>, this should be an instance of <see cref="JsonSerializerOptions" />.
+        /// </para>
+        /// <para>
+        /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
+        /// </para>
+        /// </param>
         /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>
         /// as JSON format for the response.</returns>
-        /// <remarks>Callers should cache an instance of <see cref="JsonSerializerSettings"/> to avoid
+        /// <remarks>Callers should cache an instance of serializer settings to avoid
         /// recreating cached data with each call.</remarks>
         [NonAction]
-        public virtual JsonResult Json(object data, JsonSerializerSettings serializerSettings)
+        public virtual JsonResult Json(object? data, object? serializerSettings)
         {
-            if (serializerSettings == null)
-            {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
             return new JsonResult(data, serializerSettings);
         }
 
@@ -343,7 +345,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// of <see cref="OnActionExecutionAsync" /> to continue execution of the action.</param>
         /// <returns>A <see cref="Task"/> instance.</returns>
         [NonAction]
-        public virtual async Task OnActionExecutionAsync(
+        public virtual Task OnActionExecutionAsync(
             ActionExecutingContext context,
             ActionExecutionDelegate next)
         {
@@ -360,7 +362,20 @@ namespace Microsoft.AspNetCore.Mvc
             OnActionExecuting(context);
             if (context.Result == null)
             {
-                OnActionExecuted(await next());
+                var task = next();
+                if (!task.IsCompletedSuccessfully)
+                {
+                    return Awaited(this, task);
+                }
+
+                OnActionExecuted(task.Result);
+            }
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(Controller controller, Task<ActionExecutedContext> task)
+            {
+                controller.OnActionExecuted(await task);
             }
         }
 

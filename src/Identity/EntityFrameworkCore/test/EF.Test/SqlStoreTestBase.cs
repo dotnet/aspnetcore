@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected virtual void SetupAddIdentity(IServiceCollection services)
         {
-            services.AddIdentity<TUser, TRole>(options =>
+            services.AddIdentityCore<TUser>(options =>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
@@ -41,8 +41,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 options.Password.RequireUppercase = false;
                 options.User.AllowedUserNameCharacters = null;
             })
+            .AddRoles<TRole>()
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<TestDbContext>();
+
+            services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
         }
 
         protected override void SetupIdentityServices(IServiceCollection services, object context)
@@ -55,11 +58,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             SetupAddIdentity(services);
         }
 
-        protected override bool ShouldSkipDbTests()
-        {
-            return TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
-        }
-
         public class TestDbContext : IdentityDbContext<TUser, TRole, TKey> {
             public TestDbContext(DbContextOptions options) : base(options) { }
         }
@@ -69,7 +67,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         {
             return new TUser
             {
-                UserName = useNamePrefixAsUserName ? namePrefix : string.Format("{0}{1}", namePrefix, Guid.NewGuid()),
+                UserName = useNamePrefixAsUserName ? namePrefix : string.Format(CultureInfo.InvariantCulture, "{0}{1}", namePrefix, Guid.NewGuid()),
                 Email = email,
                 PhoneNumber = phoneNumber,
                 LockoutEnabled = lockoutEnabled,
@@ -79,7 +77,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override TRole CreateTestRole(string roleNamePrefix = "", bool useRoleNamePrefixAsRoleName = false)
         {
-            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format("{0}{1}", roleNamePrefix, Guid.NewGuid());
+            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format(CultureInfo.InvariantCulture, "{0}{1}", roleNamePrefix, Guid.NewGuid());
             return new TRole() { Name = roleName };
         }
 
@@ -87,15 +85,17 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override Expression<Func<TUser, bool>> UserNameEqualsPredicate(string userName) => u => u.UserName == userName;
 
+#pragma warning disable CA1310 // Specify StringComparison for correctness
         protected override Expression<Func<TRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName);
 
         protected override Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
+#pragma warning restore CA1310 // Specify StringComparison for correctness
 
-        public virtual TestDbContext CreateContext()
+        protected virtual TestDbContext CreateContext()
         {
             var services = new ServiceCollection();
             SetupAddIdentity(services);
-            var db = DbUtil.Create<TestDbContext>(_fixture.ConnectionString, services);
+            var db = DbUtil.Create<TestDbContext>(_fixture.Connection, services);
             db.Database.EnsureCreated();
             return db;
         }
@@ -121,9 +121,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void EnsureDefaultSchema()
         {
             VerifyDefaultSchema(CreateContext());
@@ -133,7 +130,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         {
             var sqlConn = dbContext.Database.GetDbConnection();
 
-            using (var db = new SqlConnection(sqlConn.ConnectionString))
+            using (var db = new SqliteConnection(sqlConn.ConnectionString))
             {
                 db.Open();
                 Assert.True(DbUtil.VerifyColumns(db, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
@@ -145,8 +142,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 Assert.True(DbUtil.VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
                 Assert.True(DbUtil.VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
 
-                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail"));
-                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetRoles", 256, "Name", "NormalizedName"));
+                Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail"));
+                Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetRoles", 256, "Name", "NormalizedName"));
 
                 DbUtil.VerifyIndex(db, "AspNetRoles", "RoleNameIndex", isUnique: true);
                 DbUtil.VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
@@ -156,9 +153,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteRoleNonEmptySucceedsTest()
         {
             // Need fail if not empty?
@@ -177,16 +171,13 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             IdentityResultAssert.IsSuccess(await roleMgr.DeleteAsync(role));
             Assert.Null(await roleMgr.FindByNameAsync(roleName));
             Assert.False(await roleMgr.RoleExistsAsync(roleName));
-            // REVIEW: We should throw if deleteing a non empty role?
+            // REVIEW: We should throw if deleting a non empty role?
             roles = await userMgr.GetRolesAsync(user);
 
             Assert.Empty(roles);
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteUserRemovesFromRoleTest()
         {
             // Need fail if not empty?
@@ -210,9 +201,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteUserRemovesTokensTest()
         {
             // Need fail if not empty?
@@ -230,9 +218,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void CanCreateUserUsingEF()
         {
             using (var db = CreateContext())
@@ -246,9 +231,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUsingManager()
         {
             var manager = CreateManager();
@@ -282,9 +264,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task LoadFromDbFindByIdTest()
         {
             var db = CreateContext();
@@ -301,9 +280,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task LoadFromDbFindByNameTest()
         {
             var db = CreateContext();
@@ -319,9 +295,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task LoadFromDbFindByLoginTest()
         {
             var db = CreateContext();
@@ -337,9 +310,17 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task GetSecurityStampThrowsIfNull()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            var result = await manager.CreateAsync(user);
+            Assert.NotNull(user);
+            user.SecurityStamp = null;
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.GetSecurityStampAsync(user));
+        }
+
+        [ConditionalFact]
         public async Task LoadFromDbFindByEmailTest()
         {
             var db = CreateContext();

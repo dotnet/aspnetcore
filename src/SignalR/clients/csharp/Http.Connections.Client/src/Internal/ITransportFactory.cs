@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public interface ITransportFactory
+    internal interface ITransportFactory
     {
         ITransport CreateTransport(HttpTransportType availableServerTransports);
     }

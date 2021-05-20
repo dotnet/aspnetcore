@@ -101,13 +101,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void AddJsonProtocolAddsProtocol()
         {
             var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.AddJsonProtocol();
+            connectionBuilder.AddNewtonsoftJsonProtocol();
 
             var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
 
             var resolvedHubProtocol = serviceProvider.GetService<IHubProtocol>();
 
-            Assert.IsType<JsonHubProtocol>(resolvedHubProtocol);
+            Assert.IsType<NewtonsoftJsonHubProtocol>(resolvedHubProtocol);
         }
 
         [Fact]

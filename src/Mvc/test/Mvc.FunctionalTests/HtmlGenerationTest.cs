@@ -3,14 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -25,13 +28,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             MvcTestFixture<HtmlGenerationWebSite.Startup> fixture,
             MvcEncodedTestFixture<HtmlGenerationWebSite.Startup> encodedFixture)
         {
+            Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+
             Client = fixture.CreateDefaultClient();
             EncodedClient = encodedFixture.CreateDefaultClient();
         }
 
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<HtmlGenerationWebSite.Startup>();
+
         public HttpClient Client { get; }
 
         public HttpClient EncodedClient { get; }
+
+        public WebApplicationFactory<HtmlGenerationWebSite.Startup> Factory { get; }
 
         public static TheoryData<string, string> WebPagesData
         {
@@ -53,12 +63,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "EmployeeList", "/HtmlGeneration_Home/EmployeeList" },
                     // Testing the EnvironmentTagHelper
                     { "Environment", null },
-                    // Testing the ImageTagHelper
-                    { "Image", null },
                     // Testing InputTagHelper with File
                     { "Input", null },
-                    // Testing the LinkTagHelper
-                    { "Link", null },
                     // Test ability to generate nearly identical HTML with MVC tag and HTML helpers.
                     // Only attribute order should differ.
                     { "Order", "/HtmlGeneration_Order/Submit" },
@@ -70,8 +76,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "ProductList", "/HtmlGeneration_Product" },
                     { "ProductListUsingTagHelpers", "/HtmlGeneration_Product" },
                     { "ProductListUsingTagHelpersWithNullModel", "/HtmlGeneration_Product" },
-                    // Testing the ScriptTagHelper
-                    { "Script", null },
                 };
 
                 return data;
@@ -110,24 +114,64 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             responseContent = responseContent.Trim();
             if (antiforgeryPath == null)
             {
-#if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
                 Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
             }
             else
             {
                 var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
-#if GENERATE_BASELINES
-                // Reverse usual substitution and insert a format item into the new file content.
-                responseContent = responseContent.Replace(forgeryToken, "{0}");
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-                expectedContent = string.Format(expectedContent, forgeryToken);
-                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+
+                if (ResourceFile.GenerateBaselines)
+                {
+                    // Reverse usual substitution and insert a format item into the new file content.
+                    responseContent = responseContent.Replace(forgeryToken, "{0}");
+                    ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+                }
+                else
+                {
+                    expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
+                    Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+                }
             }
+        }
+
+        [ConditionalTheory]
+        [InlineData("Link", null)]
+        [InlineData("Script", null)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
+        public Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
+            => HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
+
+        [Fact]
+        public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
+        {
+            await HtmlGenerationWebSite_GeneratesExpectedResults("Image", antiforgeryPath: null);
+        }
+
+        [Fact]
+        public async Task HtmlGenerationWebSite_LinkGeneration_With21CompatibilityBehavior()
+        {
+            // Arrange
+            var client = Factory
+                 .WithWebHostBuilder(builder => builder.UseStartup<HtmlGenerationWebSite.StartupWithoutEndpointRouting>())
+                 .CreateDefaultClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home.Index21Compat.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            // The host is not important as everything runs in memory and tests are isolated from each other.
+            var response = await client.GetAsync("http://localhost/HtmlGeneration_Home/");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            responseContent = responseContent.Trim();
+
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         public static TheoryData<string, string> EncodedPagesData
@@ -139,11 +183,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "AttributesWithBooleanValues", null },
                     { "EditWarehouse", null },
                     { "Index", null },
-                    { "Link", null },
                     { "Order", "/HtmlGeneration_Order/Submit" },
                     { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
                     { "Product", null },
-                    { "Script", null },
                 };
             }
         }
@@ -170,28 +212,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             responseContent = responseContent.Trim();
             if (antiforgeryPath == null)
             {
-#if GENERATE_BASELINES
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-                Assert.Equal(
-                    expectedContent.Trim(),
-                    responseContent,
-                    ignoreLineEndingDifferences: true);
-#endif
+                ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
             }
             else
             {
-                var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
-#if GENERATE_BASELINES
-                // Reverse usual substitution and insert a format item into the new file content.
-                responseContent = responseContent.Replace(forgeryToken, "{0}");
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-                expectedContent = string.Format(expectedContent, forgeryToken);
-                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+                ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, token: AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath));
             }
         }
+
+
+        [ConditionalTheory]
+        [InlineData("Link", null)]
+        [InlineData("Script", null)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
+        public Task HtmlGenerationWebSite_GenerateEncodedResultsNotReadyForHelix(string action, string antiforgeryPath)
+            => HtmlGenerationWebSite_GenerateEncodedResults(action, antiforgeryPath);
 
         // Testing how ModelMetadata is handled as ViewDataDictionary instances are created.
         [Theory]
@@ -215,11 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             responseContent = responseContent.Trim();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -249,17 +280,71 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             responseContent = responseContent.Trim();
-            var forgeryToken =
-                AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "Customer/HtmlGeneration_Customer");
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, token: AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "Customer/HtmlGeneration_Customer"));
+        }
 
-#if GENERATE_BASELINES
-            // Reverse usual substitution and insert a format item into the new file content.
-            responseContent = responseContent.Replace(forgeryToken, "{0}");
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+        [Fact]
+        public async Task ClientValidators_AreGeneratedDuringInitialRender()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Customer/HtmlGeneration_Customer/CustomerWithRecords");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var document = await response.GetHtmlDocumentAsync();
+
+            var numberInput = document.RequiredQuerySelector("input[id=Number]");
+            Assert.Equal("true", numberInput.GetAttribute("data-val"));
+            Assert.Equal("The field Number must be between 1 and 100.", numberInput.GetAttribute("data-val-range"));
+            Assert.Equal("The Number field is required.", numberInput.GetAttribute("data-val-required"));
+
+            var passwordInput = document.RequiredQuerySelector("input[id=Password]");
+            Assert.Equal("true", passwordInput.GetAttribute("data-val"));
+            Assert.Equal("The Password field is required.", passwordInput.GetAttribute("data-val-required"));
+
+            var addressInput = document.RequiredQuerySelector("input[id=Address]");
+            Assert.Equal("true", addressInput.GetAttribute("data-val"));
+            Assert.Equal("The Address field is required.", addressInput.GetAttribute("data-val-required"));
+        }
+
+        [Fact]
+        public async Task ValidationTagHelpers_UsingRecords()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Customer/HtmlGeneration_Customer/CustomerWithRecords");
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("Number", string.Empty),
+                new KeyValuePair<string,string>("Name", string.Empty),
+                new KeyValuePair<string,string>("Email", string.Empty),
+                new KeyValuePair<string,string>("PhoneNumber", string.Empty),
+                new KeyValuePair<string,string>("Password", string.Empty),
+                new KeyValuePair<string,string>("Address", string.Empty),
+            };
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var document = await response.GetHtmlDocumentAsync();
+
+            var validation = document.RequiredQuerySelector("span[data-valmsg-for=Number]");
+            Assert.Equal("The value '' is invalid.", validation.TextContent);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Name]");
+            Assert.Null(validation);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Email]");
+            Assert.Equal("field-validation-valid", validation.ClassName);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Password]");
+            Assert.Equal("The Password field is required.", validation.TextContent);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Address]");
+            Assert.Equal("The Address field is required.", validation.TextContent);
         }
 
         [Fact]
@@ -288,12 +373,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response2 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 1
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile1, expected1, response1.Trim());
-#else
-            Assert.Equal(expected1, response1.Trim(), ignoreLineEndingDifferences: true);
-            Assert.Equal(expected1, response2.Trim(), ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile1, expected1, response1.Trim());
+
+            if (!ResourceFile.GenerateBaselines)
+            {
+                Assert.Equal(expected1, response2.Trim(), ignoreLineEndingDifferences: true);
+            }
 
             // Act - 2
             // Verify content gets changed in partials when one of the vary by parameters is changed
@@ -304,12 +389,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response4 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 2
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile2, expected2, response3.Trim());
-#else
-            Assert.Equal(expected2, response3.Trim(), ignoreLineEndingDifferences: true);
-            Assert.Equal(expected2, response4.Trim(), ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile2, expected2, response3.Trim());
+            if (!ResourceFile.GenerateBaselines)
+            {
+                Assert.Equal(expected2, response4.Trim(), ignoreLineEndingDifferences: true);
+            }
 
             // Act - 3
             // Verify content gets changed in a View Component when the Vary-by-header parameters is changed
@@ -320,12 +404,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response6 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 3
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile3, expected3, response5.Trim());
-#else
-            Assert.Equal(expected3, response5.Trim(), ignoreLineEndingDifferences: true);
-            Assert.Equal(expected3, response6.Trim(), ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile3, expected3, response5.Trim());
+            if (!ResourceFile.GenerateBaselines)
+            {
+                Assert.Equal(expected3, response6.Trim(), ignoreLineEndingDifferences: true);
+            }
         }
 
         [Fact]
@@ -367,7 +450,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expected2, response2.Trim());
 
             // Act - 3
-            // Resend the cookiesless request and cached result from the first response.
+            // Resend the cookieless request and cached result from the first response.
             var response3 = await Client.GetStringAsync("/catalog/cart?correlationid=3");
 
             // Assert - 3
@@ -470,7 +553,7 @@ Products: Book1, Book2 (1)";
 
             // Act - 3
             // Trigger an expiration of the nested content.
-            var content = @"[{ productName: ""Music Systems"" },{ productName: ""Televisions"" }]";
+            var content = @"[{ ""productName"": ""Music Systems"" },{ ""productName"": ""Televisions"" }]";
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/categories/Electronics");
             requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
             (await Client.SendAsync(requestMessage)).EnsureSuccessStatusCode();
@@ -566,7 +649,7 @@ Products: Music Systems, Televisions (3)";
             var document = await Client.GetHtmlDocumentAsync(url);
 
             // Assert
-            var banner = QuerySelector(document, ".banner");
+            var banner = document.RequiredQuerySelector(".banner");
             Assert.Equal("Some status message", banner.TextContent);
         }
 
@@ -581,19 +664,81 @@ Products: Music Systems, Televisions (3)";
             var document = await Client.GetHtmlDocumentAsync(url);
 
             // Assert
-            var banner = QuerySelector(document, ".banner");
+            var banner = document.RequiredQuerySelector(".banner");
             Assert.Empty(banner.TextContent);
         }
 
-        private static IElement QuerySelector(IHtmlDocument document, string selector)
+        [Fact]
+        public async Task PartialTagHelper_AllowsUsingFallback()
         {
-            var element = document.QuerySelector(selector);
-            if (element == null)
-            {
-                throw new ArgumentException($"Document does not contain element that matches the selector {selector}: " + Environment.NewLine + document.DocumentElement.OuterHtml);
-            }
+            // Arrange
+            var url = "/Customer/PartialWithFallback";
 
-            return element;
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var content = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from fallback", content.TextContent);
+        }
+
+        [Fact]
+        public async Task PartialTagHelper_AllowsUsingOptional()
+        {
+            // Arrange
+            var url = "/Customer/PartialWithOptional";
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var content = document.RequiredQuerySelector("#content");
+            Assert.Empty(content.TextContent);
+        }
+
+        [Fact]
+        public async Task ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedDataAttributes()
+        {
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("HtmlGeneration_Home/ValidationProviderAttribute");
+
+            // Assert
+            var firstName = document.RequiredQuerySelector("#FirstName");
+            Assert.Equal("true", firstName.GetAttribute("data-val"));
+            Assert.Equal("The FirstName field is required.", firstName.GetAttribute("data-val-required"));
+            Assert.Equal("The field FirstName must be a string with a maximum length of 5.", firstName.GetAttribute("data-val-length"));
+            Assert.Equal("5", firstName.GetAttribute("data-val-length-max"));
+            Assert.Equal("The field FirstName must match the regular expression '[A-Za-z]*'.", firstName.GetAttribute("data-val-regex"));
+            Assert.Equal("[A-Za-z]*", firstName.GetAttribute("data-val-regex-pattern"));
+
+            var lastName = document.RequiredQuerySelector("#LastName");
+            Assert.Equal("true", lastName.GetAttribute("data-val"));
+            Assert.Equal("The LastName field is required.", lastName.GetAttribute("data-val-required"));
+            Assert.Equal("The field LastName must be a string with a maximum length of 6.", lastName.GetAttribute("data-val-length"));
+            Assert.Equal("6", lastName.GetAttribute("data-val-length-max"));
+            Assert.False(lastName.HasAttribute("data-val-regex"));
+        }
+
+        [Fact]
+        public async Task ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedSpansAndDivsOnValidationError()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "HtmlGeneration_Home/ValidationProviderAttribute");
+            request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "FirstName", "TestFirstName" },
+            });
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var document = await response.GetHtmlDocumentAsync();
+            Assert.Collection(
+                document.QuerySelectorAll("div.validation-summary-errors ul li"),
+                item => Assert.Equal("The field FirstName must be a string with a maximum length of 5.", item.TextContent),
+                item => Assert.Equal("The LastName field is required.", item.TextContent));
         }
 
         private static HttpRequestMessage RequestWithLocale(string url, string locale)

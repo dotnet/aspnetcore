@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 namespace Microsoft.AspNetCore.Authorization
 {
     /// <summary>
-    /// Used for building policies during application startup.
+    /// Used for building policies.
     /// </summary>
     public class AuthorizationPolicyBuilder
     {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Creates a new instance of <see cref="AuthorizationPolicyBuilder"/>.
         /// </summary>
-        /// <param name="policy">The <see cref="AuthorizationPolicy"/> to build.</param>
+        /// <param name="policy">The <see cref="AuthorizationPolicy"/> to copy.</param>
         public AuthorizationPolicyBuilder(AuthorizationPolicy policy)
         {
             Combine(policy);
@@ -41,6 +41,9 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Gets or sets a list authentication schemes the <see cref="AuthorizationPolicyBuilder.Requirements"/> 
         /// are evaluated against.
+        /// <para>
+        /// When not specified, the requirements are evaluated against default schemes.
+        /// </para>
         /// </summary>
         public IList<string> AuthenticationSchemes { get; set; } = new List<string>();
 
@@ -92,45 +95,45 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Adds a <see cref="ClaimsAuthorizationRequirement"/>
-        /// to the current instance.
+        /// Adds a <see cref="ClaimsAuthorizationRequirement"/> to the current instance which requires
+        /// that the current user has the specified claim and that the claim value must be one of the allowed values.
         /// </summary>
         /// <param name="claimType">The claim type required.</param>
-        /// <param name="requiredValues">Values the claim must process one or more of for evaluation to succeed.</param>
+        /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] requiredValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues)
         {
             if (claimType == null)
             {
                 throw new ArgumentNullException(nameof(claimType));
             }
 
-            return RequireClaim(claimType, (IEnumerable<string>)requiredValues);
+            return RequireClaim(claimType, (IEnumerable<string>)allowedValues);
         }
 
         /// <summary>
-        /// Adds a <see cref="ClaimsAuthorizationRequirement"/>
-        /// to the current instance.
+        /// Adds a <see cref="ClaimsAuthorizationRequirement"/> to the current instance which requires
+        /// that the current user has the specified claim and that the claim value must be one of the allowed values.
         /// </summary>
         /// <param name="claimType">The claim type required.</param>
-        /// <param name="requiredValues">Values the claim must process one or more of for evaluation to succeed.</param>
+        /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> requiredValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues)
         {
             if (claimType == null)
             {
                 throw new ArgumentNullException(nameof(claimType));
             }
 
-            Requirements.Add(new ClaimsAuthorizationRequirement(claimType, requiredValues));
+            Requirements.Add(new ClaimsAuthorizationRequirement(claimType, allowedValues));
             return this;
         }
 
         /// <summary>
-        /// Adds a <see cref="ClaimsAuthorizationRequirement"/>
-        /// to the current instance.
+        /// Adds a <see cref="ClaimsAuthorizationRequirement"/> to the current instance which requires
+        /// that the current user has the specified claim.
         /// </summary>
-        /// <param name="claimType">The claim type required, which no restrictions on claim value.</param>
+        /// <param name="claimType">The claim type required, with no restrictions on claim value.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireClaim(string claimType)
         {
@@ -144,10 +147,10 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Adds a <see cref="RolesAuthorizationRequirement"/>
-        /// to the current instance.
+        /// Adds a <see cref="RolesAuthorizationRequirement"/> to the current instance which enforces that the current user
+        /// must have at least one of the specified roles.
         /// </summary>
-        /// <param name="roles">The roles required.</param>
+        /// <param name="roles">The allowed roles.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireRole(params string[] roles)
         {
@@ -160,10 +163,10 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Adds a <see cref="RolesAuthorizationRequirement"/>
-        /// to the current instance.
+        /// Adds a <see cref="RolesAuthorizationRequirement"/> to the current instance which enforces that the current user
+        /// must have at least one of the specified roles.
         /// </summary>
-        /// <param name="roles">The roles required.</param>
+        /// <param name="roles">The allowed roles.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireRole(IEnumerable<string> roles)
         {
@@ -177,8 +180,7 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Adds a <see cref="NameAuthorizationRequirement"/>
-        /// to the current instance.
+        /// Adds a <see cref="NameAuthorizationRequirement"/> to the current instance which enforces that the current user matches the specified name.
         /// </summary>
         /// <param name="userName">The user name the current user must possess.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
@@ -194,7 +196,7 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Adds a <see cref="DenyAnonymousAuthorizationRequirement"/> to the current instance.
+        /// Adds <see cref="DenyAnonymousAuthorizationRequirement"/> to the current instance which enforces that the current user is authenticated.
         /// </summary>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireAuthenticatedUser()
