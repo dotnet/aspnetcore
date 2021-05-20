@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
@@ -68,14 +69,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public bool UnsafePreferInlineScheduling { get; set; }
 
         /// <summary>
-        /// An action used to configure the listening socket before it is bound.
+        /// A function used to create a new <see cref="Socket"/> to listen with. If
+        /// not set, <see cref="CreateDefaultListenSocket" /> is called instead.
         /// </summary>
-        public Action<EndPoint, Socket>? ConfigureListenSocket { get; set; }
+        public Func<EndPoint, Socket>? CreateListenSocket { get; set; }
 
         /// <summary>
-        /// An action used to configure an accepted socket before it's used.
+        /// Creates a default instance of <see cref="Socket"/> for the given <see cref="EndPoint"/>
+        /// that can be used by a connection listener to listen for inbound requests.
         /// </summary>
-        public Action<EndPoint, Socket>? ConfigureAcceptedSocket { get; set; }
+        /// <param name="endpoint">
+        /// An <see cref="EndPoint"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Socket"/> instance.
+        /// </returns>
+        public static Socket CreateDefaultListenSocket(EndPoint endpoint)
+        {
+            switch (endpoint)
+            {
+                case FileHandleEndPoint fileHandle:
+                    return new Socket(
+                        new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true)
+                    );
+                case UnixDomainSocketEndPoint unix:
+                    return new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                case IPEndPoint ip:
+                    var listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                    // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
+                    if (ip.Address == IPAddress.IPv6Any)
+                    {
+                        listenSocket.DualMode = true;
+                    }
+
+                    return listenSocket;
+                default:
+                    return new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            }
+        }
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
     }

@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Socket? _listenSocket;
         private int _settingsIndex;
         private readonly SocketTransportOptions _options;
-        private SafeSocketHandle? _socketHandle;
 
         public EndPoint EndPoint { get; private set; }
 
@@ -91,42 +90,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
-            Socket listenSocket;
-
-            switch (EndPoint)
-            {
-                case FileHandleEndPoint fileHandle:
-                    _socketHandle = new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true);
-                    listenSocket = new Socket(_socketHandle);
-                    ConfigureSocket();
-                    break;
-                case UnixDomainSocketEndPoint unix:
-                    listenSocket = new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
-                    ConfigureSocket();
-                    BindSocket();
-                    break;
-                case IPEndPoint ip:
-                    listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-                    // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
-                    if (ip.Address == IPAddress.IPv6Any)
-                    {
-                        listenSocket.DualMode = true;
-                    }
-
-                    ConfigureSocket();
-                    BindSocket();
-                    break;
-                default:
-                    listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    ConfigureSocket();
-                    BindSocket();
-                    break;
-            }
-
-            void ConfigureSocket() => _options.ConfigureListenSocket?.Invoke(EndPoint, listenSocket);
-
-            void BindSocket()
+            var listenSocketFactory = _options.CreateListenSocket ?? SocketTransportOptions.CreateDefaultListenSocket;
+            var listenSocket = listenSocketFactory(EndPoint);
+            // we only call Bind on sockets that were _not_ created
+            // using a file handle, otherwise underlying PAL call throws
+            if (!(EndPoint is FileHandleEndPoint))
             {
                 try
                 {
@@ -161,8 +129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     {
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
-
-                    _options.ConfigureAcceptedSocket?.Invoke(EndPoint, acceptSocket);
 
                     var setting = _settings[_settingsIndex];
 
@@ -202,16 +168,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
         {
             _listenSocket?.Dispose();
-
-            _socketHandle?.Dispose();
             return default;
         }
 
         public ValueTask DisposeAsync()
         {
             _listenSocket?.Dispose();
-
-            _socketHandle?.Dispose();
 
             // Dispose the memory pool
             _memoryPool.Dispose();

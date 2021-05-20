@@ -1,21 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+namespace Sockets.BindTests
 {
     public class SocketTransportOptionsTests : LoggedTestBase
     {
@@ -24,36 +23,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task SocketTransportCallsConfigureListenSocket(EndPoint endpointToTest)
         {
             var wasCalled = false;
-            void ConfigureListenSocket(EndPoint endpoint, Socket socket) => wasCalled = true;
+
+            Socket CreateListenSocket(EndPoint endpoint)
+            {
+                wasCalled = true;
+                return SocketTransportOptions.CreateDefaultListenSocket(endpoint);
+            }
 
             using var host = CreateWebHost(
-                endpointToTest, options => options.ConfigureListenSocket = ConfigureListenSocket
+                endpointToTest,
+                options =>
+                {
+                    options.CreateListenSocket = CreateListenSocket;
+                }
             );
+
             await host.StartAsync();
-            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.ConfigureListenSocket)} to be called.");
+            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.CreateListenSocket)} to be called.");
             await host.StopAsync();
         }
 
-        [Theory]
-        [MemberData(nameof(GetEndpoints))]
-        public async Task SocketTransportCallsConfigureAcceptedSocket(EndPoint endpointToTest)
-        {
-            var wasCalled = false;
-            void ConfigureAcceptedSocket(EndPoint endpoint, Socket socket) => wasCalled = true;
+        // static to ensure that the underlying handle doesn't get closed
+        // when our underlying connection listener is disposed
+        private static readonly Socket _fileHandleSocket = new(
+            AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp
+        );
 
-            using var host = CreateWebHost(
-                endpointToTest, options => options.ConfigureAcceptedSocket = ConfigureAcceptedSocket
-            );
-            using var client = CreateHttpClient(endpointToTest);
-            await host.StartAsync();
-            var uri = host.GetUris().First();
-            var response = await client.GetAsync(uri);
-            response.EnsureSuccessStatusCode();
-            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.ConfigureAcceptedSocket)} to be called.");
-            await host.StopAsync();
-        }
-
-        private static int _counter = 1;
         public static IEnumerable<object[]> GetEndpoints()
         {
             // IPv4
@@ -65,14 +60,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 yield return new object[]
                 {
-                    // NOTE
-                    // to avoid "address in use" errors need to ensure
-                    // the socket path is unique
-                    new UnixDomainSocketEndPoint(
-                        $"/tmp/test-{Interlocked.Increment(ref _counter)}.sock"
-                    )
+                    new UnixDomainSocketEndPoint($"/tmp/test.sock")
                 };
             }
+
+            // file handle
+            // slightly messy but allows us to create a FileHandleEndPoint
+            // from the underlying OS handle used by the socket
+            _fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            yield return new object[]
+            {
+                new FileHandleEndPoint((ulong) _fileHandleSocket.Handle, FileHandleType.Auto)
+            };
 
             // TODO: other endpoint types?
         }
@@ -92,23 +91,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 )
                 .ConfigureServices(AddTestLogging)
                 .Build();
-        private static HttpClient CreateHttpClient(EndPoint endpoint)
-        {
-            if (endpoint is UnixDomainSocketEndPoint)
-            {
-                // https://stackoverflow.com/a/67203488/871146
-                return new HttpClient(new SocketsHttpHandler
-                {
-                    ConnectCallback = async (_, _) =>
-                    {
-                        var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
-                        await socket.ConnectAsync(endpoint);
-                        return new NetworkStream(socket, ownsSocket: true);
-                    }
-                });
-            }
-
-            return new HttpClient();
-        }
     }
 }
