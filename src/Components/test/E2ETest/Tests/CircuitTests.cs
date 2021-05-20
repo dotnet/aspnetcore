@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: false);
-            Browser.MountTestComponent<ReliabilityComponent>();
-            Browser.Exists(By.Id("thecounter"));
         }
 
         [Theory]
@@ -44,6 +42,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [InlineData("afterrender-async-throw")]
         public void ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
         {
+            Browser.MountTestComponent<ReliabilityComponent>();
+            Browser.Exists(By.Id("thecounter"));
+
             var targetButton = Browser.Exists(By.Id(id));
             targetButton.Click();
 
@@ -59,6 +60,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
         {
+            Browser.MountTestComponent<ReliabilityComponent>();
+            Browser.Exists(By.Id("thecounter"));
+            
             // Arrange
             var targetButton = Browser.Exists(By.Id("dispose-throw"));
 
@@ -77,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void OnLocationChanged_ReportsErrorForExceptionInUserCode()
         {
             Browser.MountTestComponent<NavigationFailureComponent>(); 
-            var targetButton = Browser.Exists(By.Id("navigate-to-page"));   
+            var targetButton = Browser.Exists(By.Id("navigate-to-page"));
 
             targetButton.Click();
 
