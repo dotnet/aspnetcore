@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -278,6 +279,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
                 {
                     o.FileProvider = testFileProvider;
                     o.ReloadOnChange = true;
+                    o.Optional = true;
                 }).Build();
 
             Assert.Empty(config.AsEnumerable());
@@ -289,6 +291,63 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             Assert.Equal("SecretValue1", config["Secret1"]);
             Assert.Equal("SecretValue2", config["Secret2"]);
         }
+
+        [Fact(Timeout = 2000)]
+        public async Task RaiseChangeEventWhenReloadOnChangeIsTrue()
+        {
+            var testFileProvider = new TestFileProvider(
+               new TestFile("Secret1", "SecretValue1"),
+               new TestFile("Secret2", "SecretValue2"));
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.ReloadOnChange = true;
+                }).Build();
+
+            var changeToken = config.GetReloadToken();
+            var changeTaskCompletion = new TaskCompletionSource<object>();
+            changeToken.RegisterChangeCallback(state =>
+                ((TaskCompletionSource<object>)state).TrySetResult(null), changeTaskCompletion);
+
+            testFileProvider.ChangeFiles(
+                new TestFile("Secret1", "NewSecretValue1"),
+                new TestFile("Secret3", "NewSecretValue3"));
+
+            await changeTaskCompletion.Task;
+
+            Assert.Equal("NewSecretValue1", config["Secret1"]);
+            Assert.Null(config["NewSecret2"]);
+            Assert.Equal("NewSecretValue3", config["Secret3"]);
+        }
+
+        [Fact(Timeout = 2000)]
+        public async Task RaiseChangeEventWhenDirectoryClearsReloadOnChangeIsTrue()
+        {
+            var testFileProvider = new TestFileProvider(
+               new TestFile("Secret1", "SecretValue1"),
+               new TestFile("Secret2", "SecretValue2"));
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.ReloadOnChange = true;
+                }).Build();
+
+            var changeToken = config.GetReloadToken();
+            var changeTaskCompletion = new TaskCompletionSource<object>();
+            changeToken.RegisterChangeCallback(state =>
+                ((TaskCompletionSource<object>)state).TrySetResult(null), changeTaskCompletion);
+
+            testFileProvider.ChangeFiles();
+
+            await changeTaskCompletion.Task;
+
+            Assert.Empty(config.AsEnumerable());
+        }
+
 
         private sealed class MyOptions
         {
@@ -361,7 +420,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             _list = new List<IFileInfo>(files);
         }
 
-        public bool Exists => true;
+        public bool Exists => _list.Any();
 
         public IEnumerator<IFileInfo> GetEnumerator() => _list.GetEnumerator();
 
