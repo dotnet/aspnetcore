@@ -111,8 +111,16 @@ namespace Templates.Test.Helpers
                 
                 // Temporary while investigating why this process occasionally never runs or exits on Debian 9
                 environmentVariables.Add("COREHOST_TRACE", "1");
-                using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+
+                using var execution = ProcessEx.Run(
+                    Output,
+                    AppContext.BaseDirectory,
+                    DotNetMuxer.MuxerPathOrDefault(),
+                    argString,
+                    environmentVariables,
+                    TimeSpan.FromHours(5));
                 await execution.Exited;
+
                 return new ProcessResult(execution);
             }
             finally
