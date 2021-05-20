@@ -210,9 +210,8 @@ namespace Microsoft.AspNetCore.Http.Features
                         _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(capacity: 5, StringComparer.OrdinalIgnoreCase);
                     }
 
-                    // Already 3 (2 existing + the new one) entries so use starting allocated as 6; then use List's expansion
-                    // mechanism for more
-                    var list = new List<string>(capacity: 6);
+                    // Already 2 (1 existing + the new one) entries so use List's expansion mechanism for more
+                    var list = new List<string>();
 
                     list.AddRange(values);
                     list.Add(value);
