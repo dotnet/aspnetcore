@@ -135,6 +135,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanUploadAndConvertImageFile()
         {
             var sourceImageId = "image-source";
+            var imageStatus = Browser.Exists(By.Id("image-status"));
+            Browser.Equal("ready", () => imageStatus.Text);
 
             // Get the source image base64
             var base64 = Browser.ExecuteJavaScript<string>($@"
