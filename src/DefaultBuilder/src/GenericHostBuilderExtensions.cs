@@ -13,8 +13,9 @@ namespace Microsoft.Extensions.Hosting
     public static class GenericHostBuilderExtensions
     {
         /// <summary>
-        /// Configures a <see cref="IHostBuilder" /> with defaults for hosting a web app. This will overwrite
-        /// previously configured values and is intended to be called before additional configuration calls.
+        /// Configures a <see cref="IHostBuilder" /> with defaults for hosting a web app. This should be called 
+        /// before application specific configuration to avoid it overwriting provided services, configuration sources, 
+        /// environments, content root, etc.
         /// </summary>
         /// <remarks>
         /// The following defaults are applied to the <see cref="IHostBuilder"/>:
