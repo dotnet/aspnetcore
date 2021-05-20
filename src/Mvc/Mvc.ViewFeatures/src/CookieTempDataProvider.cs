@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// The name of the cookie.
         /// </summary>
         public static readonly string CookieName = ".AspNetCore.Mvc.CookieTempDataProvider";
-        private static readonly string Purpose = "Microsoft.AspNetCore.Mvc.CookieTempDataProviderToken.v1";
+        private const string Purpose = "Microsoft.AspNetCore.Mvc.CookieTempDataProviderToken.v1";
 
         private readonly IDataProtector _dataProtector;
         private readonly ILogger _logger;
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 //
                 // Since TempData is a best-effort system, we don't want to throw and get a 500 if the cookie is
                 // bad, we will just clear it and ignore the exception. The common case that we've identified for
-                // this is misconfigured data protection settings, which can cause the key used to create the 
+                // this is misconfigured data protection settings, which can cause the key used to create the
                 // cookie to no longer be available.
                 try
                 {

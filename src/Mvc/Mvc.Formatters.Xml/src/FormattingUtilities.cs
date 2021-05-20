@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     /// </summary>
     internal static class FormattingUtilities
     {
-        public static readonly int DefaultMaxDepth = 32;
+        public const int DefaultMaxDepth = 32;
         public static readonly XsdDataContractExporter XsdDataContractExporter = new XsdDataContractExporter();
 
         /// <summary>

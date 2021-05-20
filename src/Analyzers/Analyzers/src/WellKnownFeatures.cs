@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal static class WellKnownFeatures
     {
-        public static readonly string SignalR = nameof(SignalR);
+        public const string SignalR = nameof(SignalR);
     }
 }

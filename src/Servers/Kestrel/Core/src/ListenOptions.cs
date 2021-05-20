@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
-        internal static readonly HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
+        internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
 
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
         internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();

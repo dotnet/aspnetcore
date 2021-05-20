@@ -5,18 +5,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
     internal class RegisteredComponentsInterop
     {
-        private static readonly string Prefix = "Blazor._internal.registeredComponents.";
+        private const string Prefix = "Blazor._internal.registeredComponents.";
 
-        public static readonly string GetRegisteredComponentsCount = Prefix + "getRegisteredComponentsCount";
+        public const string GetRegisteredComponentsCount = Prefix + "getRegisteredComponentsCount";
 
-        public static readonly string GetId = Prefix + "getId";
+        public const string GetId = Prefix + "getId";
 
-        public static readonly string GetAssembly = Prefix + "getAssembly";
+        public const string GetAssembly = Prefix + "getAssembly";
 
-        public static readonly string GetTypeName = Prefix + "getTypeName";
+        public const string GetTypeName = Prefix + "getTypeName";
 
-        public static readonly string GetParameterDefinitions = Prefix + "getParameterDefinitions";
+        public const string GetParameterDefinitions = Prefix + "getParameterDefinitions";
 
-        public static readonly string GetParameterValues = Prefix + "getParameterValues";
+        public const string GetParameterValues = Prefix + "getParameterValues";
     }
 }

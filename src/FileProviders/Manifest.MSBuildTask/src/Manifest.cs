@@ -72,13 +72,13 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task
 
         private class ElementNames
         {
-            public static readonly string Directory = "Directory";
-            public static readonly string Name = "Name";
-            public static readonly string FileSystem = "FileSystem";
-            public static readonly string Root = "Manifest";
-            public static readonly string File = "File";
-            public static readonly string ResourcePath = "ResourcePath";
-            public static readonly string ManifestVersion = "ManifestVersion";
+            public const string Directory = "Directory";
+            public const string Name = "Name";
+            public const string FileSystem = "FileSystem";
+            public const string Root = "Manifest";
+            public const string File = "File";
+            public const string ResourcePath = "ResourcePath";
+            public const string ManifestVersion = "ManifestVersion";
         }
     }
 }

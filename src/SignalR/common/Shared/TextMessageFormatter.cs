@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Internal
     {
         // This record separator is supposed to be used only for JSON payloads where 0x1e character
         // will not occur (is not a valid character) and therefore it is safe to not escape it
-        public static readonly byte RecordSeparator = 0x1e;
+        public const byte RecordSeparator = 0x1e;
 
         public static void WriteRecordSeparator(IBufferWriter<byte> output)
         {
