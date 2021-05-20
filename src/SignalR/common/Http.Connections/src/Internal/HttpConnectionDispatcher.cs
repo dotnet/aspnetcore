@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly HttpConnectionManager _manager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
-        private static readonly int _protocolVersion = 1;
+        private const int _protocolVersion = 1;
 
         public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
         {

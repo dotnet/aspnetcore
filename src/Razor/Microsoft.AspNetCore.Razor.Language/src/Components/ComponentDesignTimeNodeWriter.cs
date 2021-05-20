@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         private readonly ScopeStack _scopeStack = new ScopeStack();
 
-        private static readonly string DesignTimeVariable = "__o";
+        private const string DesignTimeVariable = "__o";
 
         public override void WriteMarkupBlock(CodeRenderingContext context, MarkupBlockIntermediateNode node)
         {

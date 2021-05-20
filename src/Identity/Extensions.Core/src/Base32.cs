@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity
     // See http://tools.ietf.org/html/rfc3548#section-5
     internal static class Base32
     {
-        private static readonly string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        private const string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
         public static string ToBase32(byte[] input)
         {

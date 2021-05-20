@@ -14,8 +14,6 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
 </Project>

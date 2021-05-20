@@ -12,9 +12,6 @@ namespace Microsoft.AspNetCore.Http.Features
     /// </summary>
     public class ResponseCookiesFeature : IResponseCookiesFeature
     {
-        // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
-
         private readonly IFeatureCollection _features;
         private IResponseCookies? _cookiesCollection;
 

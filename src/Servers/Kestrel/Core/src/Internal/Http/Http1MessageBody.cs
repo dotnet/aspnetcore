@@ -180,11 +180,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // If we got here, request contains no Content-Length or Transfer-Encoding header.
-            // Reject with 411 Length Required.
-            if (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put)
+            // Reject with Length Required for HTTP 1.0.
+            if (httpVersion == HttpVersion.Http10 && (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put))
             {
-                var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
-                KestrelBadHttpRequestException.Throw(requestRejectionReason, context.Method);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.LengthRequiredHttp10, context.Method);
             }
 
             context.OnTrailersComplete(); // No trailers for these.

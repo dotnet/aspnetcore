@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private static ReadOnlySpan<byte> TrailersBytes => new byte[8] { (byte)'t', (byte)'r', (byte)'a', (byte)'i', (byte)'l', (byte)'e', (byte)'r', (byte)'s' };
         private static ReadOnlySpan<byte> ConnectBytes => new byte[7] { (byte)'C', (byte)'O', (byte)'N', (byte)'N', (byte)'E', (byte)'C', (byte)'T' };
 
-        private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
+        private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
         private readonly Http3FrameWriter _frameWriter;

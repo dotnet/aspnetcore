@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
     {
-        private static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
-        private static readonly string RouteTemplateKey = "RouteTemplate";
+        private const string RazorPageDocumentKind = "mvc.1.0.razor-page";
+        private const string RouteTemplateKey = "RouteTemplate";
         private readonly ApplicationPartManager _applicationManager;
         private readonly RazorPagesOptions _pagesOptions;
         private readonly PageRouteModelFactory _routeModelFactory;

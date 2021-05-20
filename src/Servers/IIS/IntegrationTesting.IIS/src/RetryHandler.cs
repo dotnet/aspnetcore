@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
     public class RetryHandler : DelegatingHandler
     {
-        private static readonly int MaxRetries = 5;
+        private const int MaxRetries = 5;
         private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(1);
 
         private readonly ILogger _logger;

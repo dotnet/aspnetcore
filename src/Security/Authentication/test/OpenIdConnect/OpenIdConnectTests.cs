@@ -23,9 +23,6 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         static string noncePrefix = "OpenIdConnect." + "Nonce.";
         static string nonceDelimiter = ".";
         const string DefaultHost = @"https://example.com";
-        const string Logout = "/logout";
-        const string Signin = "/signin";
-        const string Signout = "/signout";
 
         /// <summary>
         /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
@@ -387,7 +384,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.NotNull(jwtHandler);
             Assert.False(jwtHandler.MapInboundClaims);
         }
-        
+
         // Test Cases for calculating the expiration time of cookie from cookie name
         [Fact]
         public void NonceCookieExpirationTime()

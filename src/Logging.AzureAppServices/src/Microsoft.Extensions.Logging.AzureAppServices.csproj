@@ -21,7 +21,7 @@
     <Reference Include="System.ValueTuple" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 

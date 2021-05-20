@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Html
     {
         private readonly IFormatProvider _formatProvider;
         private readonly string _format;
-        private readonly object[] _args;
+        private readonly object?[] _args;
 
         /// <summary>
         /// Creates a new <see cref="HtmlFormattableString"/> with the given <paramref name="format"/> and
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Html
         /// </summary>
         /// <param name="format">A composite format string.</param>
         /// <param name="args">An array that contains objects to format.</param>
-        public HtmlFormattableString(string format, params object[] args)
+        public HtmlFormattableString(string format, params object?[] args)
             : this(formatProvider: null, format: format, args: args)
         {
         }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Html
         /// <param name="formatProvider">An object that provides culture-specific formatting information.</param>
         /// <param name="format">A composite format string.</param>
         /// <param name="args">An array that contains objects to format.</param>
-        public HtmlFormattableString(IFormatProvider? formatProvider, string format, params object[] args)
+        public HtmlFormattableString(IFormatProvider? formatProvider, string format, params object?[] args)
         {
             if (format == null)
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Html
         //
         // Plenty of examples of ICustomFormatter and the interactions with string.Format here:
         // https://msdn.microsoft.com/en-us/library/system.string.format(v=vs.110).aspx#Format6_Example
-        private class EncodingFormatProvider : IFormatProvider, ICustomFormatter
+        private sealed class EncodingFormatProvider : IFormatProvider, ICustomFormatter
         {
             private readonly HtmlEncoder _encoder;
             private readonly IFormatProvider _formatProvider;
@@ -109,14 +109,12 @@ namespace Microsoft.AspNetCore.Html
             {
                 // These are the cases we need to special case. We trust the HtmlString or IHtmlContent instance
                 // to do the right thing with encoding.
-                var htmlString = arg as HtmlString;
-                if (htmlString != null)
+                if (arg is HtmlString htmlString)
                 {
                     return htmlString.ToString();
                 }
 
-                var htmlContent = arg as IHtmlContent;
-                if (htmlContent != null)
+                if (arg is IHtmlContent htmlContent)
                 {
                     _writer ??= new StringWriter();
 
@@ -147,8 +145,7 @@ namespace Microsoft.AspNetCore.Html
                 //
                 // An IFormattable will likely call back into the IFormatterProvider and ask for more information
                 // about how to format itself. This is the typical case when IFormatterProvider is a CultureInfo.
-                var formattable = arg as IFormattable;
-                if (formattable != null)
+                if (arg is IFormattable formattable)
                 {
                     var result = formattable.ToString(format, _formatProvider);
                     if (result != null)

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal static class JumpTableBuilder
     {
-        public static readonly int InvalidDestination = -1;
+        public const int InvalidDestination = -1;
 
         public static JumpTable Build(int defaultDestination, int exitDestination, (string text, int destination)[] pathEntries)
         {

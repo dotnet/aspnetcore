@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
     internal sealed partial class MarkupEndTagSyntax
     {
-        private static readonly string MarkupTransitionKey = "MarkupTransition";
+        private const string MarkupTransitionKey = "MarkupTransition";
 
         public bool IsMarkupTransition
         {

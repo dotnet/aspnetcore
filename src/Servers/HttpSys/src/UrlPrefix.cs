@@ -65,12 +65,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             else
             {
-                throw new ArgumentOutOfRangeException("scheme", scheme, Resources.Exception_UnsupportedScheme);
+                throw new ArgumentOutOfRangeException(nameof(scheme), scheme, Resources.Exception_UnsupportedScheme);
             }
 
             if (string.IsNullOrWhiteSpace(host))
             {
-                throw new ArgumentNullException("host");
+                throw new ArgumentNullException(nameof(host));
             }
 
             string port;

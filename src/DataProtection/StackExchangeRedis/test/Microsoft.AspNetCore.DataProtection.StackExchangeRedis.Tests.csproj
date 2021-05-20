@@ -16,8 +16,6 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
   </ItemGroup>
 
 </Project>

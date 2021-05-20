@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Identity
     /// <summary>
     /// Used to indicate that a something is considered personal data.
     /// </summary>
+    [AttributeUsage(AttributeTargets.All)]
     public class PersonalDataAttribute : Attribute
     { }
 }
