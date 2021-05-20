@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+    <Nullable>enable</Nullable>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);RS0016;RS0037;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="System.Threading.ResourceLimits" />
+  </ItemGroup>
+
+</Project>
