@@ -196,6 +196,7 @@
                           $(RepoRoot)src\WebEncoders\**\*.csproj;
                           $(RepoRoot)src\HealthChecks\**\*.csproj;
                           $(RepoRoot)src\Testing\**\*.csproj;
+                          $(RepoRoot)src\ResourceLimits\**\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "
@@ -236,6 +237,7 @@
                           $(RepoRoot)src\WebEncoders\**\src\*.csproj;
                           $(RepoRoot)src\HealthChecks\**\src\*.csproj;
                           $(RepoRoot)src\Testing\**\src\*.csproj;
+                          $(RepoRoot)src\ResourceLimits\**\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

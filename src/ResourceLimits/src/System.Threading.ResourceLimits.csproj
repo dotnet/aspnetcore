@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>WIP</Description>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
