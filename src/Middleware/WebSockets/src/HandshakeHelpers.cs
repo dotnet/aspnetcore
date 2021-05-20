@@ -77,11 +77,19 @@ namespace Microsoft.AspNetCore.WebSockets
         }
 
         // https://datatracker.ietf.org/doc/html/rfc7692#section-7.1
-        public static bool ParseDeflateOptions(ReadOnlySpan<char> extension, WebSocketDeflateOptions options, [NotNullWhen(true)] out string? response)
+        public static bool ParseDeflateOptions(ReadOnlySpan<char> extension, bool serverContextTakeover,
+            int serverMaxWindowBits, out WebSocketDeflateOptions parsedOptions, [NotNullWhen(true)] out string? response)
         {
             bool hasServerMaxWindowBits = false;
             bool hasClientMaxWindowBits = false;
+            bool hasClientNoContext = false;
+            bool hasServerNoContext = false;
             response = null;
+            parsedOptions = new WebSocketDeflateOptions()
+            {
+                ServerContextTakeover = serverContextTakeover,
+                ServerMaxWindowBits = serverMaxWindowBits
+            };
             var builder = new StringBuilder(WebSocketDeflateConstants.MaxExtensionLength);
             builder.Append(WebSocketDeflateConstants.Extension);
 
@@ -90,83 +98,139 @@ namespace Microsoft.AspNetCore.WebSockets
                 int end = extension.IndexOf(';');
                 ReadOnlySpan<char> value = (end >= 0 ? extension[..end] : extension).Trim();
 
-                if (value.Length > 0)
+                if (value.Length == 0)
                 {
-                    if (value.SequenceEqual(WebSocketDeflateConstants.ClientNoContextTakeover))
-                    {
-                        options.ClientContextTakeover = false;
-                        builder.Append("; ").Append(WebSocketDeflateConstants.ClientNoContextTakeover);
-                    }
-                    else if (value.SequenceEqual(WebSocketDeflateConstants.ServerNoContextTakeover))
-                    {
-                        // REVIEW: Do we want to reject it?
-                        // Client requests no context takeover but options passed in specified context takeover, so reject the negotiate offer
-                        if (options.ServerContextTakeover)
-                        {
-                            return false;
-                        }
-                    }
-                    else if (value.StartsWith(WebSocketDeflateConstants.ClientMaxWindowBits))
-                    {
-                        var clientMaxWindowBits = ParseWindowBits(value, WebSocketDeflateConstants.ClientMaxWindowBits);
-                        // 8 is a valid value according to the spec, but our zlib implementation does not support it
-                        if (clientMaxWindowBits == 8)
-                        {
-                            return false;
-                        }
+                    break;
+                }
 
-                        // https://tools.ietf.org/html/rfc7692#section-7.1.2.2
-                        // the server may either ignore this
-                        // value or use this value to avoid allocating an unnecessarily big LZ77
-                        // sliding window by including the "client_max_window_bits" extension
-                        // parameter in the corresponding extension negotiation response to the
-                        // offer with a value equal to or smaller than the received value.
-                        options.ClientMaxWindowBits = Math.Min(clientMaxWindowBits ?? 15, options.ClientMaxWindowBits);
-
-                        // If a received extension negotiation offer doesn't have the
-                        // "client_max_window_bits" extension parameter, the corresponding
-                        // extension negotiation response to the offer MUST NOT include the
-                        // "client_max_window_bits" extension parameter.
-                        builder.Append("; ").Append(WebSocketDeflateConstants.ClientMaxWindowBits).Append('=')
-                            .Append(options.ClientMaxWindowBits.ToString(CultureInfo.InvariantCulture));
-                    }
-                    else if (value.StartsWith(WebSocketDeflateConstants.ServerMaxWindowBits))
+                if (value.SequenceEqual(WebSocketDeflateConstants.ClientNoContextTakeover))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasClientNoContext)
                     {
-                        hasServerMaxWindowBits = true;
-                        var serverMaxWindowBits = ParseWindowBits(value, WebSocketDeflateConstants.ServerMaxWindowBits);
-                        // 8 is a valid value according to the spec, but our zlib implementation does not support it
-                        if (serverMaxWindowBits == 8)
-                        {
-                            return false;
-                        }
-
-                        // https://tools.ietf.org/html/rfc7692#section-7.1.2.1
-                        // A server accepts an extension negotiation offer with this parameter
-                        // by including the "server_max_window_bits" extension parameter in the
-                        // extension negotiation response to send back to the client with the
-                        // same or smaller value as the offer.
-                        options.ServerMaxWindowBits = Math.Min(serverMaxWindowBits ?? 15, options.ServerMaxWindowBits);
+                        return false;
                     }
 
-                    static int? ParseWindowBits(ReadOnlySpan<char> value, string propertyName)
+                    hasClientNoContext = true;
+                    parsedOptions.ClientContextTakeover = false;
+                    builder.Append("; ").Append(WebSocketDeflateConstants.ClientNoContextTakeover);
+                }
+                else if (value.SequenceEqual(WebSocketDeflateConstants.ServerNoContextTakeover))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasServerNoContext)
                     {
-                        var startIndex = value.IndexOf('=');
-
-                        // parameters can be sent without a value by the client, we'll use the values set by the app developer or the default of 15
-                        if (startIndex < 0)
-                        {
-                            return null;
-                        }
-
-                        if (!int.TryParse(value[(startIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int windowBits) ||
-                            windowBits < 8 ||
-                            windowBits > 15)
-                        {
-                            throw new WebSocketException(WebSocketError.HeaderError, $"invalid {propertyName} used: {value[(startIndex + 1)..].ToString()}");
-                        }
-
-                        return windowBits;
+                        return false;
                     }
+
+                    hasServerNoContext = true;
+                    parsedOptions.ServerContextTakeover = false;
+                }
+                else if (value.StartsWith(WebSocketDeflateConstants.ClientMaxWindowBits))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasClientMaxWindowBits)
+                    {
+                        return false;
+                    }
+
+                    hasClientMaxWindowBits = true;
+                    if (!ParseWindowBits(value, WebSocketDeflateConstants.ClientMaxWindowBits, out var clientMaxWindowBits))
+                    {
+                        return false;
+                    }
+
+                    // 8 is a valid value according to the spec, but our zlib implementation does not support it
+                    if (clientMaxWindowBits == 8)
+                    {
+                        return false;
+                    }
+
+                    // https://tools.ietf.org/html/rfc7692#section-7.1.2.2
+                    // the server may either ignore this
+                    // value or use this value to avoid allocating an unnecessarily big LZ77
+                    // sliding window by including the "client_max_window_bits" extension
+                    // parameter in the corresponding extension negotiation response to the
+                    // offer with a value equal to or smaller than the received value.
+                    parsedOptions.ClientMaxWindowBits = clientMaxWindowBits ?? 15;
+
+                    // If a received extension negotiation offer doesn't have the
+                    // "client_max_window_bits" extension parameter, the corresponding
+                    // extension negotiation response to the offer MUST NOT include the
+                    // "client_max_window_bits" extension parameter.
+                    builder.Append("; ").Append(WebSocketDeflateConstants.ClientMaxWindowBits).Append('=')
+                        .Append(parsedOptions.ClientMaxWindowBits.ToString(CultureInfo.InvariantCulture));
+                }
+                else if (value.StartsWith(WebSocketDeflateConstants.ServerMaxWindowBits))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasServerMaxWindowBits)
+                    {
+                        return false;
+                    }
+
+                    hasServerMaxWindowBits = true;
+                    if (!ParseWindowBits(value, WebSocketDeflateConstants.ServerMaxWindowBits, out var parsedServerMaxWindowBits))
+                    {
+                        return false;
+                    }
+
+                    // 8 is a valid value according to the spec, but our zlib implementation does not support it
+                    if (parsedServerMaxWindowBits == 8)
+                    {
+                        return false;
+                    }
+
+                    // https://tools.ietf.org/html/rfc7692#section-7.1.2.1
+                    // A server accepts an extension negotiation offer with this parameter
+                    // by including the "server_max_window_bits" extension parameter in the
+                    // extension negotiation response to send back to the client with the
+                    // same or smaller value as the offer.
+                    parsedOptions.ServerMaxWindowBits = Math.Min(parsedServerMaxWindowBits ?? 15, serverMaxWindowBits);
+                }
+
+                static bool ParseWindowBits(ReadOnlySpan<char> value, string propertyName, out int? parsedValue)
+                {
+                    var startIndex = value.IndexOf('=');
+
+                    // parameters can be sent without a value by the client, we'll use the values set by the app developer or the default of 15
+                    if (startIndex < 0)
+                    {
+                        parsedValue = null;
+                        return true;
+                    }
+
+                    value = value[(startIndex + 1)..].TrimEnd();
+
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-5.2
+                    // check for value in quotes and pull the value out without the quotes
+                    if (value[0] == '"' && value.EndsWith("\"".AsSpan()))
+                    {
+                        value = value[1..^1];
+                    }
+
+                    if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int windowBits) ||
+                        windowBits < 8 ||
+                        windowBits > 15)
+                    {
+                        parsedValue = null;
+                        return false;
+                    }
+
+                    parsedValue = windowBits;
+                    return true;
                 }
 
                 if (end < 0)
@@ -176,30 +240,16 @@ namespace Microsoft.AspNetCore.WebSockets
                 extension = extension[(end + 1)..];
             }
 
-            if (!options.ServerContextTakeover)
+            if (!parsedOptions.ServerContextTakeover)
             {
                 builder.Append("; ").Append(WebSocketDeflateConstants.ServerNoContextTakeover);
             }
 
-            if (hasServerMaxWindowBits || options.ServerMaxWindowBits != 15)
+            if (hasServerMaxWindowBits || parsedOptions.ServerMaxWindowBits != 15)
             {
                 builder.Append("; ")
                     .Append(WebSocketDeflateConstants.ServerMaxWindowBits).Append('=')
-                    .Append(options.ServerMaxWindowBits.ToString(CultureInfo.InvariantCulture));
-            }
-
-            // https://tools.ietf.org/html/rfc7692#section-7.1.2.2
-            // If a received extension negotiation offer doesn't have the
-            // "client_max_window_bits" extension parameter, the corresponding
-            // extension negotiation response to the offer MUST NOT include the
-            // "client_max_window_bits" extension parameter.
-            //
-            // Absence of this extension parameter in an extension negotiation
-            // response indicates that the server can receive messages compressed
-            // using an LZ77 sliding window of up to 32,768 bytes.
-            if (!hasClientMaxWindowBits)
-            {
-                options.ClientMaxWindowBits = 15;
+                    .Append(parsedOptions.ServerMaxWindowBits.ToString(CultureInfo.InvariantCulture));
             }
 
             response = builder.ToString();

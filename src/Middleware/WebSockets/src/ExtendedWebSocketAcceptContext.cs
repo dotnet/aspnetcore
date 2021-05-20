@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.WebSockets
         /// <summary>
         ///
         /// </summary>
-        public bool ServerContextTakeover { get; set; } = true;
+        public bool DisableServerContextTakeover { get; set; } = false;
 
         /// <summary>
         ///

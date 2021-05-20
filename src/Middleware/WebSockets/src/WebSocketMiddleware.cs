@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.WebSockets
                         keepAliveInterval = advancedAcceptContext.KeepAliveInterval.Value;
                     }
                     enableCompression = advancedAcceptContext.DangerousEnableCompression;
-                    serverContextTakeover = advancedAcceptContext.ServerContextTakeover;
+                    serverContextTakeover = !advancedAcceptContext.DisableServerContextTakeover;
                     serverMaxWindowBits = advancedAcceptContext.ServerMaxWindowBits;
                 }
 
@@ -168,18 +168,14 @@ namespace Microsoft.AspNetCore.WebSockets
                     var ext = _context.Request.Headers.SecWebSocketExtensions;
                     if (ext.Count != 0)
                     {
-                        // loop over each extension offer, extensions can have multiple offers we can accept any
+                        // loop over each extension offer, extensions can have multiple offers, we can accept any
                         foreach (var extension in _context.Request.Headers.GetCommaSeparatedValues(HeaderNames.SecWebSocketExtensions))
                         {
-                            if (extension.TrimStart().StartsWith("permessage-deflate", StringComparison.Ordinal))
+                            if (extension.AsSpan().TrimStart().StartsWith("permessage-deflate", StringComparison.Ordinal))
                             {
-                                deflateOptions = new WebSocketDeflateOptions()
+                                if (HandshakeHelpers.ParseDeflateOptions(extension.AsSpan().TrimStart(), serverContextTakeover, serverMaxWindowBits, out var parsedOptions, out var response))
                                 {
-                                    ServerContextTakeover = serverContextTakeover,
-                                    ServerMaxWindowBits = serverMaxWindowBits
-                                };
-                                if (HandshakeHelpers.ParseDeflateOptions(extension, deflateOptions, out var response))
-                                {
+                                    deflateOptions = parsedOptions;
                                     // If more extension types are added, this would need to be a header append
                                     // and we wouldn't want to break out of the loop
                                     _context.Response.Headers.SecWebSocketExtensions = response;
@@ -199,22 +195,6 @@ namespace Microsoft.AspNetCore.WebSockets
                     SubProtocol = subProtocol,
                     DangerousDeflateOptions = deflateOptions
                 });
-            }
-
-            private static WebSocketDeflateOptions? CloneWebSocketDeflateOptions([NotNullIfNotNull("options")] WebSocketDeflateOptions? options)
-            {
-                if (options is null)
-                {
-                    return null;
-                }
-
-                return new WebSocketDeflateOptions()
-                {
-                    ClientContextTakeover = options.ClientContextTakeover,
-                    ClientMaxWindowBits = options.ClientMaxWindowBits,
-                    ServerContextTakeover = options.ServerContextTakeover,
-                    ServerMaxWindowBits = options.ServerMaxWindowBits
-                };
             }
 
             public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)

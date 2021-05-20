@@ -2,8 +2,8 @@
 Microsoft.AspNetCore.Builder.WebSocketOptions.AllowedOrigins.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.DangerousEnableCompression.get -> bool
 Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.DangerousEnableCompression.set -> void
-Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.ServerContextTakeover.get -> bool
-Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.ServerContextTakeover.set -> void
+Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.DisableServerContextTakeover.get -> bool
+Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.DisableServerContextTakeover.set -> void
 Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.ServerMaxWindowBits.get -> int
 Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.ServerMaxWindowBits.set -> void
 Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!

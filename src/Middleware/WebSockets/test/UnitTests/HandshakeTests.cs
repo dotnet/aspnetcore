@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebSockets.Tests
@@ -36,6 +37,59 @@ namespace Microsoft.AspNetCore.WebSockets.Tests
         public void RejectsInvalidRequestKeys(string key)
         {
             Assert.False(HandshakeHelpers.IsRequestKeyValid(key));
+        }
+
+        [Theory]
+        [InlineData("permessage-deflate", "permessage-deflate")]
+        [InlineData("permessage-deflate; server_no_context_takeover", "permessage-deflate; server_no_context_takeover")]
+        [InlineData("permessage-deflate; client_no_context_takeover", "permessage-deflate; client_no_context_takeover")]
+        [InlineData("permessage-deflate; client_max_window_bits=9", "permessage-deflate; client_max_window_bits=9")]
+        [InlineData("permessage-deflate; client_max_window_bits=\"9\"", "permessage-deflate; client_max_window_bits=9")]
+        [InlineData("permessage-deflate; client_max_window_bits", "permessage-deflate; client_max_window_bits=15")]
+        [InlineData("permessage-deflate; server_max_window_bits", "permessage-deflate; server_max_window_bits=15")]
+        [InlineData("permessage-deflate; server_max_window_bits=10", "permessage-deflate; server_max_window_bits=10")]
+        [InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover", "permessage-deflate; server_no_context_takeover; server_max_window_bits=10")]
+        [InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover; client_no_context_takeover; client_max_window_bits=12", "permessage-deflate; client_no_context_takeover; client_max_window_bits=12; server_no_context_takeover; server_max_window_bits=10")]
+        public void CompressionNegotiationProducesCorrectHeaderWithDefaultOptions(string clientHeader, string expectedResponse)
+        {
+            Assert.True(HandshakeHelpers.ParseDeflateOptions(clientHeader.AsSpan(), serverContextTakeover: true, serverMaxWindowBits: 15,
+                out var _, out var response));
+            Assert.Equal(expectedResponse, response);
+        }
+
+        [Theory]
+        [InlineData("permessage-deflate", "permessage-deflate; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_no_context_takeover", "permessage-deflate; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; client_no_context_takeover", "permessage-deflate; client_no_context_takeover; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; client_max_window_bits=9", "permessage-deflate; client_max_window_bits=9; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; client_max_window_bits", "permessage-deflate; client_max_window_bits=15; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_max_window_bits", "permessage-deflate; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_max_window_bits=14", "permessage-deflate; server_no_context_takeover; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_max_window_bits=10", "permessage-deflate; server_no_context_takeover; server_max_window_bits=10")]
+        [InlineData("permessage-deflate; server_max_window_bits=10; server_no_context_takeover", "permessage-deflate; server_no_context_takeover; server_max_window_bits=10")]
+        [InlineData("permessage-deflate; server_max_window_bits=10; client_no_context_takeover; client_max_window_bits=12", "permessage-deflate; client_no_context_takeover; client_max_window_bits=12; server_no_context_takeover; server_max_window_bits=10")]
+        public void CompressionNegotiationProducesCorrectHeaderWithCustomOptions(string clientHeader, string expectedResponse)
+        {
+            Assert.True(HandshakeHelpers.ParseDeflateOptions(clientHeader.AsSpan(), serverContextTakeover: false, serverMaxWindowBits: 14,
+                out var _, out var response));
+            Assert.Equal(expectedResponse, response);
+        }
+
+        [Theory]
+        [InlineData("permessage-deflate; server_max_window_bits=8")]
+        [InlineData("permessage-deflate; client_max_window_bits=8")]
+        [InlineData("permessage-deflate; server_max_window_bits=16")]
+        [InlineData("permessage-deflate; client_max_window_bits=16")]
+        [InlineData("permessage-deflate; client_max_window_bits=\"15")]
+        [InlineData("permessage-deflate; client_max_window_bits=14\"")]
+        [InlineData("permessage-deflate; client_max_window_bits=14; client_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_max_window_bits=14; server_max_window_bits=14")]
+        [InlineData("permessage-deflate; server_no_context_takeover; server_no_context_takeover")]
+        [InlineData("permessage-deflate; client_no_context_takeover; client_no_context_takeover")]
+        public void CompressionNegotiateNotAccepted(string clientHeader)
+        {
+            Assert.False(HandshakeHelpers.ParseDeflateOptions(clientHeader.AsSpan(), serverContextTakeover: true, serverMaxWindowBits: 15,
+                out var _, out var response));
         }
     }
 }
