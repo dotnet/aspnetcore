@@ -108,7 +108,8 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            if (!DeserializeComponentDescriptor(serializedComponentRecords, out var components))
+            var (deserializationSuccessful, components) = DeserializeComponentDescriptor(serializedComponentRecords);
+            if (!deserializationSuccessful)
             {
                 Log.InvalidInputData(_logger);
                 await NotifyClientError(Clients.Caller, $"The list of component records is not valid.");
@@ -276,9 +277,14 @@ namespace Microsoft.AspNetCore.Components.Server
             return circuitHost;
         }
 
-        public virtual bool DeserializeComponentDescriptor(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
+        // We wrap the `TryDeserializeComponentDescriptorCollection` call in a virtual method here
+        // to support mocking in tests. SignalR does not support having a public method with an out
+        // parameter defined on the hub so we return the desired values in a tuple.
+        public virtual (bool, List<ComponentDescriptor>)  DeserializeComponentDescriptor(string serializedComponentRecords)
         {
-            return _serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out descriptors);
+            List<ComponentDescriptor> descriptors = new();
+            var successfulDeserialization = _serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out descriptors);
+            return (successfulDeserialization, descriptors);
         }
 
         public virtual CircuitHandle GetCircuitHandle()

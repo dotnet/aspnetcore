@@ -189,10 +189,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 return;
             }
 
-            public override bool DeserializeComponentDescriptor(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
+            public override (bool, List<ComponentDescriptor>) DeserializeComponentDescriptor(string serializedComponentRecords)
             {
-                descriptors = default;
-                return true;
+                List<ComponentDescriptor> descriptors = default;
+                return (true, descriptors);
             }
         }
 
