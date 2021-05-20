@@ -19,7 +19,10 @@
     <Compile Include="$(SharedSourceRoot)CodeAnalysis\*.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+  <ItemGroup
+      Condition="'$(TargetFramework)' == 'netstandard2.0' OR
+      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
+      '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 

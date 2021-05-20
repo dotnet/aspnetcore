@@ -9,7 +9,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
