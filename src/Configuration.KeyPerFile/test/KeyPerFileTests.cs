@@ -358,6 +358,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
                 {
                     o.FileProvider = testFileProvider;
                     o.ReloadOnChange = true;
+                    o.Optional = true;
                 }).Build();
 
             var changeToken = config.GetReloadToken();
