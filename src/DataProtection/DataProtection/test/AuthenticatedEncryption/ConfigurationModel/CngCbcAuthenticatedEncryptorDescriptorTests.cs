@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            var expectedXml = @"
+            var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='enc-alg' keyLength='2048' provider='enc-alg-prov' />
                   <hash algorithm='hash-alg' provider='hash-alg-prov' />
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            var expectedXml = @"
+            var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='enc-alg' keyLength='2048' />
                   <hash algorithm='hash-alg' />

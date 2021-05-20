@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 masterKey.ToSecret());
             var control = CreateEncryptorInstanceFromDescriptor(descriptor);
 
-            var xml = @"
+            var xml = $@"
                 <descriptor version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   <encryption algorithm='AES' keyLength='192' />
                   <masterKey enc:requiresEncryption='true'>{masterKey}</masterKey>

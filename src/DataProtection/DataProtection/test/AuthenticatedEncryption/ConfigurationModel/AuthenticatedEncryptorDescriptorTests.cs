@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(AuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            var expectedXml = @"
+            var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='AES_192_CBC' />
                   <validation algorithm='HMACSHA512' />
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(AuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            var expectedXml = @"
+            var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='AES_192_GCM' />
                   <!-- some comment here -->
