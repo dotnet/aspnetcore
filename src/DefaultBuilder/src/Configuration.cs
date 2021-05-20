@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Builder
             var providers = new List<IConfigurationProvider>();
             foreach (var source in _sources)
             {
-                IConfigurationProvider provider = source.Build(this);
+                var provider = source.Build(this);
                 providers.Add(provider);
             }
             return new ConfigurationRoot(providers);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private void RaiseChanged()
         {
-            ConfigurationReloadToken previousToken = Interlocked.Exchange(ref _changeToken, new ConfigurationReloadToken());
+            var previousToken = Interlocked.Exchange(ref _changeToken, new ConfigurationReloadToken());
             previousToken.OnReload();
         }
 

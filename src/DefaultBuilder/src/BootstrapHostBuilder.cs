@@ -17,6 +17,9 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly Configuration _configuration;
         private readonly WebHostEnvironment _environment;
 
+        private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new List<Action<IConfigurationBuilder>>();
+        private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
+
         public BootstrapHostBuilder(Configuration configuration, WebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
@@ -38,8 +41,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
-            configureDelegate(_context, _configuration);
-            _environment.ApplyConfigurationSettings(_configuration);
+            _configureAppActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
             return this;
         }
 
@@ -52,8 +54,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
-            configureDelegate(_configuration);
-            _environment.ApplyConfigurationSettings(_configuration);
+            _configureHostActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
             return this;
         }
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
         {
-            // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that chould change in the future.
+            // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
             // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
             return this;
         }
@@ -76,6 +77,23 @@ namespace Microsoft.AspNetCore.Hosting
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider
             // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
             return this;
+        }
+
+        internal void ExecuteActions()
+        {
+            foreach (var configureHostAction in _configureHostActions)
+            {
+                configureHostAction(_configuration);
+            }
+
+            _environment.ApplyConfigurationSettings(_configuration);
+
+            foreach (var configureAppAction in _configureAppActions)
+            {
+                configureAppAction(_context, _configuration);
+            }
+
+            _environment.ApplyConfigurationSettings(_configuration);
         }
     }
 }
