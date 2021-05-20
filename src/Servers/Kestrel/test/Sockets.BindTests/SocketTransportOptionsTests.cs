@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -60,7 +61,7 @@ namespace Sockets.BindTests
             {
                 yield return new object[]
                 {
-                    new UnixDomainSocketEndPoint($"/tmp/test.sock")
+                    new UnixDomainSocketEndPoint($"/tmp/{DateTime.UtcNow:yyyyMMddTHHmmss}.sock")
                 };
             }
 
