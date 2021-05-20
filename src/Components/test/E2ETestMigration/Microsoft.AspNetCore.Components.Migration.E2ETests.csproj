@@ -74,7 +74,7 @@
     </None>
   </ItemGroup>
 
-  <Target Name="PublishBasicTestApp" AfterTargets="Build">
+  <Target Name="PublishBasicTestApp" BeforeTargets="PublishAssets">
     <ItemGroup>
         <ProjectToPublish Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     </ItemGroup>
