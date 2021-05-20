@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BasicTestApp;
@@ -181,17 +182,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Validate that there are no initial cancellations.
             Browser.Equal("0", () => cancellationCount.Text);
 
-            // Validate that there is no initial fetch to cancel.
-            Browser.ExecuteJavaScript("const container = document.getElementById('async-container');container.scrollTop = 1000;");
-            Browser.Equal("0", () => cancellationCount.Text);
-
-            // Validate that scrolling again cancels the first fetch.
-            Browser.ExecuteJavaScript("const container = document.getElementById('async-container');container.scrollTop = 2000;");
-            Browser.Equal("1", () => cancellationCount.Text);
-
-            // Validate that scrolling again cancels the second fetch.
-            Browser.ExecuteJavaScript("const container = document.getElementById('async-container');container.scrollTop = 3000;");
-            Browser.Equal("2", () => cancellationCount.Text);
+            // Validate that scrolling causes cancellations
+            Browser.ExecuteJavaScript("document.getElementById('async-container').scrollTo({ top:5000, behavior:'smooth' })");
+            Browser.True(() => int.Parse(cancellationCount.Text, CultureInfo.InvariantCulture) > 0);
         }
 
         [Fact]
