@@ -29,23 +29,29 @@ namespace Microsoft.AspNetCore.Builder
             // from the service collection before it is built. That needs to be fixed...
             Environment = _environment = new WebHostEnvironment(callingAssembly);
 
+            Configuration.SetBasePath(_environment.ContentRootPath);
             Services.AddSingleton(Environment);
 
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
             // the correct defaults.
             var bootstrapBuilder = new BootstrapHostBuilder(Configuration, _environment);
-            bootstrapBuilder.ConfigureWebHostDefaults(configure: _ => { });
             bootstrapBuilder.ConfigureDefaults(args);
+            bootstrapBuilder.ConfigureWebHostDefaults(configure: _ => { });
+            bootstrapBuilder.ExecuteActions();
 
-            Configuration.SetBasePath(_environment.ContentRootPath);
             Logging = new LoggingBuilder(Services);
             WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
             Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services);
 
+            // Register Configuration as IConfiguration so updates can be observed even after the WebApplication is built.
             Services.AddSingleton<IConfiguration>(Configuration);
 
+            // Add default services
             _deferredHostBuilder.ConfigureDefaults(args);
+            // Configuration changes made by ConfigureDefaults(args) were already picked up by the BootstrapHostBuilder,
+            // so we ignore changes to config until ConfigureDefaults completes.
+            _deferredHostBuilder.ConfigurationEnabled = true;
         }
 
         /// <summary>
@@ -158,17 +164,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
         {
-            genericWebHostBuilder.Configure(ConfigureApplication);
-
-            _hostBuilder.ConfigureServices((context, services) =>
-            {
-                foreach (var s in Services)
-                {
-                    services.Add(s);
-                }
-            });
-
-            _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
+            _hostBuilder.ConfigureHostConfiguration(builder =>
             {
                 // All the sources in builder.Sources should be in Configuration.Sources
                 // already thanks to the BootstrapHostBuilder.
@@ -179,6 +175,16 @@ namespace Microsoft.AspNetCore.Builder
                     builder.Sources.Add(s);
                 }
             });
+
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                foreach (var s in Services)
+                {
+                    services.Add(s);
+                }
+            });
+
+            genericWebHostBuilder.Configure(ConfigureApplication);
 
             _deferredHostBuilder.ExecuteActions(_hostBuilder);
             _deferredWebHostBuilder.ExecuteActions(genericWebHostBuilder);

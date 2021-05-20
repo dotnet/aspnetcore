@@ -20,20 +20,26 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
-        internal Configuration Configuration => _configuration;
-
-        private readonly IConfigurationBuilder _hostConfiguration = new ConfigurationBuilder();
-
         private readonly WebHostEnvironment _environment;
         private readonly Configuration _configuration;
         private readonly IServiceCollection _services;
+
+        private readonly HostBuilderContext _context;
 
         internal ConfigureHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
         {
             _configuration = configuration;
             _environment = environment;
             _services = services;
+
+            _context = new HostBuilderContext(Properties)
+            {
+                Configuration = _configuration,
+                HostingEnvironment = _environment
+            };
         }
+
+        internal bool ConfigurationEnabled { get; set; }
 
         IHost IHostBuilder.Build()
         {
@@ -43,7 +49,13 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
-            _operations += b => b.ConfigureAppConfiguration(configureDelegate);
+            if (ConfigurationEnabled)
+            {
+                // Run these immediately so that they are observable by the imperative code
+                configureDelegate(_context, _configuration);
+                _environment.ApplyConfigurationSettings(_configuration);
+            }
+
             return this;
         }
 
@@ -57,10 +69,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
-            // HACK: We need to evaluate the host configuration as they are changes so that we have an accurate view of the world
-            configureDelegate(_hostConfiguration);
-
-            _environment.ApplyConfigurationSettings(_hostConfiguration.Build());
+            if (ConfigurationEnabled)
+            {
+                // Run these immediately so that they are observable by the imperative code
+                configureDelegate(_configuration);
+                _environment.ApplyConfigurationSettings(_configuration);
+            }
 
             return this;
         }
@@ -69,12 +83,7 @@ namespace Microsoft.AspNetCore.Builder
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
         {
             // Run these immediately so that they are observable by the imperative code
-            configureDelegate(new HostBuilderContext(Properties)
-            {
-                Configuration = Configuration,
-                HostingEnvironment = _environment
-            },
-            _services);
+            configureDelegate(_context, _services);
 
             return this;
         }
