@@ -23,9 +23,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
         }
 
-        private IPage _page;
-        private IBrowserContext _browser;
-
         protected override Type TestComponent { get; } = typeof(BindCasesComponent);
 
         protected override async Task InitializeCoreAsync(TestContext context)
@@ -34,45 +31,32 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // On WebAssembly, page reloads are expensive so skip if possible
             //Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-
-            _browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
-            var page = await _browser.NewPageAsync();
-            var url = _serverFixture.RootUri + "subdir";
-            var response = await page.GoToAsync(url);
-
-            Assert.True(response.Ok, "Got: " + response.StatusText + "from: " + url);
-            Output.WriteLine("Loaded page");
-
-            await MountTestComponentAsync(page);
-            //Browser.Exists(By.Id("bind-cases"));
-
-            _page = page;
         }
 
         protected async Task<string> GetInputValue(string selector)
-            => await _page.EvalOnSelectorAsync<string>(selector, "e => e.value");
+            => await TestPage.EvalOnSelectorAsync<string>(selector, "e => e.value");
 
         [Fact]
         public async Task CanBindTextbox_InitiallyBlank()
         {
-            var target = await _page.QuerySelectorAsync("#textbox-initially-blank");
+            var target = await TestPage.QuerySelectorAsync("#textbox-initially-blank");
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank"));
-            Assert.Equal(string.Empty, await _page.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal(string.Empty, await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank-mirror"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             await target.TypeAsync("Changed value");
             // Doesn't update until change event
-            Assert.Equal(string.Empty, await _page.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal(string.Empty, await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank-mirror"));
             await target.PressAsync("Tab");
-            Assert.Equal("Changed value", await _page.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal("Changed value", await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal("Changed value", await GetInputValue("#textbox-initially-blank-mirror"));
 
             // Remove the value altogether
-            await _page.ClickAsync("#textbox-initially-blank-setnull");
+            await TestPage.ClickAsync("#textbox-initially-blank-setnull");
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank"));
-            Assert.Equal(string.Empty, await _page.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal(string.Empty, await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank-mirror"));
         }
 
