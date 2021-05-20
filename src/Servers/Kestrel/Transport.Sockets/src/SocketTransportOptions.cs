@@ -89,6 +89,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             switch (endpoint)
             {
                 case FileHandleEndPoint fileHandle:
+                    // We're passing "ownsHandle: true" here even though we don't necessarily
+                    // own the handle because Socket.Dispose will clean-up everything safely.
+                    // If the handle was already closed or disposed then the socket will
+                    // be torn down gracefully, and if the caller never cleans up their handle
+                    // then we'll do it for them.
+                    //
+                    // If we don't do this then we run the risk of Kestrel hanging because the
+                    // the underlying socket is never closed and the transport manager can hang
+                    // when it attempts to stop.
                     return new Socket(
                         new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true)
                     );
