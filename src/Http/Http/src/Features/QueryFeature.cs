@@ -183,44 +183,47 @@ namespace Microsoft.AspNetCore.Http.Features
                     _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
                 }
 
-                if (_accumulator.TryGetValue(key, out var values))
-                {
-                    if (values.Count == 0)
-                    {
-                        // Marker entry for this key to indicate entry already in expanding list dictionary
-                        _expandingAccumulator[key].Add(value);
-                    }
-                    else if (values.Count == 1)
-                    {
-                        _accumulator[key] = StringValues.Concat(values, value);
-                    }
-                    else
-                    {
-                        // Add zero count entry and move to data to expanding list dictionary
-                        _accumulator[key] = default;
-
-                        if (_expandingAccumulator is null)
-                        {
-                            _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(capacity: 5, StringComparer.OrdinalIgnoreCase);
-                        }
-
-                        // Already 3 (2 existing + the new one) entries so use starting allocated as 6; then use List's expansion
-                        // mechanism for more
-                        var list = new List<string>(capacity: 6);
-
-                        list.AddRange(values);
-                        list.Add(value);
-
-                        _expandingAccumulator[key] = list;
-                    }
-                }
-                else
+                if (!_accumulator.TryGetValue(key, out var values))
                 {
                     // First value for this key
                     _accumulator[key] = new StringValues(value);
                 }
+                else
+                {
+                    AppendToExpandingAccumulator(key, value, values);
+                }
 
                 ValueCount++;
+            }
+
+            private void AppendToExpandingAccumulator(string key, string value, StringValues values)
+            {
+                // When there are some values for the same key, so switch to expanding accumulator, and
+                // add a zero count marker in the accumulator to indicate that switch.
+
+                if (values.Count != 0)
+                {
+                    _accumulator[key] = default;
+
+                    if (_expandingAccumulator is null)
+                    {
+                        _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(capacity: 5, StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    // Already 3 (2 existing + the new one) entries so use starting allocated as 6; then use List's expansion
+                    // mechanism for more
+                    var list = new List<string>(capacity: 6);
+
+                    list.AddRange(values);
+                    list.Add(value);
+
+                    _expandingAccumulator[key] = list;
+                }
+                else
+                {
+                    // The marker indicates we are in the expanding accumulator, so just append to the list.
+                    _expandingAccumulator[key].Add(value);
+                }
             }
 
             /// <summary>
