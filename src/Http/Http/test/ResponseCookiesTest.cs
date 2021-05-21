@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -91,12 +92,17 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             foreach (var cookie in testCookies)
             {
-                responseCookies.Delete(cookie.key, new CookieOptions() { Domain = cookie.domaine, Path = cookie.path });
+                responseCookies.Delete(cookie.Key, new CookieOptions() { Domain = cookie.Domain, Path = cookie.Path });
             }
 
             var cookieHeaderValues = headers.SetCookie.ToArray();
-            Assert.True(cookieHeaderValues.Length == testCookies.Length);
-            Assert.All(cookieHeaderValues, cookie => Assert.Contains("path=/", cookie));
+            Assert.Equal(testCookies.Length, cookieHeaderValues.Length);
+
+            var deletedCookies = cookieHeaderValues.ToArray();
+            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/"));
+            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/test/"));
+            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/") && cookie.Contains("domain=localhost"));
+            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/test/") && cookie.Contains("domain=localhost"));
             Assert.All(cookieHeaderValues, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
         }
 
