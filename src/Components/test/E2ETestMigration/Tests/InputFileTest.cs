@@ -108,7 +108,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadSingleSmallFile(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
 
             // Create a temporary text file
             var file = TempFile.Create(_tempDirectory, "txt", "This file was uploaded to the browser and read from .NET.");
@@ -121,7 +124,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadSingleLargeFile(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
 
             // Create a large text file
             var fileContentSizeInBytes = 1024 * 1024;
@@ -143,7 +149,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadMultipleFiles(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
 
             // Create multiple small text files
             var files = Enumerable.Range(1, 3)
@@ -159,7 +168,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadAndConvertImageFile(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
 
             var sourceImageId = "image-source";
 
@@ -186,8 +198,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var uploadedImage = await TestPage.WaitForSelectorAsync("#image-uploaded");
             Assert.NotNull(uploadedImage);
             var box = await uploadedImage.GetBoundingBoxAsync();
-            Assert.Equal(480, box.Height);
-            Assert.Equal(480, box.Width);
+            Assert.Equal(480, Math.Round(box.Height));
+            Assert.Equal(480, Math.Round(box.Width));
         }
 
         protected async Task ClearAndType(string selector, string value)
@@ -203,7 +215,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task ThrowsWhenTooManyFilesAreSelected(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
 
             await ClearAndType("#max-allowed-files", "1\n");
 
@@ -225,7 +240,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task ThrowsWhenOversizedFileIsSelected(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
 
             await ClearAndType("#max-file-size", "10\n");
 

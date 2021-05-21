@@ -34,7 +34,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task DownloadFileFromAnchor(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
 
             // Arrange
             var initialUrl = TestPage.Url;
