@@ -52,8 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 @class.ClassName = className;
             }
-
-
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
             @class.Modifiers.Clear();
             if (_useConsolidatedMvcViews)
