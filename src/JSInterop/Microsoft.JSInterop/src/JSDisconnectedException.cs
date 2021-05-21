@@ -8,7 +8,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Represents errors that occur during an interop call from .NET to JavaScript.
     /// </summary>
-    public class JSDisconnectedException : Exception
+    public sealed class JSDisconnectedException : Exception
     {
         /// <summary>
         /// Constructs an instance of <see cref="JSDisconnectedException"/>.
