@@ -30,6 +30,9 @@ namespace Microsoft.AspNetCore.Builder
         {
             _sources = new ConfigurationSources(this);
 
+            // Make sure there's some default storage since there are no default providers.
+            this.AddInMemoryCollection();
+
             // _configurationRoot is set by Update()
             _configurationRoot = default!;
             Update();
@@ -39,7 +42,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Automatically update the <see cref="IConfiguration"/> on <see cref="IConfigurationBuilder"/> changes.
         /// If <see langword="false"/>, <see cref="Update()"/> will manually update the <see cref="IConfiguration"/>.
         /// </summary>
-        public bool AutoUpdateEnabled { get; set; }
+        public bool AutoUpdate { get; set; } = true;
 
         /// <inheritdoc />
         public string this[string key] { get => _configurationRoot[key]; set => _configurationRoot[key] = value; }
@@ -58,7 +61,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Manually update the <see cref="IConfiguration"/> to reflect <see cref="IConfigurationBuilder"/> changes.
-        /// It is not necessary to call this if <see cref="AutoUpdateEnabled"/> is <see langword="true"/>.
+        /// It is not necessary to call this if <see cref="AutoUpdate"/> is <see langword="true"/>.
         /// </summary>
         public void Update()
         {
@@ -95,7 +98,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private void NotifySourcesChanged()
         {
-            if (AutoUpdateEnabled)
+            if (AutoUpdate)
             {
                 Update();
             }
