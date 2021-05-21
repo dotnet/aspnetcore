@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
         protected string MountUri { get; set; }
         protected IPage TestPage { get; set; }
         protected IBrowserContext TestBrowser { get; set; }
+        protected BrowserKind BrowserKind { get; set; }
 
         protected async Task MountTestComponentAsync(IPage page)
         {
@@ -40,7 +41,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
         {
             await base.InitializeCoreAsync(context);
 
-            TestBrowser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
+            // Default to Chrome
+            var browserKind = BrowserKind.Chromium;
+
+            // Check if a different browser is requested
+            var browserKindArgument = context.MethodArguments.FirstOrDefault();
+            if (browserKindArgument != null &&
+                browserKindArgument.GetType() == typeof(BrowserKind))
+            {
+                browserKind = (BrowserKind)browserKindArgument;
+            }
+
+            if (!BrowserManager.IsAvailable(browserKind))
+            {
+                throw new InvalidOperationException($"BrowserKind: {browserKind} not available.");
+            }
+            TestBrowser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
             TestPage = await TestBrowser.NewPageAsync();
             var response = await TestPage.GoToAsync(MountUri);
 

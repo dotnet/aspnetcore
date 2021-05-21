@@ -28,9 +28,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected override Type TestComponent { get; } = typeof(TestRouter);
 
-        [Fact]
-        public async Task DownloadFileFromAnchor()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        // NOTE: BrowserKind argument must be first
+        public async Task DownloadFileFromAnchor(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
+
             // Arrange
             var initialUrl = TestPage.Url;
             var downloadTask = TestPage.WaitForEventAsync(PageEvent.Download);
