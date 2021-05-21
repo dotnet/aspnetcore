@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             var features = MakeFeatures(headers);
             var responseCookies = new ResponseCookies(features);
 
-            var testCookies = new (string key, string path, string domaine)[]
+            var testCookies = new (string Key, string Path, string Domain)[]
             {
                 new ("key1", "/", null),
                 new ("key1", "/test/", null),
