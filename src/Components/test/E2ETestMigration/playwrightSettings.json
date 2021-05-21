@@ -6,7 +6,7 @@
     "ChromiumSandbox": true,
     "DumpIO": true,
     "IgnoreHTTPSErrors": true,
-    "Headless": true,
+    "Headless": false,
     "Timeout": 30000
   },
   "GlobalContextOptions": {

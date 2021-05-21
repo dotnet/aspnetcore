@@ -39,10 +39,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Theory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
+        [InlineData(BrowserKind.Webkit)]
         // NOTE: BrowserKind argument must be first
         public async Task CanBindTextbox_InitiallyBlank(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
+
             var target = await TestPage.QuerySelectorAsync("#textbox-initially-blank");
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank"));
             Assert.Equal(string.Empty, await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));

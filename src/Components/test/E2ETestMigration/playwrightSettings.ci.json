@@ -6,7 +6,7 @@
   },
   "BrowserOptions": {
     "Firefox": {
-      "IsEnabled": false
+      "IsEnabled": true
     },
     "Webkit": {
       "IsEnabled": false

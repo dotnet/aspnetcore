@@ -41,9 +41,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Theory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
+        [InlineData(BrowserKind.Webkit)]
+        // NOTE: BrowserKind argument must be first
         public async Task CanSendAndReceiveBytes(BrowserKind browserKind)
         {
-            BrowserKind = browserKind;
+            if (ShouldSkip(browserKind)) 
+            {
+                return;
+            }
+
             var targetUri = new Uri(_apiServerFixture.RootUri, "/subdir/api/data");
             await TestPage.TypeAsync("#request-uri", targetUri.AbsoluteUri);
             await TestPage.ClickAsync("#send-request");

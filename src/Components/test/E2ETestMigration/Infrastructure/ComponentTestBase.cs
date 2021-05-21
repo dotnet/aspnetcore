@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             Assert.Equal(componentTypeName, selected.First());
         }
 
+        public bool ShouldSkip(BrowserKind browserKind) => !BrowserManager.IsAvailable(browserKind);
+
         protected override async Task InitializeCoreAsync(TestContext context)
         {
             await base.InitializeCoreAsync(context);
@@ -52,10 +54,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                 browserKind = (BrowserKind)browserKindArgument;
             }
 
-            if (!BrowserManager.IsAvailable(browserKind))
+            if (ShouldSkip(browserKind))
             {
-                throw new InvalidOperationException($"BrowserKind: {browserKind} not available.");
+                return;
             }
+
             TestBrowser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
             TestPage = await TestBrowser.NewPageAsync();
             var response = await TestPage.GoToAsync(MountUri);
@@ -68,7 +71,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
         public override async Task DisposeAsync()
         {
-            await TestPage.CloseAsync();
+            if (TestPage != null)
+            {
+                await TestPage.CloseAsync();
+            }
             await base.DisposeAsync();
         }
     }
