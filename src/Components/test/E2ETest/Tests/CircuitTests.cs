@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Clicking the button again will trigger a server disconnect
             targetButton.Click();
 
-            AssertLogContains(LogLevel.Info, "Connection disconnected.");
+            AssertLogContains("Connection disconnected.");
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             // Clicking it again causes the circuit to disconnect
             targetButton.Click();
-            AssertLogContains(LogLevel.Info, "Connection disconnected.");
+            AssertLogContains("Connection disconnected.");
         }
 
         [Fact]
@@ -85,23 +85,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             targetButton.Click();
 
-            var expectedError = "There was an unhandled exception on the current circuit, so this circuit will be terminated. " +
-                "For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. " +
-                "Location change failed.";
+            var expectedError = "Location change failed";
 
-            AssertLogContains(LogLevel.Severe, expectedError);
+            AssertLogContains(expectedError);
         }
 
-        void AssertLogContains(LogLevel level, params string[] messages)
+        void AssertLogContains(params string[] messages)
         {
             var log = Browser.Manage().Logs.GetLog(LogType.Browser);
             foreach (var message in messages)
             {
-                Assert.Contains(log, entry =>
-                {
-                    return entry.Level == level
-                    && entry.Message.Contains(message);
-                });
+                Assert.Contains(log, entry => entry.Message.Contains(message));
             }
         }
     }
