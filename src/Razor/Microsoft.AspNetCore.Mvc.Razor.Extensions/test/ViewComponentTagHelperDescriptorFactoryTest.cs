@@ -146,6 +146,41 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         [Fact]
+        public void CreateDescriptor_UnderstandsOptionalParameters()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create(_assembly);
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(OptionalParameterViewComponent).FullName);
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var expectedDescriptor = TagHelperDescriptorBuilder.Create(
+                ViewComponentTagHelperConventions.Kind,
+                "__Generated__OptionalParameterViewComponentTagHelper",
+                typeof(OptionalParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
+                .TypeName("__Generated__OptionalParameterViewComponentTagHelper")
+                .DisplayName("OptionalParameterViewComponentTagHelper")
+                .TagMatchingRuleDescriptor(rule =>
+                    rule
+                    .RequireTagName("vc:optional-parameter")
+                    .RequireAttributeDescriptor(attribute => attribute.Name("show-menu").HasDefaultValue()))
+                .BoundAttributeDescriptor(attribute =>
+                    attribute
+                    .Name("show-menu")
+                    .PropertyName("showMenu")
+                    .TypeName(typeof(bool).FullName)
+                    .DisplayName("bool OptionalParameterViewComponentTagHelper.showMenu")
+                    .DefaultValue("False"))
+                .AddMetadata(ViewComponentTagHelperMetadata.Name, "OptionalParameter")
+                .Build();
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
         public void CreateDescriptor_ForSyncViewComponentWithInvokeInBaseType_Works()
         {
             // Arrange
@@ -402,6 +437,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     public class StringParameterViewComponent
     {
         public string Invoke(string foo, string bar) => null;
+    }
+
+    public class OptionalParameterViewComponent
+    {
+        public string Invoke(bool showMenu = false) => null;
     }
 
     public class VariousParameterViewComponent

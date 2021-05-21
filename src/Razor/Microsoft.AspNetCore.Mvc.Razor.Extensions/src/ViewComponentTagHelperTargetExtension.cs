@@ -117,7 +117,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 writer.WriteAutoPropertyDeclaration(
                     PublicModifiers,
                     attribute.TypeName,
-                    attribute.GetPropertyName());
+                    attribute.GetPropertyName(),
+                    attribute.DefaultValue);
 
                 if (attribute.IndexerTypeName != null)
                 {

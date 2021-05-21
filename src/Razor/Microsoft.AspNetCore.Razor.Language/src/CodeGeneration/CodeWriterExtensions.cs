@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteEndMethodInvocation(endLine);
         }
 
-        public static CodeWriter WriteAutoPropertyDeclaration(this CodeWriter writer, IList<string> modifiers, string typeName, string propertyName)
+        public static CodeWriter WriteAutoPropertyDeclaration(this CodeWriter writer, IList<string> modifiers, string typeName, string propertyName, string defaultValue = null)
         {
             if (modifiers == null)
             {
@@ -330,9 +330,34 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.Write(" ");
             writer.Write(propertyName);
             writer.Write(" { get; set; }");
+            writer.WritePropertyValue(typeName, defaultValue);
             writer.WriteLine();
 
             return writer;
+        }
+
+        private static void WritePropertyValue(this CodeWriter writer, string typeName, string propertyValue)
+        {
+            if (propertyValue != null)
+            {
+                writer.Write(" = ");
+                switch (typeName)
+                {
+                    case "System.String":
+                        writer.WriteStringLiteral(propertyValue);
+                        break;
+                    case "System.Char":
+                        writer.Write(string.Join(string.Empty, "'", propertyValue, "'"));
+                        break;
+                    case "System.Boolean":
+                        writer.Write(propertyValue.ToLowerInvariant());
+                        break;
+                    default:
+                        writer.Write(propertyValue);
+                        break;
+                }
+                writer.Write(";");
+            }
         }
 
         public static CSharpCodeWritingScope BuildScope(this CodeWriter writer)

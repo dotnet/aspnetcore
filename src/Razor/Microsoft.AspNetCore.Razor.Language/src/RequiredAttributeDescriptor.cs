@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IReadOnlyDictionary<string, string> Metadata { get; protected set; }
 
+        public bool HasDefaultValue { get; set; }
+
         public bool HasErrors
         {
             get

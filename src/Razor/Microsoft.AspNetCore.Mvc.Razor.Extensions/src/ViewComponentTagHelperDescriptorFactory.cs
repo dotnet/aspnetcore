@@ -180,6 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     {
                         var lowerKebabName = HtmlConventions.ToHtmlCase(parameter.Name);
                         attributeBuilder.Name = lowerKebabName;
+                        attributeBuilder.HasDefaultValue = parameter.HasExplicitDefaultValue;
                     });
                 }
             }
@@ -203,6 +204,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     attributeBuilder.TypeName = typeName;
                     attributeBuilder.DisplayName = $"{simpleName} {containingDisplayName}.{parameter.Name}";
                     attributeBuilder.SetPropertyName(parameter.Name);
+
+                    if (parameter.HasExplicitDefaultValue)
+                    {
+                        // Respect `null` being pass as the default value for a parameter, but only if the
+                        // parameter is decorated with a nullable annotation.
+                        if (parameter.ExplicitDefaultValue is null && parameter.NullableAnnotation is NullableAnnotation.Annotated)
+                        {
+                            attributeBuilder.DefaultValue = "null";
+                        }
+                        else if (parameter.ExplicitDefaultValue is not null)
+                        {
+                            attributeBuilder.DefaultValue = parameter.ExplicitDefaultValue.ToString();
+                        }   
+                    }
 
                     if (parameter.Type.TypeKind == TypeKind.Enum)
                     {

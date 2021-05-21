@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override RequiredAttributeDescriptor.ValueComparisonMode ValueComparisonMode { get; set; }
 
+        public override bool HasDefaultValue { get; set; }
+
         public override RazorDiagnosticCollection Diagnostics
         {
             get
@@ -61,7 +63,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 ValueComparisonMode,
                 displayName,
                 diagnostics.ToArray(),
-                new Dictionary<string, string>(Metadata));
+                new Dictionary<string, string>(Metadata),
+                HasDefaultValue);
 
             return rule;
         }

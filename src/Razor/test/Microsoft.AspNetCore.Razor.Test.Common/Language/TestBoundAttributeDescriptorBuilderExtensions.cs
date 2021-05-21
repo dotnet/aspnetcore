@@ -31,6 +31,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        public static BoundAttributeDescriptorBuilder DefaultValue(this BoundAttributeDescriptorBuilder builder, string defaultValue)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.DefaultValue = defaultValue;
+
+            return builder;
+        }
+
         public static BoundAttributeDescriptorBuilder PropertyName(this BoundAttributeDescriptorBuilder builder, string propertyName)
         {
             if (builder == null)

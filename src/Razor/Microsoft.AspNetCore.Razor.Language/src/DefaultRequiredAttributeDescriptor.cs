@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             ValueComparisonMode valueComparison,
             string displayName,
             RazorDiagnostic[] diagnostics,
-            Dictionary<string, string> metadata)
+            Dictionary<string, string> metadata,
+            bool hasDefaultValue)
         {
             Name = name;
             NameComparison = nameComparison;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             DisplayName = displayName;
             Diagnostics = diagnostics;
             Metadata = metadata;
+            HasDefaultValue = hasDefaultValue;
         }
     }
 }

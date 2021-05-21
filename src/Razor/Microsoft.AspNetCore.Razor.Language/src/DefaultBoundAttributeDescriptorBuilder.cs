@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool IsDictionary { get; set; }
 
+        public override string DefaultValue { get; set; }
+
         public override string IndexerAttributeNamePrefix { get; set; }
 
         public override string IndexerValueTypeName { get; set; }
@@ -118,6 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 TypeName,
                 IsEnum,
                 IsDictionary,
+                DefaultValue,
                 IndexerAttributeNamePrefix,
                 IndexerValueTypeName,
                 Documentation,

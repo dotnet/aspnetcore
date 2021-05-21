@@ -19,3 +19,11 @@ abstract Microsoft.AspNetCore.Razor.Language.RazorConfiguration.UseConsolidatedM
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveDescriptorBuilderExtensions.AddOptionalGenericTypeConstraintToken(this Microsoft.AspNetCore.Razor.Language.IDirectiveDescriptorBuilder builder, string name, string description) -> Microsoft.AspNetCore.Razor.Language.IDirectiveDescriptorBuilder
 ~static Microsoft.AspNetCore.Razor.Language.RazorConfiguration.Create(Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion languageVersion, string configurationName, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorExtension> extensions, bool useConsolidatedMvcViews = false) -> Microsoft.AspNetCore.Razor.Language.RazorConfiguration
 ~static readonly Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion.Version_6_0 -> Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion
+~Microsoft.AspNetCore.Razor.Language.BoundAttributeDescriptor.DefaultValue.get -> string
+~Microsoft.AspNetCore.Razor.Language.BoundAttributeDescriptor.DefaultValue.set -> void
+~abstract Microsoft.AspNetCore.Razor.Language.BoundAttributeDescriptorBuilder.DefaultValue.get -> string
+~abstract Microsoft.AspNetCore.Razor.Language.BoundAttributeDescriptorBuilder.DefaultValue.set -> void
+Microsoft.AspNetCore.Razor.Language.RequiredAttributeDescriptor.HasDefaultValue.get -> bool
+Microsoft.AspNetCore.Razor.Language.RequiredAttributeDescriptor.HasDefaultValue.set -> void
+abstract Microsoft.AspNetCore.Razor.Language.RequiredAttributeDescriptorBuilder.HasDefaultValue.get -> bool
+abstract Microsoft.AspNetCore.Razor.Language.RequiredAttributeDescriptorBuilder.HasDefaultValue.set -> void
