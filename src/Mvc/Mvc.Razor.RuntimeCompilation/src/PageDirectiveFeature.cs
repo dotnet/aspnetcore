@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             builder.Features.Add(new PageDirectiveParserOptionsFeature());
         });
 
-        public static bool TryGetPageDirective(ILogger logger, RazorProjectItem projectItem, out string template)
+        public static bool TryGetPageDirective(ILogger logger, RazorProjectItem projectItem, [NotNullWhen(true)] out string? template)
         {
             if (projectItem == null)
             {
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             return false;
         }
 
-        private class PageDirectiveParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
+        private sealed class PageDirectiveParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
         {
             public int Order { get; }
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             }
         }
 
-        private class EmptyRazorProjectFileSystem : RazorProjectFileSystem
+        private sealed class EmptyRazorProjectFileSystem : RazorProjectFileSystem
         {
             public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
             {
@@ -77,20 +78,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 return Enumerable.Empty<RazorProjectItem>();
             }
 
-            [Obsolete("Use GetItem(string path, string fileKind) instead.")]
+
             public override RazorProjectItem GetItem(string path)
             {
                 return GetItem(path, fileKind: null);
             }
 
-            public override RazorProjectItem GetItem(string path, string fileKind)
+            public override RazorProjectItem GetItem(string path, string? fileKind)
             {
                 return new NotFoundProjectItem(string.Empty, path, fileKind);
             }
 
-            private class NotFoundProjectItem : RazorProjectItem
+            private sealed class NotFoundProjectItem : RazorProjectItem
             {
-                public NotFoundProjectItem(string basePath, string path, string fileKind)
+                public NotFoundProjectItem(string basePath, string path, string? fileKind)
                 {
                     BasePath = basePath;
                     FilePath = path;

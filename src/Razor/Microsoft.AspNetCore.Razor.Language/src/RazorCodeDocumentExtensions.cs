@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     var directiveContent = node.Body?.GetContent();
 
                     // In practice, this should never be null and always start with 'namespace'. Just being defensive here.
-                    if (directiveContent != null && directiveContent.StartsWith(NamespaceDirective.Directive.Directive))
+                    if (directiveContent != null && directiveContent.StartsWith(NamespaceDirective.Directive.Directive, StringComparison.Ordinal))
                     {
                         LastNamespaceContent = directiveContent.Substring(NamespaceDirective.Directive.Directive.Length).Trim();
                         LastNamespaceLocation = node.GetSourceSpan(_source);

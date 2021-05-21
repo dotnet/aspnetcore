@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -34,7 +35,7 @@ namespace SampleApp
 
                 try
                 {
-                    await next.Invoke();
+                    await next.Invoke(context);
                 }
                 catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
             });
@@ -115,9 +116,10 @@ namespace SampleApp
                                 listenOptions.UseHttps((stream, clientHelloInfo, state, cancellationToken) =>
                                 {
                                     // Here you would check the name, select an appropriate cert, and provide a fallback or fail for null names.
-                                    if (clientHelloInfo.ServerName != null && clientHelloInfo.ServerName != "localhost")
+                                    var serverName = clientHelloInfo.ServerName;
+                                    if (serverName != null && serverName != "localhost")
                                     {
-                                        throw new AuthenticationException($"The endpoint is not configured for sever name '{clientHelloInfo.ServerName}'.");
+                                        throw new AuthenticationException($"The endpoint is not configured for server name '{clientHelloInfo.ServerName}'.");
                                     }
 
                                     return new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions
@@ -153,7 +155,7 @@ namespace SampleApp
                         .UseContentRoot(Directory.GetCurrentDirectory())
                         .UseStartup<Startup>();
 
-                    if (string.Equals(Process.GetCurrentProcess().Id.ToString(), Environment.GetEnvironmentVariable("LISTEN_PID")))
+                    if (string.Equals(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture), Environment.GetEnvironmentVariable("LISTEN_PID")))
                     {
                         // Use libuv if activated by systemd, since that's currently the only transport that supports being passed a socket handle.
 #pragma warning disable CS0618

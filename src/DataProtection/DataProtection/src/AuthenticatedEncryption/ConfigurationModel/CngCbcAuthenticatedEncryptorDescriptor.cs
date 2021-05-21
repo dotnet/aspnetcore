@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     [SupportedOSPlatform("windows")]
     public sealed class CngCbcAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="CngCbcAuthenticatedEncryptorDescriptor"/>.
+        /// </summary>
+        /// <param name="configuration">The <see cref="CngCbcAuthenticatedEncryptorConfiguration"/>.</param>
+        /// <param name="masterKey">The master key.</param>
         public CngCbcAuthenticatedEncryptorDescriptor(CngCbcAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
         {
             if (configuration == null)
@@ -34,6 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         internal CngCbcAuthenticatedEncryptorConfiguration Configuration { get; }
 
+        /// <inheritdoc />
         public XmlSerializedDescriptorInfo ExportToXml()
         {
             // <descriptor>

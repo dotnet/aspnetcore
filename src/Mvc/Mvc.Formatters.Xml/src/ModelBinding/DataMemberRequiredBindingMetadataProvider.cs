@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             // isDataContract == true iff the container type has at least one DataContractAttribute
-            var containerType = context.Key.ContainerType.GetTypeInfo();
+            var containerType = context.Key.ContainerType;
             var isDataContract = containerType.IsDefined(typeof(DataContractAttribute));
             if (isDataContract)
             {

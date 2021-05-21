@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // 2. The generated IL only supports ASCII in the URL path
     internal class ILEmitTrieJumpTable : JumpTable
     {
-        private const int NotAscii = int.MinValue;
-
         private readonly int _defaultDestination;
         private readonly int _exitDestination;
         private readonly (string text, int destination)[] _entries;
@@ -54,7 +52,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             return _getDestination(path, segment);
         }
-        
+
         // Used when we haven't yet initialized the IL trie. We defer compilation of the IL for startup
         // performance.
         private int FallbackGetDestination(string path, PathSegment segment)

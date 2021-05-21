@@ -55,13 +55,14 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// This property can return null if no suitable default key storage directory can
         /// be found, such as the case when the user profile is unavailable.
         /// </remarks>
-        public static DirectoryInfo DefaultKeyStorageDirectory => DefaultKeyStorageDirectories.Instance.GetKeyStorageDirectory();
+        public static DirectoryInfo? DefaultKeyStorageDirectory => DefaultKeyStorageDirectories.Instance.GetKeyStorageDirectory();
 
         /// <summary>
         /// The directory into which key material will be written.
         /// </summary>
         public DirectoryInfo Directory { get; }
 
+        /// <inheritdoc/>
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
             // forces complete enumeration
@@ -105,6 +106,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
         }
 
+        /// <inheritdoc/>
         public virtual void StoreElement(XElement element, string friendlyName)
         {
             if (element == null)

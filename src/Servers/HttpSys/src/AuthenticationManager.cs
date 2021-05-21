@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly int AuthInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO>();
 
-        private UrlGroup _urlGroup;
+        private UrlGroup? _urlGroup;
         private AuthenticationSchemes _authSchemes;
         private bool _allowAnonymous = true;
 
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary> 
         /// Sets the display name shown to users on login pages. The default is null.
         /// </summary> 
-        public string AuthenticationDisplayName { get; set; }
+        public string? AuthenticationDisplayName { get; set; }
 
         internal void SetUrlGroupSecurity(UrlGroup urlGroup)
         {
@@ -147,8 +148,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (challenges.Count > 0)
             {
-                context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate]
-                    = StringValues.Concat(context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate], challenges.ToArray());
+                context.Response.Headers[HeaderNames.WWWAuthenticate]
+                    = StringValues.Concat(context.Response.Headers[HeaderNames.WWWAuthenticate], challenges.ToArray());
             }
         }
     }

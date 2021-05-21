@@ -6,7 +6,7 @@ package com.microsoft.signalr;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 import okhttp3.OkHttpClient;
 
 /**
@@ -69,7 +69,8 @@ public class HttpHubConnectionBuilder {
 
     /**
      * Indicates to the {@link HubConnection} that it should skip the negotiate process.
-     * Note: This option only works with the Websockets transport and the Azure SignalR Service require the negotiate step.
+     * Note: This option only works with the {@link TransportEnum#WEBSOCKETS} transport selected via {@link #withTransport(TransportEnum) withTransport},
+     * additionally the Azure SignalR Service requires the negotiate step so this will fail when using the Azure SignalR Service.
      *
      * @param skipNegotiate Boolean indicating if the {@link HubConnection} should skip the negotiate step.
      * @return This instance of the HttpHubConnectionBuilder.

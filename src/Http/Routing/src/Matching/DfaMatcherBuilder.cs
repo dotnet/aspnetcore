@@ -667,37 +667,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private int[] GetGroupLengths(DfaNode node)
-        {
-            var nodeMatches = node.Matches;
-            if (nodeMatches == null || nodeMatches.Count == 0)
-            {
-                return Array.Empty<int>();
-            }
-
-            var groups = new List<int>();
-
-            var length = 1;
-            var exemplar = nodeMatches[0];
-
-            for (var i = 1; i < nodeMatches.Count; i++)
-            {
-                if (!_comparer.Equals(exemplar, nodeMatches[i]))
-                {
-                    groups.Add(length);
-                    length = 0;
-
-                    exemplar = nodeMatches[i];
-                }
-
-                length++;
-            }
-
-            groups.Add(length);
-
-            return groups.ToArray();
-        }
-
         private static bool HasAdditionalRequiredSegments(RouteEndpoint endpoint, int depth)
         {
             for (var i = depth; i < endpoint.RoutePattern.PathSegments.Count; i++)

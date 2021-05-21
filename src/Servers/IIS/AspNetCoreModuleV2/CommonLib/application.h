@@ -129,11 +129,11 @@ protected:
     SRWLOCK m_stopLock{};
     SRWLOCK m_dataLock {};
     bool m_fStopCalled;
+    std::wstring m_applicationPhysicalPath;
 
 private:
     mutable LONG           m_cRefs;
 
-    std::wstring m_applicationPhysicalPath;
     std::wstring m_applicationVirtualPath;
     std::wstring m_applicationConfigPath;
     std::wstring m_applicationId;

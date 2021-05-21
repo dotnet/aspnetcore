@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 {
     internal class KeyManagementOptionsSetup : IConfigureOptions<KeyManagementOptions>
     {
-        private readonly IRegistryPolicyResolver _registryPolicyResolver;
+        private readonly IRegistryPolicyResolver? _registryPolicyResolver;
         private readonly ILoggerFactory _loggerFactory;
 
         public KeyManagementOptionsSetup()
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
         {
         }
 
-        public KeyManagementOptionsSetup(ILoggerFactory loggerFactory, IRegistryPolicyResolver registryPolicyResolver)
+        public KeyManagementOptionsSetup(ILoggerFactory loggerFactory, IRegistryPolicyResolver? registryPolicyResolver)
         {
             _loggerFactory = loggerFactory;
             _registryPolicyResolver = registryPolicyResolver;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 
         public void Configure(KeyManagementOptions options)
         {
-            RegistryPolicy context = null;
+            RegistryPolicy? context = null;
             if (_registryPolicyResolver != null)
             {
                 context = _registryPolicyResolver.ResolvePolicy();

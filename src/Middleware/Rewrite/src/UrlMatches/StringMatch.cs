@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches
 {
@@ -7,13 +9,13 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
     {
         private readonly string _value;
         private readonly StringOperationType _operation;
-        private readonly bool _ignoreCase;
+        private readonly StringComparison _stringComparison;
 
         public StringMatch(string value, StringOperationType operation, bool ignoreCase)
         {
             _value = value;
             _operation = operation;
-            _ignoreCase = ignoreCase;
+            _stringComparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         }
 
         public override MatchResults Evaluate(string input, RewriteContext context)
@@ -21,17 +23,17 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
             switch (_operation)
             {
                 case StringOperationType.Equal:
-                    return string.Compare(input, _value, _ignoreCase) == 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _stringComparison) == 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.Greater:
-                    return string.Compare(input, _value, _ignoreCase) > 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _stringComparison) > 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.GreaterEqual:
-                    return string.Compare(input, _value, _ignoreCase) >= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _stringComparison) >= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.Less:
-                    return string.Compare(input, _value, _ignoreCase) < 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _stringComparison) < 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.LessEqual:
-                    return string.Compare(input, _value, _ignoreCase) <= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _stringComparison) <= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 default:
-                    return null;
+                    throw new ArgumentOutOfRangeException("operation"); // Will never be thrown
             }
         }
     }

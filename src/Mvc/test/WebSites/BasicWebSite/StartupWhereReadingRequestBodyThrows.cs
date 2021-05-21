@@ -20,8 +20,7 @@ namespace BasicWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.AddControllersWithViews();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -32,7 +31,7 @@ namespace BasicWebSite
             app.Use((context, next) =>
             {
                 context.Request.Body = new ThrowingStream();
-                return next();
+                return next(context);
             });
 
             app.UseRouting();

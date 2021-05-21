@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 
@@ -43,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </remarks>
         /// <param name="contentPath">The virtual path of the content.</param>
         /// <returns>The application absolute path.</returns>
+        [return: NotNullIfNotNull("contentPath")]
         string? Content(string? contentPath);
 
         /// <summary>
@@ -68,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </code>
         /// </para>
         /// </example>
-        bool IsLocalUrl(string? url);
+        bool IsLocalUrl([NotNullWhen(true)] string? url);
 
         /// <summary>
         /// Generates a URL with an absolute path, which contains the route name, route values, protocol to use, host

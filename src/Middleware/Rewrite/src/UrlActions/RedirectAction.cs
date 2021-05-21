@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
             EscapeBackReferences = escapeBackReferences;
         }
 
-        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
         {
-            var pattern = Url.Evaluate(context, ruleBackReferences, conditionBackReferences);
+            var pattern = Url!.Evaluate(context, ruleBackReferences, conditionBackReferences);
             var response = context.HttpContext.Response;
             var pathBase = context.HttpContext.Request.PathBase;
             if (EscapeBackReferences)
@@ -41,11 +41,11 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
 
             if (string.IsNullOrEmpty(pattern))
             {
-                response.Headers[HeaderNames.Location] = pathBase.HasValue ? pathBase.Value : "/";
+                response.Headers.Location = pathBase.HasValue ? pathBase.Value : "/";
                 return;
             }
 
-            if (pattern.IndexOf("://", StringComparison.Ordinal) == -1 && pattern[0] != '/')
+            if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) == -1 && pattern[0] != '/')
             {
                 pattern = '/' + pattern;
             }
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
                         pattern.Substring(split)));
 
                 // not using the response.redirect here because status codes may be 301, 302, 307, 308
-                response.Headers[HeaderNames.Location] = pathBase + pattern.Substring(0, split) + query;
+                response.Headers.Location = pathBase + pattern.Substring(0, split) + query;
             }
             else
             {
@@ -70,11 +70,11 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
                 // by default.
                 if (QueryStringDelete)
                 {
-                    response.Headers[HeaderNames.Location] = pathBase + pattern;
+                    response.Headers.Location = pathBase + pattern;
                 }
                 else
                 {
-                    response.Headers[HeaderNames.Location] = pathBase + pattern + context.HttpContext.Request.QueryString;
+                    response.Headers.Location = pathBase + pattern + context.HttpContext.Request.QueryString;
                 }
             }
             context.Result = RuleResult.EndResponse;

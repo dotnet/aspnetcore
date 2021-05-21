@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             ParameterType = parameterType ?? throw new ArgumentNullException(nameof(parameterType));
             Attributes = new List<object>(attributes ?? throw new ArgumentNullException(nameof(attributes)));
 
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(other.Attributes);
             BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
             Name = other.Name;
-            Properties = new Dictionary<object, object>(other.Properties);
+            Properties = new Dictionary<object, object?>(other.Properties);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The properties.
         /// </summary>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         /// <summary>
         /// The type.
@@ -66,11 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The name.
         /// </summary>
-        public string Name { get; protected set;  }
+        public string Name { get; protected set; } = default!;
 
         /// <summary>
         /// The <see cref="BindingInfo"/>.
         /// </summary>
-        public BindingInfo BindingInfo { get; set; }
+        public BindingInfo? BindingInfo { get; set; }
     }
 }

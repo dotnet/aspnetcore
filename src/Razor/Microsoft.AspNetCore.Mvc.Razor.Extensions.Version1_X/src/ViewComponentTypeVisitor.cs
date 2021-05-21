@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 {
     internal class ViewComponentTypeVisitor : SymbolVisitor
     {
-        private static readonly Version SupportedVCTHMvcVersion = new Version(1, 1);
-
         private readonly INamedTypeSymbol _viewComponentAttribute;
         private readonly INamedTypeSymbol _nonViewComponentAttribute;
         private readonly List<INamedTypeSymbol> _results;
@@ -62,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 return false;
             }
 
-            return symbol.Name.EndsWith(ViewComponentTypes.ViewComponentSuffix) ||
+            return symbol.Name.EndsWith(ViewComponentTypes.ViewComponentSuffix, StringComparison.Ordinal) ||
                 AttributeIsDefined(symbol, _viewComponentAttribute);
         }
 

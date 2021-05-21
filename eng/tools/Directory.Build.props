@@ -4,5 +4,6 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 </Project>

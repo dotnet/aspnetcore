@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
         private readonly bool _hasCascadingParameters;
         private readonly bool _hasAnyCascadingParameterSubscriptions;
-        private RenderTreeBuilder _renderTreeBuilderPrevious;
+        private RenderTreeBuilder _nextRenderTree;
         private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
         private bool _componentWasDisposed;
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
             CurrentRenderTree = new RenderTreeBuilder();
-            _renderTreeBuilderPrevious = new RenderTreeBuilder();
+            _nextRenderTree = new RenderTreeBuilder();
 
             if (_cascadingParameters.Count != 0)
             {
@@ -54,8 +54,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public ComponentState ParentComponentState { get; }
         public RenderTreeBuilder CurrentRenderTree { get; private set; }
 
-        public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
+        public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
         {
+            renderFragmentException = null;
+
             // A component might be in the render queue already before getting disposed by an
             // earlier entry in the render queue. In that case, rendering is a no-op.
             if (_componentWasDisposed)
@@ -63,19 +65,32 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
+            _nextRenderTree.Clear();
+
+            try
+            {
+                renderFragment(_nextRenderTree);
+            }
+            catch (Exception ex)
+            {
+                // If an exception occurs in the render fragment delegate, we won't process the diff in any way, so child components,
+                // event handlers, etc., will all be left untouched as if this component didn't re-render at all. The Renderer will
+                // then forcibly clear the descendant subtree by rendering an empty fragment for this component.
+                renderFragmentException = ex;
+                return;
+            }
+
+            // We don't want to make errors from this be recoverable, because there's no legitimate reason for them to happen
+            _nextRenderTree.AssertTreeIsValid(Component);
+
             // Swap the old and new tree builders
-            (CurrentRenderTree, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, CurrentRenderTree);
-
-            CurrentRenderTree.Clear();
-            renderFragment(CurrentRenderTree);
-
-            CurrentRenderTree.AssertTreeIsValid(Component);
+            (CurrentRenderTree, _nextRenderTree) = (_nextRenderTree, CurrentRenderTree);
 
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,
                 batchBuilder,
                 ComponentId,
-                _renderTreeBuilderPrevious.GetFrames(),
+                _nextRenderTree.GetFrames(),
                 CurrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
             batchBuilder.InvalidateParameterViews();
@@ -164,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
-            _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters));
+            SupplyCombinedParameters(parameters);
         }
 
         public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
@@ -173,8 +188,26 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters!);
-            var task = Component.SetParametersAsync(allParams);
-            _renderer.AddToPendingTasks(task);
+            SupplyCombinedParameters(allParams);
+        }
+
+        // This should not be called from anywhere except SetDirectParameters or NotifyCascadingValueChanged.
+        // Those two methods know how to correctly combine both cascading and non-cascading parameters to supply
+        // a consistent set to the recipient.
+        private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
+        {
+            // Normalise sync and async exceptions into a Task
+            Task setParametersAsyncTask;
+            try
+            {
+                setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
+            }
+            catch (Exception ex)
+            {
+                setParametersAsyncTask = Task.FromException(ex);
+            }
+
+            _renderer.AddToPendingTasks(setParametersAsyncTask, owningComponentState: this);
         }
 
         private bool AddCascadingParameterSubscriptions()
@@ -220,7 +253,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void DisposeBuffers()
         {
-            ((IDisposable)_renderTreeBuilderPrevious).Dispose();
+            ((IDisposable)_nextRenderTree).Dispose();
             ((IDisposable)CurrentRenderTree).Dispose();
             _latestDirectParametersSnapshot?.Dispose();
         }
@@ -236,6 +269,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 var result = ((IAsyncDisposable)Component).DisposeAsync();
                 if (result.IsCompletedSuccessfully)
                 {
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    result.GetAwaiter().GetResult();
                     return Task.CompletedTask;
                 }
                 else

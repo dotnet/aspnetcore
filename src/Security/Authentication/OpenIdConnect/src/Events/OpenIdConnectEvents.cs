@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     /// <summary>
-    /// Specifies events which the <see cref="OpenIdConnectHandler" />invokes to enable developer control over the authentication process.
+    /// Specifies events which the <see cref="OpenIdConnectHandler" /> invokes to enable developer control over the authentication process.
     /// </summary>
     public class OpenIdConnectEvents : RemoteAuthenticationEvents
     {
@@ -54,7 +54,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public Func<TokenResponseReceivedContext, Task> OnTokenResponseReceived { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket.
+        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket. Note there are additional checks after this
+        /// event that validate other aspects of the authentication flow like the nonce.
         /// </summary>
         public Func<TokenValidatedContext, Task> OnTokenValidated { get; set; } = context => Task.CompletedTask;
 
@@ -106,7 +107,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public virtual Task TokenResponseReceived(TokenResponseReceivedContext context) => OnTokenResponseReceived(context);
 
         /// <summary>
-        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket.
+        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket. Note there are additional checks after this
+        /// event that validate other aspects of the authentication flow like the nonce.
         /// </summary>
         public virtual Task TokenValidated(TokenValidatedContext context) => OnTokenValidated(context);
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public readonly struct RenderHandle
     {
-        private readonly Renderer _renderer;
+        private readonly Renderer? _renderer;
         private readonly int _componentId;
 
         internal RenderHandle(Renderer renderer, int componentId)
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Gets the <see cref="Microsoft.AspNetCore.Components.Dispatcher" /> associated with the component.
+        /// Gets the <see cref="Components.Dispatcher" /> associated with the component.
         /// </summary>
         public Dispatcher Dispatcher
         {
@@ -41,8 +42,12 @@ namespace Microsoft.AspNetCore.Components
         /// Gets a value that indicates whether the <see cref="RenderHandle"/> has been
         /// initialized and is ready to use.
         /// </summary>
-        public bool IsInitialized
-            => _renderer != null;
+        public bool IsInitialized => _renderer is not null;
+
+        /// <summary>
+        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
+        /// </summary>
+        public bool IsHotReloading => HotReloadFeature.IsSupported && (_renderer?.IsHotReloading ?? false);
 
         /// <summary>
         /// Notifies the renderer that the component should be rendered.

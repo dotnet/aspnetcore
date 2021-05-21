@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Analyzers
     {
         public TestSource Read(string source)
         {
-            if (!source.EndsWith(".cs"))
+            if (!source.EndsWith(".cs", StringComparison.Ordinal))
             {
                 source = source + ".cs";
             }
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
         public Project CreateProject(string source)
         {
-            if (!source.EndsWith(".cs"))
+            if (!source.EndsWith(".cs", StringComparison.Ordinal))
             {
                 source = source + ".cs";
             }

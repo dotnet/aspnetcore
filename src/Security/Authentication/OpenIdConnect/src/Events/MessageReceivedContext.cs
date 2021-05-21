@@ -19,17 +19,17 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             HttpContext context,
             AuthenticationScheme scheme,
             OpenIdConnectOptions options,
-            AuthenticationProperties properties)
+            AuthenticationProperties? properties)
             : base(context, scheme, options, properties) { }
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
         /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        public OpenIdConnectMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// Bearer Token. This will give the application an opportunity to retrieve a token from an alternative location.
         /// </summary>
-        public string Token { get; set; }
+        public string? Token { get; set; }
     }
 }

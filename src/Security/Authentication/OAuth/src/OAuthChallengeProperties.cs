@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// Initializes a new instance of <see cref="OAuthChallengeProperties" />.
         /// </summary>
         /// <inheritdoc />
-        public OAuthChallengeProperties(IDictionary<string, string> items)
+        public OAuthChallengeProperties(IDictionary<string, string?> items)
             : base(items)
         { }
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// Initializes a new instance of <see cref="OAuthChallengeProperties" />.
         /// </summary>
         /// <inheritdoc />
-        public OAuthChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
+        public OAuthChallengeProperties(IDictionary<string, string?>? items, IDictionary<string, object?>? parameters)
             : base(items, parameters)
         { }
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// </summary>
         public ICollection<string> Scope
         {
-            get => GetParameter<ICollection<string>>(ScopeKey);
+            get => GetParameter<ICollection<string>>(ScopeKey)!;
             set => SetParameter(ScopeKey, value);
         }
 

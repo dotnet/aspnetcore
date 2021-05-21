@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
 
             action.ApplyAction(context, null, null);
 
-            var cookieHeaders = context.HttpContext.Response.Headers[HeaderNames.SetCookie];
+            var cookieHeaders = context.HttpContext.Response.Headers.SetCookie;
             var header = Assert.Single(cookieHeaders);
             Assert.Equal($"Cookie=Chocolate%20Chip; expires={HeaderUtilities.FormatDate(now.AddMinutes(1440))}; domain=contoso.com; path=/recipes; secure; httponly", header);
         }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
 
             action.ApplyAction(context, null, null);
 
-            var cookieHeaders = context.HttpContext.Response.Headers[HeaderNames.SetCookie];
+            var cookieHeaders = context.HttpContext.Response.Headers.SetCookie;
             var header = Assert.Single(cookieHeaders);
             Assert.Equal($"Cookie=Chocolate%20Chip", header);
         }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
 
             action.ApplyAction(context, null, null);
 
-            var cookieHeaders = context.HttpContext.Response.Headers[HeaderNames.SetCookie];
+            var cookieHeaders = context.HttpContext.Response.Headers.SetCookie;
             var header = Assert.Single(cookieHeaders);
             Assert.Equal($"Cookie=", header);
         }

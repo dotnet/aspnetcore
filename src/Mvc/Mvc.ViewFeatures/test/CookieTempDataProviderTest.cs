@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var base64AndUrlEncodedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToUnprotect);
 
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.Cookie] = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
+            context.Request.Headers.Cookie = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
 
             // Act
             var tempDataDictionary = tempDataProvider.LoadTempData(context);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers[HeaderNames.Cookie] = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
+            httpContext.Request.Headers.Cookie = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
 
             // Act
             var actualValues = tempDataProvider.LoadTempData(httpContext);
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var requestCookies = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedData}";
             var httpContext = new DefaultHttpContext();
             httpContext.Request.PathBase = "/";
-            httpContext.Request.Headers[HeaderNames.Cookie] = requestCookies;
+            httpContext.Request.Headers.Cookie = requestCookies;
 
             // Act
             tempDataProvider.SaveTempData(httpContext, new Dictionary<string, object>());
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     stringBuilder.Append(";");
                 }
 
-                httpContext.Request.Headers[HeaderNames.Cookie] = stringBuilder.ToString();
+                httpContext.Request.Headers.Cookie = stringBuilder.ToString();
             }
         }
 

@@ -109,29 +109,29 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the Authority to use when making OpenIdConnect calls.
         /// </summary>
-        public string Authority { get; set; }
+        public string? Authority { get; set; }
 
         /// <summary>
         /// Gets or sets the 'client_id'.
         /// </summary>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the 'client_secret'.
         /// </summary>
-        public string ClientSecret { get; set; }
+        public string? ClientSecret { get; set; }
 
         /// <summary>
         /// Configuration provided directly by the developer. If provided, then MetadataAddress and the Backchannel properties
         /// will not be used. This information should not be updated during request processing.
         /// </summary>
-        public OpenIdConnectConfiguration Configuration { get; set; }
+        public OpenIdConnectConfiguration? Configuration { get; set; }
 
         /// <summary>
         /// Responsible for retrieving, caching, and refreshing the configuration from metadata.
         /// If not provided, then one will be created using the MetadataAddress and Backchannel properties.
         /// </summary>
-        public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; }
+        public IConfigurationManager<OpenIdConnectConfiguration>? ConfigurationManager { get; set; }
 
         /// <summary>
         /// Boolean to set whether the handler should go to user info endpoint to retrieve additional claims or not after creating an identity from id_token received from token endpoint.
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the discovery endpoint for obtaining metadata
         /// </summary>
-        public string MetadataAddress { get; set; }
+        public string? MetadataAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectEvents"/> to notify when processing OpenIdConnect messages.
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the 'resource'.
         /// </summary>
-        public string Resource { get; set; }
+        public string? Resource { get; set; }
 
         /// <summary>
         /// Gets or sets the 'response_mode'.
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the 'prompt'.
         /// </summary>
-        public string Prompt { get; set; }
+        public string? Prompt { get; set; }
 
         /// <summary>
         /// Gets the list of permissions to request.
@@ -240,17 +240,17 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// The Authentication Scheme to use with SignOut on the SignOutPath. SignInScheme will be used if this
         /// is not set.
         /// </summary>
-        public string SignOutScheme { get; set; }
+        public string? SignOutScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the handler.
         /// </summary>
-        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
+        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the type used to secure strings used by the handler.
         /// </summary>
-        public ISecureDataFormat<string> StringDataFormat { get; set; }
+        public ISecureDataFormat<string> StringDataFormat { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ISecurityTokenValidator"/> used to validate identity tokens.

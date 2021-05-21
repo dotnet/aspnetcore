@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
@@ -22,20 +21,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;
-        private readonly ParameterBinder _parameterBinder;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly CompiledPageActionDescriptor _actionDescriptor;
 
-        private Dictionary<string, object> _arguments;
-        private HandlerMethodDescriptor _handler;
-        private PageBase _page;
-        private object _pageModel;
-        private ViewContext _viewContext;
+        private Dictionary<string, object?>? _arguments;
+        private HandlerMethodDescriptor? _handler;
+        private PageBase? _page;
+        private object? _pageModel;
+        private ViewContext? _viewContext;
 
-        private PageHandlerSelectedContext _handlerSelectedContext;
-        private PageHandlerExecutingContext _handlerExecutingContext;
-        private PageHandlerExecutedContext _handlerExecutedContext;
+        private PageHandlerSelectedContext? _handlerSelectedContext;
+        private PageHandlerExecutingContext? _handlerExecutingContext;
+        private PageHandlerExecutedContext? _handlerExecutedContext;
 
         public PageActionInvoker(
             IPageHandlerMethodSelector handlerMethodSelector,
@@ -46,7 +44,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             PageContext pageContext,
             IFilterMetadata[] filterMetadata,
             PageActionInvokerCacheEntry cacheEntry,
-            ParameterBinder parameterBinder,
             ITempDataDictionaryFactory tempDataFactory,
             HtmlHelperOptions htmlHelperOptions)
             : base(
@@ -61,7 +58,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _selector = handlerMethodSelector;
             _pageContext = pageContext;
             CacheEntry = cacheEntry;
-            _parameterBinder = parameterBinder;
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions;
 
@@ -83,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             var next = State.PageBegin;
             var scope = Scope.Invoker;
-            var state = (object)null;
+            var state = (object?)null;
             var isCompleted = false;
 
             while (!isCompleted)
@@ -92,17 +88,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        protected override void ReleaseResources()
+        protected override ValueTask ReleaseResources()
         {
             if (_pageModel != null && CacheEntry.ReleaseModel != null)
             {
-                CacheEntry.ReleaseModel(_pageContext, _pageModel);
+                return CacheEntry.ReleaseModel(_pageContext, _pageModel);
             }
 
             if (_page != null && CacheEntry.ReleasePage != null)
             {
-                CacheEntry.ReleasePage(_pageContext, _viewContext, _page);
+                return CacheEntry.ReleasePage(_pageContext, _viewContext!, _page);
             }
+
+            return default;
         }
 
         protected override Task InvokeResultAsync(IActionResult result)
@@ -141,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _logger.ExecutingPageModelFactory(_pageContext);
 
                 // Since this is a PageModel, we need to activate it, and then run a handler method on the model.
-                _pageModel = CacheEntry.ModelFactory(_pageContext);
+                _pageModel = CacheEntry.ModelFactory!(_pageContext);
 
                 _logger.ExecutedPageModelFactory(_pageContext);
 
@@ -176,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        private HandlerMethodDescriptor SelectHandler()
+        private HandlerMethodDescriptor? SelectHandler()
         {
             return _selector.Select(_pageContext);
         }
@@ -195,6 +193,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private async Task BindArgumentsCoreAsync()
         {
+            Debug.Assert(_instance is not null);
+
             await CacheEntry.PropertyBinder(_pageContext, _instance);
 
             if (_handler == null)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // We do two separate cache lookups, once for the binder and once for the executor.
             // Reducing it to a single lookup requires a lot of code change with little value.
-            PageHandlerBinderDelegate handlerBinder = null;
+            PageHandlerBinderDelegate? handlerBinder = null;
             for (var i = 0; i < _actionDescriptor.HandlerMethods.Count; i++)
             {
                 if (object.ReferenceEquals(_handler, _actionDescriptor.HandlerMethods[i]))
@@ -214,11 +214,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 }
             }
 
+            Debug.Assert(handlerBinder is not null);
+            Debug.Assert(_arguments is not null);
             await handlerBinder(_pageContext, _arguments);
         }
 
-        private static object[] PrepareArguments(
-            IDictionary<string, object> argumentsInDictionary,
+        private static object?[]? PrepareArguments(
+            Dictionary<string, object?> argumentsInDictionary,
             HandlerMethodDescriptor handler)
         {
             if (handler.Parameters.Count == 0)
@@ -226,12 +228,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 return null;
             }
 
-            var arguments = new object[handler.Parameters.Count];
+            var arguments = new object?[handler.Parameters.Count];
             for (var i = 0; i < arguments.Length; i++)
             {
                 var parameter = handler.Parameters[i];
 
-                if (argumentsInDictionary.TryGetValue(parameter.ParameterInfo.Name, out var value))
+                if (argumentsInDictionary.TryGetValue(parameter.ParameterInfo.Name!, out var value))
                 {
                     // Do nothing, already set the value.
                 }
@@ -250,11 +252,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private async Task InvokeHandlerMethodAsync()
         {
             var handler = _handler;
-            if (_handler != null)
+            if (handler != null)
             {
+                Debug.Assert(_instance is not null);
+                Debug.Assert(_arguments is not null);
                 var arguments = PrepareArguments(_arguments, handler);
 
-                PageHandlerExecutorDelegate executor = null;
+                PageHandlerExecutorDelegate? executor = null;
                 for (var i = 0; i < _actionDescriptor.HandlerMethods.Count; i++)
                 {
                     if (object.ReferenceEquals(handler, _actionDescriptor.HandlerMethods[i]))
@@ -296,7 +300,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        private Task Next(ref State next, ref Scope scope, ref object state, ref bool isCompleted)
+        private Task Next(ref State next, ref Scope scope, ref object? state, ref bool isCompleted)
         {
             switch (next)
             {
@@ -317,6 +321,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     }
 
                 case State.PageSelectHandlerNext:
+
+                    Debug.Assert(_instance is not null);
 
                     var currentSelector = _cursor.GetNextFilter<IPageFilter, IAsyncPageFilter>();
                     if (currentSelector.FilterAsync != null)
@@ -418,7 +424,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                             _handler = _handlerSelectedContext.HandlerMethod;
                         }
 
-                        _arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                        _arguments = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
                         _cursor.Reset();
 
@@ -434,6 +440,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
                 case State.PageNext:
                     {
+                        Debug.Assert(_instance is not null);
+                        Debug.Assert(_arguments is not null);
+
                         var current = _cursor.GetNextFilter<IPageFilter, IAsyncPageFilter>();
                         if (current.FilterAsync != null)
                         {
@@ -490,6 +499,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         Debug.Assert(state != null);
                         Debug.Assert(_handlerExecutingContext != null);
 
+                        Debug.Assert(_instance is not null);
+
                         var filter = (IAsyncPageFilter)state;
 
                         if (_handlerExecutedContext == null)
@@ -521,6 +532,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     {
                         Debug.Assert(state != null);
                         Debug.Assert(_handlerExecutingContext != null);
+                        Debug.Assert(_instance is not null);
 
                         var filter = (IPageFilter)state;
                         var handlerExecutingContext = _handlerExecutingContext;
@@ -611,7 +623,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         {
                             if (_handlerExecutedContext == null)
                             {
-                                _handlerExecutedContext = new PageHandlerExecutedContext(_pageContext, _filters, _handler, _instance)
+                                _handlerExecutedContext = new PageHandlerExecutedContext(_pageContext, _filters, _handler!, _instance!)
                                 {
                                     Result = _result,
                                 };
@@ -643,7 +655,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             try
             {
                 var next = State.PageNext;
-                var state = (object)null;
+                var state = (object?)null;
                 var scope = Scope.Page;
                 var isCompleted = false;
                 while (!isCompleted)
@@ -653,7 +665,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
             catch (Exception exception)
             {
-                _handlerExecutedContext = new PageHandlerExecutedContext(_pageContext, _filters, _handler, _instance)
+                _handlerExecutedContext = new PageHandlerExecutedContext(_pageContext, _filters, _handler!, _instance!)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
@@ -683,7 +695,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return _handlerExecutedContext;
         }
 
-        private static void Rethrow(PageHandlerExecutedContext context)
+        private static void Rethrow(PageHandlerExecutedContext? context)
         {
             if (context == null)
             {

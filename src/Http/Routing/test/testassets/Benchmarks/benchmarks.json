@@ -8,7 +8,7 @@
     },
     "Source": {
       "Repository": "https://github.com/dotnet/aspnetcore.git",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "main",
       "Project": "src/Routing/benchmarkapps/Benchmarks/Benchmarks.csproj"
     },
     "Port": 8080

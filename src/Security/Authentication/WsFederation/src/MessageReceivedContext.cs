@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
             HttpContext context,
             AuthenticationScheme scheme,
             WsFederationOptions options,
-            AuthenticationProperties properties)
+            AuthenticationProperties? properties)
             : base(context, scheme, options, properties) { }
 
         /// <summary>
         /// The <see cref="WsFederationMessage"/> received on this request.
         /// </summary>
-        public WsFederationMessage ProtocolMessage { get; set; }
+        public WsFederationMessage ProtocolMessage { get; set; } = default!;
     }
 }

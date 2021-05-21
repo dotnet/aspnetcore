@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileStream">The stream with the file.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public FileStreamResult(Stream fileStream, MediaTypeHeaderValue contentType)
-            : base(contentType?.ToString())
+            : base(contentType.ToString())
         {
             if (fileStream == null)
             {
@@ -54,6 +55,8 @@ namespace Microsoft.AspNetCore.Mvc
         public Stream FileStream
         {
             get => _fileStream;
+
+            [MemberNotNull(nameof(_fileStream))]
             set
             {
                 if (value == null)

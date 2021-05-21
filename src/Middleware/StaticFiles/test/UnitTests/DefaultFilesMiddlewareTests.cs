@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateClient().GetAsync(requestUrl);
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                var requestUrlWithSlash = requestUrl.EndsWith("/") ? requestUrl : requestUrl + "/";
+                var requestUrlWithSlash = requestUrl.EndsWith('/') ? requestUrl : requestUrl + "/";
                 Assert.Equal(requestUrlWithSlash + "default.html", await response.Content.ReadAsStringAsync()); // Should be modified and be valid path to file
             }
         }

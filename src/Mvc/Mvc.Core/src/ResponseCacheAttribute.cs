@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the value for the Vary response header.
         /// </summary>
-        public string VaryByHeader { get; set; }
+        public string? VaryByHeader { get; set; }
 
         /// <summary>
         /// Gets or sets the query keys to vary by.
@@ -65,12 +65,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// <see cref="VaryByQueryKeys"/> requires the response cache middleware.
         /// </remarks>
-        public string[] VaryByQueryKeys { get; set; }
+        public string[]? VaryByQueryKeys { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the cache profile name.
         /// </summary>
-        public string CacheProfileName { get; set; }
+        public string? CacheProfileName { get; set; }
 
         /// <inheritdoc />
         public int Order { get; set; }
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns></returns>
         public CacheProfile GetCacheProfile(MvcOptions options)
         {
-            CacheProfile selectedProfile = null;
+            CacheProfile? selectedProfile = null;
             if (CacheProfileName != null)
             {
                 options.CacheProfiles.TryGetValue(CacheProfileName, out selectedProfile);

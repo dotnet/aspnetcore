@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -546,7 +546,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 // Use the route specified in MapPageRoute for outbound routing.
                 foreach (var selector in model.Selectors)
                 {
-                    selector.AttributeRouteModel.SuppressLinkGeneration = true;
+                    selector.AttributeRouteModel!.SuppressLinkGeneration = true;
                 }
 
                 model.Selectors.Add(new SelectorModel

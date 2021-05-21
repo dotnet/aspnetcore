@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -159,6 +160,93 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(13, lines.Length);
                 Assert.Equal("HTTP/1.1 200 OK", lines[0]);
                 Assert.Equal("0123456789", lines[12]);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestBody_ChangeContentLength_Success()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            {
+                var newContentLength = httpContext.Request.ContentLength + 1000;
+                httpContext.Request.ContentLength = newContentLength;
+                Assert.Equal(newContentLength, httpContext.Request.ContentLength);
+
+                var contentLengthHeadersCount = 0;
+                foreach (var header in httpContext.Request.Headers)
+                {
+                    if (string.Equals(header.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
+                    {
+                        contentLengthHeadersCount++;
+                    }
+                }
+                Assert.Equal(1, contentLengthHeadersCount);
+
+                byte[] input = new byte[100];
+                int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
+                httpContext.Response.ContentLength = read;
+                await httpContext.Response.Body.WriteAsync(input, 0, read);
+            }))
+            {
+                string response = await SendRequestAsync(address, "Hello World");
+                Assert.Equal("Hello World", response);
+            }
+        }
+
+
+        [ConditionalFact]
+        public async Task RequestBody_RemoveHeaderOnEmptyValueSet_Success()
+        {
+            var requestWasProcessed = false;
+
+            static void CheckHeadersCount(string headerName, int expectedCount, HttpRequest request)
+            {
+                var headersCount = 0;
+                foreach (var header in request.Headers)
+                {
+                    if (string.Equals(header.Key, headerName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        headersCount++;
+                    }
+                }
+
+                Assert.Equal(expectedCount, headersCount);
+            }
+
+            using (Utilities.CreateHttpServer(out var address, httpContext =>
+            {
+                // play with standard header
+                httpContext.Request.Headers[HeaderNames.ContentLength] = "123";
+                CheckHeadersCount(HeaderNames.ContentLength, 1, httpContext.Request);
+                Assert.Equal(123,httpContext.Request.ContentLength);
+                httpContext.Request.Headers[HeaderNames.ContentLength] = "456";
+                CheckHeadersCount(HeaderNames.ContentLength, 1, httpContext.Request);
+                Assert.Equal(456,httpContext.Request.ContentLength);
+                httpContext.Request.Headers[HeaderNames.ContentLength] = "";
+                CheckHeadersCount(HeaderNames.ContentLength, 0, httpContext.Request);
+                Assert.Null(httpContext.Request.ContentLength);
+                Assert.Equal("", httpContext.Request.Headers[HeaderNames.ContentLength].ToString());
+                httpContext.Request.ContentLength = 789;
+                CheckHeadersCount(HeaderNames.ContentLength, 1, httpContext.Request);
+                Assert.Equal(789,httpContext.Request.ContentLength);
+
+                // play with custom header
+                httpContext.Request.Headers["Custom-Header"] = "foo";
+                CheckHeadersCount("Custom-Header", 1, httpContext.Request);
+                httpContext.Request.Headers["Custom-Header"] = "bar";
+                CheckHeadersCount("Custom-Header", 1, httpContext.Request);
+                httpContext.Request.Headers["Custom-Header"] = "";
+                CheckHeadersCount("Custom-Header", 0, httpContext.Request);
+                Assert.Equal("", httpContext.Request.Headers["Custom-Header"].ToString());
+
+                httpContext.Response.StatusCode = 200;
+                requestWasProcessed = true;
+                return Task.CompletedTask;
+            }))
+            {
+                await SendRequestAsync(address, "Hello World");
+                Assert.True(requestWasProcessed);
             }
         }
 

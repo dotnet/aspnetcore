@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
-// tslint:disable:no-floating-promises
-
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { getUserAgentHeader, Platform } from "@microsoft/signalr/dist/esm/Utils";
@@ -109,10 +106,10 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.on("CustomObject", (customObject) => {
+                hubConnection.on("CustomObject", async (customObject) => {
                     expect(customObject.Name).toBe("test");
                     expect(customObject.Value).toBe(42);
-                    hubConnection.stop();
+                    await hubConnection.stop();
                 });
 
                 hubConnection.onclose((error) => {
@@ -395,11 +392,6 @@ describe("hubConnection", () => {
 
                 await hubConnection.start();
                 const value = await hubConnection.invoke("EchoComplexObject", complexObject);
-                if (protocol.name === "messagepack") {
-                    // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
-                    // and a Uint8Array even though Buffer instances are also Uint8Array instances
-                    value.ByteArray = new Uint8Array(value.ByteArray);
-                }
                 expect(value).toEqual(complexObject);
 
                 await hubConnection.stop();
@@ -429,11 +421,6 @@ describe("hubConnection", () => {
 
                 await hubConnection.start();
                 const value = await hubConnection.invoke("SendComplexObject");
-                if (protocol.name === "messagepack") {
-                    // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
-                    // and a Uint8Array even though Buffer instances are also Uint8Array instances
-                    value.ByteArray = new Uint8Array(value.ByteArray);
-                }
                 expect(value).toEqual(complexObject);
 
                 await hubConnection.stop();
@@ -564,6 +551,24 @@ describe("hubConnection", () => {
                     done();
                 } catch (err) {
                     fail(err);
+                    done();
+                }
+            });
+
+            it("can get error from unauthorized hub connection", async (done) => {
+                try {
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub").build();
+
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
+                        done();
+                    });
+
+                    await hubConnection.start();
+
+                    fail("shouldn't reach here");
+                } catch (err) {
+                    expect(err).toEqual(new Error("Failed to complete negotiation with the server: Error: Unauthorized: Status code '401'"));
                     done();
                 }
             });
@@ -1048,6 +1053,7 @@ describe("hubConnection", () => {
     function getJwtToken(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const httpClient = new DefaultHttpClient(NullLogger.instance);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             httpClient.get(url).then((response) => {
                 if (response.statusCode >= 200 && response.statusCode < 300) {
                     resolve(response.content as string);

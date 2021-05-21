@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
     internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
-        private static readonly char KeyDelimiter = '\x1e';
+        private const char KeyDelimiter = '\x1e';
         // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
-        private static readonly char KeySubDelimiter = '\x1f';
+        private const char KeySubDelimiter = '\x1f';
 
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly ResponseCachingOptions _options;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     var requestHeaders = context.HttpContext.Request.Headers;
                     for (var i = 0; i < headersCount; i++)
                     {
-                        var header = varyByRules.Headers[i];
+                        var header = varyByRules!.Headers[i];
                         var headerValues = requestHeaders[header];
                         builder.Append(KeyDelimiter)
                             .Append(header)

@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 
@@ -13,20 +14,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
-        private static readonly Action<ILogger, string, Exception> _generatedCodeToAssemblyCompilationStart;
-        private static readonly Action<ILogger, string, double, Exception> _generatedCodeToAssemblyCompilationEnd;
-        private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledView;
-        private static readonly Action<ILogger, Exception> _viewCompilerNoCompiledViewsFound;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledViewForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerRecompilingCompiledView;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerCouldNotFindFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerFoundFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerInvalidatingCompiledFile;
+        private static readonly Action<ILogger, string, Exception?> _generatedCodeToAssemblyCompilationStart;
+        private static readonly Action<ILogger, string, double, Exception?> _generatedCodeToAssemblyCompilationEnd;
+        private static readonly Action<ILogger, string, string[], Exception?> _malformedPageDirective;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledView;
+        private static readonly Action<ILogger, Exception?> _viewCompilerNoCompiledViewsFound;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledViewForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerRecompilingCompiledView;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerCouldNotFindFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerFoundFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerInvalidatingCompiledFile;
 
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheMiss;
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheHit;
-        private static readonly Action<ILogger, string, Exception> _precompiledViewFound;
+        private static readonly Action<ILogger, string, string, Exception?> _viewLookupCacheMiss;
+        private static readonly Action<ILogger, string, string, Exception?> _viewLookupCacheHit;
+        private static readonly Action<ILogger, string, Exception?> _precompiledViewFound;
 
         static MvcRazorLoggerExtensions()
         {
@@ -98,7 +99,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             _malformedPageDirective = LoggerMessage.Define<string, string[]>(
                 LogLevel.Warning,
                 new EventId(104, "MalformedPageDirective"),
-                "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}");
+                "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}",
+                skipEnabledCheck: true);
         }
 
         public static void ViewCompilerLocatedCompiledView(this ILogger logger, string view)
@@ -169,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 var messages = new string[diagnostics.Count];
                 for (var i = 0; i < diagnostics.Count; i++)
                 {
-                    messages[i] = diagnostics[i].GetMessage();
+                    messages[i] = diagnostics[i].GetMessage(CultureInfo.CurrentCulture);
                 }
 
                 _malformedPageDirective(logger, filePath, messages, null);

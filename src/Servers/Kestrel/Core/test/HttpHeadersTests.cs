@@ -135,7 +135,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void TestParseConnection(string connection, int intExpectedConnectionOptions)
         {
             var expectedConnectionOptions = (ConnectionOptions)intExpectedConnectionOptions;
-            var connectionOptions = HttpHeaders.ParseConnection(connection);
+            var requestHeaders = new HttpRequestHeaders();
+            requestHeaders.HeaderConnection = connection;
+            var connectionOptions = HttpHeaders.ParseConnection(requestHeaders);
             Assert.Equal(expectedConnectionOptions, connectionOptions);
         }
 
@@ -159,7 +161,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var expectedConnectionOptions = (ConnectionOptions)intExpectedConnectionOptions;
             var connection = new StringValues(new[] { value1, value2 });
-            var connectionOptions = HttpHeaders.ParseConnection(connection);
+            var requestHeaders = new HttpRequestHeaders();
+            requestHeaders.HeaderConnection = connection;
+            var connectionOptions = HttpHeaders.ParseConnection(requestHeaders);
             Assert.Equal(expectedConnectionOptions, connectionOptions);
         }
 

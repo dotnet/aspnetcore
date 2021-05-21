@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
@@ -108,6 +109,36 @@ namespace Test
         }
 
         [Fact]
+        public async Task DiagnosticsAreReturned_ForNotFoundNullActionResults()
+        {
+            // Arrange
+            var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    [Route(""[controller]"")]
+    public class TestController : ControllerBase
+    {
+        [HttpGet]
+        public ActionResult<string> Test()
+        {
+            return NotFound(null);
+        }
+    }
+}";
+            var testSource = TestSource.Read(source);
+            var expectedLocation = testSource.DefaultMarkerLocation;
+
+            // Act
+            var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+            // Assert
+            Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+        }
+
+        [Fact]
         public Task DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_ReturnsUndocumentedStatusCode()
             => RunTest(ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode, 404);
 
@@ -176,7 +207,7 @@ namespace Test
             => RunTest(descriptor, Array.Empty<object>(), testMethod);
 
         private Task RunTest(DiagnosticDescriptor descriptor, int statusCode, [CallerMemberName] string testMethod = "")
-            => RunTest(descriptor, new[] { statusCode.ToString() }, testMethod);
+            => RunTest(descriptor, new[] { statusCode.ToString(CultureInfo.InvariantCulture) }, testMethod);
 
         private async Task RunTest(DiagnosticDescriptor descriptor, object[] args, [CallerMemberName] string testMethod = "")
         {
@@ -195,7 +226,7 @@ namespace Test
                     Assert.Equal(descriptor.Id, diagnostic.Id);
                     Assert.Same(descriptor, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(expectedLocation, diagnostic.Location);
-                    Assert.Equal(string.Format(descriptor.MessageFormat.ToString(), args), diagnostic.GetMessage());
+                    Assert.Equal(string.Format(CultureInfo.InvariantCulture, descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture), args), diagnostic.GetMessage(CultureInfo.InvariantCulture));
                 });
         }
         private class ApiConventionWith1006DiagnosticEnabledRunner : MvcDiagnosticAnalyzerRunner

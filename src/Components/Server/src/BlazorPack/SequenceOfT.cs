@@ -299,7 +299,7 @@ namespace Nerdbank.Streams
             /// <summary>
             /// A value indicating whether the element is a value type.
             /// </summary>
-            private static readonly bool IsValueTypeElement = typeof(T).GetTypeInfo().IsValueType;
+            private static readonly bool IsValueTypeElement = typeof(T).IsValueType;
 
             /// <summary>
             /// Gets the backing array, when using an <see cref="ArrayPool{T}"/> instead of a <see cref="MemoryPool{T}"/>.

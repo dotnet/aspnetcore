@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         private int? _cacheDuration;
         private ResponseCacheLocation? _cacheLocation;
         private bool? _cacheNoStore;
-        private string _cacheVaryByHeader;
-        private string[] _cacheVaryByQueryKeys;
+        private string? _cacheVaryByHeader;
+        private string[]? _cacheVaryByQueryKeys;
 
         public ResponseCacheFilterExecutor(CacheProfile cacheProfile)
         {
@@ -41,13 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             set => _cacheNoStore = value;
         }
 
-        public string VaryByHeader
+        public string? VaryByHeader
         {
             get => _cacheVaryByHeader ?? _cacheProfile.VaryByHeader;
             set => _cacheVaryByHeader = value;
         }
 
-        public string[] VaryByQueryKeys
+        public string[]? VaryByQueryKeys
         {
             get => _cacheVaryByQueryKeys ?? _cacheProfile.VaryByQueryKeys;
             set => _cacheVaryByQueryKeys = value;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             }
             else
             {
-                string cacheControlValue;
+                string? cacheControlValue;
                 switch (Location)
                 {
                     case ResponseCacheLocation.Any:

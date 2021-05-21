@@ -4,15 +4,13 @@
 #nullable disable warnings
 
 using System;
-using System.Runtime.ExceptionServices;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Components.LegacyRouteMatching;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -22,8 +20,9 @@ namespace Microsoft.AspNetCore.Components.Routing
     public class Router : IComponent, IHandleAfterRender, IDisposable
     {
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
-        static readonly ReadOnlyDictionary<string, object> _emptyParametersDictionary
-            = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+        // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
+        static readonly IReadOnlyDictionary<string, object> _emptyParametersDictionary
+            = new Dictionary<string, object>();
 
         RenderHandle _renderHandle;
         string _baseUri;
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private Task _previousOnNavigateTask = Task.CompletedTask;
 
-        private readonly HashSet<Assembly> _assemblies = new HashSet<Assembly>();
+        private RouteKey _routeTableLastBuiltForRouteKey;
 
         private bool _onNavigateCalled = false;
 
@@ -79,17 +78,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets a flag to indicate whether route matching should prefer exact matches
         /// over wildcards.
+        /// <para>This property is obsolete and configuring it does nothing.</para>
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Important: all applications should explicitly set this to true. The option to set it to false
-        /// (or leave unset, which defaults to false) is only provided for backward compatibility.
-        /// In .NET 6, this option will be removed and the router will always prefer exact matches.
-        /// </para>
-        /// </remarks>
         [Parameter] public bool PreferExactMatches { get; set; }
 
-        private IRouteTable Routes { get; set; }
+        private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
@@ -99,6 +92,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             _baseUri = NavigationManager.BaseUri;
             _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
+
+            if  (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied += ClearRouteCaches;
+            }
         }
 
         /// <inheritdoc />
@@ -139,6 +137,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
+            if (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= ClearRouteCaches;
+            }
         }
 
         private static string StringUntilAny(string str, char[] chars)
@@ -151,18 +153,19 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private void RefreshRouteTable()
         {
-            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
-            var assembliesSet = new HashSet<Assembly>(assemblies);
+            var routeKey = new RouteKey(AppAssembly, AdditionalAssemblies);
 
-            if (!_assemblies.SetEquals(assembliesSet))
+            if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
             {
-                Routes = PreferExactMatches
-                    ? RouteTableFactory.Create(assemblies)
-                    : LegacyRouteTableFactory.Create(assemblies);
-                _assemblies.Clear();
-                _assemblies.UnionWith(assembliesSet);
+                _routeTableLastBuiltForRouteKey = routeKey;
+                Routes = RouteTableFactory.Create(routeKey);
             }
+        }
 
+        private void ClearRouteCaches()
+        {
+            RouteTableFactory.ClearCaches();
+            _routeTableLastBuiltForRouteKey = default;
         }
 
         internal virtual void Refresh(bool isNavigationIntercepted)
@@ -267,7 +270,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _locationAbsolute = args.Location;
             if (_renderHandle.IsInitialized && Routes != null)
             {
-                _ = RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), args.IsNavigationIntercepted);
+                _ = RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), args.IsNavigationIntercepted).Preserve();
             }
         }
 

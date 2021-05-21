@@ -3,22 +3,51 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Reader and, if GENERATE_BASELINES is defined, writer for files compiled into an assembly as resources.
+    /// Reader and, if GenerateBaselines is set to true, writer for files compiled into an assembly as resources.
     /// </summary>
     /// <remarks>Inspired by Razor's BaselineWriter and TestFile test classes.</remarks>
     public static class ResourceFile
     {
+        /// <summary>
+        /// Set this to true to cause baseline files to becompiled into an assembly as resources.
+        /// </summary>
+        public static readonly bool GenerateBaselines = false;
+
         private static object writeLock = new object();
+
+        public static void UpdateOrVerify(Assembly assembly, string outputFile, string expectedContent, string responseContent, string token = null)
+        {
+            if (GenerateBaselines)
+            {
+                // Reverse usual substitution and insert a format item into the new file content.
+                if (token != null)
+                {
+                    responseContent = responseContent.Replace(token, "{0}");
+                }
+                UpdateFile(assembly, outputFile, expectedContent, responseContent);
+            }
+            else
+            {
+                if (token != null)
+                {
+                    expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, token);
+                }
+                Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+            }
+        }
+
 
         /// <summary>
         /// Return <see cref="Stream"/> for <paramref name="resourceName"/> from <paramref name="assembly"/>'s
@@ -48,16 +77,19 @@ namespace Microsoft.AspNetCore.Mvc
             var fullName = $"{ assembly.GetName().Name }.{ resourceName.Replace('/', '.') }";
             if (!Exists(assembly, fullName))
             {
-#if GENERATE_BASELINES
-                if (sourceFile)
+                if (GenerateBaselines)
                 {
-                    // Even when generating baselines, a missing source file is a serious problem.
-                    Assert.True(false, $"Manifest resource: { fullName } not found.");
+                    if (sourceFile)
+                    {
+                        // Even when generating baselines, a missing source file is a serious problem.
+                        Assert.True(false, $"Manifest resource: { fullName } not found.");
+                    }
                 }
-#else
-                // When not generating baselines, a missing source or output file is always an error.
-                Assert.True(false, $"Manifest resource '{ fullName }' not found.");
-#endif
+                else
+                {
+                    // When not generating baselines, a missing source or output file is always an error.
+                    Assert.True(false, $"Manifest resource '{ fullName }' not found.");
+                }
 
                 return null;
             }
@@ -179,7 +211,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="content">
         /// New content of <paramref name="resourceName"/> in <paramref name="assembly"/>.
         /// </param>
-        [Conditional("GENERATE_BASELINES")]
         public static void UpdateFile(Assembly assembly, string resourceName, string previousContent, string content)
         {
             // Normalize line endings to '\r\n' for comparison. This removes Environment.NewLine from the equation. Not

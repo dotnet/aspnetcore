@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     /// </summary>
     public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     {
-        private OpenIdConnectConfiguration _configuration;
+        private OpenIdConnectConfiguration? _configuration;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
@@ -34,12 +34,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         { }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new JwtBearerEvents Events
         {
-            get => (JwtBearerEvents)base.Events;
+            get => (JwtBearerEvents)base.Events!;
             set => base.Events = value;
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <returns></returns>
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            string token = null;
+            string? token = null;
             try
             {
                 // Give application opportunity to find from a different location, adjust, or reject token
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    string authorization = Request.Headers[HeaderNames.Authorization];
+                    string authorization = Request.Headers.Authorization;
 
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
@@ -105,8 +105,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         ?? _configuration.SigningKeys;
                 }
 
-                List<Exception> validationFailures = null;
-                SecurityToken validatedToken;
+                List<Exception>? validationFailures = null;
+                SecurityToken? validatedToken = null;
                 foreach (var validator in Options.SecurityTokenValidators)
                 {
                     if (validator.CanReadToken(token))
@@ -143,6 +143,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             SecurityToken = validatedToken
                         };
 
+                        tokenValidatedContext.Properties.ExpiresUtc = validatedToken.ValidTo;
+                        tokenValidatedContext.Properties.IssuedUtc = validatedToken.ValidFrom;
+
                         await Events.TokenValidated(tokenValidatedContext);
                         if (tokenValidatedContext.Result != null)
                         {
@@ -158,7 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         }
 
                         tokenValidatedContext.Success();
-                        return tokenValidatedContext.Result;
+                        return tokenValidatedContext.Result!;
                     }
                 }
 
@@ -243,13 +246,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 {
                     builder.Append(" error=\"");
                     builder.Append(eventContext.Error);
-                    builder.Append("\"");
+                    builder.Append('\"');
                 }
                 if (!string.IsNullOrEmpty(eventContext.ErrorDescription))
                 {
                     if (!string.IsNullOrEmpty(eventContext.Error))
                     {
-                        builder.Append(",");
+                        builder.Append(',');
                     }
 
                     builder.Append(" error_description=\"");
@@ -261,7 +264,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     if (!string.IsNullOrEmpty(eventContext.Error) ||
                         !string.IsNullOrEmpty(eventContext.ErrorDescription))
                     {
-                        builder.Append(",");
+                        builder.Append(',');
                     }
 
                     builder.Append(" error_uri=\"");
@@ -280,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             Response.StatusCode = 403;
             return Events.Forbidden(forbiddenContext);
         }
-        
+
         private static string CreateErrorDescription(Exception authFailure)
         {
             IReadOnlyCollection<Exception> exceptions;

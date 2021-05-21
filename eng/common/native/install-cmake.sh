@@ -14,7 +14,7 @@ download_retries=5
 retry_wait_time_seconds=30
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --baseuri)
       base_uri=$2
@@ -63,7 +63,7 @@ done
 
 tool_name="cmake"
 tool_os=$(GetCurrentOS)
-tool_folder=$(echo $tool_os | awk '{print tolower($0)}')
+tool_folder="$(echo $tool_os | tr "[:upper:]" "[:lower:]")"
 tool_arch="x86_64"
 tool_name_moniker="$tool_name-$version-$tool_os-$tool_arch"
 tool_install_directory="$install_path/$tool_name/$version"

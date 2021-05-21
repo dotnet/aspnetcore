@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
+            Assert.Equal(expectedPath, httpContext.Response.Headers.Location.ToString());
             Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
         }
 

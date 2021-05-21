@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ using BasicTestApp;
 using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
@@ -57,13 +59,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validate that the file was uploaded correctly and all fields are present
             Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
-            Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
+            Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
             Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26331")]
         public void CanUploadSingleLargeFile()
         {
             // Create a large text file
@@ -72,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             for (int i = 0; i < fileContentSizeInBytes; i++)
             {
-                contentBuilder.Append((i % 10).ToString());
+                contentBuilder.Append((i % 10).ToString(CultureInfo.InvariantCulture));
             }
 
             var file = TempFile.Create(_tempDirectory, "txt", contentBuilder.ToString());
@@ -90,8 +93,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validate that the file was uploaded correctly and all fields are present
             Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
-            Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
+            Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
             Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
@@ -120,14 +123,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
                 // Validate that the file was uploaded correctly and all fields are present
                 Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-                Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
-                Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+                Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
+                Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
                 Browser.Equal("text/plain", () => fileContentTypeElement.Text);
                 Browser.Equal(file.Text, () => fileContentElement.Text);
             });
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CanUploadAndConvertImageFile()
         {
             var sourceImageId = "image-source";

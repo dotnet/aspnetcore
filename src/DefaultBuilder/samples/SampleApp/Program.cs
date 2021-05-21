@@ -16,15 +16,13 @@ namespace SampleApp
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            var app = WebApplication.Create(args);
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+            app.UseStaticFiles();
+            app.MapGet("/", (Func<string>)(() => "Hello, World!"));
+
+            app.Run();
+        }
 
         private static void HelloWorld()
         {
@@ -80,8 +78,7 @@ namespace SampleApp
                 Console.ReadKey();
             }
         }
-
-        private static void StartupClass(string[] args)
+        private static void DirectWebHost(string[] args)
         {
             // Using defaults with a Startup class
             using (var host = WebHost.CreateDefaultBuilder(args)
@@ -107,5 +104,17 @@ namespace SampleApp
 
             host.Run();
         }
+
+        private static void DefaultGenericHost(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
     }
 }

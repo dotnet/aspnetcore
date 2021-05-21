@@ -10,10 +10,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal static unsafe class UnsafeNclNativeMethods
     {
         private const string sspicli_LIB = "sspicli.dll";
-        private const string api_ms_win_core_processthreads_LIB = "api-ms-win-core-processthreads-l1-1-1.dll";
         private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-0.dll";
         private const string api_ms_win_core_handle_LIB = "api-ms-win-core-handle-l1-1-0.dll";
-        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
         private const string api_ms_win_core_heap_LIB = "api-ms-win-core-heap-L1-2-0.dll";
         private const string api_ms_win_core_heap_obsolete_LIB = "api-ms-win-core-heap-obsolete-L1-1-0.dll";
         private const string api_ms_win_core_kernel32_legacy_LIB = "api-ms-win-core-kernel32-legacy-l1-1-0.dll";
@@ -146,7 +144,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         // DACL related stuff
 
         [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "Instantiated natively")]
-        [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", 
+        [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
             Justification = "Does not own the resource.")]
         [StructLayout(LayoutKind.Sequential)]
         internal class SECURITY_ATTRIBUTES

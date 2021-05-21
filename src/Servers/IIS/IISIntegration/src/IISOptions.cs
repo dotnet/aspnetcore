@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Sets the display name shown to users on login pages. The default is null.
         /// </summary>
-        public string AuthenticationDisplayName { get; set; }
+        public string? AuthenticationDisplayName { get; set; }
 
         /// <summary>
         /// Used to indicate if the authentication handler should be registered. This is only done if ANCM indicates

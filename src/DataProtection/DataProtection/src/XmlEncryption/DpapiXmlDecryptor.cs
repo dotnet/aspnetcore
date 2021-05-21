@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// Creates a new instance of a <see cref="DpapiXmlDecryptor"/>.
         /// </summary>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public DpapiXmlDecryptor(IServiceProvider services)
+        public DpapiXmlDecryptor(IServiceProvider? services)
         {
             CryptoUtil.AssertPlatformIsWindows();
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 //   <value>{base64}</value>
                 // </encryptedKey>
 
-                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value")!);
                 using (var secret = DpapiSecretSerializerHelper.UnprotectWithDpapi(protectedSecret))
                 {
                     return secret.ToXElement();

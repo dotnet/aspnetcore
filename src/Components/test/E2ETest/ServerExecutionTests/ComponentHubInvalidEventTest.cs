@@ -27,8 +27,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         protected async override Task InitializeAsync()
         {
             var rootUri = ServerFixture.RootUri;
-            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir")), "Couldn't connect to the app");
-            Assert.Single(Batches);
+            await ConnectAutomaticallyAndWait(new Uri(rootUri, "/subdir"));
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.CounterComponent");
             Assert.Equal(2, Batches.Count);
@@ -45,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 3,
-                EventArgsType = "mouse",
+                EventName = "click",
             });
 
             // Act
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 1990,
-                EventArgsType = "mouse",
+                EventName = "click",
             });
 
             var eventArgs = new MouseEventArgs

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         private static bool HasBody(HttpRequestMessage request) =>
             request.Method == HttpMethod.Post || request.Method == HttpMethod.Put;
 
-        private static async Task<HttpContent> DuplicateRequestContent(HttpRequestMessage request)
+        private static async Task<HttpContent?> DuplicateRequestContent(HttpRequestMessage request)
         {
             if (request.Content == null)
             {
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
 
         private static async Task<(Stream originalBody, Stream copy)> CopyBody(HttpRequestMessage request)
         {
-            var originalBody = await request.Content.ReadAsStreamAsync();
+            var originalBody = await request.Content!.ReadAsStreamAsync();
             var bodyCopy = new MemoryStream();
             await originalBody.CopyToAsync(bodyCopy);
             bodyCopy.Seek(0, SeekOrigin.Begin);
@@ -131,17 +132,23 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         private static void UpdateRedirectRequest(
             HttpResponseMessage response,
             HttpRequestMessage redirect,
-            HttpContent originalContent)
+            HttpContent? originalContent)
         {
+            Debug.Assert(response.RequestMessage is not null);
+
             var location = response.Headers.Location;
-            if (!location.IsAbsoluteUri)
+            if (location != null)
             {
-                location = new Uri(
-                    new Uri(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority)),
-                    location);
+                if (!location.IsAbsoluteUri && response.RequestMessage.RequestUri is Uri requestUri)
+                {
+                    location = new Uri(
+                        new Uri(requestUri.GetLeftPart(UriPartial.Authority)),
+                        location);
+                }
+
+                redirect.RequestUri = location;
             }
 
-            redirect.RequestUri = location;
             if (!ShouldKeepVerb(response))
             {
                 redirect.Method = HttpMethod.Get;
@@ -154,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
 
             foreach (var property in response.RequestMessage.Options)
             {
-                var key = new HttpRequestOptionsKey<object>(property.Key);
+                var key = new HttpRequestOptionsKey<object?>(property.Key);
                 redirect.Options.Set(key, property.Value);
             }
         }

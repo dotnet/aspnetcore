@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class DynamicPageRouteValueTransformerMetadata : IDynamicEndpointMetadata
     {
-        public DynamicPageRouteValueTransformerMetadata(Type selectorType, object state)
+        public DynamicPageRouteValueTransformerMetadata(Type selectorType, object? state)
         {
             if (selectorType == null)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         public bool IsDynamic => true;
 
-        public object State { get; }
+        public object? State { get; }
 
         public Type SelectorType { get; }
     }

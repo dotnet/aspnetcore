@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 if (ex is TargetInvocationException)
                 {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
                 }
 
                 throw;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 if (ex is TargetInvocationException)
                 {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
                 }
 
                 throw;

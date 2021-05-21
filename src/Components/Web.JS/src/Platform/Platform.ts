@@ -3,7 +3,7 @@ import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
 export interface Platform {
   start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
 
-  callEntryPoint(assemblyName: string): void;
+  callEntryPoint(assemblyName: string): Promise<any>;
 
   toUint8Array(array: System_Array<any>): Uint8Array;
 
@@ -32,6 +32,7 @@ export interface HeapLock {
 // for compile-time checking, since TypeScript doesn't support nominal types.
 export interface MethodHandle { MethodHandle__DO_NOT_IMPLEMENT: any }
 export interface System_Object { System_Object__DO_NOT_IMPLEMENT: any }
+export interface System_Boolean { System_Boolean__DO_NOT_IMPLEMENT: any }
 export interface System_String extends System_Object { System_String__DO_NOT_IMPLEMENT: any }
 export interface System_Array<T> extends System_Object { System_Array__DO_NOT_IMPLEMENT: any }
 export interface Pointer { Pointer__DO_NOT_IMPLEMENT: any }

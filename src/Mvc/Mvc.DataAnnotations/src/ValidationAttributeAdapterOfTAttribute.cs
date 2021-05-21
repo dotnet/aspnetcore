@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     public abstract class ValidationAttributeAdapter<TAttribute> : IClientModelValidator
         where TAttribute : ValidationAttribute
     {
-        private readonly IStringLocalizer _stringLocalizer;
+        private readonly IStringLocalizer? _stringLocalizer;
         /// <summary>
         /// Create a new instance of <see cref="ValidationAttributeAdapter{TAttribute}"/>.
         /// </summary>
         /// <param name="attribute">The <typeparamref name="TAttribute"/> instance to validate.</param>
         /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
-        public ValidationAttributeAdapter(TAttribute attribute, IStringLocalizer stringLocalizer)
+        public ValidationAttributeAdapter(TAttribute attribute, IStringLocalizer? stringLocalizer)
         {
             Attribute = attribute;
             _stringLocalizer = stringLocalizer;

@@ -17,16 +17,16 @@ namespace RunTests
                 var keepGoing = runner.SetupEnvironment();
                 if (keepGoing)
                 {
-                    keepGoing = await runner.InstallDotnetDump();
+                    keepGoing = await runner.InstallDotnetToolsAsync();
                 }
+#if INSTALLPLAYWRIGHT
                 if (keepGoing)
                 {
-                    keepGoing = await runner.InstallAspNetAppIfNeededAsync();
+                    keepGoing = await runner.InstallPlaywrightAsync();
                 }
-                if (keepGoing)
-                {
-                    keepGoing = runner.InstallAspNetRefIfNeeded();
-                }
+#else                
+                Console.WriteLine("Playwright install skipped.");
+#endif
 
                 runner.DisplayContents();
 

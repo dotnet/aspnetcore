@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
     internal class ManifestDirectoryContents : IDirectoryContents
     {
         private readonly DateTimeOffset _lastModified;
-        private IFileInfo[] _entries;
+        private IFileInfo[]? _entries;
 
         public ManifestDirectoryContents(Assembly assembly, ManifestDirectory directory, DateTimeOffset lastModified)
         {

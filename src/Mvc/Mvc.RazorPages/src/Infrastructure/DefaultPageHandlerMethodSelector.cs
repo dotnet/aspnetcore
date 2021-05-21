@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private const string Handler = "handler";
 
-        public HandlerMethodDescriptor Select(PageContext context)
+        public HandlerMethodDescriptor? Select(PageContext context)
         {
             var handlers = SelectHandlers(context);
             if (handlers == null || handlers.Count == 0)
@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 return null;
             }
 
-            List<HandlerMethodDescriptor> ambiguousMatches = null;
-            HandlerMethodDescriptor bestMatch = null;
+            List<HandlerMethodDescriptor>? ambiguousMatches = null;
+            HandlerMethodDescriptor? bestMatch = null;
             for (var score = 2; score >= 0; score--)
             {
                 for (var i = 0; i < handlers.Count; i++)
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        private static string GetHandlerName(PageContext context)
+        private static string? GetHandlerName(PageContext context)
         {
             var handlerName = Convert.ToString(context.RouteData.Values[Handler], CultureInfo.InvariantCulture);
             if (!string.IsNullOrEmpty(handlerName))
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return null;
         }
 
-        private static string GetFuzzyMatchHttpMethod(PageContext context)
+        private static string? GetFuzzyMatchHttpMethod(PageContext context)
         {
             var httpMethod = context.HttpContext.Request.Method;
 

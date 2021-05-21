@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
             var result = buffer.Slice(0, length).ToArray();
@@ -43,13 +45,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Span<byte> buffer = new byte[1024 * 16];
 
-            var headers = new HttpResponseHeaders();
-            headers.HeaderCacheControl = "private";
+            var headers = (IHeaderDictionary)new HttpResponseHeaders();
+            headers.CacheControl = "private";
 
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
             var result = buffer.Slice(5, length - 5).ToArray();
@@ -68,14 +70,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Span<byte> buffer = new byte[1024 * 16];
 
-            var headers = new HttpResponseHeaders();
-            headers.HeaderCacheControl = "private";
-            headers.HeaderDate = "Mon, 21 Oct 2013 20:13:21 GMT";
-            headers.HeaderLocation = "https://www.example.com";
+            var headers = (IHeaderDictionary)new HttpResponseHeaders();
+            headers.CacheControl = "private";
+            headers.Date = "Mon, 21 Oct 2013 20:13:21 GMT";
+            headers.Location = "https://www.example.com";
 
             var enumerator = new Http2HeadersEnumerator();
 
-            var hpackEncoder = new HPackEncoder(maxHeaderTableSize: 256);
+            var hpackEncoder = new DynamicHPackEncoder(maxHeaderTableSize: 256);
 
             // First response
             enumerator.Initialize(headers);
@@ -84,9 +86,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var result = buffer.Slice(0, length).ToArray();
             var hex = BitConverter.ToString(result);
             Assert.Equal(
-                "48-03-33-30-32-58-07-70-72-69-76-61-74-65-61-1D-" +
-                "4D-6F-6E-2C-20-32-31-20-4F-63-74-20-32-30-31-33-" +
-                "20-32-30-3A-31-33-3A-32-31-20-47-4D-54-6E-17-68-" +
+                "48-03-33-30-32-61-1D-4D-6F-6E-2C-20-32-31-20-4F-" +
+                "63-74-20-32-30-31-33-20-32-30-3A-31-33-3A-32-31-" +
+                "20-47-4D-54-58-07-70-72-69-76-61-74-65-6E-17-68-" +
                 "74-74-70-73-3A-2F-2F-77-77-77-2E-65-78-61-6D-70-" +
                 "6C-65-2E-63-6F-6D", hex);
 
@@ -99,13 +101,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 },
                 e =>
                 {
-                    Assert.Equal("Date", e.Name);
-                    Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
+                    Assert.Equal("Cache-Control", e.Name);
+                    Assert.Equal("private", e.Value);
                 },
                 e =>
                 {
-                    Assert.Equal("Cache-Control", e.Name);
-                    Assert.Equal("private", e.Value);
+                    Assert.Equal("Date", e.Name);
+                    Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
                 },
                 e =>
                 {
@@ -135,19 +137,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 },
                 e =>
                 {
-                    Assert.Equal("Date", e.Name);
-                    Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
+                    Assert.Equal("Cache-Control", e.Name);
+                    Assert.Equal("private", e.Value);
                 },
                 e =>
                 {
-                    Assert.Equal("Cache-Control", e.Name);
-                    Assert.Equal("private", e.Value);
+                    Assert.Equal("Date", e.Name);
+                    Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
                 });
 
             // Third response
-            headers.HeaderDate = "Mon, 21 Oct 2013 20:13:22 GMT";
-            headers.HeaderContentEncoding = "gzip";
-            headers.HeaderSetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
+            headers.Date = "Mon, 21 Oct 2013 20:13:22 GMT";
+            headers.ContentEncoding = "gzip";
+            headers.SetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
 
             enumerator.Initialize(headers);
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));
@@ -155,9 +157,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             result = buffer.Slice(0, length).ToArray();
             hex = BitConverter.ToString(result);
             Assert.Equal(
-                "88-C1-61-1D-4D-6F-6E-2C-20-32-31-20-4F-63-74-20-" +
-                "32-30-31-33-20-32-30-3A-31-33-3A-32-32-20-47-4D-" +
-                "54-5A-04-67-7A-69-70-C1-1F-28-38-66-6F-6F-3D-41-" +
+                "88-61-1D-4D-6F-6E-2C-20-32-31-20-4F-63-74-20-32-" +
+                "30-31-33-20-32-30-3A-31-33-3A-32-32-20-47-4D-54-" +
+                "C1-5A-04-67-7A-69-70-C1-1F-28-38-66-6F-6F-3D-41-" +
                 "53-44-4A-4B-48-51-4B-42-5A-58-4F-51-57-45-4F-50-" +
                 "49-55-41-58-51-57-45-4F-49-55-3B-20-6D-61-78-2D-" +
                 "61-67-65-3D-33-36-30-30-3B-20-76-65-72-73-69-6F-" +
@@ -201,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder(maxHeaderTableSize: Http2PeerSettings.DefaultHeaderTableSize);
+            var hpackEncoder = new DynamicHPackEncoder(maxHeaderTableSize: Http2PeerSettings.DefaultHeaderTableSize);
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out _));
 
             if (neverIndex)
@@ -227,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
 
             Assert.Empty(GetHeaderEntries(hpackEncoder));
@@ -312,7 +314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(SinglePayloadData))]
         public void EncodesHeadersInSinglePayloadWhenSpaceAvailable(KeyValuePair<string, string>[] headers, byte[] expectedPayload, int? statusCode)
         {
-            HPackEncoder hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
 
             var payload = new byte[1024];
             var length = 0;
@@ -376,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 0x07, 0x4b, 0x65, 0x73, 0x74, 0x72, 0x65, 0x6c
             };
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
 
             Span<byte> payload = new byte[1024];
             var offset = 0;
@@ -415,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Span<byte> buffer = new byte[1024 * 16];
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             hpackEncoder.UpdateMaxHeaderTableSize(100);
 
             var enumerator = new Http2HeadersEnumerator();
@@ -452,7 +454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return enumerator;
         }
 
-        private EncoderHeaderEntry GetHeaderEntry(HPackEncoder encoder, int index)
+        private EncoderHeaderEntry GetHeaderEntry(DynamicHPackEncoder encoder, int index)
         {
             var entry = encoder.Head;
             while (index-- >= 0)
@@ -462,7 +464,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return entry;
         }
 
-        private List<EncoderHeaderEntry> GetHeaderEntries(HPackEncoder encoder)
+        private List<EncoderHeaderEntry> GetHeaderEntries(DynamicHPackEncoder encoder)
         {
             var headers = new List<EncoderHeaderEntry>();
 

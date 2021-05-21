@@ -2,15 +2,15 @@
   "private": true,
   "scripts": {
     "build": "npm run build:release",
-    "build:release": "webpack --mode production --env.production --env.configuration=Release",
-    "build:debug": "webpack --mode development --env.configuration=Debug",
-    "watch": "webpack --watch --mode development --env.configuration=Debug"
+    "build:release": "webpack --mode production --env production --env configuration=Release",
+    "build:debug": "webpack --mode development --env configuration=Debug",
+    "watch": "webpack --watch --mode development --env configuration=Debug"
   },
   "devDependencies": {
-    "ts-loader": "^6.2.1",
-    "typescript": "^3.7.5",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "ts-loader": "^8.0.14",
+    "typescript": "^4.2.3",
+    "webpack": "^5.24.4",
+    "webpack-cli": "^4.5.0"
   },
   "dependencies": {
     "@azure/msal-browser": "2.8.0"

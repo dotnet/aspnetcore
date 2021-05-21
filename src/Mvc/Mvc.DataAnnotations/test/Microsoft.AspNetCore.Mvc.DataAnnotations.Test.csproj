@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UseSharedCompilation>false</UseSharedCompilation>
+    <!-- This project has tests that rely on nullability on non-public types. Undo nullablePublicOnly configured by default -->
+    <Features>$(Features.Replace('nullablePublicOnly', ''))</Features>
   </PropertyGroup>
 
   <ItemGroup>

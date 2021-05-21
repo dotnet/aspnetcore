@@ -111,11 +111,10 @@ namespace HeaderPropagationSample
 
             var threshold = 0.80; // 20% chance for each feature in beta.
 
-            var random = new Random();
             var values = new List<string>();
             for (var i = 0; i < features.Length; i++)
             {
-                if (random.NextDouble() > threshold)
+                if (Random.Shared.NextDouble() > threshold)
                 {
                     values.Add(features[i]);
                 }

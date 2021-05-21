@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 {
     public class MapPathMiddlewareTests
     {
-        private static readonly Action<IApplicationBuilder> ActionNotImplemented = new Action<IApplicationBuilder>(_ => { throw new NotImplementedException(); });
-
         private static Task Success(HttpContext context)
         {
             context.Response.StatusCode = 200;

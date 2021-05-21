@@ -44,15 +44,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             if (options.StateDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(OpenIdConnectHandler).FullName, name, "v1");
+                    typeof(OpenIdConnectHandler).FullName!, name, "v1");
                 options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
 
             if (options.StringDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(OpenIdConnectHandler).FullName,
-                    typeof(string).FullName,
+                    typeof(OpenIdConnectHandler).FullName!,
+                    typeof(string).FullName!,
                     name,
                     "v1");
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                         options.MetadataAddress += ".well-known/openid-configuration";
                     }
 
-                    if (options.RequireHttpsMetadata && !options.MetadataAddress.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    if (options.RequireHttpsMetadata && !(options.MetadataAddress?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ?? false))
                     {
                         throw new InvalidOperationException("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.");
                     }

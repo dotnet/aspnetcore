@@ -1692,6 +1692,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 tree.AddAttribute(1, "MyDouble", double.MaxValue);
                 tree.AddAttribute(1, "MyDecimal", decimal.MinusOne);
                 tree.AddAttribute(1, "MyDate", dateTimeWillNotChange);
+                tree.AddAttribute(1, "MyGuid", Guid.Empty);
                 tree.CloseComponent();
             }
 

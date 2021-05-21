@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, string, string, Exception> _handleChallenge;
+        private static Action<ILogger, string, string, Exception?> _handleChallenge;
 
         static LoggingExtensions()
         {

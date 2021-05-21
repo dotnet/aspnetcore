@@ -14,21 +14,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <summary>
         /// Gets or sets the <see cref="MethodInfo"/>.
         /// </summary>
-        public MethodInfo MethodInfo { get; set; }
+        public MethodInfo MethodInfo { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the http method.
         /// </summary>
-        public string HttpMethod { get; set; }
+        public string HttpMethod { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters for the method.
         /// </summary>
-        public IList<HandlerParameterDescriptor> Parameters { get; set; }
+        public IList<HandlerParameterDescriptor> Parameters { get; set; } = default!;
     }
 }

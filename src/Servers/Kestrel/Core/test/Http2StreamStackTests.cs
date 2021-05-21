@@ -1,9 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -94,15 +99,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static Http2Stream<HttpContext> CreateStream(int streamId, long expirationTicks)
         {
             var context = new Http2StreamContext
-            {
-                StreamId = streamId,
-                ServiceContext = new Internal.ServiceContext
-                {
-                    ServerOptions = new KestrelServerOptions()
-                },
-                ServerPeerSettings = new Http2PeerSettings(),
-                ClientPeerSettings = new Http2PeerSettings()
-            };
+            (
+                connectionId: "TestConnectionId",
+                protocols: HttpProtocols.Http2,
+                serviceContext: TestContextFactory.CreateServiceContext(serverOptions: new KestrelServerOptions()),
+                connectionFeatures: new FeatureCollection(),
+                memoryPool: MemoryPool<byte>.Shared,
+                localEndPoint: null,
+                remoteEndPoint: null,
+                streamId: streamId,
+                streamLifetimeHandler: null!,
+                clientPeerSettings: new Http2PeerSettings(),
+                serverPeerSettings: new Http2PeerSettings(),
+                frameWriter: null!,
+                connectionInputFlowControl: null!,
+                connectionOutputFlowControl: null!
+            );
 
             return new Http2Stream<HttpContext>(new DummyApplication(), context)
             {

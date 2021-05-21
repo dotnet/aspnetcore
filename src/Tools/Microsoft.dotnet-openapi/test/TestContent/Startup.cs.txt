@@ -19,8 +19,7 @@ namespace SimpleWebSite
             services
                 .AddMvcCore()
                 .AddAuthorization()
-                .AddFormatterMappings(m => m.SetMediaTypeMappingForFormat("js", new MediaTypeHeaderValue("application/json")))
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddFormatterMappings(m => m.SetMediaTypeMappingForFormat("js", new MediaTypeHeaderValue("application/json")));
         }
 
         public void Configure(IApplicationBuilder app)

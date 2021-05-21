@@ -131,7 +131,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2267")]
         public async Task Server_ShutdownDuringRequest_Success()
         {
             Task<string> responseTask;
@@ -385,6 +384,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32479")]
         public async Task Server_SetConnectionLimitChangeAfterStarted_Success()
         {
             HttpSysOptions options = null;

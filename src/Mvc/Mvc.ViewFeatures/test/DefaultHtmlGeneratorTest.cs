@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
@@ -212,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, int.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value, CultureInfo.InvariantCulture));
         }
 
         [Theory]
@@ -236,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, int.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value, CultureInfo.InvariantCulture));
         }
 
         [Theory]
@@ -260,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, int.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value, CultureInfo.InvariantCulture));
         }
 
         [Fact]
@@ -282,7 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(Math.Min(ModelWithMaxLengthMetadata.MaxLengthAttributeValue, ModelWithMaxLengthMetadata.StringLengthAttributeValue), int.Parse(attribute.Value));
+            Assert.Equal(Math.Min(ModelWithMaxLengthMetadata.MaxLengthAttributeValue, ModelWithMaxLengthMetadata.StringLengthAttributeValue), int.Parse(attribute.Value, CultureInfo.InvariantCulture));
         }
 
         [Fact]
@@ -328,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, int.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value, CultureInfo.InvariantCulture));
         }
 
         [Theory]

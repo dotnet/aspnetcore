@@ -3,12 +3,15 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -20,7 +23,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly IArrayPool<char> _charPool;
         private readonly MvcOptions _mvcOptions;
-        private JsonSerializerSettings _serializerSettings;
+        private MvcNewtonsoftJsonOptions? _jsonOptions;
+        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
+        private JsonSerializerSettings? _serializerSettings;
+        private ILogger? _logger;
 
         /// <summary>
         /// Initializes a new <see cref="NewtonsoftJsonOutputFormatter"/> instance.
@@ -32,10 +38,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public NewtonsoftJsonOutputFormatter(
             JsonSerializerSettings serializerSettings,
             ArrayPool<char> charPool,
-            MvcOptions mvcOptions)
+            MvcOptions mvcOptions) : this(serializerSettings, charPool, mvcOptions, jsonOptions: null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="NewtonsoftJsonOutputFormatter"/> instance.
+        /// </summary>
+        /// <param name="serializerSettings">
+        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+        /// (<see cref="MvcNewtonsoftJsonOptions.SerializerSettings"/>) or an instance
+        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+        /// </param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        /// <param name="jsonOptions">The <see cref="MvcNewtonsoftJsonOptions"/>.</param>
+        public NewtonsoftJsonOutputFormatter(
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool,
+            MvcOptions mvcOptions,
+            MvcNewtonsoftJsonOptions? jsonOptions)
         {
             if (serializerSettings == null)
             {
@@ -50,12 +76,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SerializerSettings = serializerSettings;
             _charPool = new JsonArrayPool<char>(charPool);
             _mvcOptions = mvcOptions ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _jsonOptions = jsonOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
+
+            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(_mvcOptions);
         }
 
         /// <summary>
@@ -129,25 +158,34 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(selectedEncoding));
             }
 
+            // Compat mode for derived options
+            _jsonOptions ??= context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcNewtonsoftJsonOptions>>().Value;
+
             var response = context.HttpContext.Response;
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            FileBufferingWriteStream? fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
+                fileBufferingWriteStream = new FileBufferingWriteStream(_jsonOptions.OutputFormatterMemoryBufferThreshold);
                 responseStream = fileBufferingWriteStream;
+            }
+
+            var value = context.Object;
+            if (value is not null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
+            {
+                _logger ??= context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
+                Log.BufferingAsyncEnumerable(_logger, value);
+                value = await reader(value);
             }
 
             try
             {
                 await using (var writer = context.WriterFactory(responseStream, selectedEncoding))
                 {
-                    using (var jsonWriter = CreateJsonWriter(writer))
-                    {
-                        var jsonSerializer = CreateJsonSerializer(context);
-                        jsonSerializer.Serialize(jsonWriter, context.Object);
-                    }
+                    using var jsonWriter = CreateJsonWriter(writer);
+                    var jsonSerializer = CreateJsonSerializer(context);
+                    jsonSerializer.Serialize(jsonWriter, value);
                 }
 
                 if (fileBufferingWriteStream != null)
@@ -201,6 +239,23 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             };
 
             return copiedSettings;
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
+                LogLevel.Debug,
+                new EventId(1, "BufferingAsyncEnumerable"),
+                "Buffering IAsyncEnumerable instance of type '{Type}'.",
+                skipEnabledCheck: true);
+
+            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

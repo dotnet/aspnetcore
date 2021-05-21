@@ -1,0 +1,22 @@
+﻿@page "/"
+@namespace HostedBlazorWebassemblyApp.Server.Pages
+@using HostedBlazorWebassemblyApp.Client 
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HostedBlazorWebassemblyApp</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HostedBlazorWebassemblyApp.Client.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app"><component type="typeof(App)" render-mode="WebAssemblyPrerendered" /></div>
+    <persist-component-state />
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

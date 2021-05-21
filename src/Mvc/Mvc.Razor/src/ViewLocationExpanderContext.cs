@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public ViewLocationExpanderContext(
             ActionContext actionContext,
             string viewName,
-            string controllerName,
-            string areaName,
-            string pageName,
+            string? controllerName,
+            string? areaName,
+            string? pageName,
             bool isMainPage)
         {
             if (actionContext == null)
@@ -59,18 +59,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the controller name.
         /// </summary>
-        public string ControllerName { get; }
+        public string? ControllerName { get; }
 
         /// <summary>
         /// Gets the page name. This will be the value of the <c>page</c> route value when rendering a Page from the
         /// Razor Pages framework. This value will be <c>null</c> if rendering a view as the result of a controller.
         /// </summary>
-        public string PageName { get; }
+        public string? PageName { get; }
 
         /// <summary>
         /// Gets the area name.
         /// </summary>
-        public string AreaName { get; }
+        public string? AreaName { get; }
 
         /// <summary>
         /// Determines if the page being found is the main page for an action.
@@ -81,6 +81,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Gets or sets the <see cref="IDictionary{TKey, TValue}"/> that is populated with values as part of
         /// <see cref="IViewLocationExpander.PopulateValues(ViewLocationExpanderContext)"/>.
         /// </summary>
-        public IDictionary<string, string> Values { get; set; }
+        public IDictionary<string, string?> Values { get; set; } = default!;
     }
 }

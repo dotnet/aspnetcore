@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object?[]? args, out object? result)
         {
-            result = _clientProxy.SendCoreAsync(binder.Name, args);
+            result = _clientProxy.SendCoreAsync(binder.Name, args!);
             return true;
         }
     }

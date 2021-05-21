@@ -76,12 +76,19 @@ namespace Microsoft.AspNetCore.Cryptography
 #endif
         public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)
         {
+#if NETCOREAPP
+            var byteCount = Convert.ToInt32(count);
+            var bytesA = new ReadOnlySpan<byte>(bufA, byteCount);
+            var bytesB = new ReadOnlySpan<byte>(bufB, byteCount);
+            return CryptographicOperations.FixedTimeEquals(bytesA, bytesB);
+#else
             bool areEqual = true;
             for (uint i = 0; i < count; i++)
             {
                 areEqual &= (bufA[i] == bufB[i]);
             }
             return areEqual;
+#endif
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -91,12 +98,21 @@ namespace Microsoft.AspNetCore.Cryptography
             // An error at the call site isn't usable for timing attacks.
             Assert(countA == countB, "countA == countB");
 
+#if NETCOREAPP
+            unsafe
+            {
+                return CryptographicOperations.FixedTimeEquals(
+                    bufA.AsSpan(start: offsetA, length: countA),
+                    bufB.AsSpan(start: offsetB, length: countB));
+            }
+#else
             bool areEqual = true;
             for (int i = 0; i < countA; i++)
             {
                 areEqual &= (bufA[offsetA + i] == bufB[offsetB + i]);
             }
             return areEqual;
+#endif
         }
     }
 }

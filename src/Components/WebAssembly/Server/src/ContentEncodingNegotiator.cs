@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
 
         private void NegotiateEncoding(HttpContext context)
         {
-            var accept = context.Request.Headers[HeaderNames.AcceptEncoding];
+            var accept = context.Request.Headers.AcceptEncoding;
 
             if (StringValues.IsNullOrEmpty(accept))
             {
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             if (_encodingExtensionMap.TryGetValue(selectedEncoding, out var extension))
             {
                 context.Request.Path = context.Request.Path + extension;
-                context.Response.Headers[HeaderNames.ContentEncoding] = selectedEncoding.Value;
+                context.Response.Headers.ContentEncoding = selectedEncoding.Value;
                 context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.ContentEncoding);
             }
 

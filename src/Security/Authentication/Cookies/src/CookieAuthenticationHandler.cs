@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     return AuthenticateResult.Fail("SessionId missing");
                 }
                 // Only store _sessionKey if it matches an existing session. Otherwise we'll create a new one.
-                ticket = await Options.SessionStore.RetrieveAsync(claim.Value);
+                ticket = await Options.SessionStore.RetrieveAsync(claim.Value, Context.RequestAborted);
                 if (ticket == null)
                 {
                     return AuthenticateResult.Fail("Identity missing in session store");
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 if (Options.SessionStore != null)
                 {
-                    await Options.SessionStore.RemoveAsync(_sessionKey!);
+                    await Options.SessionStore.RemoveAsync(_sessionKey!, Context.RequestAborted);
                 }
                 return AuthenticateResult.Fail("Ticket expired");
             }
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
                 if (Options.SessionStore != null && _sessionKey != null)
                 {
-                    await Options.SessionStore.RenewAsync(_sessionKey, ticket);
+                    await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
                     var principal = new ClaimsPrincipal(
                         new ClaimsIdentity(
                             new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
@@ -322,11 +322,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 if (_sessionKey != null)
                 {
                     // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
-                    await Options.SessionStore.RenewAsync(_sessionKey, ticket);
+                    await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
                 }
                 else
                 {
-                    _sessionKey = await Options.SessionStore.StoreAsync(ticket);
+                    _sessionKey = await Options.SessionStore.StoreAsync(ticket, Context.RequestAborted);
                 }
 
                 var principal = new ClaimsPrincipal(
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var cookieOptions = BuildCookieOptions();
             if (Options.SessionStore != null && _sessionKey != null)
             {
-                await Options.SessionStore.RemoveAsync(_sessionKey);
+                await Options.SessionStore.RemoveAsync(_sessionKey, Context.RequestAborted);
             }
 
             var context = new CookieSigningOutContext(
@@ -398,9 +398,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private async Task ApplyHeaders(bool shouldRedirectToReturnUrl, AuthenticationProperties properties)
         {
-            Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCacheNoStore;
-            Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
-            Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
+            Response.Headers.CacheControl = HeaderValueNoCacheNoStore;
+            Response.Headers.Pragma = HeaderValueNoCache;
+            Response.Headers.Expires = HeaderValueEpocDate;
 
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {

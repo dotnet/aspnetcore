@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class UrlGroup : IDisposable
+    internal partial class UrlGroup : IDisposable
     {
         private static readonly int QosInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_QOS_SETTING_INFO>();
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private readonly ILogger _logger;
 
-        private ServerSession _serverSession;
+        private ServerSession? _serverSession;
         private bool _disposed;
         private bool _created;
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 var exception = new HttpSysException((int)statusCode);
-                _logger.LogError(LoggerEventIds.SetUrlPropertyError, exception, "SetUrlGroupProperty");
+                Log.SetUrlPropertyError(_logger, exception);
                 if (throwOnError)
                 {
                     throw exception;
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void RegisterPrefix(string uriPrefix, int contextId)
         {
-            _logger.LogDebug(LoggerEventIds.RegisteringPrefix, "Listening on prefix: {0}" , uriPrefix);
+            Log.RegisteringPrefix(_logger, uriPrefix);
             CheckDisposed();
             var statusCode = HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal bool UnregisterPrefix(string uriPrefix)
         {
-            _logger.LogInformation(LoggerEventIds.UnregisteringPrefix, "Stop listening on prefix: {0}" , uriPrefix);
+            Log.UnregisteringPrefix(_logger, "Stop listening on prefix: {0}");
             CheckDisposed();
 
             var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
-                    _logger.LogError(LoggerEventIds.CloseUrlGroupError, "HttpCloseUrlGroup; Result: {0}", statusCode);
+                    Log.CloseUrlGroupError(_logger, statusCode);
                 }
 
             }

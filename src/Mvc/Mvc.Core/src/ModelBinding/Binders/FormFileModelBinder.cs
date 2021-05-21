@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -181,9 +183,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
             }
 
-            public IFormFile this[string name] => GetFile(name);
+            public IFormFile? this[string name] => GetFile(name);
 
-            public IFormFile GetFile(string name)
+            public IFormFile? GetFile(string name)
             {
                 for (var i = 0; i < Items.Count; i++)
                 {

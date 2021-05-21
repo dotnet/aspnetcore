@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public class KnownRouteValueConstraint : IRouteConstraint
     {
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
-        private RouteValuesCollection _cachedValuesCollection;
+        private RouteValuesCollection? _cachedValuesCollection;
 
         /// <summary>
         /// Initializes an instance of <see cref="KnownRouteValueConstraint"/>.
@@ -37,8 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         /// <inheritdoc/>
         public bool Match(
-            HttpContext httpContext,
-            IRouter route,
+            HttpContext? httpContext,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection)
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return false;
         }
 
-        private ActionDescriptorCollection GetAndValidateActionDescriptors(HttpContext httpContext)
+        private ActionDescriptorCollection GetAndValidateActionDescriptors(HttpContext? httpContext)
         {
             var actionDescriptorsProvider = _actionDescriptorCollectionProvider;
 
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 _cachedValuesCollection = valuesCollection;
             }
 
-            return _cachedValuesCollection.Items;
+            return valuesCollection.Items;
         }
 
         private class RouteValuesCollection

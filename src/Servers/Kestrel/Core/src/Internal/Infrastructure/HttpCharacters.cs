@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static class HttpCharacters
     {
-        private static readonly int _tableSize = 128;
+        private const int _tableSize = 128;
         private static readonly bool[] _alphaNumeric = InitializeAlphaNumeric();
         private static readonly bool[] _authority = InitializeAuthority();
         private static readonly bool[] _token = InitializeToken();

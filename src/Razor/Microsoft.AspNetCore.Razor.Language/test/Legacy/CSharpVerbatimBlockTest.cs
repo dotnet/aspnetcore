@@ -8,8 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpVerbatimBlockTest : ParserTestBase
     {
-        private const string TestExtraKeyword = "model";
-
         [Fact]
         public void VerbatimBlock()
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// Creates a new <see cref="ClientValidatorItem"/>.
         /// </summary>
         /// <param name="validatorMetadata">The <see cref="ValidatorMetadata"/>.</param>
-        public ClientValidatorItem(object validatorMetadata)
+        public ClientValidatorItem(object? validatorMetadata)
         {
             ValidatorMetadata = validatorMetadata;
         }
@@ -30,12 +30,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// Gets the metadata associated with the <see cref="Validator"/>.
         /// </summary>
-        public object ValidatorMetadata { get; } = default!;
+        public object? ValidatorMetadata { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="IClientModelValidator"/>.
         /// </summary>
-        public IClientModelValidator Validator { get; set; } = default!;
+        public IClientModelValidator? Validator { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not <see cref="Validator"/> can be reused across requests.

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     {
         public static void AddDataAnnotationsLocalizationServices(
             IServiceCollection services,
-            Action<MvcDataAnnotationsLocalizationOptions> setupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? setupAction)
         {
             services.AddLocalization();
 

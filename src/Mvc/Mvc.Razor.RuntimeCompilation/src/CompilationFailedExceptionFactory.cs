@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                     sourceFileContent = ReadContent(codeDocument, sourceFilePath);
                 }
 
-                string additionalMessage = null;
+                string? additionalMessage = null;
                 if (group.Any(g =>
                     string.Equals(CS0234, g.Id, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(CS0246, g.Id, StringComparison.OrdinalIgnoreCase)))
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
         private static string ReadContent(RazorCodeDocument codeDocument, string filePath)
         {
-            RazorSourceDocument sourceDocument;
+            RazorSourceDocument? sourceDocument;
             if (string.IsNullOrEmpty(filePath) || string.Equals(codeDocument.Source.FilePath, filePath, StringComparison.Ordinal))
             {
                 sourceDocument = codeDocument.Source;
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             string filePath)
         {
             var sourceSpan = razorDiagnostic.Span;
-            var message = razorDiagnostic.GetMessage();
+            var message = razorDiagnostic.GetMessage(CultureInfo.CurrentCulture);
             return new DiagnosticMessage(
                 message: message,
                 formattedMessage: razorDiagnostic.ToString(),

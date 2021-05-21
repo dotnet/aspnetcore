@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             throw new NotImplementedException();
         }
 
-        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
+
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);

@@ -3,8 +3,14 @@
 
 namespace Microsoft.AspNetCore.Connections.Features
 {
+    /// <summary>
+    /// The error code for the protocol being used.
+    /// </summary>
     public interface IProtocolErrorCodeFeature
     {
+        /// <summary>
+        /// Gets or sets the error code.
+        /// </summary>
         long Error { get; set; }
     }
 }

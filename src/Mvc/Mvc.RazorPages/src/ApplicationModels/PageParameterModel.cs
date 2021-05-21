@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public PageParameterModel(
             ParameterInfo parameterInfo,
             IReadOnlyList<object> attributes)
-            : base(parameterInfo?.ParameterType, attributes)
+            : base(parameterInfo.ParameterType, attributes)
         {
             if (parameterInfo == null)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The <see cref="PageHandlerModel"/>.
         /// </summary>
-        public PageHandlerModel Handler { get; set; }
+        public PageHandlerModel Handler { get; set; } = default!;
 
         MemberInfo ICommonModel.MemberInfo => ParameterInfo.Member;
 

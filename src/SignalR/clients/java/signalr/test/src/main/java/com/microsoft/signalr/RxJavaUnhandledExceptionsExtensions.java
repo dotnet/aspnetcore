@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import io.reactivex.plugins.RxJavaPlugins;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 // Use by adding "@ExtendWith({RxJavaUnhandledExceptionsExtensions.class})" to a test class
 class RxJavaUnhandledExceptionsExtensions implements BeforeAllCallback, AfterAllCallback {

@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         public void ParsingHandshakeRequestMessage_NotComplete1()
         {
             var message = _requestMessage4;
-            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
+            if (HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
             {
                 throw new Exception();
             }
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         }
 
         [Benchmark]
-        public void ParsingHandshakeResponseMessage_ValidMessages4() 
+        public void ParsingHandshakeResponseMessage_ValidMessages4()
         {
             var message = _responseMessage4;
             if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))

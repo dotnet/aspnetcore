@@ -52,5 +52,11 @@ namespace Microsoft.CodeAnalysis.Razor
 
             return new GlobalQualifiedTypeNameRewriter(ignore);
         }
+
+        public override bool IsLambda(string expression)
+        {
+            var parsed = SyntaxFactory.ParseExpression(expression);
+            return parsed is LambdaExpressionSyntax;
+        }
     }
 }

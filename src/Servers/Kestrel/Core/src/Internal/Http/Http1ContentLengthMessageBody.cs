@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,12 +29,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _unexaminedInputLength = contentLength;
         }
 
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            ThrowIfCompleted();
-            return ReadAsyncInternal(cancellationToken);
-        }
-
         public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
         {
             VerifyIsNotReading();
@@ -51,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
             }
 
-            TryStart();
+            await TryStartAsync();
 
             // The while(true) loop is required because the Http1 connection calls CancelPendingRead to unblock
             // the call to StartTimingReadAsync to check if the request timed out.
@@ -122,12 +117,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _readResult;
         }
 
-        public override bool TryRead(out ReadResult readResult)
-        {
-            ThrowIfCompleted();
-            return TryReadInternal(out readResult);
-        }
-
         public override bool TryReadInternal(out ReadResult readResult)
         {
             VerifyIsNotReading();
@@ -144,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
             }
 
-            TryStart();
+            TryStartAsync();
 
             // The while(true) because we don't want to return a canceled ReadResult if the user themselves didn't cancel it.
             while (true)
@@ -213,11 +202,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return maxLength;
         }
 
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
-        }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             if (!_isReading)
@@ -252,28 +236,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnReadStarting()
         {
-            if (_contentLength > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+            if (_contentLength > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
             }
-        }
-
-        public override void Complete(Exception exception)
-        {
-            _context.ReportApplicationError(exception);
-            _completed = true;
         }
 
         public override void CancelPendingRead()
         {
             Interlocked.Exchange(ref _userCanceled, 1);
             _context.Input.CancelPendingRead();
-        }
-
-        protected override Task OnStopAsync()
-        {
-            Complete(null);
-            return Task.CompletedTask;
         }
 
         [StackTraceHidden]

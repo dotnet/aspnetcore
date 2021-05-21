@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// </summary>
     public class PageHandlerExecutedContext : FilterContext
     {
-        private Exception _exception;
-        private ExceptionDispatchInfo _exceptionDispatchInfo;
+        private Exception? _exception;
+        private ExceptionDispatchInfo? _exceptionDispatchInfo;
 
         /// <summary>
         /// Creates a new instance of <see cref="PageHandlerExecutedContext"/>.
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         public PageHandlerExecutedContext(
             PageContext pageContext,
             IList<IFilterMetadata> filters,
-            HandlerMethodDescriptor handlerMethod,
+            HandlerMethodDescriptor? handlerMethod,
             object handlerInstance)
             : base(pageContext, filters)
         {
@@ -61,13 +61,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets the descriptor for the handler method that was invoked.
         /// </summary>
-        public virtual HandlerMethodDescriptor HandlerMethod { get; }
+        public virtual HandlerMethodDescriptor? HandlerMethod { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="System.Exception"/> caught while executing the action or action filters, if
         /// any.
         /// </summary>
-        public virtual Exception Exception
+        public virtual Exception? Exception
         {
             get
             {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or sets the <see cref="System.Runtime.ExceptionServices.ExceptionDispatchInfo"/> for the
         /// <see cref="Exception"/>, if an <see cref="System.Exception"/> was caught and this information captured.
         /// </summary>
-        public virtual ExceptionDispatchInfo ExceptionDispatchInfo
+        public virtual ExceptionDispatchInfo? ExceptionDispatchInfo
         {
             get => _exceptionDispatchInfo;
 
@@ -111,6 +111,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets or sets the <see cref="IActionResult"/>.
         /// </summary>
-        public virtual IActionResult Result { get; set; }
+        public virtual IActionResult? Result { get; set; }
     }
 }

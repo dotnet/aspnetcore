@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Cryptography.Cng
         // Warning: mutable struct!
         private struct CachedAlgorithmInfo
         {
-            private WeakReference<BCryptAlgorithmHandle> _algorithmHandle;
+            private WeakReference<BCryptAlgorithmHandle>? _algorithmHandle;
             private readonly Func<BCryptAlgorithmHandle> _factory;
 
             public CachedAlgorithmInfo(Func<BCryptAlgorithmHandle> factory)

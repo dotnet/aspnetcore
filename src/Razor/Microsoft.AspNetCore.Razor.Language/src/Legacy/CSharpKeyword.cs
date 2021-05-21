@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         Break,
         Checked,
         Namespace,
-        When
+        When,
+        Where
     }
 }

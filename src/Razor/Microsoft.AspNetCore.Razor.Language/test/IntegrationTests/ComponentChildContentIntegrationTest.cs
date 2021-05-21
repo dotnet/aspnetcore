@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp;
@@ -42,38 +43,6 @@ namespace Test
 
         [Parameter]
         public RenderFragment<string> ChildContent { get; set; }
-
-        [Parameter]
-        public string Value { get; set; }
-    }
-}
-");
-
-        private readonly CSharpSyntaxTree RenderMultipleChildContent = Parse(@"
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering
-namespace Test
-{
-    public class RenderMultipleChildContent : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.AddContent(0, Header, Name);
-            builder.AddContent(1, ChildContent, Value);
-            builder.AddContent(2, Footer);
-        }
-
-        [Parameter]
-        public string Name { get; set; }
-
-        [Parameter]
-        public RenderFragment<string> Header { get; set; }
-
-        [Parameter]
-        public RenderFragment<string> ChildContent { get; set; }
-
-        [Parameter]
-        public RenderFragment Footer { get; set; }
 
         [Parameter]
         public string Value { get; set; }
@@ -143,7 +112,7 @@ Some Content
             Assert.Equal(
                 "Unrecognized child content inside component 'RenderChildContent'. The component 'RenderChildContent' accepts " +
                 "child content through the following top-level items: 'ChildContent'.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -226,7 +195,7 @@ Some Content
             Assert.Equal(
                 "The child content element 'ChildContent' of component 'RenderChildContentString' uses the same parameter name ('context') as enclosing child content " +
                 "element 'ChildContent' of component 'RenderChildContentString'. Specify the parameter name like: '<ChildContent Context=\"another_name\"> to resolve the ambiguity",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -245,7 +214,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentHasInvalidParameterOnComponent.Id, diagnostic.Id);
             Assert.Equal(
                 "Invalid parameter name. The parameter name attribute 'Context' on component 'RenderChildContentString' can only include literal text.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -266,7 +235,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentHasInvalidAttribute.Id, diagnostic.Id);
             Assert.Equal(
                 "Unrecognized attribute '@key' on child content element 'ChildContent'.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
     }
 }

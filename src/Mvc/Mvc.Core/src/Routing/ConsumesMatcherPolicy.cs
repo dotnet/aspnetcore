@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.Collections.Generic;
@@ -345,7 +346,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private class ConsumesMetadataEndpointComparer : EndpointMetadataComparer<IConsumesMetadata>
         {
-            protected override int CompareMetadata(IConsumesMetadata x, IConsumesMetadata y)
+            protected override int CompareMetadata(IConsumesMetadata? x, IConsumesMetadata? y)
             {
                 // Ignore the metadata if it has an empty list of content types.
                 return base.CompareMetadata(

@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         public ActionDescriptor()
         {
             Id = Guid.NewGuid().ToString();
-            Properties = new Dictionary<object, object>();
-            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Properties = new Dictionary<object, object?>();
+            RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// Gets or sets the collection of route values that must be provided by routing
         /// for the action to be selected.
         /// </summary>
-        public IDictionary<string, string> RouteValues { get; set; }
+        public IDictionary<string, string?> RouteValues { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Routing.AttributeRouteInfo"/>.
@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; set; } = default!;
+        public IDictionary<object, object?> Properties { get; set; } = default!;
+
+        internal IFilterMetadata[]? CachedReusableFilters { get; set; }
     }
 }

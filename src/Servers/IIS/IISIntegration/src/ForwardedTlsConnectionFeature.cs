@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     internal class ForwardedTlsConnectionFeature : ITlsConnectionFeature
     {
         private StringValues _header;
-        private X509Certificate2 _certificate;
+        private X509Certificate2? _certificate;
         private ILogger _logger;
 
         public ForwardedTlsConnectionFeature(ILogger logger, StringValues header)
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _header = header;
         }
 
-        public X509Certificate2 ClientCertificate
+        public X509Certificate2? ClientCertificate
         {
             get
             {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
         }
 
-        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
+        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(ClientCertificate);
         }

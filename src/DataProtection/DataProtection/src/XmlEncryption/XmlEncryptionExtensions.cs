@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 // the original document or other data structures. The element we pass to
                 // the decryptor should be the child of the 'encryptedSecret' element.
                 var clonedElementWhichRequiresDecryption = new XElement(elementWhichRequiresDecryption);
-                string decryptorTypeName = (string)clonedElementWhichRequiresDecryption.Attribute(XmlConstants.DecryptorTypeAttributeName);
+                string decryptorTypeName = (string)clonedElementWhichRequiresDecryption.Attribute(XmlConstants.DecryptorTypeAttributeName)!;
                 var decryptorInstance = activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
                 var decryptedElement = decryptorInstance.Decrypt(clonedElementWhichRequiresDecryption.Elements().Single());
 
@@ -63,10 +63,10 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             {
                 entry.Key.ReplaceWith(entry.Value);
             }
-            return doc.Root;
+            return doc.Root!;
         }
 
-        public static XElement EncryptIfNecessary(this IXmlEncryptor encryptor, XElement element)
+        public static XElement? EncryptIfNecessary(this IXmlEncryptor encryptor, XElement element)
         {
             // If no encryption is necessary, return null.
             if (!DoesElementOrDescendentRequireEncryption(element))
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 // </enc:encryptedSecret>
                 entry.Key.ReplaceWith(
                     new XElement(XmlConstants.EncryptedSecretElementName,
-                        new XAttribute(XmlConstants.DecryptorTypeAttributeName, entry.Value.DecryptorType.AssemblyQualifiedName),
+                        new XAttribute(XmlConstants.DecryptorTypeAttributeName, entry.Value.DecryptorType.AssemblyQualifiedName!),
                         entry.Value.EncryptedElement));
             }
             return doc.Root;

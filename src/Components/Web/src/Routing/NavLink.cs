@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -51,13 +52,13 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter]
         public NavLinkMatch Match { get; set; }
 
-        [Inject] private NavigationManager NavigationManger { get; set; } = default!;
+        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
         /// <inheritdoc />
         protected override void OnInitialized()
         {
             // We'll consider re-rendering on each location change
-            NavigationManger.LocationChanged += OnLocationChanged;
+            NavigationManager.LocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
@@ -67,16 +68,16 @@ namespace Microsoft.AspNetCore.Components.Routing
             var href = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
             {
-                href = Convert.ToString(obj);
+                href = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
 
-            _hrefAbsolute = href == null ? null : NavigationManger.ToAbsoluteUri(href).AbsoluteUri;
-            _isActive = ShouldMatch(NavigationManger.Uri);
+            _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
+            _isActive = ShouldMatch(NavigationManager.Uri);
 
             _class = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
             {
-                _class = Convert.ToString(obj);
+                _class = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
 
             UpdateCssClass();
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             // To avoid leaking memory, it's important to detach any event handlers in Dispose()
-            NavigationManger.LocationChanged -= OnLocationChanged;
+            NavigationManager.LocationChanged -= OnLocationChanged;
         }
 
         private void UpdateCssClass()

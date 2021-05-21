@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -83,7 +83,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<ImplementsDirectivePass>(feature),
                 feature => Assert.IsType<InheritsDirectivePass>(feature),
                 feature => Assert.IsType<MetadataAttributePass>(feature),
-                feature => Assert.IsType<PreallocatedTagHelperAttributeOptimizationPass>(feature));
+                feature => Assert.IsType<PreallocatedTagHelperAttributeOptimizationPass>(feature),
+                feature => Assert.IsType<ViewCssScopePass>(feature));
         }
 
         private static void AssertDefaultDirectives(RazorProjectEngine engine)

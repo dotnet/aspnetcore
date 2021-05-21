@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <see cref="Abstractions.ActionDescriptor.RouteValues"/> to get route values
         /// produces consistently cased results.
         /// </remarks>
-        public static string GetNormalizedRouteValue(ActionContext context, string key)
+        public static string? GetNormalizedRouteValue(ActionContext context, string key)
             => NormalizedRouteValue.GetNormalizedRouteValue(context, key);
 
         /// <inheritdoc />
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
             else
             {
-                return new RazorPageResult(pageName, cacheResult.SearchedLocations);
+                return new RazorPageResult(pageName, cacheResult.SearchedLocations!);
             }
         }
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
             else
             {
-                return new RazorPageResult(pagePath, cacheResult.SearchedLocations);
+                return new RazorPageResult(pagePath, cacheResult.SearchedLocations!);
             }
         }
 
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isMainPage)
+        public ViewEngineResult GetView(string? executingFilePath, string viewPath, bool isMainPage)
         {
             if (string.IsNullOrEmpty(viewPath))
             {
@@ -198,11 +198,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return CreateViewEngineResult(cacheResult, viewPath);
         }
 
-        private ViewLocationCacheResult LocatePageFromPath(string executingFilePath, string pagePath, bool isMainPage)
+        private ViewLocationCacheResult LocatePageFromPath(string? executingFilePath, string pagePath, bool isMainPage)
         {
-            var applicationRelativePath = GetAbsolutePath(executingFilePath, pagePath);
+            var applicationRelativePath = GetAbsolutePath(executingFilePath, pagePath)!;
             var cacheKey = new ViewLocationCacheKey(applicationRelativePath, isMainPage);
-            if (!ViewLookupCache.TryGetValue(cacheKey, out ViewLocationCacheResult cacheResult))
+            if (!ViewLookupCache.TryGetValue(cacheKey, out ViewLocationCacheResult? cacheResult))
             {
                 var expirationTokens = new HashSet<IChangeToken>();
                 cacheResult = CreateCacheResult(expirationTokens, applicationRelativePath, isMainPage);
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     cacheEntryOptions);
             }
 
-            return cacheResult;
+            return cacheResult!;
         }
 
         private ViewLocationCacheResult LocatePageFromViewLocations(
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             var controllerName = GetNormalizedRouteValue(actionContext, ControllerKey);
             var areaName = GetNormalizedRouteValue(actionContext, AreaKey);
-            string razorPageName = null;
+            string? razorPageName = null;
             if (actionContext.ActionDescriptor.RouteValues.ContainsKey(PageKey))
             {
                 // Only calculate the Razor Page name if "page" is registered in RouteValues.
@@ -250,14 +250,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 areaName,
                 razorPageName,
                 isMainPage);
-            Dictionary<string, string> expanderValues = null;
+            Dictionary<string, string?>? expanderValues = null;
 
             var expanders = _options.ViewLocationExpanders;
             // Read interface .Count once rather than per iteration
             var expandersCount = expanders.Count;
             if (expandersCount > 0)
             {
-                expanderValues = new Dictionary<string, string>(StringComparer.Ordinal);
+                expanderValues = new Dictionary<string, string?>(StringComparer.Ordinal);
                 expanderContext.Values = expanderValues;
 
                 // Perf: Avoid allocations
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public string GetAbsolutePath(string executingFilePath, string pagePath)
+        public string? GetAbsolutePath(string? executingFilePath, string? pagePath)
         {
             if (string.IsNullOrEmpty(pagePath))
             {
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 viewLocations = expanders[i].ExpandViewLocations(expanderContext, viewLocations);
             }
 
-            ViewLocationCacheResult cacheResult = null;
+            ViewLocationCacheResult? cacheResult = null;
             var searchedLocations = new List<string>();
             var expirationTokens = new HashSet<IChangeToken>();
             foreach (var location in viewLocations)
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         // Internal for unit testing
-        internal ViewLocationCacheResult CreateCacheResult(
+        internal ViewLocationCacheResult? CreateCacheResult(
             HashSet<IChangeToken> expirationTokens,
             string relativePath,
             bool isMainPage)
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 // Only need to lookup _ViewStarts for the main page.
                 var viewStartPages = isMainPage ?
-                    GetViewStartPages(viewDescriptor.RelativePath, expirationTokens) :
+                    GetViewStartPages(viewDescriptor!.RelativePath, expirationTokens) :
                     Array.Empty<ViewLocationCacheItem>();
 
                 return new ViewLocationCacheResult(
@@ -471,12 +471,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             if (!result.Success)
             {
-                return ViewEngineResult.NotFound(viewName, result.SearchedLocations);
+                return ViewEngineResult.NotFound(viewName, result.SearchedLocations!);
             }
 
             var page = result.ViewEntry.PageFactory();
 
-            var viewStarts = new IRazorPage[result.ViewStartEntries.Count];
+            var viewStarts = new IRazorPage[result.ViewStartEntries!.Count];
             for (var i = 0; i < viewStarts.Length; i++)
             {
                 var viewStartItem = result.ViewStartEntries[i];
@@ -484,6 +484,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
 
             var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder, _diagnosticListener);
+            if (view is IAsyncDisposable)
+            {
+                throw new InvalidOperationException(Resources.FormatAsyncDisposableViewsNotSupported(typeof(IAsyncDisposable).FullName));
+            }
+
             return ViewEngineResult.Found(viewName, view);
         }
 

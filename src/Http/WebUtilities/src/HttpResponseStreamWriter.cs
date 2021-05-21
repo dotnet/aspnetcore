@@ -14,12 +14,11 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.WebUtilities
 {
     /// <summary>
-    /// Writes to the <see cref="Stream"/> using the supplied <see cref="Encoding"/>.
+    /// Writes to the HTTP response <see cref="Stream"/> using the supplied <see cref="System.Text.Encoding"/>.
     /// It does not write the BOM and also does not close the stream.
     /// </summary>
     public class HttpResponseStreamWriter : TextWriter
     {
-        private const int MinBufferSize = 128;
         internal const int DefaultBufferSize = 16 * 1024;
 
         private Stream _stream;
@@ -34,16 +33,35 @@ namespace Microsoft.AspNetCore.WebUtilities
         private int _charBufferCount;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpResponseStreamWriter"/>.
+        /// </summary>
+        /// <param name="stream">The HTTP response <see cref="Stream"/>.</param>
+        /// <param name="encoding">The character encoding to use.</param>
         public HttpResponseStreamWriter(Stream stream, Encoding encoding)
             : this(stream, encoding, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpResponseStreamWriter"/>.
+        /// </summary>
+        /// <param name="stream">The HTTP response <see cref="Stream"/>.</param>
+        /// <param name="encoding">The character encoding to use.</param>
+        /// <param name="bufferSize">The minimum buffer size.</param>
         public HttpResponseStreamWriter(Stream stream, Encoding encoding, int bufferSize)
             : this(stream, encoding, bufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpResponseStreamWriter"/>.
+        /// </summary>
+        /// <param name="stream">The HTTP response <see cref="Stream"/>.</param>
+        /// <param name="encoding">The character encoding to use.</param>
+        /// <param name="bufferSize">The minimum buffer size.</param>
+        /// <param name="bytePool">The byte array pool.</param>
+        /// <param name="charPool">The char array pool.</param>
         public HttpResponseStreamWriter(
             Stream stream,
             Encoding encoding,
@@ -88,8 +106,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override Encoding Encoding { get; }
 
+        /// <inheritdoc/>
         public override void Write(char value)
         {
             if (_disposed)
@@ -106,6 +126,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _charBufferCount++;
         }
 
+        /// <inheritdoc/>
         public override void Write(char[] values, int index, int count)
         {
             if (_disposed)
@@ -129,6 +150,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override void Write(ReadOnlySpan<char> value)
         {
             if (_disposed)
@@ -151,6 +173,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
         }
 
+        /// <inheritdoc/>
         public override void Write(string? value)
         {
             if (_disposed)
@@ -176,6 +199,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override void WriteLine(ReadOnlySpan<char> value)
         {
             if (_disposed)
@@ -187,6 +211,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             Write(NewLine);
         }
 
+        /// <inheritdoc/>
         public override Task WriteAsync(char value)
         {
             if (_disposed)
@@ -217,6 +242,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _charBufferCount++;
         }
 
+        /// <inheritdoc/>
         public override Task WriteAsync(char[] values, int index, int count)
         {
             if (_disposed)
@@ -258,6 +284,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override Task WriteAsync(string? value)
         {
             if (_disposed)
@@ -302,6 +329,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
         public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
         {
@@ -353,6 +381,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
         }
 
+        /// <inheritdoc/>
         public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
         {
             if (_disposed)
@@ -393,6 +422,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         // We want to flush the stream when Flush/FlushAsync is explicitly
         // called by the user (example: from a Razor view).
 
+        /// <inheritdoc/>
         public override void Flush()
         {
             if (_disposed)
@@ -403,6 +433,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             FlushInternal(flushEncoder: true);
         }
 
+        /// <inheritdoc/>
         public override Task FlushAsync()
         {
             if (_disposed)
@@ -413,6 +444,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return FlushInternalAsync(flushEncoder: true);
         }
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (disposing && !_disposed)
@@ -432,6 +464,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             base.Dispose(disposing);
         }
 
+        /// <inheritdoc/>
         public override async ValueTask DisposeAsync()
         {
             if (!_disposed)

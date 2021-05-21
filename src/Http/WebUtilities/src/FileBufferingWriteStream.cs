@@ -61,6 +61,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             PagedByteBuffer = new PagedByteBuffer(ArrayPool<byte>.Shared);
         }
 
+        /// <summary>
+        /// The maximum amount of memory in bytes to allocate before switching to a file on disk.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 32kb.
+        /// </remarks>
+        public int MemoryThreshold => _memoryThreshold;
+
         /// <inheritdoc />
         public override bool CanRead => false;
 
@@ -200,6 +208,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             await PagedByteBuffer.MoveToAsync(destination, cancellationToken);
         }
 
+        /// <summary>
+        /// Drains buffered content to <paramref name="destination"/>.
+        /// </summary>
+        /// <param name="destination">The <see cref="PipeWriter" /> to drain buffered contents to.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken" />.</param>
+        /// <returns>A <see cref="Task" /> that represents the asynchronous drain operation.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public async Task DrainBufferAsync(PipeWriter destination, CancellationToken cancellationToken = default)
         {

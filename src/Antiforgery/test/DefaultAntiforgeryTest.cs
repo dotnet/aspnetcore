@@ -313,8 +313,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             Assert.NotNull(antiforgeryFeature);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
         }
 
         [Fact]
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 isOldCookieValid: true,
                 antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
-            context.HttpContext.Response.Headers["Cache-Control"] = "public";
+            context.HttpContext.Response.Headers.CacheControl = "public";
 
             // Act
             var tokenSet = antiforgery.GetAndStoreTokens(context.HttpContext);
@@ -344,8 +344,106 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             Assert.NotNull(antiforgeryFeature);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
+        }
+
+        private string GetAndStoreTokens_CacheHeadersArrangeAct(TestSink testSink, string headerName, string headerValue)
+        {
+            // Arrange
+            var loggerFactory = new Mock<ILoggerFactory>();
+            loggerFactory
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
+                .Returns(new TestLogger("test logger", testSink, enabled: true));
+            var services = new ServiceCollection();
+            services.AddSingleton(loggerFactory.Object);
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var context = CreateMockContext(
+                new AntiforgeryOptions(),
+                useOldCookie: true,
+                isOldCookieValid: true,
+                antiforgeryFeature: antiforgeryFeature);
+            context.HttpContext.RequestServices = services.BuildServiceProvider();
+            var antiforgery = GetAntiforgery(context);
+            context.HttpContext.Response.Headers[headerName] = headerValue;
+
+            // Act
+            antiforgery.GetAndStoreTokens(context.HttpContext);
+            return context.HttpContext.Response.Headers[headerName].ToString();
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-cache, no-store")]
+        [InlineData("Cache-Control", "NO-CACHE, NO-STORE")]
+        [InlineData("Cache-Control", "no-cache, no-store, private")]
+        [InlineData("Cache-Control", "NO-CACHE, NO-STORE, PRIVATE")]        
+        public void GetAndStoreTokens_DoesNotOverwriteCacheControlHeader(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.Equal(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.False(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-cache, private")]
+        [InlineData("Cache-Control", "NO-CACHE, PRIVATE")]
+        public void GetAndStoreTokens_OverwritesCacheControlHeader_IfNoStoreIsNotSet(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.NotEqual(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.True(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-store, private")]
+        [InlineData("Cache-Control", "NO-STORE, PRIVATE")]
+        public void GetAndStoreTokens_OverwritesCacheControlHeader_IfNoCacheIsNotSet(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.NotEqual(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.True(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Pragma", "no-cache")]
+        [InlineData("Pragma", "NO-CACHE")]
+        public void GetAndStoreTokens_DoesNotOverwritePragmaHeader(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.Equal(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.False(hasWarningMessage);
         }
 
         [Fact]
@@ -408,8 +506,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(antiforgeryFeature);
             Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
         }
 
         [Fact]
@@ -1186,7 +1284,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);
@@ -1224,7 +1322,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);
@@ -1250,7 +1348,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Theory]
-        [InlineData("Cache-Control", "no-cache")]
+        [InlineData("Cache-Control", "no-cache, no-store")]
         [InlineData("Pragma", "no-cache")]
         public void GetAndStoreTokens_DoesNotLogsWarning_ForNoCacheHeaders_AlreadyPresent(string headerName, string headerValue)
         {
@@ -1258,7 +1356,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);

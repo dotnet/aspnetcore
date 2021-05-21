@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using Microsoft.AspNetCore.Components;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
         /// <param name="selector">The DOM element selector or component registration id for the component.</param>
-        public RootComponentMapping(Type componentType, string selector)
+        public RootComponentMapping([DynamicallyAccessedMembers(Component)] Type componentType, string selector)
         {
             if (componentType is null)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
         /// <param name="selector">The DOM element selector or registration id for the component.</param>
         /// <param name="parameters">The parameters to pass to the component.</param>
-        public RootComponentMapping(Type componentType, string selector, ParameterView parameters) : this(componentType, selector)
+        public RootComponentMapping([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters) : this(componentType, selector)
         {
             Parameters = parameters;
         }
@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Gets the component type.
         /// </summary>
+        [DynamicallyAccessedMembers(Component)]
         public Type ComponentType { get; }
 
         /// <summary>

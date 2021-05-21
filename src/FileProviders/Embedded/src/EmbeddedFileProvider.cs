@@ -41,11 +41,11 @@ namespace Microsoft.Extensions.FileProviders
         /// </summary>
         /// <param name="assembly">The assembly that contains the embedded resources.</param>
         /// <param name="baseNamespace">The base namespace that contains the embedded resources.</param>
-        public EmbeddedFileProvider(Assembly assembly, string baseNamespace)
+        public EmbeddedFileProvider(Assembly assembly, string? baseNamespace)
         {
             if (assembly == null)
             {
-                throw new ArgumentNullException("assembly");
+                throw new ArgumentNullException(nameof(assembly));
             }
 
             _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + ".";

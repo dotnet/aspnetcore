@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using LocalizationTest.Abc.Controllers;
@@ -20,7 +20,8 @@ namespace Microsoft.Extensions.Localization.RootNamespace.Tests
             var factory = new ResourceManagerStringLocalizerFactory(options.Object, NullLoggerFactory.Instance);
 
             var valuesLoc = factory.Create(typeof(ValuesController));
-            Assert.Equal("ValFromResource", valuesLoc["String1"]);
+            string value = valuesLoc["String1"]; // Note: Tests nullable analysis of implicit string conversion operator.
+            Assert.Equal("ValFromResource", value);
         }
     }
 }

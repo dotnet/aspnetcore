@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Session
             return Convert.ToBase64String(protectedData).TrimEnd('=');
         }
 
-        internal static string Unprotect(IDataProtector protector, string protectedText, ILogger logger)
+        internal static string Unprotect(IDataProtector protector, string? protectedText, ILogger logger)
         {
             try
             {
