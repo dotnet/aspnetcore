@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private readonly MvcRazorRuntimeCompilationOptions _options;
         private object _compilationReferencesLock = new object();
         private bool _compilationReferencesInitialized;
-        private IReadOnlyList<MetadataReference> _compilationReferences;
+        private IReadOnlyList<MetadataReference>? _compilationReferences;
 
         public RazorReferenceManager(
             ApplicationPartManager partManager,
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                     ref _compilationReferences,
                     ref _compilationReferencesInitialized,
                     ref _compilationReferencesLock,
-                    GetCompilationReferences);
+                    GetCompilationReferences)!;
             }
         }
 

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             ApiExplorer = new ApiExplorerModel();
             Controllers = new List<ControllerModel>();
             Filters = new List<IFilterMetadata>();
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
         }
 
         /// <summary>
@@ -51,6 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Gets a set of properties associated with all actions.
         /// These properties will be copied to <see cref="Abstractions.ActionDescriptor.Properties"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
     }
 }

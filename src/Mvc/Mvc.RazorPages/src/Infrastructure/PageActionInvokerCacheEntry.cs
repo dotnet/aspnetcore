@@ -12,15 +12,15 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    internal class PageActionInvokerCacheEntry
+    internal sealed class PageActionInvokerCacheEntry
     {
         public PageActionInvokerCacheEntry(
             CompiledPageActionDescriptor actionDescriptor,
             Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> viewDataFactory,
             Func<PageContext, ViewContext, object> pageFactory,
-            Func<PageContext, ViewContext, object, ValueTask> releasePage,
-            Func<PageContext, object> modelFactory,
-            Func<PageContext, object, ValueTask> releaseModel,
+            Func<PageContext, ViewContext, object, ValueTask>? releasePage,
+            Func<PageContext, object>? modelFactory,
+            Func<PageContext, object, ValueTask>? releaseModel,
             Func<PageContext, object, Task> propertyBinder,
             PageHandlerExecutorDelegate[] handlerExecutors,
             PageHandlerBinderDelegate[] handlerBinders,
@@ -47,14 +47,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <summary>
         /// The action invoked to release a page. This may be <c>null</c>.
         /// </summary>
-        public Func<PageContext, ViewContext, object, ValueTask> ReleasePage { get; }
+        public Func<PageContext, ViewContext, object, ValueTask>? ReleasePage { get; }
 
-        public Func<PageContext, object> ModelFactory { get; }
+        public Func<PageContext, object>? ModelFactory { get; }
 
         /// <summary>
         /// The delegate invoked to release a model. This may be <c>null</c>.
         /// </summary>
-        public Func<PageContext, object, ValueTask> ReleaseModel { get; }
+        public Func<PageContext, object, ValueTask>? ReleaseModel { get; }
 
         /// <summary>
         /// The delegate invoked to bind either the handler type (page or model).

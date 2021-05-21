@@ -14,20 +14,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
-        private static readonly Action<ILogger, string, Exception> _generatedCodeToAssemblyCompilationStart;
-        private static readonly Action<ILogger, string, double, Exception> _generatedCodeToAssemblyCompilationEnd;
-        private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledView;
-        private static readonly Action<ILogger, Exception> _viewCompilerNoCompiledViewsFound;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledViewForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerRecompilingCompiledView;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerCouldNotFindFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerFoundFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerInvalidatingCompiledFile;
+        private static readonly Action<ILogger, string, Exception?> _generatedCodeToAssemblyCompilationStart;
+        private static readonly Action<ILogger, string, double, Exception?> _generatedCodeToAssemblyCompilationEnd;
+        private static readonly Action<ILogger, string, string[], Exception?> _malformedPageDirective;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledView;
+        private static readonly Action<ILogger, Exception?> _viewCompilerNoCompiledViewsFound;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledViewForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerRecompilingCompiledView;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerCouldNotFindFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerFoundFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerInvalidatingCompiledFile;
 
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheMiss;
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheHit;
-        private static readonly Action<ILogger, string, Exception> _precompiledViewFound;
+        private static readonly Action<ILogger, string, string, Exception?> _viewLookupCacheMiss;
+        private static readonly Action<ILogger, string, string, Exception?> _viewLookupCacheHit;
+        private static readonly Action<ILogger, string, Exception?> _precompiledViewFound;
 
         static MvcRazorLoggerExtensions()
         {

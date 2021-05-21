@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// </summary>
     public class PageConventionCollection : Collection<IPageConvention>
     {
-        private readonly IServiceProvider _serviceProvider;
-        private MvcOptions _mvcOptions;
+        private readonly IServiceProvider? _serviceProvider;
+        private MvcOptions? _mvcOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageConventionCollection"/> class that is empty.
         /// </summary>
         public PageConventionCollection()
-            : this((IServiceProvider)null)
+            : this((IServiceProvider?)null)
         {
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
         }
 
-        internal PageConventionCollection(IServiceProvider serviceProvider)
+        internal PageConventionCollection(IServiceProvider? serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             get
             {
                 // Avoid eagerly getting to the MvcOptions from the options setup for RazorPagesOptions.
-                _mvcOptions ??= _serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
+                _mvcOptions ??= _serviceProvider!.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return _mvcOptions;
             }
         }
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private class PageRouteModelConvention : IPageRouteModelConvention
         {
-            private readonly string _areaName;
+            private readonly string? _areaName;
             private readonly string _path;
             private readonly Action<PageRouteModel> _action;
 
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
             }
 
-            public PageRouteModelConvention(string areaName, string path, Action<PageRouteModel> action)
+            public PageRouteModelConvention(string? areaName, string path, Action<PageRouteModel> action)
             {
                 _areaName = areaName;
                 _path = path;
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private class FolderRouteModelConvention : IPageRouteModelConvention
         {
-            private readonly string _areaName;
+            private readonly string? _areaName;
             private readonly string _folderPath;
             private readonly Action<PageRouteModel> _action;
 
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
             }
 
-            public FolderRouteModelConvention(string areaName, string folderPath, Action<PageRouteModel> action)
+            public FolderRouteModelConvention(string? areaName, string folderPath, Action<PageRouteModel> action)
             {
                 _areaName = areaName;
                 _folderPath = folderPath.TrimEnd('/');
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private class PageApplicationModelConvention : IPageApplicationModelConvention
         {
-            private readonly string _areaName;
+            private readonly string? _areaName;
             private readonly string _path;
             private readonly Action<PageApplicationModel> _action;
 
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
             }
 
-            public PageApplicationModelConvention(string areaName, string path, Action<PageApplicationModel> action)
+            public PageApplicationModelConvention(string? areaName, string path, Action<PageApplicationModel> action)
             {
                 _areaName = areaName;
                 _path = path;
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private class FolderApplicationModelConvention : IPageApplicationModelConvention
         {
-            private readonly string _areaName;
+            private readonly string? _areaName;
             private readonly string _folderPath;
             private readonly Action<PageApplicationModel> _action;
 
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
             }
 
-            public FolderApplicationModelConvention(string areaName, string folderPath, Action<PageApplicationModel> action)
+            public FolderApplicationModelConvention(string? areaName, string folderPath, Action<PageApplicationModel> action)
             {
                 _areaName = areaName;
                 _folderPath = folderPath.TrimEnd('/');

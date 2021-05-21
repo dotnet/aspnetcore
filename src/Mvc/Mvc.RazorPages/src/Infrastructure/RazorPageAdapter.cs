@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         /// <inheritdoc/>
-        public IHtmlContent BodyContent
+        public IHtmlContent? BodyContent
         {
             get { return _page.BodyContent; }
             set { _page.BodyContent = value; }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         /// <inheritdoc/>
-        public string Layout
+        public string? Layout
         {
             get { return _page.Layout; }
             set { _page.Layout = value; }

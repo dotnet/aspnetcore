@@ -6,7 +6,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;razor</PackageTags>
     <IsPackable>true</IsPackable>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

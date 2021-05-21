@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The properties.
         /// </summary>
-        IDictionary<object, object> Properties { get; }
+        IDictionary<object, object?> Properties { get; }
     }
 }

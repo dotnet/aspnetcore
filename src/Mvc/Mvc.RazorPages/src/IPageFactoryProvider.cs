@@ -24,16 +24,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to release the created page.</returns>
-        Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor);
+        Action<PageContext, ViewContext, object>? CreatePageDisposer(CompiledPageActionDescriptor descriptor);
 
         /// <summary>
         /// Releases a Razor page asynchronously.
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to release the created page asynchronously.</returns>
-        Func<PageContext, ViewContext, object, ValueTask> CreateAsyncPageDisposer(CompiledPageActionDescriptor descriptor)
+        Func<PageContext, ViewContext, object, ValueTask>? CreateAsyncPageDisposer(CompiledPageActionDescriptor descriptor)
         {
             var disposer = CreatePageDisposer(descriptor);
+            if (disposer is null)
+            {
+                return null;
+            }
 
             return (context, viewContext, page) =>
             {

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public PagePropertyModel(
             PropertyInfo propertyInfo,
             IReadOnlyList<object> attributes)
-            : base(propertyInfo?.PropertyType, attributes)
+            : base(propertyInfo.PropertyType, attributes)
         {
             PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo));
         }
@@ -41,14 +41,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             Page = other.Page;
-            BindingInfo = BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
+            BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
             PropertyInfo = other.PropertyInfo;
         }
 
         /// <summary>
         /// Gets or sets the <see cref="PageApplicationModel"/> this <see cref="PagePropertyModel"/> is associated with.
         /// </summary>
-        public PageApplicationModel Page { get; set; }
+        public PageApplicationModel Page { get; set; } = default!;
 
         MemberInfo ICommonModel.MemberInfo => PropertyInfo;
 

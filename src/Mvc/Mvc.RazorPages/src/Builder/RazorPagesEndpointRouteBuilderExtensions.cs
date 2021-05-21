@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
         /// </para>
         /// </remarks>
-        public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state)
+        public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object? state)
             where TTransformer : DynamicRouteValueTransformer
         {
             if (endpoints == null)
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Builder
             pageDataSource.AddDynamicPageEndpoint(endpoints, pattern, typeof(TTransformer), state, order);
         }
 
-        private static DynamicPageMetadata CreateDynamicPageMetadata(string page, string area)
+        private static DynamicPageMetadata CreateDynamicPageMetadata(string page, string? area)
         {
             return new DynamicPageMetadata(new RouteValueDictionary()
             {

@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// </summary>
         /// <param name="context">The <see cref="PageContext"/>.</param>
         /// <returns>The selected <see cref="HandlerMethodDescriptor"/>.</returns>
-        HandlerMethodDescriptor Select(PageContext context);
+        HandlerMethodDescriptor? Select(PageContext context);
     }
 }

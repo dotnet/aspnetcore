@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Filters = new List<IFilterMetadata>();
             Parameters = new List<ParameterModel>();
             RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
             Selectors = new List<SelectorModel>();
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // These are just metadata, safe to create new collections
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
-            Properties = new Dictionary<object, object>(other.Properties);
+            Properties = new Dictionary<object, object?>(other.Properties);
             RouteValues = new Dictionary<string, string?>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
 
             // Make a deep copy of other 'model' types.
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Entries will take precedence over entries with the same key in
         /// <see cref="ApplicationModel.Properties"/> and <see cref="ControllerModel.Properties"/>.
         /// </remarks>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         MemberInfo ICommonModel.MemberInfo => ActionMethod;
 
