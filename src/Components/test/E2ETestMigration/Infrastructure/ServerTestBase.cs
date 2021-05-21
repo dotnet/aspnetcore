@@ -37,14 +37,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
         {
             await base.InitializeCoreAsync(context);
 
-            if (BrowserManager.IsAvailable(BrowserKind.Chromium))
+            if (TestPage != null)
             {
-                await using var browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
-                var page = await browser.NewPageAsync();
                 // Clear logs - we check these during tests in some cases.
                 // Make sure each test starts clean.
-                await page.EvaluateAsync("console.clear()");
-                await page.CloseAsync();
+                await TestPage.EvaluateAsync("console.clear()");
             }
         }
     }
