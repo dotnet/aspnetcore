@@ -1,2 +1,7 @@
 {
+  "BrowserOptions": {
+    "Firefox": {
+      "IsEnabled": false
+    }
+  }
 }
