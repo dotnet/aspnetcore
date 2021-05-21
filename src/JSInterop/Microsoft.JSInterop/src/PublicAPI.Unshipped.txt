@@ -28,3 +28,5 @@ static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JS
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object?[]? args) -> System.Threading.Tasks.ValueTask
 *REMOVED*static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object?[]? args) -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.JSDisconnectedException
+Microsoft.JSInterop.JSDisconnectedException.JSDisconnectedException(string! message) -> void

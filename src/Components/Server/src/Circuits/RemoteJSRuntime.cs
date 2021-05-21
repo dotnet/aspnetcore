@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly CircuitOptions _options;
         private readonly ILogger<RemoteJSRuntime> _logger;
         private CircuitClientProxy _clientProxy;
+        private bool _permanentlyDisconnected;
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -78,15 +79,30 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (_clientProxy is null)
             {
-                throw new InvalidOperationException(
-                    "JavaScript interop calls cannot be issued at this time. This is because the component is being " +
-                    $"statically rendered. When prerendering is enabled, JavaScript interop calls can only be performed " +
-                    $"during the OnAfterRenderAsync lifecycle method.");
+                if (_permanentlyDisconnected)
+                {
+                    throw new JSDisconnectedException(
+                           "JavaScript interop calls cannot be issued at this time. This is because the circuit has disconnected " +
+                           "and is being disposed.");
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        "JavaScript interop calls cannot be issued at this time. This is because the component is being " +
+                        $"statically rendered. When prerendering is enabled, JavaScript interop calls can only be performed " +
+                        $"during the OnAfterRenderAsync lifecycle method.");
+                }
             }
 
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
             _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
+        }
+
+        public void MarkPermanentlyDisconnected()
+        {
+            _permanentlyDisconnected = true;
+            _clientProxy = null;
         }
 
         public static class Log
