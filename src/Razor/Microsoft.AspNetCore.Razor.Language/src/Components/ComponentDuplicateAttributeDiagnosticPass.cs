@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal sealed class ComponentMarkupDiagnosticPass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
     {
-        public static readonly int DefaultOrder = 10000;
+        public const int DefaultOrder = 10000;
 
         public override int Order => DefaultOrder;
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             }
                             else
                             {
-                                // This is a conflict in the code the user wrote. 
+                                // This is a conflict in the code the user wrote.
                                 other.node.Diagnostics.Add(ComponentDiagnosticFactory.Create_DuplicateMarkupAttribute(
                                     other.name,
                                     other.node.Source ?? node.Source));
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             }
                             else
                             {
-                                // This is a conflict in the code the user wrote. 
+                                // This is a conflict in the code the user wrote.
                                 other.node.Diagnostics.Add(ComponentDiagnosticFactory.Create_DuplicateComponentParameter(
                                     other.name,
                                     other.node.Source ?? node.Source));

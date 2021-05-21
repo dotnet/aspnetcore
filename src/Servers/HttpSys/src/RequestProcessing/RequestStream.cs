@@ -100,15 +100,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
             if (offset < 0 || offset > buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
             }
             if (size <= 0 || size > buffer.Length - offset)
             {
-                throw new ArgumentOutOfRangeException("size", size, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(size), size, string.Empty);
             }
         }
 

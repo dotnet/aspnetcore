@@ -13,8 +13,10 @@ namespace Polly
     /// </summary>
     public static class HttpRequestMessageExtensions
     {
+#pragma warning disable CA1802 //  Use literals where appropriate. Using a static field for reference equality
         internal static readonly string PolicyExecutionContextKey = "PolicyExecutionContext";
-        
+#pragma warning restore CA1802
+
         /// <summary>
         /// Gets the <see cref="Context"/> associated with the provided <see cref="HttpRequestMessage"/>.
         /// </summary>

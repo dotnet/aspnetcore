@@ -9,6 +9,7 @@
     <NoWarn>$(NoWarn);PKG0001</NoWarn>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

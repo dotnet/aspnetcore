@@ -17,6 +17,7 @@ import { TestHttpClient } from "./TestHttpClient";
 import { TestTransport } from "./TestTransport";
 import { TestEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
+import { HeaderNames } from "../src/HeaderNames";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
@@ -235,10 +236,12 @@ describe("HttpConnection", () => {
 
             expect(negotiateCount).toEqual(1);
         },
+        /* eslint-disable max-len */
         "Failed to start the transport 'WebSockets': Error: WebSocket failed to connect. The connection could not be found on the server, " +
         "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.",
         "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: " +
         "Error: WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled. ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+        /* eslint-enable max-len */
     });
 
     it("negotiate called again when transport fails to start and falls back", async () => {
@@ -483,7 +486,6 @@ describe("HttpConnection", () => {
                 constructor() {
                     this._onopen = null;
                 }
-                // tslint:disable-next-line:variable-name
                 private _onopen: ((this: WebSocket, ev: Event) => any) | null;
                 public get onopen(): ((this: WebSocket, ev: Event) => any) | null {
                     return this._onopen;
@@ -752,8 +754,7 @@ describe("HttpConnection", () => {
                     .on("POST", () => ({ connectionId: "42", availableTransports: [availableTransport] }))
                     .on("GET", (r) => {
                         httpClientGetCount++;
-                        // tslint:disable-next-line:no-string-literal
-                        const authorizationValue = r.headers!["Authorization"];
+                        const authorizationValue = r.headers![HeaderNames.Authorization];
                         if (httpClientGetCount === 1) {
                             if (authorizationValue) {
                                 fail("First long poll request should have a authorization header.");
@@ -1096,7 +1097,6 @@ describe("HttpConnection", () => {
             const availableTransports = [{ transport: "WebSockets", transferFormats: ["Text"] }, { transport: "LongPolling", transferFormats: ["Text"] }];
             let negotiateCount: number = 0;
             let getCount: number = 0;
-            let connection: HttpConnection;
             const options: IHttpConnectionOptions = {
                 WebSocket: TestWebSocket,
                 ...commonOptions,
@@ -1119,7 +1119,7 @@ describe("HttpConnection", () => {
 
             TestWebSocket.webSocketSet = new PromiseSource();
 
-            connection = new HttpConnection("http://tempuri.org", options);
+            const connection = new HttpConnection("http://tempuri.org", options);
             const startPromise = connection.start(TransferFormat.Text);
 
             await TestWebSocket.webSocketSet;
@@ -1285,8 +1285,6 @@ describe("HttpConnection", () => {
                 let eventSourceConstructorCalled: boolean = false;
 
                 class TestEventSource {
-                    // The "_" prefix tell TypeScript not to worry about unused parameter, but tslint doesn't like it.
-                    // tslint:disable-next-line:variable-name
                     constructor(_url: string, _eventSourceInitDict: EventSourceInit) {
                         eventSourceConstructorCalled = true;
                         throw new Error("EventSource constructor called.");
@@ -1323,8 +1321,6 @@ describe("HttpConnection", () => {
         it("uses WebSocket constructor from options if provided", async () => {
             await VerifyLogger.run(async (logger) => {
                 class BadConstructorWebSocket {
-                    // The "_" prefix tell TypeScript not to worry about unused parameter, but tslint doesn't like it.
-                    // tslint:disable-next-line:variable-name
                     constructor(_url: string, _protocols?: string | string[]) {
                         throw new Error("WebSocket constructor called.");
                     }

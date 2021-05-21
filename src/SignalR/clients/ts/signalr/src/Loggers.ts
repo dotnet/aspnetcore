@@ -11,7 +11,7 @@ export class NullLogger implements ILogger {
     private constructor() {}
 
     /** @inheritDoc */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public log(_logLevel: LogLevel, _message: string): void {
     }
 }

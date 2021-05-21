@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignOutAsync"/>.
     /// </summary>
-    public class SignOutResult : ActionResult
+    public class SignOutResult : ActionResult, IResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="SignOutResult"/> with the default sign out scheme.
@@ -88,13 +89,24 @@ namespace Microsoft.AspNetCore.Mvc
         public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
+            return ExecuteAsync(context.HttpContext);
+        }
+
+        /// <inheritdoc />
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            return ExecuteAsync(httpContext);
+        }
+
+        private async Task ExecuteAsync(HttpContext httpContext)
+        {
             if (AuthenticationSchemes == null)
             {
                 throw new InvalidOperationException(
@@ -103,20 +115,20 @@ namespace Microsoft.AspNetCore.Mvc
                         /* type: */ nameof(SignOutResult)));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<SignOutResult>();
 
             logger.SignOutResultExecuting(AuthenticationSchemes);
 
             if (AuthenticationSchemes.Count == 0)
             {
-                await context.HttpContext.SignOutAsync(Properties);
+                await httpContext.SignOutAsync(Properties);
             }
             else
             {
                 for (var i = 0; i < AuthenticationSchemes.Count; i++)
                 {
-                    await context.HttpContext.SignOutAsync(AuthenticationSchemes[i], Properties);
+                    await httpContext.SignOutAsync(AuthenticationSchemes[i], Properties);
                 }
             }
         }

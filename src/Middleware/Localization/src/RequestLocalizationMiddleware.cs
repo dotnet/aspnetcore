@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Localization
     /// </summary>
     public class RequestLocalizationMiddleware
     {
-        private static readonly int MaxCultureFallbackDepth = 5;
+        private const int MaxCultureFallbackDepth = 5;
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;

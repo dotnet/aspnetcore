@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Components
             || type == typeof(string)
             || type == typeof(DateTime)
             || type == typeof(Type)
-            || type == typeof(decimal);
+            || type == typeof(decimal)
+            || type == typeof(Guid);
     }
 }

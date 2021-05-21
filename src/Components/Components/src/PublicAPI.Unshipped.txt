@@ -48,3 +48,7 @@ override Microsoft.AspNetCore.Components.LayoutComponentBase.SetParametersAsync(
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RemovedAttributeName -> string?
+*REMOVED*Microsoft.AspNetCore.Components.CascadingValue<TValue>.Value.get -> TValue
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.Value.get -> TValue?
+*REMOVED*Microsoft.AspNetCore.Components.CascadingValue<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?

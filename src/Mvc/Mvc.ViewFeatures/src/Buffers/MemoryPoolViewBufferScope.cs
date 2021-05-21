@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
     /// </summary>
     internal class MemoryPoolViewBufferScope : IViewBufferScope, IDisposable
     {
-        public static readonly int MinimumSize = 16;
+        public const int MinimumSize = 16;
         private readonly ArrayPool<ViewBufferValue> _viewBufferPool;
         private readonly ArrayPool<char> _charPool;
         private List<ViewBufferValue[]> _available;

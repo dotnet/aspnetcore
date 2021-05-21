@@ -7,6 +7,7 @@
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)-windows</TargetFrameworks>
     <Description>WebView2 wrappers for BlazorWebView components on Windows.</Description>
     <IsShippingPackage>true</IsShippingPackage>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

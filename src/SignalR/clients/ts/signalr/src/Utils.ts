@@ -119,7 +119,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
 }
 
 /** @private */
-export function createLogger(logger?: ILogger | LogLevel) {
+export function createLogger(logger?: ILogger | LogLevel): ILogger {
     if (logger === undefined) {
         return new ConsoleLogger(LogLevel.Information);
     }
@@ -233,7 +233,8 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     return userAgent;
 }
 
- /*#__PURE__*/ function getOsName(): string {
+// eslint-disable-next-line spaced-comment
+/*#__PURE__*/ function getOsName(): string {
     if (Platform.isNode) {
         switch (process.platform) {
             case "win32":
@@ -250,7 +251,8 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     }
 }
 
- /*#__PURE__*/ function getRuntimeVersion(): string | undefined {
+// eslint-disable-next-line spaced-comment
+/*#__PURE__*/ function getRuntimeVersion(): string | undefined {
     if (Platform.isNode) {
         return process.versions.node;
     }

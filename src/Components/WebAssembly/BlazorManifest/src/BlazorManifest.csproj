@@ -9,6 +9,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <!-- Set this to false because there's nothing to reference here. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <Target Name="_PrepareForPack" BeforeTargets="CoreBuild">

@@ -38,19 +38,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     .TypeName("System.Int32"),
             });
 
-        private static readonly TagHelperDescriptor StringIndexerTagHelper = CreateTagHelperDescriptor(
-            tagName: "input",
-            typeName: "InputTagHelper",
-            assemblyName: "TestAssembly",
-            attributes: new Action<BoundAttributeDescriptorBuilder>[]
-            {
-                builder => builder
-                    .Name("bound")
-                    .PropertyName("StringIndexer")
-                    .TypeName("System.Collections.Generic.Dictionary<System.String, System.String>")
-                    .AsDictionary("foo-", "System.String"),
-            });
-
         private static readonly TagHelperDescriptor IntIndexerTagHelper = CreateTagHelperDescriptor(
             tagName: "input",
             typeName: "InputTagHelper",
@@ -1083,7 +1070,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
-            
+
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act
@@ -1108,7 +1095,7 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
-            
+
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act

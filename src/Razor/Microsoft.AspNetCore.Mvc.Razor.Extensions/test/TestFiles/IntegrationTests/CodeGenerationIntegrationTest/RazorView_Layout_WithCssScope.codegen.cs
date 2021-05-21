@@ -18,7 +18,7 @@ namespace AspNetCore
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-            WriteLiteral("\r\n<!DOCTYPE html>\r\n<html TestCssScope lang=\"en\">\r\n<head TestCssScope>\r\n    <meta TestCssScope charset=\"utf-8\" />\r\n    <meta TestCssScope name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title TestCssScope>");
+            WriteLiteral("\r\n<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title>");
 #nullable restore
 #line 7 "TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml"
       Write(ViewData["Title"]);

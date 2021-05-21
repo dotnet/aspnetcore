@@ -17,7 +17,7 @@
     "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
     "prebuild": "yarn run clean && yarn install --mutex network",
     "build": "yarn run build:lint && yarn run build:esm && yarn run build:cjs && yarn run build:browser && yarn run build:webworker && yarn run build:uglify",
-    "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
+    "build:lint": "node ../common/node_modules/eslint/bin/eslint ./src --ext .ts --resolve-plugins-relative-to ../common",
     "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d && node ./build/process-dts.js",
     "build:cjs": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
     "build:browser": "node ../common/node_modules/webpack-cli/bin/cli.js",

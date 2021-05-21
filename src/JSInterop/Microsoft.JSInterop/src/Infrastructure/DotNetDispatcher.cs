@@ -108,24 +108,28 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 // Returned a task - we need to continue that task and then report an exception
                 // or return the value.
-                task.ContinueWith(t =>
-                {
-                    if (t.Exception != null)
-                    {
-                        var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(t.Exception.GetBaseException());
-                        var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
-                        jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
-                    }
-
-                    var result = TaskGenericsUtil.GetTaskResult(task);
-                    jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(result));
-                }, TaskScheduler.Current);
+                task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
             }
             else
             {
-                var dispatchResult = new DotNetInvocationResult(syncResult);
+                var syncResultJson = JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
+                var dispatchResult = new DotNetInvocationResult(syncResultJson);
                 jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
+        }
+
+        private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
+        {
+            if (task.Exception != null)
+            {
+                var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception.GetBaseException());
+                var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
+                jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            }
+
+            var result = TaskGenericsUtil.GetTaskResult(task);
+            var resultJson = JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
+            jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
         }
 
         private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson)
