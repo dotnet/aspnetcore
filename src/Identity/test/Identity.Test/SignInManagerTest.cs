@@ -279,6 +279,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.SupportsUserTwoFactor).Returns(tfaEnabled).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
+
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
 
