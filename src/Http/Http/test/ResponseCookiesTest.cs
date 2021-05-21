@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         }
 
         [Fact]
-        public void DeleteCookieWithDomainAndPathShouldSetDefaultPath()
+        public void DeleteCookieWithDomainAndPathDeletesPriorMatchingCookies()
         {
             var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             var testCookies = new (string Key, string Path, string Domain)[]
             {
-                new ("key1", "/", null),
-                new ("key1", "/test/", null),
-                new ("key2", "/", "localhost"),
-                new ("key2", "/test/", "localhost"),
+                new ("key1", "/path1/", null),
+                new ("key1", "/path2/", null),
+                new ("key2", "/path1/", "localhost"),
+                new ("key2", "/path2/", "localhost"),
             };
 
             foreach (var cookie in testCookies)
@@ -99,10 +99,10 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Equal(testCookies.Length, cookieHeaderValues.Length);
 
             var deletedCookies = cookieHeaderValues.ToArray();
-            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/"));
-            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/test/"));
-            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/") && cookie.Contains("domain=localhost"));
-            Assert.Contains(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/test/") && cookie.Contains("domain=localhost"));
+            Assert.Single(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/path1/"));
+            Assert.Single(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/path2/"));
+            Assert.Single(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/path1/") && cookie.Contains("domain=localhost"));
+            Assert.Single(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/path2/") && cookie.Contains("domain=localhost"));
             Assert.All(cookieHeaderValues, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
         }
 

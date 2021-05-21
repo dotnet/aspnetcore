@@ -154,25 +154,24 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
-            bool domainAndPathHasValue = !string.IsNullOrEmpty(options.Domain) && !string.IsNullOrEmpty(options.Path);
-            bool domainOnlyHasValue = !string.IsNullOrEmpty(options.Domain) && string.IsNullOrEmpty(options.Path);
-            bool pathOnlyHasValue = !string.IsNullOrEmpty(options.Path) && string.IsNullOrEmpty(options.Domain);
+            bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
+            bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
             Func<string, string, CookieOptions, bool> rejectPredicate;
-            if (domainAndPathHasValue)
+            if (domainHasValue && pathHasValue)
             {
                 rejectPredicate = (value, encKeyPlusEquals, opts) =>
                     value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
                         value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1 &&
                         value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
             }
-            else if (domainOnlyHasValue)
+            else if (domainHasValue)
             {
                 rejectPredicate = (value, encKeyPlusEquals, opts) =>
                     value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
                         value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1;
             }
-            else if (pathOnlyHasValue)
+            else if (pathHasValue)
             {
                 rejectPredicate = (value, encKeyPlusEquals, opts) =>
                     value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
