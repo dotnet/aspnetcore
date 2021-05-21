@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             // When implementing support for out-of-process runtimes, we'll need to call this
             // asynchronously and ensure we surface any exceptions correctly.
 
-            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(
                 "Blazor._internal.attachRootComponentToElement",
                 domElementSelector,
                 componentId,

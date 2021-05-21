@@ -133,9 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 case RequestRejectionReason.FinalTransferCodingNotChunked:
                     ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_FinalTransferCodingNotChunked(detail), StatusCodes.Status400BadRequest, reason);
                     break;
-                case RequestRejectionReason.LengthRequired:
-                    ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_LengthRequired(detail), StatusCodes.Status411LengthRequired, reason);
-                    break;
                 case RequestRejectionReason.LengthRequiredHttp10:
                     ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_LengthRequiredHttp10(detail), StatusCodes.Status400BadRequest, reason);
                     break;

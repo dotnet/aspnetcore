@@ -6,10 +6,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+[assembly: MetadataUpdateHandler(typeof(Microsoft.JSInterop.Infrastructure.DotNetDispatcher))]
 
 namespace Microsoft.JSInterop.Infrastructure
 {
@@ -107,24 +110,29 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 // Returned a task - we need to continue that task and then report an exception
                 // or return the value.
-                task.ContinueWith(t =>
-                {
-                    if (t.Exception != null)
-                    {
-                        var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(t.Exception.GetBaseException());
-                        var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
-                        jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
-                    }
-
-                    var result = TaskGenericsUtil.GetTaskResult(task);
-                    jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(result));
-                }, TaskScheduler.Current);
+                task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
             }
             else
             {
-                var dispatchResult = new DotNetInvocationResult(syncResult);
+                var syncResultJson = JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
+                var dispatchResult = new DotNetInvocationResult(syncResultJson);
                 jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
+        }
+
+        // TODO: This is a new func needs to be integrated with byte array interop
+        private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
+        {
+            if (task.Exception != null)
+            {
+                var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception.GetBaseException());
+                var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
+                jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            }
+
+            var result = TaskGenericsUtil.GetTaskResult(task);
+            var resultJson = JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
+            jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
         }
 
         private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, byte[][]? byteArrays)
@@ -431,6 +439,12 @@ namespace Microsoft.JSInterop.Infrastructure
 
             return assembly
                 ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
+        }
+
+        private static void ClearCache(Type[]? _)
+        {
+            _cachedMethodsByAssembly.Clear();
+            _cachedMethodsByType.Clear();
         }
 
         private readonly struct AssemblyKey : IEquatable<AssemblyKey>

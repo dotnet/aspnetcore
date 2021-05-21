@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
-    internal class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
+    internal sealed class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
     {
         public PageViewDataAttributeFilter(IReadOnlyList<LifecycleProperty> properties)
         {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
         public IReadOnlyList<LifecycleProperty> Properties { get;  }
 
-        public object Subject { get; set; }
+        public object? Subject { get; set; }
 
         public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
         {

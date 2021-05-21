@@ -3,6 +3,7 @@
 
 import { AbortController } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
@@ -29,7 +30,7 @@ export class LongPollingTransport implements ITransport {
     public onclose: ((error?: Error) => void) | null;
 
     // This is an internal type, not exported from 'index' so this is really just internal.
-    public get pollAborted() {
+    public get pollAborted(): boolean {
         return this._pollAbort.aborted;
     }
 
@@ -111,14 +112,11 @@ export class LongPollingTransport implements ITransport {
             request.headers = {};
         }
         if (token) {
-            // tslint:disable-next-line:no-string-literal
-            request.headers["Authorization"] = `Bearer ${token}`;
+            request.headers[HeaderNames.Authorization] = `Bearer ${token}`;
             return;
         }
-        // tslint:disable-next-line:no-string-literal
-        if (request.headers["Authorization"]) {
-            // tslint:disable-next-line:no-string-literal
-            delete request.headers["Authorization"];
+        if (request.headers[HeaderNames.Authorization]) {
+            delete request.headers[HeaderNames.Authorization];
         }
     }
 

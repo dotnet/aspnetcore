@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return CreatePageFactory(pageTypeInfo);
         }
 
-        public Action<PageContext, ViewContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        public Action<PageContext, ViewContext, object>? CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return null;
         }
 
-        public Func<PageContext, ViewContext, object, ValueTask> CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
+        public Func<PageContext, ViewContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {

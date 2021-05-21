@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private Task _previousOnNavigateTask = Task.CompletedTask;
 
-        private RouteKey _currentRouteKey;
+        private RouteKey _routeTableLastBuiltForRouteKey;
 
         private bool _onNavigateCalled = false;
 
@@ -91,6 +92,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             _baseUri = NavigationManager.BaseUri;
             _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
+
+            if  (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied += ClearRouteCaches;
+            }
         }
 
         /// <inheritdoc />
@@ -131,6 +137,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
+            if (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= ClearRouteCaches;
+            }
         }
 
         private static string StringUntilAny(string str, char[] chars)
@@ -145,11 +155,17 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             var routeKey = new RouteKey(AppAssembly, AdditionalAssemblies);
 
-            if (!routeKey.Equals(_currentRouteKey))
+            if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
             {
-                _currentRouteKey = routeKey;
+                _routeTableLastBuiltForRouteKey = routeKey;
                 Routes = RouteTableFactory.Create(routeKey);
             }
+        }
+
+        private void ClearRouteCaches()
+        {
+            RouteTableFactory.ClearCaches();
+            _routeTableLastBuiltForRouteKey = default;
         }
 
         internal virtual void Refresh(bool isNavigationIntercepted)

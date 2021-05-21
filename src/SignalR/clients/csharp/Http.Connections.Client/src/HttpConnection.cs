@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
     {
         // Not configurable on purpose, high enough that if we reach here, it's likely
         // a buggy server
-        private static readonly int _maxRedirects = 100;
-        private static readonly int _protocolVersionNumber = 1;
+        private const int _maxRedirects = 100;
+        private const int _protocolVersionNumber = 1;
         private static readonly Task<string?> _noAccessToken = Task.FromResult<string?>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);

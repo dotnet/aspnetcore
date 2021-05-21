@@ -7,10 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,10 +35,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
         private readonly ComponentFactory _componentFactory;
-        private HotReloadEnvironment? _hotReloadEnvironment;
         private List<(ComponentState, ParameterView)>? _rootComponents;
 
-        private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
+        private int _nextComponentId = 0;
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
@@ -98,16 +97,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(componentActivator);
 
-            InitializeHotReload(serviceProvider);
-        }
-
-        private void InitializeHotReload(IServiceProvider serviceProvider)
-        {
-            // HotReloadEnvironment is a test-specific feature and may not be available in a running app. We'll fallback to the default instance
-            // if the test fixture does not provide one.
-            _hotReloadEnvironment = serviceProvider.GetService<HotReloadEnvironment>() ?? HotReloadEnvironment.Instance;
-
-            if (_hotReloadEnvironment.IsHotReloadEnabled)
+            if (HotReloadFeature.IsSupported)
             {
                 HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
             }
@@ -137,6 +127,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private async void RenderRootComponentsOnHotReload()
         {
+            // Before re-rendering the root component, also clear any well-known caches in the framework
+            _componentFactory.ClearCache();
+            ComponentProperties.ClearCache();
+
             await Dispatcher.InvokeAsync(() =>
             {
                 if (_rootComponents is null)
@@ -232,7 +226,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // During the asynchronous rendering process we want to wait up until all components have
             // finished rendering so that we can produce the complete output.
             var componentState = GetRequiredComponentState(componentId);
-            CaptureRootComponentForHotReload(initialParameters, componentState);
+            if (HotReloadFeature.IsSupported)
+            {
+                // when we're doing hot-reload, stash away the parameters used while rendering root components.
+                // We'll use this to trigger re-renders on hot reload updates.
+                _rootComponents ??= new();
+                _rootComponents.Add((componentState, initialParameters.Clone()));
+            }
 
             componentState.SetDirectParameters(initialParameters);
 
@@ -244,20 +244,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             finally
             {
                 _pendingTasks = null;
-            }
-        }
-
-        /// <remarks>
-        /// Intentionally authored as a separate method call so we can trim this code.
-        /// </remarks>
-        private void CaptureRootComponentForHotReload(ParameterView initialParameters, ComponentState componentState)
-        {
-            if (_hotReloadEnvironment?.IsHotReloadEnabled ?? false)
-            {
-                // when we're doing hot-reload, stash away the parameters used while rendering root components.
-                // We'll use this to trigger re-renders on hot reload updates.
-                _rootComponents ??= new();
-                _rootComponents.Add((componentState, initialParameters.Clone()));
             }
         }
 
@@ -1011,7 +997,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            DisposeForHotReload();
+            if (HotReloadFeature.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            }
 
             if (_disposed)
             {
@@ -1033,17 +1022,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     await default(ValueTask);
                 }
-            }
-        }
-
-        /// <remarks>
-        /// Intentionally authored as a separate method call so we can trim this code.
-        /// </remarks>
-        private void DisposeForHotReload()
-        {
-            if (_hotReloadEnvironment?.IsHotReloadEnabled ?? false)
-            {
-                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
             }
         }
     }

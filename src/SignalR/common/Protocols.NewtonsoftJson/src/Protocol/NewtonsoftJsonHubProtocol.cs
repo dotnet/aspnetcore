@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string HeadersPropertyName = "headers";
         private const string AllowReconnectPropertyName = "allowReconnect";
 
-        private static readonly string ProtocolName = "json";
-        private static readonly int ProtocolVersion = 1;
+        private const string ProtocolName = "json";
+        private const int ProtocolVersion = 1;
 
         /// <summary>
         /// Gets the serializer used to serialize invocation arguments and return values.

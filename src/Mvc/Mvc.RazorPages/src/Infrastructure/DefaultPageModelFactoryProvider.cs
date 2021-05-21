@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _modelActivator = modelActivator;
         }
 
-        public Func<PageContext, object> CreateModelFactory(CompiledPageActionDescriptor descriptor)
+        public Func<PageContext, object>? CreateModelFactory(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public Action<PageContext, object> CreateModelDisposer(CompiledPageActionDescriptor descriptor)
+        public Action<PageContext, object>? CreateModelDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return _modelActivator.CreateReleaser(descriptor);
         }
 
-        public Func<PageContext, object, ValueTask> CreateAsyncModelDisposer(CompiledPageActionDescriptor descriptor)
+        public Func<PageContext, object, ValueTask>? CreateAsyncModelDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

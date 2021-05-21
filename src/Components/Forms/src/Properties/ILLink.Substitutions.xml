@@ -1,0 +1,7 @@
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components.Forms">
+    <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadFeature" feature="System.Diagnostics.Debugger.IsSupported" featurevalue="false">
+      <method signature="System.Boolean get_IsSupported()" body="stub" value="false"  />
+    </type>
+  </assembly>
+</linker>

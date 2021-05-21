@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +13,6 @@ namespace TestServer
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(new HotReloadEnvironment(isHotReloadEnabled: true));
             services.AddControllers();
             services.AddRazorPages();
             services.AddServerSideBlazor();

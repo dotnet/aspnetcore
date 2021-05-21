@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.WebSockets
     {
         public static class Headers
         {
-            public readonly static string UpgradeWebSocket = "websocket";
-            public readonly static string SupportedVersion = "13";
+            public const string UpgradeWebSocket = "websocket";
+            public const string SupportedVersion = "13";
         }
     }
 }

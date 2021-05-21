@@ -9,7 +9,7 @@
 
     <_BlazorDevServerPath>$(ArtifactsDir)bin/Microsoft.AspNetCore.Components.WebAssembly.DevServer/$(Configuration)/$(DefaultNetCoreTargetFramework)/blazor-devserver.dll</_BlazorDevServerPath>
     <RunCommand>dotnet</RunCommand>
-    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; serve --applicationpath &quot;$(TargetPath)&quot; $(AdditionalRunArguments)</RunArguments>
+    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; --applicationpath &quot;$(TargetPath)&quot; $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>

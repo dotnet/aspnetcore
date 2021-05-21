@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return (context) => factory(context.HttpContext.RequestServices, Array.Empty<object>());
         }
 
-        public virtual Action<PageContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        public virtual Action<PageContext, object>? CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return null;
         }
 
-        public virtual Func<PageContext, object, ValueTask> CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
+        public virtual Func<PageContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {

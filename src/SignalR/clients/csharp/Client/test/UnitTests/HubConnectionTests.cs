@@ -3,11 +3,14 @@
 
 using System;
 using System.Buffers;
+using System.IO;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
@@ -634,6 +637,53 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connection = new TestConnection();
                 await using var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task VerifyUserOptionsAreNotChanged()
+        {
+            using (StartVerifiableLog())
+            {
+                HttpConnectionOptions originalOptions = null, resolvedOptions = null;
+                var accessTokenFactory = new Func<Task<string>>(() => Task.FromResult("fakeAccessToken"));
+                var fakeHeader = "fakeHeader";
+
+                var connection = new HubConnectionBuilder()
+                    .WithUrl("http://example.com", Http.Connections.HttpTransportType.WebSockets,
+                        options =>
+                        {
+                            originalOptions = options;
+                            options.SkipNegotiation = true;
+                            options.Headers.Add(fakeHeader, "value");
+                            options.AccessTokenProvider = accessTokenFactory;
+                            options.WebSocketFactory = (context, token) =>
+                            {
+                                resolvedOptions = context.Options;
+                                return ValueTask.FromResult<WebSocket>(null);
+                            };
+                        })
+                    .Build();
+
+                try
+                {
+                    // since we returned null WebSocket it would fail
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().DefaultTimeout());
+                }
+                finally
+                {
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+
+                Assert.NotNull(resolvedOptions);
+                Assert.NotNull(originalOptions);
+                // verify that object was copied
+                Assert.NotSame(resolvedOptions, originalOptions);
+                Assert.NotSame(resolvedOptions.AccessTokenProvider, originalOptions.AccessTokenProvider);
+                // verify original object still points to the same provider
+                Assert.Same(originalOptions.AccessTokenProvider, accessTokenFactory);
+                Assert.Same(resolvedOptions.Headers, originalOptions.Headers);
+                Assert.Contains(fakeHeader, resolvedOptions.Headers);
             }
         }
 

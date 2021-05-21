@@ -164,6 +164,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <summary>
+        /// The maximum amount of memory in bytes to allocate before switching to a file on disk.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 32kb.
+        /// </remarks>
+        public int MemoryThreshold => _memoryThreshold;
+
+        /// <summary>
         /// Gets a value that determines if the contents are buffered entirely in memory.
         /// </summary>
         public bool InMemory

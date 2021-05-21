@@ -10,7 +10,7 @@ These packages are not part of the ASP.NET Core shared framework but are shipped
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building a subset of the code](../../docs/BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
 
 ### Test
 

@@ -51,9 +51,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         public static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(15);
 
-        // This lock protects the connection state.
-        private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
-
         // The receive loop has a single reader and single writer at a time so optimize the channel for that
         private static readonly UnboundedChannelOptions _receiveLoopOptions = new UnboundedChannelOptions
         {

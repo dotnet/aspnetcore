@@ -11,7 +11,7 @@ export class AbortController implements AbortSignal {
     private _isAborted: boolean = false;
     public onabort: (() => void) | null = null;
 
-    public abort() {
+    public abort(): void {
         if (!this._isAborted) {
             this._isAborted = true;
             if (this.onabort) {

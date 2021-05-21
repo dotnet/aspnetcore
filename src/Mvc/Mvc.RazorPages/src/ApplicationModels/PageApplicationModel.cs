@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             HandlerType = handlerType;
 
             Filters = new List<IFilterMetadata>();
-            Properties = new CopyOnWriteDictionary<object, object>(
+            Properties = new CopyOnWriteDictionary<object, object?>(
                 actionDescriptor.Properties,
                 EqualityComparer<object>.Default);
             HandlerMethods = new List<PageHandlerModel>();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             ModelType = other.ModelType;
 
             Filters = new List<IFilterMetadata>(other.Filters);
-            Properties = new Dictionary<object, object>(other.Properties);
+            Properties = new Dictionary<object, object?>(other.Properties);
 
             HandlerMethods = new List<PageHandlerModel>(other.HandlerMethods.Select(m => new PageHandlerModel(m)));
             HandlerProperties = new List<PagePropertyModel>(other.HandlerProperties.Select(p => new PagePropertyModel(p)));
@@ -101,12 +101,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets the area name.
         /// </summary>
-        public string AreaName => ActionDescriptor.AreaName;
+        public string? AreaName => ActionDescriptor.AreaName;
 
         /// <summary>
         /// Gets the route template for the page.
         /// </summary>
-        public string RouteTemplate => ActionDescriptor.AttributeRouteInfo?.Template;
+        public string? RouteTemplate => ActionDescriptor.AttributeRouteInfo?.Template;
 
         /// <summary>
         /// Gets the applicable <see cref="IFilterMetadata"/> instances.
@@ -116,26 +116,26 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="PageApplicationModel"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="TypeInfo"/> of the Razor page.
         /// </summary>
-        public TypeInfo PageType { get; set; }
+        public TypeInfo PageType { get; set; } = default!;
 
         /// <summary>
         /// Gets the declared model <see cref="TypeInfo"/> of the model for the page.
         /// Typically this <see cref="TypeInfo"/> will be the type specified by the @model directive
         /// in the razor page.
         /// </summary>
-        public TypeInfo DeclaredModelType { get; }
+        public TypeInfo? DeclaredModelType { get; }
 
         /// <summary>
         /// Gets or sets the runtime model <see cref="TypeInfo"/> of the model for the razor page.
         /// This is the <see cref="TypeInfo"/> that will be used at runtime to instantiate and populate
         /// the model property of the page.
         /// </summary>
-        public TypeInfo ModelType { get; set; }
+        public TypeInfo? ModelType { get; set; }
 
         /// <summary>
         /// Gets the <see cref="TypeInfo"/> of the handler.

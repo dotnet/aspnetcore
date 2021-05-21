@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
         // Used in tests
-        internal static readonly string OriginHeader = "Origin";
-        internal static readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
         internal static readonly string PreflightHttpMethod = HttpMethods.Options;
 
         // Used in tests

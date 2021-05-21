@@ -54,11 +54,11 @@ export class PromiseSource<T = void> implements Promise<T> {
         throw new Error("Method not implemented.");
     }
 
-    public resolve(value: T | PromiseLike<T>) {
+    public resolve(value: T | PromiseLike<T>): void {
         this._resolver(value);
     }
 
-    public reject(reason?: any) {
+    public reject(reason?: any): void {
         this._rejecter(reason);
     }
 
@@ -84,7 +84,7 @@ export class SyncPoint {
         return this._atSyncPoint.promise;
     }
 
-    public continue() {
+    public continue(): void {
         this._continueFromSyncPoint.resolve();
     }
 

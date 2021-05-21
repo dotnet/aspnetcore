@@ -17,7 +17,7 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.RouteTableFactory.&lt;GetRouteableComponents&gt;g__GetRouteableComponents|3_0(System.Collections.Generic.List{System.Type},System.Reflection.Assembly)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.RouteTableFactory.&lt;GetRouteableComponents&gt;g__GetRouteableComponents|4_0(System.Collections.Generic.List{System.Type},System.Reflection.Assembly)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

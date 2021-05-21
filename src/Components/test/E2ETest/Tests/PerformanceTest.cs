@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -29,13 +30,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate("/", noReload: true);
         }
 
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32788")]
         public void HasTitle()
         {
             Assert.Equal("E2EPerformance", Browser.Title);
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32788")]
         public void BenchmarksRunWithoutError()
         {
             // In CI, we only verify that the benchmarks run without throwing any

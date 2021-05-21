@@ -1632,7 +1632,7 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.Controller.set -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.DisplayName.get -> string!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.Filters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.Parameters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel!>!
-Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.RouteParameterTransformer.get -> Microsoft.AspNetCore.Routing.IOutboundParameterTransformer?
 Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.RouteParameterTransformer.set -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string?>!
@@ -1648,7 +1648,7 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModel.ApiExplorer.get -> M
 Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModel.ApiExplorer.set -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModel.Controllers.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModel.Filters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>!
-Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext.ApplicationModelProviderContext(System.Collections.Generic.IEnumerable<System.Reflection.TypeInfo!>! controllerTypes) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext.ControllerTypes.get -> System.Collections.Generic.IEnumerable<System.Reflection.TypeInfo!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext.Result.get -> Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModel!
@@ -1675,7 +1675,7 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.ControllerProperties.
 Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.ControllerType.get -> System.Reflection.TypeInfo!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.DisplayName.get -> string!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.Filters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>!
-Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel.Selectors.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel! action) -> void
@@ -1693,7 +1693,7 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention.Apply(Micr
 Microsoft.AspNetCore.Mvc.ApplicationModels.IFilterModel.Filters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.IParameterModelBaseConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase! parameter) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.IParameterModelConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel! parameter) -> void
-Microsoft.AspNetCore.Mvc.ApplicationModels.IPropertyModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.ApplicationModels.IPropertyModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel! action) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.InferParameterBindingInfoConvention(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.InvalidModelStateFilterConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel! action) -> void
@@ -1706,7 +1706,7 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel.ParameterModel(Microso
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel.ParameterModel(System.Reflection.ParameterInfo! parameterInfo, System.Collections.Generic.IReadOnlyList<object!>! attributes) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel.ParameterName.get -> string!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel.ParameterName.set -> void
-Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.Attributes.get -> System.Collections.Generic.IReadOnlyList<object!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.BindingInfo.set -> void
@@ -1715,11 +1715,11 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.Name.set -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.ParameterModelBase(Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase! other) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.ParameterModelBase(System.Type! parameterType, System.Collections.Generic.IReadOnlyList<object!>! attributes) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.ParameterType.get -> System.Type!
-Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.Attributes.get -> System.Collections.Generic.IReadOnlyList<object!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.Controller.get -> Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel!
 Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.Controller.set -> void
-Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.PropertyInfo.get -> System.Reflection.PropertyInfo!
 Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.PropertyModel(Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel! other) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.PropertyModel.PropertyModel(System.Reflection.PropertyInfo! propertyInfo, System.Collections.Generic.IReadOnlyList<object!>! attributes) -> void
@@ -3221,3 +3221,4 @@ virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuted(Microsoft.As
 virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext! context) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.HandleNonHttpsRequest(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.OnAuthorization(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
+

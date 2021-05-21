@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             var viewContext = result.Page.ViewContext;
-            var pageAdapter = new RazorPageAdapter(result.Page, pageContext.ActionDescriptor.DeclaredModelTypeInfo);
+            var pageAdapter = new RazorPageAdapter(result.Page, pageContext.ActionDescriptor.DeclaredModelTypeInfo!);
 
             viewContext.View = new RazorView(
                 _razorViewEngine,

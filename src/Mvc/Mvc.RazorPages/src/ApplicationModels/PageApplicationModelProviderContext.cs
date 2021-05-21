@@ -35,6 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the <see cref="ApplicationModels.PageApplicationModel"/>.
         /// </summary>
-        public PageApplicationModel PageApplicationModel { get; set; }
+        public PageApplicationModel PageApplicationModel { get; set; } = default!;
     }
 }

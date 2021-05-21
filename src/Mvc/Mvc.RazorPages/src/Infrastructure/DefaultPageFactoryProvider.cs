@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor)
+        public Action<PageContext, ViewContext, object>? CreatePageDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return _pageActivator.CreateReleaser(descriptor);
         }
 
-        public Func<PageContext, ViewContext, object, ValueTask> CreateAsyncPageDisposer(CompiledPageActionDescriptor descriptor)
+        public Func<PageContext, ViewContext, object, ValueTask>? CreateAsyncPageDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

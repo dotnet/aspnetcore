@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     AreaName = model.AreaName,
                     AttributeRouteInfo = new AttributeRouteInfo
                     {
-                        Name = selector.AttributeRouteModel.Name,
+                        Name = selector.AttributeRouteModel!.Name,
                         Order = selector.AttributeRouteModel.Order ?? 0,
                         Template = TransformPageRoute(model, selector),
                         SuppressLinkGeneration = selector.AttributeRouteModel.SuppressLinkGeneration,
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     DisplayName = $"Page: {model.ViewEnginePath}",
                     EndpointMetadata = selector.EndpointMetadata.ToList(),
                     FilterDescriptors = Array.Empty<FilterDescriptor>(),
-                    Properties = new Dictionary<object, object>(model.Properties),
+                    Properties = new Dictionary<object, object?>(model.Properties),
                     RelativePath = model.RelativePath,
                     ViewEnginePath = model.ViewEnginePath,
                 };
@@ -127,12 +127,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        private static string TransformPageRoute(PageRouteModel model, SelectorModel selectorModel)
+        private static string? TransformPageRoute(PageRouteModel model, SelectorModel selectorModel)
         {
             // Transformer not set on page route
             if (model.RouteParameterTransformer == null)
             {
-                return selectorModel.AttributeRouteModel.Template;
+                return selectorModel.AttributeRouteModel!.Template;
             }
 
             var pageRouteMetadata = selectorModel.EndpointMetadata.OfType<PageRouteMetadata>().SingleOrDefault();
@@ -141,10 +141,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 // Selector does not have expected metadata
                 // This selector was likely configured by AddPageRouteModelConvention
                 // Use the existing explicitly configured template
-                return selectorModel.AttributeRouteModel.Template;
+                return selectorModel.AttributeRouteModel!.Template;
             }
 
-            var segments = pageRouteMetadata.PageRoute.Split('/');
+            var segments = (string?[])pageRouteMetadata.PageRoute.Split('/');
             for (var i = 0; i < segments.Length; i++)
             {
                 segments[i] = model.RouteParameterTransformer.TransformOutbound(segments[i]);

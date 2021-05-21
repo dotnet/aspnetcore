@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Components
             return routeTable;
         }
 
+        public static void ClearCaches() => Cache.Clear();
+
         private static List<Type> GetRouteableComponents(RouteKey routeKey)
         {
             var routeableComponents = new List<Type>();

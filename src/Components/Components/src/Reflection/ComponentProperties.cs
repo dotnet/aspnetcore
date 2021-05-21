@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Components.Reflection
         private readonly static ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
             = new ConcurrentDictionary<Type, WritersForType>();
 
+        public static void ClearCache() => _cachedWritersByType.Clear();
+
         public static void SetProperties(in ParameterView parameters, object target)
         {
             if (target == null)

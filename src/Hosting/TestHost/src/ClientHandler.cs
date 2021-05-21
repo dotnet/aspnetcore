@@ -184,12 +184,16 @@ namespace Microsoft.AspNetCore.TestHost
             // Copy trailers to the response message when the response stream is complete
             contextBuilder.RegisterResponseReadCompleteCallback(context =>
             {
-                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>()!;
+                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
 
-                foreach (var trailer in responseTrailersFeature.Trailers)
+                // Trailers collection is settable so double check the app hasn't set it to null.
+                if (responseTrailersFeature?.Trailers != null)
                 {
-                    bool success = response.TrailingHeaders.TryAddWithoutValidation(trailer.Key, (IEnumerable<string>)trailer.Value);
-                    Contract.Assert(success, "Bad trailer");
+                    foreach (var trailer in responseTrailersFeature.Trailers)
+                    {
+                        bool success = response.TrailingHeaders.TryAddWithoutValidation(trailer.Key, (IEnumerable<string>)trailer.Value);
+                        Contract.Assert(success, "Bad trailer");
+                    }
                 }
             });
 

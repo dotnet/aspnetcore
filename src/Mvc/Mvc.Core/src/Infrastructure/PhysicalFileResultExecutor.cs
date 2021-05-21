@@ -3,10 +3,8 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -69,9 +67,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <inheritdoc/>
         protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
-            if (context == null)
+            return WriteFileAsyncInternal(context.HttpContext, result, range, rangeLength, Logger);
+        }
+
+        internal static Task WriteFileAsyncInternal(
+            HttpContext httpContext,
+            PhysicalFileResult result,
+            RangeItemHeaderValue? range,
+            long rangeLength,
+            ILogger logger)
+        {
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
             if (result == null)
@@ -84,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Task.CompletedTask;
             }
 
-            var response = context.HttpContext.Response;
+            var response = httpContext.Response;
             if (!Path.IsPathRooted(result.FileName))
             {
                 throw new NotSupportedException(Resources.FormatFileResult_PathNotRooted(result.FileName));
@@ -92,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (range != null)
             {
-                Logger.WritingRangeToBody();
+                logger.WritingRangeToBody();
             }
 
             if (range != null)

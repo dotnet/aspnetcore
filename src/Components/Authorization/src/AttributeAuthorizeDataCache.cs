@@ -10,13 +10,11 @@ namespace Microsoft.AspNetCore.Components.Authorization
 {
     internal static class AttributeAuthorizeDataCache
     {
-        private static ConcurrentDictionary<Type, IAuthorizeData[]> _cache
-            = new ConcurrentDictionary<Type, IAuthorizeData[]>();
+        private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> _cache = new();
 
-        public static IAuthorizeData[] GetAuthorizeDataForType(Type type)
+        public static IAuthorizeData[]? GetAuthorizeDataForType(Type type)
         {
-            IAuthorizeData[] result;
-            if (!_cache.TryGetValue(type, out result))
+            if (!_cache.TryGetValue(type, out var result))
             {
                 result = ComputeAuthorizeDataForType(type);
                 _cache[type] = result; // Safe race - doesn't matter if it overwrites
@@ -25,11 +23,11 @@ namespace Microsoft.AspNetCore.Components.Authorization
             return result;
         }
 
-        private static IAuthorizeData[] ComputeAuthorizeDataForType(Type type)
+        private static IAuthorizeData[]? ComputeAuthorizeDataForType(Type type)
         {
             // Allow Anonymous skips all authorization
             var allAttributes = type.GetCustomAttributes(inherit: true);
-            List<IAuthorizeData> authorizeDatas = null;
+            List<IAuthorizeData>? authorizeDatas = null;
             for (var i = 0; i < allAttributes.Length; i++)
             {
                 if (allAttributes[i] is IAllowAnonymous)

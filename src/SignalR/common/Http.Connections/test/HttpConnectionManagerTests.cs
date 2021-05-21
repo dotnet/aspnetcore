@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
                 var transport = connection.Transport;
 
                 Assert.NotNull(connection.ConnectionId);
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
 
                 var transport = connection.Transport;
 
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default, negotiateVersion: 0);
+                var connection = connectionManager.CreateConnection(new(), negotiateVersion: 0);
 
                 var transport = connection.Transport;
 
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default, negotiateVersion: 1);
+                var connection = connectionManager.CreateConnection(new(), negotiateVersion: 1);
 
                 var transport = connection.Transport;
 
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
 
                 connection.ApplicationTask = Task.Run(async () =>
                 {
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
                 var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 connection.ApplicationTask = tcs.Task;
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
                 var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 connection.ApplicationTask = tcs.Task;
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
                 var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 connection.ApplicationTask = tcs.Task;
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
 
                 Assert.NotNull(connection.ConnectionId);
                 Assert.NotNull(connection.Transport);
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 appLifetime.Start();
 
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
 
                 appLifetime.StopApplication();
 
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var connectionManager = CreateConnectionManager(LoggerFactory, appLifetime);
 
-                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var connection = connectionManager.CreateConnection();
 
                 appLifetime.StopApplication();
 

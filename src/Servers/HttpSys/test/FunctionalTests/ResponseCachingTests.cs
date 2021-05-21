@@ -383,6 +383,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32853")]
         public async Task Caching_SendFileWithFullContentLength_Cached()
         {
             var requestCount = 1;
@@ -391,7 +392,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
-                httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
+                httpContext.Response.Headers["Cache-Control"] = "public, max-age=30";
                 httpContext.Response.ContentLength = _fileLength;
                 await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
             }))

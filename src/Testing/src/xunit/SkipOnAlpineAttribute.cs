@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Testing
     /// <summary>
     /// Skip test if running on Alpine Linux (which uses musl instead of glibc)
     /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
     public class SkipOnAlpineAttribute : Attribute, ITestCondition
     {
         public SkipOnAlpineAttribute(string issueUrl = "")

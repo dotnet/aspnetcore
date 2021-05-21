@@ -153,10 +153,10 @@ export module DotNet {
   /**
    * Parses the given JSON string using revivers to restore args passed from .NET to JS.
    *
-   * @param json The JSON string to parse.
+   * @param json The JSON stirng to parse.
    * @param byteArrays The byte array data to revive.
    */
-  export function parseJsonWithRevivers(json: string, byteArrays?: Uint8Array[] | undefined): any {
+  function parseJsonWithRevivers(json: string, byteArrays?: Uint8Array[] | undefined): any {
     return json ? JSON.parse(json, (key, initialValue) => {
       // Invoke each reviver in order, passing the output from the previous reviver,
       // so that each one gets a chance to transform the value
@@ -349,12 +349,14 @@ export module DotNet {
      * Receives notification that an async call from JS to .NET has completed.
      * @param callId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
      * @param success A flag to indicate whether the operation completed successfully.
-     * @param resultOrExceptionMessage Either the operation result or an error message.
+     * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
      * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      */
-    endInvokeDotNetFromJS: (callId: string, success: boolean, resultOrExceptionMessage: any): void => {
-      const resultOrError = success ? resultOrExceptionMessage : new Error(resultOrExceptionMessage);
-      completePendingCall(parseInt(callId), success, resultOrError);
+    endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string, byteArrays: Uint8Array[]): void => {
+      const resultOrError = success
+        ? parseJsonWithRevivers(resultJsonOrExceptionMessage, byteArrays)
+        : new Error(resultJsonOrExceptionMessage);
+      completePendingCall(parseInt(asyncCallId), success, resultOrError);
     }
   }
 

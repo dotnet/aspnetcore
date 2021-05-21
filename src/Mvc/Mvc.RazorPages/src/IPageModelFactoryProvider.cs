@@ -16,23 +16,28 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The Razor Page model factory.</returns>
-        Func<PageContext, object> CreateModelFactory(CompiledPageActionDescriptor descriptor);
+        Func<PageContext, object>? CreateModelFactory(CompiledPageActionDescriptor descriptor);
 
         /// <summary>
         /// Releases a Razor Page model.
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to release the created Razor Page model.</returns>
-        Action<PageContext, object> CreateModelDisposer(CompiledPageActionDescriptor descriptor);
+        Action<PageContext, object>? CreateModelDisposer(CompiledPageActionDescriptor descriptor);
 
         /// <summary>
         /// Releases a Razor Page model asynchronously.
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to release the created Razor Page model asynchronously.</returns>
-        Func<PageContext, object, ValueTask> CreateAsyncModelDisposer(CompiledPageActionDescriptor descriptor)
+        Func<PageContext, object, ValueTask>? CreateAsyncModelDisposer(CompiledPageActionDescriptor descriptor)
         {
             var releaser = CreateModelDisposer(descriptor);
+            if (releaser is null)
+            {
+                return null;
+            }
+
             return (context, model) =>
             {
                 releaser(context, model);

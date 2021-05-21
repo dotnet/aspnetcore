@@ -102,6 +102,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 newOptions.Proxy = options.Proxy;
                 newOptions.UseDefaultCredentials = options.UseDefaultCredentials;
                 newOptions.WebSocketConfiguration = options.WebSocketConfiguration;
+                newOptions.WebSocketFactory = options.WebSocketFactory;
             }
 
             return newOptions;
