@@ -17,12 +17,11 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class BaseRedirectResultTest
     {
-        public static async Task Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
+        public static async Task Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde<TContext>(
             string appRoot,
             string contentPath,
             string expectedPath,
-            string action,
-            Func<RedirectResult, object, Task> function)
+            Func<RedirectResult, TContext, Task> function)
         {
             // Arrange
             var httpContext = GetHttpContext(appRoot);
@@ -30,7 +29,8 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new RedirectResult(contentPath);
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext) context);
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
@@ -38,12 +38,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
         }
 
-        public static async Task Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
+        public static async Task Execute_ReturnsAppRelativePath_WhenItStartsWithTilde<TContext>(
             string appRoot,
             string contentPath,
             string expectedPath,
-            string action,
-            Func<RedirectResult, object, Task> function)
+            Func<RedirectResult, TContext, Task> function)
         {
             // Arrange
             var httpContext = GetHttpContext(appRoot);
@@ -51,7 +50,8 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new RedirectResult(contentPath);
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
@@ -62,11 +62,12 @@ namespace Microsoft.AspNetCore.Mvc
         private static ActionContext GetActionContext(HttpContext httpContext)
         {
             var routeData = new RouteData();
-            routeData.Routers.Add(new Mock<IRouter>().Object);
+            routeData.Routers.Add(Mock.Of<IRouter>());
 
-            return new ActionContext(httpContext,
-                                    routeData,
-                                    new ActionDescriptor());
+            return new ActionContext(
+                httpContext,
+                routeData,
+                new ActionDescriptor());
         }
 
         private static IServiceProvider GetServiceProvider()

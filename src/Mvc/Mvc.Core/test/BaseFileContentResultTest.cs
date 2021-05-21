@@ -19,9 +19,8 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class BaseFileContentResultTest
     {
-        public static async Task WriteFileAsync_CopiesBuffer_ToOutputStream(
-            string action,
-            Func<FileContentResult, object, Task> function)
+        public static async Task WriteFileAsync_CopiesBuffer_ToOutputStream<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var buffer = new byte[] { 1, 2, 3, 4, 5 };
@@ -31,24 +30,24 @@ namespace Microsoft.AspNetCore.Mvc
             var outStream = new MemoryStream();
             httpContext.Response.Body = outStream;
 
-            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var result = new FileContentResult(buffer, "text/plain");
 
             // Act
-            await function(result, action == "ActionContext" ? context : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             Assert.Equal(buffer, outStream.ToArray());
         }
 
-        public static async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(
+        public static async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested<TContext>(
             long? start,
             long? end,
             string expectedString,
             long contentLength,
-            string action,
-            Func<FileContentResult, object, Task> function)
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -75,7 +74,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             start = start ?? 11 - end;
@@ -94,9 +94,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedString, body);
         }
 
-        public static async Task WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest(
-            string action,
-            Func<FileContentResult, object, Task> function)
+        public static async Task WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -124,7 +123,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -151,9 +151,8 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        public static async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored(
-            string action,
-            Func<FileContentResult, object, Task> function)
+        public static async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -180,7 +179,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -193,9 +193,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        public static async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored(
-            string action,
-            Func<FileContentResult, object, Task> function)
+        public static async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -223,7 +222,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -236,10 +236,9 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(
+        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored<TContext>(
             string rangeString,
-            string action,
-            Func<FileContentResult, object, Task> function)
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -261,7 +260,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -275,10 +275,9 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(
+        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable<TContext>(
             string rangeString,
-            string action,
-            Func<FileContentResult, object, Task> function)
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -300,7 +299,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -317,9 +317,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        public static async Task WriteFileAsync_PreconditionFailed_RangeRequestedIgnored(
-            string action,
-            Func<FileContentResult, object, Task> function)
+        public static async Task WriteFileAsync_PreconditionFailed_RangeRequestedIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -346,7 +345,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -360,9 +360,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        public static async Task WriteFileAsync_NotModified_RangeRequestedIgnored(
-            string action,
-            Func<FileContentResult, object, Task> function)
+        public static async Task WriteFileAsync_NotModified_RangeRequestedIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange       
             var contentType = "text/plain";
@@ -389,7 +388,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await function(result, action == "ActionContext" ? actionContext : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -404,9 +404,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        public static async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(
-            string action,
-            Func<FileContentResult, object, Task> function)
+        public static async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var expectedContentType = "text/foo; charset=us-ascii";
@@ -417,12 +416,13 @@ namespace Microsoft.AspNetCore.Mvc
             var outStream = new MemoryStream();
             httpContext.Response.Body = outStream;
 
-            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var result = new FileContentResult(buffer, expectedContentType);
 
             // Act
-            await function(result, action == "ActionContext" ? context : httpContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             Assert.Equal(buffer, outStream.ToArray());

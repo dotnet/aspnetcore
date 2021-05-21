@@ -62,14 +62,13 @@ namespace Microsoft.AspNetCore.Mvc
             string contentPath,
             string expectedPath)
         {
-            var actionType = "ActionContext";
-            var action = new Func<RedirectResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action
+                = new Func<RedirectResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
             await BaseRedirectResultTest.Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
                 appRoot,
                 contentPath,
                 expectedPath,
-                actionType,
                 action);
         }
 
@@ -84,14 +83,13 @@ namespace Microsoft.AspNetCore.Mvc
             string contentPath,
             string expectedPath)
         {
-            var actionType = "ActionContext";
-            var action = new Func<RedirectResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action =
+                new Func<RedirectResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
             await BaseRedirectResultTest.Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
                 appRoot,
                 contentPath,
                 expectedPath,
-                actionType,
                 action);
         }
     }

@@ -46,43 +46,38 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(8, null, "ResultTestFile contents�", 26)]
         public async Task WriteFileAsync_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
             await BasePhysicalFileResultTest.WriteFileAsync_WritesRangeRequested(
                 start,
                 end,
                 expectedString,
                 contentLength,
-                actionType,
                 action);
         }
 
         [Fact]
         public async Task WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange(actionType, action);
+            await BasePhysicalFileResultTest.WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange(action);
         }
 
         [Fact]
         public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored(actionType, action);
+            await BasePhysicalFileResultTest.WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored(action);
         }
 
         [Fact]
         public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored(actionType, action);
+            await BasePhysicalFileResultTest.WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored(action);
         }
 
         [Theory]
@@ -91,11 +86,9 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("bytes = 1-4, 5-11")]
         public async Task WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(string rangeString)
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest
-                .WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(rangeString, actionType, action);
+            await BasePhysicalFileResultTest.WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(rangeString, action);
         }
 
         [Theory]
@@ -103,38 +96,33 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("bytes = -0")]
         public async Task WriteFileAsync_RangeRequestedNotSatisfiable(string rangeString)
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest
-                .WriteFileAsync_RangeRequestedNotSatisfiable(rangeString, actionType, action);
+            await BasePhysicalFileResultTest.WriteFileAsync_RangeRequestedNotSatisfiable(rangeString, action);
         }
 
         [Fact]
         public async Task WriteFileAsync_RangeRequested_PreconditionFailed()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.WriteFileAsync_RangeRequested_PreconditionFailed(actionType, action);
+            await BasePhysicalFileResultTest.WriteFileAsync_RangeRequested_PreconditionFailed(action);
         }
 
         [Fact]
         public async Task WriteFileAsync_RangeRequested_NotModified()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.WriteFileAsync_RangeRequested_NotModified(actionType, action);
+            await BasePhysicalFileResultTest.WriteFileAsync_RangeRequested_NotModified(action);
         }
 
         [Fact]
         public async Task ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent(actionType, action);
+            await BasePhysicalFileResultTest.ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent(action);
         }
 
         [Theory]
@@ -144,33 +132,25 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(8, null, 26)]
         public async Task ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(long? start, long? end, long contentLength)
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(
-                start,
-                end,
-                contentLength,
-                actionType,
-                action);
+            await BasePhysicalFileResultTest.ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(start, end, contentLength, action);
         }
 
         [Fact]
         public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(actionType, action);
+            await BasePhysicalFileResultTest.ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(action);
         }
 
         [Fact]
         public async Task ExecuteResultAsync_WorksWithAbsolutePaths()
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest.ExecuteResultAsync_WorksWithAbsolutePaths(actionType, action);
+            await BasePhysicalFileResultTest.ExecuteResultAsync_WorksWithAbsolutePaths(action);
         }
 
         [Theory]
@@ -188,11 +168,9 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("~/SubFolder\\SubFolderTestFile.txt")]
         public async Task ExecuteAsync_ThrowsNotSupported_ForNonRootedPaths(string path)
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
-            await BasePhysicalFileResultTest
-                .ExecuteAsync_ThrowsNotSupported_ForNonRootedPaths(path, actionType, action);
+            await BasePhysicalFileResultTest.ExecuteAsync_ThrowsNotSupported_ForNonRootedPaths(path, action);
         }
 
         [Theory]
@@ -206,11 +184,10 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(".\\SubFolder/SubFolderTestFile.txt")]
         public void ExecuteAsync_ThrowsDirectoryNotFound_IfItCanNotFindTheDirectory_ForRootPaths(string path)
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
             BasePhysicalFileResultTest
-                .ExecuteAsync_ThrowsDirectoryNotFound_IfItCanNotFindTheDirectory_ForRootPaths(path, actionType, action);
+                .ExecuteAsync_ThrowsDirectoryNotFound_IfItCanNotFindTheDirectory_ForRootPaths(path, action);
         }
 
         [Theory]
@@ -218,11 +195,10 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("\\FilePathResultTestFile.txt")]
         public void ExecuteAsync_ThrowsFileNotFound_WhenFileDoesNotExist_ForRootPaths(string path)
         {
-            var actionType = "ActionContext";
-            var action = new Func<PhysicalFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
+            var action = new Func<PhysicalFileResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
             BasePhysicalFileResultTest
-                .ExecuteAsync_ThrowsFileNotFound_WhenFileDoesNotExist_ForRootPaths(path, actionType, action);
+                .ExecuteAsync_ThrowsFileNotFound_WhenFileDoesNotExist_ForRootPaths(path, action);
         }
     }
 }

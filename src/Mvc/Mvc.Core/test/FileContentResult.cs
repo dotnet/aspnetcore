@@ -12,11 +12,8 @@ namespace Microsoft.AspNetCore.Mvc
     {
         [Fact]
         public async Task WriteFileAsync_CopiesBuffer_ToOutputStream()
-        {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
-
-            await BaseFileContentResultTest.WriteFileAsync_CopiesBuffer_ToOutputStream(actionType, action);
+        {var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            await BaseFileContentResultTest.WriteFileAsync_CopiesBuffer_ToOutputStream(action);
         }
 
         [Theory]
@@ -26,38 +23,34 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(6, null, "World", 5)]
         public async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
             await BaseFileContentResultTest
-                .WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(start, end, expectedString, contentLength, actionType, action);
+                .WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(start, end, expectedString, contentLength, action);
         }
 
         [Fact]
         public async Task WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest()
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest.WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest(actionType, action);
+            await BaseFileContentResultTest.WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest(action);
         }
 
         [Fact]
         public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored()
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest.WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored(actionType, action);
+            await BaseFileContentResultTest.WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored(action);
         }
 
         [Fact]
         public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored()
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest.WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored(actionType, action);
+            await BaseFileContentResultTest.WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored(action);
         }
 
         [Theory]
@@ -66,11 +59,9 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("bytes = 1-4, 5-11")]
         public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(string rangeString)
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest
-                .WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(rangeString, actionType, action);
+            await BaseFileContentResultTest.WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(rangeString, action);
         }
 
         [Theory]
@@ -78,38 +69,33 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("bytes = -0")]
         public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(string rangeString)
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest
-                .WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(rangeString, actionType, action);
+            await BaseFileContentResultTest.WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(rangeString, action);
         }
 
         [Fact]
         public async Task WriteFileAsync_PreconditionFailed_RangeRequestedIgnored()
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest.WriteFileAsync_PreconditionFailed_RangeRequestedIgnored(actionType, action);
+            await BaseFileContentResultTest.WriteFileAsync_PreconditionFailed_RangeRequestedIgnored(action);
         }
 
         [Fact]
         public async Task WriteFileAsync_NotModified_RangeRequestedIgnored()
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest.WriteFileAsync_NotModified_RangeRequestedIgnored(actionType, action);
+            await BaseFileContentResultTest.WriteFileAsync_NotModified_RangeRequestedIgnored(action);
         }
 
         [Fact]
         public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
         {
-            var actionType = "HttpContext";
-            var action = new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var action = new Func<FileContentResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
 
-            await BaseFileContentResultTest.ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(actionType, action);
+            await BaseFileContentResultTest.ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(action);
         }
     }
 }
