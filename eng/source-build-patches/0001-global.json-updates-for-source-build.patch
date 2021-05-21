@@ -13,7 +13,7 @@ index 5a2b8a613d..951a5f9fe3 100644
 +++ b/global.json
 @@ -5,13 +5,10 @@
    "tools": {
-     "dotnet": "6.0.100-preview.5.21264.3",
+     "dotnet": "6.0.100-preview.5.21230.2",
      "runtimes": {
 -      "dotnet/x64": [
 +      "dotnet": [
@@ -26,6 +26,6 @@ index 5a2b8a613d..951a5f9fe3 100644
        "aspnetcore/x64": [
          "3.1.14"
        ]
--- 
+--
 2.20.1.windows.1
 
