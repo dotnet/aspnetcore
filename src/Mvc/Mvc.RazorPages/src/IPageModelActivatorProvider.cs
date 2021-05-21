@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
             return (context, model) =>
             {
-                releaser.Invoke(context, model);
+                releaser(context, model);
                 return default;
             };
         }
