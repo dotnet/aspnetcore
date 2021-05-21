@@ -38,9 +38,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             MountUri = _devHostServerFixture.RootUri + "subdir";
         }
 
-        [Fact]
-        public async Task CanSendAndReceiveBytes()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        public async Task CanSendAndReceiveBytes(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
             var targetUri = new Uri(_apiServerFixture.RootUri, "/subdir/api/data");
             await TestPage.TypeAsync("#request-uri", targetUri.AbsoluteUri);
             await TestPage.ClickAsync("#send-request");

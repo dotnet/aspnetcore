@@ -102,17 +102,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
         }
 
-        [Fact]
-        public async Task CanUploadSingleSmallFile()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        // NOTE: BrowserKind argument must be first
+        public async Task CanUploadSingleSmallFile(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
+
             // Create a temporary text file
             var file = TempFile.Create(_tempDirectory, "txt", "This file was uploaded to the browser and read from .NET.");
             await VerifyFile(file);
         }
 
-        [Fact]
-        public async Task CanUploadSingleLargeFile()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        // NOTE: BrowserKind argument must be first
+        public async Task CanUploadSingleLargeFile(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
+
             // Create a large text file
             var fileContentSizeInBytes = 1024 * 1024;
             var contentBuilder = new StringBuilder();
@@ -127,9 +137,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await VerifyFile(file);
         }
 
-        [Fact]
-        public async Task CanUploadMultipleFiles()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        // NOTE: BrowserKind argument must be first
+        public async Task CanUploadMultipleFiles(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
+
             // Create multiple small text files
             var files = Enumerable.Range(1, 3)
                 .Select(i => TempFile.Create(_tempDirectory, "txt", $"Contents of file {i}."))
@@ -138,9 +153,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await VerifyFiles(files);
         }
 
-        [Fact]
-        public async Task CanUploadAndConvertImageFile()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        // NOTE: BrowserKind argument must be first
+        public async Task CanUploadAndConvertImageFile(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
+
             var sourceImageId = "image-source";
 
             // Get the source image base64
@@ -177,9 +197,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await element.TypeAsync(value);
         }
 
-        [Fact]
-        public async Task ThrowsWhenTooManyFilesAreSelected()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        // NOTE: BrowserKind argument must be first
+        public async Task ThrowsWhenTooManyFilesAreSelected(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
+
             await ClearAndType("#max-allowed-files", "1\n");
 
             // Save two files locally
@@ -194,9 +219,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("The maximum number of files accepted is 1, but 2 were supplied.", await exceptionMessage.GetTextContentAsync());
         }
 
-        [Fact]
-        public async Task ThrowsWhenOversizedFileIsSelected()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        // NOTE: BrowserKind argument must be first
+        public async Task ThrowsWhenOversizedFileIsSelected(BrowserKind browserKind)
         {
+            BrowserKind = browserKind;
+
             await ClearAndType("#max-file-size", "10\n");
 
             // Save a file that exceeds the specified file size limit

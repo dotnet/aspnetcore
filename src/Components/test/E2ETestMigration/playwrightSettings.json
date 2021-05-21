@@ -28,11 +28,11 @@
     },
     "Firefox": {
       "BrowserKind": "Firefox",
-      "IsEnabled": false
+      "IsEnabled": true
     },
     "Webkit": {
       "BrowserKind": "Webkit",
-      "IsEnabled": false
+      "IsEnabled": true
     }
   }
 }
