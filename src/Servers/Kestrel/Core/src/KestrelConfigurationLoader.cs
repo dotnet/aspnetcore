@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
     /// </summary>
     public class KestrelConfigurationLoader
     {
-        private bool _loaded = false;
+        private bool _loaded;
 
         internal KestrelConfigurationLoader(
             KestrelServerOptions options,

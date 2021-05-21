@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class Http3Limits
     {
-        private int _headerTableSize = 0;
+        private int _headerTableSize;
         private int _maxRequestHeaderFieldSize = 8192;
 
         /// <summary>

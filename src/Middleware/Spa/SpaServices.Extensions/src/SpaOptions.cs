@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SpaServices
         /// <summary>
         /// Controls whether the development server should be used with a dynamic or fixed port.
         /// </summary>
-        public int DevServerPort { get; set; } = default(int);
+        public int DevServerPort { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the package manager executable, (e.g npm,

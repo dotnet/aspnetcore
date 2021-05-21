@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class SourceLocationTracker
     {
-        private int _absoluteIndex = 0;
-        private int _characterIndex = 0;
-        private int _lineIndex = 0;
+        private int _absoluteIndex;
+        private int _characterIndex;
+        private int _lineIndex;
         private SourceLocation _currentLocation;
 
         public SourceLocationTracker()

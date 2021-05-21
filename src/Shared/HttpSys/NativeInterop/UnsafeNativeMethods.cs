@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             public int nLength = 12;
             public SafeLocalMemHandle lpSecurityDescriptor = new SafeLocalMemHandle(IntPtr.Zero, false);
-            public bool bInheritHandle = false;
+            public bool bInheritHandle;
         }
     }
 }

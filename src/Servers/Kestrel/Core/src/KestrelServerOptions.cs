@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = false;
+        public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
         /// Gets or sets a value that controls whether the string values materialized
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool DisableStringReuse { get; set; } = false;
+        public bool DisableStringReuse { get; set; }
 
         /// <summary>
         /// Controls whether to return the "Alt-Svc" header from an HTTP/2 or lower response for HTTP/3.
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool EnableAltSvc { get; set; } = false;
+        public bool EnableAltSvc { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that returns the <see cref="Encoding"/> to decode the value for the specified request header name,

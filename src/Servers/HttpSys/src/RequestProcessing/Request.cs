@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
 
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         internal Request(RequestContext requestContext)
         {

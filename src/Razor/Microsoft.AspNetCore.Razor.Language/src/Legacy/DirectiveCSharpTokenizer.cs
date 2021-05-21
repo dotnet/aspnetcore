@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class DirectiveCSharpTokenizer : CSharpTokenizer
     {
-        private bool _visitedFirstTokenStart = false;
-        private bool _visitedFirstTokenLineEnd = false;
+        private bool _visitedFirstTokenStart;
+        private bool _visitedFirstTokenLineEnd;
 
         public DirectiveCSharpTokenizer(ITextDocument source) : base(source)
         {

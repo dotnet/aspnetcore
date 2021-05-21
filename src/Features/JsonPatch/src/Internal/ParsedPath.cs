@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     /// </summary>
     public readonly struct ParsedPath
     {
-        private static readonly string[] Empty = null;
-
         private readonly string[] _segments;
 
         public ParsedPath(string path)
@@ -41,7 +39,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public IReadOnlyList<string> Segments => _segments ?? Empty;
+        public IReadOnlyList<string> Segments => _segments;
 
         private static string[] ParsePath(string path)
         {

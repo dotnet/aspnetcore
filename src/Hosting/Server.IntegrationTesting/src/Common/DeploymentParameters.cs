@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
 
-        public bool PreservePublishedApplicationForDebugging { get; set; } = false;
+        public bool PreservePublishedApplicationForDebugging { get; set; }
 
         public bool StatusMessagesEnabled { get; set; } = true;
 

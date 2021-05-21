@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly ComponentFactory _componentFactory;
         private List<(ComponentState, ParameterView)>? _rootComponents;
 
-        private int _nextComponentId = 0;
+        private int _nextComponentId;
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
