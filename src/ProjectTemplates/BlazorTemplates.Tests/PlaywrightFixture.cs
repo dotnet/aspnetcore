@@ -19,19 +19,18 @@ namespace ProjectTemplates.Tests.Infrastructure
     public class PlaywrightFixture<TTestAssemblyType> : IAsyncLifetime
     {
         private static readonly bool _isCIEnvironment =
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild")) ||
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Helix"));
 
         private readonly IMessageSink _diagnosticsMessageSink;
-        private readonly IConfiguration _configuration;
+        private static BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration(typeof(TTestAssemblyType).Assembly));
 
         public PlaywrightFixture(IMessageSink diagnosticsMessageSink)
         {
             _diagnosticsMessageSink = diagnosticsMessageSink;
-
-            _configuration = CreateConfiguration(typeof(TTestAssemblyType).Assembly);
         }
 
-        private IConfiguration CreateConfiguration(Assembly assembly)
+        private static IConfiguration CreateConfiguration(Assembly assembly)
         {
             var basePath = Path.GetDirectoryName(assembly.Location);
             var os = Environment.OSVersion.Platform switch
@@ -65,7 +64,7 @@ namespace ProjectTemplates.Tests.Infrastructure
             var sink = new TestSink();
             sink.MessageLogged += LogBrowserManagerMessage;
             var factory = new TestLoggerFactory(sink, enabled: true);
-            BrowserManager = await BrowserManager.CreateAsync(_configuration, factory);
+            BrowserManager = await BrowserManager.CreateAsync(_config, factory);
         }
 
         private void LogBrowserManagerMessage(WriteContext context)
