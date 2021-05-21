@@ -49,13 +49,10 @@ namespace Microsoft.AspNetCore.RequestLimiter
             Interlocked.Add(ref _resourceCount, -requestedCount);
 
             var registration = new RateLimitRequest(requestedCount);
+            _queue.Enqueue(registration);
 
-            if (WaitHandle.WaitAny(new[] { registration.MRE.WaitHandle, cancellationToken.WaitHandle }) == 0)
-            {
-                return ValueTask.FromResult(Resource.NoopResource);
-            }
-
-            throw new InvalidOperationException("Limit exceeded");
+            // handle cancellation
+            return new ValueTask<Resource>(registration.TCS.Task);
         }
 
         private static void Replenish(object? state)
@@ -86,7 +83,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
                     if (requestToFulfill == request)
                     {
                         // If requestToFulfill == request, the fulfillment is successful.
-                        requestToFulfill.MRE.Set();
+                        requestToFulfill.TCS.SetResult(Resource.NoopResource);
                     }
                     else
                     {
@@ -114,12 +111,13 @@ namespace Microsoft.AspNetCore.RequestLimiter
             public RateLimitRequest(long count)
             {
                 Count = count;
-                MRE = new ManualResetEventSlim();
+                // Use VoidAsyncOperationWithData<T> instead
+                TCS = new TaskCompletionSource<Resource>();
             }
 
             public long Count { get; }
 
-            public ManualResetEventSlim MRE { get; }
+            public TaskCompletionSource<Resource> TCS { get; }
         }
     }
 }
