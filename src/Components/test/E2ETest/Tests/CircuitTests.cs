@@ -84,9 +84,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var targetButton = Browser.Exists(By.Id("navigate-to-page"));
 
             targetButton.Click();
+            Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
 
             var expectedError = "Location change failed";
-
             AssertLogContains(expectedError);
         }
 
