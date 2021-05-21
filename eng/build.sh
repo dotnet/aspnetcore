@@ -18,7 +18,6 @@ verbosity='minimal'
 run_restore=''
 run_build=true
 run_pack=false
-run_publish=false
 run_tests=false
 build_all=false
 build_deps=true
@@ -147,9 +146,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         -pack)
             run_pack=true
-            ;;
-        -publish)
-            run_publish=true
             ;;
         -no-pack|-nopack)
             run_pack=false
