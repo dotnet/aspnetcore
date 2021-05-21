@@ -6,7 +6,9 @@ Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.DisableServerCont
 Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.DisableServerContextTakeover.set -> void
 Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.ServerMaxWindowBits.get -> int
 Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.ServerMaxWindowBits.set -> void
+Microsoft.AspNetCore.Http.WebSocketManagerExtensions
 Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.WebSocketManagerExtensions.AcceptWebSocketAsync(this Microsoft.AspNetCore.Http.WebSocketManager! webSocketManager, Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext! acceptContext) -> System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket!>!
 ~Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.WebSocketMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.WebSocketOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 override Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.SubProtocol.get -> string?
 override Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.SubProtocol.set -> void
