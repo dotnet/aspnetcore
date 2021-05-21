@@ -17,62 +17,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class FileContentResultTest
+    public class BaseFileContentResultTest
     {
-        [Fact]
-        public void Constructor_SetsFileContents()
-        {
-            // Arrange
-            var fileContents = new byte[0];
-
-            // Act
-            var result = new FileContentResult(fileContents, "text/plain");
-
-            // Assert
-            Assert.Same(fileContents, result.FileContents);
-        }
-
-        [Fact]
-        public void Constructor_SetsContentTypeAndParameters()
-        {
-            // Arrange
-            var fileContents = new byte[0];
-            var contentType = "text/plain; charset=us-ascii; p1=p1-value";
-            var expectedMediaType = contentType;
-
-            // Act
-            var result = new FileContentResult(fileContents, contentType);
-
-            // Assert
-            Assert.Same(fileContents, result.FileContents);
-            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
-        }
-
-        [Fact]
-        public void Constructor_SetsLastModifiedAndEtag()
-        {
-            // Arrange
-            var fileContents = new byte[0];
-            var contentType = "text/plain";
-            var expectedMediaType = contentType;
-            var lastModified = new DateTimeOffset();
-            var entityTag = new EntityTagHeaderValue("\"Etag\"");
-
-            // Act
-            var result = new FileContentResult(fileContents, contentType)
-            {
-                LastModified = lastModified,
-                EntityTag = entityTag
-            };
-
-            // Assert
-            Assert.Equal(lastModified, result.LastModified);
-            Assert.Equal(entityTag, result.EntityTag);
-            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
-        }
-
-        [Fact]
-        public async Task WriteFileAsync_CopiesBuffer_ToOutputStream()
+        public static async Task WriteFileAsync_CopiesBuffer_ToOutputStream<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var buffer = new byte[] { 1, 2, 3, 4, 5 };
@@ -82,23 +30,24 @@ namespace Microsoft.AspNetCore.Mvc
             var outStream = new MemoryStream();
             httpContext.Response.Body = outStream;
 
-            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var result = new FileContentResult(buffer, "text/plain");
 
             // Act
-            await result.ExecuteResultAsync(context);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             Assert.Equal(buffer, outStream.ToArray());
         }
 
-        [Theory]
-        [InlineData(0, 4, "Hello", 5)]
-        [InlineData(6, 10, "World", 5)]
-        [InlineData(null, 5, "World", 5)]
-        [InlineData(6, null, "World", 5)]
-        public async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
+        public static async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested<TContext>(
+            long? start,
+            long? end,
+            string expectedString,
+            long contentLength,
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -125,7 +74,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             start = start ?? 11 - end;
@@ -144,8 +94,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedString, body);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest()
+        public static async Task WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -173,7 +123,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -200,8 +151,8 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        [Fact]
-        public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored()
+        public static async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -228,7 +179,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -241,8 +193,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored()
+        public static async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -270,7 +222,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -283,11 +236,9 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        [Theory]
-        [InlineData("0-5")]
-        [InlineData("bytes = ")]
-        [InlineData("bytes = 1-4, 5-11")]
-        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(string rangeString)
+        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored<TContext>(
+            string rangeString,
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -309,7 +260,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -323,10 +275,9 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        [Theory]
-        [InlineData("bytes = 12-13")]
-        [InlineData("bytes = -0")]
-        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(string rangeString)
+        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable<TContext>(
+            string rangeString,
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -348,7 +299,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -365,8 +317,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_PreconditionFailed_RangeRequestedIgnored()
+        public static async Task WriteFileAsync_PreconditionFailed_RangeRequestedIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -393,7 +345,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -407,8 +360,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Fact]
-        public async Task WriteFileAsync_NotModified_RangeRequestedIgnored()
+        public static async Task WriteFileAsync_NotModified_RangeRequestedIgnored<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange       
             var contentType = "text/plain";
@@ -435,7 +388,8 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -450,8 +404,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Fact]
-        public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
+        public static async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding<TContext>(
+            Func<FileContentResult, TContext, Task> function)
         {
             // Arrange
             var expectedContentType = "text/foo; charset=us-ascii";
@@ -462,12 +416,13 @@ namespace Microsoft.AspNetCore.Mvc
             var outStream = new MemoryStream();
             httpContext.Response.Body = outStream;
 
-            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var result = new FileContentResult(buffer, expectedContentType);
 
             // Act
-            await result.ExecuteResultAsync(context);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             Assert.Equal(buffer, outStream.ToArray());

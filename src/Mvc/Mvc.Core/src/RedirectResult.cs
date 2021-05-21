@@ -4,10 +4,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -15,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// An <see cref="ActionResult"/> that returns a Found (302), Moved Permanently (301), Temporary Redirect (307),
     /// or Permanent Redirect (308) response with a Location header to the supplied URL.
     /// </summary>
-    public class RedirectResult : ActionResult, IKeepTempDataResult
+    public class RedirectResult : ActionResult, IResult, IKeepTempDataResult
     {
         private string _url;
 
@@ -111,6 +114,37 @@ namespace Microsoft.AspNetCore.Mvc
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<RedirectResult>>();
             return executor.ExecuteAsync(context, this);
+        }
+
+        /// <inheritdoc />
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<RedirectResult>();
+
+            // IsLocalUrl is called to handle URLs starting with '~/'.
+            var destinationUrl = UrlHelperBase.CheckIsLocalUrl(_url) ? UrlHelperBase.Content(httpContext, _url) : _url;
+
+            logger.RedirectResultExecuting(destinationUrl);
+
+            if (PreserveMethod)
+            {
+                httpContext.Response.StatusCode = Permanent
+                    ? StatusCodes.Status308PermanentRedirect
+                    : StatusCodes.Status307TemporaryRedirect;
+                httpContext.Response.Headers.Location = destinationUrl;
+            }
+            else
+            {
+                httpContext.Response.Redirect(destinationUrl, Permanent);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }
