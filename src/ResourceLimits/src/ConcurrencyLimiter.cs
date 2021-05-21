@@ -1,5 +1,6 @@
 // Pending API review
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace System.Threading.ResourceLimits
         private long _resourceCount;
         private readonly long _maxResourceCount;
         private object _lock = new object();
-        private ManualResetEventSlim _mre; // How about a FIFO queue instead of randomness?
+        private readonly ConcurrentQueue<ConcurrencyLimitRequest> _queue = new();
 
         // an inaccurate view of resources
         public override long EstimatedCount => Interlocked.Read(ref _resourceCount);
@@ -19,7 +20,6 @@ namespace System.Threading.ResourceLimits
         {
             _resourceCount = resourceCount;
             _maxResourceCount = resourceCount;
-            _mre = new ManualResetEventSlim();
         }
 
         // Fast synchronous attempt to acquire resources
@@ -77,34 +77,52 @@ namespace System.Threading.ResourceLimits
                 }
             }
 
-            // Handle cancellation
-            while (true)
+            var registration = new ConcurrencyLimitRequest(requestedCount);
+            _queue.Enqueue(registration);
+
+            // handle cancellation
+            return new ValueTask<Resource>(registration.TCS.Task);
+        }
+
+        private void Release(long releaseCount)
+        {
+            lock (_lock) // Check lock check
             {
-                _mre.Wait(cancellationToken); // Handle cancellation
+                // Check for negative requestCount
+                Interlocked.Add(ref _resourceCount, releaseCount);
 
-                lock (_lock)
+                while (_queue.TryPeek(out var request))
                 {
-                    if (_mre.IsSet)
+                    if (EstimatedCount >= request.Count)
                     {
-                        _mre.Reset();
-                    }
+                        // Request can be fulfilled
+                        _queue.TryDequeue(out var requestToFulfill);
 
-                    if (EstimatedCount > requestedCount)
-                    {
-                        Interlocked.Add(ref _resourceCount, -requestedCount);
-                        return ValueTask.FromResult(new Resource(
+                        // requestToFulfill == request
+                        requestToFulfill!.TCS.SetResult(new Resource(
                             state: null,
-                            onDispose: resource => Release(requestedCount)));
+                            onDispose: resource => Release(request.Count)));
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
             }
         }
 
-        private void Release(long releaseCount)
+        private class ConcurrencyLimitRequest
         {
-            // Check for negative requestCount
-            Interlocked.Add(ref _resourceCount, releaseCount);
-            _mre.Set();
+            public ConcurrencyLimitRequest(long count)
+            {
+                Count = count;
+                // Use VoidAsyncOperationWithData<T> instead
+                TCS = new TaskCompletionSource<Resource>();
+            }
+
+            public long Count { get; }
+
+            public TaskCompletionSource<Resource> TCS { get; }
         }
     }
 }
