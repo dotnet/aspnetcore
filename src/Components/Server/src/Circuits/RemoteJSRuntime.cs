@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 if (_permanentlyDisconnected)
                 {
                     throw new JSDisconnectedException(
-                           "JavaScript interop calls cannot be issued at this time. This is because the circuit has disconnected " +
-                           "and is being disposed.");
+                   "JavaScript interop calls cannot be issued at this time. This is because the circuit has disconnected " +
+                   "and is being disposed.");
                 }
                 else
                 {
