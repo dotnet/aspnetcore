@@ -23,13 +23,11 @@ namespace System.Threading.ResourceLimits
         }
 
         // Fast synchronous attempt to acquire resources
-        public override bool TryAcquire(long requestedCount, [NotNullWhen(true)] out Resource? resource)
+        public override Resource Acquire(long requestedCount)
         {
-            resource = Resource.NoopResource;
-
             if (requestedCount < 0 || requestedCount > _maxResourceCount)
             {
-                return false;
+                return Resource.FailNoopResource;
             }
 
             if (requestedCount == 0)
@@ -44,15 +42,15 @@ namespace System.Threading.ResourceLimits
                     if (EstimatedCount >= requestedCount)
                     {
                         Interlocked.Add(ref _resourceCount, -requestedCount);
-                        resource = new Resource(
+                        return new Resource(
+                            isAcquired: true,
                             state: null,
                             onDispose: resource => Release(requestedCount));
-                        return true;
                     }
                 }
             }
 
-            return false;
+            return Resource.FailNoopResource;
         }
 
         // Wait until the requested resources are available
@@ -71,6 +69,7 @@ namespace System.Threading.ResourceLimits
                     {
                         Interlocked.Add(ref _resourceCount, -requestedCount);
                         return ValueTask.FromResult(new Resource(
+                            isAcquired: true,
                             state: null,
                             onDispose: resource => Release(requestedCount)));
                     }
@@ -100,6 +99,7 @@ namespace System.Threading.ResourceLimits
 
                         // requestToFulfill == request
                         requestToFulfill!.TCS.SetResult(new Resource(
+                            isAcquired: true,
                             state: null,
                             onDispose: resource => Release(request.Count)));
                     }

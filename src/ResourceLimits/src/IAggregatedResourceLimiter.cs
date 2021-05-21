@@ -1,6 +1,5 @@
 // Pending API review
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace System.Threading.ResourceLimits
@@ -12,7 +11,7 @@ namespace System.Threading.ResourceLimits
         public abstract long EstimatedCount(TKey resourceID);
 
         // Fast synchronous attempt to acquire resources
-        public abstract bool TryAcquire(TKey resourceID, long requestedCount, [NotNullWhen(true)] out Resource? resource);
+        public abstract Resource Acquire(TKey resourceID, long requestedCount);
 
         // Wait until the requested resources are available
         // If unsuccessful, throw

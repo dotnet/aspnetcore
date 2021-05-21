@@ -4,12 +4,15 @@ namespace System.Threading.ResourceLimits
 {
     public struct Resource : IDisposable
     {
-        public object? State { get; init; }
+        public bool IsAcquired { get; }
+
+        public object? State { get; }
 
         private Action<object?>? _onDispose;
 
-        public Resource(object? state, Action<object?>? onDispose)
+        public Resource(bool isAcquired, object? state, Action<object?>? onDispose)
         {
+            IsAcquired = isAcquired;
             State = state;
             _onDispose = onDispose;
         }
@@ -19,6 +22,7 @@ namespace System.Threading.ResourceLimits
             _onDispose?.Invoke(State);
         }
 
-        public static Resource NoopResource = new Resource(null, null);
+        public static Resource SuccessNoopResource = new Resource(true, null, null);
+        public static Resource FailNoopResource = new Resource(false, null, null);
     }
 }
