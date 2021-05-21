@@ -214,9 +214,15 @@ namespace Microsoft.AspNetCore.WebSockets
 
                     value = value[(startIndex + 1)..].TrimEnd();
 
+                    if (value.Length == 0)
+                    {
+                        parsedValue = null;
+                        return false;
+                    }
+
                     // https://datatracker.ietf.org/doc/html/rfc7692#section-5.2
                     // check for value in quotes and pull the value out without the quotes
-                    if (value[0] == '"' && value.EndsWith("\"".AsSpan()))
+                    if (value[0] == '"' && value.EndsWith("\"".AsSpan()) && value.Length > 1)
                     {
                         value = value[1..^1];
                     }

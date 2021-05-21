@@ -3,14 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -73,7 +68,7 @@ namespace Microsoft.AspNetCore.WebSockets
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
             if (upgradeFeature != null && context.Features.Get<IHttpWebSocketFeature>() == null)
             {
-                var webSocketFeature = new UpgradeHandshake(context, upgradeFeature, _options);
+                var webSocketFeature = new UpgradeHandshake(context, upgradeFeature, _options, _logger);
                 context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
 
                 if (!_anyOriginAllowed)
@@ -102,13 +97,15 @@ namespace Microsoft.AspNetCore.WebSockets
             private readonly HttpContext _context;
             private readonly IHttpUpgradeFeature _upgradeFeature;
             private readonly WebSocketOptions _options;
+            private readonly ILogger _logger;
             private bool? _isWebSocketRequest;
 
-            public UpgradeHandshake(HttpContext context, IHttpUpgradeFeature upgradeFeature, WebSocketOptions options)
+            public UpgradeHandshake(HttpContext context, IHttpUpgradeFeature upgradeFeature, WebSocketOptions options, ILogger logger)
             {
                 _context = context;
                 _upgradeFeature = upgradeFeature;
                 _options = options;
+                _logger = logger;
             }
 
             public bool IsWebSocketRequest
@@ -175,6 +172,7 @@ namespace Microsoft.AspNetCore.WebSockets
                             {
                                 if (HandshakeHelpers.ParseDeflateOptions(extension.AsSpan().TrimStart(), serverContextTakeover, serverMaxWindowBits, out var parsedOptions, out var response))
                                 {
+                                    Log.CompressionAccepted(_logger, response);
                                     deflateOptions = parsedOptions;
                                     // If more extension types are added, this would need to be a header append
                                     // and we wouldn't want to break out of the loop
@@ -182,6 +180,11 @@ namespace Microsoft.AspNetCore.WebSockets
                                     break;
                                 }
                             }
+                        }
+
+                        if (deflateOptions is null)
+                        {
+                            Log.CompressionNotAccepted(_logger);
                         }
                     }
                 }
@@ -266,6 +269,25 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
 
                 return HandshakeHelpers.IsRequestKeyValid(requestHeaders.SecWebSocketKey.ToString());
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception?> _compressionAccepted =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "CompressionAccepted"), "WebSocket compression negotiation accepted with values '{CompressionResponse}'.");
+
+            private static readonly Action<ILogger, Exception?> _compressionNotAccepted =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "CompressionNotAccepted"), "Compression negotiation not accepted by server.");
+
+            public static void CompressionAccepted(ILogger logger, string response)
+            {
+                _compressionAccepted(logger, response, null);
+            }
+
+            public static void CompressionNotAccepted(ILogger logger)
+            {
+                _compressionNotAccepted(logger, null);
             }
         }
     }
