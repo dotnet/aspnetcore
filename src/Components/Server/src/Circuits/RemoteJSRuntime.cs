@@ -77,12 +77,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
         {
             var args = new[] { callId, success, resultOrError };
-            var (argsJson, byteArrays) = SerializeArgs(args);
+            var serializedArgs = SerializeArgs(args);
 
              _clientProxy.SendAsync(
                 "JS.EndInvokeDotNet",
-                argsJson,
-                byteArrays);
+                serializedArgs.ArgsJson,
+                serializedArgs.ByteArrays);
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
