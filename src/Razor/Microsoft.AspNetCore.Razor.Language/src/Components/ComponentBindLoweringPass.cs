@@ -518,7 +518,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             out BoundAttributeDescriptor changeAttribute,
             out BoundAttributeDescriptor expressionAttribute)
         {
-            valueAttributeName = null;
             changeAttributeName = null;
             expressionAttributeName = null;
             changeAttributeNode = null;

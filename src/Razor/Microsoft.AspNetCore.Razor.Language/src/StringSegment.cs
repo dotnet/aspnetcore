@@ -305,6 +305,33 @@ namespace Microsoft.AspNetCore.Razor
             return IndexOf(c, 0, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int IndexOfAny(char[] anyOf, int startIndex, int count)
+        {
+            var index = -1;
+
+            if (HasValue)
+            {
+                index = Buffer.IndexOfAny(anyOf, Offset + startIndex, count);
+                if (index != -1)
+                {
+                    index -= Offset;
+                }
+            }
+
+            return index;
+        }
+
+        public int IndexOfAny(char[] anyOf, int startIndex)
+        {
+            return IndexOfAny(anyOf, startIndex, Length - startIndex);
+        }
+
+        public int IndexOfAny(char[] anyOf)
+        {
+            return IndexOfAny(anyOf, 0, Length);
+        }
+
         /// <summary>
         /// Indicates whether the specified StringSegment is null or an Empty string.
         /// </summary>

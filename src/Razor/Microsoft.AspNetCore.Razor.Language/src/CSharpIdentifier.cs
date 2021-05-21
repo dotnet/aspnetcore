@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
@@ -40,19 +40,24 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return inputName;
             }
 
+            var builder = new StringBuilder(inputName.Length);
+            AppendSanitized(builder, inputName);
+
+            return builder.ToString();
+        }
+
+        public static void AppendSanitized(StringBuilder builder, StringSegment inputName)
+        {
             if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
             {
-                inputName = "_" + inputName;
+                builder.Append('_');
             }
 
-            var builder = new StringBuilder(inputName.Length);
             for (var i = 0; i < inputName.Length; i++)
             {
                 var ch = inputName[i];
                 builder.Append(IsIdentifierPart(ch) ? ch : '_');
             }
-
-            return builder.ToString();
         }
     }
 }

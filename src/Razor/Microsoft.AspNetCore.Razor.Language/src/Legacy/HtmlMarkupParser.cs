@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2026,8 +2026,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 CurrentToken.Content[position] == sequence[0] &&
                 position + sequence.Length <= CurrentToken.Content.Length)
             {
-                var possibleStart = CurrentToken.Content.Substring(position, sequence.Length);
-                if (string.Equals(possibleStart, sequence, Comparison))
+                var possibleStart = new StringSegment(CurrentToken.Content, position, sequence.Length);
+                if (possibleStart.Equals(sequence, Comparison))
                 {
                     // Capture the current token and "put it back" (really we just want to clear CurrentToken)
                     var bookmark = CurrentStart;

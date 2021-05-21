@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class SourceLocationTracker
+    internal sealed class SourceLocationTracker
     {
         private int _absoluteIndex;
         private int _characterIndex;
@@ -52,10 +52,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return tracker.CurrentLocation;
         }
 
+        public static SourceLocation Advance(SourceLocation location, StringSegment text)
+        {
+            var tracker = new SourceLocationTracker(location);
+            tracker.UpdateLocation(text);
+            return tracker.CurrentLocation;
+        }
+
         public void UpdateLocation(char characterRead, char nextCharacter)
         {
             UpdateCharacterCore(characterRead, nextCharacter);
             RecalculateSourceLocation();
+        }
+
+        public SourceLocationTracker UpdateLocation(StringSegment content)
+        {
+            for (var i = 0; i < content.Length; i++)
+            {
+                var nextCharacter = '\0';
+                if (i < content.Length - 1)
+                {
+                    nextCharacter = content[i + 1];
+                }
+                UpdateCharacterCore(content[i], nextCharacter);
+            }
+            RecalculateSourceLocation();
+            return this;
         }
 
         public SourceLocationTracker UpdateLocation(string content)
