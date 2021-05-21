@@ -4,6 +4,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -51,5 +52,46 @@ namespace Microsoft.AspNetCore.Tests
                 File.Delete("appsettings.json");
             }
         }
+
+        [Fact]
+        public async Task EnvironmentSpecificLoggingConfigurationSectionPassedToLoggerByDefault()
+        {
+            try
+            {
+                await File.WriteAllTextAsync("appsettings.Development.json", @"
+{
+    ""Logging"": {
+        ""LogLevel"": {
+            ""Default"": ""Warning""
+        }
+    }
+}");
+
+                var app = WebApplication.Create(new[] { "--environment", "Development" });
+
+                var factory = (ILoggerFactory)app.Services.GetService(typeof(ILoggerFactory));
+                var logger = factory.CreateLogger("Test");
+
+                logger.Log(LogLevel.Information, 0, "Message", null, (s, e) =>
+                {
+                    Assert.True(false);
+                    return string.Empty;
+                });
+
+                var logWritten = false;
+                logger.Log(LogLevel.Warning, 0, "Message", null, (s, e) =>
+                {
+                    logWritten = true;
+                    return string.Empty;
+                });
+
+                Assert.True(logWritten);
+            }
+            finally
+            {
+                File.Delete("appsettings.json");
+            }
+        }
+
     }
 }
