@@ -75,6 +75,32 @@ namespace Microsoft.AspNetCore.Http.Tests
         }
 
         [Fact]
+        public void DeleteCookieWithDomainAndPathShouldSetDefaultPath()
+        {
+            var headers = (IHeaderDictionary)new HeaderDictionary();
+            var features = MakeFeatures(headers);
+            var responseCookies = new ResponseCookies(features);
+
+            var testCookies = new (string key, string path, string domaine)[]
+            {
+                new ("key1", "/", null),
+                new ("key1", "/test/", null),
+                new ("key2", "/", "localhost"),
+                new ("key2", "/test/", "localhost"),
+            };
+
+            foreach (var cookie in testCookies)
+            {
+                responseCookies.Delete(cookie.key, new CookieOptions() { Domain = cookie.domaine, Path = cookie.path });
+            }
+
+            var cookieHeaderValues = headers.SetCookie.ToArray();
+            Assert.True(cookieHeaderValues.Length == testCookies.Length);
+            Assert.All(cookieHeaderValues, cookie => Assert.Contains("path=/", cookie));
+            Assert.All(cookieHeaderValues, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
+        }
+
+        [Fact]
         public void DeleteCookieWithCookieOptionsShouldKeepPropertiesOfCookieOptions()
         {
             var headers = (IHeaderDictionary)new HeaderDictionary();
