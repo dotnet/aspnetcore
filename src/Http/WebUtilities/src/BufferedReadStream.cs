@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly Stream _inner;
         private readonly byte[] _buffer;
         private readonly ArrayPool<byte> _bytePool;
-        private int _bufferOffset = 0;
-        private int _bufferCount = 0;
+        private int _bufferOffset;
+        private int _bufferCount;
         private bool _disposed;
 
         /// <summary>

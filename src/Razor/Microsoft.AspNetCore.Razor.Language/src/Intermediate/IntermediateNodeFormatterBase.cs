@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             private const int IndentSize = 2;
 
             private readonly IntermediateNodeFormatterBase _formatter;
-            private int _indent = 0;
+            private int _indent;
 
             public FormatterVisitor(IntermediateNodeFormatterBase formatter)
             {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 }
                 _formatter.FormatNode(node);
                 _formatter.Writer.WriteLine();
-                
+
                 // Process children
                 _indent += IndentSize;
                 base.VisitDefault(node);

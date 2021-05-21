@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal class SeekableTextReader : TextReader, ITextDocument
     {
         private readonly RazorSourceDocument _sourceDocument;
-        private int _position = 0;
+        private int _position;
         private int _current;
         private SourceLocation _location;
         private (TextSpan Span, int LineIndex) _cachedLineInfo;

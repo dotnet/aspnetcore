@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
-        
+
         protected readonly NativeSafeHandle _requestNativeHandle;
 
         private readonly IISServerOptions _options;
@@ -606,7 +606,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             AsyncIO!.NotifyCompletion(hr, bytes);
         }
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

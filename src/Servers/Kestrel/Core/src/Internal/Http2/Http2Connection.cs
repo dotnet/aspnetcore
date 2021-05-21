@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _highestOpenedStreamId;
         private bool _gracefulCloseStarted;
 
-        private int _clientActiveStreamCount = 0;
-        private int _serverActiveStreamCount = 0;
+        private int _clientActiveStreamCount;
+        private int _serverActiveStreamCount;
 
         // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
         private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// Enables full request body buffering. Use this if multiple components need to read the raw stream.
         /// Defaults to <c>false</c>.
         /// </summary>
-        public bool BufferBody { get; set; } = false;
+        public bool BufferBody { get; set; }
 
         /// <summary>
         /// If <see cref="BufferBody"/> is enabled, this many bytes of the body will be buffered in memory.

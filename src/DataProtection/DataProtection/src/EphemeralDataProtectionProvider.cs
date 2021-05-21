@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             public IAuthenticatedEncryptor? DefaultAuthenticatedEncryptor { get; }
 
-            public Guid DefaultKeyId { get; } = default(Guid);
+            public Guid DefaultKeyId { get; }
 
             public IAuthenticatedEncryptor? GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
             {

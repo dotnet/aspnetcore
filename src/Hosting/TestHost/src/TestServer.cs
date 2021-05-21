@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.TestHost
     public class TestServer : IServer
     {
         private IWebHost? _hostInstance;
-        private bool _disposed = false;
+        private bool _disposed;
         private ApplicationWrapper? _application;
 
         /// <summary>

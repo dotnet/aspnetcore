@@ -16,10 +16,10 @@ namespace Microsoft.AspNetCore.Http
     {
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly Enumerator EmptyEnumerator = new Enumerator();
+
         // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
-        private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
+        private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = default(Enumerator);
+        private static readonly IEnumerator EmptyIEnumerator = default(Enumerator);
 
         private AdaptiveCapacityDictionary<string, string> Store { get; set; }
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Http
             if (Store == null || Store.Count == 0)
             {
                 // Non-boxed Enumerator
-                return EmptyEnumerator;
+                return default;
             }
             // Non-boxed Enumerator
             return new Enumerator(Store.GetEnumerator());

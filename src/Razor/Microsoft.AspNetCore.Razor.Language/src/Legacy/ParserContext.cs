@@ -64,8 +64,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal partial class ParserContext
     {
         private const int InfiniteLoopCountThreshold = 1000;
-        private int _infiniteLoopGuardCount = 0;
-        private SourceLocation? _infiniteLoopGuardLocation = null;
+        private int _infiniteLoopGuardCount;
+        private SourceLocation? _infiniteLoopGuardLocation;
 
         internal string Unparsed
         {

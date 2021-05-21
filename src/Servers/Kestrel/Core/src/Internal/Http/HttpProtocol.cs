@@ -75,8 +75,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private RouteValueDictionary? _routeValues;
         private Endpoint? _endpoint;
 
-        protected string? _methodText = null;
-        private string? _scheme = null;
+        protected string? _methodText;
+        private string? _scheme;
         private Stream? _requestStreamInternal;
         private Stream? _responseStreamInternal;
 

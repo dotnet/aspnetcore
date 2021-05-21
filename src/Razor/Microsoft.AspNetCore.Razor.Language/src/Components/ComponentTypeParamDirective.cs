@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal class ComponentTypeParamDirective
     {
-        public static DirectiveDescriptor Directive = null;
+        public static DirectiveDescriptor Directive;
 
         public static RazorProjectEngineBuilder Register(RazorProjectEngineBuilder builder, bool supportConstraints)
         {

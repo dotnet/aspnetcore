@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = false;
+        public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
         /// If true the server should set HttpContext.User. If false the server will only provide an
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Builder
         // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
         private long? _maxRequestBodySize = 30000000;
 
-        internal long IisMaxRequestSizeLimit; // Used for verifying if limit set in managed exceeds native 
+        internal long IisMaxRequestSizeLimit; // Used for verifying if limit set in managed exceeds native
 
         /// <summary>
         /// Gets or sets the maximum allowed size of any request body in bytes.

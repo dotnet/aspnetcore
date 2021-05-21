@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// the codegen process when a document is open, but this is more involved, so hacking
         /// it for now.
         /// </summary>
-        public bool MangleClassNames { get; set; } = false;
+        public bool MangleClassNames { get; set; }
 
         protected override string DocumentKind => ComponentDocumentKind;
 

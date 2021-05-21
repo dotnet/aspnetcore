@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class MvcViewDocumentClassifierPass : DocumentClassifierPassBase
     {
-        private bool _useConsolidatedMvcViews = false;
+        private bool _useConsolidatedMvcViews;
 
         public static readonly string MvcViewDocumentKind = "mvc.1.0.view";
 
@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         protected override void OnDocumentStructureCreated(
-            RazorCodeDocument codeDocument, 
-            NamespaceDeclarationIntermediateNode @namespace, 
-            ClassDeclarationIntermediateNode @class, 
+            RazorCodeDocument codeDocument,
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
             MethodDeclarationIntermediateNode method)
         {
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
@@ -52,8 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 @class.ClassName = className;
             }
-            
-
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
             @class.Modifiers.Clear();
             if (_useConsolidatedMvcViews)
