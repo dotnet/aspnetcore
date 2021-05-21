@@ -95,7 +95,9 @@ namespace Microsoft.AspNetCore.RequestLimiter
             {
                 var limiter = registration.ResolveLimiter(context.RequestServices);
                 _logger.LogInformation("Resource count: " + limiter.EstimatedCount);
-                if (!limiter.TryAcquire(out var resource))
+                // TODO use AcquireAsync to enable queuing
+                var resource = limiter.Acquire();
+                if (!resource.IsAcquired)
                 {
                     _logger.LogInformation("Resource exhausted");
                     context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
@@ -103,14 +105,16 @@ namespace Microsoft.AspNetCore.RequestLimiter
                 }
 
                 _logger.LogInformation("Resource obtained");
-                obtainedResources.Push(resource.Value);
+                obtainedResources.Push(resource);
                 return true;
             }
             if (registration.ResolveAggregatedLimiter != null)
             {
                 var limiter = registration.ResolveAggregatedLimiter(context.RequestServices);
                 _logger.LogInformation("Resource count: " + limiter.EstimatedCount(context));
-                if (!limiter.TryAcquire(context, out var resource))
+                // TODO use AcquireAsync to enable queuing
+                var resource = limiter.Acquire(context);
+                if (!resource.IsAcquired)
                 {
                     _logger.LogInformation("Resource exhausted");
                     context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
@@ -118,7 +122,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
                 }
 
                 _logger.LogInformation("Resource obtained");
-                obtainedResources.Push(resource.Value);
+                obtainedResources.Push(resource);
                 return true;
             }
             throw new InvalidOperationException("Registration couldn't resolve limiter");

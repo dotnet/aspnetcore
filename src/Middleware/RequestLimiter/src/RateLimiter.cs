@@ -27,23 +27,22 @@ namespace Microsoft.AspNetCore.RequestLimiter
             _renewTimer = new Timer(Replenish, this, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         }
 
-        public override bool TryAcquire(long requestedCount, [NotNullWhen(true)] out Resource? resource)
+        public override Resource Acquire(long requestedCount)
         {
-            resource = Resource.NoopResource;
             if (Interlocked.Add(ref _resourceCount, requestedCount) <= _maxResourceCount)
             {
-                return true;
+                return Resource.SuccessNoopResource;
             }
 
             Interlocked.Add(ref _resourceCount, -requestedCount);
-            return false;
+            return Resource.FailNoopResource;
         }
 
         public override ValueTask<Resource> AcquireAsync(long requestedCount, CancellationToken cancellationToken = default)
         {
             if (Interlocked.Add(ref _resourceCount, requestedCount) <= _maxResourceCount)
             {
-                return ValueTask.FromResult(Resource.NoopResource);
+                return ValueTask.FromResult(Resource.SuccessNoopResource);
             }
 
             Interlocked.Add(ref _resourceCount, -requestedCount);
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
                     if (requestToFulfill == request)
                     {
                         // If requestToFulfill == request, the fulfillment is successful.
-                        requestToFulfill.TCS.SetResult(Resource.NoopResource);
+                        requestToFulfill.TCS.SetResult(Resource.SuccessNoopResource);
                     }
                     else
                     {

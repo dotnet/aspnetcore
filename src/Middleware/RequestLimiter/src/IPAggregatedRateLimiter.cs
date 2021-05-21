@@ -40,17 +40,16 @@ namespace Microsoft.AspNetCore.RequestLimiter
             return _cache.TryGetValue(resourceId.Connection.RemoteIpAddress, out var count) ? count : 0;
         }
 
-        public override bool TryAcquire(HttpContext resourceId, long requestedCount, [NotNullWhen(true)] out Resource? resource)
+        public override Resource Acquire(HttpContext resourceId, long requestedCount)
         {
-            resource = Resource.NoopResource;
             if (requestedCount > _maxResourceCount)
             {
-                return false;
+                return Resource.FailNoopResource;
             }
 
             if (resourceId.Connection.RemoteIpAddress == null)
             {
-                return true;
+                return Resource.SuccessNoopResource;
             }
 
             var key = resourceId.Connection.RemoteIpAddress;
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
             {
                 if (_cache.TryAdd(key, requestedCount))
                 {
-                    return true;
+                    return Resource.SuccessNoopResource;
                 }
             }
 
@@ -70,16 +69,16 @@ namespace Microsoft.AspNetCore.RequestLimiter
                 {
                     if (newCount > _maxResourceCount)
                     {
-                        return false;
+                        return Resource.FailNoopResource;
                     }
 
-                    return true;
+                    return Resource.SuccessNoopResource;
                 }
                 if (!_cache.TryGetValue(key, out count))
                 {
                     if (_cache.TryAdd(key, requestedCount))
                     {
-                        return true;
+                        return Resource.SuccessNoopResource;
                     }
                 }
             }
