@@ -2,14 +2,43 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class VirtualFileResultTest
+    public class VirtualFileActionResultTest
     {
+        [Fact]
+        public void Constructor_SetsFileName()
+        {
+            // Arrange
+            var path = Path.GetFullPath("helllo.txt");
+
+            // Act
+            var result = new VirtualFileResult(path, "text/plain");
+
+            // Assert
+            Assert.Equal(path, result.FileName);
+        }
+
+        [Fact]
+        public void Constructor_SetsContentTypeAndParameters()
+        {
+            // Arrange
+            var path = Path.GetFullPath("helllo.txt");
+            var contentType = "text/plain; charset=us-ascii; p1=p1-value";
+            var expectedMediaType = contentType;
+
+            // Act
+            var result = new VirtualFileResult(path, contentType);
+
+            // Assert
+            Assert.Equal(path, result.FileName);
+            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
+        }
+
         [Theory]
         [InlineData(0, 3, "File", 4)]
         [InlineData(8, 13, "Result", 6)]
@@ -17,8 +46,8 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(8, null, "ResultTestFile contents¡", 25)]
         public async Task WriteFileAsync_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.WriteFileAsync_WritesRangeRequested(
                 start,
@@ -32,8 +61,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange(actionType, action);
         }
@@ -41,8 +70,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest
                 .WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored(actionType, action);
@@ -51,8 +80,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored(actionType, action);
         }
@@ -63,8 +92,8 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("bytes = 1-4, 5-11")]
         public async Task WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(string rangeString)
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest
                 .WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(rangeString, actionType, action);
@@ -75,8 +104,8 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("bytes = -0")]
         public async Task WriteFileAsync_RangeRequestedNotSatisfiable(string rangeString)
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest
                 .WriteFileAsync_RangeRequestedNotSatisfiable(rangeString, actionType, action);
@@ -85,8 +114,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task WriteFileAsync_RangeRequested_PreconditionFailed()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.WriteFileAsync_RangeRequested_PreconditionFailed(actionType, action);
         }
@@ -94,8 +123,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task WriteFileAsync_RangeRequested_NotModified()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.WriteFileAsync_RangeRequested_NotModified(actionType, action);
         }
@@ -103,8 +132,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task ExecuteResultAsync_FallsBackToWebRootFileProvider_IfNoFileProviderIsPresent()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest
                 .ExecuteResultAsync_FallsBackToWebRootFileProvider_IfNoFileProviderIsPresent(actionType, action);
@@ -113,8 +142,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest
                 .ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent(actionType, action);
@@ -127,8 +156,8 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(8, null, "ResultTestFile contents¡", 25)]
         public async Task ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(long? start, long? end, string expectedString, long contentLength)
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(
                 start,
@@ -142,8 +171,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(actionType, action);
         }
@@ -151,8 +180,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task ExecuteResultAsync_ReturnsFileContentsForRelativePaths()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.ExecuteResultAsync_ReturnsFileContentsForRelativePaths(actionType, action);
         }
@@ -166,8 +195,8 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(@"\\..//?><|""&@#\c:\..\? /..txt")]
         public async Task ExecuteResultAsync_ReturnsFiles_ForDifferentPaths(string path)
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest
                 .ExecuteResultAsync_ReturnsFiles_ForDifferentPaths(path, actionType, action);
@@ -181,8 +210,8 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(@"~~~~\\..//?>~<|""&@#\c:\..\? /..txt~~~")]
         public async Task ExecuteResultAsync_TrimsTilde_BeforeInvokingFileProvider(string path)
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest
                 .ExecuteResultAsync_TrimsTilde_BeforeInvokingFileProvider(path, actionType, action);
@@ -191,8 +220,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task ExecuteResultAsync_WorksWithNonDiskBasedFiles()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.ExecuteResultAsync_WorksWithNonDiskBasedFiles(actionType, action);
         }
@@ -200,8 +229,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Fact]
         public async Task ExecuteResultAsync_ThrowsFileNotFound_IfFileProviderCanNotFindTheFile()
         {
-            var actionType = "HttpContext";
-            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context));
+            var actionType = "ActionContext";
+            var action = new Func<VirtualFileResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context));
 
             await BaseVirtualFileResultTest.ExecuteResultAsync_ThrowsFileNotFound_IfFileProviderCanNotFindTheFile(actionType, action);
         }

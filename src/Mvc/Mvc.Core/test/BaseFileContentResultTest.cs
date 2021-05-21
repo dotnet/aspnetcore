@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,63 +17,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class FileContentResultTest
+    public class BaseFileContentResultTest
     {
-        [Fact]
-        public void Constructor_SetsFileContents()
-        {
-            // Arrange
-            var fileContents = new byte[0];
-
-            // Act
-            var result = new FileContentResult(fileContents, "text/plain");
-
-            // Assert
-            Assert.Same(fileContents, result.FileContents);
-        }
-
-        [Fact]
-        public void Constructor_SetsContentTypeAndParameters()
-        {
-            // Arrange
-            var fileContents = new byte[0];
-            var contentType = "text/plain; charset=us-ascii; p1=p1-value";
-            var expectedMediaType = contentType;
-
-            // Act
-            var result = new FileContentResult(fileContents, contentType);
-
-            // Assert
-            Assert.Same(fileContents, result.FileContents);
-            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
-        }
-
-        [Fact]
-        public void Constructor_SetsLastModifiedAndEtag()
-        {
-            // Arrange
-            var fileContents = new byte[0];
-            var contentType = "text/plain";
-            var expectedMediaType = contentType;
-            var lastModified = new DateTimeOffset();
-            var entityTag = new EntityTagHeaderValue("\"Etag\"");
-
-            // Act
-            var result = new FileContentResult(fileContents, contentType)
-            {
-                LastModified = lastModified,
-                EntityTag = entityTag
-            };
-
-            // Assert
-            Assert.Equal(lastModified, result.LastModified);
-            Assert.Equal(entityTag, result.EntityTag);
-            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetActions))]
-        public async Task WriteFileAsync_CopiesBuffer_ToOutputStream(
+        public static async Task WriteFileAsync_CopiesBuffer_ToOutputStream(
             string action,
             Func<FileContentResult, object, Task> function)
         {
@@ -97,12 +42,13 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(buffer, outStream.ToArray());
         }
 
-        [Theory]
-        [InlineData(0, 4, "Hello", 5)]
-        [InlineData(6, 10, "World", 5)]
-        [InlineData(null, 5, "World", 5)]
-        [InlineData(6, null, "World", 5)]
-        public async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
+        public static async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(
+            long? start,
+            long? end,
+            string expectedString,
+            long contentLength,
+            string action,
+            Func<FileContentResult, object, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -129,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             start = start ?? 11 - end;
@@ -148,9 +94,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedString, body);
         }
 
-        [Theory]
-        [MemberData(nameof(GetActions))]
-        public async Task WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest(
+        public static async Task WriteFileAsync_IfRangeHeaderValid_WritesRangeRequest(
             string action,
             Func<FileContentResult, object, Task> function)
         {
@@ -207,9 +151,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        [Theory]
-        [MemberData(nameof(GetActions))]
-        public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored(
+        public static async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestIgnored(
             string action,
             Func<FileContentResult, object, Task> function)
         {
@@ -251,9 +193,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        [Theory]
-        [MemberData(nameof(GetActions))]
-        public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored(
+        public static async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestIgnored(
             string action,
             Func<FileContentResult, object, Task> function)
         {
@@ -296,11 +236,10 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        [Theory]
-        [InlineData("0-5")]
-        [InlineData("bytes = ")]
-        [InlineData("bytes = 1-4, 5-11")]
-        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(string rangeString)
+        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(
+            string rangeString,
+            string action,
+            Func<FileContentResult, object, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -322,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -336,10 +275,10 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Hello World", body);
         }
 
-        [Theory]
-        [InlineData("bytes = 12-13")]
-        [InlineData("bytes = -0")]
-        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(string rangeString)
+        public static async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(
+            string rangeString,
+            string action,
+            Func<FileContentResult, object, Task> function)
         {
             // Arrange
             var contentType = "text/plain";
@@ -361,7 +300,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            await function(result, action == "ActionContext" ? actionContext : httpContext);
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
@@ -378,9 +317,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Theory]
-        [MemberData(nameof(GetActions))]
-        public async Task WriteFileAsync_PreconditionFailed_RangeRequestedIgnored(
+        public static async Task WriteFileAsync_PreconditionFailed_RangeRequestedIgnored(
             string action,
             Func<FileContentResult, object, Task> function)
         {
@@ -423,9 +360,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Theory]
-        [MemberData(nameof(GetActions))]
-        public async Task WriteFileAsync_NotModified_RangeRequestedIgnored(
+        public static async Task WriteFileAsync_NotModified_RangeRequestedIgnored(
             string action,
             Func<FileContentResult, object, Task> function)
         {
@@ -469,9 +404,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(body);
         }
 
-        [Theory]
-        [MemberData(nameof(GetActions))]
-        public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(
+        public static async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(
             string action,
             Func<FileContentResult, object, Task> function)
         {
@@ -494,15 +427,6 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             Assert.Equal(buffer, outStream.ToArray());
             Assert.Equal(expectedContentType, httpContext.Response.ContentType);
-        }
-
-        public static IEnumerable<object[]> GetActions()
-        {
-            return new List<object[]>
-            {
-                new object[] { "ActionContext", new Func<FileContentResult, object, Task>(async (result, context) => await result.ExecuteResultAsync((ActionContext)context)) },
-                new object[] { "HttpContext", new Func<FileContentResult, object, Task>(async (result, context) => await ((IResult)result).ExecuteAsync((HttpContext)context)) },
-            };
         }
 
         private static IServiceCollection CreateServices()
