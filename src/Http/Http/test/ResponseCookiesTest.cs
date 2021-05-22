@@ -95,15 +95,42 @@ namespace Microsoft.AspNetCore.Http.Tests
                 responseCookies.Delete(cookie.Key, new CookieOptions() { Domain = cookie.Domain, Path = cookie.Path });
             }
 
-            var cookieHeaderValues = headers.SetCookie.ToArray();
-            Assert.Equal(testCookies.Length, cookieHeaderValues.Length);
+            var deletedCookies = headers.SetCookie.ToArray();
+            Assert.Equal(testCookies.Length, deletedCookies.Length);
 
-            var deletedCookies = cookieHeaderValues.ToArray();
             Assert.Single(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/path1/"));
             Assert.Single(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/path2/"));
             Assert.Single(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/path1/") && cookie.Contains("domain=localhost"));
             Assert.Single(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/path2/") && cookie.Contains("domain=localhost"));
-            Assert.All(cookieHeaderValues, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
+            Assert.All(deletedCookies, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
+        }
+
+        [Fact]
+        public void DeleteRemovesCookieWithDomainAndPathCreatedByAdd()
+        {
+            var headers = (IHeaderDictionary)new HeaderDictionary();
+            var features = MakeFeatures(headers);
+            var responseCookies = new ResponseCookies(features);
+
+            var testCookies = new (string Key, string Path, string Domain)[]
+            {
+                new ("key1", "/path1/", null),
+                new ("key1", "/path1/", null),
+                new ("key2", "/path1/", "localhost"),
+                new ("key2", "/path1/", "localhost"),
+            };
+
+            foreach (var cookie in testCookies)
+            {
+                responseCookies.Append(cookie.Key, cookie.Key, new CookieOptions() { Domain = cookie.Domain, Path = cookie.Path });
+                responseCookies.Delete(cookie.Key, new CookieOptions() { Domain = cookie.Domain, Path = cookie.Path });
+            }
+
+            var deletedCookies = headers.SetCookie.ToArray();
+            Assert.Equal(2, deletedCookies.Length);
+            Assert.Single(deletedCookies, cookie => cookie.StartsWith("key1", StringComparison.InvariantCulture) && cookie.Contains("path=/path1/"));
+            Assert.Single(deletedCookies, cookie => cookie.StartsWith("key2", StringComparison.InvariantCulture) && cookie.Contains("path=/path1/") && cookie.Contains("domain=localhost"));
+            Assert.All(deletedCookies, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
         }
 
         [Fact]
