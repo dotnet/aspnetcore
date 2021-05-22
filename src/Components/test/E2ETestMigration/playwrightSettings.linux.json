@@ -3,9 +3,6 @@
     "Firefox": {
       "BrowserKind": "Firefox",
       "IsEnabled": false
-    },
-    "Webkit": {
-      "BrowserKind": "Webkit",
-      "IsEnabled": false
     }
+  }
 }

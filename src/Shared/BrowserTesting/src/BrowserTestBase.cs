@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.BrowserTesting
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild")) ||
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Helix"));
 
-        private static BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration());
+        private static readonly BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration());
 
         public BrowserTestBase(ITestOutputHelper output = null) : base(output) { }
 
-        protected async override Task InitializeCoreAsync(TestContext context)
+        protected override async Task InitializeCoreAsync(TestContext context)
         {
             BrowserManager = await BrowserManager.CreateAsync(_config, LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);

@@ -23,7 +23,7 @@ namespace ProjectTemplates.Tests.Infrastructure
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Helix"));
 
         private readonly IMessageSink _diagnosticsMessageSink;
-        private static BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration(typeof(TTestAssemblyType).Assembly));
+        private static readonly BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration(typeof(TTestAssemblyType).Assembly));
 
         public PlaywrightFixture(IMessageSink diagnosticsMessageSink)
         {

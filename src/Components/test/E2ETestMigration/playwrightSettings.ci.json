@@ -3,13 +3,5 @@
   "TimeoutAfterFirstFailureInMilliseconds": 20000,
   "GlobalBrowserOptions": {
     "Headless": true
-  },
-  "BrowserOptions": {
-    "Firefox": {
-      "IsEnabled": true
-    },
-    "Webkit": {
-      "IsEnabled": false
-    }
   }
 }

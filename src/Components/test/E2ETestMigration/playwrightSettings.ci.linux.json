@@ -1,5 +1,8 @@
 {
   "BrowserOptions": {
+    "Chromium": {
+      "IsEnabled": false
+    },
     "Firefox": {
       "IsEnabled": false
     }

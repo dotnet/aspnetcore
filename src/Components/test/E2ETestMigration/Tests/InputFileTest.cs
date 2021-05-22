@@ -261,7 +261,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public override void Dispose()
         {
             base.Dispose();
-            Directory.Delete(_tempDirectory, recursive: true);
+            if (!String.IsNullOrEmpty(_tempDirectory))
+            {
+                Directory.Delete(_tempDirectory, recursive: true);
+            }
         }
 
         private struct TempFile
