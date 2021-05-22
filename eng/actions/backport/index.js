@@ -31,13 +31,14 @@ async function run() {
   try {
     // verify the comment user is a repo collaborator
     try {
-      await octokit.repos.checkCollaborator({
+      await octokit.rest.repos.checkCollaborator({
         owner: repo_owner,
         repo: repo_name,
         username: comment_user
       });
       console.log(`Verified ${comment_user} is a repo collaborator.`);
-    } catch {
+    } catch (error) {
+      console.log(error);
       throw new BackportException(`Error: @${comment_user} is not a repo collaborator, backporting is not allowed.`);
     }
 
@@ -125,7 +126,7 @@ async function run() {
       .replace(/%cc_users%/g, cc_users);
 
     // open the GitHub PR
-    await octokit.pulls.create({
+    await octokit.rest.pulls.create({
       owner: repo_owner,
       repo: repo_name,
       title: backport_pr_title,
@@ -142,7 +143,7 @@ async function run() {
     if (error.postToGitHub === undefined || error.postToGitHub == true) {
       // post failure to GitHub comment
       const unknown_error_body = `@${comment_user} an error occurred while backporting to ${target_branch}, please check the run log for details!\n\n${error.message}`;
-      await octokit.issues.createComment({
+      await octokit.rest.issues.createComment({
         owner: repo_owner,
         repo: repo_name,
         issue_number: pr_number,
