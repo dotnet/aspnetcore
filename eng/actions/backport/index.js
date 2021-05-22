@@ -86,7 +86,7 @@ async function run() {
 
     if (git_am_failed) {
       const git_am_failed_body = `@${github.context.payload.comment.user.login} backporting to ${target_branch} failed, the patch most likely resulted in conflicts:\n\n\`\`\`shell\n${git_am_output}\n\`\`\`\n\nPlease backport manually!`;
-      await octokit.issues.createComment({
+      await octokit.rest.issues.createComment({
         owner: repo_owner,
         repo: repo_name,
         issue_number: pr_number,
