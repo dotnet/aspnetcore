@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     // Metadata used for Components interactions with the tag helper system
     internal static class ComponentMetadata
     {
-        private const string MangledClassNamePrefix = "__generated__";
+        private static readonly StringSegment MangledClassNamePrefix = "__generated__";
 
         // There's a bug in the 15.7 preview 1 Razor that prevents 'Kind' from being serialized
         // this affects both tooling and build. For now our workaround is to ignore 'Kind' and
@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return MangledClassNamePrefix + className;
         }
 
-        public static bool IsMangledClass(string className)
+        public static bool IsMangledClass(StringSegment className)
         {
-            if (string.IsNullOrEmpty(className))
+            if (StringSegment.IsNullOrEmpty(className))
             {
                 return false;
             }

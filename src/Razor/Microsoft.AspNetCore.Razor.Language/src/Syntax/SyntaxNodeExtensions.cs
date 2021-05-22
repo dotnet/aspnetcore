@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
@@ -13,49 +13,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
     {
         public static TNode WithAnnotations<TNode>(this TNode node, params SyntaxAnnotation[] annotations) where TNode : SyntaxNode
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
             return (TNode)node.Green.SetAnnotations(annotations).CreateRed(node.Parent, node.Position);
         }
 
         public static object GetAnnotationValue<TNode>(this TNode node, string key) where TNode : SyntaxNode
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
             if (!node.ContainsAnnotations)
             {
                 return null;
             }
 
-            var annotation = node.GetAnnotations().FirstOrDefault(n => n.Kind == key);
-            return annotation?.Data;
+            var annotations = node.GetAnnotations();
+            foreach (var annotation in annotations)
+            {
+                if (annotation.Kind == key)
+                {
+                    return annotation.Data;
+                }
+            }
+
+            return null;
         }
 
         public static TNode WithDiagnostics<TNode>(this TNode node, params RazorDiagnostic[] diagnostics) where TNode : SyntaxNode
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
             return (TNode)node.Green.SetDiagnostics(diagnostics).CreateRed(node.Parent, node.Position);
         }
 
         public static TNode AppendDiagnostic<TNode>(this TNode node, params RazorDiagnostic[] diagnostics) where TNode : SyntaxNode
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
             var existingDiagnostics = node.GetDiagnostics();
-            var allDiagnostics = existingDiagnostics.Concat(diagnostics).ToArray();
+            var allDiagnostics = new RazorDiagnostic[diagnostics.Length + existingDiagnostics.Length];
+            Array.Copy(existingDiagnostics, allDiagnostics, existingDiagnostics.Length);
+            Array.Copy(diagnostics, 0, allDiagnostics, existingDiagnostics.Length, diagnostics.Length);
 
             return (TNode)node.WithDiagnostics(allDiagnostics);
         }
@@ -68,11 +58,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         /// <returns>The list of <see cref="RazorDiagnostic"/>s.</returns>
         public static IReadOnlyList<RazorDiagnostic> GetAllDiagnostics<TNode>(this TNode node) where TNode : SyntaxNode
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
             var walker = new DiagnosticSyntaxWalker();
             walker.Visit(node);
 
@@ -81,15 +66,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public static SourceLocation GetSourceLocation(this SyntaxNode node, RazorSourceDocument source)
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
             try
             {
                 if (source.Length == 0)
@@ -126,17 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public static SourceSpan GetSourceSpan(this SyntaxNode node, RazorSourceDocument source)
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
             var location = node.GetSourceLocation(source);
-
             return new SourceSpan(location, node.FullWidth);
         }
 
@@ -235,14 +201,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public static string GetContent<TNode>(this TNode node) where TNode : SyntaxNode
         {
-            if (node == null)
+            var builder = new StringBuilder();
+            foreach (var token in node.DescendantNodesAndSelf())
             {
-                throw new ArgumentNullException(nameof(node));
+                if (!token.IsToken)
+                {
+                    continue;
+                }
+
+                var syntaxToken = (SyntaxToken)token;
+                builder.Append(syntaxToken.Content);
             }
 
-            var tokens = node.DescendantNodesAndSelf().Where(n => n.IsToken).Cast<SyntaxToken>();
-            var content = string.Concat(tokens.Select(t => t.Content));
-            return content;
+            return builder.ToString();
         }
 
         private class DiagnosticSyntaxWalker : SyntaxWalker

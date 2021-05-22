@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -16,26 +15,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public const char ElementOptOutCharacter = '!';
 
         public static bool SatisfiesRule(
-            string tagNameWithoutPrefix,
-            string parentTagNameWithoutPrefix,
+            StringSegment tagNameWithoutPrefix,
+            StringSegment parentTagNameWithoutPrefix,
             IReadOnlyList<KeyValuePair<string, string>> tagAttributes,
             TagMatchingRuleDescriptor rule)
         {
-            if (tagNameWithoutPrefix == null)
-            {
-                throw new ArgumentNullException(nameof(tagNameWithoutPrefix));
-            }
-
-            if (tagAttributes == null)
-            {
-                throw new ArgumentNullException(nameof(tagAttributes));
-            }
-
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
             var satisfiesTagName = SatisfiesTagName(tagNameWithoutPrefix, rule);
             if (!satisfiesTagName)
             {
@@ -57,19 +41,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesTagName(string tagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
+        public static bool SatisfiesTagName(StringSegment tagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
         {
-            if (tagNameWithoutPrefix == null)
-            {
-                throw new ArgumentNullException(nameof(tagNameWithoutPrefix));
-            }
-
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
-            if (string.IsNullOrEmpty(tagNameWithoutPrefix))
+            if (StringSegment.IsNullOrEmpty(tagNameWithoutPrefix))
             {
                 return false;
             }
@@ -82,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (rule.TagName != ElementCatchAllName &&
                 rule.TagName != null &&
-                !string.Equals(tagNameWithoutPrefix, rule.TagName, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
+                !tagNameWithoutPrefix.Equals(rule.TagName, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -90,14 +64,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesParentTag(string parentTagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
+        public static bool SatisfiesParentTag(StringSegment parentTagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
         {
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
-            if (rule.ParentTag != null && !string.Equals(parentTagNameWithoutPrefix, rule.ParentTag, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
+            if (rule.ParentTag != null &&
+                !parentTagNameWithoutPrefix.Equals(rule.ParentTag, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -107,16 +77,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static bool SatisfiesAttributes(IReadOnlyList<KeyValuePair<string, string>> tagAttributes, TagMatchingRuleDescriptor rule)
         {
-            if (tagAttributes == null)
-            {
-                throw new ArgumentNullException(nameof(tagAttributes));
-            }
-
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
             if (!rule.Attributes.All(
                 static (requiredAttribute, tagAttributes) => tagAttributes.Any(
                     static (attribute, requiredAttribute) => SatisfiesRequiredAttribute(attribute.Key, attribute.Value, requiredAttribute),
@@ -133,7 +93,21 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return SatisfiesBoundAttributeName(name, descriptor) ||
                 SatisfiesBoundAttributeIndexer(name, descriptor) ||
-                descriptor.BoundAttributeParameters.Any(p => SatisfiesBoundAttributeWithParameter(name, descriptor, p));
+                GetSatifyingBoundAttributeWithParameter(name, descriptor, descriptor.BoundAttributeParameters) is not null;
+        }
+
+        private static BoundAttributeParameterDescriptor GetSatifyingBoundAttributeWithParameter(string name, BoundAttributeDescriptor descriptor, IReadOnlyList<BoundAttributeParameterDescriptor> boundAttributeParameters)
+        {
+            var count = boundAttributeParameters.Count;
+            for (var i = 0; i < count; i++)
+            {
+                if (SatisfiesBoundAttributeWithParameter(name, descriptor, boundAttributeParameters[i]))
+                {
+                    return boundAttributeParameters[i];
+                }
+            }
+
+            return null;
         }
 
         public static bool SatisfiesBoundAttributeIndexer(string name, BoundAttributeDescriptor descriptor)
@@ -193,8 +167,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // First, check if we have a bound attribute descriptor that matches the parameter if it exists.
             foreach (var attribute in descriptor.BoundAttributes)
             {
-                boundAttributeParameter = attribute.BoundAttributeParameters.FirstOrDefault(
-                    p => SatisfiesBoundAttributeWithParameter(name, attribute, p));
+                boundAttributeParameter = GetSatifyingBoundAttributeWithParameter(name, attribute, attribute.BoundAttributeParameters);
 
                 if (boundAttributeParameter != null)
                 {

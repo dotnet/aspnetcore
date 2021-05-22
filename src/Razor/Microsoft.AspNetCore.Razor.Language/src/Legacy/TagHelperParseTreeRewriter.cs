@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class TagHelperParseTreeRewriter
+    internal static class TagHelperParseTreeRewriter
     {
         public static RazorSyntaxTree Rewrite(RazorSyntaxTree syntaxTree, string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
         {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing.
-        internal class Rewriter : SyntaxRewriter
+        internal sealed class Rewriter : SyntaxRewriter
         {
             // Internal for testing.
             // Null characters are invalid markup for HTML attribute values.

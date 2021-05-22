@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1359,8 +1359,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Equal(expectedResult, result);
-            Assert.Equal(expectedNamespace, DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(@namespace, fullTypeName));
-            Assert.Equal(expectedTypeName, DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeName, fullTypeName));
+            Assert.True(new StringSegment(expectedNamespace).Equals(DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(@namespace, fullTypeName), StringComparison.Ordinal));
+            Assert.True(new StringSegment(expectedTypeName).Equals(DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeName, fullTypeName), StringComparison.Ordinal));
         }
 
         private static RazorSourceDocument CreateComponentTestSourceDocument(string content, string filePath = null)
