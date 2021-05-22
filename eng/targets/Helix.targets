@@ -8,6 +8,36 @@
     <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
   </ItemGroup>
 
+<<<<<<< HEAD
+=======
+  <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
+    <SkipHelixQueues>
+      (Alpine.312.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673;
+      (Fedora.33.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-helix-20210120000908-a9df267
+      Debian.9.Amd64.Open;
+      Redhat.7.Amd64.Open;
+      Ubuntu.2004.Amd64.Open;
+      Windows.7.Amd64.Open;
+      Windows.81.Amd64.Open;
+    </SkipHelixQueues>
+    <SkipHelixArm>true</SkipHelixArm>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call RunPowershell.cmd installPlaywrightReqs.ps1 || exit /b 1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnIIS)' == 'true' AND '$(IsWindowsOnlyTest)' == 'true'">
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
+
+    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
+  </ItemGroup>
+
+>>>>>>> 83f7970b8c... Clean out Ubuntu 16.04 testing (#32894)
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
     <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
   </ItemGroup>
