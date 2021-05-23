@@ -51,18 +51,20 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
+        /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
         /// <returns>A JSON representation of the result.</returns>
-        protected virtual string? InvokeJS(string identifier, string? argsJson)
-            => InvokeJS(identifier, argsJson, JSCallResultType.Default, 0);
+        protected virtual string? InvokeJS(string identifier, string? argsJson, byte[][]? byteArrays)
+            => InvokeJS(identifier, argsJson, byteArrays, JSCallResultType.Default, 0);
 
         /// <summary>
         /// Performs a synchronous function invocation.
         /// </summary>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
+        /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
         /// <param name="resultType">The type of result expected from the invocation.</param>
         /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
         /// <returns>A JSON representation of the result.</returns>
-        protected abstract string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId);
+        protected abstract string? InvokeJS(string identifier, string? argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId);
     }
 }

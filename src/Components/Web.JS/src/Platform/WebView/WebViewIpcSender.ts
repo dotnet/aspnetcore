@@ -13,12 +13,12 @@ export function sendBrowserEvent(descriptor: EventDescriptor, eventArgs: any) {
   send('DispatchBrowserEvent', descriptor, eventArgs);
 }
 
-export function sendBeginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
-  send('BeginInvokeDotNet', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+export function sendBeginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string, byteArrays: Uint8Array[] | null): void {
+  send('BeginInvokeDotNet', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson, byteArrays);
 }
 
-export function sendEndInvokeJSFromDotNet(asyncHandle: number, succeeded: boolean, argsJson: any) {
-  send('EndInvokeJS', asyncHandle, succeeded, argsJson);
+export function sendEndInvokeJSFromDotNet(asyncHandle: number, succeeded: boolean, argsJson: any, byteArrays: Uint8Array[] | null) {
+  send('EndInvokeJS', asyncHandle, succeeded, argsJson, byteArrays);
 }
 
 export function sendLocationChanged(uri: string, intercepted: boolean) {
