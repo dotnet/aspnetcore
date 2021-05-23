@@ -445,6 +445,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Theory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32907")]
         [InlineData("focus-button-onafterrender-invoke")]
         [InlineData("focus-button-onafterrender-await")]
         public void CanFocusDuringOnAfterRenderAsyncWithFocusInEvent(string triggerButton)
