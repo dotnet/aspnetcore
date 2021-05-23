@@ -74,17 +74,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
-        {
-            var args = new[] { callId, success, resultOrError };
-            var serializedArgs = SerializeArgs(args);
-
-             _clientProxy.SendAsync(
-                "JS.EndInvokeDotNet",
-                serializedArgs.ArgsJson,
-                serializedArgs.ByteArrays);
-        }
-
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
         {
             if (_clientProxy is null)

@@ -39,12 +39,12 @@ namespace Microsoft.JSInterop.Infrastructure
                     }
                     else
                     {
-                        throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
+                        throw new JsonException($"Unexpected JSON property {reader.GetString()}.");
                     }
                 }
                 else
                 {
-                    throw new JsonException($"Unexcepted JSON Token {reader.TokenType}.");
+                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}.");
                 }
             }
 
