@@ -134,13 +134,13 @@ namespace Microsoft.JSInterop
                     return new ValueTask<TValue>(tcs.Task);
                 }
 
-                var (argsJson, byteArrays) = args is not null && args.Length != 0 ?
+                var serializedArgs = args is not null && args.Length != 0 ?
                     SerializeArgs(args) :
-                    (null, null);
+                    new SerializedArgs(null, null);
                 var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 
 
-                BeginInvokeJS(taskId, identifier, argsJson, byteArrays, resultType, targetInstanceId);
+                BeginInvokeJS(taskId, identifier, serializedArgs.ArgsJson, serializedArgs.ByteArrays, resultType, targetInstanceId);
 
                 return new ValueTask<TValue>(tcs.Task);
             }
@@ -164,18 +164,18 @@ namespace Microsoft.JSInterop
         /// Serialize the args to a json string, with the byte arrays
         /// extracted out for seperate transmission.
         /// </summary>
-        /// <param name="args">Argument(s) to be converted to json.</param>
+        /// <param name="args">Arguments to be converted to json.</param>
         /// <returns>
         /// A tuple of the json string and an array containing the extracted
         /// byte arrays from the args.
         /// </returns>
-        protected internal (string, byte[][]?) SerializeArgs(object? args)
+        protected internal SerializedArgs SerializeArgs(object? args)
         {
             ByteArraysToSerialize.Clear();
             var serializedArgs = JsonSerializer.Serialize(args, JsonSerializerOptions);
             var byteArrays = ByteArraysToSerialize.ToArray();
 
-            return (serializedArgs, byteArrays);
+            return new(serializedArgs, byteArrays);
         }
 
         /// <summary>
@@ -228,8 +228,8 @@ namespace Microsoft.JSInterop
 
                     ByteArraysToDeserialize = byteArrays;
                     var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
-                    ByteArraysToDeserialize = null;
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                    ByteArraysToDeserialize = null;
                 }
                 else
                 {

@@ -11,6 +11,7 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static Microsoft.JSInterop.JSRuntime;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.JSInterop.Infrastructure.DotNetDispatcher))]
 
@@ -36,8 +37,8 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
-        /// <returns>A tuple containing the JSON representation of the return value, or null, along with the extracted byte arrays, or null.</returns>
-        public static (string?, byte[][]?) Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson, byte[][]? byteArrays)
+        /// <returns>A record containing the JSON representation of the return value, or null, along with the extracted byte arrays, or null.</returns>
+        public static SerializedArgs Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson, byte[][]? byteArrays)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -53,7 +54,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, byteArrays);
             if (syncResult == null)
             {
-                return (null, null);
+                return new SerializedArgs(null, null);
             }
 
             return jsRuntime.SerializeArgs(syncResult);
@@ -66,7 +67,6 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
-        /// <returns>A JSON representation of the return value, or null.</returns>
         public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, string argsJson, byte[][]? byteArrays)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
@@ -114,13 +114,13 @@ namespace Microsoft.JSInterop.Infrastructure
             }
             else
             {
-                var syncResultJson = JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
-                var dispatchResult = new DotNetInvocationResult(syncResultJson);
+
+                var serializedArgs = jsRuntime.SerializeArgs(syncResult);
+                var dispatchResult = new DotNetInvocationResult(serializedArgs);
                 jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
         }
 
-        // TODO: This is a new func needs to be integrated with byte array interop
         private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
         {
             if (task.Exception != null)
@@ -131,8 +131,8 @@ namespace Microsoft.JSInterop.Infrastructure
             }
 
             var result = TaskGenericsUtil.GetTaskResult(task);
-            var resultJson = JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
-            jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
+            var serializedArgs = jsRuntime.SerializeArgs(result);
+            jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(serializedArgs));
         }
 
         private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, byte[][]? byteArrays)
@@ -429,7 +429,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // In most ordinary scenarios, we wouldn't have two instances of the same Assembly in the AppDomain
             // so this doesn't change the outcome.
             Assembly? assembly = null;
-            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (new AssemblyKey(a).Equals(assemblyKey))
                 {

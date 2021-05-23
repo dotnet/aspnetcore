@@ -15,6 +15,7 @@ namespace Microsoft.JSInterop.Infrastructure
         internal DotNetInvocationResult(Exception exception, string? errorKind)
         {
             ResultJson = default;
+            ByteArrays = default;
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
             ErrorKind = errorKind;
             Success = false;
@@ -23,10 +24,11 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Constructor for a successful invocation.
         /// </summary>
-        /// <param name="resultJson">The JSON representation of the result.</param>
-        internal DotNetInvocationResult(string? resultJson)
+        /// <param name="args">Serialized JSON representation of the result with the extracted byte arrays.</param>
+        internal DotNetInvocationResult(SerializedArgs args)
         {
-            ResultJson = resultJson;
+            ResultJson = args.ArgsJson;
+            ByteArrays = args.ByteArrays;
             Exception = default;
             ErrorKind = default;
             Success = true;
@@ -46,6 +48,11 @@ namespace Microsoft.JSInterop.Infrastructure
         /// Gets a JSON representation of the result of a successful invocation.
         /// </summary>
         public string? ResultJson { get; }
+
+        /// <summary>
+        /// Gets the byte array data extracted from the result for direct transfer.
+        /// </summary>
+        public byte[][]? ByteArrays { get; }
 
         /// <summary>
         /// <see langword="true"/> if the invocation succeeded, otherwise <see langword="false"/>.

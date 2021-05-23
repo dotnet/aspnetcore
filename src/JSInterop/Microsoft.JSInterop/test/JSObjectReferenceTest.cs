@@ -91,7 +91,7 @@ namespace Microsoft.JSInterop.Tests
             {
             }
 
-            protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+            protected override string? InvokeJS(string identifier, string? argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
             {
                 InvokeJSInvocationCount++;
 

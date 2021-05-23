@@ -487,7 +487,7 @@ function attachInteropInvoker(): void {
   const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'EndInvokeJS');
 
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
+    beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string, byteArrays: Uint8Array[] | null): void => {
       assertHeapIsNotLocked();
       if (!dotNetObjectId && !assemblyName) {
         throw new Error('Either assemblyName or dotNetObjectId must have a non null value.');
@@ -503,21 +503,24 @@ function attachInteropInvoker(): void {
         assemblyNameOrDotNetObjectId,
         methodIdentifier,
         argsJson,
+        byteArrays,
       );
     },
-    endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
+    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson, byteArrays: Uint8Array[] | null): void => {
       dotNetDispatcherEndInvokeJSMethodHandle(
-        serializedArgs
+        argsJson,
+        byteArrays,
       );
     },
-    invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+    invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays: Uint8Array[] | null) => {
       assertHeapIsNotLocked();
       return dotNetDispatcherInvokeMethodHandle(
         assemblyName ? assemblyName : null,
         methodIdentifier,
         dotNetObjectId ? dotNetObjectId.toString() : null,
         argsJson,
-      ) as string;
+        byteArrays,
+      ) as DotNet.SerializedArgs | null;
     },
   });
 }

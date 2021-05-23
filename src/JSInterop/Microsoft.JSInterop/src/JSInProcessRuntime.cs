@@ -15,9 +15,12 @@ namespace Microsoft.JSInterop
         [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
+            var serializedArgs = SerializeArgs(args);
+
             var resultJson = InvokeJS(
                 identifier,
-                JsonSerializer.Serialize(args, JsonSerializerOptions),
+                serializedArgs.ArgsJson,
+                serializedArgs.ByteArrays,
                 JSCallResultTypeHelper.FromGeneric<TValue>(),
                 targetInstanceId);
 

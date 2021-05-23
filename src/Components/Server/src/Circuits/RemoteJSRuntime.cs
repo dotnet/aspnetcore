@@ -70,7 +70,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _clientProxy.SendAsync("JS.EndInvokeDotNet",
                     invocationInfo.CallId,
                     /* success */ true,
-                    invocationResult.ResultJson);
+                    invocationResult.ResultJson,
+                    invocationResult.ByteArrays);
             }
         }
 

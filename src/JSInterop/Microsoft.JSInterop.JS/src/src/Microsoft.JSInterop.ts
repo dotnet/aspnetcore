@@ -3,7 +3,7 @@
 export module DotNet {
   (window as any).DotNet = DotNet; // Ensure reachable from anywhere
 
-  export type JsonReviver = ((key: any, value: any, byteArrays: Uint8Array[] | undefined) => any);
+  export type JsonReviver = ((key: any, value: any, byteArrays: Uint8Array[] | null) => any);
   const jsonRevivers: JsonReviver[] = [];
 
   class JSObject {
@@ -156,12 +156,12 @@ export module DotNet {
    * @param json The JSON stirng to parse.
    * @param byteArrays The byte array data to revive.
    */
-  function parseJsonWithRevivers(json: string, byteArrays?: Uint8Array[] | undefined): any {
+  function parseJsonWithRevivers(json: string, byteArrays?: Uint8Array[] | null): any {
     return json ? JSON.parse(json, (key, initialValue) => {
       // Invoke each reviver in order, passing the output from the previous reviver,
       // so that each one gets a chance to transform the value
       return jsonRevivers.reduce(
-        (latestValue, reviver) => reviver(key, latestValue, byteArrays),
+        (latestValue, reviver) => reviver(key, latestValue, byteArrays === undefined ? null : byteArrays),
         initialValue
       );
     }) : null;
@@ -172,8 +172,8 @@ export module DotNet {
     if (dispatcher.invokeDotNetFromJS) {
       const byteArrays : Uint8Array[] = [];
       const argsJson = JSON.stringify(args, (key, value) => argReplacer(key, value, byteArrays));
-      const resultJson = dispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays);
-      return resultJson ? parseJsonWithRevivers(resultJson) : null;
+      const result = dispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays);
+      return result && result.ArgsJson ? parseJsonWithRevivers(result.ArgsJson, result.ByteArrays) : null;
     } else {
       throw new Error('The current dispatcher does not support synchronous calls from JS to .NET. Use invokeMethodAsync instead.');
     }
@@ -237,6 +237,19 @@ export module DotNet {
   }
 
   /**
+   * Represents the type of result expected from a JS interop call.
+   */
+  export class SerializedArgs {
+    ArgsJson: string | null;
+    ByteArrays: Uint8Array[] | null;
+
+    constructor(argsJson: string | null, byteArrays: Uint8Array[] | null) {
+      this.ArgsJson = argsJson;
+      this.ByteArrays = byteArrays;
+    }
+  }
+
+  /**
    * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
    */
   export interface DotNetCallDispatcher {
@@ -248,9 +261,9 @@ export module DotNet {
      * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
      * @param argsJson JSON representation of arguments to pass to the method.
      * @param byteArrays Byte array data extracted from the arguments for direct transfer.
-     * @returns JSON representation of the result of the invocation.
+     * @returns SerializedArgs containing the string JSON args along with the extracted byte arrays representation of the result of the invocation.
      */
-    invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string, byteArrays: Uint8Array[] | null): string | null;
+    invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string, byteArrays: Uint8Array[] | null): SerializedArgs | null;
 
     /**
      * Invoked by the runtime to begin an asynchronous call to a .NET method.
@@ -303,16 +316,17 @@ export module DotNet {
      * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      * @param resultType The type of result expected from the JS interop call.
      * @param targetInstanceId The instance ID of the target JS object.
-     * @returns JSON representation of the invocation result.
+     * @returns SerializedArgs containing the JSON representation of the invocation result and the associated byte arrays.
      */
-    invokeJSFromDotNet: (identifier: string, argsJson: string, byteArrays: Uint8Array[], resultType: JSCallResultType, targetInstanceId: number) => {
+    invokeJSFromDotNet: (identifier: string, argsJson: string, byteArrays: Uint8Array[], resultType: JSCallResultType, targetInstanceId: number): SerializedArgs => {
       const returnValue = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson, byteArrays));
       const result = createJSCallResult(returnValue, resultType);
 
       const returnedByteArrays : Uint8Array[] = [];
-      return result === null || result === undefined
+      var serializedJson = (result === null || result === undefined)
         ? null
-        : JSON.stringify(result, (key, value) => argReplacer(key, value, returnedByteArrays)); // TODO; what is this used for? Seems like it doesn't actually invoke anything
+        : JSON.stringify(result, (key, value) => argReplacer(key, value, returnedByteArrays)); // TODO; confirm this works for blazor wasm
+      return new SerializedArgs(serializedJson, returnedByteArrays);
     },
 
     /**
@@ -405,7 +419,7 @@ export module DotNet {
   }
 
   const dotNetObjectRefKey = '__dotNetObject';
-  attachReviver(function reviveDotNetObject(key: any, value: any, byteArrays: Uint8Array[] | undefined) {
+  attachReviver(function reviveDotNetObject(key: any, value: any, byteArrays: Uint8Array[] | null) {
     if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
       return new DotNetObject(value.__dotNetObject);
     }
@@ -414,7 +428,7 @@ export module DotNet {
     return value;
   });
 
-  attachReviver(function reviveJSObjectReference(key: any, value: any, byteArrays: Uint8Array[] | undefined) {
+  attachReviver(function reviveJSObjectReference(key: any, value: any, byteArrays: Uint8Array[] | null) {
     if (value && typeof value === 'object' && value.hasOwnProperty(jsObjectIdKey)) {
       const id = value[jsObjectIdKey];
       const jsObject = cachedJSObjectsById[id];
@@ -431,7 +445,7 @@ export module DotNet {
   });
 
   const byteArrayRefKey = '__byte[]';
-  attachReviver(function reviveByteArray(key: any, value: any, byteArrays: Uint8Array[] | undefined) {
+  attachReviver(function reviveByteArray(key: any, value: any, byteArrays: Uint8Array[] | null) {
     if (value && typeof value === 'object' && value.hasOwnProperty(byteArrayRefKey) && byteArrays) {
       const index = value[byteArrayRefKey];
 

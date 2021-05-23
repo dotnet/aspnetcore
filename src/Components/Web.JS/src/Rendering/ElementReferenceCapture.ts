@@ -15,7 +15,7 @@ function getCaptureIdAttributeName(referenceCaptureId: string) {
 
 // Support receiving ElementRef instances as args in interop calls
 const elementRefKey = '__internalId'; // Keep in sync with ElementRef.cs
-DotNet.attachReviver(function reviveElementReference(key: any, value: any, byteArrays: Uint8Array[] | undefined) {
+DotNet.attachReviver(function reviveElementReference(key: any, value: any, byteArrays: Uint8Array[] | null) {
   if (value && typeof value === 'object' && value.hasOwnProperty(elementRefKey) && typeof value[elementRefKey] === 'string') {
     return getElementByCaptureId(value[elementRefKey]);
   }
