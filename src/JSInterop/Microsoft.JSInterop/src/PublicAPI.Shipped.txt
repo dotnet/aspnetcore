@@ -71,7 +71,6 @@ Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, object?[]?
 Microsoft.JSInterop.JSRuntime.JSRuntime() -> void
 Microsoft.JSInterop.JSRuntime.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
 Microsoft.JSInterop.JSRuntimeExtensions
-abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string?
 abstract Microsoft.JSInterop.JSRuntime.EndInvokeDotNet(Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, in Microsoft.JSInterop.Infrastructure.DotNetInvocationResult invocationResult) -> void
 static Microsoft.JSInterop.DotNetObjectReference.Create<TValue>(TValue! value) -> Microsoft.JSInterop.DotNetObjectReference<TValue!>!
 static Microsoft.JSInterop.JSInProcessObjectReferenceExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessObjectReference! jsObjectReference, string! identifier, params object?[]! args) -> void
@@ -88,5 +87,4 @@ static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsof
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Threading.CancellationToken cancellationToken, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
-virtual Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson) -> string?
 ~Microsoft.JSInterop.DotNetObjectReference<TValue>
