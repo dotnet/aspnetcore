@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -55,28 +56,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public static bool IsIdentifierPart(char value)
         {
-            return IsLetter(value)
-                || IsDecimalDigit(value)
-                || IsConnecting(value)
-                || IsCombining(value)
-                || IsFormatting(value);
-        }
-
-        public static bool IsFormatting(char value)
-        {
-            return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.Format;
-        }
-
-        public static bool IsCombining(char value)
-        {
-            var cat = CharUnicodeInfo.GetUnicodeCategory(value);
-
-            return cat == UnicodeCategory.SpacingCombiningMark || cat == UnicodeCategory.NonSpacingMark;
-        }
-
-        public static bool IsConnecting(char value)
-        {
-            return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.ConnectorPunctuation;
+            return IsLetter(value) ||
+                IsDecimalDigit(value) ||
+                (CharUnicodeInfo.GetUnicodeCategory(value) is UnicodeCategory.Format or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.NonSpacingMark or UnicodeCategory.ConnectorPunctuation);
         }
 
         public static bool IsWhitespace(char value)
@@ -85,25 +67,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                    value == '\f' ||
                    value == '\t' ||
                    value == '\u000B' || // Vertical Tab
-                   CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.SpaceSeparator;
+                   char.IsSeparator(value);;
         }
 
-        public static bool IsLetter(char value)
-        {
-            var cat = CharUnicodeInfo.GetUnicodeCategory(value);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsLetter(char value) => char.IsLetter(value);
 
-            return cat == UnicodeCategory.UppercaseLetter
-                   || cat == UnicodeCategory.LowercaseLetter
-                   || cat == UnicodeCategory.TitlecaseLetter
-                   || cat == UnicodeCategory.ModifierLetter
-                   || cat == UnicodeCategory.OtherLetter
-                   || cat == UnicodeCategory.LetterNumber;
-        }
-
-        public static bool IsDecimalDigit(char value)
-        {
-            return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.DecimalDigitNumber;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsDecimalDigit(char value) => char.IsDigit(value);
 
         // From http://dev.w3.org/html5/spec/Overview.html#elements-0
         public static readonly HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)

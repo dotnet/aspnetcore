@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class SeekableTextReader : TextReader, ITextDocument
+    internal sealed class SeekableTextReader : TextReader, ITextDocument
     {
         private readonly RazorSourceDocument _sourceDocument;
+        private readonly string _filePath;
         private int _position;
         private int _current;
         private SourceLocation _location;
@@ -20,12 +21,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SeekableTextReader(RazorSourceDocument source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
             _sourceDocument = source;
+            _filePath = source.FilePath;
             _cachedLineInfo = (new TextSpan(0, _sourceDocument.Lines.GetLineLength(0)), 0);
             UpdateState();
         }
