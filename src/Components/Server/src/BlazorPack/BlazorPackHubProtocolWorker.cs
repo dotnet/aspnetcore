@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using MessagePack;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -37,13 +38,18 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                 }
                 else if (type == typeof(byte[][]))
                 {
+                    if (reader.IsNil)
+                    {
+                        return null;
+                    }
+
                     var length = reader.ReadArrayHeader();
-                    var result = new byte[length][];
+                    var result = new List<byte[]>();
                     for (var i = 0; i < length; i++)
                     {
-                        result[i] = reader.ReadBytes().GetValueOrDefault().ToArray();
+                        result.Add(reader.ReadBytes().GetValueOrDefault().ToArray());
                     }
-                    return result;
+                    return result.ToArray();
                 }
             }
             catch (Exception ex)
