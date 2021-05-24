@@ -6,3 +6,8 @@
 *REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void
 *REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory) -> void
 *REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void
+Microsoft.AspNetCore.Http.Features.DefaultConnectionLifetimeNotificationFeature
+Microsoft.AspNetCore.Http.Features.DefaultConnectionLifetimeNotificationFeature.ConnectionClosedRequested.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Http.Features.DefaultConnectionLifetimeNotificationFeature.ConnectionClosedRequested.set -> void
+Microsoft.AspNetCore.Http.Features.DefaultConnectionLifetimeNotificationFeature.DefaultConnectionLifetimeNotificationFeature(Microsoft.AspNetCore.Http.Features.IHttpResponseFeature? httpResponseFeature) -> void
+Microsoft.AspNetCore.Http.Features.DefaultConnectionLifetimeNotificationFeature.RequestClose() -> void
