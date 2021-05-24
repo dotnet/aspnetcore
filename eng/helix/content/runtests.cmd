@@ -29,7 +29,7 @@ dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
 
 if not errorlevel 0 (
     set exit_code=%errorlevel%
-    echo "Finished running tests: exit_code=%exit_code%"
+    echo "Restore runtests failed: exit_code=%exit_code%"
     EXIT /b %exit_code%
 )
 
