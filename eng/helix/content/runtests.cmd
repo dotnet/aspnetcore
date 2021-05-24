@@ -27,7 +27,7 @@ set exit_code=0
 echo "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
 
-if errorlevel neq 0 (
+if %errorlevel% neq 0 (
     set exit_code=%errorlevel%
     echo "Finished running tests: exit_code=%exit_code%"
     EXIT /b %exit_code%
@@ -35,7 +35,7 @@ if errorlevel neq 0 (
 
 echo "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%"
 dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%
-if errorlevel neq 0 (
+if %errorlevel% neq 0 (
     set exit_code=%errorlevel%
 )
 echo "Finished running tests: exit_code=%exit_code%"
