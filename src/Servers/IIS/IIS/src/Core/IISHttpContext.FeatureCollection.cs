@@ -12,10 +12,10 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpBodyControlFeature,
                                             IHttpMaxRequestBodySizeFeature,
                                             IHttpResponseTrailersFeature,
-                                            IHttpResetFeature
+                                            IHttpResetFeature,
+                                            IConnectionLifetimeNotificationFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -447,7 +448,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
         {
             // Check version is above 2.
-            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
             {
                 return this;
             }
@@ -461,10 +462,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => ResponseTrailers = value;
         }
 
+        CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested { get; set; }
+
         internal IHttpResetFeature? GetResetFeature()
         {
             // Check version is above 2.
-            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
             {
                 return this;
             }
@@ -498,6 +501,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             var serverVariableFeature = (IServerVariablesFeature)this;
             serverVariableFeature["IIS_EnableDynamicCompression"] = "0";
+        }
+
+        void IConnectionLifetimeNotificationFeature.RequestClose()
+        {
+            // Set the connection close feature if the response hasn't sent headers as yet
+            if (!HasResponseStarted)
+            {
+                ResponseHeaders.Connection = ConnectionClose;
+            }
+
         }
     }
 }
