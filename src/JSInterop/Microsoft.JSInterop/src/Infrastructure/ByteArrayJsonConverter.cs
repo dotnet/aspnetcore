@@ -5,12 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class ByteArrayJsonConverter : JsonConverter<byte[]>
     {
         private byte[][]? _byteArraysToDeserialize;
+
+        internal readonly SemaphoreSlim ReadSemaphore = new(initialCount: 1, maxCount: 1);
+        internal readonly SemaphoreSlim WriteSemaphore = new(initialCount: 1, maxCount: 1);
+
         internal static readonly JsonEncodedText ByteArrayRefKey = JsonEncodedText.Encode("__byte[]");
 
         /// <summary>
@@ -25,7 +30,15 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             set
             {
-                if (_byteArraysToDeserialize is not null && value is not null)
+                if (value is null)
+                {
+                    _byteArraysToDeserialize = null;
+                    ReadSemaphore.Release();
+                    return;
+                }
+
+                if (_byteArraysToDeserialize is not null ||
+                    !ReadSemaphore.Wait(millisecondsTimeout: 100))
                 {
                     throw new JsonException("Unable to deserialize arguments, previous deserialization is incomplete.");
                 }
@@ -38,6 +51,11 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (ReadSemaphore.CurrentCount != 0)
+            {
+                throw new JsonException("Must acquire ReadSemaphore before requesting byte array deserialization.");
+            }
+
             if (_byteArraysToDeserialize is null)
             {
                 throw new JsonException("ByteArraysToDeserialize not set.");
@@ -81,6 +99,11 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
         {
+            if (WriteSemaphore.CurrentCount != 0)
+            {
+                throw new JsonException("Must acquire WriteSemaphore before requesting byte array serialization.");
+            }
+
             var id = ByteArraysToSerialize.Count;
 
             ByteArraysToSerialize.Add(value);

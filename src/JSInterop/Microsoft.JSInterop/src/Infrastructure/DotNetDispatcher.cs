@@ -312,7 +312,8 @@ namespace Microsoft.JSInterop.Infrastructure
         /// </returns>
         internal static SerializedArgs SerializeArgs(JSRuntime jsRuntime, object? args)
         {
-            if (jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Count != 0)
+            if (jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Count != 0 ||
+                !jsRuntime.ByteArrayJsonConverter.WriteSemaphore.Wait(millisecondsTimeout: 100))
             {
                 throw new JsonException("Unable to serialize arguments, previous serialization is incomplete.");
             }
@@ -320,6 +321,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var serializedArgs = JsonSerializer.Serialize(args, jsRuntime.JsonSerializerOptions);
             var byteArrays = jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.ToArray();
             jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Clear();
+            jsRuntime.ByteArrayJsonConverter.WriteSemaphore.Release();
 
             return new(serializedArgs, byteArrays);
         }
