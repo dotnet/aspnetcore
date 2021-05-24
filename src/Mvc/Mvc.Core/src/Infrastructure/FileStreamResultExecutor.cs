@@ -5,6 +5,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -77,9 +78,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             RangeItemHeaderValue? range,
             long rangeLength)
         {
-            if (context == null)
+            return WriteFileAsyncInternal(context.HttpContext, result, range, rangeLength, Logger);
+        }
+
+        internal static Task WriteFileAsyncInternal(HttpContext httpContext, FileStreamResult result, RangeItemHeaderValue? range, long rangeLength, ILogger logger)
+        {
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
             if (result == null)
@@ -94,10 +100,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (range != null)
             {
-                Logger.WritingRangeToBody();
+                logger.WritingRangeToBody();
             }
 
-            return WriteFileAsync(context.HttpContext, result.FileStream, range, rangeLength);
+            return WriteFileAsync(httpContext, result.FileStream, range, rangeLength);
         }
     }
 }

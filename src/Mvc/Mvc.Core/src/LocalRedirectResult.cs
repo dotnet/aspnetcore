@@ -4,9 +4,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -14,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// An <see cref="ActionResult"/> that returns a Found (302), Moved Permanently (301), Temporary Redirect (307),
     /// or Permanent Redirect (308) response with a Location header to the supplied local URL.
     /// </summary>
-    public class LocalRedirectResult : ActionResult
+    public class LocalRedirectResult : ActionResult, IResult
     {
         private string _localUrl;
 
@@ -102,6 +105,40 @@ namespace Microsoft.AspNetCore.Mvc
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<LocalRedirectResult>>();
             return executor.ExecuteAsync(context, this);
+        }
+
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            // IsLocalUrl is called to handle  Urls starting with '~/'.
+            if (!UrlHelperBase.CheckIsLocalUrl(Url))
+            {
+                throw new InvalidOperationException(Resources.UrlNotLocal);
+            }
+
+            var destinationUrl = UrlHelperBase.Content(httpContext, Url);
+
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<RedirectResult>();
+            logger.LocalRedirectResultExecuting(destinationUrl);
+
+            if (PreserveMethod)
+            {
+                httpContext.Response.StatusCode = Permanent
+                    ? StatusCodes.Status308PermanentRedirect
+                    : StatusCodes.Status307TemporaryRedirect;
+                httpContext.Response.Headers.Location = destinationUrl;
+            }
+            else
+            {
+                httpContext.Response.Redirect(destinationUrl, Permanent);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

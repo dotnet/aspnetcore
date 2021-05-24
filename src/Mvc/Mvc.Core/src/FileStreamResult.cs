@@ -5,8 +5,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -15,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// write a file from a stream to the response.
     /// </summary>
-    public class FileStreamResult : FileResult
+    public class FileStreamResult : FileResult, IResult
     {
         private Stream _fileStream;
 
@@ -78,6 +80,43 @@ namespace Microsoft.AspNetCore.Mvc
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<FileStreamResult>>();
             return executor.ExecuteAsync(context, this);
+        }
+
+        async Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            using (FileStream)
+            {
+                var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger<RedirectResult>();
+                logger.ExecutingFileResult(this);
+
+                long? fileLength = null;
+                if (FileStream.CanSeek)
+                {
+                    fileLength = FileStream.Length;
+                }
+
+                var (range, rangeLength, serveBody) = FileResultExecutorBase.SetHeadersAndLog(
+                    httpContext,
+                    this,
+                    fileLength,
+                    EnableRangeProcessing,
+                    LastModified,
+                    EntityTag,
+                    logger);
+
+                if (!serveBody)
+                {
+                    return;
+                }
+
+                await FileStreamResultExecutor.WriteFileAsyncInternal(httpContext, this, range, rangeLength, logger);
+            }
         }
     }
 }
