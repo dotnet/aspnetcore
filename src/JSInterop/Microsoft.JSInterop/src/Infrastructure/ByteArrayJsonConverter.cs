@@ -21,7 +21,7 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Contains the byte array(s) being serialized.
         /// </summary>
-        internal readonly List<byte[]> ByteArraysToSerialize = new();
+        internal readonly ArrayBuilder<byte[]> ByteArraysToSerialize = new();
 
         /// <summary>
         /// Sets the byte array(s) being deserialized.
@@ -106,7 +106,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             var id = ByteArraysToSerialize.Count;
 
-            ByteArraysToSerialize.Add(value);
+            ByteArraysToSerialize.Append(value);
 
             writer.WriteStartObject();
             writer.WriteNumber(ByteArrayRefKey, id);

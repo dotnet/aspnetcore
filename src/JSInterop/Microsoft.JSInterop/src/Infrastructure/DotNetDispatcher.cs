@@ -319,7 +319,9 @@ namespace Microsoft.JSInterop.Infrastructure
             }
 
             var serializedArgs = JsonSerializer.Serialize(args, jsRuntime.JsonSerializerOptions);
-            var byteArrays = jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.ToArray();
+            var numByteArrays = jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Count;
+            var byteArrays = new byte[numByteArrays][];
+            Array.Copy(jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Buffer, byteArrays, numByteArrays);
             jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Clear();
             jsRuntime.ByteArrayJsonConverter.WriteSemaphore.Release();
 

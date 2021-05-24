@@ -8,11 +8,13 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
+    <DefineConstants>$(DefineConstants);JS_INTEROP</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)JSInterop\JSCallResultTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)\src\Components\Shared\src\ArrayBuilder.cs" />
   </ItemGroup>
 
   <ItemGroup>
