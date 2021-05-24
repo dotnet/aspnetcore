@@ -33,15 +33,32 @@ namespace Microsoft.AspNetCore.Razor.Language
                 category == UnicodeCategory.Format; // Cf
         }
 
-        public static string SanitizeIdentifier(string inputName)
+        public static string SanitizeIdentifier(StringSegment inputName)
         {
-            if (string.IsNullOrEmpty(inputName))
+            if (StringSegment.IsNullOrEmpty(inputName))
             {
-                return inputName;
+                return string.Empty;
             }
 
-            var builder = new StringBuilder(inputName.Length);
-            AppendSanitized(builder, inputName);
+            var length = inputName.Length;
+            var prependUnderscore = false;
+            if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
+            {
+                length++;
+                prependUnderscore = true;
+            }
+
+            var builder = new StringBuilder(length);
+            if (prependUnderscore)
+            {
+                builder.Append('_');
+            }
+
+            for (var i = 0; i < inputName.Length; i++)
+            {
+                var ch = inputName[i];
+                builder.Append(IsIdentifierPart(ch) ? ch : '_');
+            }
 
             return builder.ToString();
         }

@@ -493,7 +493,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             if (!context.Options.DesignTime)
             {
                 context.CodeWriter.WriteField(FieldUnusedModifiers, PrivateModifiers, "string", StringValueBufferVariableName);
-             
+
                 var backedScopeManageVariableName = "__backed" + ScopeManagerVariableName;
                 context.CodeWriter
                     .Write("private ")
@@ -650,7 +650,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         private static string GetPropertyAccessor(DefaultTagHelperPropertyIntermediateNode node)
         {
-            var propertyAccessor = string.Concat(node.FieldName, '.', node.PropertyName);
+            var propertyAccessor = node.FieldName + "." + node.PropertyName;
 
             if (node.IsIndexerNameMatch)
             {

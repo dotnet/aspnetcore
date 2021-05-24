@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 // It's possible for a Razor document to not have a file path.
                 // Eg. When we try to generate code for an in memory document like default imports.
                 var checksum = Checksum.BytesToString(codeDocument.Source.GetChecksum());
-                @class.ClassName = $"AspNetCore_{checksum}";
+                @class.ClassName = "AspNetCore_" + checksum;
             }
             else
             {
@@ -94,12 +95,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 return path;
             }
 
+            var pathSegment = new StringSegment(path);
             if (path.EndsWith(cshtmlExtension, StringComparison.OrdinalIgnoreCase))
             {
-                path = path.Substring(0, path.Length - cshtmlExtension.Length);
+                pathSegment = pathSegment.Subsegment(0, path.Length - cshtmlExtension.Length);
             }
 
-            return CSharpIdentifier.SanitizeIdentifier(path);
+            return CSharpIdentifier.SanitizeIdentifier(pathSegment);
         }
     }
 }

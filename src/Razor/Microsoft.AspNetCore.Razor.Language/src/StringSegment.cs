@@ -10,6 +10,10 @@ namespace Microsoft.AspNetCore.Razor
 {
     /// <summary>
     /// An optimized representation of a substring.
+    /// <p>
+    /// We're using our own copy of StringSegment rather than using Span or StringSegment from M.Extensions.Primitives
+    /// to avoid cross-compiling this project to support source build and to avoid adding new dependencies to the IDE.
+    /// </p>
     /// </summary>
     internal readonly struct StringSegment : IEquatable<StringSegment>, IEquatable<string>
     {
