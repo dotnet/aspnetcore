@@ -42,10 +42,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Pack .map files in symbols package (native symbols for Linux) -->
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.map</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
 
-    <!-- Optimize the framework using the crossgen tool -->
+    <!-- Optimize the framework using the crossgen2 tool -->
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
-    <!-- Produce crossgen profiling symbols (.ni.pdb or .map files). -->
+    <!-- Produce crossgen2 profiling symbols (.ni.pdb or .map files). -->
     <GenerateCrossgenProfilingSymbols>true</GenerateCrossgenProfilingSymbols>
     <GenerateCrossgenProfilingSymbols Condition=" '$(CrossgenOutput)' != 'true' OR '$(TargetOsName)' == 'osx' ">false</GenerateCrossgenProfilingSymbols>
 
@@ -80,33 +80,30 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
-    <!-- Properties related to crossgen -->
+    <!-- Properties related to crossgen2 -->
     <CrossGenSymbolsType>PerfMap</CrossGenSymbolsType>
     <CrossGenSymbolsType Condition="'$(TargetOsName)' == 'win'">PDB</CrossGenSymbolsType>
 
+    <!--
+      hostfxr and hostpolicy libraries are named libhostfxr.so and libhostpolicy.so in non-Windows
+      microsoft.netcore.app.runtime packages.
+    -->
     <LibPrefix Condition=" '$(TargetOsName)' != 'win' ">lib</LibPrefix>
-    <LibExtension>.so</LibExtension>
-    <LibExtension Condition=" '$(TargetOsName)' == 'win' ">.dll</LibExtension>
-    <LibExtension Condition=" '$(TargetOsName)' == 'osx' ">.dylib</LibExtension>
-    <ExeExtension Condition=" '$(TargetOsName)' == 'win' ">.exe</ExeExtension>
-    <!-- 3B = semicolon in ASCII -->
-    <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
-    <PathSeparator Condition=" '$(TargetOsName)' == 'win' ">%3B</PathSeparator>
 
-    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm'">x64_arm</CrossCompileDirectory>
-    <CrossCompileDirectory Condition=" '$(TargetArchitecture)' == 'arm64' AND '$(BuildArchitecture)' != 'arm64' ">x64_arm64</CrossCompileDirectory>
-    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm</CrossCompileDirectory>
-
-    <!-- Crossgen executable name -->
-    <CrossgenToolFileName>crossgen</CrossgenToolFileName>
-    <CrossgenToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(CrossgenToolFileName).exe</CrossgenToolFileName>
-    <!-- Default crossgen executable relative path -->
-    <CrossgenToolPackagePath>$(CrossgenToolFileName)</CrossgenToolPackagePath>
-    <!-- Disambiguated RID-specific crossgen executable relative path -->
-    <CrossgenToolPackagePath Condition=" '$(CrossCompileDirectory)' != '' ">$(CrossCompileDirectory)\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
+    <!-- crossgen2 executable name -->
+    <Crossgen2ToolFileName>crossgen2</Crossgen2ToolFileName>
+    <Crossgen2ToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(Crossgen2ToolFileName).exe</Crossgen2ToolFileName>
 
     <!-- E.g. "PkgMicrosoft_NETCore_App_Runtime_win-x64" (set in obj/Microsoft.AspNetCore.App.Runtime.csproj.nuget.g.props). -->
     <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
+
+    <!--
+      Determine the crossgen2 package path property name. Special case linux-musl-arm and linux-musl-arm64 because they
+      are built on an Ubuntu container with cross compilation tools. linux-musl-x64 is built in an alpine container.
+    -->
+    <BuildOsName>$(TargetOsName)</BuildOsName>
+    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</BuildOsName>
+    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
@@ -121,6 +118,15 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </Reference>
 
     <Reference Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)"
+        ExcludeAssets="All"
+        PrivateAssets="All"
+        GeneratePathProperty="true" />
+
+    <!--
+      This package contains the crossgen2 tool. Unfortunately, it doesn't make the tool easy to use.
+      $(GeneratePathProperty) and hacks in the _ExpandRuntimePackageRoot target work around the gaps.
+    -->
+    <Reference Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(BuildArchitecture)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />
@@ -286,7 +292,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <BuildOutputFiles Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' " />
       <!-- Include all .pdbs in build output. Some .pdb files are part of ReferenceCopyLocalPaths, but this can change when running /t:Pack /p:NoBuild=true. -->
       <BuildOutputFiles Include="$(TargetDir)*.pdb" Exclude="@(ReferenceCopyLocalPaths)" />
-      <!-- Crossgen symbols for Linux include a GUID in the file name which cannot be predicted. -->
+      <!-- crossgen2 symbols for Linux include a GUID in the file name which cannot be predicted. -->
       <BuildOutputFiles Include="$(TargetDir)*.map" Condition="'$(CrossGenSymbolsType)' == 'PerfMap'" />
 
       <!-- Strip duplicate Files by checking for distinct %(FileName)%(Extension) -->
@@ -341,18 +347,24 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_ExpandRuntimePackageRoot">
     <!--
-      Use an item group for expansion of $($(RuntimePackageRootVariableName)) (an illegal MSBuild expression)
-      i.e. the prop value's value.
+      Use an item group for expansion of $($(RuntimePackageRootVariableName)) and $($(Crossgen2PackageRootMapping))
+      (both illegal MSBuild expressions) i.e. the prop value's value.
     -->
     <ItemGroup>
       <RuntimePackageRootMapping Include="$(RuntimePackageRootVariableName)" />
       <RuntimePackageRootMapping>
         <RuntimePackageRoot>$(%(Identity))</RuntimePackageRoot>
       </RuntimePackageRootMapping>
+      <Crossgen2PackageRootMapping Include="$(Crossgen2PackageRootVariableName)" />
+      <Crossgen2PackageRootMapping>
+        <Crossgen2PackageRoot>$(%(Identity))</Crossgen2PackageRoot>
+      </Crossgen2PackageRootMapping>
     </ItemGroup>
     <PropertyGroup>
       <RuntimePackageRoot>@(RuntimePackageRootMapping->'%(RuntimePackageRoot)')</RuntimePackageRoot>
       <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
+      <Crossgen2PackageRoot>@(Crossgen2PackageRootMapping->'%(Crossgen2PackageRoot)')</Crossgen2PackageRoot>
+      <Crossgen2PackageRoot>$([MSBuild]::EnsureTrailingSlash('$(Crossgen2PackageRoot)'))</Crossgen2PackageRoot>
     </PropertyGroup>
   </Target>
 
@@ -362,11 +374,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
 
-    <!-- Resolve list of assemblies to crossgen -->
+    <!-- Resolve list of assemblies to crossgen2 -->
     <ItemGroup>
       <IntermediateCrossgenAssembly Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' AND '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'" />
 
-      <!-- These are the paths used by crossgen to find assemblies that are expected to exist at runtime in the shared frameworks. -->
+      <!-- These are the paths used by crossgen2 to find assemblies that are expected to exist at runtime in the shared frameworks. -->
       <_PlatformAssemblyPaths Include="$(CrossgenToolDir)" />
       <!-- Include the directories of the assemblies not built in this repo. These contain only implementation assemblies. -->
       <_PlatformAssemblyPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)')" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' == ''"/>
@@ -375,54 +387,64 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <ReferenceCopyLocalPaths Remove="@(IntermediateCrossgenAssembly)" />
       <ReferenceCopyLocalPaths Include="@(IntermediateCrossgenAssembly->'$(TargetDir)%(FileName)%(Extension)')" />
+
+      <_DistinctPlatformAssemblyPaths Include="@(_PlatformAssemblyPaths->Distinct())"/>
+      <_DistinctPlatformAssemblyPaths>
+        <CommandLineOption>-r:%(Identity)*.dll</CommandLineOption>
+      </_DistinctPlatformAssemblyPaths>
+
+      <Crossgen2PlatformAssemblyPaths Include="@(_DistinctPlatformAssemblyPaths->'%(CommandLineOption)')" />
     </ItemGroup>
 
     <PropertyGroup>
-      <CrossgenToolPath>$([System.IO.Path]::Combine('$(RuntimePackageRoot)', 'tools', '$(CrossgenToolPackagePath)'))</CrossgenToolPath>
+      <CrossgenToolPath>$([System.IO.Path]::Combine('$(Crossgen2PackageRoot)', 'tools', '$(Crossgen2ToolFileName)'))</CrossgenToolPath>
       <CrossgenSymbolsTargetDir>$(TargetDir)</CrossgenSymbolsTargetDir>
-      <CrossgenPlatformAssemblyPaths>@(_PlatformAssemblyPaths->Distinct(), '$(PathSeparator)')</CrossgenPlatformAssemblyPaths>
 
       <!-- Escaping (double backslash at end) required due to the way batch processes backslashes. -->
       <CrossgenSymbolsTargetDir Condition="HasTrailingSlash($(CrossgenSymbolsTargetDir)) AND '$(OS)' == 'Windows_NT'">$(TargetDir)\</CrossgenSymbolsTargetDir>
-      <CrossgenPlatformAssemblyPaths Condition="HasTrailingSlash($(CrossgenPlatformAssemblyPaths)) AND '$(OS)' == 'Windows_NT'">$(CrossgenPlatformAssemblyPaths)\</CrossgenPlatformAssemblyPaths>
     </PropertyGroup>
 
     <WriteLinesToFile
-        Lines="-platform_assemblies_paths &quot;$(CrossgenPlatformAssemblyPaths)&quot;"
-        File="$(CrossgenToolDir)PlatformAssembliesPaths.rsp"
+        Lines="@(Crossgen2PlatformAssemblyPaths)"
+        File="$(CrossgenToolDir)PlatformAssembliesPathsCrossgen2.rsp"
         Overwrite="true" />
 
     <ItemGroup>
       <RuntimePackageFiles Include="$(RuntimePackageRoot)runtimes\**\*" />
     </ItemGroup>
 
-    <Error Text="Could not find crossgen $(CrossgenToolPath)" Condition=" ! Exists($(CrossgenToolPath))" />
+    <Error Text="Could not find crossgen2 $(CrossgenToolPath)" Condition=" ! Exists($(CrossgenToolPath))" />
 
-    <!-- Create tool directory with crossgen executable and runtime assemblies -->
-    <Copy SourceFiles="@(RuntimePackageFiles);$(CrossgenToolPath)" DestinationFolder="$(CrossGenToolDir)"/>
-    <Exec Command="chmod +x &quot;$(CrossGenToolDir)$(CrossgenToolFileName)&quot;" Condition="'$(OS)' != 'Windows_NT'" />
+    <!-- Create tool directory with runtime assemblies -->
+    <Copy SourceFiles="@(RuntimePackageFiles)" DestinationFolder="$(CrossGenToolDir)"/>
   </Target>
 
+  <!-- Target executes once per @(IntermediateCrossgenAssembly) item. -->
   <Target Name="_BatchCrossGenAssemblies"
     DependsOnTargets="_ExpandRuntimePackageRoot"
     Inputs="@(IntermediateCrossgenAssembly)"
     Outputs="@(IntermediateCrossgenAssembly->'$(TargetDir)%(FileName)%(Extension)')">
     <PropertyGroup>
-      <!-- Pick the right coreclr jit based on whether we are cross-compiling or not. -->
-      <CoreCLRJitPath
-          Condition="'$(CrossCompileDirectory)' == ''">$(RuntimePackageRoot)runtimes\$(RuntimeIdentifier)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
-      <CoreCLRJitPath
-          Condition="'$(CrossCompileDirectory)' != ''">$(RuntimePackageRoot)runtimes\$(CrossCompileDirectory)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
+      <!--
+        Handle different names for the target OS on the crossgen2 command line. This often matches neither
+        $(TargetOsName) nor $(BuildOsName).
+      -->
+      <Crossgen2TargetOs>$(TargetOsName)</Crossgen2TargetOs>
+      <Crossgen2TargetOs Condition="'$(TargetOsName)' == 'win'">windows</Crossgen2TargetOs>
+      <Crossgen2TargetOs Condition="'$(TargetOsName)' == 'linux-musl'">linux</Crossgen2TargetOs>
+
+      <!-- Compose the crossgen2 command line. -->
+      <Crossgen2Args>--targetarch:$(TargetArchitecture)</Crossgen2Args>
+      <Crossgen2Args>$(Crossgen2Args) --targetos:$(Crossgen2TargetOs)</Crossgen2Args>
+      <Crossgen2Args>$(Crossgen2Args) -O</Crossgen2Args>
+      <Crossgen2Args>$(Crossgen2Args) @&quot;$(CrossgenToolDir)PlatformAssembliesPathsCrossgen2.rsp&quot;</Crossgen2Args>
+      <Crossgen2Args Condition="Exists('$(RuntimePackageRoot)tools\StandardOptimizationData.mibc')">$(Crossgen2Args) &quot;-m:$(RuntimePackageRoot)tools\StandardOptimizationData.mibc&quot;</Crossgen2Args>
+      <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' == 'win'">$(Crossgen2Args) --pdb --pdb-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
+      <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' != 'win'">$(Crossgen2Args) --perfmap --perfmap-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
     </PropertyGroup>
 
-    <Exec Command="&quot;$(CrossgenToolDir)$(CrossgenToolFileName)&quot; -nologo -readytorun -in &quot;%(IntermediateCrossgenAssembly.Identity)&quot; -out &quot;$(TargetDir)%(FileName)%(Extension)&quot; -jitpath &quot;$(CoreCLRJitPath)&quot; &quot;@$(CrossgenToolDir)PlatformAssembliesPaths.rsp&quot;"
-          EnvironmentVariables="COMPlus_PartialNGen=0"
-          IgnoreStandardErrorWarningFormat="true"
-          StandardOutputImportance="High" />
-
-    <Exec Condition=" '$(GenerateCrossgenProfilingSymbols)' == 'true' "
-          Command="&quot;$(CrossgenToolDir)$(CrossgenToolFileName)&quot; -nologo -readytorun -in &quot;$(TargetDir)%(IntermediateCrossgenAssembly.FileName)%(Extension)&quot; -Create$(CrossGenSymbolsType) &quot;$(CrossgenSymbolsTargetDir)&quot; &quot;@$(CrossgenToolDir)PlatformAssembliesPaths.rsp&quot;"
-          EnvironmentVariables="COMPlus_PartialNGen=0"
+    <!-- All metadata in batched task comes from current @(IntermediateCrossgenAssembly) item. -->
+    <Exec Command="&quot;$(CrossgenToolPath)&quot; $(Crossgen2Args) -o:&quot;$(TargetDir)%(FileName)%(Extension)&quot; &quot;%(IntermediateCrossgenAssembly.Identity)&quot;"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
   </Target>
