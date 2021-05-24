@@ -54,27 +54,5 @@ namespace Microsoft.AspNetCore.Identity
             var appAssembly = Assembly.Load(applicationName);
             return appAssembly;
         }
-
-        private static bool TryResolveUIFramework(Assembly assembly, out UIFramework uiFramework)
-        {
-            uiFramework = default;
-
-            var metadata = assembly.GetCustomAttributes<UIFrameworkAttribute>()
-                .SingleOrDefault()?.UIFramework; // Bootstrap4 is the default
-            if (metadata == null)
-            {
-                return false;
-            }
-
-            // If we find the metadata there must be a valid framework here.
-            if (!Enum.TryParse<UIFramework>(metadata, ignoreCase: true, out uiFramework))
-            {
-                var enumValues = string.Join(", ", Enum.GetNames(typeof(UIFramework)).Select(v => $"'{v}'"));
-                throw new InvalidOperationException(
-                    $"Found an invalid value for the 'IdentityUIFrameworkVersion'. Valid values are {enumValues}");
-            }
-
-            return true;
-        }
     }
 }

@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap4</IdentityUIFrameworkVersion>
+    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap5</IdentityUIFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,11 +9,11 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">
-    <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V4\**">
+  <ItemGroup Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap5'">
+    <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V5\**">
       <SourceType>Package</SourceType>
       <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-      <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V4'))</ContentRoot>
+      <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V5'))</ContentRoot>
       <BasePath>/Identity</BasePath>
       <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
     </StaticWebAsset>

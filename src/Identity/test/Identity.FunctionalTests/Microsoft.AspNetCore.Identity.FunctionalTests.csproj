@@ -10,7 +10,6 @@
 
     <Compile Include="..\..\Extensions.Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
     <Compile Include="..\..\Extensions.Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
-    <Compile Include="..\..\UI\src\UIFramework.cs" Link="Infrastructure\UIFramework.cs" />
   </ItemGroup>
 
   <ItemGroup>
