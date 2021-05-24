@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (_cachedLineInfo.Span.Contains(_position))
             {
-                _location = new SourceLocation(_sourceDocument.FilePath, _position, _cachedLineInfo.LineIndex, _position - _cachedLineInfo.Span.Start);
+                _location = new SourceLocation(_filePath, _position, _cachedLineInfo.LineIndex, _position - _cachedLineInfo.Span.Start);
                 _current = _sourceDocument[_location.AbsoluteIndex];
 
                 return;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (nextLineSpan.Contains(_position))
                     {
                         _cachedLineInfo = (nextLineSpan, nextLineIndex);
-                        _location = new SourceLocation(_sourceDocument.FilePath, _position, nextLineIndex, _position - nextLineSpan.Start);
+                        _location = new SourceLocation(_filePath, _position, nextLineIndex, _position - nextLineSpan.Start);
                         _current = _sourceDocument[_location.AbsoluteIndex];
 
                         return;
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (prevLineSpan.Contains(_position))
                     {
                         _cachedLineInfo = (prevLineSpan, prevLineIndex);
-                        _location = new SourceLocation(_sourceDocument.FilePath, _position, prevLineIndex, _position - prevLineSpan.Start);
+                        _location = new SourceLocation(_filePath, _position, prevLineIndex, _position - prevLineSpan.Start);
                         _current = _sourceDocument[_location.AbsoluteIndex];
 
                         return;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             var lineNumber = _sourceDocument.Lines.Count - 1;
-            _location = new SourceLocation(_sourceDocument.FilePath, Length, lineNumber, _sourceDocument.Lines.GetLineLength(lineNumber));
+            _location = new SourceLocation(_filePath, Length, lineNumber, _sourceDocument.Lines.GetLineLength(lineNumber));
 
             _current = -1;
         }
