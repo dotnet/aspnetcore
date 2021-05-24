@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop
@@ -15,7 +16,7 @@ namespace Microsoft.JSInterop
         [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
-            var serializedArgs = SerializeArgs(args);
+            var serializedArgs = DotNetDispatcher.SerializeArgs(this, args);
 
             var resultJson = InvokeJS(
                 identifier,

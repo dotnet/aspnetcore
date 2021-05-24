@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,16 +20,16 @@ namespace Microsoft.JSInterop
     {
         private long _nextObjectReferenceId = 0; // 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
-        private readonly ConcurrentDictionary<long, object> _pendingTasks = new ConcurrentDictionary<long, object>();
-        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectReference>();
-        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations =
-            new ConcurrentDictionary<long, CancellationTokenRegistration>();
+        private readonly ConcurrentDictionary<long, object> _pendingTasks = new();
+        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
+        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
 
         /// <summary>
         /// Initializes a new instance of <see cref="JSRuntime"/>.
         /// </summary>
         protected JSRuntime()
         {
+            ByteArrayJsonConverter = new ByteArrayJsonConverter();
             JsonSerializerOptions = new JsonSerializerOptions
             {
                 MaxDepth = 32,
@@ -41,7 +39,7 @@ namespace Microsoft.JSInterop
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
                     new JSObjectReferenceJsonConverter(this),
-                    new ByteArrayJsonConverter(this),
+                    ByteArrayJsonConverter,
                 }
             };
         }
@@ -52,19 +50,14 @@ namespace Microsoft.JSInterop
         protected internal JsonSerializerOptions JsonSerializerOptions { get; }
 
         /// <summary>
+        /// Gets the <see cref="Infrastructure.ByteArrayJsonConverter"/> used to serialize and deserialize byte arrays from the interop payloads.
+        /// </summary>
+        internal ByteArrayJsonConverter ByteArrayJsonConverter { get; }
+
+        /// <summary>
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
         /// </summary>
         protected TimeSpan? DefaultAsyncTimeout { get; set; }
-
-        /// <summary>
-        /// Contains the combined byte array(s) being serialized.
-        /// </summary>
-        internal readonly List<byte[]> ByteArraysToSerialize = new();
-
-        /// <summary>
-        /// Contains the combined byte array(s) being deserialized.
-        /// </summary>
-        internal byte[][]? ByteArraysToDeserialize { get; set; }
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -135,12 +128,12 @@ namespace Microsoft.JSInterop
                 }
 
                 var serializedArgs = args is not null && args.Length != 0 ?
-                    SerializeArgs(args) :
+                    DotNetDispatcher.SerializeArgs(this, args) :
                     new SerializedArgs(null, null);
                 var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 
 
-                BeginInvokeJS(taskId, identifier, serializedArgs.ArgsJson, serializedArgs.ByteArrays, resultType, targetInstanceId);
+                BeginInvokeJS(taskId, identifier, serializedArgs, resultType, targetInstanceId);
 
                 return new ValueTask<TValue>(tcs.Task);
             }
@@ -161,43 +154,23 @@ namespace Microsoft.JSInterop
         }
 
         /// <summary>
-        /// Serialize the args to a json string, with the byte arrays
-        /// extracted out for seperate transmission.
+        /// Begins an asynchronous function invocation.
         /// </summary>
-        /// <param name="args">Arguments to be converted to json.</param>
-        /// <returns>
-        /// A tuple of the json string and an array containing the extracted
-        /// byte arrays from the args.
-        /// </returns>
-        protected internal SerializedArgs SerializeArgs(object? args)
-        {
-            ByteArraysToSerialize.Clear();
-            var serializedArgs = JsonSerializer.Serialize(args, JsonSerializerOptions);
-            var byteArrays = ByteArraysToSerialize.ToArray();
-
-            return new(serializedArgs, byteArrays);
-        }
+        /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
+        /// <param name="identifier">The identifier for the function to invoke.</param>
+        /// <param name="serializedArgs">The serialized args containing the JSON representation along with the extracted byte arrays.</param>
+        protected virtual void BeginInvokeJS(long taskId, string identifier, SerializedArgs serializedArgs)
+            => BeginInvokeJS(taskId, identifier, serializedArgs, JSCallResultType.Default, 0);
 
         /// <summary>
         /// Begins an asynchronous function invocation.
         /// </summary>
         /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
         /// <param name="identifier">The identifier for the function to invoke.</param>
-        /// <param name="argsJson">A JSON representation of the arguments.</param>
-        /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
-        protected virtual void BeginInvokeJS(long taskId, string identifier, string? argsJson, byte[][]? byteArrays)
-            => BeginInvokeJS(taskId, identifier, argsJson, byteArrays, JSCallResultType.Default, 0);
-
-        /// <summary>
-        /// Begins an asynchronous function invocation.
-        /// </summary>
-        /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
-        /// <param name="identifier">The identifier for the function to invoke.</param>
-        /// <param name="argsJson">A JSON representation of the arguments.</param>
-        /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
+        /// <param name="serializedArgs">The serialized args containing the JSON representation along with the extracted byte arrays.</param>
         /// <param name="resultType">The type of result expected from the invocation.</param>
         /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
-        protected abstract void BeginInvokeJS(long taskId, string identifier, string? argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId);
+        protected abstract void BeginInvokeJS(long taskId, string identifier, SerializedArgs serializedArgs, JSCallResultType resultType, long targetInstanceId);
 
         /// <summary>
         /// Completes an async JS interop call from JavaScript to .NET
@@ -226,10 +199,10 @@ namespace Microsoft.JSInterop
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
-                    ByteArraysToDeserialize = byteArrays;
+                    ByteArrayJsonConverter.ByteArraysToDeserialize = byteArrays;
                     var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
-                    ByteArraysToDeserialize = null;
+                    ByteArrayJsonConverter.ByteArraysToDeserialize = null;
                 }
                 else
                 {

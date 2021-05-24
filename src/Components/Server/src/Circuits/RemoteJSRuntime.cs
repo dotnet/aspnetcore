@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long asyncHandle, string identifier, SerializedArgs serializedArgs, JSCallResultType resultType, long targetInstanceId)
         {
             if (_clientProxy is null)
             {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
-            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, byteArrays, (int)resultType, targetInstanceId);
+            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, serializedArgs.ArgsJson, serializedArgs.ByteArrays, (int)resultType, targetInstanceId);
         }
 
         public static class Log

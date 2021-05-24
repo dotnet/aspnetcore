@@ -57,7 +57,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 return new SerializedArgs(null, null);
             }
 
-            return jsRuntime.SerializeArgs(syncResult);
+            return SerializeArgs(jsRuntime, syncResult);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Microsoft.JSInterop.Infrastructure
             else
             {
 
-                var serializedArgs = jsRuntime.SerializeArgs(syncResult);
+                var serializedArgs = SerializeArgs(jsRuntime, syncResult);
                 var dispatchResult = new DotNetInvocationResult(serializedArgs);
                 jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
@@ -131,7 +131,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }
 
             var result = TaskGenericsUtil.GetTaskResult(task);
-            var serializedArgs = jsRuntime.SerializeArgs(result);
+            var serializedArgs = SerializeArgs(jsRuntime, result);
             jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(serializedArgs));
         }
 
@@ -200,7 +200,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             var suppliedArgs = new object?[parameterTypes.Length];
 
-            jsRuntime.ByteArraysToDeserialize = byteArrays;
+            jsRuntime.ByteArrayJsonConverter.ByteArraysToDeserialize = byteArrays;
 
             var index = 0;
             while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
@@ -227,7 +227,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
             }
 
-            jsRuntime.ByteArraysToDeserialize = null;
+            jsRuntime.ByteArrayJsonConverter.ByteArraysToDeserialize = null;
 
             return suppliedArgs;
 
@@ -298,6 +298,30 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 throw new JsonException("Invalid JSON");
             }
+        }
+
+        /// <summary>
+        /// Serialize the args to a json string, with the byte arrays
+        /// extracted out for seperate transmission.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
+        /// <param name="args">Arguments to be converted to json.</param>
+        /// <returns>
+        /// A tuple of the json string and an array containing the extracted
+        /// byte arrays from the args.
+        /// </returns>
+        internal static SerializedArgs SerializeArgs(JSRuntime jsRuntime, object? args)
+        {
+            if (jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Count != 0)
+            {
+                throw new JsonException("Unable to serialize arguments, previous serialization is incomplete.");
+            }
+
+            var serializedArgs = JsonSerializer.Serialize(args, jsRuntime.JsonSerializerOptions);
+            var byteArrays = jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.ToArray();
+            jsRuntime.ByteArrayJsonConverter.ByteArraysToSerialize.Clear();
+
+            return new(serializedArgs, byteArrays);
         }
 
         private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -9,19 +10,35 @@ namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class ByteArrayJsonConverter : JsonConverter<byte[]>
     {
+        private byte[][]? _byteArraysToDeserialize;
         internal static readonly JsonEncodedText ByteArrayRefKey = JsonEncodedText.Encode("__byte[]");
-        private readonly JSRuntime _jsRuntime;
 
-        public ByteArrayJsonConverter(JSRuntime jsRuntime)
+        /// <summary>
+        /// Contains the byte array(s) being serialized.
+        /// </summary>
+        internal readonly List<byte[]> ByteArraysToSerialize = new();
+
+        /// <summary>
+        /// Sets the byte array(s) being deserialized.
+        /// </summary>
+        internal byte[][]? ByteArraysToDeserialize
         {
-            _jsRuntime = jsRuntime;
+            set
+            {
+                if (_byteArraysToDeserialize is not null && value is not null)
+                {
+                    throw new JsonException("Unable to deserialize arguments, previous deserialization is incomplete.");
+                }
+
+                _byteArraysToDeserialize = value;
+            }
         }
 
         public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(byte[]);
 
         public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (_jsRuntime.ByteArraysToDeserialize is null)
+            if (_byteArraysToDeserialize is null)
             {
                 throw new JsonException("ByteArraysToDeserialize not set.");
             }
@@ -53,20 +70,20 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException($"Required property {ByteArrayRefKey} not found.");
             }
 
-            if (byteArrayIndex >= _jsRuntime.ByteArraysToDeserialize.Length || byteArrayIndex < 0)
+            if (byteArrayIndex >= _byteArraysToDeserialize.Length || byteArrayIndex < 0)
             {
                 throw new JsonException($"Byte array {byteArrayIndex} not found.");
             }
 
-            var value = _jsRuntime.ByteArraysToDeserialize[byteArrayIndex.Value];
+            var value = _byteArraysToDeserialize[byteArrayIndex.Value];
             return value;
         }
 
         public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
         {
-            var id = _jsRuntime.ByteArraysToSerialize.Count;
+            var id = ByteArraysToSerialize.Count;
 
-            _jsRuntime.ByteArraysToSerialize.Add(value);
+            ByteArraysToSerialize.Add(value);
 
             writer.WriteStartObject();
             writer.WriteNumber(ByteArrayRefKey, id);
