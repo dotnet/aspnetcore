@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.JSInterop
 {
     /// <summary>
-    /// Represents errors that occur during an interop call from .NET to JavaScript.
+    /// Represents errors that occur during an interop call from .NET to JavaScript when the JavaScript runtime becomes disconnected.
     /// </summary>
     public sealed class JSDisconnectedException : Exception
     {
