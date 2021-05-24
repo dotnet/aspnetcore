@@ -35,10 +35,9 @@ namespace Microsoft.JSInterop.Infrastructure
         /// </summary>
         /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
         /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
-        /// <param name="argsJson">A JSON representation of the parameters.</param>
-        /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
+        /// <param name="serializedArgs">The serialized args containing the JSON representation along with the extracted byte arrays.</param>
         /// <returns>A record containing the JSON representation of the return value, or null, along with the extracted byte arrays, or null.</returns>
-        public static SerializedArgs Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson, byte[][]? byteArrays)
+        public static SerializedArgs Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, SerializedArgs serializedArgs)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -51,7 +50,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
             }
 
-            var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, byteArrays);
+            var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, serializedArgs);
             if (syncResult == null)
             {
                 return new SerializedArgs(null, null);
@@ -65,9 +64,8 @@ namespace Microsoft.JSInterop.Infrastructure
         /// </summary>
         /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
         /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
-        /// <param name="argsJson">A JSON representation of the parameters.</param>
-        /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
-        public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, string argsJson, byte[][]? byteArrays)
+        /// <param name="serializedArgs">The serialized args containing the JSON representation along with the extracted byte arrays.</param>
+        public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, SerializedArgs serializedArgs)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -89,7 +87,7 @@ namespace Microsoft.JSInterop.Infrastructure
                     targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
                 }
 
-                syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, byteArrays);
+                syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, serializedArgs);
             }
             catch (Exception ex)
             {
@@ -114,9 +112,8 @@ namespace Microsoft.JSInterop.Infrastructure
             }
             else
             {
-
-                var serializedArgs = SerializeArgs(jsRuntime, syncResult);
-                var dispatchResult = new DotNetInvocationResult(serializedArgs);
+                var serializedReturnArgs = SerializeArgs(jsRuntime, syncResult);
+                var dispatchResult = new DotNetInvocationResult(serializedReturnArgs);
                 jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
         }
@@ -135,7 +132,7 @@ namespace Microsoft.JSInterop.Infrastructure
             jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(serializedArgs));
         }
 
-        private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, byte[][]? byteArrays)
+        private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, SerializedArgs serializedArgs)
         {
             var assemblyName = callInfo.AssemblyName;
             var methodIdentifier = callInfo.MethodIdentifier;
@@ -165,7 +162,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 (methodInfo, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
             }
 
-            var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, byteArrays, parameterTypes);
+            var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, serializedArgs, parameterTypes);
 
             try
             {
@@ -184,14 +181,14 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
-        internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, byte[][]? byteArrays, Type[] parameterTypes)
+        internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, SerializedArgs serializedArgs, Type[] parameterTypes)
         {
             if (parameterTypes.Length == 0)
             {
                 return Array.Empty<object>();
             }
 
-            var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
+            var utf8JsonBytes = Encoding.UTF8.GetBytes(serializedArgs.ArgsJson ?? string.Empty);
             var reader = new Utf8JsonReader(utf8JsonBytes);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
             {
@@ -200,7 +197,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             var suppliedArgs = new object?[parameterTypes.Length];
 
-            jsRuntime.ByteArrayJsonConverter.ByteArraysToDeserialize = byteArrays;
+            jsRuntime.ByteArrayJsonConverter.ByteArraysToDeserialize = serializedArgs.ByteArrays;
 
             var index = 0;
             while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
@@ -263,15 +260,14 @@ namespace Microsoft.JSInterop.Infrastructure
         /// passed in as parameters.
         /// </remarks>
         /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
-        /// <param name="arguments">The serialized arguments for the callback completion.</param>
-        /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
+        /// <param name="serializedArgs">The serialized args containing the JSON representation along with the extracted byte arrays.</param>
         /// <exception cref="Exception">
         /// This method can throw any exception either from the argument received or as a result
         /// of executing any callback synchronously upon completion.
         /// </exception>
-        public static void EndInvokeJS(JSRuntime jsRuntime, string arguments, byte[][]? byteArrays)
+        public static void EndInvokeJS(JSRuntime jsRuntime, SerializedArgs serializedArgs)
         {
-            var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
+            var utf8JsonBytes = Encoding.UTF8.GetBytes(serializedArgs.ArgsJson ?? string.Empty);
 
             // The payload that we're trying to parse is of the format
             // [ taskId: long, success: boolean, value: string? | object ]
@@ -292,7 +288,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var success = reader.GetBoolean();
 
             reader.Read();
-            jsRuntime.EndInvokeJS(taskId, success, ref reader, byteArrays);
+            jsRuntime.EndInvokeJS(taskId, success, ref reader, serializedArgs.ByteArrays);
 
             if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
             {

@@ -14,9 +14,9 @@ static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.WriteJSObj
 *REMOVED*Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.DotNetInvocationResult(object? result) -> void
 *REMOVED*Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.Result.get -> object?
 *REMOVED*static Microsoft.JSInterop.JSInProcessObjectReferenceExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessObjectReference! jsObjectReference, string! identifier, params object?[]! args) -> void
-static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime! jsRuntime, Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson, byte[]![]? byteArrays) -> void
-static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeJS(Microsoft.JSInterop.JSRuntime! jsRuntime, string! arguments, byte[]![]? byteArrays) -> void
-static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.Invoke(Microsoft.JSInterop.JSRuntime! jsRuntime, in Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson, byte[]![]? byteArrays) -> Microsoft.JSInterop.SerializedArgs
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime! jsRuntime, Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, Microsoft.JSInterop.SerializedArgs serializedArgs) -> void
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeJS(Microsoft.JSInterop.JSRuntime! jsRuntime, Microsoft.JSInterop.SerializedArgs serializedArgs) -> void
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.Invoke(Microsoft.JSInterop.JSRuntime! jsRuntime, in Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, Microsoft.JSInterop.SerializedArgs serializedArgs) -> Microsoft.JSInterop.SerializedArgs
 static Microsoft.JSInterop.JSInProcessObjectReferenceExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessObjectReference! jsObjectReference, string! identifier, params object?[]? args) -> void
 *REMOVED*static Microsoft.JSInterop.JSInProcessRuntimeExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessRuntime! jsRuntime, string! identifier, params object?[]! args) -> void
 static Microsoft.JSInterop.JSInProcessRuntimeExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessRuntime! jsRuntime, string! identifier, params object?[]? args) -> void

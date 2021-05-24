@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -195,7 +196,8 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays);
+            var serializedArgs = new SerializedArgs(argsJson, byteArrays);
+            _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, serializedArgs);
         }
 
         public async ValueTask EndInvokeJSFromDotNet(long callId, bool succeeded, string resultOrError, byte[][] byteArrays)
@@ -206,7 +208,8 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            _ = circuitHost.EndInvokeJSFromDotNet(callId, succeeded, resultOrError, byteArrays);
+            var serializedArgs = new SerializedArgs(resultOrError, byteArrays);
+            _ = circuitHost.EndInvokeJSFromDotNet(callId, succeeded, serializedArgs);
         }
 
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)
