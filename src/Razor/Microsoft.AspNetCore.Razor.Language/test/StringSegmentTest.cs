@@ -568,6 +568,60 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal(-1, result);
         }
 
+        [Fact]
+        public void IndexOfAny_ComputesIndex_RelativeToTheCurrentSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 10);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { ',' });
+
+            // Assert
+            Assert.Equal(4, result);
+        }
+
+        [Fact]
+        public void IndexOfAny_ReturnsMinusOne_IfElementNotInSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { ',' });
+
+            // Assert
+            Assert.Equal(-1, result);
+        }
+
+        [Fact]
+        public void IndexOfAny_SkipsANumberOfCaracters_IfStartIsProvided()
+        {
+            // Arrange
+            const string buffer = "Hello, World!, Hello people!";
+            var segment = new StringSegment(buffer, 3, buffer.Length - 3);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { '!' }, 15);
+
+            // Assert
+            Assert.Equal(buffer.Length - 4, result);
+        }
+
+        [Fact]
+        public void IndexOfAny_SearchOnlyInsideTheRange_IfStartAndCountAreProvided()
+        {
+            // Arrange
+            const string buffer = "Hello, World!, Hello people!";
+            var segment = new StringSegment(buffer, 3, buffer.Length - 3);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { '!' }, 15, 5);
+
+            // Assert
+            Assert.Equal(-1, result);
+        }
+
 
         [Fact]
         public void Value_DoesNotAllocateANewString_IfTheSegmentContainsTheWholeBuffer()

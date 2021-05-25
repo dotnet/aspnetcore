@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return null;
         }
 
-        public static bool SatisfiesBoundAttributeIndexer(string name, BoundAttributeDescriptor descriptor)
+        public static bool SatisfiesBoundAttributeIndexer(StringSegment name, BoundAttributeDescriptor descriptor)
         {
             return descriptor.IndexerNamePrefix != null &&
                 !SatisfiesBoundAttributeName(name, descriptor) &&
@@ -123,27 +123,51 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var satisfiesBoundAttributeName = SatisfiesBoundAttributeName(attributeName, parent);
                 var satisfiesBoundAttributeIndexer = SatisfiesBoundAttributeIndexer(attributeName, parent);
-                var matchesParameter = string.Equals(descriptor.Name, parameterName, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+                var matchesParameter = parameterName.Equals(descriptor.Name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
                 return (satisfiesBoundAttributeName || satisfiesBoundAttributeIndexer) && matchesParameter;
             }
 
             return false;
         }
 
-        public static bool TryGetBoundAttributeParameter(string fullAttributeName, out string boundAttributeName, out string parameterName)
+        public static bool TryGetBoundAttributeParameter(string fullAttributeName, out StringSegment boundAttributeName)
         {
-            boundAttributeName = null;
-            parameterName = null;
+            boundAttributeName = default;
 
-            if (!string.IsNullOrEmpty(fullAttributeName) && fullAttributeName.IndexOf(':') != -1)
+            if (string.IsNullOrEmpty(fullAttributeName))
             {
-                var segments = fullAttributeName.Split(new[] { ':' }, 2);
-                boundAttributeName = segments[0];
-                parameterName = segments[1];
-                return true;
+                return false;
             }
 
-            return false;
+            var index = fullAttributeName.IndexOf(':');
+            if (index == -1)
+            {
+                return false;
+            }
+
+            boundAttributeName = new StringSegment(fullAttributeName, 0, index);
+            return true;
+        }
+
+        public static bool TryGetBoundAttributeParameter(string fullAttributeName, out StringSegment boundAttributeName, out StringSegment parameterName)
+        {
+            boundAttributeName = default;
+            parameterName = default;
+
+            if (string.IsNullOrEmpty(fullAttributeName))
+            {
+                return false;
+            }
+
+            var index = fullAttributeName.IndexOf(':');
+            if (index == -1)
+            {
+                return false;
+            }
+
+            boundAttributeName = new StringSegment(fullAttributeName, 0 , index);
+            parameterName = new StringSegment(fullAttributeName, index + 1);
+            return true;
         }
 
         public static bool TryGetFirstBoundAttributeMatch(
@@ -194,9 +218,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             return false;
         }
 
-        private static bool SatisfiesBoundAttributeName(string name, BoundAttributeDescriptor descriptor)
+        private static bool SatisfiesBoundAttributeName(StringSegment name, BoundAttributeDescriptor descriptor)
         {
-            return string.Equals(descriptor.Name, name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            return name.Equals(descriptor.Name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         // Internal for testing
