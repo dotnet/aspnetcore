@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             negotiateSyncPoint.Continue();
 
                             // Assert that StartAsync was canceled
-                            await Assert.ThrowsAsync<OperationCanceledException>(() => startTask).DefaultTimeout();
+                            await Assert.ThrowsAsync<TaskCanceledException>(() => startTask).DefaultTimeout();
                         });
                 }
             }
