@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Http
         private readonly static Func<IFeatureCollection, IHttpWebSocketFeature?> _nullWebSocketFeature = f => null;
 
         private FeatureReferences<FeatureInterfaces> _features;
+        private readonly static WebSocketAcceptContext _defaultWebSocketAcceptContext = new WebSocketAcceptContext();
 
         public DefaultWebSocketManager(IFeatureCollection features)
         {
@@ -62,7 +63,9 @@ namespace Microsoft.AspNetCore.Http
 
         public override Task<WebSocket> AcceptWebSocketAsync(string? subProtocol)
         {
-            return AcceptWebSocketAsync(new WebSocketAcceptContext() { SubProtocol = subProtocol });
+            var acceptContext = subProtocol is null ? _defaultWebSocketAcceptContext :
+                new WebSocketAcceptContext() { SubProtocol = subProtocol };
+            return AcceptWebSocketAsync(acceptContext);
         }
 
         public override Task<WebSocket> AcceptWebSocketAsync(WebSocketAcceptContext acceptContext)
