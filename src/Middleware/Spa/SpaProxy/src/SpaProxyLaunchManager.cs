@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SpaProxy
 {
@@ -18,18 +19,19 @@ namespace Microsoft.AspNetCore.SpaProxy
     {
         private readonly SpaDevelopmentServerOptions _options;
         private readonly ILogger<SpaProxyLaunchManager> _logger;
+        private readonly SpaProxyStatus _status;
 
         private Process? _spaProcess;
         private bool _disposedValue;
 
-        public SpaProxyLaunchManager(ILogger<SpaProxyLaunchManager> logger)
+        public SpaProxyLaunchManager(
+            ILogger<SpaProxyLaunchManager> logger,
+            IOptions<SpaDevelopmentServerOptions> options,
+            SpaProxyStatus status)
         {
-            _options = new SpaDevelopmentServerOptions();
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "spa.proxy.json"))
-                .Build();
-            configuration.GetSection("SpaProxyServer").Bind(_options);
+            _options = options.Value;
             _logger = logger;
+            _status = status;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -49,7 +51,30 @@ namespace Microsoft.AspNetCore.SpaProxy
             else
             {
                 _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
-                await StartSpaProcessAndProbeForLiveness(httpClient, cancellationToken);
+
+                // We are not waiting for the SPA proxy to launch, instead we are going to rely on a piece of
+                // middleware to display an HTML document while the SPA proxy is not ready, refresh every three
+                // seconds and redirect to the SPA proxy url once it is ready.
+                // Being ready in this context means that we were able to receive a 200 from the proxy or that
+                // we gave up waiting.
+                // We do this to ensure Visual Studio can work correctly with IIS and when running without debugging.
+                _ = UpdateStatus(StartSpaProcessAndProbeForLiveness(httpClient, cancellationToken));
+            }
+
+            async Task UpdateStatus(Task launchTask)
+            {
+                try
+                {
+                    await launchTask;
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError(ex, "There was an error trying to launch the SPA proxy.");
+                }
+                finally
+                {
+                    _status.IsReady = true;
+                }
             }
         }
 
@@ -206,19 +231,6 @@ namespace Microsoft.AspNetCore.SpaProxy
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        private class SpaDevelopmentServerOptions
-        {
-            public string ServerUrl { get; set; } = "";
-
-            public string LaunchCommand { get; set; } = "";
-
-            public int MaxTimeoutInSeconds { get; set; }
-
-            public TimeSpan MaxTimeout => TimeSpan.FromSeconds(MaxTimeoutInSeconds);
-
-            public string WorkingDirectory { get; set; } = "";
         }
     }
 }
