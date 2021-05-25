@@ -251,7 +251,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                         continue;
                     }
 
-
                     _notFullyQualifiedComponents ??= new();
                     _notFullyQualifiedComponents.Add(tagHelper);
 
