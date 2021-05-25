@@ -15,9 +15,17 @@
 	<link href="HostedBlazorWebassemblyApp.Client.styles.css" rel="stylesheet" />
 </head>
 <body>
-	<button id="start" onclick="loadMe()" disabled>Click me to render the App component</button>
-	<button id="stop" onclick="unloadMe()" disabled>Remove app component</button>
-	<input id="increment" type="number" step="1" onchange="updateIncrementAmount()" placeholder="Update the increment amount" />
+	<div>
+		<button id="start" onclick="loadMe()" disabled>Click me to render the App component</button>
+	</div>
+	<div>
+		<button id="stop" onclick="unloadMe()" disabled>Remove app component</button>
+	</div>
+	<div>
+		<label for="increment">Counter increment amount</label>
+		<input id="increment" value="0" type="number" step="1" onchange="updateIncrementAmount()" placeholder="Update the increment amount" />
+	</div>
+	<div id="max-count-reached"></div>
 	<script src="_framework/blazor.webassembly.js" autostart="false"></script>
 	<script>
 		var proxies = [];
@@ -28,7 +36,7 @@
 			document.querySelector('body').appendChild(component);
 			document.querySelector('#stop').disabled = false;
 
-			component.addEventListener('MaxCountReached', (event) => { alert('Max count reached!') });
+			component.addEventListener('MaxCountReached', (event) => { document.querySelector('#max-count-reached').innerText = 'Max count reached!' });
 		}
 
 		async function unloadMe(){
