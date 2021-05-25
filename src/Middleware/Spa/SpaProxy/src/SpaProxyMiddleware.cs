@@ -4,9 +4,11 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
@@ -22,7 +24,54 @@ namespace Microsoft.AspNetCore.SpaProxy
     /// </summary>
     internal class SpaProxyMiddleware
     {
-        private const string SpaLaunchPage = @"
+        private readonly RequestDelegate _next;
+        private readonly SpaProxyLaunchManager _spaProxyLaunchManager;
+        private readonly IOptions<SpaDevelopmentServerOptions> _options;
+        private readonly IHostApplicationLifetime _hostLifetime;
+        private readonly ILogger<SpaProxyMiddleware> _logger;
+
+        public SpaProxyMiddleware(
+            RequestDelegate next,
+            SpaProxyLaunchManager spaProxyLaunchManager,
+            IOptions<SpaDevelopmentServerOptions> options,
+            IHostApplicationLifetime hostLifetime,
+            ILogger<SpaProxyMiddleware> logger)
+        {
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _spaProxyLaunchManager = spaProxyLaunchManager ?? throw new ArgumentNullException(nameof(spaProxyLaunchManager));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _hostLifetime = hostLifetime ?? throw new ArgumentNullException(nameof(hostLifetime));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+            if (context.Request.Path.Equals(new Uri(_options.Value.ServerUrl).LocalPath))
+            {
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
+                if (!await _spaProxyLaunchManager.IsSpaProxyRunning(context.RequestAborted))
+                {
+                    _spaProxyLaunchManager.StartInBackground(_hostLifetime.ApplicationStopping);
+                    _logger.LogInformation("SPA proxy is not ready. Returning temporary landing page.");
+                    context.Response.ContentType = "text/html";
+
+                    await using var writer = new StreamWriter(context.Response.Body, Encoding.UTF8);
+                    await writer.WriteAsync(GenerateSpaLaunchPage(_options.Value));
+                }
+                else
+                {
+                    _logger.LogInformation($"SPA proxy is ready. Redirecting to {_options.Value.ServerUrl}.");
+                    context.Response.Redirect(_options.Value.ServerUrl);
+                }
+            }
+            else
+            {
+                await _next(context);
+            }
+
+            string GenerateSpaLaunchPage(SpaDevelopmentServerOptions options)
+            {
+                return $@"
 <!DOCTYPE html>
 <html lang=""en"">
 <head>
@@ -34,56 +83,9 @@ namespace Microsoft.AspNetCore.SpaProxy
 </head>
 <body>
   <h1>Launching the SPA proxy...</h1>
-  <p>This page will automatically refresh in one second.</p>
+  <p>This page will automatically redirect to <a href=""{options.ServerUrl}"">{options.ServerUrl}</a> when the SPA proxy is ready.</p>
 </body>
 </html>";
-
-        private readonly RequestDelegate _next;
-        private readonly SpaProxyStatus _status;
-        private readonly IOptions<SpaDevelopmentServerOptions> _options;
-
-        public SpaProxyMiddleware(RequestDelegate next, SpaProxyStatus status, IOptions<SpaDevelopmentServerOptions> options)
-        {
-            if (next is null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            if (status is null)
-            {
-                throw new ArgumentNullException(nameof(status));
-            }
-
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            _next = next;
-            _status = status;
-            _options = options;
-        }
-
-        public async Task Invoke(HttpContext context)
-        {
-            var status = context.RequestServices.GetRequiredService<SpaProxyStatus>();
-            if (context.Request.Path.Equals(new Uri(_options.Value.ServerUrl).LocalPath))
-            {
-                if (!status.IsReady)
-                {
-                    context.Response.ContentType = "text/html";
-                    await using var writer = new StreamWriter(context.Response.Body, Encoding.UTF8);
-                    await writer.WriteAsync(SpaLaunchPage);
-                }
-                else
-                {
-                    context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
-                    context.Response.Redirect(_options.Value.ServerUrl);
-                }
-            }
-            else
-            {
-                await _next(context);
             }
         }
     }

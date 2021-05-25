@@ -1,64 +1,56 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SpaProxy
 {
-    internal class SpaProxyLaunchManager : IHostedService, IDisposable
+    internal class SpaProxyLaunchManager : IDisposable
     {
         private readonly SpaDevelopmentServerOptions _options;
         private readonly ILogger<SpaProxyLaunchManager> _logger;
-        private readonly SpaProxyStatus _status;
+        private readonly object _lock = new object();
 
         private Process? _spaProcess;
         private bool _disposedValue;
+        private Task? _launchTask;
 
         public SpaProxyLaunchManager(
             ILogger<SpaProxyLaunchManager> logger,
-            IOptions<SpaDevelopmentServerOptions> options,
-            SpaProxyStatus status)
+            IOptions<SpaDevelopmentServerOptions> options)
         {
             _options = options.Value;
             _logger = logger;
-            _status = status;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public void StartInBackground(CancellationToken cancellationToken)
         {
             var httpClient = new HttpClient(new HttpClientHandler()
             {
                 // It's ok for us to do this here since this service is only plugged in during development.
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
+            _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
 
-            _logger.LogInformation("Starting SPA development server");
-            var running = await ProbeSpaDevelopmentServerUrl(httpClient, cancellationToken);
-            if (running)
+            // We are not waiting for the SPA proxy to launch, instead we are going to rely on a piece of
+            // middleware to display an HTML document while the SPA proxy is not ready, refresh every three
+            // seconds and redirect to the SPA proxy url once it is ready.
+            // Being ready in this context means that we were able to receive a 200 from the proxy or that
+            // we gave up waiting.
+            // We do this to ensure Visual Studio can work correctly with IIS and when running without debugging.
+            lock (_lock)
             {
-                _logger.LogInformation($"Found SPA development server running at {_options.ServerUrl}");
-            }
-            else
-            {
-                _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
-
-                // We are not waiting for the SPA proxy to launch, instead we are going to rely on a piece of
-                // middleware to display an HTML document while the SPA proxy is not ready, refresh every three
-                // seconds and redirect to the SPA proxy url once it is ready.
-                // Being ready in this context means that we were able to receive a 200 from the proxy or that
-                // we gave up waiting.
-                // We do this to ensure Visual Studio can work correctly with IIS and when running without debugging.
-                _ = UpdateStatus(StartSpaProcessAndProbeForLiveness(httpClient, cancellationToken));
+                if (_launchTask == null)
+                {
+                    _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(httpClient, cancellationToken));
+                }
             }
 
             async Task UpdateStatus(Task launchTask)
@@ -67,14 +59,42 @@ namespace Microsoft.AspNetCore.SpaProxy
                 {
                     await launchTask;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, "There was an error trying to launch the SPA proxy.");
                 }
                 finally
                 {
-                    _status.IsReady = true;
+                    lock (_lock)
+                    {
+                        _launchTask = null;
+                    }
                 }
+            }
+        }
+
+        public async Task<bool> IsSpaProxyRunning(CancellationToken cancellationToken)
+        {
+            var httpClient = new HttpClient(new HttpClientHandler()
+            {
+                // It's ok for us to do this here since this service is only plugged in during development.
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+            try
+            {
+                var response = await httpClient.GetAsync(_options.ServerUrl, cancellationTokenSource.Token);
+                var running = response.IsSuccessStatusCode;
+                return running;
+            }
+            catch (Exception exception) when (exception is HttpRequestException ||
+                  exception is TaskCanceledException ||
+                  exception is OperationCanceledException)
+            {
+                _logger.LogDebug(exception, "Failed to connect to the SPA Development proxy.");
+                return false;
             }
         }
 

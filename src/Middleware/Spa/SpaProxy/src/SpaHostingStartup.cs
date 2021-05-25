@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -18,11 +19,15 @@ namespace Microsoft.AspNetCore.SpaProxy
         {
             builder.ConfigureServices(services =>
             {
-                if (File.Exists(Path.Combine(AppContext.BaseDirectory, "spa.proxy.json")))
+                var spaProxyConfigFile = Path.Combine(AppContext.BaseDirectory, "spa.proxy.json");
+                if (File.Exists(spaProxyConfigFile))
                 {
-                    services.AddHostedService<SpaProxyLaunchManager>();
-                    services.AddSingleton<SpaProxyStatus>();
-                    services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<SpaDevelopmentServerOptions>, ConfigureSpaDevelopmentServerOptions>());
+                    var configuration = new ConfigurationBuilder()
+                        .AddJsonFile(spaProxyConfigFile)
+                        .Build();
+
+                    services.AddSingleton<SpaProxyLaunchManager>();
+                    services.Configure<SpaDevelopmentServerOptions>(configuration.GetSection("SpaProxyServer"));
                     services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, SpaProxyStartupFilter>());
                 }
             });
