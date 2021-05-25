@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpSysRequestInfoFeature), _identityFunc },
             { typeof(IHttpResponseTrailersFeature), ctx => ctx.GetResponseTrailersFeature() },
             { typeof(IHttpResetFeature), ctx => ctx.GetResetFeature() },
-            { typeof(IHttpActivityFeature), _identityFunc },
         };
 
         private readonly RequestContext _featureContext;

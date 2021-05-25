@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IHttpMaxRequestBodySizeFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature);
         private static readonly Type IHttpResponseTrailersFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature);
         private static readonly Type IHttpResetFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
-        private static readonly Type IHttpActivityFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpActivityFeature);
 
         private object? _currentIHttpRequestFeature;
         private object? _currentIHttpRequestBodyDetectionFeature;
@@ -55,7 +54,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private object? _currentIHttpMaxRequestBodySizeFeature;
         private object? _currentIHttpResponseTrailersFeature;
         private object? _currentIHttpResetFeature;
-        private object? _currentIHttpActivityFeature;
 
         private void Initialize()
         {
@@ -74,7 +72,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _currentITlsConnectionFeature = this;
             _currentIHttpResponseTrailersFeature = GetResponseTrailersFeature();
             _currentIHttpResetFeature = GetResetFeature();
-            _currentIHttpActivityFeature = this;
         }
 
         internal object? FastFeatureGet(Type key)
@@ -170,10 +167,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpResetFeature)
             {
                 return _currentIHttpResetFeature;
-            }
-            if (key == IHttpActivityFeature)
-            {
-                return _currentIHttpActivityFeature;
             }
 
             return ExtraFeatureGet(key);
@@ -290,10 +283,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 _currentIHttpResetFeature = feature;
             }
-            if (key == IHttpActivityFeature)
-            {
-                _currentIHttpActivityFeature = feature;
-            }
             if (key == IISHttpContextType)
             {
                 throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
@@ -390,10 +379,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIHttpResetFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResetFeature);
-            }
-            if (_currentIHttpActivityFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IHttpActivityFeature, _currentIHttpActivityFeature);
             }
 
             if (MaybeExtra != null)

@@ -56,16 +56,19 @@ namespace Microsoft.AspNetCore.Hosting
 
             if (loggingEnabled || diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners())
             {
-                context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
+                context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener)!;
                 context.HasDiagnosticListener = hasDiagnosticListener;
 
-                if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
+                if (context.Activity is not null)
                 {
-                    feature.Activity = context.Activity;
-                }
-                else
-                {
-                    httpContext.Features.Set<IHttpActivityFeature>(new ActivityFeature() { Activity = context.Activity });
+                    if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
+                    {
+                        feature.Activity = context.Activity;
+                    }
+                    else
+                    {
+                        httpContext.Features.Set(context.HttpActivityFeature);
+                    }
                 }
             }
 
@@ -148,7 +151,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var activity = context.Activity;
             // Always stop activity if it was started
-            if (activity != null)
+            if (activity is not null)
             {
                 StopActivity(httpContext, activity, context.HasDiagnosticListener);
             }
