@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         private readonly WebAssemblyRenderer _renderer;
         private readonly int _componentId;
 
-        private bool _disposed = false;
+        private bool _disposed;
         private DynamicComponentParameterDeserializer? _deserializer;
 
         public ComponentProxy(WebAssemblyRenderer renderer, string selector, int componentId)
