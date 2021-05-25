@@ -306,21 +306,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return state.SetDirectParameters(parameters);
         }
 
-        /// <remarks>
-        /// Intentionally authored as a separate method call so we can trim this code.
-        /// </remarks>
-        private void CaptureRootComponentForHotReload(ParameterView initialParameters, ComponentState componentState)
-        {
-            if (_hotReloadEnvironment?.IsHotReloadEnabled ?? false)
-            {
-                // when we're doing hot-reload, stash away the parameters used while rendering root components.
-                // We'll use this to trigger re-renders on hot reload updates.
-                _rootComponents ??= new();
-                _rootComponents.Add((componentState, initialParameters.Clone()));
-            }
-        }
-
-
         /// <summary>
         /// Allows derived types to handle exceptions during rendering. Defaults to rethrowing the original exception.
         /// </summary>
