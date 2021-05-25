@@ -234,6 +234,14 @@ Microsoft.AspNetCore.Http.Features.FeatureCollection.IsReadOnly.get -> bool (for
 Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature? instance) -> void (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].get -> object? (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].set -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.DangerousEnableCompression.get -> bool
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.DangerousEnableCompression.set -> void
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.DisableServerContextTakeover.get -> bool
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.DisableServerContextTakeover.set -> void
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.ServerMaxWindowBits.get -> int
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.ServerMaxWindowBits.set -> void
 virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int (forwarded, contained in Microsoft.Extensions.Features)
+virtual Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveInterval.get -> System.TimeSpan?
+virtual Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveInterval.set -> void
 ~Microsoft.AspNetCore.Http.Features.FeatureReference<> (forwarded, contained in Microsoft.Extensions.Features)
 ~Microsoft.AspNetCore.Http.Features.FeatureReferences<> (forwarded, contained in Microsoft.Extensions.Features)

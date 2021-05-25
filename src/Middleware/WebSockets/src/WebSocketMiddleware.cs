@@ -135,24 +135,27 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
 
                 string? subProtocol = null;
-                if (acceptContext != null)
-                {
-                    subProtocol = acceptContext.SubProtocol;
-                }
-
-                TimeSpan keepAliveInterval = _options.KeepAliveInterval;
                 bool enableCompression = false;
                 bool serverContextTakeover = true;
                 int serverMaxWindowBits = 15;
+                TimeSpan keepAliveInterval = _options.KeepAliveInterval;
+                if (acceptContext != null)
+                {
+                    subProtocol = acceptContext.SubProtocol;
+                    enableCompression = acceptContext.DangerousEnableCompression;
+                    serverContextTakeover = !acceptContext.DisableServerContextTakeover;
+                    serverMaxWindowBits = acceptContext.ServerMaxWindowBits;
+                    keepAliveInterval = acceptContext.KeepAliveInterval ?? keepAliveInterval;
+                }
+
+#pragma warning disable CS0618 // Type or member is obsolete
                 if (acceptContext is ExtendedWebSocketAcceptContext advancedAcceptContext)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     if (advancedAcceptContext.KeepAliveInterval.HasValue)
                     {
                         keepAliveInterval = advancedAcceptContext.KeepAliveInterval.Value;
                     }
-                    enableCompression = advancedAcceptContext.DangerousEnableCompression;
-                    serverContextTakeover = !advancedAcceptContext.DisableServerContextTakeover;
-                    serverMaxWindowBits = advancedAcceptContext.ServerMaxWindowBits;
                 }
 
                 string key = _context.Request.Headers.SecWebSocketKey;

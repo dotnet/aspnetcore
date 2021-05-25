@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
-                var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync(new WebSocketAcceptContext()
                 {
                     DangerousEnableCompression = true,
                     DisableServerContextTakeover = true
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
-                var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync(new WebSocketAcceptContext()
                 {
                     DangerousEnableCompression = true,
                     ServerMaxWindowBits = 13
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
-                using var webSocket = await context.WebSockets.AcceptWebSocketAsync(new ExtendedWebSocketAcceptContext()
+                using var webSocket = await context.WebSockets.AcceptWebSocketAsync(new WebSocketAcceptContext()
                 {
                     DangerousEnableCompression = true,
                     ServerMaxWindowBits = 13
