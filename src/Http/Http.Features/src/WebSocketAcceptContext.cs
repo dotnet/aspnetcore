@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http
         /// <value>
         /// false
         /// </value>
-        public bool DisableServerContextTakeover { get; set; } = false;
+        public bool DisableServerContextTakeover { get; set; }
 
         /// <summary>
         /// Sets the maximum base-2 logarithm of the LZ77 sliding window size that can be used for compression.
