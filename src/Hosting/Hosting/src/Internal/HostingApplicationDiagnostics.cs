@@ -59,11 +59,11 @@ namespace Microsoft.AspNetCore.Hosting
                 context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener)!;
                 context.HasDiagnosticListener = hasDiagnosticListener;
 
-                if (context.Activity is not null)
+                if (context.Activity is Activity activity)
                 {
                     if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
                     {
-                        feature.Activity = context.Activity;
+                        feature.Activity = activity;
                     }
                     else
                     {
