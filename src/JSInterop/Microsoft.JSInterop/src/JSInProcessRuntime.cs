@@ -29,7 +29,9 @@ namespace Microsoft.JSInterop
                 return default!;
             }
 
-            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions)!;
+            var result = JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions)!;
+            ResetByteArraysToBeRevived();
+            return result;
         }
 
         /// <summary>

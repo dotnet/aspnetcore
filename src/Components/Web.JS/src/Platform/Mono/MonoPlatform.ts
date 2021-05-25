@@ -485,6 +485,7 @@ function attachInteropInvoker(): void {
   const dotNetDispatcherInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'InvokeDotNet');
   const dotNetDispatcherBeginInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'BeginInvokeDotNet');
   const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'EndInvokeJS');
+  const dotNetDispatcherSupplyByteArrayMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'SupplyByteArray');
 
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
@@ -506,9 +507,10 @@ function attachInteropInvoker(): void {
       );
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
-      dotNetDispatcherEndInvokeJSMethodHandle(
-        serializedArgs
-      );
+      dotNetDispatcherEndInvokeJSMethodHandle(serializedArgs);
+    },
+    supplyByteArray: (id: number, data: Uint8Array): void => {
+      dotNetDispatcherSupplyByteArrayMethodHandle(id, data);
     },
     invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
       assertHeapIsNotLocked();

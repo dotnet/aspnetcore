@@ -7,6 +7,7 @@ static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.WriteJSObj
 *REMOVED*Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.DotNetInvocationResult(object? result) -> void
 *REMOVED*Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.Result.get -> object?
 *REMOVED*static Microsoft.JSInterop.JSInProcessObjectReferenceExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessObjectReference! jsObjectReference, string! identifier, params object?[]! args) -> void
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.SupplyByteArray(Microsoft.JSInterop.JSRuntime! jsRuntime, long id, byte[]! data) -> void
 static Microsoft.JSInterop.JSInProcessObjectReferenceExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessObjectReference! jsObjectReference, string! identifier, params object?[]? args) -> void
 *REMOVED*static Microsoft.JSInterop.JSInProcessRuntimeExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessRuntime! jsRuntime, string! identifier, params object?[]! args) -> void
 static Microsoft.JSInterop.JSInProcessRuntimeExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessRuntime! jsRuntime, string! identifier, params object?[]? args) -> void
@@ -28,3 +29,4 @@ static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JS
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object?[]? args) -> System.Threading.Tasks.ValueTask
 *REMOVED*static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object?[]? args) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.JSInterop.JSRuntime.SupplyByteArray(long id, byte[]! data) -> void

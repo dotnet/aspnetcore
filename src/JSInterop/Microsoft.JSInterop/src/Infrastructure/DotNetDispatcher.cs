@@ -222,6 +222,8 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
             }
 
+            jsRuntime.ResetByteArraysToBeRevived();
+
             return suppliedArgs;
 
             // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
@@ -290,6 +292,32 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 throw new JsonException("Invalid JSON");
             }
+        }
+
+        /// <summary>
+        /// Accepts the byte array data being transferred from JS to DotNet.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
+        /// <param name="id">Identifier for the byte array being transfered.</param>
+        /// <param name="data">Byte array to be transfered from JS.</param>
+        public static void SupplyByteArray(JSRuntime jsRuntime, long id, byte[] data)
+        {
+            if (id == 0)
+            {
+                // Starting a new transfer, clear out previously stored byte arrays
+                jsRuntime.ResetByteArraysToBeRevived();
+            }
+            else if (id != (jsRuntime.ByteArraysToBeRevived.Count + 1))
+            {
+                throw new ArgumentOutOfRangeException($"Element id '${id}' cannot be added to the byte arrays to be revived with length '${jsRuntime.ByteArraysToBeRevived.Count}'.");
+            }
+            else if (data.Length + jsRuntime.ByteArraysToBeRevivedByteLength > (31*1024)) // TODO; get this limit from SignalR somehow?
+            {
+                throw new ArgumentOutOfRangeException("Exceeded the maximum byte array transfer limit for a call.");
+            }
+
+            jsRuntime.ByteArraysToBeRevived.Append(data);
+            jsRuntime.ByteArraysToBeRevivedByteLength += data.Length;
         }
 
         private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)

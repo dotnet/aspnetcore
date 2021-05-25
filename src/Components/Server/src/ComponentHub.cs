@@ -209,6 +209,17 @@ namespace Microsoft.AspNetCore.Components.Server
             _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
         }
 
+        public async ValueTask SupplyByteArray(long id, byte[] data)
+        {
+            var circuitHost = await GetActiveCircuitAsync();
+            if (circuitHost == null)
+            {
+                return;
+            }
+
+            _ = circuitHost.SupplyByteArray(id, data);
+        }
+
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)
         {
             var circuitHost = await GetActiveCircuitAsync();

@@ -20,10 +20,12 @@ namespace Microsoft.JSInterop
     {
         private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
-        private readonly ConcurrentDictionary<long, object> _pendingTasks = new ConcurrentDictionary<long, object>();
-        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectReference>();
-        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations =
-            new ConcurrentDictionary<long, CancellationTokenRegistration>();
+        private readonly ConcurrentDictionary<long, object> _pendingTasks = new();
+        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
+        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
+
+        internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
+        internal int ByteArraysToBeRevivedByteLength;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JSRuntime"/>.
@@ -39,6 +41,7 @@ namespace Microsoft.JSInterop
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
                     new JSObjectReferenceJsonConverter(this),
+                    new ByteArrayJsonConverter(this)
                 }
             };
         }
@@ -174,6 +177,16 @@ namespace Microsoft.JSInterop
             DotNetInvocationInfo invocationInfo,
             in DotNetInvocationResult invocationResult);
 
+        /// <summary>
+        /// Invoked by JS 
+        /// </summary>
+        /// <param name="id">Atomically incrementing identifier for the byte array being transfered.</param>
+        /// <param name="data">Byte array to be transfered to JS.</param>
+        protected internal virtual void SupplyByteArray(long id, byte[] data)
+        {
+            throw new NotSupportedException("JSRuntime subclasses are responsible for implementing byte array transfer to JS.");
+        }
+
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
         internal void EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
         {
@@ -193,6 +206,7 @@ namespace Microsoft.JSInterop
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
                     var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
+                    ResetByteArraysToBeRevived();
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }
                 else
@@ -206,6 +220,12 @@ namespace Microsoft.JSInterop
                 var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
                 TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
             }
+        }
+
+        internal void ResetByteArraysToBeRevived()
+        {
+            ByteArraysToBeRevived.Clear();
+            ByteArraysToBeRevivedByteLength = 0;
         }
 
         internal long TrackObjectReference<TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class

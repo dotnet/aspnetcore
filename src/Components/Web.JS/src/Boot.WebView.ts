@@ -4,7 +4,7 @@ import { shouldAutoStart } from './BootCommon';
 import { internalFunctions as navigationManagerFunctions } from './Services/NavigationManager';
 import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
-import { sendBrowserEvent, sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
+import { sendBrowserEvent, sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendSupplyByteArray, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
 import { InputFile } from './InputFile';
 
 let started = false;
@@ -20,6 +20,7 @@ async function boot(): Promise<void> {
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: sendBeginInvokeDotNetFromJS,
     endInvokeJSFromDotNet: sendEndInvokeJSFromDotNet,
+    supplyByteArray: sendSupplyByteArray,
   });
 
   Blazor._internal.InputFile = InputFile;

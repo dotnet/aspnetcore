@@ -74,6 +74,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        protected override void SupplyByteArray(long id, byte[] data)
+        {
+            _clientProxy.SendAsync("JS.SupplyByteArray", id, data);
+        }
+
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             if (_clientProxy is null)
