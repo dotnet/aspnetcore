@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             if (loggingEnabled || diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners())
             {
-                context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener)!;
+                context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
                 context.HasDiagnosticListener = hasDiagnosticListener;
 
                 if (context.Activity is Activity activity)
