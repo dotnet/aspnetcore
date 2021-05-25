@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Internal
 {
     internal class ProcessEx : IDisposable
     {
-        private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromHours(5);
         private static readonly string NUGET_PACKAGES = GetNugetPackagesRestorePath();
 
         private readonly ITestOutputHelper _output;
