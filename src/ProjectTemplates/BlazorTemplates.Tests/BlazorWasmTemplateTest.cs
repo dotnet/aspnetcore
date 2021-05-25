@@ -227,7 +227,7 @@ namespace Templates.Test
         [InlineData(BrowserKind.Chromium)]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30700")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
             => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
 
@@ -235,7 +235,7 @@ namespace Templates.Test
         // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
         [Theory]
         [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
             => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
@@ -419,7 +419,7 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(TemplateData))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30880")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30851")]
         public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
             => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
 
