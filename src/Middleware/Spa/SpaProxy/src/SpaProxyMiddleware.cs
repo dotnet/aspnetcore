@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.SpaProxy
 </head>
 <body>
   <h1>Launching the SPA proxy...</h1>
-  <p>This page will automatically redirect to <a href=""{options.ServerUrl}"">{options.ServerUrl}</a> when the SPA proxy is ready.</p>
+  <p>This page will automatically redirect to <a href=""{options.ServerUrl}"">{HtmlEncoder.Default.Encode(options.ServerUrl)}</a> when the SPA proxy is ready.</p>
 </body>
 </html>";
             }

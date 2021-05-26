@@ -15,12 +15,7 @@ namespace Microsoft.AspNetCore.SpaProxy
         {
             return builder =>
             {
-                var env = builder.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
-                if (env.IsDevelopment())
-                {
-                    builder.UseMiddleware<SpaProxyMiddleware>();
-                }
-
+                builder.UseMiddleware<SpaProxyMiddleware>();
                 next(builder);
             };
         }
