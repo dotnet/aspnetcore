@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Builder
         /// It is not necessary to call this if <see cref="AutoUpdate"/> is <see langword="true"/>.
         /// </summary>
         [MemberNotNull(nameof(_configurationRoot))]
-        public void Update()
+        internal void Update()
         {
             var newConfiguration = BuildConfigurationRoot();
             var prevConfiguration = _configurationRoot;
