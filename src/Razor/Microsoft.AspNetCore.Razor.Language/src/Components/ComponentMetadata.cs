@@ -29,11 +29,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static bool IsMangledClass(StringSegment className)
         {
-            if (StringSegment.IsNullOrEmpty(className))
-            {
-                return false;
-            }
-
             return className.StartsWith(MangledClassNamePrefix, StringComparison.Ordinal);
         }
 
