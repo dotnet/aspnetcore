@@ -384,38 +384,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32479")]
-        public async Task Server_SetConnectionLimitChangeAfterStarted_Success()
-        {
-            HttpSysOptions options = null;
-            using (Utilities.CreateDynamicHost(out var address, opt =>
-            {
-                options = opt;
-                Assert.Null(options.MaxConnections);
-                options.MaxConnections = 3;
-            }, httpContext => Task.FromResult(0)))
-            {
-                using (var client1 = await SendHungRequestAsync("GET", address))
-                using (var client2 = await SendHungRequestAsync("GET", address))
-                using (var client3 = await SendHungRequestAsync("GET", address))
-                {
-                    // Maxed out, refuses connection and throws
-                    await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-
-                    options.MaxConnections = 4;
-
-                    string responseText = await SendRequestAsync(address);
-                    Assert.Equal(string.Empty, responseText);
-
-                    options.MaxConnections = 2;
-
-                    // Maxed out, refuses connection and throws
-                    await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                }
-            }
-        }
-
-        [ConditionalFact]
         public async Task Server_SetConnectionLimitInfinite_Success()
         {
             using (Utilities.CreateDynamicHost(out var address, options =>

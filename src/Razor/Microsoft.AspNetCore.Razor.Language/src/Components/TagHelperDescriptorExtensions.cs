@@ -100,9 +100,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static bool IsChildContentTagHelper(this TagHelperDescriptor tagHelper)
         {
-            return
-                tagHelper.Metadata.TryGetValue(ComponentMetadata.SpecialKindKey, out var value) &&
-                string.Equals(value, ComponentMetadata.ChildContent.TagHelperKind, StringComparison.Ordinal);
+            if (tagHelper.IsChildContentTagHelperCache is bool value)
+            {
+                return value;
+            }
+
+            value = tagHelper.Metadata.TryGetValue(ComponentMetadata.SpecialKindKey, out var specialKey) &&
+                string.Equals(specialKey, ComponentMetadata.ChildContent.TagHelperKind, StringComparison.Ordinal);
+
+            tagHelper.IsChildContentTagHelperCache = value;
+            return value;
         }
 
         public static bool IsComponentTagHelper(this TagHelperDescriptor tagHelper)
@@ -146,9 +153,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/>.</param>
         public static bool IsComponentFullyQualifiedNameMatch(this TagHelperDescriptor tagHelper)
         {
-            return
-                tagHelper.Metadata.TryGetValue(ComponentMetadata.Component.NameMatchKey, out var matchType) &&
+            if (tagHelper.IsComponentFullyQualifiedNameMatchCache is bool value)
+            {
+                return value;
+            }
+
+            value = tagHelper.Metadata.TryGetValue(ComponentMetadata.Component.NameMatchKey, out var matchType) &&
                 string.Equals(ComponentMetadata.Component.FullyQualifiedNameMatch, matchType);
+            tagHelper.IsComponentFullyQualifiedNameMatchCache = value;
+            return value;
         }
 
         public static string GetEventArgsType(this TagHelperDescriptor tagHelper)
