@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return true;
                 }
 
-                return new StringSegment(descriptor.Name).StartsWith(new StringSegment(typePattern, 0, typePattern.Length - 1), StringComparison.Ordinal);
+               return new StringSegment(descriptor.Name).StartsWith(new StringSegment(typePattern, 0, typePattern.Length - 1), StringComparison.Ordinal);
             }
 
             return string.Equals(descriptor.Name, typePattern, StringComparison.Ordinal);
