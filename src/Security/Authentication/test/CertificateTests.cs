@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813")]
+        [OSSkipCondition(OperatingSystems.Linux)]
         public async Task VerifyNotYetValidSelfSignedFails()
         {
             var server = CreateServer(
