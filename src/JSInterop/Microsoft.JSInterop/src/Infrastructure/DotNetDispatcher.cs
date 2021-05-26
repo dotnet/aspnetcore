@@ -203,12 +203,15 @@ namespace Microsoft.JSInterop.Infrastructure
                 var parameterType = parameterTypes[index];
                 if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
                 {
+                    jsRuntime.ResetByteArraysToBeRevived();
                     throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
                 }
 
                 suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, jsRuntime.JsonSerializerOptions);
                 index++;
             }
+
+            jsRuntime.ResetByteArraysToBeRevived();
 
             if (index < parameterTypes.Length)
             {
@@ -221,8 +224,6 @@ namespace Microsoft.JSInterop.Infrastructure
                 // Either we received more parameters than we expected or the JSON is malformed.
                 throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
             }
-
-            jsRuntime.ResetByteArraysToBeRevived();
 
             return suppliedArgs;
 
@@ -309,9 +310,9 @@ namespace Microsoft.JSInterop.Infrastructure
             }
             else if (id != (jsRuntime.ByteArraysToBeRevived.Count + 1))
             {
-                throw new ArgumentOutOfRangeException($"Element id '${id}' cannot be added to the byte arrays to be revived with length '${jsRuntime.ByteArraysToBeRevived.Count}'.");
+                throw new ArgumentOutOfRangeException($"Element id '{id}' cannot be added to the byte arrays to be revived with length '{jsRuntime.ByteArraysToBeRevived.Count}'.");
             }
-            else if (data.Length + jsRuntime.ByteArraysToBeRevivedByteLength > (31*1024)) // TODO; get this limit from SignalR somehow?
+            else if ((31 * 1024) - data.Length < jsRuntime.ByteArraysToBeRevivedByteLength) // TODO; get this limit from SignalR somehow?
             {
                 throw new ArgumentOutOfRangeException("Exceeded the maximum byte array transfer limit for a call.");
             }

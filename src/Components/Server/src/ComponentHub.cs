@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            _ = circuitHost.SupplyByteArray(id, data);
+            await circuitHost.SupplyByteArray(id, data);
         }
 
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)

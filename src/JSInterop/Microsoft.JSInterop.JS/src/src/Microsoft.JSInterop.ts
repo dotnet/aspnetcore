@@ -349,7 +349,7 @@ export module DotNet {
      * @param success A flag to indicate whether the operation completed successfully.
      * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
      */
-     endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void => {
+    endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void => {
       const resultOrError = success
         ? parseJsonWithRevivers(resultJsonOrExceptionMessage)
         : new Error(resultJsonOrExceptionMessage);
@@ -361,9 +361,9 @@ export module DotNet {
      * @param id The identifier for the byte array used during revival.
      * @param data The byte array being transferred for eventual revival.
      */
-     supplyByteArray: (id: number, data: Uint8Array): void => {
+    supplyByteArray: (id: number, data: Uint8Array): void => {
       byteArraysToBeRevived.set(id, data);
-     }
+    }
   }
 
   function formatError(error: any): string {

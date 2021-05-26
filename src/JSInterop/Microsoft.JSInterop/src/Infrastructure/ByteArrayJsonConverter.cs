@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class ByteArrayJsonConverter : JsonConverter<byte[]>
     {
-        /// Atomically incrementing unique identifier for serializing byte arrays.
+        // Atomically incrementing unique identifier for serializing byte arrays.
         private static long _byteArrayId;
 
         internal static readonly JsonEncodedText ByteArrayRefKey = JsonEncodedText.Encode("__byte[]");
@@ -23,8 +23,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public JSRuntime JSRuntime { get; }
 
-        public override bool CanConvert(Type typeToConvert) =>
-            typeToConvert == typeof(byte[]) || typeToConvert == typeof(ReadOnlySequence<byte>);
+        public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(byte[]);
 
         public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -74,7 +73,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // We must copy over the byte array to ensure the data is preserved after we
             // clear the JSRuntime.ByteArraysToBeRevived buffer.
             var result = new byte[byteArray.Length];
-            Array.Copy(byteArray, result, byteArray.Length);
+            byteArray.AsSpan().CopyTo(result);
             return result;
         }
 
