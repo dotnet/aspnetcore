@@ -1,4 +1,4 @@
-// Pending API review
+// Pending aspnetcore API review
 
 using System.Threading.Tasks;
 
@@ -11,10 +11,10 @@ namespace System.Threading.ResourceLimits
         public abstract long EstimatedCount(TKey resourceID);
 
         // Fast synchronous attempt to acquire resources
-        public abstract Resource Acquire(TKey resourceID, long requestedCount);
+        public abstract ResourceLease Acquire(TKey resourceID, long requestedCount);
 
         // Wait until the requested resources are available
         // If unsuccessful, throw
-        public abstract ValueTask<Resource> AcquireAsync(TKey resourceID, long requestedCount, CancellationToken cancellationToken = default);
+        public abstract ValueTask<ResourceLease> WaitAsync(TKey resourceID, long requestedCount, CancellationToken cancellationToken = default);
     }
 }

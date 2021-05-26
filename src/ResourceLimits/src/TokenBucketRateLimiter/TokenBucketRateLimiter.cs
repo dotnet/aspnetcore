@@ -1,12 +1,12 @@
-// Pending API review
+// Will be migrated to dotnet/runtime
+// Pending dotnet API review
 
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace System.Threading.ResourceLimits
 {
-    public class ConcurrencyLimiter : ResourceLimiter
+    public class TokenBucketRateLimiter : ResourceLimiter
     {
         private long _resourceCount;
         private readonly long _maxResourceCount;
@@ -16,18 +16,18 @@ namespace System.Threading.ResourceLimits
         // an inaccurate view of resources
         public override long EstimatedCount => Interlocked.Read(ref _resourceCount);
 
-        public ConcurrencyLimiter(long resourceCount)
+        public TokenBucketRateLimiter(long resourceCount)
         {
             _resourceCount = resourceCount;
             _maxResourceCount = resourceCount;
         }
 
         // Fast synchronous attempt to acquire resources
-        public override Resource Acquire(long requestedCount)
+        public override ResourceLease Acquire(long requestedCount)
         {
             if (requestedCount < 0 || requestedCount > _maxResourceCount)
             {
-                return Resource.FailNoopResource;
+                return ResourceLease.FailNoopResource;
             }
 
             if (requestedCount == 0)
@@ -42,7 +42,7 @@ namespace System.Threading.ResourceLimits
                     if (EstimatedCount >= requestedCount)
                     {
                         Interlocked.Add(ref _resourceCount, -requestedCount);
-                        return new Resource(
+                        return new ResourceLease(
                             isAcquired: true,
                             state: null,
                             onDispose: resource => Release(requestedCount));
@@ -50,11 +50,11 @@ namespace System.Threading.ResourceLimits
                 }
             }
 
-            return Resource.FailNoopResource;
+            return ResourceLease.FailNoopResource;
         }
 
         // Wait until the requested resources are available
-        public override ValueTask<Resource> AcquireAsync(long requestedCount, CancellationToken cancellationToken = default)
+        public override ValueTask<ResourceLease> AcquireAsync(long requestedCount, CancellationToken cancellationToken = default)
         {
             if (requestedCount < 0 || requestedCount > _maxResourceCount)
             {
@@ -68,7 +68,7 @@ namespace System.Threading.ResourceLimits
                     if (EstimatedCount >= requestedCount)
                     {
                         Interlocked.Add(ref _resourceCount, -requestedCount);
-                        return ValueTask.FromResult(new Resource(
+                        return ValueTask.FromResult(new ResourceLease(
                             isAcquired: true,
                             state: null,
                             onDispose: resource => Release(requestedCount)));
@@ -80,7 +80,7 @@ namespace System.Threading.ResourceLimits
             _queue.Enqueue(registration);
 
             // handle cancellation
-            return new ValueTask<Resource>(registration.TCS.Task);
+            return new ValueTask<ResourceLease>(registration.TCS.Task);
         }
 
         private void Release(long releaseCount)
@@ -98,7 +98,7 @@ namespace System.Threading.ResourceLimits
                         _queue.TryDequeue(out var requestToFulfill);
 
                         // requestToFulfill == request
-                        requestToFulfill!.TCS.SetResult(new Resource(
+                        requestToFulfill!.TCS.SetResult(new ResourceLease(
                             isAcquired: true,
                             state: null,
                             onDispose: resource => Release(request.Count)));
@@ -117,12 +117,12 @@ namespace System.Threading.ResourceLimits
             {
                 Count = count;
                 // Use VoidAsyncOperationWithData<T> instead
-                TCS = new TaskCompletionSource<Resource>();
+                TCS = new TaskCompletionSource<ResourceLease>();
             }
 
             public long Count { get; }
 
-            public TaskCompletionSource<Resource> TCS { get; }
+            public TaskCompletionSource<ResourceLease> TCS { get; }
         }
     }
 }
