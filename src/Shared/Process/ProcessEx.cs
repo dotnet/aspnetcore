@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Internal
             // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
             // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
             // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.
-            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
+            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {timeout}.";
 
             _processTimeoutCts = new CancellationTokenSource(timeout);
             _processTimeoutCts.Token.Register(() =>
