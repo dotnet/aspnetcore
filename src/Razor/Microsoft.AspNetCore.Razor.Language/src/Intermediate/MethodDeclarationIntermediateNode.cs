@@ -46,11 +46,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             for (var i = 0; i <parameter.Modifiers.Count; i++)
             {
                 builder.Append(parameter.Modifiers[i]);
-                builder.Append(" ");
+                builder.Append(' ');
             }
 
             builder.Append(parameter.TypeName);
-            builder.Append(" ");
+            builder.Append(' ');
 
             builder.Append(parameter.ParameterName);
 

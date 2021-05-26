@@ -766,7 +766,7 @@ namespace Microsoft.AspNetCore.Mvc
                 var routeKeys = action.RouteValues.Keys.ToArray();
                 var routeValues = action.RouteValues.Values.ToArray();
                 var stringBuilder = new StringBuilder();
-                stringBuilder.Append("{");
+                stringBuilder.Append('{');
                 for (var i = 0; i < routeValues.Length; i++)
                 {
                     if (i == routeValues.Length - 1)
@@ -778,7 +778,7 @@ namespace Microsoft.AspNetCore.Mvc
                         stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\", ");
                     }
                 }
-                stringBuilder.Append("}");
+                stringBuilder.Append('}');
 
                 if (action.RouteValues.TryGetValue("page", out var page) && page != null)
                 {

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Internal for testing.
             // Null characters are invalid markup for HTML attribute values.
-            internal const string InvalidAttributeValueMarker = "\0";
+            internal const char InvalidAttributeValueMarker = '\0';
 
             private readonly RazorSourceDocument _source;
             private readonly string _tagHelperPrefix;
@@ -759,7 +759,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         if (AllowedChildren != null && _prefixedAllowedChildren == null)
                         {
-                            Debug.Assert(Info.BindingResult.Descriptors.Count() >= 1);
+                            Debug.Assert(Info.BindingResult.Descriptors.Any());
 
                             _prefixedAllowedChildren = AllowedChildren.Select(allowedChild => _tagHelperPrefix + allowedChild).ToList();
                         }

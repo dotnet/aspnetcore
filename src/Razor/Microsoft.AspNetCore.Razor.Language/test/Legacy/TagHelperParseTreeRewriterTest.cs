@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Func<string, string, KeyValuePair<string, string>> kvp =
                     (key, value) => new KeyValuePair<string, string>(key, value);
                 var empty = Enumerable.Empty<KeyValuePair<string, string>>();
-                var csharp = TagHelperParseTreeRewriter.Rewriter.InvalidAttributeValueMarker;
+                var csharp = TagHelperParseTreeRewriter.Rewriter.InvalidAttributeValueMarker.ToString();
 
                 // documentContent, expectedPairs
                 return new TheoryData<string, IEnumerable<KeyValuePair<string, string>>>

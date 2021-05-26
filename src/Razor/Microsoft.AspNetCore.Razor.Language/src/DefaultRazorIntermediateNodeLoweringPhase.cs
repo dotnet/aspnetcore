@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _builder.Add(new DirectiveTokenIntermediateNode()
                     {
                         Content = addTagHelperChunkGenerator.LookupText,
-                        DirectiveToken = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Tokens.First(),
+                        DirectiveToken = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Tokens[0],
                         Source = BuildSourceSpanFromNode(node),
                     });
 
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _builder.Add(new DirectiveTokenIntermediateNode()
                     {
                         Content = removeTagHelperChunkGenerator.LookupText,
-                        DirectiveToken = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Tokens.First(),
+                        DirectiveToken = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Tokens[0],
                         Source = BuildSourceSpanFromNode(node),
                     });
 
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _builder.Add(new DirectiveTokenIntermediateNode()
                     {
                         Content = tagHelperPrefixChunkGenerator.Prefix,
-                        DirectiveToken = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Tokens.First(),
+                        DirectiveToken = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Tokens[0],
                         Source = BuildSourceSpanFromNode(node),
                     });
 
@@ -1019,7 +1019,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 IReadOnlyList<SyntaxNode> children = node.ChildNodes();
                 var position = node.Position;
-                if (children.FirstOrDefault() is MarkupBlockSyntax markupBlock &&
+                if (children.Count > 0 &&
+                    children[0] is MarkupBlockSyntax markupBlock &&
                     markupBlock.Children.Count == 2 &&
                     markupBlock.Children[0] is MarkupTextLiteralSyntax &&
                     markupBlock.Children[1] is MarkupEphemeralTextLiteralSyntax)
@@ -1970,7 +1971,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 IReadOnlyList<SyntaxNode> children = node.ChildNodes();
                 var position = node.Position;
-                if (children.FirstOrDefault() is MarkupBlockSyntax markupBlock &&
+                if (children.Count > 0 &&
+                    children[0] is MarkupBlockSyntax markupBlock &&
                     markupBlock.Children.Count == 2 &&
                     markupBlock.Children[0] is MarkupTextLiteralSyntax &&
                     markupBlock.Children[1] is MarkupEphemeralTextLiteralSyntax)

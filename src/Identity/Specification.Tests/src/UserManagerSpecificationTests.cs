@@ -1826,7 +1826,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             await manager.ConfirmEmailAsync(user, token);
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(2, factors.Count());
+            Assert.Equal(2, factors.Count);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, null));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
@@ -1835,7 +1835,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(2, factors.Count());
+            Assert.Equal(2, factors.Count);
             Assert.Equal("Authenticator", factors[1]);
         }
 

@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var formTagHelper = Assert.Single(tagHelperNodes);
             Assert.Equal("form", formTagHelper.TagHelperInfo.TagName);
-            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.Mappings[descriptor].Count());
+            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.Mappings[descriptor].Count);
         }
 
         [Fact]
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var formTagHelper = Assert.Single(tagHelperNodes);
             Assert.Equal("form", formTagHelper.TagHelperInfo.TagName);
-            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.Mappings[descriptor].Count());
+            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.Mappings[descriptor].Count);
         }
 
         [Fact]
@@ -653,7 +653,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     },
                     {
                         $@"
-@tagHelperPrefix 
+@tagHelperPrefix
 @addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, {AssemblyA}
 @addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidInherited*, {AssemblyA}",
                         null
@@ -858,7 +858,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             visitor.Visit(syntaxTree.Root);
 
             // Assert
-            Assert.Equal(expected.Count(), visitor.Matches.Count());
+            Assert.Equal(expected.Length, visitor.Matches.Count);
 
             foreach (var expectedDescriptor in expected)
             {

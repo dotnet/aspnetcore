@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public TemporaryCSharpProject WithItem(ItemSpec item)
         {
             var sb = new StringBuilder("<");
-            sb.Append(item.Name).Append(" ");
+            sb.Append(item.Name).Append(' ');
             if (item.Include != null) sb.Append(" Include=\"").Append(item.Include).Append('"');
             if (item.Remove != null) sb.Append(" Remove=\"").Append(item.Remove).Append('"');
             if (item.Update != null) sb.Append(" Update=\"").Append(item.Update).Append('"');
