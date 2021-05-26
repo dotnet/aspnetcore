@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Builder
             var bootstrapBuilder = new BootstrapHostBuilder(Configuration, _environment);
             bootstrapBuilder.ConfigureDefaults(args);
             bootstrapBuilder.ConfigureWebHostDefaults(configure: _ => { });
-            bootstrapBuilder.ExecuteActions();
+            bootstrapBuilder.RunConfigurationCallbacks();
 
             Logging = new LoggingBuilder(Services);
             WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
@@ -218,8 +218,8 @@ namespace Microsoft.AspNetCore.Builder
 
             genericWebHostBuilder.Configure(ConfigureApplication);
 
-            _deferredHostBuilder.ExecuteActions(_hostBuilder);
-            _deferredWebHostBuilder.ExecuteActions(genericWebHostBuilder);
+            _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
+            _deferredWebHostBuilder.ApplySettings(genericWebHostBuilder);
 
             _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
         }

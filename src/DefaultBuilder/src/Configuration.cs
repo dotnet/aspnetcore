@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
@@ -33,8 +34,6 @@ namespace Microsoft.AspNetCore.Builder
             // Make sure there's some default storage since there are no default providers.
             this.AddInMemoryCollection();
 
-            // _configurationRoot is set by Update()
-            _configurationRoot = default!;
             Update();
         }
 
@@ -63,6 +62,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Manually update the <see cref="IConfiguration"/> to reflect <see cref="IConfigurationBuilder"/> changes.
         /// It is not necessary to call this if <see cref="AutoUpdate"/> is <see langword="true"/>.
         /// </summary>
+        [MemberNotNull(nameof(_configurationRoot))]
         public void Update()
         {
             var newConfiguration = BuildConfigurationRoot();

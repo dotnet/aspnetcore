@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Builder
             return this;
         }
 
-        internal void ExecuteActions(IHostBuilder hostBuilder)
+        internal void RunDeferredCallbacks(IHostBuilder hostBuilder)
         {
             foreach (var operation in _operations)
             {

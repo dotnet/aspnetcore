@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        internal void ExecuteActions()
+        internal void RunConfigurationCallbacks()
         {
             foreach (var configureHostAction in _configureHostActions)
             {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             // Configuration doesn't auto-update during the bootstrap phase to reduce I/O,
-            // but we do need to update between host and app configuration so the right environment is ussed.
+            // but we do need to update between host and app configuration so the right environment is used.
             _configuration.Update();
             _environment.ApplyConfigurationSettings(_configuration);
 

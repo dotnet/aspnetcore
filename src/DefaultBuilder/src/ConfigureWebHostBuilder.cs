@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Builder
             return this;
         }
 
-        internal void ExecuteActions(IWebHostBuilder webHostBuilder)
+        internal void ApplySettings(IWebHostBuilder webHostBuilder)
         {
             foreach (var (key, value) in _settings)
             {
