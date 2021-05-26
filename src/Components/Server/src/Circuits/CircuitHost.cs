@@ -174,6 +174,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 try
                 {
+                    // Prevent any further JS interop calls
+                    // Helps with scenarios like https://github.com/dotnet/aspnetcore/issues/32808
+                    JSRuntime.MarkPermanentlyDisconnected();
+
                     await Renderer.DisposeAsync();
 
                     // This cast is needed because it's possible the scope may not support async dispose.

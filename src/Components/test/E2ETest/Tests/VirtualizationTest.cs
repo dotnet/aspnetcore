@@ -169,12 +169,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CancelsOutdatedRefreshes_Async()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
             var cancellationCount = Browser.Exists(By.Id("cancellation-count"));
             var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
+            var js = (IJavaScriptExecutor)Browser;
 
             // Load the initial set of items.
             finishLoadingButton.Click();
@@ -183,7 +183,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("0", () => cancellationCount.Text);
 
             // Validate that scrolling causes cancellations
-            Browser.ExecuteJavaScript("document.getElementById('async-container').scrollTo({ top:5000, behavior:'smooth' })");
+            for (var y = 1000; y <= 5000; y += 1000)
+            {
+                js.ExecuteScript($"document.getElementById('async-container').scrollTo({{ top: {y} }})");
+                Browser.Equal(y, () => (long)js.ExecuteScript("return document.getElementById('async-container').scrollTop"));
+            }
+
             Browser.True(() => int.Parse(cancellationCount.Text, CultureInfo.InvariantCulture) > 0);
         }
 

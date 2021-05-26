@@ -660,7 +660,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     context.CodeWriter.Write(".");
                     context.CodeWriter.Write(ComponentsApi.EventCallbackFactory.CreateMethod);
 
-                    if (node.TryParseEventCallbackTypeArgument(out var argument))
+                    if (node.TryParseEventCallbackTypeArgument(out StringSegment argument))
                     {
                         context.CodeWriter.Write("<");
                         context.CodeWriter.Write(argument);

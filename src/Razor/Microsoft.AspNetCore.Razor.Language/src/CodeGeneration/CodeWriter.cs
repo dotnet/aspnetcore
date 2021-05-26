@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -114,6 +115,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return Write(value, 0, value.Length);
         }
 
+        internal CodeWriter Write(StringSegment value)
+        {
+            return WriteCore(value.Buffer, value.Offset, value.Length);
+        }
+
         public CodeWriter Write(string value, int startIndex, int count)
         {
             if (value == null)
@@ -136,6 +142,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             }
 
+            return WriteCore(value, startIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal CodeWriter WriteCore(string value, int startIndex, int count)
+        {
             if (count == 0)
             {
                 return this;

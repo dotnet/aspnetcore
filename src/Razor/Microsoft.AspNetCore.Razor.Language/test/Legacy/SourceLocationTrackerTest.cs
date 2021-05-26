@@ -8,20 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class SourceLocationTrackerTest
     {
         private static readonly SourceLocation TestStartLocation = new SourceLocation(10, 42, 45);
-
-        [Fact]
-        public void ConstructorSetsCurrentLocationToZero()
-        {
-            Assert.Equal(SourceLocation.Zero, new SourceLocationTracker().CurrentLocation);
-        }
-
-        [Fact]
-        public void ConstructorWithSourceLocationSetsCurrentLocationToSpecifiedValue()
-        {
-            var loc = new SourceLocation(10, 42, 4);
-            Assert.Equal(loc, new SourceLocationTracker(loc).CurrentLocation);
-        }
-
+       
         [Theory]
         [InlineData(null)]
         [InlineData("path-to-file")]
@@ -44,171 +31,171 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void UpdateLocationAdvancesCorrectlyForMultiLineString()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation("foo\nbar\rbaz\r\nbox");
+            var currentLocation = SourceLocationTracker.Advance(location, "foo\nbar\rbaz\r\nbox");
 
             // Assert
-            Assert.Equal(26, tracker.CurrentLocation.AbsoluteIndex);
-            Assert.Equal(45, tracker.CurrentLocation.LineIndex);
-            Assert.Equal(3, tracker.CurrentLocation.CharacterIndex);
+            Assert.Equal(26, currentLocation.AbsoluteIndex);
+            Assert.Equal(45, currentLocation.LineIndex);
+            Assert.Equal(3, currentLocation.CharacterIndex);
         }
-
-        [Fact]
-        public void UpdateLocationAdvancesAbsoluteIndexOnNonNewlineCharacter()
-        {
-            // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
-
-            // Act
-            tracker.UpdateLocation('f', 'o');
-
-            // Assert
-            Assert.Equal(11, tracker.CurrentLocation.AbsoluteIndex);
-        }
+        
 
         [Fact]
         public void UpdateLocationAdvancesCharacterIndexOnNonNewlineCharacter()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('f', 'o');
+            var currentLocation = UpdateLocation(location, 'f', 'o');
 
             // Assert
-            Assert.Equal(46, tracker.CurrentLocation.CharacterIndex);
+            Assert.Equal(46, currentLocation.CharacterIndex);
         }
+
 
         [Fact]
         public void UpdateLocationDoesNotAdvanceLineIndexOnNonNewlineCharacter()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('f', 'o');
+            var currentLocation = UpdateLocation(location, 'f', 'o');
 
             // Assert
-            Assert.Equal(42, tracker.CurrentLocation.LineIndex);
+            Assert.Equal(42, currentLocation.LineIndex);
         }
 
         [Fact]
         public void UpdateLocationAdvancesLineIndexOnSlashN()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\n', 'o');
+            var currentLocation = UpdateLocation(location, '\n', 'o');
 
             // Assert
-            Assert.Equal(43, tracker.CurrentLocation.LineIndex);
+            Assert.Equal(43, currentLocation.LineIndex);
         }
 
         [Fact]
         public void UpdateLocationAdvancesAbsoluteIndexOnSlashN()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\n', 'o');
+            var currentLocation = UpdateLocation(location, '\n', 'o');
 
             // Assert
-            Assert.Equal(11, tracker.CurrentLocation.AbsoluteIndex);
+            Assert.Equal(11, currentLocation.AbsoluteIndex);
         }
 
         [Fact]
         public void UpdateLocationResetsCharacterIndexOnSlashN()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\n', 'o');
+            var currentLocation = UpdateLocation(location, '\n', 'o');
 
             // Assert
-            Assert.Equal(0, tracker.CurrentLocation.CharacterIndex);
+            Assert.Equal(0, currentLocation.CharacterIndex);
         }
 
         [Fact]
         public void UpdateLocationAdvancesLineIndexOnSlashRFollowedByNonNewlineCharacter()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\r', 'o');
+            var currentLocation = UpdateLocation(location, '\r', 'o');
 
             // Assert
-            Assert.Equal(43, tracker.CurrentLocation.LineIndex);
+            Assert.Equal(43, currentLocation.LineIndex);
         }
 
         [Fact]
         public void UpdateLocationAdvancesAbsoluteIndexOnSlashRFollowedByNonNewlineCharacter()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\r', 'o');
+            var currentLocation = UpdateLocation(location, '\r', 'o');
 
             // Assert
-            Assert.Equal(11, tracker.CurrentLocation.AbsoluteIndex);
+            Assert.Equal(11, currentLocation.AbsoluteIndex);
         }
 
         [Fact]
         public void UpdateLocationResetsCharacterIndexOnSlashRFollowedByNonNewlineCharacter()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\r', 'o');
+            var currentLocation = UpdateLocation(location, '\r', 'o');
 
             // Assert
-            Assert.Equal(0, tracker.CurrentLocation.CharacterIndex);
+            Assert.Equal(0, currentLocation.CharacterIndex);
         }
 
         [Fact]
         public void UpdateLocationDoesNotAdvanceLineIndexOnSlashRFollowedBySlashN()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\r', '\n');
+            var currentLocation = UpdateLocation(location, '\r', '\n');
 
             // Assert
-            Assert.Equal(42, tracker.CurrentLocation.LineIndex);
+            Assert.Equal(42, currentLocation.LineIndex);
         }
 
         [Fact]
         public void UpdateLocationAdvancesAbsoluteIndexOnSlashRFollowedBySlashN()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\r', '\n');
+            var currentLocation = UpdateLocation(location, '\r', '\n');
 
             // Assert
-            Assert.Equal(11, tracker.CurrentLocation.AbsoluteIndex);
+            Assert.Equal(11, currentLocation.AbsoluteIndex);
         }
 
         [Fact]
         public void UpdateLocationAdvancesCharacterIndexOnSlashRFollowedBySlashN()
         {
             // Arrange
-            var tracker = new SourceLocationTracker(TestStartLocation);
+            var location = TestStartLocation;
 
             // Act
-            tracker.UpdateLocation('\r', '\n');
+            var currentLocation = UpdateLocation(location, '\r', '\n');
 
             // Assert
-            Assert.Equal(46, tracker.CurrentLocation.CharacterIndex);
+            Assert.Equal(46, currentLocation.CharacterIndex);
+        }
+
+        private static SourceLocation UpdateLocation(SourceLocation location, char v1, char v2)
+        {
+            var absoluteIndex = location.AbsoluteIndex;
+            var lineIndex = location.LineIndex;
+            var characterIndex = location.CharacterIndex;
+
+            SourceLocationTracker.UpdateCharacterCore(v1, v2, ref absoluteIndex, ref lineIndex, ref characterIndex);
+
+            return new SourceLocation(location.FilePath, absoluteIndex, lineIndex, characterIndex);
         }
     }
 }

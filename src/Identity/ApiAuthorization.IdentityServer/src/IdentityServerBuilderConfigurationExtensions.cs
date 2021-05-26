@@ -234,12 +234,14 @@ namespace Microsoft.Extensions.DependencyInjection
             this IIdentityServerBuilder builder,
             IConfiguration configuration)
         {
+            const string KeySectionName = "IdentityServer:Key";
+
             builder.ConfigureReplacedServices();
             builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IConfigureOptions<ApiAuthorizationOptions>, ConfigureSigningCredentials>(sp =>
                 {
                     var logger = sp.GetRequiredService<ILogger<ConfigureSigningCredentials>>();
-                    var effectiveConfig = configuration ?? sp.GetRequiredService<IConfiguration>().GetSection("IdentityServer:Key");
+                    var effectiveConfig = configuration ?? sp.GetRequiredService<IConfiguration>().GetSection(KeySectionName);
                     return new ConfigureSigningCredentials(effectiveConfig, logger);
                 }));
 
@@ -254,12 +256,20 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton<IValidationKeysStore>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
+                var signingCredential = options.Value.SigningCredential;
+
+                if (signingCredential is null)
+                {
+                    throw new InvalidOperationException(
+                        $"No signing credential is configured by the '{KeySectionName}' configuration section.");
+                }
+
                 return new InMemoryValidationKeysStore(new[]
                 {
                     new SecurityKeyInfo
                     {
-                        Key = options.Value.SigningCredential.Key,
-                        SigningAlgorithm = options.Value.SigningCredential.Algorithm
+                        Key = signingCredential.Key,
+                        SigningAlgorithm = signingCredential.Algorithm
                     }
                 });
             });

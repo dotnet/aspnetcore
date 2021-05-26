@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
@@ -33,19 +33,27 @@ namespace Microsoft.AspNetCore.Razor.Language
                 category == UnicodeCategory.Format; // Cf
         }
 
-        public static string SanitizeIdentifier(string inputName)
+        public static string SanitizeIdentifier(StringSegment inputName)
         {
-            if (string.IsNullOrEmpty(inputName))
+            if (StringSegment.IsNullOrEmpty(inputName))
             {
-                return inputName;
+                return string.Empty;
             }
 
+            var length = inputName.Length;
+            var prependUnderscore = false;
             if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
             {
-                inputName = "_" + inputName;
+                length++;
+                prependUnderscore = true;
             }
 
-            var builder = new StringBuilder(inputName.Length);
+            var builder = new StringBuilder(length);
+            if (prependUnderscore)
+            {
+                builder.Append('_');
+            }
+
             for (var i = 0; i < inputName.Length; i++)
             {
                 var ch = inputName[i];
@@ -53,6 +61,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return builder.ToString();
+        }
+
+        public static void AppendSanitized(StringBuilder builder, StringSegment inputName)
+        {
+            if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
+            {
+                builder.Append('_');
+            }
+
+            for (var i = 0; i < inputName.Length; i++)
+            {
+                var ch = inputName[i];
+                builder.Append(IsIdentifierPart(ch) ? ch : '_');
+            }
         }
     }
 }

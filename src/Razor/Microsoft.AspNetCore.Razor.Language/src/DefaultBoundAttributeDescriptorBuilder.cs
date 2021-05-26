@@ -186,10 +186,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                     yield return diagnostic;
                 }
 
-                var name = Name;
+                StringSegment name = Name;
                 if (isDirectiveAttribute && name.StartsWith("@", StringComparison.Ordinal))
                 {
-                    name = name.Substring(1);
+                    name = name.Subsegment(1);
                 }
                 else if (isDirectiveAttribute)
                 {
@@ -201,14 +201,15 @@ namespace Microsoft.AspNetCore.Razor.Language
                     yield return diagnostic;
                 }
 
-                foreach (var character in name)
+                for (var i = 0; i < name.Length; i++)
                 {
+                    var character = name[i];
                     if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeName(
                             _parent.GetDisplayName(),
                             GetDisplayName(),
-                            name,
+                            name.Value,
                             character);
 
                         yield return diagnostic;
@@ -237,29 +238,30 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
                 else
                 {
-                    var indexerPrefix = IndexerAttributeNamePrefix;
+                    StringSegment indexerPrefix = IndexerAttributeNamePrefix;
                     if (isDirectiveAttribute && indexerPrefix.StartsWith("@", StringComparison.Ordinal))
                     {
-                        indexerPrefix = indexerPrefix.Substring(1);
+                        indexerPrefix = indexerPrefix.Subsegment(1);
                     }
                     else if (isDirectiveAttribute)
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundDirectiveAttributePrefix(
                             _parent.GetDisplayName(),
                             GetDisplayName(),
-                            indexerPrefix);
+                            indexerPrefix.Value);
 
                         yield return diagnostic;
                     }
 
-                    foreach (var character in indexerPrefix)
+                    for (var i = 0; i < indexerPrefix.Length; i++)
                     {
+                        var character = indexerPrefix[i];
                         if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributePrefix(
                                 _parent.GetDisplayName(),
                                 GetDisplayName(),
-                                indexerPrefix,
+                                indexerPrefix.Value,
                                 character);
 
                             yield return diagnostic;

@@ -86,7 +86,9 @@
       "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
-      "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj"
+      "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
+      "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
 }
