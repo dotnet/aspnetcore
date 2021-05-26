@@ -168,7 +168,7 @@ namespace PackageBaselineGenerator
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
                         // Don't bother generating empty ItemGroup elements.
-                        if (group.Packages.Count() == 0)
+                        if (!group.Packages.Any())
                         {
                             continue;
                         }
