@@ -12,7 +12,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't rollforward to something else that might be installed on the machine
 export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-export VSTEST_DUMP_PATH=$HELIX_DUMP_FOLDER
 
 export PATH="$PATH:$DIR:$DIR/node/bin"
 

@@ -46,6 +46,9 @@ namespace RunTests
                 var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                 Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                 EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
+                var dumpPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+                Console.WriteLine($"Set VSTEST_DUMP_PATH: {dumpPath}");
+                EnvironmentVariables.Add("VSTEST_DUMP_PATH", dumpPath);
 
 #if INSTALLPLAYWRIGHT
                 // Playwright will download and look for browsers to this directory
