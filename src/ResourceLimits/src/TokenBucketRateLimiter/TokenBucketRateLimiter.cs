@@ -1,119 +1,101 @@
 // Will be migrated to dotnet/runtime
 // Pending dotnet API review
 
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace System.Threading.ResourceLimits
 {
+    // TODO: rework implementation with options and queuing
     public class TokenBucketRateLimiter : ResourceLimiter
     {
         private long _resourceCount;
         private readonly long _maxResourceCount;
+        private readonly long _newResourcePerSecond;
+        private Timer _renewTimer;
+        private readonly Queue<RateLimitRequest> _queue = new Queue<RateLimitRequest>();
         private object _lock = new object();
-        private readonly ConcurrentQueue<ConcurrencyLimitRequest> _queue = new();
 
-        // an inaccurate view of resources
         public override long EstimatedCount => Interlocked.Read(ref _resourceCount);
 
-        public TokenBucketRateLimiter(long resourceCount)
+        public TokenBucketRateLimiter(long resourceCount, long newResourcePerSecond)
         {
-            _resourceCount = resourceCount;
-            _maxResourceCount = resourceCount;
+            _resourceCount = 0;
+            _maxResourceCount = resourceCount; // Another variable for max resource count?
+            _newResourcePerSecond = newResourcePerSecond;
+
+            // Start timer (5s for demo)
+            _renewTimer = new Timer(Replenish, this, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         }
 
-        // Fast synchronous attempt to acquire resources
         public override ResourceLease Acquire(long requestedCount)
         {
-            if (requestedCount < 0 || requestedCount > _maxResourceCount)
+            if (Interlocked.Add(ref _resourceCount, requestedCount) <= _maxResourceCount)
             {
-                return ResourceLease.FailNoopResource;
+                return ResourceLease.SuccessfulAcquisition;
             }
 
-            if (requestedCount == 0)
-            {
-                // TODO check if resources are exhausted
-            }
-
-            if (EstimatedCount >= requestedCount)
-            {
-                lock (_lock) // Check lock check
-                {
-                    if (EstimatedCount >= requestedCount)
-                    {
-                        Interlocked.Add(ref _resourceCount, -requestedCount);
-                        return new ResourceLease(
-                            isAcquired: true,
-                            state: null,
-                            onDispose: resource => Release(requestedCount));
-                    }
-                }
-            }
-
-            return ResourceLease.FailNoopResource;
+            Interlocked.Add(ref _resourceCount, -requestedCount);
+            return ResourceLease.FailedAcquisition;
         }
 
-        // Wait until the requested resources are available
-        public override ValueTask<ResourceLease> AcquireAsync(long requestedCount, CancellationToken cancellationToken = default)
+        public override ValueTask<ResourceLease> WaitAsync(long requestedCount, CancellationToken cancellationToken = default)
         {
-            if (requestedCount < 0 || requestedCount > _maxResourceCount)
+            if (Interlocked.Add(ref _resourceCount, requestedCount) <= _maxResourceCount)
             {
-                throw new InvalidOperationException("Limit exceeded");
+                return ValueTask.FromResult(ResourceLease.SuccessfulAcquisition);
             }
 
-            if (EstimatedCount >= requestedCount)
-            {
-                lock (_lock) // Check lock check
-                {
-                    if (EstimatedCount >= requestedCount)
-                    {
-                        Interlocked.Add(ref _resourceCount, -requestedCount);
-                        return ValueTask.FromResult(new ResourceLease(
-                            isAcquired: true,
-                            state: null,
-                            onDispose: resource => Release(requestedCount)));
-                    }
-                }
-            }
+            Interlocked.Add(ref _resourceCount, -requestedCount);
 
-            var registration = new ConcurrencyLimitRequest(requestedCount);
+            var registration = new RateLimitRequest(requestedCount);
             _queue.Enqueue(registration);
 
             // handle cancellation
             return new ValueTask<ResourceLease>(registration.TCS.Task);
         }
 
-        private void Release(long releaseCount)
+        private static void Replenish(object? state)
         {
-            lock (_lock) // Check lock check
-            {
-                // Check for negative requestCount
-                Interlocked.Add(ref _resourceCount, releaseCount);
+            // Return if Replenish already running to avoid concurrency.
+            var limiter = state as TokenBucketRateLimiter;
 
-                while (_queue.TryPeek(out var request))
+            if (limiter == null)
+            {
+                return;
+            }
+
+            if (limiter._resourceCount > 0)
+            {
+                var resoucesToDeduct = Math.Min(limiter._newResourcePerSecond, limiter._resourceCount);
+                Interlocked.Add(ref limiter._resourceCount, -resoucesToDeduct);
+            }
+
+            // Process queued requests
+            var queue = limiter._queue;
+            lock (limiter._lock)
+            {
+                while (queue.TryPeek(out var request))
                 {
-                    if (EstimatedCount >= request.Count)
+                    if (Interlocked.Add(ref limiter._resourceCount, request.Count) <= limiter._maxResourceCount)
                     {
                         // Request can be fulfilled
-                        _queue.TryDequeue(out var requestToFulfill);
-
-                        // requestToFulfill == request
-                        requestToFulfill!.TCS.SetResult(new ResourceLease(
-                            isAcquired: true,
-                            state: null,
-                            onDispose: resource => Release(request.Count)));
+                        queue.TryDequeue(out var requestToFulfill);
+                        requestToFulfill.TCS.SetResult(ResourceLease.SuccessfulAcquisition);
                     }
                     else
                     {
+                        // Request cannot be fulfilled
+                        Interlocked.Add(ref limiter._resourceCount, -request.Count);
                         break;
                     }
                 }
             }
         }
 
-        private class ConcurrencyLimitRequest
+        private struct RateLimitRequest
         {
-            public ConcurrencyLimitRequest(long count)
+            public RateLimitRequest(long count)
             {
                 Count = count;
                 // Use VoidAsyncOperationWithData<T> instead
