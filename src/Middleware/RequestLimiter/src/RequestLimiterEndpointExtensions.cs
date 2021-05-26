@@ -4,13 +4,9 @@
 using System.Threading.ResourceLimits;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public static class RequestLimiterEndpointExtensions
     {
         public static IEndpointConventionBuilder EnforceLimit(this IEndpointConventionBuilder builder)
@@ -33,18 +29,37 @@ namespace Microsoft.AspNetCore.RequestLimiter
             return builder;
         }
 
-        public static IEndpointConventionBuilder EnforceLimit(this IEndpointConventionBuilder builder, long requestPerSecond)
+        public static IEndpointConventionBuilder EnforceRateLimit(this IEndpointConventionBuilder builder, long requestPerSecond)
         {
-
             builder.Add(endpointBuilder =>
             {
-                endpointBuilder.Metadata.Add(new RequestLimitAttribute(requestPerSecond));
+                endpointBuilder.Metadata.Add(
+                    new RequestLimitAttribute(
+                        (HttpContextLimiter)new TokenBucketRateLimiter(
+                            requestPerSecond,
+                            requestPerSecond)));
             });
 
             return builder;
         }
 
-        public static IEndpointConventionBuilder EnforceLimit(this IEndpointConventionBuilder builder, RateLimiter limiter)
+        public static IEndpointConventionBuilder EnforceConcurrencyLimit(this IEndpointConventionBuilder builder, long concurrentRequests)
+        {
+            builder.Add(endpointBuilder =>
+            {
+                endpointBuilder.Metadata.Add(
+                    new RequestLimitAttribute(
+                        (HttpContextLimiter)new ConcurrencyLimiter(
+                            new ConcurrencyLimiterOptions { ResourceLimit = concurrentRequests })));
+            });
+
+            return builder;
+        }
+
+        public static IEndpointConventionBuilder EnforceLimit(this IEndpointConventionBuilder builder, ResourceLimiter limiter)
+            => builder.EnforceLimit((HttpContextLimiter)limiter);
+
+        public static IEndpointConventionBuilder EnforceLimit(this IEndpointConventionBuilder builder, AggregatedResourceLimiter<HttpContext> limiter)
         {
 
             builder.Add(endpointBuilder =>
@@ -52,26 +67,6 @@ namespace Microsoft.AspNetCore.RequestLimiter
                 endpointBuilder.Metadata.Add(new RequestLimitAttribute(limiter));
             });
 
-            return builder;
-        }
-
-        public static IEndpointConventionBuilder EnforceLimit<TResourceLimiter>(this IEndpointConventionBuilder builder)
-            where TResourceLimiter : ResourceLimiter
-        {
-            builder.Add(endpointBuilder =>
-            {
-                endpointBuilder.Metadata.Add(new RequestLimitAttribute(new RequestLimitRegistration(services => services.GetRequiredService<TResourceLimiter>())));
-            });
-            return builder;
-        }
-
-        public static IEndpointConventionBuilder EnforceAggregatedLimit<TAggregatedResourceLimiter>(this IEndpointConventionBuilder builder)
-            where TAggregatedResourceLimiter : AggregatedResourceLimiter<HttpContext>
-        {
-            builder.Add(endpointBuilder =>
-            {
-                endpointBuilder.Metadata.Add(new RequestLimitAttribute(new RequestLimitRegistration(services => services.GetRequiredService<TAggregatedResourceLimiter>())));
-            });
             return builder;
         }
     }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.ResourceLimits;
 using Microsoft.AspNetCore.Http;
@@ -10,26 +11,27 @@ namespace Microsoft.AspNetCore.RequestLimiter
 {
     public class RequestLimiterPolicy
     {
-        public ICollection<RequestLimitRegistration> Limiters { get; } = new List<RequestLimitRegistration>();
-
-        public void AddLimiter(RequestLimitRegistration registration)
-        {
-            Limiters.Add(registration);
-        }
+        internal ICollection<Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>> LimiterResolvers { get; } = new List<Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>>();
 
         public void AddLimiter(ResourceLimiter limiter)
         {
-            Limiters.Add(new RequestLimitRegistration(limiter));
+            LimiterResolvers.Add(_ => (HttpContextLimiter)limiter);
         }
 
-        public void AddLimiter(AggregatedResourceLimiter<HttpContext> aggregatedLimiter)
+        public void AddAggregatedLimiter(AggregatedResourceLimiter<HttpContext> aggregatedLimiter)
         {
-            Limiters.Add(new RequestLimitRegistration(aggregatedLimiter));
+            LimiterResolvers.Add(_ => aggregatedLimiter);
         }
 
         public void AddLimiter<TResourceLimiter>() where TResourceLimiter : ResourceLimiter
         {
-            Limiters.Add(new RequestLimitRegistration(services => services.GetRequiredService<TResourceLimiter>()));
+            LimiterResolvers.Add(services => (HttpContextLimiter)services.GetRequiredService<TResourceLimiter>());
+        }
+
+        // TODO: non aggregated limiters
+        public void AddAggregatedLimiter<TResourceAggregatedLimiter>() where TResourceAggregatedLimiter : AggregatedResourceLimiter<HttpContext>
+        {
+            LimiterResolvers.Add(services => services.GetRequiredService<TResourceAggregatedLimiter>());
         }
     }
 }

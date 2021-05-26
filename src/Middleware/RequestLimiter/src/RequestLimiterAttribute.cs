@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
-    /// <summary>
-    /// Specifies that the class or method that this attribute is applied to requires the specified authorization.
-    /// </summary>
     // TODO: Double check ordering
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class RequestLimitAttribute : Attribute
@@ -21,28 +18,13 @@ namespace Microsoft.AspNetCore.RequestLimiter
             Policy = policy;
         }
 
-        public RequestLimitAttribute(long requestPerSecond)
-            : this(new RateLimiter(requestPerSecond, requestPerSecond))
-        { }
-
-        public RequestLimitAttribute(ResourceLimiter limiter)
-        {
-            LimiterRegistration = new RequestLimitRegistration(limiter);
-        }
-
         public RequestLimitAttribute(AggregatedResourceLimiter<HttpContext> limiter)
         {
-            LimiterRegistration = new RequestLimitRegistration(limiter);
+            Limiter = limiter;
         }
 
-        // TODO consider constructors that take in types for DI retrieval
-        public RequestLimitAttribute(RequestLimitRegistration registration)
-        {
-            LimiterRegistration = registration;
-        }
+        internal string? Policy { get; }
 
-        public string? Policy { get; set; }
-
-        public RequestLimitRegistration? LimiterRegistration { get; set; }
+        internal AggregatedResourceLimiter<HttpContext>? Limiter { get; }
     }
 }

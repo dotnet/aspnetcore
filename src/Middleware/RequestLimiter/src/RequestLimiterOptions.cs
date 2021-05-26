@@ -4,32 +4,31 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.ResourceLimits;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public class RequestLimiterOptions
     {
         internal Dictionary<string, RequestLimiterPolicy> PolicyMap { get; } = new Dictionary<string, RequestLimiterPolicy>(StringComparer.OrdinalIgnoreCase);
 
-        internal RequestLimitRegistration? DefaultRequestLimitRegistration { get; set; }
-
-        public void SetDefaultPolicy(RequestLimitRegistration policyRegistration)
-        {
-            DefaultRequestLimitRegistration = policyRegistration;
-        }
+        internal Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>? ResolveDefaultRequestLimit { get; set; }
 
         public void SetDefaultPolicy(ResourceLimiter limiter)
         {
-            DefaultRequestLimitRegistration = new RequestLimitRegistration(limiter);
+            ResolveDefaultRequestLimit = _ => (HttpContextLimiter)limiter;
         }
 
         public void SetDefaultPolicy(AggregatedResourceLimiter<HttpContext> aggregatedLimiter)
         {
-            DefaultRequestLimitRegistration = new RequestLimitRegistration(aggregatedLimiter);
+            ResolveDefaultRequestLimit = _ => aggregatedLimiter;
+        }
+
+        public void SetDefaultPolicy<TResourceLimiter>() where TResourceLimiter : AggregatedResourceLimiter<HttpContext>
+        {
+            ResolveDefaultRequestLimit = services => services.GetRequiredService<TResourceLimiter>();
         }
 
         public void AddPolicy(string name, Action<RequestLimiterPolicy> configurePolicy)
@@ -44,5 +43,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
             PolicyMap[name] = policy;
         }
+
+        public Func<HttpContext, ResourceLease, Task> OnRejected { get; set; } = (context, resourceLease) => Task.CompletedTask;
     }
 }

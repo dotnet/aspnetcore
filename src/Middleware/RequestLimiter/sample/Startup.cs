@@ -20,22 +20,20 @@ namespace RateLimiterSample
         {
             services.AddControllersWithViews();
             services.AddSingleton(new IPAggregatedRateLimiter(2, 2));
-            services.AddSingleton(new RateLimiter(2, 2));
+            services.AddSingleton(new TokenBucketRateLimiter(2, 2));
 
             services.AddRequestLimiter(options =>
             {
-                options.SetDefaultPolicy(new ConcurrencyLimiter(100));
-                // TODO: Consider a policy builder
-                // TODO: Support combining/composing policies
-                options.AddPolicy("concurrency", policy =>
+                options.SetDefaultPolicy(new ConcurrencyLimiter(new ConcurrencyLimiterOptions { ResourceLimit = 100 }));
+                options.AddPolicy("ipPolicy", policy =>
                 {
                     // Add instance
-                    policy.AddLimiter(new ConcurrencyLimiter(1));
+                    policy.AddAggregatedLimiter(new IPAggregatedRateLimiter(2, 2));
                 });
                 options.AddPolicy("rate", policy =>
                 {
                     // Add from DI
-                    policy.AddLimiter<RateLimiter>();
+                    policy.AddLimiter<TokenBucketRateLimiter>();
                 });
             });
         }
@@ -59,25 +57,25 @@ namespace RateLimiterSample
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Hello World!");
-                }).EnforceLimit(new RateLimiter(2, 2));
+                }).EnforceLimit(new TokenBucketRateLimiter(2, 2));
 
-                endpoints.MapGet("/concurrentPolicy", async context =>
+                endpoints.MapGet("/concurrent", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Wrote!");
-                }).EnforceLimit("concurrency");
+                }).EnforceConcurrencyLimit(concurrentRequests: 1);
 
                 endpoints.MapGet("/adhoc", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Tested!");
-                }).EnforceLimit(requestPerSecond: 2);
+                }).EnforceRateLimit(requestPerSecond: 2);
 
                 endpoints.MapGet("/ipFromDI", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("IP limited!");
-                }).EnforceAggregatedLimit<IPAggregatedRateLimiter>();
+                }).EnforceLimit("ipPolicy");
 
                 endpoints.MapGet("/multiple", async context =>
                 {

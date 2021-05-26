@@ -33,24 +33,29 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
             if (attributes == null)
             {
-                // TODO: Apply default policy
                 await _next.Invoke(context);
                 return;
             }
 
-            var resources = new Stack<Resource>();
+            var resourceLeases = new Stack<ResourceLease>();
             try
             {
                 foreach (var attribute in attributes)
                 {
-                    if (!string.IsNullOrEmpty(attribute.Policy) && attribute.LimiterRegistration != null)
+                    if (!string.IsNullOrEmpty(attribute.Policy) && attribute.Limiter != null)
                     {
-                        throw new InvalidOperationException("Cannot specify both policy and limiter registration");
+                        throw new InvalidOperationException("Cannot specify both policy and limiter");
                     }
 
-                    if (string.IsNullOrEmpty(attribute.Policy) || attribute.LimiterRegistration == null)
+                    if (string.IsNullOrEmpty(attribute.Policy) && attribute.Limiter == null)
                     {
-                        throw new InvalidOperationException("No policy or registration on attribute");
+                        if (_options.ResolveDefaultRequestLimit != null)
+                        {
+                            if (!await ApplyLimitAsync(_options.ResolveDefaultRequestLimit(context.RequestServices), context, resourceLeases))
+                            {
+                                return;
+                            }
+                        }
                     }
 
                     // Policy based limiters
@@ -61,27 +66,31 @@ namespace Microsoft.AspNetCore.RequestLimiter
                             throw new InvalidOperationException("Policy not found");
                         }
 
-                        foreach (var registration in policy.Limiters)
+                        foreach (var limitResolver in policy.LimiterResolvers)
                         {
-                            if (!ApplyLimit(registration, context, resources))
+                            if (!await ApplyLimitAsync(limitResolver(context.RequestServices), context, resourceLeases))
                             {
                                 return;
                             }
                         }
                     }
 
-                    // Registrations based limiters
-                    if (!ApplyLimit(attribute.LimiterRegistration, context, resources))
+                    if (attribute.Limiter != null)
                     {
-                        return;
+                        // Registrations based limiters
+                        if (!await ApplyLimitAsync(attribute.Limiter, context, resourceLeases))
+                        {
+                            return;
+                        }
                     }
+
                 }
 
                 await _next.Invoke(context);
             }
             finally
             {
-                while (resources.TryPop(out var resource))
+                while (resourceLeases.TryPop(out var resource))
                 {
                     _logger.LogInformation("Releasing resource");
                     resource.Dispose();
@@ -89,43 +98,21 @@ namespace Microsoft.AspNetCore.RequestLimiter
             };
         }
 
-        private bool ApplyLimit(RequestLimitRegistration registration, HttpContext context, Stack<Resource> obtainedResources)
+        private async Task<bool> ApplyLimitAsync(AggregatedResourceLimiter<HttpContext> limiter, HttpContext context, Stack<ResourceLease> obtainedResources)
         {
-            if (registration.ResolveLimiter != null)
+            _logger.LogInformation("Resource count: " + limiter.EstimatedCount(context));
+            var resourceLease = await limiter.WaitAsync(context);
+            if (!resourceLease.IsAcquired)
             {
-                var limiter = registration.ResolveLimiter(context.RequestServices);
-                _logger.LogInformation("Resource count: " + limiter.EstimatedCount);
-                // TODO use AcquireAsync to enable queuing
-                var resource = limiter.Acquire();
-                if (!resource.IsAcquired)
-                {
-                    _logger.LogInformation("Resource exhausted");
-                    context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                    return false;
-                }
-
-                _logger.LogInformation("Resource obtained");
-                obtainedResources.Push(resource);
-                return true;
+                _logger.LogInformation("Resource exhausted");
+                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                await _options.OnRejected(context, resourceLease);
+                return false;
             }
-            if (registration.ResolveAggregatedLimiter != null)
-            {
-                var limiter = registration.ResolveAggregatedLimiter(context.RequestServices);
-                _logger.LogInformation("Resource count: " + limiter.EstimatedCount(context));
-                // TODO use AcquireAsync to enable queuing
-                var resource = limiter.Acquire(context);
-                if (!resource.IsAcquired)
-                {
-                    _logger.LogInformation("Resource exhausted");
-                    context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                    return false;
-                }
 
-                _logger.LogInformation("Resource obtained");
-                obtainedResources.Push(resource);
-                return true;
-            }
-            throw new InvalidOperationException("Registration couldn't resolve limiter");
+            _logger.LogInformation("Resource obtained");
+            obtainedResources.Push(resourceLease);
+            return true;
         }
     }
 }

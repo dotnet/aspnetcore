@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading;
 using System.Threading.ResourceLimits;
@@ -9,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
+    // TODO: update implementation with WaitAsync and use MemoryCache instead of ConcurrentDictionary
     public class IPAggregatedRateLimiter : AggregatedResourceLimiter<HttpContext>
     {
         private long _resourceCount;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
         private readonly long _newResourcePerSecond;
 
         private Timer _renewTimer;
-        // This is racy
+        // TODO: This is racy
         private ConcurrentDictionary<IPAddress, long> _cache = new ConcurrentDictionary<IPAddress, long>();
 
         public IPAggregatedRateLimiter(long resourceCount, long newResourcePerSecond)
@@ -40,16 +40,16 @@ namespace Microsoft.AspNetCore.RequestLimiter
             return _cache.TryGetValue(resourceId.Connection.RemoteIpAddress, out var count) ? count : 0;
         }
 
-        public override Resource Acquire(HttpContext resourceId, long requestedCount)
+        public override ResourceLease Acquire(HttpContext resourceId, long requestedCount)
         {
             if (requestedCount > _maxResourceCount)
             {
-                return Resource.FailNoopResource;
+                return ResourceLease.FailedAcquisition;
             }
 
             if (resourceId.Connection.RemoteIpAddress == null)
             {
-                return Resource.SuccessNoopResource;
+                return ResourceLease.SuccessfulAcquisition;
             }
 
             var key = resourceId.Connection.RemoteIpAddress;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
             {
                 if (_cache.TryAdd(key, requestedCount))
                 {
-                    return Resource.SuccessNoopResource;
+                    return ResourceLease.SuccessfulAcquisition;
                 }
             }
 
@@ -69,22 +69,22 @@ namespace Microsoft.AspNetCore.RequestLimiter
                 {
                     if (newCount > _maxResourceCount)
                     {
-                        return Resource.FailNoopResource;
+                        return ResourceLease.FailedAcquisition;
                     }
 
-                    return Resource.SuccessNoopResource;
+                    return ResourceLease.SuccessfulAcquisition;
                 }
                 if (!_cache.TryGetValue(key, out count))
                 {
                     if (_cache.TryAdd(key, requestedCount))
                     {
-                        return Resource.SuccessNoopResource;
+                        return ResourceLease.SuccessfulAcquisition;
                     }
                 }
             }
         }
 
-        public override ValueTask<Resource> AcquireAsync(HttpContext resourceId, long requestedCount, CancellationToken cancellationToken = default)
+        public override ValueTask<ResourceLease> WaitAsync(HttpContext resourceId, long requestedCount, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
