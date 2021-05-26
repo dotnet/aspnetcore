@@ -14,8 +14,7 @@ namespace IgnitorSample
     /// </summary>
     class Program
     {
-        private static readonly string ServerUrl = "https://localhost:5001";
-        private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        private const string ServerUrl = "https://localhost:5001";
 
         static async Task Main(string[] args)
         {

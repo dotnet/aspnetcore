@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             TryParseResult result,
             MarkupTagHelperAttributeValueSyntax rewrittenValue)
         {
-            // 
+            //
             // Consider, <Foo @bind:param="..." />
             // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
             // We need to split the name "@bind:param" into four parts,
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             MarkupMinimizedAttributeBlockSyntax attributeBlock,
             TryParseResult result)
         {
-            // 
+            //
             // Consider, <Foo @bind:param />
             // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
             // We need to split the name "@bind:param" into four parts,
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private class AttributeValueRewriter : SyntaxRewriter
         {
             private readonly TryParseResult _tryParseResult;
-            private bool _rewriteAsMarkup = false;
+            private bool _rewriteAsMarkup;
 
             public AttributeValueRewriter(TryParseResult result)
             {

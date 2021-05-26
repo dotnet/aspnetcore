@@ -70,11 +70,45 @@ end_of_line = lf
 charset = utf-8-bom
 
 [*.{cs,vb}]
+# CA1018: Mark attributes with AttributeUsageAttribute
+dotnet_diagnostic.CA1018.severity = warning
+
+# CA1047: Do not declare protected member in sealed type
+dotnet_diagnostic.CA1047.severity = warning
+
 # CA1305: Specify IFormatProvider
 dotnet_diagnostic.CA1305.severity = error
 
-[*.{cs,vb}]
+# CA1507: Use nameof to express symbol names
+dotnet_diagnostic.CA1507.severity = warning
+
+# CA1725: Parameter names should match base declaration
+dotnet_diagnostic.CA1725.severity = suggestion
+
+# CA1802: Use literals where appropriate
+dotnet_diagnostic.CA1802.severity = warning
+
+# CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = warning
+
+# CA1823: Avoid unused private fields
+dotnet_diagnostic.CA1823.severity = warning
+
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = warning
-[**/{test,perf}/**.{cs,vb}]
+
+[**/HostFactoryResolver.cs]
+# CA1823: Use literals where appropriate
+dotnet_diagnostic.CA1802.severity = suggestion
+
+[**/{test,samples,perf}/**.{cs,vb}]
+# CA1018: Mark attributes with AttributeUsageAttribute
+dotnet_diagnostic.CA1018.severity = suggestion
+# CA1507: Use nameof to express symbol names
+dotnet_diagnostic.CA1507.severity = suggestion
+# CA1802: Use literals where appropriate
+dotnet_diagnostic.CA1802.severity = suggestion
+# CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = suggestion
+# CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = suggestion

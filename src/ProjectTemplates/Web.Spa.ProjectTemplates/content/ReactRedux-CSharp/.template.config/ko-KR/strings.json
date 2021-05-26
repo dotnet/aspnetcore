@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "React.js 및 Redux를 사용한 ASP.NET Core",
-    "description": "React.js 및 Redux를 사용하여 ASP.NET Core 애플리케이션을 만드는 데 사용되는 프로젝트 템플릿"
-  }
-}

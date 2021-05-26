@@ -53,7 +53,7 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       inputs:
-        locProj: Localize/LocProject.json
+        locProj: eng/Localize/LocProject.json
         outDir: $(Build.ArtifactStagingDirectory)
         lclSource: ${{ parameters.LclSource }}
         lclPackageId: ${{ parameters.LclPackageId }}
@@ -79,7 +79,7 @@ jobs:
     - task: PublishBuildArtifacts@1
       displayName: Publish LocProject.json
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/Localize/'
+        PathtoPublish: '$(Build.SourcesDirectory)/eng/Localize/'
         PublishLocation: Container
         ArtifactName: Loc
       condition: ${{ parameters.condition }}

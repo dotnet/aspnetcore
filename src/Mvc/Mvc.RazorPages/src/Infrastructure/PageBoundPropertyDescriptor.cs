@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <summary>
         /// Gets or sets the <see cref="System.Reflection.PropertyInfo"/> for this property.
         /// </summary>
-        public PropertyInfo Property { get; set; }
+        public PropertyInfo Property { get; set; } = default!;
 
         PropertyInfo IPropertyInfoParameterDescriptor.PropertyInfo => Property;
     }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHost : IWebHost, IAsyncDisposable
     {
-        private static readonly string DeprecatedServerUrlsKey = "server.urls";
+        private const string DeprecatedServerUrlsKey = "server.urls";
 
         private readonly IServiceCollection _applicationServiceCollection;
         private IStartup? _startup;

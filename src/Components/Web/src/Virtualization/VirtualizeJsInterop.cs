@@ -48,7 +48,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         {
             if (_selfReference != null)
             {
-                await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.dispose", _selfReference);
+                try
+                {
+                    await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.dispose", _selfReference);
+                }
+                catch (JSDisconnectedException)
+                {
+                    // If the browser is gone, we don't need it to clean up any browser-side state
+                }
             }
         }
     }

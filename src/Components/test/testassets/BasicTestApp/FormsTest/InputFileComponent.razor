@@ -50,7 +50,8 @@ Max allowed files:
 
 <p>
     Source image:<br />
-    <img id="image-source" src="images/blazor_logo_1000x.png" />
+    <img id="image-source" src="images/blazor_logo_1000x.png" onload="document.getElementById('image-status').textContent = 'ready'" />
+    <span id="image-status"></span>
 </p>
 
 @code {

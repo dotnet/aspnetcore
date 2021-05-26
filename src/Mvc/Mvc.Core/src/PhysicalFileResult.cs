@@ -3,9 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -14,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// A <see cref="FileResult"/> on execution will write a file from disk to the response
     /// using mechanisms provided by the host.
     /// </summary>
-    public class PhysicalFileResult : FileResult
+    public class PhysicalFileResult : FileResult, IResult
     {
         private string _fileName;
 
@@ -65,6 +69,52 @@ namespace Microsoft.AspNetCore.Mvc
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<PhysicalFileResult>>();
             return executor.ExecuteAsync(context, this);
+        }
+
+        Task IResult.ExecuteAsync(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            var fileInfo = new FileInfo(FileName);
+            if (!fileInfo.Exists)
+            {
+                throw new FileNotFoundException(
+                    Resources.FormatFileResult_InvalidPath(FileName), FileName);
+            }
+
+            return ExecuteAsyncInternal(httpContext, this, fileInfo.LastWriteTimeUtc, fileInfo.Length);
+        }
+
+        internal static Task ExecuteAsyncInternal(
+            HttpContext httpContext,
+            PhysicalFileResult result,
+            DateTimeOffset fileLastModified,
+            long fileLength)
+        {
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<RedirectResult>();
+
+            logger.ExecutingFileResult(result, result.FileName);
+
+            var lastModified = result.LastModified ?? fileLastModified;
+            var (range, rangeLength, serveBody) = FileResultExecutorBase.SetHeadersAndLog(
+                httpContext,
+                result,
+                fileLength,
+                result.EnableRangeProcessing,
+                lastModified,
+                result.EntityTag,
+                logger);
+
+            if (serveBody)
+            {
+                return PhysicalFileResultExecutor.WriteFileAsyncInternal(httpContext, result, range, rangeLength, logger);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

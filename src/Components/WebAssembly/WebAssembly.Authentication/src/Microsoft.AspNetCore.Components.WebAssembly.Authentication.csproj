@@ -7,6 +7,7 @@
     <Description>Build client-side authentication for single-page applications (SPAs).</Description>
     <IsShippingPackage>true</IsShippingPackage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

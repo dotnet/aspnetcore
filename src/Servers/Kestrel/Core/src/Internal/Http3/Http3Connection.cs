@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
 
         private long _highestOpenedStreamId;
-        private readonly object _sync = new object(); 
+        private readonly object _sync = new object();
         private readonly MultiplexedConnectionContext _multiplexedContext;
         private readonly HttpMultiplexedConnectionContext _context;
         private bool _aborted;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _gracefulCloseInitiator;
         private int _isClosed;
         private bool _gracefulCloseStarted;
-        private int _activeRequestCount = 0;
+        private int _activeRequestCount;
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();

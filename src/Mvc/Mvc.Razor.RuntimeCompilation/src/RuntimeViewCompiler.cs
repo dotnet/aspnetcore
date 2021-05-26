@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
             // Anything we compile from source will use Razor 2.1 and so should have the new metadata.
             var loader = new RazorCompiledItemLoader();
-            var item = loader.LoadItems(assembly).SingleOrDefault();
+            var item = loader.LoadItems(assembly).Single();
             return new CompiledViewDescriptor(item);
         }
 
@@ -422,13 +422,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
         private class ViewCompilerWorkItem
         {
-            public bool SupportsCompilation { get; set; }
+            public bool SupportsCompilation { get; set; } = default!;
 
-            public string NormalizedPath { get; set; }
+            public string NormalizedPath { get; set; } = default!;
 
-            public IList<IChangeToken> ExpirationTokens { get; set; }
+            public IList<IChangeToken> ExpirationTokens { get; set; } = default!;
 
-            public CompiledViewDescriptor Descriptor { get; set; }
+            public CompiledViewDescriptor Descriptor { get; set; } = default!;
         }
     }
 }

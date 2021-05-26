@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 {
     public class TemplateBinderTests
     {
-        private readonly IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
-
         public static TheoryData EmptyAndNullDefaultValues =>
             new TheoryData<string, RouteValueDictionary, RouteValueDictionary, string>
             {
@@ -1442,14 +1440,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
             // Assert
             Assert.Equal(expected, boundTemplate);
-        }
-
-        private static IInlineConstraintResolver GetInlineConstraintResolver()
-        {
-            var services = new ServiceCollection().AddOptions();
-            var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
         }
 
         private class PathAndQuery

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <see cref="Order"/>. Lower values are executed first.
         /// </summary>
         /// <remarks>Default order is <c>0</c>.</remarks>
-        public virtual int Order { get; } = 0;
+        public virtual int Order { get; }
 
         /// <summary>
         /// Initializes the <see cref="ITagHelper"/> with the given <paramref name="context"/>. Additions to

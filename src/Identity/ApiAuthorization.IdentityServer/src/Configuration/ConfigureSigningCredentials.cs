@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         // for testing purposes only
         internal virtual DateTimeOffset GetCurrentTime() => DateTimeOffset.UtcNow;
 
-        private X509KeyStorageFlags GetStorageFlags(KeyDefinition key)
+        private static X509KeyStorageFlags GetStorageFlags(KeyDefinition key)
         {
             var defaultFlags = OperatingSystem.IsLinux() ?
                 UnsafeEphemeralKeySet : (OperatingSystem.IsMacOS() ? X509KeyStorageFlags.PersistKeySet :
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 return defaultFlags;
             }
 
-            var flagsList = key.StorageFlags.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var flagsList = key.StorageFlags.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (flagsList.Length == 0)
             {
                 return defaultFlags;
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 
             return result;
 
-            X509KeyStorageFlags ParseCurrentFlag(string candidate)
+            static X509KeyStorageFlags ParseCurrentFlag(string candidate)
             {
                 if (Enum.TryParse<X509KeyStorageFlags>(candidate, out var flag))
                 {

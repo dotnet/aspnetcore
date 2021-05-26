@@ -20,7 +20,6 @@ namespace RoutingWebSite
 {
     public class UseEndpointRoutingStartup
     {
-        private static readonly byte[] _homePayload = Encoding.UTF8.GetBytes("Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext");
         private static readonly byte[] _plainTextPayload = Encoding.UTF8.GetBytes("Plain text!");
 
         public void ConfigureServices(IServiceCollection services)

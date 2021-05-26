@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Internal
         private readonly TaskCompletionSource<int> _exited;
         private readonly CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         private readonly CancellationTokenSource _processTimeoutCts;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public ProcessEx(ITestOutputHelper output, Process proc, TimeSpan timeout)
         {

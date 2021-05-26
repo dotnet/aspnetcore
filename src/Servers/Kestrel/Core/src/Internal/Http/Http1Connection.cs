@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         // The _parsed fields cache the Path, QueryString, RawTarget, and/or _absoluteRequestTarget
         // from the previous request when DisableStringReuse is false.
-        private string? _parsedPath = null;
-        private string? _parsedQueryString = null;
-        private string? _parsedRawTarget = null;
+        private string? _parsedPath;
+        private string? _parsedQueryString;
+        private string? _parsedRawTarget;
         private Uri? _parsedAbsoluteRequestTarget;
 
         private long _remainingRequestHeadersBytesAllowed;

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class TagHelperParseTreeRewriter
+    internal static class TagHelperParseTreeRewriter
     {
         public static RazorSyntaxTree Rewrite(RazorSyntaxTree syntaxTree, string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
         {
@@ -45,11 +45,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing.
-        internal class Rewriter : SyntaxRewriter
+        internal sealed class Rewriter : SyntaxRewriter
         {
             // Internal for testing.
             // Null characters are invalid markup for HTML attribute values.
-            internal static readonly string InvalidAttributeValueMarker = "\0";
+            internal const string InvalidAttributeValueMarker = "\0";
 
             private readonly RazorSourceDocument _source;
             private readonly string _tagHelperPrefix;
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         if (!string.IsNullOrWhiteSpace(content))
                         {
                             var trimmedStart = content.TrimStart();
-                            var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
+                            var whitespace = new StringSegment(content, 0, content.Length - trimmedStart.Length);
                             var errorStart = SourceLocationTracker.Advance(child.GetSourceLocation(_source), whitespace);
                             var length = trimmedStart.TrimEnd().Length;
                             var allowedChildren = CurrentTagHelperTracker.AllowedChildren;

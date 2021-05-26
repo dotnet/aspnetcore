@@ -163,11 +163,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
+#pragma warning disable CA1823 // Avoid unused private fields
         private struct IO_STATUS_BLOCK
         {
             uint status;
             ulong information;
         }
+#pragma warning restore CA1823
 
         private struct FILE_COMPLETION_INFORMATION
         {

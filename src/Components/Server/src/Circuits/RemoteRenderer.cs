@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger _logger;
         internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
         private long _nextRenderId = 1;
-        private bool _disposing = false;
+        private bool _disposing;
 
         /// <summary>
         /// Notifies when a rendering exception occurred.

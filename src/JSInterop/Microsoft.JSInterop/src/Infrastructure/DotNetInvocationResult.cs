@@ -12,9 +12,9 @@ namespace Microsoft.JSInterop.Infrastructure
         /// </summary>
         /// <param name="exception">The <see cref="System.Exception"/> that caused the failure.</param>
         /// <param name="errorKind">The error kind.</param>
-        public DotNetInvocationResult(Exception exception, string? errorKind)
+        internal DotNetInvocationResult(Exception exception, string? errorKind)
         {
-            Result = default;
+            ResultJson = default;
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
             ErrorKind = errorKind;
             Success = false;
@@ -23,10 +23,10 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Constructor for a successful invocation.
         /// </summary>
-        /// <param name="result">The result.</param>
-        public DotNetInvocationResult(object? result)
+        /// <param name="resultJson">The JSON representation of the result.</param>
+        internal DotNetInvocationResult(string? resultJson)
         {
-            Result = result;
+            ResultJson = resultJson;
             Exception = default;
             ErrorKind = default;
             Success = true;
@@ -43,9 +43,9 @@ namespace Microsoft.JSInterop.Infrastructure
         public string? ErrorKind { get; }
 
         /// <summary>
-        /// Gets the result of a successful invocation.
+        /// Gets a JSON representation of the result of a successful invocation.
         /// </summary>
-        public object? Result { get; }
+        public string? ResultJson { get; }
 
         /// <summary>
         /// <see langword="true"/> if the invocation succeeded, otherwise <see langword="false"/>.

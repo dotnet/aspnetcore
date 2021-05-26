@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         /// <summary>
         /// <c>true</c> if request paths are case-sensitive; otherwise <c>false</c>. The default is to treat paths as case-insensitive.
         /// </summary>
-        public bool UseCaseSensitivePaths { get; set; } = false;
+        public bool UseCaseSensitivePaths { get; set; }
 
         /// <summary>
         /// For testing purposes only.

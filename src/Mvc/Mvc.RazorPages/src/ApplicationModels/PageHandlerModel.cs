@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
 
             Parameters = new List<PageParameterModel>();
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // These are just metadata, safe to create new collections
             Attributes = new List<object>(other.Attributes);
-            Properties = new Dictionary<object, object>(other.Properties);
+            Properties = new Dictionary<object, object?>(other.Properties);
 
             // Make a deep copy of other 'model' types.
             Parameters = new List<PageParameterModel>(other.Parameters.Select(p => new PageParameterModel(p) { Handler = this }));
@@ -65,17 +65,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the HTTP method supported by this handler.
         /// </summary>
-        public string HttpMethod { get; set; }
+        public string HttpMethod { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the handler method name.
         /// </summary>
-        public string HandlerName { get; set; }
+        public string? HandlerName { get; set; }
 
         /// <summary>
         /// Gets or sets a descriptive name for the handler.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         /// <summary>
         /// Gets the sequence of <see cref="PageParameterModel"/> instances.
@@ -85,13 +85,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the <see cref="PageApplicationModel"/>.
         /// </summary>
-        public PageApplicationModel Page { get; set; }
+        public PageApplicationModel Page { get; set; } = default!;
 
         /// <inheritdoc />
         public IReadOnlyList<object> Attributes { get; }
 
         /// <inheritdoc />
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         MemberInfo ICommonModel.MemberInfo => MethodInfo;
     }

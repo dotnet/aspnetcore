@@ -158,7 +158,14 @@ namespace Microsoft.AspNetCore.Http
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
             Func<string, string, CookieOptions, bool> rejectPredicate;
-            if (domainHasValue)
+            if (domainHasValue && pathHasValue)
+            {
+                rejectPredicate = (value, encKeyPlusEquals, opts) =>
+                    value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
+                        value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1 &&
+                        value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
+            }
+            else if (domainHasValue)
             {
                 rejectPredicate = (value, encKeyPlusEquals, opts) =>
                     value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&

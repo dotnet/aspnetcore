@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private RouteKey _routeTableLastBuiltForRouteKey;
 
-        private bool _onNavigateCalled = false;
+        private bool _onNavigateCalled;
 
         [Inject] private NavigationManager NavigationManager { get; set; }
 

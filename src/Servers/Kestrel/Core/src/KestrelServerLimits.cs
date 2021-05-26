@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private TimeSpan _requestHeadersTimeout = TimeSpan.FromSeconds(30);
 
         // Unlimited connections are allowed by default.
-        private long? _maxConcurrentConnections = null;
-        private long? _maxConcurrentUpgradedConnections = null;
+        private long? _maxConcurrentConnections;
+        private long? _maxConcurrentUpgradedConnections;
 
         /// <summary>
         /// Gets or sets the maximum size of the response buffer before write

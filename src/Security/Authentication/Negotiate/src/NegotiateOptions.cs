@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// This option must not be used if connections may be shared by requests from different users.
         /// </summary>
         /// <value>Defaults to <see langword="false"/>.</value>
-        public bool PersistKerberosCredentials { get; set; } = false;
+        public bool PersistKerberosCredentials { get; set; }
 
         /// <summary>
         /// Indicates if NTLM credentials should be persisted and re-used for subsquent anonymous requests.

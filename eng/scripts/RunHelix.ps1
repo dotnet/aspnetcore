@@ -8,13 +8,12 @@
 .PARAMETER HelixQueues
     Set the Helix queues to use. The list is '+' or ';'-separated.
     Some supported queues:
-    Ubuntu.1604.Amd64.Open
     Ubuntu.1804.Amd64.Open
-    Windows.10.Amd64.Open
+    Ubuntu.2004.Amd64.Open
+    Windows.10.Amd64.Server20H2.Open
     Windows.81.Amd64.Open
     Windows.7.Amd64.Open
     OSX.1014.Amd64.Open
-    Centos.7.Amd64.Open
     Debian.9.Amd64.Open
     Redhat.7.Amd64.Open
 .PARAMETER RunQuarantinedTests
@@ -29,7 +28,7 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$Project,
 
-    [string]$HelixQueues = "Windows.10.Amd64.Open",
+    [string]$HelixQueues = "Windows.10.Amd64.Server20H2.Open",
     [switch]$RunQuarantinedTests,
 
     [ValidateSet('x64', 'x86', 'arm', 'arm64')]

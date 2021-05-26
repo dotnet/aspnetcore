@@ -7,6 +7,7 @@
     <Description>Authenticate your Blazor webassembly applications with Azure Active Directory and Azure Active Directory B2C</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Trimmable>true</Trimmable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

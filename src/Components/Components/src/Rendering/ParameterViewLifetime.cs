@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly RenderBatchBuilder _owner;
         private readonly int _stamp;
 
-        public static readonly ParameterViewLifetime Unbound = default;
+        public static readonly ParameterViewLifetime Unbound;
 
         public ParameterViewLifetime(RenderBatchBuilder owner)
         {

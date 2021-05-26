@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 
@@ -352,8 +353,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (corsPreflight)
             {
-                httpContext.Request.Headers[OriginHeader] = "example.com";
-                httpContext.Request.Headers[AccessControlRequestMethod] = httpMethod;
+                httpContext.Request.Headers[HeaderNames.Origin] = "example.com";
+                httpContext.Request.Headers[HeaderNames.AccessControlRequestMethod] = httpMethod;
             }
 
             return httpContext;

@@ -18,7 +18,7 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The method returns void, so nothing is deserialized.")]
-        public static void InvokeVoid(this IJSInProcessObjectReference jsObjectReference, string identifier, params object?[] args)
+        public static void InvokeVoid(this IJSInProcessObjectReference jsObjectReference, string identifier, params object?[]? args)
         {
             if (jsObjectReference == null)
             {

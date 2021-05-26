@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets or sets the value for the Vary response header.
         /// </summary>
-        public string VaryByHeader
+        public string? VaryByHeader
         {
             get => _executor.VaryByHeader;
             set => _executor.VaryByHeader = value;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <remarks>
         /// <see cref="VaryByQueryKeys"/> requires the response cache middleware.
         /// </remarks>
-        public string[] VaryByQueryKeys
+        public string[]? VaryByQueryKeys
         {
             get => _executor.VaryByQueryKeys;
             set => _executor.VaryByQueryKeys = value;

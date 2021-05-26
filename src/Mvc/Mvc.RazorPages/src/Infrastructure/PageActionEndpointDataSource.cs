@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return endpoints;
         }
 
-        internal void AddDynamicPageEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state, int? order = null)
+        internal void AddDynamicPageEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object? state, int? order = null)
         {
             CreateInertEndpoints = true;
             lock (Lock)

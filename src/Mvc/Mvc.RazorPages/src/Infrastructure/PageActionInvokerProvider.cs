@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
             IActionResultTypeMapper mapper,
-            IActionContextAccessor actionContextAccessor = null)
+            IActionContextAccessor? actionContextAccessor = null)
         {
             _pageLoader = pageLoader;
             _pageActionInvokerCache = pageActionInvokerCache;

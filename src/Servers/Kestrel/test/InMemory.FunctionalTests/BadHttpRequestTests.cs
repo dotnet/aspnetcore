@@ -81,17 +81,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Theory]
         [InlineData("POST")]
         [InlineData("PUT")]
-        public Task BadRequestIfMethodRequiresLengthButNoContentLengthOrTransferEncodingInRequest(string method)
-        {
-            return TestBadRequest(
-                $"{method} / HTTP/1.1\r\nHost:\r\n\r\n",
-                "411 Length Required",
-                CoreStrings.FormatBadRequest_LengthRequired(method));
-        }
-
-        [Theory]
-        [InlineData("POST")]
-        [InlineData("PUT")]
         public Task BadRequestIfMethodRequiresLengthButNoContentLengthInHttp10Request(string method)
         {
             return TestBadRequest(

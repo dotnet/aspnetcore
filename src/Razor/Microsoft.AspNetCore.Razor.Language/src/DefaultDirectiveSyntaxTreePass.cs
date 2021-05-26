@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,16 +14,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public RazorSyntaxTree Execute(RazorCodeDocument codeDocument, RazorSyntaxTree syntaxTree)
         {
-            if (codeDocument == null)
+            if (FileKinds.IsComponent(codeDocument.GetFileKind()))
             {
-                throw new ArgumentNullException(nameof(codeDocument));
+                // Nothing to do here.
+                return syntaxTree;
             }
 
-            if (syntaxTree == null)
-            {
-                throw new ArgumentNullException(nameof(syntaxTree));
-            }
-            
             var sectionVerifier = new NestedSectionVerifier(syntaxTree);
             return sectionVerifier.Verify();
         }

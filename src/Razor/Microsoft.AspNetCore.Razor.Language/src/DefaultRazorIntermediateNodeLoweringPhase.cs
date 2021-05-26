@@ -1774,7 +1774,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                             IntermediateNode attributeNode;
                             if (parameterMatch &&
-                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter, out _))
+                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter))
                             {
                                 var expectsBooleanValue = associatedAttributeParameterDescriptor.IsBooleanProperty;
                                 if (!expectsBooleanValue)
@@ -1786,7 +1786,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                                 attributeNode = new TagHelperDirectiveAttributeParameterIntermediateNode()
                                 {
                                     AttributeName = actualAttributeName,
-                                    AttributeNameWithoutParameter = attributeNameWithoutParameter,
+                                    AttributeNameWithoutParameter = attributeNameWithoutParameter.Value,
                                     OriginalAttributeName = attributeName,
                                     BoundAttributeParameter = associatedAttributeParameterDescriptor,
                                     BoundAttribute = associatedAttributeDescriptor,
@@ -1912,12 +1912,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                             IntermediateNode attributeNode;
                             if (parameterMatch &&
-                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter, out _))
+                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter))
                             {
                                 attributeNode = new TagHelperDirectiveAttributeParameterIntermediateNode()
                                 {
                                     AttributeName = actualAttributeName,
-                                    AttributeNameWithoutParameter = attributeNameWithoutParameter,
+                                    AttributeNameWithoutParameter = attributeNameWithoutParameter.Value,
                                     OriginalAttributeName = attributeName,
                                     BoundAttributeParameter = associatedAttributeParameterDescriptor,
                                     BoundAttribute = associatedAttributeDescriptor,

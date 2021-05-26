@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         /// <param name="arguments">The arguments to the method.</param>
         /// <param name="handlerMethodDescriptor">The method descriptor.</param>
         /// <param name="instance">The instance.</param>
-        public BeforeHandlerMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance)
+        public BeforeHandlerMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object?> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance)
         {
             ActionContext = actionContext;
             Arguments = arguments;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         /// <summary>
         /// The arguments to the method.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Arguments { get; }
+        public IReadOnlyDictionary<string, object?> Arguments { get; }
 
         /// <summary>
         /// The <see cref="HandlerMethodDescriptor"/>.
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         /// <param name="handlerMethodDescriptor">The method descriptor.</param>
         /// <param name="instance">The instance.</param>
         /// <param name="result">The result of the handler method</param>
-        public AfterHandlerMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance, IActionResult result)
+        public AfterHandlerMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object?> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance, IActionResult? result)
         {
             ActionContext = actionContext;
             Arguments = arguments;
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         /// <summary>
         /// The arguments to the method.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Arguments { get; }
+        public IReadOnlyDictionary<string, object?> Arguments { get; }
 
         /// <summary>
         /// The <see cref="HandlerMethodDescriptor"/>.
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         /// <summary>
         /// The result of the method.
         /// </summary>
-        public IActionResult Result { get; }
+        public IActionResult? Result { get; }
 
         /// <inheritdoc/>
         protected override int Count => 5;
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             1 => new KeyValuePair<string, object>(nameof(Arguments), Arguments),
             2 => new KeyValuePair<string, object>(nameof(HandlerMethodDescriptor), HandlerMethodDescriptor),
             3 => new KeyValuePair<string, object>(nameof(Instance), Instance),
-            4 => new KeyValuePair<string, object>(nameof(Result), Result),
+            4 => new KeyValuePair<string, object>(nameof(Result), Result!),
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
     }

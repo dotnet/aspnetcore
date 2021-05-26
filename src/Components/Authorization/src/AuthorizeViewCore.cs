@@ -14,40 +14,40 @@ namespace Microsoft.AspNetCore.Components.Authorization
     /// </summary>
     public abstract class AuthorizeViewCore : ComponentBase
     {
-        private AuthenticationState currentAuthenticationState;
+        private AuthenticationState? currentAuthenticationState;
         private bool? isAuthorized;
 
         /// <summary>
         /// The content that will be displayed if the user is authorized.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> ChildContent { get; set; }
+        [Parameter] public RenderFragment<AuthenticationState>? ChildContent { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
+        [Parameter] public RenderFragment<AuthenticationState>? NotAuthorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is authorized.
         /// If you specify a value for this parameter, do not also specify a value for <see cref="ChildContent"/>.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> Authorized { get; set; }
+        [Parameter] public RenderFragment<AuthenticationState>? Authorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
-        [Parameter] public RenderFragment Authorizing { get; set; }
+        [Parameter] public RenderFragment? Authorizing { get; set; }
 
         /// <summary>
         /// The resource to which access is being controlled.
         /// </summary>
-        [Parameter] public object Resource { get; set; }
+        [Parameter] public object? Resource { get; set; }
 
-        [CascadingParameter] private Task<AuthenticationState> AuthenticationState { get; set; }
+        [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
 
-        [Inject] private IAuthorizationPolicyProvider AuthorizationPolicyProvider { get; set; }
+        [Inject] private IAuthorizationPolicyProvider AuthorizationPolicyProvider { get; set; } = default!;
 
-        [Inject] private IAuthorizationService AuthorizationService { get; set; }
+        [Inject] private IAuthorizationService AuthorizationService { get; set; } = default!;
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -61,11 +61,11 @@ namespace Microsoft.AspNetCore.Components.Authorization
             else if (isAuthorized == true)
             {
                 var authorized = Authorized ?? ChildContent;
-                builder.AddContent(0, authorized?.Invoke(currentAuthenticationState));
+                builder.AddContent(0, authorized?.Invoke(currentAuthenticationState!));
             }
             else
             {
-                builder.AddContent(0, NotAuthorized?.Invoke(currentAuthenticationState));
+                builder.AddContent(0, NotAuthorized?.Invoke(currentAuthenticationState!));
             }
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
         /// <summary>
         /// Gets the data required to apply authorization rules.
         /// </summary>
-        protected abstract IAuthorizeData[] GetAuthorizeData();
+        protected abstract IAuthorizeData[]? GetAuthorizeData();
 
         private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
         {
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
 
             var policy = await AuthorizationPolicy.CombineAsync(
                 AuthorizationPolicyProvider, authorizeData);
-            var result = await AuthorizationService.AuthorizeAsync(user, Resource, policy);
+            var result = await AuthorizationService.AuthorizeAsync(user, Resource, policy!);
             return result.Succeeded;
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -27,12 +28,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     {
         private bool _disposed;
         private bool _disposedAsync;
-        private TestServer _server;
-        private IHost _host;
+        private TestServer? _server;
+        private IHost? _host;
         private Action<IWebHostBuilder> _configuration;
-        private IList<HttpClient> _clients = new List<HttpClient>();
-        private List<WebApplicationFactory<TEntryPoint>> _derivedFactories =
-            new List<WebApplicationFactory<TEntryPoint>>();
+        private List<HttpClient> _clients = new();
+        private List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
         /// <summary>
         /// <para>
@@ -138,6 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             return factory;
         }
 
+        [MemberNotNull(nameof(_server))]
         private void EnsureServer()
         {
             if (_server != null)
@@ -183,13 +184,13 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
             else
             {
-                builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name);
+                builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name!);
             }
         }
 
         private string GetContentRootFromFile(string file)
         {
-            var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file));
+            var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file))!;
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
 
             if (!data.TryGetValue(key, out var contentRoot))
@@ -200,13 +201,13 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;
         }
 
-        private string GetContentRootFromAssembly()
+        private string? GetContentRootFromAssembly()
         {
             var metadataAttributes = GetContentRootMetadataAttributes(
-                typeof(TEntryPoint).Assembly.FullName,
-                typeof(TEntryPoint).Assembly.GetName().Name);
+                typeof(TEntryPoint).Assembly.FullName!,
+                typeof(TEntryPoint).Assembly.GetName().Name!);
 
-            string contentRoot = null;
+            string? contentRoot = null;
             for (var i = 0; i < metadataAttributes.Length; i++)
             {
                 var contentRootAttribute = metadataAttributes[i];
@@ -232,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         {
             // Attempt to look for TEST_CONTENTROOT_APPNAME in settings. This should result in looking for
             // ASPNETCORE_TEST_CONTENTROOT_APPNAME environment variable.
-            var assemblyName = typeof(TEntryPoint).Assembly.GetName().Name;
+            var assemblyName = typeof(TEntryPoint).Assembly.GetName().Name!;
             var settingSuffix = assemblyName.ToUpperInvariant().Replace(".", "_");
             var settingName = $"TEST_CONTENTROOT_{settingSuffix}";
 
@@ -337,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// array as arguments.
         /// </remarks>
         /// <returns>A <see cref="IHostBuilder"/> instance.</returns>
-        protected virtual IHostBuilder CreateHostBuilder()
+        protected virtual IHostBuilder? CreateHostBuilder()
         {
             var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
             if (hostBuilder != null)
@@ -364,7 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 throw new InvalidOperationException(Resources.FormatMissingBuilderMethod(
                     nameof(IHostBuilder),
                     nameof(IWebHostBuilder),
-                    typeof(TEntryPoint).Assembly.EntryPoint.DeclaringType.FullName,
+                    typeof(TEntryPoint).Assembly.EntryPoint!.DeclaringType!.FullName,
                     typeof(WebApplicationFactory<TEntryPoint>).Name,
                     nameof(CreateHostBuilder),
                     nameof(CreateWebHostBuilder)));
@@ -566,7 +567,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             private readonly Func<IWebHostBuilder, TestServer> _createServer;
             private readonly Func<IHostBuilder, IHost> _createHost;
             private readonly Func<IWebHostBuilder> _createWebHostBuilder;
-            private readonly Func<IHostBuilder> _createHostBuilder;
+            private readonly Func<IHostBuilder?> _createHostBuilder;
             private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
             private readonly Action<HttpClient> _configureClient;
 
@@ -575,7 +576,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 Func<IWebHostBuilder, TestServer> createServer,
                 Func<IHostBuilder, IHost> createHost,
                 Func<IWebHostBuilder> createWebHostBuilder,
-                Func<IHostBuilder> createHostBuilder,
+                Func<IHostBuilder?> createHostBuilder,
                 Func<IEnumerable<Assembly>> getTestAssemblies,
                 Action<HttpClient> configureClient,
                 Action<IWebHostBuilder> configureWebHost)
@@ -596,7 +597,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             protected override IWebHostBuilder CreateWebHostBuilder() => _createWebHostBuilder();
 
-            protected override IHostBuilder CreateHostBuilder() => _createHostBuilder();
+            protected override IHostBuilder? CreateHostBuilder() => _createHostBuilder();
 
             protected override IEnumerable<Assembly> GetTestAssemblies() => _getTestAssemblies();
 
