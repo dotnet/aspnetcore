@@ -1,6 +1,6 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>!
-Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnCheckSlidingExpiration.get -> System.Func<Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnCheckSlidingExpiration.get -> System.Func<Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnCheckSlidingExpiration.set -> void
 Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext
 Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext.CookieSlidingExpirationContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions! options, Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, System.TimeSpan elapsedTime, System.TimeSpan remainingTime) -> void

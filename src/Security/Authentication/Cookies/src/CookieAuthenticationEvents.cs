@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <summary>
         /// Invoked to check if the cookie should be renewed.
         /// </summary>
-        public Func<CookieSlidingExpirationContext, Task>? OnCheckSlidingExpiration { get; set; }
+        public Func<CookieSlidingExpirationContext, Task> OnCheckSlidingExpiration { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked on signing in.
