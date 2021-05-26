@@ -1,4 +1,8 @@
 const createProxyMiddleware = require('http-proxy-middleware');
+const { env } = require('process');
+
+const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
+  env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'http://localhost:8080';
 
 const context =  [
   "/weatherforecast",
@@ -13,11 +17,7 @@ const context =  [
 
 module.exports = function(app) {
   const appProxy = createProxyMiddleware(context, {
-//#if(RequiresHttps)
-    target: 'https://localhost:5001',
-//#else
-    target: 'http://localhost:5000',
-//#endif
+    target: target,
     secure: false
   });
 
