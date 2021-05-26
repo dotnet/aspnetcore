@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Web.WebView2.Core;
+using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
@@ -53,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             return webViewManager.AddRootComponentAsync(ComponentType, Selector, parameterView);
         }
 
-        internal Task RemoveFromWebViewManagerAsync(WebView2WebViewManager webviewManager)
+        internal Task RemoveFromWebViewManagerAsync(WebView2WebViewManager<WebView2Control, CoreWebView2Environment> webviewManager)
         {
             return webviewManager.RemoveRootComponentAsync(Selector);
         }

@@ -2,40 +2,248 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
     /// <summary>
     /// Provides an abstraction for different UI frameworks to provide access to APIs from
-    /// <see cref="Microsoft.Web.WebView2.Core.CoreWebView2"/> and related controls.
+    /// Microsoft.Web.WebView2.Core.CoreWebView2 and related controls.
     /// </summary>
-    public interface IWebView2Wrapper
+    public interface IWebView2Wrapper<TWebView2, TCoreWebView2Environment>
     {
-        /// <summary>
-        /// Gets the <see cref="CoreWebView2"/> instance on the control. This is only available
-        /// once the <see cref="Task"/> returned by <see cref="EnsureCoreWebView2Async(CoreWebView2Environment)"/>
-        /// has completed.
-        /// </summary>
-        CoreWebView2 CoreWebView2 { get; }
+        TWebView2 WebView2 { get; }
+
+        Task<ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment>> CreateEnvironmentAsync();
+
+
+        ICoreWebView2Wrapper CoreWebView2 { get; }
 
         /// <summary>
         /// Gets or sets the source URI of the control. Setting the source URI causes page navigation.
         /// </summary>
         Uri Source { get; set; }
 
-        /// <summary>
-        /// Initializes the <see cref="CoreWebView2"/> instance on the control. This should only be called once
-        /// per control.
-        /// </summary>
-        /// <param name="environment">A <see cref="CoreWebView2Environment"/> that can be used to customize the control's behavior.</param>
-        /// <returns>A <see cref="Task"/> that will complete once the <see cref="CoreWebView2"/> is initialized and attached to the control.</returns>
-        Task EnsureCoreWebView2Async(CoreWebView2Environment environment = null);
+        Task EnsureCoreWebView2Async(ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment> environment = null);
 
         /// <summary>
         /// Event that occurs when an accelerator key is pressed.
         /// </summary>
-        event EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> AcceleratorKeyPressed;
+        Action AddAcceleratorKeyPressedHandler(EventHandler<ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler);
+    }
+
+    public interface ICoreWebView2WebResourceRequestedEventArgsWrapper
+    {
+        /// <summary>
+        /// Gets the web resource request.
+        /// </summary>
+        /// <remarks>
+        /// The request object may be missing some headers that are added by network stack at a later time.
+        /// </remarks>
+        public ICoreWebView2WebResourceRequestWrapper Request { get; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2WebResourceResponse" /> object.
+        /// </summary>
+        /// <remarks>
+        /// If this object is set, the <see cref="E:Microsoft.Web.WebView2.Core.CoreWebView2.WebResourceRequested" /> event will be completed with this Response.
+        /// An empty <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2WebResourceResponse" /> object can be created with <see cref="M:Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateWebResourceResponse(System.IO.Stream,System.Int32,System.String,System.String)" /> and then modified to construct the Response.
+        /// </remarks>
+        public ICoreWebView2WebResourceResponseWrapper Response { get; set; }
+
+        /// <summary>
+        /// Gets the web resource request context.
+        /// </summary>
+        public CoreWebView2WebResourceContextWrapper ResourceContext { get; }
+    }
+
+
+    /// <summary>
+    /// An HTTP request used with the <see cref="E:Microsoft.Web.WebView2.Core.CoreWebView2.WebResourceRequested" /> event.
+    /// </summary>
+    public interface ICoreWebView2WebResourceRequestWrapper
+    {
+        /// <summary>
+        /// Gets or sets the request URI.
+        /// </summary>
+        string Uri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP request method.
+        /// </summary>
+        string Method { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP request message body as stream.
+        /// </summary>
+        /// <remarks>
+        /// POST data should be here. If a stream is set, which overrides the message body, the stream must have all the content data available by the time the <see cref="E:Microsoft.Web.WebView2.Core.CoreWebView2.WebResourceRequested" /> event deferral of this request is completed. Stream should be agile or be created from a background STA to prevent performance impact to the UI thread. <c>null</c> means no content data.
+        /// </remarks>
+        /// <seealso cref="T:System.IO.Stream" />
+        Stream Content { get; set; }
+
+        ///// <summary>
+        ///// Gets the mutable HTTP request headers.
+        ///// </summary>
+        //ICoreWebView2HttpRequestHeadersWrapper Headers { get; }
+    }
+
+
+    /// <summary>
+    /// An HTTP response used with the <see cref="E:Microsoft.Web.WebView2.Core.CoreWebView2.WebResourceRequested" /> event.
+    /// </summary>
+    public interface ICoreWebView2WebResourceResponseWrapper
+    {
+        /// <summary>
+        /// Gets HTTP response content as stream.
+        /// </summary>
+        /// <remarks>
+        /// Stream must have all the content data available by the time the <see cref="E:Microsoft.Web.WebView2.Core.CoreWebView2.WebResourceRequested" /> event deferral of this response is completed. Stream should be agile or be created from a background thread to prevent performance impact to the UI thread. <c>null</c> means no content data.
+        /// </remarks>
+        /// <seealso cref="T:System.IO.Stream" />
+        Stream Content { get; set; }
+
+        /// <summary>
+        /// Gets the overridden HTTP response headers.
+        /// </summary>
+        ICoreWebView2HttpResponseHeadersWrapper Headers { get; }
+
+        /// <summary>
+        /// Gets or sets the HTTP response status code.
+        /// </summary>
+        int StatusCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP response reason phrase.
+        /// </summary>
+        string ReasonPhrase { get; set; }
+    }
+
+
+
+
+
+
+    //public interface ICoreWebView2HttpRequestHeadersWrapper : IEnumerable<KeyValuePair<string, string>>, IEnumerable
+    //{
+    //    /// <inheritdoc />
+    //    IEnumerator IEnumerable.GetEnumerator()
+    //    {
+    //        return GetEnumerator();
+    //    }
+
+    //    /// <inheritdoc />
+    //    IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator()
+    //    {
+    //        return GetEnumerator();
+    //    }
+
+    //    /// <summary>
+    //    /// Returns an enumerator that iterates through the <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2HttpRequestHeaders" /> or <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2HttpResponseHeaders" /> collection.
+    //    /// </summary>
+    //    CoreWebView2HttpHeadersCollectionIterator GetEnumerator()
+    //    {
+    //        return GetIterator();
+    //    }
+
+    //    internal CoreWebView2HttpRequestHeaders(object rawCoreWebView2HttpRequestHeaders)
+    //    {
+    //        _rawNative = rawCoreWebView2HttpRequestHeaders;
+    //    }
+
+    //    /// <summary>
+    //    /// Gets the header value matching the name.
+    //    /// </summary>
+    //    /// <returns>The header value matching the name.</returns>
+    //    string GetHeader(string name)
+    //    {
+    //        return _nativeICoreWebView2HttpRequestHeaders.GetHeader(name);
+    //    }
+
+    //    /// <summary>
+    //    /// Gets the header value matching the name using a <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2HttpHeadersCollectionIterator" />.
+    //    /// </summary>
+    //    /// <returns>The header value matching the name.</returns>
+    //    CoreWebView2HttpHeadersCollectionIterator GetHeaders(string name)
+    //    {
+    //        return new CoreWebView2HttpHeadersCollectionIterator(_nativeICoreWebView2HttpRequestHeaders.GetHeaders(name));
+    //    }
+
+    //    /// <summary>
+    //    /// Checks whether the headers contain an entry that matches the header name.
+    //    /// </summary>
+    //    /// <returns>Whether the headers contain an entry that matches the header name.</returns>
+    //    bool Contains(string name)
+    //    {
+    //        return _nativeICoreWebView2HttpRequestHeaders.Contains(name) != 0;
+    //    }
+
+    //    /// <summary>
+    //    /// Adds or updates header that matches the name.
+    //    /// </summary>
+    //    void SetHeader(string name, string value)
+    //    {
+    //        _nativeICoreWebView2HttpRequestHeaders.SetHeader(name, value);
+    //    }
+
+    //    /// <summary>
+    //    /// Removes header that matches the name.
+    //    /// </summary>
+    //    void RemoveHeader(string name)
+    //    {
+    //        _nativeICoreWebView2HttpRequestHeaders.RemoveHeader(name);
+    //    }
+
+    //    /// <summary>
+    //    /// Gets a <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2HttpHeadersCollectionIterator" /> over the collection of request headers.
+    //    /// </summary>
+    //    CoreWebView2HttpHeadersCollectionIterator GetIterator()
+    //    {
+    //        return new CoreWebView2HttpHeadersCollectionIterator(_nativeICoreWebView2HttpRequestHeaders.GetIterator());
+    //    }
+    //}
+
+    public interface ICoreWebView2HttpResponseHeadersWrapper : IEnumerable<KeyValuePair<string, string>>, IEnumerable
+    {
+        /// <summary>
+        /// Appends header line with name and value.
+        /// </summary>
+        /// <param name="name">The header name to be appended.</param>
+        /// <param name="value">The header value to be appended.</param>
+        void AppendHeader(string name, string value);
+
+        /// <summary>
+        /// Checks whether this CoreWebView2HttpResponseHeaders  contain entries matching the header name.
+        /// </summary>
+        /// <param name="name">The name of the header to seek.</param>
+        bool Contains(string name);
+
+        /// <summary>
+        /// Gets the first header value in the collection matching the name.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        /// <returns>The first header value in the collection matching the name.</returns>
+        string GetHeader(string name);
+
+        /// <summary>
+        /// Gets the header values matching the name.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        CoreWebView2HttpHeadersCollectionIterator GetHeaders(string name);
+
+    }
+
+    public interface ICoreWebView2AcceleratorKeyPressedEventArgsWrapper
+    {
+        uint VirtualKey { get; }
+        int KeyEventLParam { get; }
+        bool Handled { get; set; }
+    }
+
+    public interface ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment>
+    {
+        TCoreWebView2Environment CoreWebView2Environment { get; }
     }
 }

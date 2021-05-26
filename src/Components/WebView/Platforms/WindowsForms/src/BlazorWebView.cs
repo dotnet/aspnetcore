@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
     public sealed class BlazorWebView : ContainerControl, IDisposable
     {
         private readonly WebView2Control _webview;
-        private WebView2WebViewManager _webviewManager;
+        private WebView2WebViewManager<WebView2Control, CoreWebView2Environment> _webviewManager;
         private string _hostPage;
         private IServiceProvider _services;
 
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-            _webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, hostPageRelativePath);
+            _webviewManager = new WebView2WebViewManager<WebView2Control, CoreWebView2Environment>(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, hostPageRelativePath);
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously
