@@ -21,7 +21,7 @@ builder.Services
             OnCheckSlidingExpiration = context =>
             {
                 // If 25% expired instead of the default 50%.
-                context.ShouldRenew = context.TimeElapsed > (context.Options.ExpireTimeSpan / 4);
+                context.ShouldRenew = context.ElapsedTime > (context.Options.ExpireTimeSpan / 4);
 
                 // Don't renew on API endpoints that use JWT.
                 var authData = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IAuthorizeData>();

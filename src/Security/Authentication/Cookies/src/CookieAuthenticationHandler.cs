@@ -90,12 +90,21 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
                 var timeRemaining = expiresUtc.Value.Subtract(currentUtc);
+                var renew = timeRemaining < timeElapsed;
 
-                var eventContext = new CookieSlidingExpirationContext(Context, Scheme, Options, ticket)
+                if (Options.Events.OnCheckSlidingExpiration == null)
                 {
-                    TimeElapsed = timeElapsed,
-                    TimeRemaining = timeRemaining,
-                    ShouldRenew = timeRemaining < timeElapsed,
+                    if (renew)
+                    {
+                        RequestRefresh(ticket);
+                    }
+
+                    return;
+                }
+
+                var eventContext = new CookieSlidingExpirationContext(Context, Scheme, Options, ticket, timeElapsed, timeRemaining)
+                {
+                    ShouldRenew = renew,
                 };
                 await Options.Events.OnCheckSlidingExpiration(eventContext);
 

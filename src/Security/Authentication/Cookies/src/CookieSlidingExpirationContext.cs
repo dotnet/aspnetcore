@@ -17,8 +17,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="context"></param>
         /// <param name="scheme"></param>
         /// <param name="ticket">Contains the initial values for identity and extra data</param>
+        /// <param name="elapsedTime"></param>
+        /// <param name="remainingTime"></param>
         /// <param name="options"></param>
-        public CookieSlidingExpirationContext(HttpContext context, AuthenticationScheme scheme, CookieAuthenticationOptions options, AuthenticationTicket ticket)
+        public CookieSlidingExpirationContext(HttpContext context, AuthenticationScheme scheme, CookieAuthenticationOptions options,
+            AuthenticationTicket ticket, TimeSpan elapsedTime, TimeSpan remainingTime)
             : base(context, scheme, options, ticket?.Properties)
         {
             if (ticket == null)
@@ -27,17 +30,19 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
 
             Principal = ticket.Principal;
+            ElapsedTime = elapsedTime;
+            RemainingTime = remainingTime;
         }
 
         /// <summary>
         /// The amount of time that has elapsed since the cookie was issued or renewed.
         /// </summary> 
-        public TimeSpan TimeElapsed { get; internal set; }
+        public TimeSpan ElapsedTime { get; }
 
         /// <summary>
         /// The amount of time left until the cookie expires.
         /// </summary> 
-        public TimeSpan TimeRemaining { get; internal set; }
+        public TimeSpan RemainingTime { get; }
 
         /// <summary>
         /// If true, the cookie will be renewed. The initial value will be true if the elapsed time
