@@ -49,6 +49,15 @@ namespace Microsoft.AspNetCore.Builder
 
             // Add default services
             _deferredHostBuilder.ConfigureDefaults(args);
+            _deferredHostBuilder.ConfigureWebHostDefaults(configure: _ => { });
+
+            // This is important because GenericWebHostBuilder does the following and we want to preserve the WebHostBuilderContext:
+            // context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
+            // context.Properties[typeof(WebHostOptions)] = options;
+            foreach (var (key, value) in _deferredHostBuilder.Properties)
+            {
+                _hostBuilder.Properties[key] = value;
+            }
 
             // Configuration changes made by ConfigureDefaults(args) were already picked up by the BootstrapHostBuilder,
             // so we ignore changes to config until ConfigureDefaults completes.
@@ -96,9 +105,11 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A configured <see cref="WebApplication"/>.</returns>
         public WebApplication Build()
         {
+            // We call ConfigureWebHostDefaults AGAIN because config might be added like "ForwardedHeaders_Enabled"
+            // which can add even more services. If not for that, we probably call _hostBuilder.ConfigureWebHost(ConfigureWebHost)
+            // instead in order to avoid duplicate service registration.
             _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost);
-            _builtApplication = new WebApplication(_hostBuilder.Build());
-            return _builtApplication;
+            return _builtApplication = new WebApplication(_hostBuilder.Build());
         }
 
         private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
@@ -163,16 +174,23 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Properties[item.Key] = item.Value;
             }
-
         }
 
         private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
         {
             _hostBuilder.ConfigureHostConfiguration(builder =>
             {
+                // TODO: Use a ChainedConfigurationSource instead.
+                // See EnvironmentSpecificLoggingConfigurationSectionPassedToLoggerByDefault in WebApplicationFuncationalTests.
+
                 // All the sources in builder.Sources should be in Configuration.Sources
                 // already thanks to the BootstrapHostBuilder.
                 builder.Sources.Clear();
+
+                foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
+                {
+                    builder.Properties[key] = value;
+                }
 
                 foreach (var s in ((IConfigurationBuilder)Configuration).Sources)
                 {
@@ -180,8 +198,18 @@ namespace Microsoft.AspNetCore.Builder
                 }
             });
 
-            _hostBuilder.ConfigureServices((context, services) =>
+            genericWebHostBuilder.ConfigureServices((context, services) =>
             {
+                // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
+                // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
+                // until now, so we cannot clear these services even though some are redundant because
+                // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
+
+                // Ideally, we'd only call _hostBuilder.ConfigureWebHost(ConfigureWebHost) instead of
+                // _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost) to avoid some duplicate service descriptors,
+                // but we want to add services in the WebApplicationBuilder constructor so code can inspect
+                // WebApplicationBuilder.Services. At the same time, we want to be able which services are loaded
+                // to react to config changes (e.g. ForwardedHeadersStartupFilter).
                 foreach (var s in Services)
                 {
                     services.Add(s);

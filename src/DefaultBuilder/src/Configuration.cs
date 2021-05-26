@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Automatically update the <see cref="IConfiguration"/> on <see cref="IConfigurationBuilder"/> changes.
         /// If <see langword="false"/>, <see cref="Update()"/> will manually update the <see cref="IConfiguration"/>.
         /// </summary>
-        public bool AutoUpdate { get; set; } = true;
+        internal bool AutoUpdate { get; set; } = true;
 
         /// <inheritdoc />
         public string this[string key] { get => _configurationRoot[key]; set => _configurationRoot[key] = value; }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <inheritdoc />
-        public void Dispose()
+        void IDisposable.Dispose()
         {
             _changeTokenRegistration?.Dispose();
             _configurationRoot?.Dispose();

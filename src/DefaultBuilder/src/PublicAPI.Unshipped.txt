@@ -1,9 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.Configuration
-Microsoft.AspNetCore.Builder.Configuration.AutoUpdate.get -> bool
-Microsoft.AspNetCore.Builder.Configuration.AutoUpdate.set -> void
 Microsoft.AspNetCore.Builder.Configuration.Configuration() -> void
-Microsoft.AspNetCore.Builder.Configuration.Dispose() -> void
 Microsoft.AspNetCore.Builder.Configuration.GetChildren() -> System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSection!>!
 Microsoft.AspNetCore.Builder.Configuration.GetSection(string! key) -> Microsoft.Extensions.Configuration.IConfigurationSection!
 Microsoft.AspNetCore.Builder.Configuration.Update() -> void

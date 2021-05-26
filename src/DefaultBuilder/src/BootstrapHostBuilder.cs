@@ -13,18 +13,20 @@ namespace Microsoft.AspNetCore.Hosting
     // This exists solely to bootstrap the configuration
     internal class BootstrapHostBuilder : IHostBuilder
     {
-        private readonly HostBuilderContext _context;
         private readonly Configuration _configuration;
         private readonly WebHostEnvironment _environment;
 
-        private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new List<Action<IConfigurationBuilder>>();
-        private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
+        private readonly HostBuilderContext _hostContext;
+
+        private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
+        private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
 
         public BootstrapHostBuilder(Configuration configuration, WebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
             _environment = webHostEnvironment;
-            _context = new HostBuilderContext(Properties)
+
+            _hostContext = new HostBuilderContext(Properties)
             {
                 Configuration = configuration,
                 HostingEnvironment = webHostEnvironment
@@ -56,6 +58,11 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _configureHostActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
             return this;
+        }
+
+        public string? GetSetting(string key)
+        {
+            return _configuration[key];
         }
 
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
@@ -93,7 +100,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             foreach (var configureAppAction in _configureAppActions)
             {
-                configureAppAction(_context, _configuration);
+                configureAppAction(_hostContext, _configuration);
             }
 
             _configuration.Update();

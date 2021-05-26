@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class ConfigureHostBuilder : IHostBuilder
     {
-        private Action<IHostBuilder>? _operations;
+        private readonly List<Action<IHostBuilder>> _operations = new();
 
         /// <inheritdoc />
         public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
@@ -62,7 +62,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
         {
-            _operations += b => b.ConfigureContainer(configureDelegate);
+            if (configureDelegate is null)
+            {
+                throw new ArgumentNullException(nameof(configureDelegate));
+            }
+
+            _operations.Add(b => b.ConfigureContainer(configureDelegate));
             return this;
         }
 
@@ -91,20 +96,33 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
         {
-            _operations += b => b.UseServiceProviderFactory(factory);
+            if (factory is null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _operations.Add(b => b.UseServiceProviderFactory(factory));
             return this;
         }
 
         /// <inheritdoc />
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
         {
-            _operations += b => b.UseServiceProviderFactory(factory);
+            if (factory is null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _operations.Add(b => b.UseServiceProviderFactory(factory));
             return this;
         }
 
         internal void ExecuteActions(IHostBuilder hostBuilder)
         {
-            _operations?.Invoke(hostBuilder);
+            foreach (var operation in _operations)
+            {
+                operation(hostBuilder);
+            }
         }
     }
 }

@@ -4,7 +4,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -68,6 +67,12 @@ namespace Microsoft.AspNetCore.Tests
 }");
 
                 var app = WebApplication.Create(new[] { "--environment", "Development" });
+
+                // TODO: Make this work! I think it should be possible if we register our Configuration
+                // as a ChainedConfigurationSource instead of copying over the bootstrapped IConfigurationSources.
+                //var builder = WebApplication.CreateBuilder();
+                //builder.Environment.EnvironmentName = "Development";
+                //await using var app = builder.Build();
 
                 var factory = (ILoggerFactory)app.Services.GetService(typeof(ILoggerFactory));
                 var logger = factory.CreateLogger("Test");
