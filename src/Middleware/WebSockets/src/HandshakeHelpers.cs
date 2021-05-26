@@ -92,7 +92,8 @@ namespace Microsoft.AspNetCore.WebSockets
                 ServerMaxWindowBits = serverMaxWindowBits
             };
 
-            var responseLength = WebSocketDeflateConstants.Extension.Length;
+            using var builder = new ValueStringBuilder(WebSocketDeflateConstants.MaxExtensionLength);
+            builder.Append(WebSocketDeflateConstants.Extension);
 
             while (true)
             {
@@ -117,8 +118,9 @@ namespace Microsoft.AspNetCore.WebSockets
 
                     hasClientNoContext = true;
                     parsedOptions.ClientContextTakeover = false;
-                    // 2 = '; '
-                    responseLength += 2 + WebSocketDeflateConstants.ClientNoContextTakeover.Length;
+                    builder.Append(';');
+                    builder.Append(' ');
+                    builder.Append(WebSocketDeflateConstants.ClientNoContextTakeover);
                 }
                 else if (value.SequenceEqual(WebSocketDeflateConstants.ServerNoContextTakeover))
                 {
@@ -164,9 +166,20 @@ namespace Microsoft.AspNetCore.WebSockets
                     // parameter in the corresponding extension negotiation response to the
                     // offer with a value equal to or smaller than the received value.
                     parsedOptions.ClientMaxWindowBits = clientMaxWindowBits ?? 15;
-                    // 2 = '; ', 1 = '='
-                    responseLength += 2 + WebSocketDeflateConstants.ClientMaxWindowBits.Length + 1 +
-                        ((parsedOptions.ClientMaxWindowBits > 9) ? 2 : 1);
+
+                    // If a received extension negotiation offer doesn't have the
+                    // "client_max_window_bits" extension parameter, the corresponding
+                    // extension negotiation response to the offer MUST NOT include the
+                    // "client_max_window_bits" extension parameter.
+                    builder.Append(';');
+                    builder.Append(' ');
+                    builder.Append(WebSocketDeflateConstants.ClientMaxWindowBits);
+                    builder.Append('=');
+                    var len = (parsedOptions.ClientMaxWindowBits > 9) ? 2 : 1;
+                    var span = builder.AppendSpan(len);
+                    var ret = parsedOptions.ClientMaxWindowBits.TryFormat(span, out var written);
+                    Debug.Assert(ret);
+                    Debug.Assert(written == len);
                 }
                 else if (value.StartsWith(WebSocketDeflateConstants.ServerMaxWindowBits))
                 {
@@ -246,69 +259,25 @@ namespace Microsoft.AspNetCore.WebSockets
 
             if (!parsedOptions.ServerContextTakeover)
             {
-                // 2 = '; '
-                responseLength += 2 + WebSocketDeflateConstants.ServerNoContextTakeover.Length;
+                builder.Append(';');
+                builder.Append(' ');
+                builder.Append(WebSocketDeflateConstants.ServerNoContextTakeover);
             }
 
             if (hasServerMaxWindowBits || parsedOptions.ServerMaxWindowBits != 15)
             {
-                // 2 = '; ', 1 = '='
-                responseLength += 2 + WebSocketDeflateConstants.ServerMaxWindowBits.Length + 1 +
-                    ((parsedOptions.ServerMaxWindowBits > 9) ? 2 : 1);
+                builder.Append(';');
+                builder.Append(' ');
+                builder.Append(WebSocketDeflateConstants.ServerMaxWindowBits);
+                builder.Append('=');
+                var len = (parsedOptions.ServerMaxWindowBits > 9) ? 2 : 1;
+                var span = builder.AppendSpan(len);
+                var ret = parsedOptions.ServerMaxWindowBits.TryFormat(span, out var written);
+                Debug.Assert(ret);
+                Debug.Assert(written == len);
             }
 
-            response = string.Create(responseLength, (parsedOptions, hasClientMaxWindowBits, hasServerMaxWindowBits, hasClientNoContext),
-                static (span, state) =>
-                {
-                    WebSocketDeflateConstants.Extension.AsSpan().CopyTo(span);
-                    span = span.Slice(WebSocketDeflateConstants.Extension.Length);
-                    if (state.hasClientNoContext)
-                    {
-                        span[0] = ';';
-                        span[1] = ' ';
-                        span = span.Slice(2);
-                        WebSocketDeflateConstants.ClientNoContextTakeover.AsSpan().CopyTo(span);
-                        span = span.Slice(WebSocketDeflateConstants.ClientNoContextTakeover.Length);
-                    }
-                    if (state.hasClientMaxWindowBits)
-                    {
-                        // If a received extension negotiation offer doesn't have the
-                        // "client_max_window_bits" extension parameter, the corresponding
-                        // extension negotiation response to the offer MUST NOT include the
-                        // "client_max_window_bits" extension parameter.
-                        span[0] = ';';
-                        span[1] = ' ';
-                        span = span.Slice(2);
-                        WebSocketDeflateConstants.ClientMaxWindowBits.AsSpan().CopyTo(span);
-                        span = span.Slice(WebSocketDeflateConstants.ClientMaxWindowBits.Length);
-                        span[0] = '=';
-                        span = span.Slice(1);
-                        var ret = state.parsedOptions.ClientMaxWindowBits.TryFormat(span, out var written);
-                        Debug.Assert(ret);
-                        span = span.Slice(written);
-                    }
-                    if (!state.parsedOptions.ServerContextTakeover)
-                    {
-                        span[0] = ';';
-                        span[1] = ' ';
-                        span = span.Slice(2);
-                        WebSocketDeflateConstants.ServerNoContextTakeover.AsSpan().CopyTo(span);
-                        span = span.Slice(WebSocketDeflateConstants.ServerNoContextTakeover.Length);
-                    }
-                    if (state.hasServerMaxWindowBits || state.parsedOptions.ServerMaxWindowBits != 15)
-                    {
-                        span[0] = ';';
-                        span[1] = ' ';
-                        span = span.Slice(2);
-                        WebSocketDeflateConstants.ServerMaxWindowBits.AsSpan().CopyTo(span);
-                        span = span.Slice(WebSocketDeflateConstants.ServerMaxWindowBits.Length);
-                        span[0] = '=';
-                        span = span.Slice(1);
-                        var ret = state.parsedOptions.ServerMaxWindowBits.TryFormat(span, out var written);
-                        Debug.Assert(ret);
-                        span = span.Slice(written);
-                    }
-                });
+            response = builder.ToString();
 
             return true;
         }
