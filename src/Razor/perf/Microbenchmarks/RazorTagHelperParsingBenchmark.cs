@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
         public RazorTagHelperParsingBenchmark()
         {
             var current = new DirectoryInfo(AppContext.BaseDirectory);
-            while  (current != null && !File.Exists(Path.Combine(current.FullName, "taghelpers.json")))
+            while (current != null && !File.Exists(Path.Combine(current.FullName, "taghelpers.json")))
             {
                 current = current.Parent;
             }
@@ -26,11 +26,18 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
             var root = current;
 
             var tagHelpers = ReadTagHelpers(Path.Combine(root.FullName, "taghelpers.json"));
+            var tagHelperFeature = new StaticTagHelperFeature(tagHelpers);
+
             var blazorServerTagHelpersFilePath = Path.Combine(root.FullName, "BlazorServerTagHelpers.razor");
 
             var fileSystem = RazorProjectFileSystem.Create(root.FullName);
-            ProjectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, b => RazorExtensions.Register(b));
-            BlazorServerTagHelpersDemoFile = fileSystem.GetItem(Path.Combine(blazorServerTagHelpersFilePath), FileKinds.Legacy);
+            ProjectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem,
+                b =>
+                {
+                    RazorExtensions.Register(b);
+                    b.Features.Add(tagHelperFeature);
+                });
+            BlazorServerTagHelpersDemoFile = fileSystem.GetItem(Path.Combine(blazorServerTagHelpersFilePath), FileKinds.Component);
 
             ComponentDirectiveVisitor = new ComponentDirectiveVisitor(blazorServerTagHelpersFilePath, tagHelpers, currentNamespace: null);
             var codeDocument = ProjectEngine.ProcessDesignTime(BlazorServerTagHelpersDemoFile);
@@ -48,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
             _ = ProjectEngine.ProcessDesignTime(BlazorServerTagHelpersDemoFile);
         }
 
-        [Benchmark(Description = "TagHelper Component Directive Parsing")]
+        [Benchmark(Description = "Component Directive Parsing")]
         public void TagHelper_ComponentDirectiveVisitor()
         {
             ComponentDirectiveVisitor.Visit(SyntaxTree);
@@ -64,6 +71,15 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
             {
                 return serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
             }
+        }
+
+        private sealed class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+        {
+            public StaticTagHelperFeature(IReadOnlyList<TagHelperDescriptor> descriptors) => Descriptors = descriptors;
+
+            public IReadOnlyList<TagHelperDescriptor> Descriptors { get; }
+
+            public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => Descriptors;
         }
     }
 }

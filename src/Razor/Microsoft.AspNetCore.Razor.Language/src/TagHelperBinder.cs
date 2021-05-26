@@ -130,8 +130,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private void Register(TagHelperDescriptor descriptor)
         {
-            foreach (var rule in descriptor.TagMatchingRules)
+            var count = descriptor.TagMatchingRules.Count;
+            for (var i = 0; i < count; i++)
             {
+                var rule = descriptor.TagMatchingRules[i];
                 var registrationKey =
                     string.Equals(rule.TagName, TagHelperMatchingConventions.ElementCatchAllName, StringComparison.Ordinal) ?
                     TagHelperMatchingConventions.ElementCatchAllName :

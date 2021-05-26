@@ -1342,15 +1342,21 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.True(result);
         }
 
+        public static TheoryData TrySplitNamespaceAndTypeData =>
+            new TheoryData<string, bool, string, string>
+            {
+                { "", false, "", ""},
+                { ".", true, "", ""},
+                { "Foo", true, "", "Foo"},
+                { "SomeProject.Foo", true, "SomeProject", "Foo"},
+                { "SomeProject.Foo<Bar>", true, "SomeProject", "Foo<Bar>"},
+                { "SomeProject.Foo<Bar.Baz>", true, "SomeProject", "Foo<Bar.Baz>"},
+                { "SomeProject.Foo<Bar.Baz>>", true, "", "SomeProject.Foo<Bar.Baz>>"},
+                { "SomeProject..Foo<Bar>", true, "SomeProject.", "Foo<Bar>"},
+            };
+
         [Theory]
-        [InlineData("", false, "", "")]
-        [InlineData(".", true, "", "")]
-        [InlineData("Foo", true, "", "Foo")]
-        [InlineData("SomeProject.Foo", true, "SomeProject", "Foo")]
-        [InlineData("SomeProject.Foo<Bar>", true, "SomeProject", "Foo<Bar>")]
-        [InlineData("SomeProject.Foo<Bar.Baz>", true, "SomeProject", "Foo<Bar.Baz>")]
-        [InlineData("SomeProject.Foo<Bar.Baz>>", true, "", "SomeProject.Foo<Bar.Baz>>")]
-        [InlineData("SomeProject..Foo<Bar>", true, "SomeProject.", "Foo<Bar>")]
+        [MemberData(nameof(TrySplitNamespaceAndTypeData))]
         public void TrySplitNamespaceAndType_WorksAsExpected(string fullTypeName, bool expectedResult, string expectedNamespace, string expectedTypeName)
         {
             // Arrange & Act
@@ -1359,8 +1365,32 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Equal(expectedResult, result);
-            Assert.True(new StringSegment(expectedNamespace).Equals(DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(@namespace, fullTypeName), StringComparison.Ordinal));
-            Assert.True(new StringSegment(expectedTypeName).Equals(DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeName, fullTypeName), StringComparison.Ordinal));
+            Assert.True(new StringSegment(expectedNamespace).Equals(@namespace, StringComparison.Ordinal));
+            Assert.True(new StringSegment(expectedTypeName).Equals(typeName, StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [MemberData(nameof(TrySplitNamespaceAndTypeData))]
+        public void TrySplitNamespaceAndTypeWithTagHelperDescriptors_WorksAsExpected(string fullTypeName, bool expectedResult, string expectedNamespace, string expectedTypeName)
+        {
+            // Arrange & Act
+            var tagHelperDescriptor = CreateTagHelperDescriptor("CoolTag", fullTypeName, AssemblyA);
+
+            var result = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(
+                tagHelperDescriptor, out var @namespace, out var typeName);
+
+            // Assert
+            Assert.Equal(expectedResult, result);
+            Assert.True(new StringSegment(expectedNamespace).Equals(@namespace, StringComparison.Ordinal));
+            Assert.True(new StringSegment(expectedTypeName).Equals(typeName, StringComparison.Ordinal));
+
+            // Try again to make sure caching works
+            result = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(
+                tagHelperDescriptor, out @namespace, out typeName);
+
+            Assert.Equal(expectedResult, result);
+            Assert.True(new StringSegment(expectedNamespace).Equals(@namespace, StringComparison.Ordinal));
+            Assert.True(new StringSegment(expectedTypeName).Equals(typeName, StringComparison.Ordinal));
         }
 
         private static RazorSourceDocument CreateComponentTestSourceDocument(string content, string filePath = null)
