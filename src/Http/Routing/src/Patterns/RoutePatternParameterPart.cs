@@ -80,14 +80,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         internal override string DebuggerToString()
         {
             var builder = new StringBuilder();
-            builder.Append("{");
+            builder.Append('{');
 
             if (IsCatchAll)
             {
-                builder.Append("*");
+                builder.Append('*');
                 if (!EncodeSlashes)
                 {
-                    builder.Append("*");
+                    builder.Append('*');
                 }
             }
 
@@ -95,22 +95,22 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             foreach (var constraint in ParameterPolicies)
             {
-                builder.Append(":");
+                builder.Append(':');
                 builder.Append(constraint.ParameterPolicy);
             }
 
             if (Default != null)
             {
-                builder.Append("=");
+                builder.Append('=');
                 builder.Append(Default);
             }
 
             if (IsOptional)
             {
-                builder.Append("?");
+                builder.Append('?');
             }
 
-            builder.Append("}");
+            builder.Append('}');
             return builder.ToString();
         }
     }

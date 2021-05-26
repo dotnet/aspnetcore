@@ -775,7 +775,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private static IntermediateToken GetAttributeContent(IntermediateNode node)
         {
-            var template = node.FindDescendantNodes<TemplateIntermediateNode>().FirstOrDefault();
+            var nodes = node.FindDescendantNodes<TemplateIntermediateNode>();
+            var template = nodes.Count > 0 ? nodes[0] : default;
             if (template != null)
             {
                 // See comments in TemplateDiagnosticPass

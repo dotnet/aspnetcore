@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         private static string EnsureText(XElement element)
         {
-            if (element.Elements().Count() == 0 &&
+            if (!element.Elements().Any() &&
                 !element.IsEmpty &&
                 element.Nodes().Count() == 1 &&
                 element.FirstNode?.NodeType == XmlNodeType.Text)

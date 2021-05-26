@@ -119,9 +119,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             logBuilder.Append(GetLogLevelString(logLevel));
             logBuilder.Append(_loglevelPadding);
             logBuilder.Append(logName);
-            logBuilder.Append("[");
+            logBuilder.Append('[');
             logBuilder.Append(eventId);
-            logBuilder.Append("]");
+            logBuilder.Append(']');
 
             if (!string.IsNullOrEmpty(message))
             {

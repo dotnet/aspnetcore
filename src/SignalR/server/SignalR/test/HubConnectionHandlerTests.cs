@@ -4338,8 +4338,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var messages = await messagePromise;
 
                     // add one because this includes the completion
-                    Assert.Equal(phrases.Count() + 1, messages.Count);
-                    for (var i = 0; i < phrases.Count(); i++)
+                    Assert.Equal(phrases.Length + 1, messages.Count);
+                    for (var i = 0; i < phrases.Length; i++)
                     {
                         Assert.Equal("echo:" + phrases[i], ((StreamItemMessage)messages[i]).Item);
                     }

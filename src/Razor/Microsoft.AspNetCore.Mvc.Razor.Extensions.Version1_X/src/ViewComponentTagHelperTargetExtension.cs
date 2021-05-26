@@ -170,9 +170,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         private void WriteTargetElementString(CodeWriter writer, TagHelperDescriptor tagHelper)
         {
-            Debug.Assert(tagHelper.TagMatchingRules.Count() == 1);
+            Debug.Assert(tagHelper.TagMatchingRules.Count == 1);
 
-            var rule = tagHelper.TagMatchingRules.First();
+            var rule = tagHelper.TagMatchingRules[0];
 
             writer.Write("[")
                 .WriteStartMethodInvocation(HtmlTargetElementAttributeTypeName)

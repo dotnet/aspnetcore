@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
-        
+
         [Fact]
         public async Task VerifyValidationFailureCanBeHandled()
         {
@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.SubjectName.Name))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.X500DistinguishedName);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.SubjectName.Name, actual.First().Value);
@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.SerialNumber))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.SerialNumber);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.SerialNumber, actual.First().Value);
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.DnsName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Dns);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.DnsName, false), actual.First().Value);
@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.EmailName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Email);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.EmailName, false), actual.First().Value);
@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.SimpleName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.SimpleName, false), actual.First().Value);
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UpnName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Upn);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UpnName, false), actual.First().Value);
@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UrlName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Uri);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UrlName, false), actual.First().Value);

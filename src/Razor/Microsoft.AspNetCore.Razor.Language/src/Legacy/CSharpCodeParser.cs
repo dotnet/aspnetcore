@@ -46,10 +46,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 builder.Description = Resources.TagHelperPrefixDirective_Description;
             });
 
-        internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new DirectiveDescriptor[]
-        {
-        };
-
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
         {
             SyntaxConstants.CSharp.TagHelperPrefixKeyword,
@@ -912,11 +908,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void SetupDirectiveParsers(IEnumerable<DirectiveDescriptor> directiveDescriptors)
         {
-            var allDirectives = directiveDescriptors.Concat(DefaultDirectiveDescriptors).ToList();
-
-            for (var i = 0; i < allDirectives.Count; i++)
+            foreach (var directiveDescriptor in directiveDescriptors)
             {
-                var directiveDescriptor = allDirectives[i];
                 CurrentKeywords.Add(directiveDescriptor.Directive);
                 MapDirectives((builder, transition) => ParseExtensibleDirective(builder, transition, directiveDescriptor), directiveDescriptor.Directive);
             }

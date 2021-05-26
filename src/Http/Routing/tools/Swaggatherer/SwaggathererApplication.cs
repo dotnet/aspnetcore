@@ -244,7 +244,7 @@ namespace Swaggatherer
                 // We don't yet handle complex segments
                 var part = template.Segments[i].Parts[0];
 
-                url.Append("/");
+                url.Append('/');
                 url.Append(part.IsLiteral ? part.Text : GenerateParameterValue(part));
             }
 
