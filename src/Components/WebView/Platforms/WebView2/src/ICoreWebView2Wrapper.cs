@@ -2,14 +2,29 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
-    public interface ICoreWebView2Wrapper
+    public interface ICoreWebView2Wrapper<TCoreWebView2Environment>
     {
         void PostWebMessageAsString(string message);
         void AddWebResourceRequestedFilter(string uri, CoreWebView2WebResourceContextWrapper ResourceContext);
         Action AddWebResourceRequestedHandler(EventHandler<ICoreWebView2WebResourceRequestedEventArgsWrapper> eventHandler);
+        Task AddScriptToExecuteOnDocumentCreatedAsync(string javaScript);
+        void AddWebMessageReceivedHandler(Action<WebMessageReceivedEventArgs> messageReceived);
+    }
+
+    public class WebMessageReceivedEventArgs : EventArgs
+    {
+        public WebMessageReceivedEventArgs(string source, string webMessageAsString)
+        {
+            Source = source;
+            WebMessageAsString = webMessageAsString;
+        }
+
+        public string Source { get; }
+        public string WebMessageAsString { get; }
     }
 
     public enum CoreWebView2WebResourceContextWrapper

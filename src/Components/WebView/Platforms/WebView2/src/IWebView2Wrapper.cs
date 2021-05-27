@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -19,14 +20,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         Task<ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment>> CreateEnvironmentAsync();
 
 
-        ICoreWebView2Wrapper CoreWebView2 { get; }
+        ICoreWebView2Wrapper<TCoreWebView2Environment> CoreWebView2 { get; }
+
+        TCoreWebView2Environment Environment { get; }
 
         /// <summary>
         /// Gets or sets the source URI of the control. Setting the source URI causes page navigation.
         /// </summary>
         Uri Source { get; set; }
 
-        Task EnsureCoreWebView2Async(ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment> environment = null);
+        Task EnsureCoreWebView2Async(ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment> environment);
 
         /// <summary>
         /// Event that occurs when an accelerator key is pressed.
@@ -45,18 +48,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         public ICoreWebView2WebResourceRequestWrapper Request { get; }
 
         /// <summary>
-        /// Gets or sets the <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2WebResourceResponse" /> object.
-        /// </summary>
-        /// <remarks>
-        /// If this object is set, the <see cref="E:Microsoft.Web.WebView2.Core.CoreWebView2.WebResourceRequested" /> event will be completed with this Response.
-        /// An empty <see cref="T:Microsoft.Web.WebView2.Core.CoreWebView2WebResourceResponse" /> object can be created with <see cref="M:Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateWebResourceResponse(System.IO.Stream,System.Int32,System.String,System.String)" /> and then modified to construct the Response.
-        /// </remarks>
-        public ICoreWebView2WebResourceResponseWrapper Response { get; set; }
-
-        /// <summary>
         /// Gets the web resource request context.
         /// </summary>
         public CoreWebView2WebResourceContextWrapper ResourceContext { get; }
+
+        void SetResponse(Stream content, int statusCode, string statusMessage, string headerString);
     }
 
 
@@ -227,11 +223,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// <returns>The first header value in the collection matching the name.</returns>
         string GetHeader(string name);
 
-        /// <summary>
-        /// Gets the header values matching the name.
-        /// </summary>
-        /// <param name="name">The header name.</param>
-        CoreWebView2HttpHeadersCollectionIterator GetHeaders(string name);
+        ///// <summary>
+        ///// Gets the header values matching the name.
+        ///// </summary>
+        ///// <param name="name">The header name.</param>
+        //CoreWebView2HttpHeadersCollectionIterator GetHeaders(string name);
 
     }
 

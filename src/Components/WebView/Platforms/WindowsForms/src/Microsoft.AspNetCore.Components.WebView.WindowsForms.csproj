@@ -6,6 +6,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <IsShippingPackage>true</IsShippingPackage>
     <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);CS1591;RS0016;RS0017</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
