@@ -711,7 +711,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTask(ValueTask task)
         {
-            EnsureRequestValueTaskResultNotNull(task);
             static async Task ExecuteAwaited(ValueTask task)
             {
                 await task;
@@ -727,7 +726,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext)
         {
-            EnsureRequestValueTaskResultNotNull(task);
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsJsonAsync(await task);
@@ -743,7 +741,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskOfString(ValueTask<string> task, HttpContext httpContext)
         {
-            EnsureRequestValueTaskResultNotNull(task);
             static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -759,7 +756,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskResult<T>(ValueTask<T> task, HttpContext httpContext) where T : IResult
         {
-            EnsureRequestValueTaskResultNotNull(task);
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
             {
                 await (await task).ExecuteAsync(httpContext);
@@ -829,25 +825,9 @@ namespace Microsoft.AspNetCore.Http
 
         private static void EnsureRequestTaskResultNotNull<T>(Task<T> task)
         {
-            if (task == null)
+            if (task is null)
             {
                 throw new InvalidOperationException("Task Result should not be null");
-            }
-        }
-
-        private static void EnsureRequestValueTaskResultNotNull<T>(ValueTask<T> task)
-        {
-            if (task.Equals(null))
-            {
-                throw new InvalidOperationException("Endpoint result should not be null");
-            }
-        }
-
-        private static void EnsureRequestValueTaskResultNotNull(ValueTask task)
-        {
-            if (task.Equals(null))
-            {
-                throw new InvalidOperationException("Endpoint result should not be null");
             }
         }
     }
