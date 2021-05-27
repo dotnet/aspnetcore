@@ -92,8 +92,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                 };
             ").ConfigureAwait(true);
 
-            //_webview.CoreWebView2.WebMessageReceived += (sender, eventArgs)
-            //    => MessageReceived(new Uri(eventArgs.Source), eventArgs.TryGetWebMessageAsString());
             _webview.CoreWebView2.AddWebMessageReceivedHandler(e
                 => MessageReceived(new Uri(e.Source), e.WebMessageAsString));
         }
@@ -103,11 +101,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
         private void ApplyDefaultWebViewSettings()
         {
-            //// Desktop applications typically don't want the default web browser context menu
-            //_webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            // Desktop applications typically don't want the default web browser context menu
+            _webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
 
-            //// Desktop applications almost never want to show a URL preview when hovering over a link
-            //_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            // Desktop applications almost never want to show a URL preview when hovering over a link
+            _webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
 
             // Desktop applications don't normally want to enable things like "alt-left to go back"
             // or "ctrl+f to find". Developers should explicitly opt into allowing these.

@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
     public interface ICoreWebView2Wrapper<TCoreWebView2Environment>
     {
+        public ICoreWebView2SettingsWrapper Settings { get; }
         void PostWebMessageAsString(string message);
         void AddWebResourceRequestedFilter(string uri, CoreWebView2WebResourceContextWrapper ResourceContext);
         Action AddWebResourceRequestedHandler(EventHandler<ICoreWebView2WebResourceRequestedEventArgsWrapper> eventHandler);

@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
     internal class WindowsFormsCoreWebView2Wrapper : ICoreWebView2Wrapper<CoreWebView2Environment>
     {
         private readonly WindowsFormsWebView2Wrapper _webView2;
+        private WindowsFormsCoreWebView2SettingsWrapper _settings;
 
         public WindowsFormsCoreWebView2Wrapper(WindowsFormsWebView2Wrapper webView2)
         {
@@ -109,6 +110,18 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
 
             _webView2 = webView2;
+        }
+
+        public ICoreWebView2SettingsWrapper Settings
+        {
+            get
+            {
+                if (_settings == null)
+                {
+                    _settings = new WindowsFormsCoreWebView2SettingsWrapper(_webView2.WebView2.CoreWebView2.Settings);
+                }
+                return _settings;
+            }
         }
 
         public Task AddScriptToExecuteOnDocumentCreatedAsync(string javaScript)
@@ -146,6 +159,62 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         public void PostWebMessageAsString(string message)
         {
             _webView2.WebView2.CoreWebView2.PostWebMessageAsString(message);
+        }
+    }
+
+    internal class WindowsFormsCoreWebView2SettingsWrapper : ICoreWebView2SettingsWrapper
+    {
+        private CoreWebView2Settings _settings;
+
+        public WindowsFormsCoreWebView2SettingsWrapper(CoreWebView2Settings settings)
+        {
+            _settings = settings;
+        }
+
+        public bool IsScriptEnabled
+        {
+            get => _settings.IsScriptEnabled;
+            set => _settings.IsScriptEnabled = value;
+        }
+        public bool IsWebMessageEnabled
+        {
+            get => _settings.IsWebMessageEnabled;
+            set => _settings.IsWebMessageEnabled = value;
+        }
+        public bool AreDefaultScriptDialogsEnabled
+        {
+            get => _settings.AreDefaultScriptDialogsEnabled;
+            set => _settings.AreDefaultScriptDialogsEnabled = value;
+        }
+        public bool IsStatusBarEnabled
+        {
+            get => _settings.IsStatusBarEnabled;
+            set => _settings.IsStatusBarEnabled = value;
+        }
+        public bool AreDevToolsEnabled
+        {
+            get => _settings.AreDevToolsEnabled;
+            set => _settings.AreDevToolsEnabled = value;
+        }
+        public bool AreDefaultContextMenusEnabled
+        {
+            get => _settings.AreDefaultContextMenusEnabled;
+            set => _settings.AreDefaultContextMenusEnabled = value;
+        }
+        public bool AreHostObjectsAllowed
+        {
+            get => _settings.AreHostObjectsAllowed;
+            set => _settings.AreHostObjectsAllowed = value;
+        }
+        public bool IsZoomControlEnabled
+        {
+            get => _settings.IsZoomControlEnabled;
+            set => _settings.IsZoomControlEnabled = value;
+        }
+        public bool IsBuiltInErrorPageEnabled
+        {
+            get => _settings.IsBuiltInErrorPageEnabled;
+            set => _settings.IsBuiltInErrorPageEnabled = value;
         }
     }
 
