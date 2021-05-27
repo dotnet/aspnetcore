@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -586,6 +587,28 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static RazorDiagnostic CreateTagHelper_InconsistentTagStructure(SourceSpan location, string firstDescriptor, string secondDescriptor, string tagName)
         {
             return RazorDiagnostic.Create(TagHelper_InconsistentTagStructure, location, firstDescriptor, secondDescriptor, tagName, nameof(TagMatchingRuleDescriptor.TagStructure));
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Component_EditorRequiredParameterNotSpecified =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2012",
+                () => Resources.Component_EditorRequiredParameterNotSpecified,
+                RazorDiagnosticSeverity.Warning);
+
+        public static RazorDiagnostic CreateComponent_EditorRequiredParameterNotSpecified(SourceSpan location, string tagName, string parameterName)
+        {
+            return RazorDiagnostic.Create(Component_EditorRequiredParameterNotSpecified, location, tagName, parameterName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Component_EditorRequiredGroupNotSpecified =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2013",
+                () => Resources.Component_EditorRequiredGroupNotSpecified,
+                RazorDiagnosticSeverity.Warning);
+
+        public static RazorDiagnostic CreateComponent_EditorRequiredGroupNotSpecified(SourceSpan location, string tagName, IEnumerable<string> parameterNames)
+        {
+            return RazorDiagnostic.Create(Component_EditorRequiredParameterNotSpecified, location, tagName, string.Join(", ", parameterNames));
         }
 
         #endregion

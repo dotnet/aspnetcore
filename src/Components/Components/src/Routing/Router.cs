@@ -47,7 +47,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets the assembly that should be searched for components matching the URI.
         /// </summary>
-        [Parameter] public Assembly AppAssembly { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public Assembly AppAssembly { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of additional assemblies that should be searched for components
@@ -58,12 +60,16 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets the content to display when no match is found for the requested route.
         /// </summary>
-        [Parameter] public RenderFragment NotFound { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment NotFound { get; set; }
 
         /// <summary>
         /// Gets or sets the content to display when a match is found for the requested route.
         /// </summary>
-        [Parameter] public RenderFragment<RouteData> Found { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment<RouteData> Found { get; set; }
 
         /// <summary>
         /// Get or sets the content to display when asynchronous navigation is in progress.

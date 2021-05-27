@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         [Parameter]
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+        [EditorRequired]
         public Type Type { get; set; } = default!;
 
         /// <summary>

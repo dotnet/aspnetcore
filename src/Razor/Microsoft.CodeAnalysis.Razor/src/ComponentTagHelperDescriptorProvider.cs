@@ -172,6 +172,15 @@ namespace Microsoft.CodeAnalysis.Razor
                 pb.Name = property.Name;
                 pb.TypeName = property.Type.ToDisplayString(FullNameTypeDisplayFormat);
                 pb.SetPropertyName(property.Name);
+                var editorRequired = property.GetAttributes().FirstOrDefault(a => a.AttributeClass.ToDisplayString() == "Microsoft.AspNetCore.Components.EditorRequiredAttribute");
+                if (editorRequired != null)
+                {
+                    pb.IsEditorRequired = true;
+                    if (editorRequired.ConstructorArguments.Length > 0)
+                    {
+                        pb.EditorRequiredGroupNames = editorRequired.ConstructorArguments[0].Values.Select(v => (string)v.Value).ToArray();
+                    }
+                }
 
                 if (kind == PropertyKind.Enum)
                 {
