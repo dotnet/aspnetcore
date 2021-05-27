@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public string TagHelperContextVariableName { get; set; } = "__context";
 
+        public string TagHelperContextAttributesVariableName { get; set; } = "AllAttributes";
+
         public string TagHelperOutputTypeName { get; set; } = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput";
 
         public string TagHelperOutputVariableName { get; set; } = "__output";
@@ -117,8 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 writer.WriteAutoPropertyDeclaration(
                     PublicModifiers,
                     attribute.TypeName,
-                    attribute.GetPropertyName(),
-                    attribute.DefaultValue);
+                    attribute.GetPropertyName());
 
                 if (attribute.IndexerTypeName != null)
                 {
@@ -163,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             var propertyNames = tagHelper.BoundAttributes.Select(attribute => attribute.GetPropertyName());
             var joinedPropertyNames = string.Join(", ", propertyNames);
-            var parametersString = $"new {{ { joinedPropertyNames } }}";
+            var parametersString = $"{TagHelperContextVariableName}.{TagHelperContextAttributesVariableName}.ToDictionary(attr => attr.Name, attr => attr.Value)";
             var viewComponentName = tagHelper.GetViewComponentName();
             var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
             return methodParameters;

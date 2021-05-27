@@ -78,10 +78,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static bool SatisfiesAttributes(IReadOnlyList<KeyValuePair<string, string>> tagAttributes, TagMatchingRuleDescriptor rule)
         {
             if (!rule.Attributes.All(
-                static (requiredAttribute, tagAttributes) => 
-                    requiredAttribute.HasDefaultValue || tagAttributes.Any(
-                    static (attribute, requiredAttribute) => 
-                        SatisfiesRequiredAttribute(attribute.Key, attribute.Value, requiredAttribute),
+                static (requiredAttribute, tagAttributes) => tagAttributes.Any(
+                    static (attribute, requiredAttribute) => SatisfiesRequiredAttribute(attribute.Key, attribute.Value, requiredAttribute),
                     requiredAttribute),
                 tagAttributes))
             {

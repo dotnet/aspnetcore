@@ -532,10 +532,15 @@ public class OptionalTestWithParamViewComponent
 }}
 public class OptionalWithMultipleTypesViewComponent
 {{
-    public string Invoke(int age = 42, double favoriteDecimal = 12.3, char favoriteLetter = 'b', DateTime? birthDate = null)
+    public string Invoke(
+        int age = 42,
+        double favoriteDecimal = 12.3,
+        char favoriteLetter = 'b',
+        DateTime? birthDate = null,
+        string anotherOne = null)
     {{
         birthDate = new DateTime(1979, 8, 23);
-        return age + "" : "" + favoriteDecimal + "" : "" + favoriteLetter + "" : "" + birthDate;
+        return age + "" : "" + favoriteDecimal + "" : "" + favoriteLetter + "" : "" + birthDate + "" : "" + anotherOne;
     }}
 }}
 ");

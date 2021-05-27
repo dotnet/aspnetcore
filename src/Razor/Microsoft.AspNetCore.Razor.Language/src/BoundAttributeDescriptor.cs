@@ -29,8 +29,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public bool IsBooleanProperty { get; protected set; }
 
-        public string DefaultValue { get; protected set; }
-
         public string Name { get; protected set; }
 
         public string IndexerNamePrefix { get; protected set; }

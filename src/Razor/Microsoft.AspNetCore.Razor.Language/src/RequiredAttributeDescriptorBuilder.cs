@@ -18,7 +18,5 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract RazorDiagnosticCollection Diagnostics { get; }
 
         public virtual IDictionary<string, string> Metadata { get; }
-
-        public abstract bool HasDefaultValue { get; set; }
     }
 }

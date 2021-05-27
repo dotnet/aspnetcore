@@ -200,62 +200,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.IsType<ViewComponentTagHelperIntermediateNode>(@class.Children.Last());
         }
 
-        [Fact]
-        public void ViewComponentTagHelperPass_Execute_CreatesViewComponentTagHelper_WithOptionalParameter()
-        {
-            // Arrange
-            var optionalCodeDocument = CreateDocument(@"
-@addTagHelper TestTagHelper, TestAssembly
-<optionaltagcloud></optionaltagcloud>
-");
-            var codeDocument = CreateDocument(@"
-@addTagHelper TestTagHelper, TestAssembly         
-<optionaltagcloud foo=""17""></optionaltagcloud>");
-
-            var tagHelpers = new[]
-            {
-                TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, "TestTagHelper", "TestAssembly")
-                    .TypeName("__Generated__OptionalTagCloudViewComponentTagHelper")
-                    .BoundAttributeDescriptor(attribute => attribute
-                        .Name("Foo")
-                        .TypeName("System.Int32")
-                        .PropertyName("Foo")
-                        .DefaultValue("18"))
-                    .TagMatchingRuleDescriptor(rule => 
-                            rule
-                                .RequireTagName("optionaltagcloud")
-                                .RequireAttributeDescriptor(attribute => attribute.Name("foo").HasDefaultValue()))
-                    .AddMetadata(ViewComponentTagHelperMetadata.Name, "OptionalTagCloud")
-                    .Build()
-            };
-
-            var projectEngine = CreateProjectEngine(tagHelpers);
-            var pass = new ViewComponentTagHelperPass()
-            {
-                Engine = projectEngine.Engine,
-            };
-
-            var optionalIrDocument = CreateIRDocument(projectEngine, optionalCodeDocument);
-            var irDocument = CreateIRDocument(projectEngine, codeDocument);
-
-            var vcthFullName = "AspNetCore.test.__Generated__OptionalTagCloudViewComponentTagHelper";
-
-            // Act on optional content
-            pass.Execute(optionalCodeDocument, optionalIrDocument);
-
-            // Assert on optional content
-            var optionalTagHelper = FindTagHelperNode(optionalIrDocument);
-            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(optionalTagHelper.Children[1]).TypeName);
-
-            // Act on provided parameter
-            pass.Execute(codeDocument, irDocument);
-
-            // Assert on provided parameter
-            var tagHelper = FindTagHelperNode(irDocument);
-            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(tagHelper.Children[1]).TypeName);
-            Assert.Equal("Foo", Assert.IsType<DefaultTagHelperPropertyIntermediateNode>(tagHelper.Children[2]).PropertyName); 
-        }
-
         private RazorCodeDocument CreateDocument(string content)
         {
             var source = RazorSourceDocument.Create(content, "test.cshtml");

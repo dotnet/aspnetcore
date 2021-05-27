@@ -19,18 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
-        public static RequiredAttributeDescriptorBuilder HasDefaultValue(this RequiredAttributeDescriptorBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.HasDefaultValue = true;
-
-            return builder;
-        }
-
         public static RequiredAttributeDescriptorBuilder NameComparisonMode(
             this RequiredAttributeDescriptorBuilder builder,
             RequiredAttributeDescriptor.NameComparisonMode nameComparison)

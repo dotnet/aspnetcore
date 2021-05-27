@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             string typeName,
             bool isEnum,
             bool hasIndexer,
-            string defaultValue,
             string indexerNamePrefix,
             string indexerTypeName,
             string documentation,
@@ -28,7 +27,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             TypeName = typeName;
             IsEnum = isEnum;
             HasIndexer = hasIndexer;
-            DefaultValue = defaultValue;
             IndexerNamePrefix = indexerNamePrefix;
             IndexerTypeName = indexerTypeName;
             Documentation = documentation;

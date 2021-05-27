@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool IsDictionary { get; set; }
 
-        public abstract string DefaultValue { get; set; }
-
         public abstract string IndexerAttributeNamePrefix { get; set; }
 
         public abstract string IndexerValueTypeName { get; set; }
