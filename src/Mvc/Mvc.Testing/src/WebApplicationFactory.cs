@@ -527,7 +527,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         /// <inheritdoc />
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             if (_disposed)
             {
@@ -546,7 +546,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             foreach (var factory in _derivedFactories)
             {
-                await factory.DisposeAsync().ConfigureAwait(false);
+                await ((IAsyncDisposable)factory).DisposeAsync().ConfigureAwait(false);
             }
 
             _server?.Dispose();

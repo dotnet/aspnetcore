@@ -32,7 +32,7 @@ Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateClient
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateClient(Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions! options) -> System.Net.Http.HttpClient!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateDefaultClient(System.Uri! baseAddress, params System.Net.Http.DelegatingHandler![]! handlers) -> System.Net.Http.HttpClient!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateDefaultClient(params System.Net.Http.DelegatingHandler![]! handlers) -> System.Net.Http.HttpClient!
-Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Factories.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint!>!>!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Server.get -> Microsoft.AspNetCore.TestHost.TestServer!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.WithWebHostBuilder(System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configuration) -> Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint!>!
