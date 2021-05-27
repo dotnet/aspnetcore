@@ -373,6 +373,33 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             Assert.Equal("SecretValue1", config["Secret1"]);
         }
 
+        [Fact(Timeout = 2000)]
+        public async Task RaiseChangeEventAfterProviderSetToNull()
+        {
+            var testFileProvider = new TestFileProvider(
+               new TestFile("Secret1", "SecretValue1"),
+               new TestFile("Secret2", "SecretValue2"));
+            var configurationSource = new KeyPerFileConfigurationSource
+            {
+                FileProvider = testFileProvider,
+                Optional = true,
+            };
+            var keyPerFileProvider = new KeyPerFileConfigurationProvider(configurationSource);
+            var config = new ConfigurationRoot(new[] { keyPerFileProvider });
+
+            var changeToken = config.GetReloadToken();
+            var changeTaskCompletion = new TaskCompletionSource<object>();
+            changeToken.RegisterChangeCallback(state =>
+                ((TaskCompletionSource<object>)state).TrySetResult(null), changeTaskCompletion);
+
+            configurationSource.FileProvider = null;
+            config.Reload();
+
+            await changeTaskCompletion.Task;
+
+            Assert.Empty(config.AsEnumerable());
+        }
+
         private sealed class MyOptions
         {
             public int Number { get; set; }

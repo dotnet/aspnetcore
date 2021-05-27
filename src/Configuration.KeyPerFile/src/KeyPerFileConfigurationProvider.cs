@@ -61,6 +61,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 if (Source.Optional || reload) // Always optional on reload
                 {
                     Data = data;
+                    OnReload();
                     return;
                 }
 
