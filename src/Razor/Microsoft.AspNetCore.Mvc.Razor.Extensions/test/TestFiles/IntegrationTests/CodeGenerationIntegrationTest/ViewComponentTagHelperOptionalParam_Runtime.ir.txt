@@ -15,6 +15,7 @@ Document -
             FieldDeclaration -  - private - global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelperOptionalParam.__Generated__OptionalWithMultipleTypesViewComponentTagHelper - __OptionalWithMultipleTypesViewComponentTagHelper
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - favoriteDecimal - 10.8 - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - favoriteLetter - a - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - birthDate - DateTime.Now - HtmlAttributeValueStyle.DoubleQuotes
             DefaultTagHelperRuntime - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (28:1,0 [2] ViewComponentTagHelperOptionalParam.cshtml)
@@ -77,6 +78,26 @@ Document -
                     DefaultTagHelperProperty - (537:10,38 [2] ViewComponentTagHelperOptionalParam.cshtml) - age - int OptionalWithMultipleTypesViewComponentTagHelper.age - HtmlAttributeValueStyle.DoubleQuotes
                         LazyIntermediateToken - (537:10,38 [2] ViewComponentTagHelperOptionalParam.cshtml) - CSharp - 12
                     PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    DefaultTagHelperExecute - 
+                HtmlContent - (598:10,99 [2] ViewComponentTagHelperOptionalParam.cshtml)
+                    LazyIntermediateToken - (598:10,99 [2] ViewComponentTagHelperOptionalParam.cshtml) - Html - \n
+                TagHelper - (600:11,0 [124] ViewComponentTagHelperOptionalParam.cshtml) - vc:optional-with-multiple-types - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelperOptionalParam.__Generated__OptionalWithMultipleTypesViewComponentTagHelper
+                    DefaultTagHelperProperty - (638:11,38 [2] ViewComponentTagHelperOptionalParam.cshtml) - age - int OptionalWithMultipleTypesViewComponentTagHelper.age - HtmlAttributeValueStyle.DoubleQuotes
+                        LazyIntermediateToken - (638:11,38 [2] ViewComponentTagHelperOptionalParam.cshtml) - CSharp - 12
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
+                HtmlContent - (724:11,124 [2] ViewComponentTagHelperOptionalParam.cshtml)
+                    LazyIntermediateToken - (724:11,124 [2] ViewComponentTagHelperOptionalParam.cshtml) - Html - \n
+                TagHelper - (726:12,0 [124] ViewComponentTagHelperOptionalParam.cshtml) - vc:optional-with-multiple-types - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelperOptionalParam.__Generated__OptionalWithMultipleTypesViewComponentTagHelper
+                    DefaultTagHelperProperty - (764:12,38 [2] ViewComponentTagHelperOptionalParam.cshtml) - age - int OptionalWithMultipleTypesViewComponentTagHelper.age - HtmlAttributeValueStyle.DoubleQuotes
+                        LazyIntermediateToken - (764:12,38 [2] ViewComponentTagHelperOptionalParam.cshtml) - CSharp - 12
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     DefaultTagHelperExecute - 
             Inject - 
             Inject - 

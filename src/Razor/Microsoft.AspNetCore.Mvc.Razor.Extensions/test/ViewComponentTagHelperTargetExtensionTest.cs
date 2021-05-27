@@ -52,7 +52,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
     {
         (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-        var __helperContent = await __helper.InvokeAsync(""TagCloud"", new { Foo });
+        var __helperContent = await __helper.InvokeAsync(""TagCloud"", __context.AllAttributes.ToDictionary(attr => attr.Name, attr => attr.Value));
         __output.TagName = null;
         __output.Content.SetHtmlContent(__helperContent);
     }
@@ -107,7 +107,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
     {
         (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-        var __helperContent = await __helper.InvokeAsync(""TagCloud"", new { Tags });
+        var __helperContent = await __helper.InvokeAsync(""TagCloud"", __context.AllAttributes.ToDictionary(attr => attr.Name, attr => attr.Value));
         __output.TagName = null;
         __output.Content.SetHtmlContent(__helperContent);
     }
