@@ -16,7 +16,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Abstract base class for a JavaScript runtime.
     /// </summary>
-    public abstract partial class JSRuntime : IJSRuntime
+    public abstract partial class JSRuntime : IJSRuntime, IDisposable
     {
         private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
@@ -25,7 +25,7 @@ namespace Microsoft.JSInterop
         private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
 
         internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
-        internal int ByteArraysToBeRevivedByteLength;
+        internal int ByteArraysToBeRevivedTotalBytes;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JSRuntime"/>.
@@ -55,6 +55,12 @@ namespace Microsoft.JSInterop
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
         /// </summary>
         protected TimeSpan? DefaultAsyncTimeout { get; set; }
+
+        /// <summary>
+        /// Stores the maximum SignalR message size accepted.
+        /// Used to restrict the total byte array transfers of a single call.
+        /// </summary>
+        protected long SignalRMaxMessageSizeBytes { get; set; } = 31 * 1024;
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -178,13 +184,43 @@ namespace Microsoft.JSInterop
             in DotNetInvocationResult invocationResult);
 
         /// <summary>
-        /// Invoked by JS 
+        /// Invoked by JS
         /// </summary>
         /// <param name="id">Atomically incrementing identifier for the byte array being transfered.</param>
         /// <param name="data">Byte array to be transfered to JS.</param>
-        protected internal virtual void SupplyByteArray(long id, byte[] data)
+        protected internal virtual void SendByteArray(int id, byte[] data)
         {
             throw new NotSupportedException("JSRuntime subclasses are responsible for implementing byte array transfer to JS.");
+        }
+
+        /// <summary>
+        /// Accepts the byte array data being transferred from JS to DotNet.
+        /// </summary>
+        /// <param name="id">Identifier for the byte array being transfered.</param>
+        /// <param name="data">Byte array to be transfered from JS.</param>
+        public void ReceiveByteArray(int id, byte[] data)
+        {
+            if (id == 0)
+            {
+                // Starting a new transfer, clear out previously stored byte arrays
+                ResetByteArraysToBeRevived();
+            }
+            else if (id != (ByteArraysToBeRevived.Count + 1))
+            {
+                throw new ArgumentOutOfRangeException($"Element id '{id}' cannot be added to the byte arrays to be revived with length '{ByteArraysToBeRevived.Count}'.");
+            }
+            else if (SignalRMaxMessageSizeBytes - data.Length < ByteArraysToBeRevivedTotalBytes)
+            {
+                throw new ArgumentOutOfRangeException("Exceeded the maximum byte array transfer limit for a call.");
+            }
+
+            ByteArraysToBeRevived.Append(data);
+
+            // We also store the total number of bytes seen so far to compare against
+            // the max SignalR message size limit.
+            // We take the larger of the size of the array or 4, to ensure we're not inundated
+            // with small/empty arrays.
+            ByteArraysToBeRevivedTotalBytes += Math.Max(4, data.Length);
         }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
@@ -225,7 +261,7 @@ namespace Microsoft.JSInterop
         internal void ResetByteArraysToBeRevived()
         {
             ByteArraysToBeRevived.Clear();
-            ByteArraysToBeRevivedByteLength = 0;
+            ByteArraysToBeRevivedTotalBytes = 0;
         }
 
         internal long TrackObjectReference<TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class
@@ -270,5 +306,10 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
         internal void ReleaseObjectReference(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
+
+        /// <summary>
+        /// Dispose the JSRuntime.
+        /// </summary>
+        public void Dispose() => ByteArraysToBeRevived.Dispose();
     }
 }

@@ -2,17 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class ByteArrayJsonConverter : JsonConverter<byte[]>
     {
-        // Atomically incrementing unique identifier for serializing byte arrays.
-        private static long _byteArrayId;
+        // Unique identifier for serializing byte arrays.
+        private int _byteArrayId;
 
         internal static readonly JsonEncodedText ByteArrayRefKey = JsonEncodedText.Encode("__byte[]");
 
@@ -32,60 +30,37 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException("ByteArraysToBeRevived is empty.");
             }
 
-            long? byteArrayIndex = null;
+            var byteArrayRef = JsonSerializer.Deserialize<ByteArrayRef>(ref reader, options);
 
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-            {
-                if (reader.TokenType == JsonTokenType.PropertyName)
-                {
-                    if (byteArrayIndex is null && reader.ValueTextEquals(ByteArrayRefKey.EncodedUtf8Bytes))
-                    {
-                        reader.Read();
-                        byteArrayIndex = reader.GetInt64();
-                    }
-                    else
-                    {
-                        throw new JsonException($"Unexpected JSON property {reader.GetString()}.");
-                    }
-                }
-                else
-                {
-                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}.");
-                }
-            }
-
-            if (byteArrayIndex is null)
+            if (byteArrayRef.Id is null)
             {
                 throw new JsonException($"Required property {ByteArrayRefKey} not found.");
             }
 
-            if (byteArrayIndex >= JSRuntime.ByteArraysToBeRevived.Count || byteArrayIndex < 0)
+            if (byteArrayRef.Id >= JSRuntime.ByteArraysToBeRevived.Count || byteArrayRef.Id < 0)
             {
-                throw new JsonException($"Byte array {byteArrayIndex} not found.");
+                throw new JsonException($"Byte array {byteArrayRef.Id} not found.");
             }
 
-            var byteArray = JSRuntime.ByteArraysToBeRevived.Buffer[byteArrayIndex.Value];
-            if (byteArray is null || byteArray.Length == 0)
-            {
-                return Array.Empty<byte>();
-            }
-
-            // We must copy over the byte array to ensure the data is preserved after we
-            // clear the JSRuntime.ByteArraysToBeRevived buffer.
-            var result = new byte[byteArray.Length];
-            byteArray.AsSpan().CopyTo(result);
-            return result;
+            var byteArray = JSRuntime.ByteArraysToBeRevived.Buffer[byteArrayRef.Id.Value];
+            return byteArray;
         }
 
         public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
         {
-            var id = Interlocked.Increment(ref _byteArrayId);
+            var id = ++_byteArrayId;
 
-            JSRuntime.SupplyByteArray(id, value);
+            JSRuntime.SendByteArray(id, value);
 
             writer.WriteStartObject();
             writer.WriteNumber(ByteArrayRefKey, id);
             writer.WriteEndObject();
+        }
+
+        private struct ByteArrayRef
+        {
+            [JsonPropertyName("__byte[]")]
+            public int? Id { get; set; }
         }
     }
 }

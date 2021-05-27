@@ -203,6 +203,8 @@ namespace Microsoft.JSInterop.Infrastructure
                 var parameterType = parameterTypes[index];
                 if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
                 {
+                    // We don't strictly have to clear the ByteArraysToBeRevived because it will auto-clear at the start of the next call,
+                    // but since we know we won't be using it for this call, we might as well clear it
                     jsRuntime.ResetByteArraysToBeRevived();
                     throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
                 }
@@ -293,32 +295,6 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 throw new JsonException("Invalid JSON");
             }
-        }
-
-        /// <summary>
-        /// Accepts the byte array data being transferred from JS to DotNet.
-        /// </summary>
-        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
-        /// <param name="id">Identifier for the byte array being transfered.</param>
-        /// <param name="data">Byte array to be transfered from JS.</param>
-        public static void SupplyByteArray(JSRuntime jsRuntime, long id, byte[] data)
-        {
-            if (id == 0)
-            {
-                // Starting a new transfer, clear out previously stored byte arrays
-                jsRuntime.ResetByteArraysToBeRevived();
-            }
-            else if (id != (jsRuntime.ByteArraysToBeRevived.Count + 1))
-            {
-                throw new ArgumentOutOfRangeException($"Element id '{id}' cannot be added to the byte arrays to be revived with length '{jsRuntime.ByteArraysToBeRevived.Count}'.");
-            }
-            else if ((31 * 1024) - data.Length < jsRuntime.ByteArraysToBeRevivedByteLength) // TODO; get this limit from SignalR somehow?
-            {
-                throw new ArgumentOutOfRangeException("Exceeded the maximum byte array transfer limit for a call.");
-            }
-
-            jsRuntime.ByteArraysToBeRevived.Append(data);
-            jsRuntime.ByteArraysToBeRevivedByteLength += data.Length;
         }
 
         private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)

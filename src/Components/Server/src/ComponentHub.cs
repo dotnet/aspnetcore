@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.Server
             _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
         }
 
-        public async ValueTask SupplyByteArray(long id, byte[] data)
+        public async ValueTask ReceiveByteArray(int id, byte[] data)
         {
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            await circuitHost.SupplyByteArray(id, data);
+            await circuitHost.ReceiveByteArray(id, data);
         }
 
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)

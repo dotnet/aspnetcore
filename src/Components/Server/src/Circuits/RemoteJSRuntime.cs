@@ -22,9 +22,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public bool IsInitialized => _clientProxy is not null;
 
-        public RemoteJSRuntime(IOptions<CircuitOptions> options, ILogger<RemoteJSRuntime> logger)
+        public RemoteJSRuntime(
+            IOptions<CircuitOptions> circuitOptions,
+            IOptions<HubOptions> hubOptions,
+            ILogger<RemoteJSRuntime> logger)
         {
-            _options = options.Value;
+            _options = circuitOptions.Value;
+            SignalRMaxMessageSizeBytes = hubOptions.Value.MaximumReceiveMessageSize is null ?
+                SignalRMaxMessageSizeBytes : hubOptions.Value.MaximumReceiveMessageSize.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
             ElementReferenceContext = new WebElementReferenceContext(this);
@@ -75,9 +80,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        protected override void SupplyByteArray(long id, byte[] data)
+        protected override void SendByteArray(int id, byte[] data)
         {
-            _clientProxy.SendAsync("JS.SupplyByteArray", id, data);
+            _clientProxy.SendAsync("JS.ReceiveByteArray", id, data);
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)

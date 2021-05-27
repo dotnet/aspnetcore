@@ -270,11 +270,11 @@ export module DotNet {
     endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
 
     /**
-     * Receives notification that a byte array is available for transfer.
+     * Invoked by the runtime to transfer a byte array from JS to .NET.
      * @param id The identifier for the byte array used during revival.
      * @param data The byte array being transferred for eventual revival.
      */
-     supplyByteArray(id: number, data: Uint8Array): void;
+     sendByteArray(id: number, data: Uint8Array): void;
   }
 
   /**
@@ -357,11 +357,11 @@ export module DotNet {
     },
 
     /**
-     * Receives notification that a byte array is available for transfer.
+     * Receives notification that a byte array is being transferred from .NET to JS.
      * @param id The identifier for the byte array used during revival.
      * @param data The byte array being transferred for eventual revival.
      */
-    supplyByteArray: (id: number, data: Uint8Array): void => {
+    receiveByteArray: (id: number, data: Uint8Array): void => {
       byteArraysToBeRevived.set(id, data);
     }
   }
@@ -451,22 +451,22 @@ export module DotNet {
     }
   }
 
+  let nextByteArrayIndex = 0;
   function stringifyArgs(args: any[] | null) {
-    let byteArrayIndex = 0;
-
+    nextByteArrayIndex = 0;
     return JSON.stringify(args, argReplacer);
+  }
 
-    function argReplacer(key: string, value: any) {
-      if (value instanceof DotNetObject) {
-        return value.serializeAsArg();
-      } else if (value instanceof Uint8Array) {
-        dotNetDispatcher!.supplyByteArray(byteArrayIndex, value);
-        const jsonValue = { [byteArrayRefKey]: byteArrayIndex };
-        byteArrayIndex++;
-        return jsonValue;
-      }
-
-      return value;
+  function argReplacer(key: string, value: any) {
+    if (value instanceof DotNetObject) {
+      return value.serializeAsArg();
+    } else if (value instanceof Uint8Array) {
+      dotNetDispatcher!.sendByteArray(nextByteArrayIndex, value);
+      const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
+      nextByteArrayIndex++;
+      return jsonValue;
     }
+
+    return value;
   }
 }
