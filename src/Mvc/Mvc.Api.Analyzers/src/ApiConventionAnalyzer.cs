@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
@@ -37,43 +38,39 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         private void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, ApiControllerSymbolCache symbolCache)
         {
-            compilationStartAnalysisContext.RegisterSyntaxNodeAction(syntaxNodeContext =>
+            compilationStartAnalysisContext.RegisterOperationAction(operationStartContext =>
             {
-                var cancellationToken = syntaxNodeContext.CancellationToken;
-                var methodSyntax = (MethodDeclarationSyntax)syntaxNodeContext.Node;
-                var semanticModel = syntaxNodeContext.SemanticModel;
-                var method = semanticModel.GetDeclaredSymbol(methodSyntax, syntaxNodeContext.CancellationToken);
-
+                var method = (IMethodSymbol)operationStartContext.ContainingSymbol;
                 if (!ApiControllerFacts.IsApiControllerAction(symbolCache, method))
                 {
                     return;
                 }
 
                 var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
-                var hasUnreadableStatusCodes = !ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, semanticModel, methodSyntax, cancellationToken, out var actualResponseMetadata);
+                var hasUnreadableStatusCodes = !ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, (IMethodBodyOperation)operationStartContext.Operation, operationStartContext.CancellationToken, out var actualResponseMetadata);
 
                 var hasUndocumentedStatusCodes = false;
                 foreach (var actualMetadata in actualResponseMetadata)
                 {
-                    var location = actualMetadata.ReturnStatement.GetLocation();
+                    var location = actualMetadata.ReturnOperation.ReturnedValue.Syntax.GetLocation();
 
                     if (!DeclaredApiResponseMetadata.Contains(declaredResponseMetadata, actualMetadata))
                     {
                         hasUndocumentedStatusCodes = true;
                         if (actualMetadata.IsDefaultResponse)
                         {
-                            syntaxNodeContext.ReportDiagnostic(Diagnostic.Create(
+                            operationStartContext.ReportDiagnostic(Diagnostic.Create(
                                 ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult,
                                 location));
                         }
                         else
-                    {
-                        syntaxNodeContext.ReportDiagnostic(Diagnostic.Create(
-                            ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode,
-                            location,
-                               actualMetadata.StatusCode));
+                        {
+                            operationStartContext.ReportDiagnostic(Diagnostic.Create(
+                                ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode,
+                                location,
+                                   actualMetadata.StatusCode));
+                        }
                     }
-                }
                 }
 
                 if (hasUndocumentedStatusCodes || hasUnreadableStatusCodes)
@@ -88,21 +85,21 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                     var declaredMetadata = declaredResponseMetadata[i];
                     if (!Contains(actualResponseMetadata, declaredMetadata))
                     {
-                        syntaxNodeContext.ReportDiagnostic(Diagnostic.Create(
+                        operationStartContext.ReportDiagnostic(Diagnostic.Create(
                             ApiDiagnosticDescriptors.API1002_ActionDoesNotReturnDocumentedStatusCode,
-                            methodSyntax.Identifier.GetLocation(),
+                            method.Locations[0],
                             declaredMetadata.StatusCode));
                     }
                 }
 
-            }, SyntaxKind.MethodDeclaration);
+            }, OperationKind.MethodBody);
         }
 
         internal static bool Contains(IList<ActualApiResponseMetadata> actualResponseMetadata, DeclaredApiResponseMetadata declaredMetadata)
         {
             for (var i = 0; i < actualResponseMetadata.Count; i++)
             {
-               if (declaredMetadata.Matches(actualResponseMetadata[i]))
+                if (declaredMetadata.Matches(actualResponseMetadata[i]))
                 {
                     return true;
                 }
