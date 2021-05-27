@@ -8,7 +8,7 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>16</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>17</AspNetCorePatchVersion>
     <ValidateBaseline>true</ValidateBaseline>
     <PreReleasePreviewNumber>0</PreReleasePreviewNumber>
     <ComponentsWebAssemblyMajorVersion>3</ComponentsWebAssemblyMajorVersion>
