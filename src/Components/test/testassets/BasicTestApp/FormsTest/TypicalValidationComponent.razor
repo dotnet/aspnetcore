@@ -2,7 +2,10 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
+    @if (enableDataAnnotationsSupport)
+    {
+        <DataAnnotationsValidator />
+    }
 
     <p class="name">
         Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
@@ -89,7 +92,9 @@
     <ValidationSummary />
 </EditForm>
 
-<ul>@foreach (var entry in submissionLog) { <li>@entry</li> }</ul>
+<ul>@foreach (var entry in submissionLog) { <li class="submission-log-entry">@entry</li> }</ul>
+
+<button id="toggle-dataannotations" @onclick="ToggleDataAnnotations">Toggle DataAnnotations support</button>
 
 @code {
     protected virtual bool UseExperimentalValidator => false;
@@ -97,6 +102,7 @@
     Person person = new Person();
     EditContext editContext;
     ValidationMessageStore customValidationMessageStore;
+    bool enableDataAnnotationsSupport = true;
 
     protected override void OnInitialized()
     {
@@ -186,5 +192,11 @@
             customValidationMessageStore.Add(editContext.Field(nameof(Person.Username)), "This is invalid, asynchronously");
             _ = InvokeAsync(editContext.NotifyValidationStateChanged);
         });
+    }
+
+    void ToggleDataAnnotations()
+    {
+        enableDataAnnotationsSupport = !enableDataAnnotationsSupport;
+        submissionLog.Add($"DataAnnotations support is now {(enableDataAnnotationsSupport ? "enabled" : "disabled")}");
     }
 }

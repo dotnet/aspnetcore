@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public async Task<Memory<byte>> ReceiveChunk()
         {
-            var length = int.Parse(await ReadLineAsync(), System.Globalization.NumberStyles.HexNumber);
+            var length = int.Parse(await ReadLineAsync(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var bytes = await Receive(length);
 

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <PackageId>Microsoft.DotNet.Web.Spa.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <PackageId>Microsoft.DotNet.Web.Spa.ProjectTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
     <Description>Single Page Application templates for ASP.NET Core</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
     <!-- By default Pack will exclude files that start with '.', we want to include those files -->
@@ -13,18 +13,20 @@
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
-      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
-      MicrosoftEntityFrameworkCoreRelationalPackageVersion=$(MicrosoftEntityFrameworkCoreRelationalPackageVersion);
-      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
-      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
-      MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
+      MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
+      MicrosoftEntityFrameworkCoreRelationalVersion=$(MicrosoftEntityFrameworkCoreRelationalVersion);
+      MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
+      MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
+      MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+      MicrosoftAspNetCoreSpaProxyVersion=$(MicrosoftAspNetCoreSpaProxyVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
-    <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Spa\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Spa\SpaProxy\src\Microsoft.AspNetCore.SpaProxy.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
@@ -34,7 +36,6 @@
   <ItemGroup>
     <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="React-CSharp.csproj.in" OutputPath="content/React-CSharp/Company.WebApplication1.csproj" />
-    <GeneratedContent Include="ReactRedux-CSharp.csproj.in" OutputPath="content/ReactRedux-CSharp/Company.WebApplication1.csproj" />
   </ItemGroup>
 
 </Project>

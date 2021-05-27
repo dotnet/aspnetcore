@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public int Count => _size;
 
-        public bool TryPop(out Http2Stream result)
+        public bool TryPop([NotNullWhen(true)] out Http2Stream? result)
         {
             int size = _size - 1;
             Http2StreamAsValueType[] array = _array;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
-        public bool TryPeek(out Http2Stream result)
+        public bool TryPeek([NotNullWhen(true)] out Http2Stream? result)
         {
             int size = _size - 1;
             Http2StreamAsValueType[] array = _array;

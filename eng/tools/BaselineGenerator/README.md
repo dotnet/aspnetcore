@@ -4,7 +4,7 @@ This tool is used to generate an MSBuild file which sets the "baseline" against 
 
 ## Usage
 
-Add `--package-source {source}` to the commands below if the packages of interest are not all hosted on NuGet.org.
+Add `--package-sources {source}` to the commands below if the packages of interest are not all hosted on NuGet.org.
 
 ### Auto-update
 

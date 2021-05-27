@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         /// <param name="method">The <see cref="MethodInfo"/>.</param>
         /// <returns>The <see cref="PageHandlerModel"/>.</returns>
-        public PageHandlerModel CreateHandlerModel(MethodInfo method)
+        public PageHandlerModel? CreateHandlerModel(MethodInfo method)
         {
             if (method == null)
             {
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var attributes = parameter.GetCustomAttributes(inherit: true);
 
-            BindingInfo bindingInfo;
+            BindingInfo? bindingInfo;
             if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
             {
                 var modelMetadata = modelMetadataProviderBase.GetMetadataForParameter(parameter);
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return new PageParameterModel(parameter, attributes)
             {
                 BindingInfo = bindingInfo,
-                ParameterName = parameter.Name,
+                ParameterName = parameter.Name!,
             };
         }
 
@@ -119,14 +120,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // BindingInfo for properties can be either specified by decorating the property with binding-specific attributes.
             // ModelMetadata also adds information from the property's type and any configured IBindingMetadataProvider.
-            var propertyMetadata = _modelMetadataProvider.GetMetadataForProperty(property.DeclaringType, property.Name);
+            var propertyMetadata = _modelMetadataProvider.GetMetadataForProperty(property.DeclaringType!, property.Name);
             var bindingInfo = BindingInfo.GetBindingInfo(propertyAttributes, propertyMetadata);
 
             if (bindingInfo == null)
             {
                 // Look for BindPropertiesAttribute on the handler type if no BindingInfo was inferred for the property.
                 // This allows a user to enable model binding on properties by decorating the controller type with BindPropertiesAttribute.
-                var declaringType = property.DeclaringType;
+                var declaringType = property.DeclaringType!;
                 var bindPropertiesAttribute = declaringType.GetCustomAttribute<BindPropertiesAttribute>(inherit: true);
                 if (bindPropertiesAttribute != null)
                 {
@@ -218,13 +219,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return true;
         }
 
-        internal static bool TryParseHandlerMethod(string methodName, out string httpMethod, out string handler)
+        internal static bool TryParseHandlerMethod(string methodName, [NotNullWhen(true)] out string? httpMethod, out string? handler)
         {
             httpMethod = null;
             handler = null;
 
             // Handler method names always start with "On"
-            if (!methodName.StartsWith("On") || methodName.Length <= "On".Length)
+            if (!methodName.StartsWith("On", StringComparison.Ordinal) || methodName.Length <= "On".Length)
             {
                 return false;
             }

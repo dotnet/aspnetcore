@@ -65,14 +65,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         internal HttpConnectionContext CreateConnection()
         {
-            return CreateConnection(PipeOptions.Default, PipeOptions.Default);
+            return CreateConnection(new());
         }
 
         /// <summary>
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions, int negotiateVersion = 0)
+        internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0)
         {
             string connectionToken;
             var id = MakeNewConnectionId();
@@ -87,10 +87,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-            var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger);
-            var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
-            connection.Transport = pair.Application;
-            connection.Application = pair.Transport;
+            var pair = DuplexPipe.CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
+            var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, pair.Application, pair.Transport, options);
 
             _connections.TryAdd(connectionToken, (connection, connectionTimer));
 

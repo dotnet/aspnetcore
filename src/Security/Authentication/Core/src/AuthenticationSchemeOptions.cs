@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// setting first, followed by checking the ForwardDefaultSelector, followed by ForwardDefault. The first non null result
         /// will be used as the target scheme to forward to.
         /// </summary>
-        public Func<HttpContext, string>? ForwardDefaultSelector { get; set; }
+        public Func<HttpContext, string?>? ForwardDefaultSelector { get; set; }
 
     }
 }

@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     /// </summary>
     internal class Disposable : IDisposable
     {
-        private Action _dispose;
-        private bool _disposedValue = false; // To detect redundant calls
+        private Action? _dispose;
+        private bool _disposedValue; // To detect redundant calls
 
         public Disposable(Action dispose)
         {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 if (disposing)
                 {
-                    _dispose.Invoke();
+                    _dispose!.Invoke();
                 }
 
                 _dispose = null;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal class FileProviderRazorProjectFileSystem : RazorProjectFileSystem
+    internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSystem
     {
         private const string RazorFileExtension = ".cshtml";
         private readonly RuntimeCompilationFileProvider _fileProvider;
@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
         public IFileProvider FileProvider => _fileProvider.FileProvider;
 
-        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
+
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);
         }
 
-        public override RazorProjectItem GetItem(string path, string fileKind)
+        public override RazorProjectItem GetItem(string path, string? fileKind)
         {
             path = NormalizeAndEnsureValidPath(path);
             var fileInfo = FileProvider.GetFileInfo(path);

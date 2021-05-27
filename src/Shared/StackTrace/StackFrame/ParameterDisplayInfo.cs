@@ -21,11 +21,11 @@ namespace Microsoft.Extensions.StackTrace.Sources
             {
                 builder
                     .Append(Prefix)
-                    .Append(" ");
+                    .Append(' ');
             }
 
             builder.Append(Type);
-            builder.Append(" ");
+            builder.Append(' ');
             builder.Append(Name);
 
             return builder.ToString();

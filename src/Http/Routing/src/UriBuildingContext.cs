@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (_path.Length != 0)
                 {
-                    _path.Append("/");
+                    _path.Append('/');
                 }
             }
 
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Routing
             // This prevents the leading slash from PathString segments from being encoded.
             if (_path.Length == 0 && value.Length > 0 && value[0] == '/')
             {
-                _path.Append("/");
+                _path.Append('/');
                 EncodeValue(value, 1, value.Length - 1, encodeSlashes);
             }
             else
@@ -304,7 +305,7 @@ namespace Microsoft.AspNetCore.Routing
                 while ((end = value.IndexOf('/', start, characterCount)) >= 0)
                 {
                     _urlEncoder.Encode(PathWriter, value, start, end - start);
-                    _path.Append("/");
+                    _path.Append('/');
 
                     start = end + 1;
                     characterCount = length - start;
@@ -319,7 +320,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private string DebuggerToString()
         {
-            return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
+            return string.Format(CultureInfo.InvariantCulture, "{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
         }
 
         private readonly struct BufferValue

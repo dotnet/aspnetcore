@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
                 if (db != null)
                 {
-                    var dbName = db.GetType().FullName;
+                    var dbName = db.GetType().FullName!;
                     try
                     {
                         _logger.ApplyingMigrations(dbName);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             }
         }
 
-        private static async Task<DbContext> GetDbContext(HttpContext context, ILogger logger)
+        private static async Task<DbContext?> GetDbContext(HttpContext context, ILogger logger)
         {
             var form = await context.Request.ReadFormAsync();
             var contextTypeName = form["context"];
@@ -132,9 +132,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 return null;
             }
 
-            var contextType = Type.GetType(contextTypeName);
+            var contextType = Type.GetType(contextTypeName)!;
 
-            var db = (DbContext)context.RequestServices.GetService(contextType);
+            var db = (DbContext?)context.RequestServices.GetService(contextType);
 
             return db;
         }

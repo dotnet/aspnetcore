@@ -35,14 +35,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
         {
             context.Response.ContentType = "text/event-stream";
-            context.Response.Headers[HeaderNames.CacheControl] = "no-cache,no-store";
-            context.Response.Headers[HeaderNames.Pragma] = "no-cache";
+            context.Response.Headers.CacheControl = "no-cache,no-store";
+            context.Response.Headers.Pragma = "no-cache";
 
             // Make sure we disable all response buffering for SSE
-            var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>();
+            var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
             bufferingFeature.DisableBuffering();
 
-            context.Response.Headers[HeaderNames.ContentEncoding] = "identity";
+            context.Response.Headers.ContentEncoding = "identity";
 
             // Workaround for a Firefox bug where EventSource won't fire the open event
             // until it receives some data

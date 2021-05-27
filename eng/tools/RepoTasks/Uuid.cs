@@ -11,7 +11,7 @@ namespace RepoTasks
     /// <summary>
     /// Implementation of RFC 4122 - A Universally Unique Identifier (UUID) URN Namespace.
     /// </summary>
-    internal sealed class Uuid
+    internal static class Uuid
     {
         /// <summary>
         ///   Generates a version 3 UUID given a namespace UUID and name. This is based on the algorithm described in
@@ -42,7 +42,7 @@ namespace RepoTasks
             Buffer.BlockCopy(nameBytes, 0, hashBuffer, 16, nameBytes.Length);
             byte[] hash;
 
-            using (SHA256 sha256 = new SHA256Managed())
+            using (SHA256 sha256 = SHA256.Create())
             {
                 hash = sha256.ComputeHash(hashBuffer);
             }

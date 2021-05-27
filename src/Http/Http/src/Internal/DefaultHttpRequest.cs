@@ -119,8 +119,8 @@ namespace Microsoft.AspNetCore.Http
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers[HeaderNames.Host]); }
-            set { Headers[HeaderNames.Host] = value.ToUriComponent(); }
+            get { return HostString.FromUriComponent(Headers.Host); }
+            set { Headers.Host = value.ToUriComponent(); }
         }
 
         public override IQueryCollection Query
@@ -146,10 +146,10 @@ namespace Microsoft.AspNetCore.Http
             set { RequestCookiesFeature.Cookies = value; }
         }
 
-        public override string ContentType
+        public override string? ContentType
         {
-            get { return Headers[HeaderNames.ContentType]; }
-            set { Headers[HeaderNames.ContentType] = value; }
+            get { return Headers.ContentType; }
+            set { Headers.ContentType = value; }
         }
 
         public override bool HasFormContentType

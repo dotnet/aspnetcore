@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -11,8 +12,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class RazorPageDocumentClassifierPass : DocumentClassifierPassBase
     {
+        private bool _useConsolidatedMvcViews;
+
         public static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
         public static readonly string RouteTemplateKey = "RouteTemplate";
+
+        public RazorPageDocumentClassifierPass() : this(false) { }
+
+        public RazorPageDocumentClassifierPass(bool useConsolidatedMvcViews)
+        {
+            _useConsolidatedMvcViews = useConsolidatedMvcViews;
+        }
 
         private static readonly RazorProjectEngine LeadingDirectiveParsingEngine = RazorProjectEngine.Create(
             RazorConfiguration.Create(RazorLanguageVersion.Version_3_0, "leading-directive-parser", Array.Empty<RazorExtension>()),
@@ -50,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (!codeDocument.TryComputeNamespace(fallbackToRootNamespace: false, out var namespaceName))
             {
-                @namespace.Content = "AspNetCore";
+                @namespace.Content = _useConsolidatedMvcViews ? "AspNetCoreGeneratedDocument" : "AspNetCore";
             }
             else
             {
@@ -71,7 +81,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
             @class.Modifiers.Clear();
-            @class.Modifiers.Add("public");
+            if (_useConsolidatedMvcViews)
+            {
+                @class.Modifiers.Add("internal");
+                @class.Modifiers.Add("sealed");
+            }
+            else
+            {
+                @class.Modifiers.Add("public");
+            }
 
             method.MethodName = "ExecuteAsync";
             method.Modifiers.Clear();
@@ -170,12 +188,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 return path;
             }
 
+            var pathSegment = new StringSegment(path);
             if (path.EndsWith(cshtmlExtension, StringComparison.OrdinalIgnoreCase))
             {
-                path = path.Substring(0, path.Length - cshtmlExtension.Length);
+                pathSegment = pathSegment.Subsegment(0, path.Length - cshtmlExtension.Length);
             }
 
-            return CSharpIdentifier.SanitizeIdentifier(path);
+            return CSharpIdentifier.SanitizeIdentifier(pathSegment);
         }
     }
 }

@@ -44,7 +44,7 @@ Return Values:
     DWORD   ich;
     DWORD   cchEncoded;
     BYTE    b0, b1, b2;
-    BYTE *  pbDecodedBuffer = (BYTE *) pDecodedBuffer;
+    BYTE *  pbDecodedBuffer = static_cast<BYTE*>(pDecodedBuffer);
 
     // Calculate encoded string size.
     cchEncoded = 1 + (cbDecodedBufferSize + 2) / 3 * 4;
@@ -155,7 +155,7 @@ Return Values:
 
 --*/
 {
-#define NA (255)
+constexpr auto NA = (255);
 #define DECODE(x) (((ULONG)(x) < sizeof(rgbDecodeTable)) ? rgbDecodeTable[x] : NA)
 
     static BYTE rgbDecodeTable[128] = {

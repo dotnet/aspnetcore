@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal("bytes", httpContext.Response.Headers[HeaderNames.AcceptRanges]);
+            Assert.Equal("bytes", httpContext.Response.Headers.AcceptRanges);
         }
 
         [Theory]
@@ -268,13 +268,13 @@ namespace Microsoft.AspNetCore.Mvc
             httpRequestHeaders.IfUnmodifiedSince = lastModified;
             httpRequestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(1);
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
 
             // Act
-            var state = fileResult.GetPreconditionState(
+            var state = FileResultExecutorBase.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(FileResultExecutorBase.PreconditionState.ShouldProcess, state);
@@ -307,13 +307,13 @@ namespace Microsoft.AspNetCore.Mvc
             httpRequestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue;
             httpRequestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(2);
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
 
             // Act
-            var state = fileResult.GetPreconditionState(
+            var state = FileResultExecutorBase.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(FileResultExecutorBase.PreconditionState.PreconditionFailed, state);
@@ -344,13 +344,13 @@ namespace Microsoft.AspNetCore.Mvc
             };
             httpRequestHeaders.IfModifiedSince = lastModified;
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
 
             // Act
-            var state = fileResult.GetPreconditionState(
+            var state = FileResultExecutorBase.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(FileResultExecutorBase.PreconditionState.NotModified, state);
@@ -372,13 +372,13 @@ namespace Microsoft.AspNetCore.Mvc
             httpRequestHeaders.IfRange = new RangeConditionHeaderValue(ifRangeString);
             httpRequestHeaders.IfModifiedSince = lastModified;
             actionContext.HttpContext = httpContext;
-            var fileResult = (new Mock<FileResultExecutorBase>(NullLogger.Instance)).Object;
 
             // Act
-            var ifRangeIsValid = fileResult.IfRangeValid(
+            var ifRangeIsValid = FileResultExecutorBase.IfRangeValid(
                 httpRequestHeaders,
                 lastModified,
-                etag);
+                etag,
+                NullLogger.Instance);
 
             // Assert
             Assert.Equal(expected, ifRangeIsValid);
@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var httpContext = GetHttpContext();
-            httpContext.Request.Headers[HeaderNames.IfModifiedSince] = HeaderUtilities.FormatDate(ifModifiedSince);
+            httpContext.Request.Headers.IfModifiedSince = HeaderUtilities.FormatDate(ifModifiedSince);
             var actionContext = CreateActionContext(httpContext);
             // Represents 4/9/2018 11:24:22 AM +00:00
             // Ticks rounded down to seconds: 636588698620000000
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var httpContext = GetHttpContext();
-            httpContext.Request.Headers[HeaderNames.IfUnmodifiedSince] = HeaderUtilities.FormatDate(ifUnmodifiedSince);
+            httpContext.Request.Headers.IfUnmodifiedSince = HeaderUtilities.FormatDate(ifUnmodifiedSince);
             var actionContext = CreateActionContext(httpContext);
             // Represents 4/9/2018 11:24:22 AM +00:00
             // Ticks rounded down to seconds: 636588698620000000

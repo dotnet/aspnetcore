@@ -23,6 +23,9 @@ namespace Microsoft.AspNetCore.Owin
 {
     using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
 
+    /// <summary>
+    /// OWIN feature collection.
+    /// </summary>
     public class OwinFeatureCollection :
         IFeatureCollection,
         IHttpRequestFeature,
@@ -36,10 +39,17 @@ namespace Microsoft.AspNetCore.Owin
         IHttpWebSocketFeature,
         IOwinEnvironmentFeature
     {
+        /// <summary>
+        /// Gets or sets OWIN environment values.
+        /// </summary>
         public IDictionary<string, object> Environment { get; set; }
         private PipeWriter _responseBodyWrapper;
         private bool _headersSent;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OwinFeatureCollection"/>.
+        /// </summary>
+        /// <param name="environment">The environment values.</param>
         public OwinFeatureCollection(IDictionary<string, object> environment)
         {
             Environment = environment;
@@ -206,13 +216,13 @@ namespace Microsoft.AspNetCore.Owin
 
         int IHttpConnectionFeature.RemotePort
         {
-            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort)); }
+            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort), CultureInfo.InvariantCulture); }
             set { Prop(OwinConstants.CommonKeys.RemotePort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
         int IHttpConnectionFeature.LocalPort
         {
-            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.LocalPort)); }
+            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.LocalPort), CultureInfo.InvariantCulture); }
             set { Prop(OwinConstants.CommonKeys.LocalPort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
@@ -318,16 +328,19 @@ namespace Microsoft.AspNetCore.Owin
 
         // IFeatureCollection
 
+        /// <inheritdoc/>
         public int Revision
         {
             get { return 0; } // Not modifiable
         }
 
+        /// <inheritdoc/>
         public bool IsReadOnly
         {
             get { return true; }
         }
 
+        /// <inheritdoc/>
         public object this[Type key]
         {
             get { return Get(key); }
@@ -337,7 +350,7 @@ namespace Microsoft.AspNetCore.Owin
         private bool SupportsInterface(Type key)
         {
             // Does this type implement the requested interface?
-            if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
+            if (key.IsAssignableFrom(GetType()))
             {
                 // Check for conditional features
                 if (key == typeof(ITlsConnectionFeature))
@@ -355,6 +368,7 @@ namespace Microsoft.AspNetCore.Owin
             return false;
         }
 
+        /// <inheritdoc/>
         public object Get(Type key)
         {
             if (SupportsInterface(key))
@@ -364,16 +378,19 @@ namespace Microsoft.AspNetCore.Owin
             return null;
         }
 
+        /// <inheritdoc/>
         public void Set(Type key, object value)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public TFeature Get<TFeature>()
         {
             return (TFeature)this[typeof(TFeature)];
         }
 
+        /// <inheritdoc/>
         public void Set<TFeature>(TFeature instance)
         {
             this[typeof(TFeature)] = instance;
@@ -384,6 +401,7 @@ namespace Microsoft.AspNetCore.Owin
             return GetEnumerator();
         }
 
+        /// <inheritdoc/>
         public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
         {
             yield return new KeyValuePair<Type, object>(typeof(IHttpRequestFeature), this);
@@ -431,6 +449,7 @@ namespace Microsoft.AspNetCore.Owin
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
         }

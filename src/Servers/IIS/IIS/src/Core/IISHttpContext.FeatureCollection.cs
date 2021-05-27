@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
 
         private int _featureRevision;
-        private string _httpProtocolVersion;
-        private X509Certificate2 _certificate;
+        private string? _httpProtocolVersion;
+        private X509Certificate2? _certificate;
 
-        private List<KeyValuePair<Type, object>> MaybeExtra;
+        private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         public void ResetFeatureCollection()
         {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _featureRevision++;
         }
 
-        private object ExtraFeatureGet(Type key)
+        private object? ExtraFeatureGet(Type key)
         {
             if (MaybeExtra == null)
             {
@@ -70,22 +70,39 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return null;
         }
 
-        private void ExtraFeatureSet(Type key, object value)
+        private void ExtraFeatureSet(Type key, object? value)
         {
-            if (MaybeExtra == null)
+            if (value == null)
             {
-                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
-            }
-
-            for (var i = 0; i < MaybeExtra.Count; i++)
-            {
-                if (MaybeExtra[i].Key == key)
+                if (MaybeExtra == null)
                 {
-                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
                     return;
                 }
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {
+                    if (MaybeExtra[i].Key == key)
+                    {
+                        MaybeExtra.RemoveAt(i);
+                        return;
+                    }
+                }
             }
-            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            else
+            {
+                if (MaybeExtra == null)
+                {
+                    MaybeExtra = new List<KeyValuePair<Type, object>>(2);
+                }
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {
+                    if (MaybeExtra[i].Key == key)
+                    {
+                        MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
+                        return;
+                    }
+                }
+                MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            }
         }
 
         string IHttpRequestFeature.Protocol
@@ -150,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => StatusCode = value;
         }
 
-        string IHttpResponseFeature.ReasonPhrase
+        string? IHttpResponseFeature.ReasonPhrase
         {
             get => ReasonPhrase;
             set => ReasonPhrase = value;
@@ -226,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // calling flush twice at the same time.
             // awaiting the writeBodyTask guarantees the response has finished the final flush.
             _bodyOutput.Complete();
-            return _writeBodyTask;
+            return _writeBodyTask!;
         }
 
         private async Task CompleteResponseBodyAwaited(ValueTask completeAsyncTask)
@@ -239,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
 
             _bodyOutput.Complete();
-            await _writeBodyTask;
+            await _writeBodyTask!;
         }
 
         private async Task CompleteInitializeResponseAwaited(Task initializeTask)
@@ -247,22 +264,25 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             await initializeTask;
 
             _bodyOutput.Complete();
-            await _writeBodyTask;
+            await _writeBodyTask!;
         }
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => true;
+        // Http/2 does not support the upgrade mechanic.
+        // Http/1.x upgrade requests may have a request body, but that's not allowed in our main scenario (WebSockets) and much
+        // more complicated to support. See https://tools.ietf.org/html/rfc7230#section-6.7, https://tools.ietf.org/html/rfc7540#section-3.2
+        bool IHttpUpgradeFeature.IsUpgradableRequest => !RequestCanHaveBody && HttpVersion < System.Net.HttpVersion.Version20;
 
         bool IFeatureCollection.IsReadOnly => false;
 
         int IFeatureCollection.Revision => _featureRevision;
 
-        ClaimsPrincipal IHttpAuthenticationFeature.User
+        ClaimsPrincipal? IHttpAuthenticationFeature.User
         {
             get => User;
             set => User = value;
         }
 
-        string IServerVariablesFeature.this[string variableName]
+        string? IServerVariablesFeature.this[string variableName]
         {
             get
             {
@@ -284,6 +304,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
                 }
 
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 // Synchronize access to native methods that might run in parallel with IO loops
                 lock (_contextLock)
                 {
@@ -292,18 +317,18 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        object IFeatureCollection.this[Type key]
+        object? IFeatureCollection.this[Type key]
         {
             get => FastFeatureGet(key);
             set => FastFeatureSet(key, value);
         }
 
-        TFeature IFeatureCollection.Get<TFeature>()
+        TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {
-            return (TFeature)FastFeatureGet(typeof(TFeature));
+            return (TFeature?)FastFeatureGet(typeof(TFeature));
         }
 
-        void IFeatureCollection.Set<TFeature>(TFeature instance)
+        void IFeatureCollection.Set<TFeature>(TFeature? instance) where TFeature : default
         {
             FastFeatureSet(typeof(TFeature), instance);
         }
@@ -348,19 +373,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             HasStartedConsumingRequestBody = false;
 
             // Upgrade async will cause the stream processing to go into duplex mode
-            AsyncIO = new WebSocketsAsyncIOEngine(_contextLock, _requestNativeHandle);
+            AsyncIO = new WebSocketsAsyncIOEngine(this, _requestNativeHandle);
 
             await InitializeResponse(flushHeaders: true);
 
             return _streams.Upgrade();
         }
 
-        Task<X509Certificate2> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        Task<X509Certificate2?> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(((ITlsConnectionFeature)this).ClientCertificate);
         }
 
-        unsafe X509Certificate2 ITlsConnectionFeature.ClientCertificate
+        unsafe X509Certificate2? ITlsConnectionFeature.ClientCertificate
         {
             get
             {
@@ -419,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
+        internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
         {
             // Check version is above 2.
             if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
@@ -436,7 +461,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => ResponseTrailers = value;
         }
 
-        internal IHttpResetFeature GetResetFeature()
+        internal IHttpResetFeature? GetResetFeature()
         {
             // Check version is above 2.
             if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))

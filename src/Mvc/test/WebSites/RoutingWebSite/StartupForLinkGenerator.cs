@@ -25,8 +25,7 @@ namespace RoutingWebSite
                     {
                         pageRouteTransformerConvention.Apply(model);
                     });
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                });
             services
                 .AddRouting(options =>
                 {

@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             var relativePosition = changeStart - target.Position;
-            var deletionContent = target.GetContent().Substring(relativePosition, changeLength);
+            var deletionContent = new StringSegment(target.GetContent(), relativePosition, changeLength);
 
             if (deletionContent.IndexOfAny(new[] { '(', ')' }) >= 0)
             {

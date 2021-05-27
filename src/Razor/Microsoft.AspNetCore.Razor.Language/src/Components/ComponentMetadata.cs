@@ -8,14 +8,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     // Metadata used for Components interactions with the tag helper system
     internal static class ComponentMetadata
     {
-        private static readonly string MangledClassNamePrefix = "__generated__";
+        private static readonly StringSegment MangledClassNamePrefix = "__generated__";
 
         // There's a bug in the 15.7 preview 1 Razor that prevents 'Kind' from being serialized
         // this affects both tooling and build. For now our workaround is to ignore 'Kind' and
         // use our own metadata entry to denote non-Component tag helpers.
-        public static readonly string SpecialKindKey = "Components.IsSpecialKind";
+        public const string SpecialKindKey = "Components.IsSpecialKind";
 
-        public static readonly string ImportsFileName = "_Imports.razor";
+        public const string ImportsFileName = "_Imports.razor";
 
         public static string MangleClassName(string className)
         {
@@ -27,118 +27,115 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return MangledClassNamePrefix + className;
         }
 
-        public static bool IsMangledClass(string className)
+        public static bool IsMangledClass(StringSegment className)
         {
-            if (string.IsNullOrEmpty(className))
-            {
-                return false;
-            }
-
             return className.StartsWith(MangledClassNamePrefix, StringComparison.Ordinal);
         }
 
         public static class Common
         {
-            public static readonly string OriginalAttributeName = "Common.OriginalAttributeName";
+            public const string OriginalAttributeName = "Common.OriginalAttributeName";
 
-            public static readonly string DirectiveAttribute = "Common.DirectiveAttribute";
+            public const string DirectiveAttribute = "Common.DirectiveAttribute";
 
-            public static readonly string AddAttributeMethodName = "Common.AddAttributeMethodName";
+            public const string AddAttributeMethodName = "Common.AddAttributeMethodName";
         }
 
         public static class Bind
         {
-            public static readonly string RuntimeName = "Components.None";
+            public const string RuntimeName = "Components.None";
 
-            public readonly static string TagHelperKind = "Components.Bind";
+            public const string TagHelperKind = "Components.Bind";
 
-            public readonly static string FallbackKey = "Components.Bind.Fallback";
+            public const string FallbackKey = "Components.Bind.Fallback";
 
-            public readonly static string TypeAttribute = "Components.Bind.TypeAttribute";
+            public const string TypeAttribute = "Components.Bind.TypeAttribute";
 
-            public readonly static string ValueAttribute = "Components.Bind.ValueAttribute";
+            public const string ValueAttribute = "Components.Bind.ValueAttribute";
 
-            public readonly static string ChangeAttribute = "Components.Bind.ChangeAttribute";
+            public const string ChangeAttribute = "Components.Bind.ChangeAttribute";
 
-            public readonly static string ExpressionAttribute = "Components.Bind.ExpressionAttribute";
+            public const string ExpressionAttribute = "Components.Bind.ExpressionAttribute";
 
-            public readonly static string IsInvariantCulture = "Components.Bind.IsInvariantCulture";
+            public const string IsInvariantCulture = "Components.Bind.IsInvariantCulture";
 
-            public readonly static string Format = "Components.Bind.Format";
+            public const string Format = "Components.Bind.Format";
         }
 
         public static class ChildContent
         {
-            public static readonly string RuntimeName = "Components.None";
+            public const string RuntimeName = "Components.None";
 
-            public static readonly string TagHelperKind = "Components.ChildContent";
+            public const string TagHelperKind = "Components.ChildContent";
 
-            public static readonly string ParameterNameBoundAttributeKind = "Components.ChildContentParameterName";
+            public const string ParameterNameBoundAttributeKind = "Components.ChildContentParameterName";
 
             /// <summary>
             /// The name of the synthesized attribute used to set a child content parameter.
             /// </summary>
-            public static readonly string ParameterAttributeName = "Context";
+            public const string ParameterAttributeName = "Context";
 
             /// <summary>
             /// The default name of the child content parameter (unless set by a Context attribute).
             /// </summary>
-            public static readonly string DefaultParameterName = "context";
+            public const string DefaultParameterName = "context";
         }
 
         public static class Component
         {
-            public static readonly string ChildContentKey = "Components.ChildContent";
+            public const string ChildContentKey = "Components.ChildContent";
 
-            public static readonly string ChildContentParameterNameKey = "Components.ChildContentParameterName";
+            public const string ChildContentParameterNameKey = "Components.ChildContentParameterName";
 
-            public static readonly string DelegateSignatureKey = "Components.DelegateSignature";
+            public const string DelegateSignatureKey = "Components.DelegateSignature";
 
-            public static readonly string EventCallbackKey = "Components.EventCallback";
+            public const string EventCallbackKey = "Components.EventCallback";
 
-            public static readonly string WeaklyTypedKey = "Components.IsWeaklyTyped";
+            public const string WeaklyTypedKey = "Components.IsWeaklyTyped";
 
-            public static readonly string RuntimeName = "Components.IComponent";
+            public const string RuntimeName = "Components.IComponent";
 
-            public readonly static string TagHelperKind = "Components.Component";
+            public const string TagHelperKind = "Components.Component";
 
-            public readonly static string GenericTypedKey = "Components.GenericTyped";
+            public const string GenericTypedKey = "Components.GenericTyped";
 
-            public readonly static string TypeParameterKey = "Components.TypeParameter";
+            public const string TypeParameterKey = "Components.TypeParameter";
 
-            public readonly static string NameMatchKey = "Components.NameMatch";
+            public const string TypeParameterIsCascadingKey = "Components.TypeParameterIsCascading";
 
-            public readonly static string FullyQualifiedNameMatch = "Components.FullyQualifiedNameMatch";
+            public const string NameMatchKey = "Components.NameMatch";
+
+            public const string FullyQualifiedNameMatch = "Components.FullyQualifiedNameMatch";
         }
 
         public static class EventHandler
         {
-            public static readonly string EventArgsType = "Components.EventHandler.EventArgs";
+            public const string EventArgsType = "Components.EventHandler.EventArgs";
 
-            public static readonly string RuntimeName = "Components.None";
+            public const string RuntimeName = "Components.None";
 
-            public readonly static string TagHelperKind = "Components.EventHandler";
+            public const string TagHelperKind = "Components.EventHandler";
         }
 
         public static class Key
         {
-            public readonly static string TagHelperKind = "Components.Key";
+            public const string TagHelperKind = "Components.Key";
 
-            public static readonly string RuntimeName = "Components.None";
+            public const string RuntimeName = "Components.None";
         }
 
         public static class Splat
         {
-            public readonly static string TagHelperKind = "Components.Splat";
+            public const string TagHelperKind = "Components.Splat";
 
-            public static readonly string RuntimeName = "Components.None";
+            public const string RuntimeName = "Components.None";
         }
 
         public static class Ref
         {
-            public readonly static string TagHelperKind = "Components.Ref";
+            public const string TagHelperKind = "Components.Ref";
 
-            public static readonly string RuntimeName = "Components.None";
+            public const string RuntimeName = "Components.None";
         }
     }
 }

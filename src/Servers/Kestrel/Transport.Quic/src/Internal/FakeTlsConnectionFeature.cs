@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal class FakeTlsConnectionFeature : ITlsConnectionFeature
     {
@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         {
         }
 
-        public X509Certificate2 ClientCertificate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public X509Certificate2? ClientCertificate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
+        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

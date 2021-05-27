@@ -11,11 +11,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class Constants
     {
-        public const string UserAgent = "User-Agent";
+#pragma warning disable CA1802
+        public static readonly string UserAgent = "User-Agent";
+#pragma warning restore CA1802
         public static readonly string UserAgentHeader;
 
         static Constants()
         {
+            if (OperatingSystem.IsBrowser())
+            {
+                UserAgent = "X-SignalR-User-Agent";
+            }
+
             var assemblyVersion = typeof(Constants)
                 .Assembly
                 .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
@@ -26,7 +33,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             var runtime = ".NET";
             var runtimeVersion = RuntimeInformation.FrameworkDescription;
 
-            UserAgentHeader = ConstructUserAgent(typeof(Constants).Assembly.GetName().Version, assemblyVersion?.InformationalVersion, GetOS(), runtime, runtimeVersion);
+            UserAgentHeader = ConstructUserAgent(typeof(Constants).Assembly.GetName().Version!, assemblyVersion.InformationalVersion, GetOS(), runtime, runtimeVersion);
         }
 
         private static string GetOS()

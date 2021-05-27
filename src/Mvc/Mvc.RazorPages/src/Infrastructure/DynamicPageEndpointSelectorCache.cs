@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -23,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         internal void AddDataSource(EndpointDataSource dataSource, int key) =>
             _dataSourceCache.GetOrAdd(key, dataSource);
 
-        public DynamicPageEndpointSelector GetEndpointSelector(Endpoint endpoint)
+        public DynamicPageEndpointSelector? GetEndpointSelector(Endpoint endpoint)
         {
             if (endpoint?.Metadata == null)
             {
@@ -31,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             var dataSourceId = endpoint.Metadata.GetMetadata<PageEndpointDataSourceIdMetadata>();
+            Debug.Assert(dataSourceId is not null);
             return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
         }
 

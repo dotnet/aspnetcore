@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(candidates));
             }
 
-            DynamicPageEndpointSelector selector = null;
+            DynamicPageEndpointSelector? selector = null;
 
             // There's no real benefit here from trying to avoid the async state machine.
             // We only execute on nodes that contain a dynamic policy, and thus always have
@@ -102,13 +102,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var endpoint = candidates[i].Endpoint;
                 var originalValues = candidates[i].Values;
 
-                RouteValueDictionary dynamicValues = null;
+                RouteValueDictionary? dynamicValues = null;
 
                 // We don't expect both of these to be provided, and they are internal so there's
                 // no realistic way this could happen.
                 var dynamicPageMetadata = endpoint.Metadata.GetMetadata<DynamicPageMetadata>();
                 var transformerMetadata = endpoint.Metadata.GetMetadata<DynamicPageRouteValueTransformerMetadata>();
-                DynamicRouteValueTransformer transformer = null;
+                DynamicRouteValueTransformer? transformer = null;
                 if (dynamicPageMetadata != null)
                 {
                     dynamicValues = dynamicPageMetadata.Values;
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         throw new InvalidOperationException(Resources.FormatStateShouldBeNullForRouteValueTransformers(transformerMetadata.SelectorType.Name));
                     }
                     transformer.State = transformerMetadata.State;
-                    dynamicValues = await transformer.TransformAsync(httpContext, originalValues);
+                    dynamicValues = await transformer.TransformAsync(httpContext, originalValues!);
                 }
                 else
                 {
@@ -181,19 +181,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 for (var j = 0; j < loadedEndpoints.Count; j++)
                 {
                     var metadata = loadedEndpoints[j].Metadata;
-                    var pageActionDescriptor = metadata.GetMetadata<PageActionDescriptor>();
-
-                    CompiledPageActionDescriptor compiled;
-                    if (_loader is DefaultPageLoader defaultPageLoader)
+                    var actionDescriptor = metadata.GetMetadata<PageActionDescriptor>();
+                    if (actionDescriptor is CompiledPageActionDescriptor)
                     {
-                        compiled = await defaultPageLoader.LoadAsync(pageActionDescriptor, endpoint.Metadata);
+                        // Nothing to do here. The endpoint already represents a compiled page.
                     }
                     else
                     {
-                        compiled = await _loader.LoadAsync(pageActionDescriptor);
+                        // We're working with a runtime-compiled page and have to Load it.
+                        var compiled = actionDescriptor!.CompiledPageDescriptor ??
+                            await _loader.LoadAsync(actionDescriptor, endpoint.Metadata);
+                        loadedEndpoints[j] = compiled.Endpoint!;
                     }
-
-                    loadedEndpoints[j] = compiled.Endpoint;
                 }
 
                 // Expand the list of endpoints
@@ -201,14 +200,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        private DynamicPageEndpointSelector ResolveSelector(DynamicPageEndpointSelector currentSelector, Endpoint endpoint)
+        private DynamicPageEndpointSelector ResolveSelector(DynamicPageEndpointSelector? currentSelector, Endpoint endpoint)
         {
             var selector = _selectorCache.GetEndpointSelector(endpoint);
 
             Debug.Assert(currentSelector == null || ReferenceEquals(currentSelector, selector));
 
-            return selector;
+            return selector!;
         }
-
     }
 }

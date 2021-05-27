@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             TryParseResult result,
             MarkupTagHelperAttributeValueSyntax rewrittenValue)
         {
-            // 
+            //
             // Consider, <Foo @bind:param="..." />
             // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
             // We need to split the name "@bind:param" into four parts,
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new SyntaxList<SyntaxToken>(SyntaxFactory.MissingToken(SyntaxKind.Transition)));
             RazorMetaCodeSyntax colon = null;
             MarkupTextLiteralSyntax parameterName = null;
-            if (attributeName.StartsWith("@"))
+            if (attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 attributeName = attributeName.Substring(1);
                 var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, attributeName);
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             MarkupMinimizedAttributeBlockSyntax attributeBlock,
             TryParseResult result)
         {
-            // 
+            //
             // Consider, <Foo @bind:param />
             // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
             // We need to split the name "@bind:param" into four parts,
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new SyntaxList<SyntaxToken>(SyntaxFactory.MissingToken(SyntaxKind.Transition)));
             RazorMetaCodeSyntax colon = null;
             MarkupTextLiteralSyntax parameterName = null;
-            if (attributeName.StartsWith("@"))
+            if (attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 attributeName = attributeName.Substring(1);
                 var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, attributeName);
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private class AttributeValueRewriter : SyntaxRewriter
         {
             private readonly TryParseResult _tryParseResult;
-            private bool _rewriteAsMarkup = false;
+            private bool _rewriteAsMarkup;
 
             public AttributeValueRewriter(TryParseResult result)
             {

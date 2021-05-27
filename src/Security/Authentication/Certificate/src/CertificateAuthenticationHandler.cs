@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
     {
         private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
-        private ICertificateValidationCache _cache;
+        private ICertificateValidationCache? _cache;
 
         public CertificateAuthenticationHandler(
             IOptionsMonitor<CertificateAuthenticationOptions> options,
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// </summary>
         protected new CertificateAuthenticationEvents Events
         {
-            get { return (CertificateAuthenticationEvents)base.Events; }
+            get { return (CertificateAuthenticationEvents)base.Events!; }
             set { base.Events = value; }
         }
 
@@ -79,6 +79,17 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 }
 
                 var result = await ValidateCertificateAsync(clientCertificate);
+
+                // Invoke the failed handler if validation failed, before updating the cache
+                if (result.Failure != null)
+                {
+                    var authenticationFailedContext = await HandleFailureAsync(result.Failure);
+                    if (authenticationFailedContext.Result != null)
+                    {
+                        result = authenticationFailedContext.Result;
+                    }
+                }
+                
                 if (_cache != null)
                 {
                     _cache.Put(Context, clientCertificate, result);
@@ -87,12 +98,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
             catch (Exception ex)
             {
-                var authenticationFailedContext = new CertificateAuthenticationFailedContext(Context, Scheme, Options)
-                {
-                    Exception = ex
-                };
-
-                await Events.AuthenticationFailed(authenticationFailedContext);
+                var authenticationFailedContext = await HandleFailureAsync(ex);
                 if (authenticationFailedContext.Result != null)
                 {
                     return authenticationFailedContext.Result;
@@ -100,6 +106,17 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 throw;
             }
+        }
+
+        private async Task<CertificateAuthenticationFailedContext> HandleFailureAsync(Exception error)
+        {
+            var authenticationFailedContext = new CertificateAuthenticationFailedContext(Context, Scheme, Options)
+            {
+                Exception = error
+            };
+
+            await Events.AuthenticationFailed(authenticationFailedContext);
+            return authenticationFailedContext;
         }
 
         private async Task<AuthenticateResult> ValidateCertificateAsync(X509Certificate2 clientCertificate)
@@ -123,7 +140,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
 
             var chainPolicy = BuildChainPolicy(clientCertificate);
-            var chain = new X509Chain
+            using var chain = new X509Chain
             {
                 ChainPolicy = chainPolicy
             };
@@ -154,7 +171,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
 
             certificateValidatedContext.Success();
-            return certificateValidatedContext.Result;
+            return certificateValidatedContext.Result!;
         }
 
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
@@ -211,6 +228,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 chainPolicy.TrustMode = Options.ChainTrustValidationMode;
             }
+
+            chainPolicy.ExtraStore.AddRange(Options.AdditionalChainCertificates);
 
             if (!Options.ValidateValidityPeriod)
             {

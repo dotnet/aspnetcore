@@ -30,12 +30,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Returns the 'provided' token binding identifier, optionally also returning the
         /// 'referred' token binding identifier. Returns null on failure.
         /// </summary>
-        public static byte[] GetProvidedTokenIdFromBindingInfo(HTTP_REQUEST_TOKEN_BINDING_INFO* pTokenBindingInfo, out byte[] referredId)
+        public static byte[]? GetProvidedTokenIdFromBindingInfo(HTTP_REQUEST_TOKEN_BINDING_INFO* pTokenBindingInfo, out byte[]? referredId)
         {
-            byte[] providedId = null;
+            byte[]? providedId = null;
             referredId = null;
 
-            HeapAllocHandle handle = null;
+            HeapAllocHandle? handle = null;
             int status = UnsafeNclNativeMethods.TokenBindingVerifyMessage(
                 pTokenBindingInfo->TokenBinding,
                 pTokenBindingInfo->TokenBindingSize,

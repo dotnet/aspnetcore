@@ -32,18 +32,14 @@ namespace ControllersFromServicesWebSite
                       typeof(ComponentFromServicesViewComponent),
                       typeof(InServicesTagHelper)));
 
-                    var relatedAssenbly = RelatedAssemblyAttribute
-                        .GetRelatedAssemblies(GetType().Assembly, throwOnError: true)
-                        .SingleOrDefault();
-                    foreach (var part in CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts(relatedAssenbly))
+                    foreach (var part in CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts(Assembly.GetExecutingAssembly()))
                     {
                         manager.ApplicationParts.Add(part);
                     }
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices()
-                .AddTagHelpersAsServices()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddTagHelpersAsServices();
 
             services.AddTransient<QueryValueService>();
             services.AddTransient<ValueService>();

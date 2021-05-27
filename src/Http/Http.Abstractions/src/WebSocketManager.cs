@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Manages the establishment of WebSocket connections for a specific HTTP request. 
+    /// Manages the establishment of WebSocket connections for a specific HTTP request.
     /// </summary>
     public abstract class WebSocketManager
     {
@@ -37,5 +38,12 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="subProtocol">The sub-protocol to use.</param>
         /// <returns>A task representing the completion of the transition.</returns>
         public abstract Task<WebSocket> AcceptWebSocketAsync(string? subProtocol);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="acceptContext"></param>
+        /// <returns></returns>
+        public virtual Task<WebSocket> AcceptWebSocketAsync(WebSocketAcceptContext acceptContext) => throw new NotImplementedException();
     }
 }

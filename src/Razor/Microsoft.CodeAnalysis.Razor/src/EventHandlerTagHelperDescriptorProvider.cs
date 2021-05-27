@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 
@@ -27,15 +28,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-            var bindMethods = compilation.GetTypeByMetadataName(ComponentsApi.IComponent.FullTypeName);
-            if (bindMethods == null)
+            if (compilation.GetTypeByMetadataName(ComponentsApi.EventHandlerAttribute.FullTypeName) is not INamedTypeSymbol eventHandlerAttribute)
             {
-                // If we can't find IComponent, then just bail. We won't be able to compile the
-                // generated code anyway.
+                // If we can't find EventHandlerAttribute, then just bail. We won't discover anything.
                 return;
             }
 
-            var eventHandlerData = GetEventHandlerData(compilation);
+            var eventHandlerData = GetEventHandlerData(context, compilation, eventHandlerAttribute);
 
             foreach (var tagHelper in CreateEventHandlerTagHelpers(eventHandlerData))
             {
@@ -43,27 +42,25 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private List<EventHandlerData> GetEventHandlerData(Compilation compilation)
+        private List<EventHandlerData> GetEventHandlerData(TagHelperDescriptorProviderContext context, Compilation compilation, INamedTypeSymbol eventHandlerAttribute)
         {
-            var eventHandlerAttribute = compilation.GetTypeByMetadataName(ComponentsApi.EventHandlerAttribute.FullTypeName);
-            if (eventHandlerAttribute == null)
-            {
-                // This won't likely happen, but just in case.
-                return new List<EventHandlerData>();
-            }
-
             var types = new List<INamedTypeSymbol>();
             var visitor = new EventHandlerDataVisitor(types);
 
-            // Visit the primary output of this compilation, as well as all references.
-            visitor.Visit(compilation.Assembly);
-            foreach (var reference in compilation.References)
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null)
             {
-                // We ignore .netmodules here - there really isn't a case where they are used by user code
-                // even though the Roslyn APIs all support them.
-                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                visitor.Visit(targetAssembly.GlobalNamespace);
+            }
+            else
+            {
+                visitor.Visit(compilation.Assembly.GlobalNamespace);
+                foreach (var reference in compilation.References)
                 {
-                    visitor.Visit(assembly);
+                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                    {
+                        visitor.Visit(assembly.GlobalNamespace);
+                    }
                 }
             }
 
@@ -118,6 +115,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
                 builder.CaseSensitive = true;
                 builder.Documentation = string.Format(
+                    CultureInfo.CurrentCulture,
                     ComponentResources.EventHandlerTagHelper_Documentation,
                     attributeName,
                     eventArgType);
@@ -176,6 +174,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 builder.BindAttribute(a =>
                 {
                     a.Documentation = string.Format(
+                        CultureInfo.CurrentCulture,
                         ComponentResources.EventHandlerTagHelper_Documentation,
                         attributeName,
                         eventArgType);
@@ -201,7 +200,8 @@ namespace Microsoft.CodeAnalysis.Razor
                         {
                             parameter.Name = "preventDefault";
                             parameter.TypeName = typeof(bool).FullName;
-                            parameter.Documentation = string.Format(ComponentResources.EventHandlerTagHelper_PreventDefault_Documentation, attributeName);
+                            parameter.Documentation = string.Format(
+                                CultureInfo.CurrentCulture, ComponentResources.EventHandlerTagHelper_PreventDefault_Documentation, attributeName);
 
                             parameter.SetPropertyName("PreventDefault");
                         });
@@ -213,7 +213,8 @@ namespace Microsoft.CodeAnalysis.Razor
                         {
                             parameter.Name = "stopPropagation";
                             parameter.TypeName = typeof(bool).FullName;
-                            parameter.Documentation = string.Format(ComponentResources.EventHandlerTagHelper_StopPropagation_Documentation, attributeName);
+                            parameter.Documentation = string.Format(
+                                CultureInfo.CurrentCulture, ComponentResources.EventHandlerTagHelper_StopPropagation_Documentation, attributeName);
 
                             parameter.SetPropertyName("StopPropagation");
                         });

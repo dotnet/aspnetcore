@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_SerializesAsyncEnumerables()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new[] { "Hello", "world" }));
+            var expected = JsonSerializer.Serialize(new[] { "Hello", "world" });
 
             var context = GetActionContext();
             var result = new JsonResult(TestAsyncEnumerable());
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             var written = GetWrittenBytes(context.HttpContext);
-            Assert.Equal(expected, written);
+            Assert.Equal(expected, Encoding.UTF8.GetString(written));
         }
 
         [Fact]

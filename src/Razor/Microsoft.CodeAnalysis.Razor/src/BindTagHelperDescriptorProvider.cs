@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,12 +28,12 @@ namespace Microsoft.CodeAnalysis.Razor
             // map to any real component. Bind behaviors more like a macro, which can map a single LValue to
             // both a 'value' attribute and a 'value changed' attribute.
             //
-            // User types: 
+            // User types:
             //      <input type="text" @bind="@FirstName"/>
             //
             // We generate:
-            //      <input type="text" 
-            //          value="@BindMethods.GetValue(FirstName)" 
+            //      <input type="text"
+            //          value="@BindMethods.GetValue(FirstName)"
             //          onchange="@EventCallbackFactory.CreateBinder(this, __value => FirstName = __value, FirstName)"/>
             //
             // This isn't very different from code the user could write themselves - thus the pronouncement
@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // We handle a few different cases here:
             //
             //  1.  When given an attribute like **anywhere**'@bind-value="@FirstName"' and '@bind-value:event="onchange"' we will
-            //      generate the 'value' attribute and 'onchange' attribute. 
+            //      generate the 'value' attribute and 'onchange' attribute.
             //
             //      We don't do any transformation or inference for this case, because the developer has
             //      told us exactly what to do. This is the *full* form of @bind, and should support any
@@ -98,6 +98,12 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 // If we can't find BindConverter, then just bail. We won't be able to compile the
                 // generated code anyway.
+                return;
+            }
+
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null && !SymbolEqualityComparer.Default.Equals(targetAssembly, bindMethods.ContainingAssembly))
+            {
                 return;
             }
 
@@ -175,7 +181,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     parameter.Name = "event";
                     parameter.TypeName = typeof(string).FullName;
-                    parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Fallback_Event_Documentation, attributeName);
+                    parameter.Documentation = string.Format(CultureInfo.CurrentCulture, ComponentResources.BindTagHelper_Fallback_Event_Documentation, attributeName);
 
                     parameter.SetPropertyName("Event");
                 });
@@ -295,6 +301,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, name, ComponentsApi.AssemblyName);
                 builder.CaseSensitive = true;
                 builder.Documentation = string.Format(
+                    CultureInfo.CurrentCulture,
                     ComponentResources.BindTagHelper_Element_Documentation,
                     entry.ValueAttribute,
                     entry.ChangeAttribute);
@@ -315,7 +322,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     //
                     // We provide a tag helper for <input /> that should match all input elements,
                     // but we only want it to be used when a more specific one is used.
-                    // 
+                    //
                     // Therefore we use this metadata to know which one is more specific when two
                     // tag helpers match.
                     builder.Metadata[ComponentMetadata.Bind.TypeAttribute] = entry.TypeAttribute;
@@ -338,7 +345,7 @@ namespace Microsoft.CodeAnalysis.Razor
                             a.ValueComparisonMode = RequiredAttributeDescriptor.ValueComparisonMode.FullMatch;
                         });
                     }
-                    
+
                     rule.Attribute(a =>
                     {
                         a.Name = attributeName;
@@ -351,6 +358,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                     a.Documentation = string.Format(
+                        CultureInfo.CurrentCulture,
                         ComponentResources.BindTagHelper_Element_Documentation,
                         entry.ValueAttribute,
                         entry.ChangeAttribute);
@@ -366,7 +374,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         parameter.Name = "format";
                         parameter.TypeName = typeof(string).FullName;
-                        parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Format_Documentation, attributeName);
+                        parameter.Documentation = string.Format(CultureInfo.CurrentCulture, ComponentResources.BindTagHelper_Element_Format_Documentation, attributeName);
 
                         parameter.SetPropertyName(formatName);
                     });
@@ -375,7 +383,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         parameter.Name = "event";
                         parameter.TypeName = typeof(string).FullName;
-                        parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Event_Documentation, attributeName);
+                        parameter.Documentation = string.Format(CultureInfo.CurrentCulture, ComponentResources.BindTagHelper_Element_Event_Documentation, attributeName);
 
                         parameter.SetPropertyName(eventName);
                     });
@@ -395,7 +403,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     attribute.Name = formatAttributeName;
                     attribute.TypeName = "System.String";
-                    attribute.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Format_Documentation, attributeName);
+                    attribute.Documentation = string.Format(CultureInfo.CurrentCulture, ComponentResources.BindTagHelper_Element_Format_Documentation, attributeName);
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the toolips.
@@ -429,7 +437,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
                 {
                     var changeAttribute = tagHelper.BoundAttributes[i];
-                    if (!changeAttribute.Name.EndsWith("Changed") || 
+                    if (!changeAttribute.Name.EndsWith("Changed", StringComparison.Ordinal) ||
 
                         // Allow the ValueChanged attribute to be a delegate or EventCallback<>.
                         //
@@ -473,6 +481,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     builder.DisplayName = tagHelper.DisplayName;
                     builder.CaseSensitive = true;
                     builder.Documentation = string.Format(
+                        CultureInfo.CurrentCulture,
                         ComponentResources.BindTagHelper_Component_Documentation,
                         valueAttribute.Name,
                         changeAttribute.Name);
@@ -507,6 +516,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                         attribute.Documentation = string.Format(
+                            CultureInfo.CurrentCulture,
                             ComponentResources.BindTagHelper_Component_Documentation,
                             valueAttribute.Name,
                             changeAttribute.Name);

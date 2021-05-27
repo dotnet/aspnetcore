@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Internal
         private readonly TaskCompletionSource<int> _exited;
         private readonly CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         private readonly CancellationTokenSource _processTimeoutCts;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public ProcessEx(ITestOutputHelper output, Process proc, TimeSpan timeout)
         {
@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Internal
             _stdoutCapture = new StringBuilder();
             _stderrCapture = new StringBuilder();
             _stdoutLines = new BlockingCollection<string>();
+            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _process = proc;
             proc.EnableRaisingEvents = true;
@@ -47,12 +48,11 @@ namespace Microsoft.AspNetCore.Internal
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
 
-            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
             // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
             // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.
-            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
+            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {timeout}.";
 
             _processTimeoutCts = new CancellationTokenSource(timeout);
             _processTimeoutCts.Token.Register(() =>
@@ -176,6 +176,13 @@ namespace Microsoft.AspNetCore.Internal
 
         private void OnProcessExited(object sender, EventArgs e)
         {
+            lock (_testOutputLock)
+            {
+                if (!_disposed)
+                {
+                    _output.WriteLine("Process exited.");
+                }
+            }
             _process.WaitForExit();
             _stdoutLines.CompleteAdding();
             _stdoutLines = null;

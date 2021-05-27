@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.FileProviders
     {
         private string _content;
 
-        public bool IsDirectory { get; } = false;
+        public bool IsDirectory => false;
 
         public DateTimeOffset LastModified { get; set; }
 

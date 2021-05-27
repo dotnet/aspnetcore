@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly ManualResetEventSlim _resetEvent;
         private readonly string _shutdownMessage;
 
-        private bool _disposed = false;
-        private bool _exitedGracefully = false;
+        private bool _disposed;
+        private bool _exitedGracefully;
 
         public WebHostLifetime(CancellationTokenSource cts, ManualResetEventSlim resetEvent, string shutdownMessage)
         {
@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Hosting
             Console.CancelKeyPress -= CancelKeyPress;
         }
 
-        private void CancelKeyPress(object sender, ConsoleCancelEventArgs eventArgs)
+        private void CancelKeyPress(object? sender, ConsoleCancelEventArgs eventArgs)
         {
             Shutdown();
             // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
             eventArgs.Cancel = true;
         }
 
-        private void ProcessExit(object sender, EventArgs eventArgs)
+        private void ProcessExit(object? sender, EventArgs eventArgs)
         {
             Shutdown();
             if (_exitedGracefully)

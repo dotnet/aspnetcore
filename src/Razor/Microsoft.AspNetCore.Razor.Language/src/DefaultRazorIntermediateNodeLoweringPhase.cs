@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _builder.Add(new DirectiveTokenIntermediateNode()
                     {
                         Content = addTagHelperChunkGenerator.LookupText,
-                        DirectiveToken = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Tokens.First(),
+                        DirectiveToken = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Tokens[0],
                         Source = BuildSourceSpanFromNode(node),
                     });
 
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _builder.Add(new DirectiveTokenIntermediateNode()
                     {
                         Content = removeTagHelperChunkGenerator.LookupText,
-                        DirectiveToken = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Tokens.First(),
+                        DirectiveToken = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Tokens[0],
                         Source = BuildSourceSpanFromNode(node),
                     });
 
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _builder.Add(new DirectiveTokenIntermediateNode()
                     {
                         Content = tagHelperPrefixChunkGenerator.Prefix,
-                        DirectiveToken = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Tokens.First(),
+                        DirectiveToken = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Tokens[0],
                         Source = BuildSourceSpanFromNode(node),
                     });
 
@@ -1019,7 +1019,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 IReadOnlyList<SyntaxNode> children = node.ChildNodes();
                 var position = node.Position;
-                if (children.FirstOrDefault() is MarkupBlockSyntax markupBlock &&
+                if (children.Count > 0 &&
+                    children[0] is MarkupBlockSyntax markupBlock &&
                     markupBlock.Children.Count == 2 &&
                     markupBlock.Children[0] is MarkupTextLiteralSyntax &&
                     markupBlock.Children[1] is MarkupEphemeralTextLiteralSyntax)
@@ -1770,11 +1771,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                         {
                             // Directive attributes should start with '@' unless the descriptors are misconfigured.
                             // In that case, we would have already logged an error.
-                            var actualAttributeName = attributeName.StartsWith("@") ? attributeName.Substring(1) : attributeName;
+                            var actualAttributeName = attributeName.StartsWith("@", StringComparison.Ordinal) ? attributeName.Substring(1) : attributeName;
 
                             IntermediateNode attributeNode;
                             if (parameterMatch &&
-                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter, out _))
+                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter))
                             {
                                 var expectsBooleanValue = associatedAttributeParameterDescriptor.IsBooleanProperty;
                                 if (!expectsBooleanValue)
@@ -1786,7 +1787,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                                 attributeNode = new TagHelperDirectiveAttributeParameterIntermediateNode()
                                 {
                                     AttributeName = actualAttributeName,
-                                    AttributeNameWithoutParameter = attributeNameWithoutParameter,
+                                    AttributeNameWithoutParameter = attributeNameWithoutParameter.Value,
                                     OriginalAttributeName = attributeName,
                                     BoundAttributeParameter = associatedAttributeParameterDescriptor,
                                     BoundAttribute = associatedAttributeDescriptor,
@@ -1908,16 +1909,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                         {
                             // Directive attributes should start with '@' unless the descriptors are misconfigured.
                             // In that case, we would have already logged an error.
-                            var actualAttributeName = attributeName.StartsWith("@") ? attributeName.Substring(1) : attributeName;
+                            var actualAttributeName = attributeName.StartsWith("@", StringComparison.Ordinal) ? attributeName.Substring(1) : attributeName;
 
                             IntermediateNode attributeNode;
                             if (parameterMatch &&
-                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter, out _))
+                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter))
                             {
                                 attributeNode = new TagHelperDirectiveAttributeParameterIntermediateNode()
                                 {
                                     AttributeName = actualAttributeName,
-                                    AttributeNameWithoutParameter = attributeNameWithoutParameter,
+                                    AttributeNameWithoutParameter = attributeNameWithoutParameter.Value,
                                     OriginalAttributeName = attributeName,
                                     BoundAttributeParameter = associatedAttributeParameterDescriptor,
                                     BoundAttribute = associatedAttributeDescriptor,
@@ -1970,7 +1971,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 IReadOnlyList<SyntaxNode> children = node.ChildNodes();
                 var position = node.Position;
-                if (children.FirstOrDefault() is MarkupBlockSyntax markupBlock &&
+                if (children.Count > 0 &&
+                    children[0] is MarkupBlockSyntax markupBlock &&
                     markupBlock.Children.Count == 2 &&
                     markupBlock.Children[0] is MarkupTextLiteralSyntax &&
                     markupBlock.Children[1] is MarkupEphemeralTextLiteralSyntax)

@@ -21,12 +21,12 @@ namespace Microsoft.AspNetCore.Identity.Test
                          && !type.IsSealed
                          && type.DeclaredConstructors.Any(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
                          && type.Namespace != null
-                         && !type.Namespace.EndsWith(".Compiled")
+                         && !type.Namespace.EndsWith(".Compiled", StringComparison.Ordinal)
                    from method in type.DeclaredMethods.Where(m => m.IsPublic && !m.IsStatic)
                    where GetBasestTypeInAssembly(method.DeclaringType) == type
-                         && !(method.IsVirtual && !method.IsFinal) 
-                         && !method.Name.StartsWith("get_") 
-                         && !method.Name.StartsWith("set_")
+                         && !(method.IsVirtual && !method.IsFinal)
+                         && !method.Name.StartsWith("get_", StringComparison.Ordinal)
+                         && !method.Name.StartsWith("set_", StringComparison.Ordinal)
                          && !method.Name.Equals("Dispose")
                    select type.Name + "." + method.Name)
                     .ToList();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var missingSuffixMethods
                 = asyncMethods
-                    .Where(method => !method.Name.EndsWith("Async"))
+                    .Where(method => !method.Name.EndsWith("Async", StringComparison.Ordinal))
                     .Select(method => method.DeclaringType.Name + "." + method.Name)
                     .Except(GetAsyncSuffixExceptions())
                     .ToList();
@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-        protected TypeInfo GetBasestTypeInAssembly(Type type)
+        protected Type GetBasestTypeInAssembly(Type type)
         {
-            while (type.GetTypeInfo()?.BaseType?.GetTypeInfo()?.Assembly == type.GetTypeInfo().Assembly)
+            while (type.BaseType?.Assembly == type.Assembly)
             {
-                type = type.GetTypeInfo().BaseType;
+                type = type.BaseType;
             }
 
-            return type.GetTypeInfo();
+            return type;
         }
     }
 }

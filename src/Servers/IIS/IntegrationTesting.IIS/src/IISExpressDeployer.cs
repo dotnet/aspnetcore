@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // Start timer
                 StartTimer();
 
+                Logger.LogInformation(Environment.OSVersion.ToString());
+
                 // For an unpublished application the dllroot points pre-built dlls like projectdir/bin/debug/netcoreappX.Y/
                 // and contentRoot points to the project directory so you get things like static assets.
                 // For a published app both point to the publish directory.
@@ -170,8 +172,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     PrepareConfig(contentRoot, port);
 
                     var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
-                                    string.Format("/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
-                                    string.Format("/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
+                                    string.Format(CultureInfo.InvariantCulture, "/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
+                                    string.Format(CultureInfo.InvariantCulture, "/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
 
                     Logger.LogInformation("Executing command : {iisExpress} {parameters}", iisExpressPath, parameters);
 
@@ -195,16 +197,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     var process = new Process() { StartInfo = startInfo };
                     process.OutputDataReceived += (sender, dataArgs) =>
                     {
-                        if (string.Equals(dataArgs.Data, UnableToStartIISExpressMessage))
+                        if (string.Equals(dataArgs.Data, UnableToStartIISExpressMessage, StringComparison.Ordinal))
                         {
                             // We completely failed to start and we don't really know why
                             started.TrySetException(new InvalidOperationException("Failed to start IIS Express"));
                         }
-                        else if (string.Equals(dataArgs.Data, FailedToInitializeBindingsMessage))
+                        else if (string.Equals(dataArgs.Data, FailedToInitializeBindingsMessage, StringComparison.Ordinal))
                         {
                             started.TrySetResult(false);
                         }
-                        else if (string.Equals(dataArgs.Data, IISExpressRunningMessage))
+                        else if (string.Equals(dataArgs.Data, IISExpressRunningMessage, StringComparison.Ordinal))
                         {
                             started.TrySetResult(true);
                         }

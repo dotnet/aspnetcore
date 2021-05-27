@@ -12,7 +12,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -27,7 +26,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks" />
   </ItemGroup>
 
 </Project>

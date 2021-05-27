@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// content files.</param>
         /// <param name="password">The password required to access the X.509 certificate data.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string password)
+        public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string? password)
         {
             var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
             return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password));
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="password">The password required to access the X.509 certificate data.</param>
         /// <param name="configureOptions">An Action to configure the <see cref="HttpsConnectionAdapterOptions"/>.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string password,
+        public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string? password,
             Action<HttpsConnectionAdapterOptions> configureOptions)
         {
             var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
@@ -219,6 +219,8 @@ namespace Microsoft.AspNetCore.Hosting
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
             listenOptions.IsTls = true;
+            listenOptions.HttpsOptions = httpsOptions;
+
             listenOptions.Use(next =>
             {
                 // Set the list of protocols from listen options

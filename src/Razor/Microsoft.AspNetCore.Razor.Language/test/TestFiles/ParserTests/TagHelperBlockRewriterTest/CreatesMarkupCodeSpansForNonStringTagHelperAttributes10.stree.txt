@@ -13,7 +13,7 @@ RazorDocument - [0..73)::73 - [<person age="12" birthday="DateTime.Now" name="@@
                     MarkupTextLiteral - [12..13)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [13..15)::2
-                        CSharpExpressionLiteral - [13..15)::2 - [12] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [13..15)::2 - [12] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                             Text;[12];
                     MarkupTextLiteral - [15..16)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
@@ -26,7 +26,7 @@ RazorDocument - [0..73)::73 - [<person age="12" birthday="DateTime.Now" name="@@
                     MarkupTextLiteral - [26..27)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [27..39)::12
-                        CSharpExpressionLiteral - [27..39)::12 - [DateTime.Now] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [27..39)::12 - [DateTime.Now] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                             Text;[DateTime.Now];
                     MarkupTextLiteral - [39..40)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];

@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly Stream _inner;
         private readonly byte[] _buffer;
         private readonly ArrayPool<byte> _bytePool;
-        private int _bufferOffset = 0;
-        private int _bufferCount = 0;
+        private int _bufferOffset;
+        private int _bufferCount;
         private bool _disposed;
 
         /// <summary>
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (minCount > _buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length.ToString());
+                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length);
             }
             while (_bufferCount < minCount)
             {
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (minCount > _buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length.ToString());
+                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length);
             }
             while (_bufferCount < minCount)
             {

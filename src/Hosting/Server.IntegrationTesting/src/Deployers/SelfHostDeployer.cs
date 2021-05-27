@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +22,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
 
         public Process HostProcess { get; private set; }
+
+        // Use this property before calling DeployAsync
+        // instead of using HostProcess.OutputDataReceived
+        // in order to capture process output from the beginning of the process
+        public Action<string> ProcessOutputListener { get; set; }
 
         public SelfHostDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
@@ -83,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var executableArgs = string.Empty;
                 var workingDirectory = string.Empty;
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll"
-                    : (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "");
+                    : (OperatingSystem.IsWindows() ? ".exe" : "");
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
@@ -158,6 +162,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                             actualUrl = new Uri(m.Groups["url"].Value);
                         }
                     }
+
+                    ProcessOutputListener?.Invoke(dataArgs.Data);
                 };
                 var hostExitTokenSource = new CancellationTokenSource();
                 HostProcess.Exited += (sender, e) =>

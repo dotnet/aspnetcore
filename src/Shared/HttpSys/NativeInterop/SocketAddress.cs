@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private const int NumberOfIPv6Labels = 8;
         // Lower case hex, no leading zeros
         private const string IPv6NumberFormat = "{0:x}";
-        private const string IPv6StringSeparator = ":";
+        private const char IPv6StringSeparator = ':';
         private const string IPv4StringFormat = "{0:d}.{1:d}.{2:d}.{3:d}";
 
         internal const int IPv6AddressSize = 28;
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // it doesn't make sense to create a socket address with less tha
                 // 2 bytes, that's where we store the address family.
 
-                throw new ArgumentOutOfRangeException("size");
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
             _size = size;
             _buffer = new byte[((size / IntPtr.Size) + 2) * IntPtr.Size]; // sizeof DWORD
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // access
                 if (offset < 0 || offset >= Size)
                 {
-                    throw new ArgumentOutOfRangeException("offset");
+                    throw new ArgumentOutOfRangeException(nameof(offset));
                 }
                 return _buffer[offset];
             }
@@ -122,9 +122,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return (int)((_buffer[2] << 8 & 0xFF00) | (_buffer[3]));
         }
 
-        public override bool Equals(object comparand)
+        public override bool Equals(object? comparand)
         {
-            SocketAddress castedComparand = comparand as SocketAddress;
+            SocketAddress? castedComparand = comparand as SocketAddress;
             if (castedComparand == null || this.Size != castedComparand.Size)
             {
                 return false;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return _hash;
         }
 
-        internal IPAddress GetIPAddress()
+        internal IPAddress? GetIPAddress()
         {
             if (Family == AddressFamily.InterNetworkV6)
             {
@@ -206,14 +206,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 if (i > WriteableOffset)
                 {
-                    bytes.Append(",");
+                    bytes.Append(',');
                 }
                 bytes.Append(this[i].ToString(NumberFormatInfo.InvariantInfo));
             }
             return Family.ToString() + ":" + Size.ToString(NumberFormatInfo.InvariantInfo) + ":{" + bytes.ToString() + "}";
         }
 
-        internal string GetIPAddressString()
+        internal string? GetIPAddressString()
         {
             if (Family == AddressFamily.InterNetworkV6)
             {

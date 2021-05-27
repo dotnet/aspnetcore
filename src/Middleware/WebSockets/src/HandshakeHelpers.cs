@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -12,17 +15,6 @@ namespace Microsoft.AspNetCore.WebSockets
 {
     internal static class HandshakeHelpers
     {
-        /// <summary>
-        /// Gets request headers needed process the handshake on the server.
-        /// </summary>
-        public static readonly IEnumerable<string> NeededHeaders = new[]
-        {
-            HeaderNames.Upgrade,
-            HeaderNames.Connection,
-            HeaderNames.SecWebSocketKey,
-            HeaderNames.SecWebSocketVersion
-        };
-
         // "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> EncodedWebSocketKey => new byte[]
@@ -34,55 +26,14 @@ namespace Microsoft.AspNetCore.WebSockets
         };
 
         // Verify Method, Upgrade, Connection, version,  key, etc..
-        public static bool CheckSupportedWebSocketRequest(string method, IEnumerable<KeyValuePair<string, string>> headers)
+        public static void GenerateResponseHeaders(string key, string? subProtocol, IHeaderDictionary headers)
         {
-            bool validUpgrade = false, validConnection = false, validKey = false, validVersion = false;
-
-            if (!string.Equals("GET", method, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            foreach (var pair in headers)
-            {
-                if (string.Equals(HeaderNames.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(Constants.Headers.ConnectionUpgrade, pair.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        validConnection = true;
-                    }
-                }
-                else if (string.Equals(HeaderNames.Upgrade, pair.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(Constants.Headers.UpgradeWebSocket, pair.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        validUpgrade = true;
-                    }
-                }
-                else if (string.Equals(HeaderNames.SecWebSocketVersion, pair.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(Constants.Headers.SupportedVersion, pair.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        validVersion = true;
-                    }
-                }
-                else if (string.Equals(HeaderNames.SecWebSocketKey, pair.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    validKey = IsRequestKeyValid(pair.Value);
-                }
-            }
-
-            return validConnection && validUpgrade && validVersion && validKey;
-        }
-
-        public static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
-        {
-            headers[HeaderNames.Connection] = Constants.Headers.ConnectionUpgrade;
-            headers[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
-            headers[HeaderNames.SecWebSocketAccept] = CreateResponseKey(key);
+            headers.Connection = HeaderNames.Upgrade;
+            headers.Upgrade = Constants.Headers.UpgradeWebSocket;
+            headers.SecWebSocketAccept = CreateResponseKey(key);
             if (!string.IsNullOrWhiteSpace(subProtocol))
             {
-                headers[HeaderNames.SecWebSocketProtocol] = subProtocol;
+                headers.SecWebSocketProtocol = subProtocol;
             }
         }
 
@@ -114,7 +65,7 @@ namespace Microsoft.AspNetCore.WebSockets
             // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
             Span<byte> mergedBytes = stackalloc byte[60];
             Encoding.UTF8.GetBytes(requestKey, mergedBytes);
-            EncodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
+            EncodedWebSocketKey.CopyTo(mergedBytes[24..]);
 
             Span<byte> hashedBytes = stackalloc byte[20];
             var written = SHA1.HashData(mergedBytes, hashedBytes);
@@ -124,6 +75,211 @@ namespace Microsoft.AspNetCore.WebSockets
             }
 
             return Convert.ToBase64String(hashedBytes);
+        }
+
+        // https://datatracker.ietf.org/doc/html/rfc7692#section-7.1
+        public static bool ParseDeflateOptions(ReadOnlySpan<char> extension, bool serverContextTakeover,
+            int serverMaxWindowBits, out WebSocketDeflateOptions parsedOptions, [NotNullWhen(true)] out string? response)
+        {
+            bool hasServerMaxWindowBits = false;
+            bool hasClientMaxWindowBits = false;
+            bool hasClientNoContext = false;
+            bool hasServerNoContext = false;
+            response = null;
+            parsedOptions = new WebSocketDeflateOptions()
+            {
+                ServerContextTakeover = serverContextTakeover,
+                ServerMaxWindowBits = serverMaxWindowBits
+            };
+
+            using var builder = new ValueStringBuilder(WebSocketDeflateConstants.MaxExtensionLength);
+            builder.Append(WebSocketDeflateConstants.Extension);
+
+            while (true)
+            {
+                int end = extension.IndexOf(';');
+                ReadOnlySpan<char> value = (end >= 0 ? extension[..end] : extension).Trim();
+
+                if (value.Length == 0)
+                {
+                    break;
+                }
+
+                if (value.SequenceEqual(WebSocketDeflateConstants.ClientNoContextTakeover))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasClientNoContext)
+                    {
+                        return false;
+                    }
+
+                    hasClientNoContext = true;
+                    parsedOptions.ClientContextTakeover = false;
+                    builder.Append(';');
+                    builder.Append(' ');
+                    builder.Append(WebSocketDeflateConstants.ClientNoContextTakeover);
+                }
+                else if (value.SequenceEqual(WebSocketDeflateConstants.ServerNoContextTakeover))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasServerNoContext)
+                    {
+                        return false;
+                    }
+
+                    hasServerNoContext = true;
+                    parsedOptions.ServerContextTakeover = false;
+                }
+                else if (value.StartsWith(WebSocketDeflateConstants.ClientMaxWindowBits))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasClientMaxWindowBits)
+                    {
+                        return false;
+                    }
+
+                    hasClientMaxWindowBits = true;
+                    if (!ParseWindowBits(value, WebSocketDeflateConstants.ClientMaxWindowBits, out var clientMaxWindowBits))
+                    {
+                        return false;
+                    }
+
+                    // 8 is a valid value according to the spec, but our zlib implementation does not support it
+                    if (clientMaxWindowBits == 8)
+                    {
+                        return false;
+                    }
+
+                    // https://tools.ietf.org/html/rfc7692#section-7.1.2.2
+                    // the server may either ignore this
+                    // value or use this value to avoid allocating an unnecessarily big LZ77
+                    // sliding window by including the "client_max_window_bits" extension
+                    // parameter in the corresponding extension negotiation response to the
+                    // offer with a value equal to or smaller than the received value.
+                    parsedOptions.ClientMaxWindowBits = clientMaxWindowBits ?? 15;
+
+                    // If a received extension negotiation offer doesn't have the
+                    // "client_max_window_bits" extension parameter, the corresponding
+                    // extension negotiation response to the offer MUST NOT include the
+                    // "client_max_window_bits" extension parameter.
+                    builder.Append(';');
+                    builder.Append(' ');
+                    builder.Append(WebSocketDeflateConstants.ClientMaxWindowBits);
+                    builder.Append('=');
+                    var len = (parsedOptions.ClientMaxWindowBits > 9) ? 2 : 1;
+                    var span = builder.AppendSpan(len);
+                    var ret = parsedOptions.ClientMaxWindowBits.TryFormat(span, out var written);
+                    Debug.Assert(ret);
+                    Debug.Assert(written == len);
+                }
+                else if (value.StartsWith(WebSocketDeflateConstants.ServerMaxWindowBits))
+                {
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                    // MUST decline if:
+                    // The negotiation offer contains multiple extension parameters with
+                    // the same name.
+                    if (hasServerMaxWindowBits)
+                    {
+                        return false;
+                    }
+
+                    hasServerMaxWindowBits = true;
+                    if (!ParseWindowBits(value, WebSocketDeflateConstants.ServerMaxWindowBits, out var parsedServerMaxWindowBits))
+                    {
+                        return false;
+                    }
+
+                    // 8 is a valid value according to the spec, but our zlib implementation does not support it
+                    if (parsedServerMaxWindowBits == 8)
+                    {
+                        return false;
+                    }
+
+                    // https://tools.ietf.org/html/rfc7692#section-7.1.2.1
+                    // A server accepts an extension negotiation offer with this parameter
+                    // by including the "server_max_window_bits" extension parameter in the
+                    // extension negotiation response to send back to the client with the
+                    // same or smaller value as the offer.
+                    parsedOptions.ServerMaxWindowBits = Math.Min(parsedServerMaxWindowBits ?? 15, serverMaxWindowBits);
+                }
+
+                static bool ParseWindowBits(ReadOnlySpan<char> value, string propertyName, out int? parsedValue)
+                {
+                    var startIndex = value.IndexOf('=');
+
+                    // parameters can be sent without a value by the client, we'll use the values set by the app developer or the default of 15
+                    if (startIndex < 0)
+                    {
+                        parsedValue = null;
+                        return true;
+                    }
+
+                    value = value[(startIndex + 1)..].TrimEnd();
+
+                    if (value.Length == 0)
+                    {
+                        parsedValue = null;
+                        return false;
+                    }
+
+                    // https://datatracker.ietf.org/doc/html/rfc7692#section-5.2
+                    // check for value in quotes and pull the value out without the quotes
+                    if (value[0] == '"' && value.EndsWith("\"".AsSpan()) && value.Length > 1)
+                    {
+                        value = value[1..^1];
+                    }
+
+                    if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int windowBits) ||
+                        windowBits < 8 ||
+                        windowBits > 15)
+                    {
+                        parsedValue = null;
+                        return false;
+                    }
+
+                    parsedValue = windowBits;
+                    return true;
+                }
+
+                if (end < 0)
+                {
+                    break;
+                }
+                extension = extension[(end + 1)..];
+            }
+
+            if (!parsedOptions.ServerContextTakeover)
+            {
+                builder.Append(';');
+                builder.Append(' ');
+                builder.Append(WebSocketDeflateConstants.ServerNoContextTakeover);
+            }
+
+            if (hasServerMaxWindowBits || parsedOptions.ServerMaxWindowBits != 15)
+            {
+                builder.Append(';');
+                builder.Append(' ');
+                builder.Append(WebSocketDeflateConstants.ServerMaxWindowBits);
+                builder.Append('=');
+                var len = (parsedOptions.ServerMaxWindowBits > 9) ? 2 : 1;
+                var span = builder.AppendSpan(len);
+                var ret = parsedOptions.ServerMaxWindowBits.TryFormat(span, out var written);
+                Debug.Assert(ret);
+                Debug.Assert(written == len);
+            }
+
+            response = builder.ToString();
+
+            return true;
         }
     }
 }

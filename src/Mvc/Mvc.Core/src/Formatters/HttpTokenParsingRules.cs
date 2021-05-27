@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -66,8 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         internal static int GetTokenLength(string input, int startIndex)
         {
-            Contract.Requires(input != null);
-            Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
+            Debug.Assert(input != null);
 
             if (startIndex >= input.Length)
             {
@@ -89,8 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         internal static int GetWhitespaceLength(string input, int startIndex)
         {
-            Contract.Requires(input != null);
-            Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
+            Debug.Assert(input != null);
 
             if (startIndex >= input.Length)
             {
@@ -140,10 +138,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         // CHAR = <any US-ASCII character (octets 0 - 127)>
         internal static HttpParseResult GetQuotedPairLength(string input, int startIndex, out int length)
         {
-            Contract.Requires(input != null);
-            Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
-            Contract.Ensures((Contract.ValueAtReturn(out length) >= 0) &&
-                (Contract.ValueAtReturn(out length) <= (input.Length - startIndex)));
+            Debug.Assert(input != null);
+            Debug.Assert((startIndex >= 0) && (startIndex < input.Length));
 
             length = 0;
 
@@ -184,10 +180,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ref int nestedCount,
             out int length)
         {
-            Contract.Requires(input != null);
-            Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
-            Contract.Ensures((Contract.Result<HttpParseResult>() != HttpParseResult.Parsed) ||
-                (Contract.ValueAtReturn<int>(out length) > 0));
+            Debug.Assert(input != null);
+            Debug.Assert((startIndex >= 0) && (startIndex < input.Length));
 
             length = 0;
 
@@ -239,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                                 break;
 
                             case HttpParseResult.NotParsed:
-                                Contract.Assert(false, "'NotParsed' is unexpected: We started nested expression " +
+                                Debug.Fail("'NotParsed' is unexpected: We started nested expression " +
                                     "parsing, because we found the open-char. So either it's a valid nested " +
                                     "expression or it has invalid format.");
                                 break;
@@ -249,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                                 return HttpParseResult.InvalidFormat;
 
                             default:
-                                Contract.Assert(false, "Unknown enum result: " + nestedResult);
+                                Debug.Fail("Unknown enum result: " + nestedResult);
                                 break;
                         }
                     }

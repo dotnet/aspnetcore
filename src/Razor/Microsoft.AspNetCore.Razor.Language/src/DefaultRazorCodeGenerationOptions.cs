@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     internal class DefaultRazorCodeGenerationOptions : RazorCodeGenerationOptions
     {
         public DefaultRazorCodeGenerationOptions(
-            bool indentWithTabs, 
+            bool indentWithTabs,
             int indentSize, 
             bool designTime,
             string rootNamespace,

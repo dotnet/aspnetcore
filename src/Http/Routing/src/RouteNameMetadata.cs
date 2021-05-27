@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,16 +15,16 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Creates a new instance of <see cref="RouteNameMetadata"/> with the provided route name.
         /// </summary>
-        /// <param name="routeName">The route name. Can be null.</param>
-        public RouteNameMetadata(string routeName)
+        /// <param name="routeName">The route name. Can be <see langword="null"/>.</param>
+        public RouteNameMetadata(string? routeName)
         {
             RouteName = routeName;
         }
 
         /// <summary>
-        /// Gets the route name. Can be null.
+        /// Gets the route name. Can be <see langword="null"/>.
         /// </summary>
-        public string RouteName { get; }
+        public string? RouteName { get; }
 
         internal string DebuggerToString()
         {

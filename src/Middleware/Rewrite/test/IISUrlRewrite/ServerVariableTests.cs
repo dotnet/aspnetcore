@@ -142,11 +142,11 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
             context.Request.QueryString = QueryString.FromUriComponent("?bar=1");
             context.Request.ContentLength = 10;
             context.Request.ContentType = "json";
-            context.Request.Headers[HeaderNames.Accept] = "accept";
-            context.Request.Headers[HeaderNames.Cookie] = "cookie";
-            context.Request.Headers[HeaderNames.Referer] = "referer";
-            context.Request.Headers[HeaderNames.UserAgent] = "useragent";
-            context.Request.Headers[HeaderNames.Connection] = "connection";
+            context.Request.Headers.Accept = "accept";
+            context.Request.Headers.Cookie = "cookie";
+            context.Request.Headers.Referer = "referer";
+            context.Request.Headers.UserAgent = "useragent";
+            context.Request.Headers.Connection = "connection";
 
             return context;
         }
@@ -159,13 +159,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         private MatchResults CreateTestRuleMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
+            return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
         }
 
         private MatchResults CreateTestCondMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
+            return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
         }
 
         [Fact]

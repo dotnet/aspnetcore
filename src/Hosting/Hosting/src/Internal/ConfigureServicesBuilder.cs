@@ -10,25 +10,25 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class ConfigureServicesBuilder
     {
-        public ConfigureServicesBuilder(MethodInfo configureServices)
+        public ConfigureServicesBuilder(MethodInfo? configureServices)
         {
             MethodInfo = configureServices;
         }
 
-        public MethodInfo MethodInfo { get; }
+        public MethodInfo? MethodInfo { get; }
 
-        public Func<Func<IServiceCollection, IServiceProvider>, Func<IServiceCollection, IServiceProvider>> StartupServiceFilters { get; set; } = f => f;
+        public Func<Func<IServiceCollection, IServiceProvider?>, Func<IServiceCollection, IServiceProvider?>> StartupServiceFilters { get; set; } = f => f;
 
-        public Func<IServiceCollection, IServiceProvider> Build(object instance) => services => Invoke(instance, services);
+        public Func<IServiceCollection, IServiceProvider?> Build(object instance) => services => Invoke(instance, services);
 
-        private IServiceProvider Invoke(object instance, IServiceCollection services)
+        private IServiceProvider? Invoke(object instance, IServiceCollection services)
         {
             return StartupServiceFilters(Startup)(services);
 
-            IServiceProvider Startup(IServiceCollection serviceCollection) => InvokeCore(instance, serviceCollection);
+            IServiceProvider? Startup(IServiceCollection serviceCollection) => InvokeCore(instance, serviceCollection);
         }
 
-        private IServiceProvider InvokeCore(object instance, IServiceCollection services)
+        private IServiceProvider? InvokeCore(object instance, IServiceCollection services)
         {
             if (MethodInfo == null)
             {

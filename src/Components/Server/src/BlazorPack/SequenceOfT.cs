@@ -84,7 +84,7 @@ namespace Nerdbank.Streams
         /// in which case the higher of the two minimums dictate the minimum array size that will be allocated.
         /// </para>
         /// </remarks>
-        public int MinimumSpanLength { get; set; } = 0;
+        public int MinimumSpanLength { get; set; }
 
         /// <summary>
         /// Gets this sequence expressed as a <see cref="ReadOnlySequence{T}"/>.
@@ -299,7 +299,7 @@ namespace Nerdbank.Streams
             /// <summary>
             /// A value indicating whether the element is a value type.
             /// </summary>
-            private static readonly bool IsValueTypeElement = typeof(T).GetTypeInfo().IsValueType;
+            private static readonly bool IsValueTypeElement = typeof(T).IsValueType;
 
             /// <summary>
             /// Gets the backing array, when using an <see cref="ArrayPool{T}"/> instead of a <see cref="MemoryPool{T}"/>.

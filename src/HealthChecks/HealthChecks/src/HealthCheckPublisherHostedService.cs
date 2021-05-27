@@ -180,15 +180,15 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 // This is a cancellation - if the app is shutting down we want to ignore it. Otherwise, it's
                 // a timeout and we want to log it.
             }
-            catch (OperationCanceledException ocex)
+            catch (OperationCanceledException)
             {
                 Logger.HealthCheckPublisherTimeout(_logger, publisher, duration.GetElapsedTime());
-                throw ocex;
+                throw;
             }
             catch (Exception ex)
             {
                 Logger.HealthCheckPublisherError(_logger, publisher, duration.GetElapsedTime(), ex);
-                throw ex;
+                throw;
             }
         }
 

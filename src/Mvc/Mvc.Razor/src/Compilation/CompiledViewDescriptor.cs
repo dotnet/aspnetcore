@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             }
 
             Item = item;
-            ExpirationTokens = Array.Empty<IChangeToken>();
             RelativePath = ViewPath.NormalizePath(item.Identifier);
         }
 
@@ -69,16 +68,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             // We don't have access to the file provider here so we can't check if the files
             // even exist or what their checksums are. For now leave this empty, it will be updated
             // later.
-            ExpirationTokens = Array.Empty<IChangeToken>();
             RelativePath = ViewPath.NormalizePath(item?.Identifier ?? attribute.Path);
         }
 
         /// <summary>
         /// The normalized application relative path of the view.
         /// </summary>
-        public string RelativePath { get; set; }
+        public string RelativePath { get; set; } = default!;
 
-#pragma warning disable CS0618 
+#pragma warning disable CS0618
         // Type or member is obsolete
         /// <summary>
         /// Gets or sets the <see cref="RazorViewAttribute"/> decorating the view.
@@ -87,22 +85,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// May be <c>null</c>.
         /// </remarks>
         [Obsolete("Use Item instead. RazorViewAttribute has been superseded by RazorCompiledItem and will not be used by the runtime.")]
-        public RazorViewAttribute ViewAttribute { get; set; }
+        public RazorViewAttribute? ViewAttribute { get; set; }
 #pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// <see cref="IChangeToken"/> instances that indicate when this result has expired.
         /// </summary>
-        public IList<IChangeToken> ExpirationTokens { get; set; }
+        public IList<IChangeToken>? ExpirationTokens { get; set; }
 
         /// <summary>
         /// Gets the <see cref="RazorCompiledItem"/> descriptor for this view.
         /// </summary>
-        public RazorCompiledItem Item { get; set; }
+        public RazorCompiledItem? Item { get; set; }
 
         /// <summary>
         /// Gets the type of the compiled item.
         /// </summary>
-        public Type Type => Item?.Type;
+        public Type? Type => Item?.Type;
     }
 }

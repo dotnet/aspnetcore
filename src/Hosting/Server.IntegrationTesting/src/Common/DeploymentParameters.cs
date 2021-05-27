@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             if (!Directory.Exists(applicationPath))
             {
-                throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", applicationPath));
+                throw new DirectoryNotFoundException($"Application path {applicationPath} does not exist.");
             }
 
             ApplicationPath = applicationPath;
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
 
-        public bool PreservePublishedApplicationForDebugging { get; set; } = false;
+        public bool PreservePublishedApplicationForDebugging { get; set; }
 
         public bool StatusMessagesEnabled { get; set; } = true;
 
@@ -187,12 +188,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public override string ToString()
         {
             return string.Format(
-                    "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
-                    ServerType,
-                    RuntimeFlavor,
-                    RuntimeArchitecture,
-                    ApplicationBaseUriHint,
-                    PublishApplicationBeforeDeployment);
+                CultureInfo.InvariantCulture,
+                "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
+                ServerType,
+                RuntimeFlavor,
+                RuntimeArchitecture,
+                ApplicationBaseUriHint,
+                PublishApplicationBeforeDeployment);
         }
     }
 }

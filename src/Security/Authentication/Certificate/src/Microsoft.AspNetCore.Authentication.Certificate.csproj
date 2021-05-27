@@ -6,7 +6,7 @@
     <DefineConstants>$(DefineConstants);SECURITY</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security;x509;certificate</PackageTags>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
     public static class WaitAssert
     {
-        private static bool TestRunFailed = false;
+        private static bool TestRunFailed;
         public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultWaitTimeoutInSeconds);
         public static TimeSpan FailureTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultAfterFailureWaitTimeoutInSeconds);
 

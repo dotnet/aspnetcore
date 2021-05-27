@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     // Make sure the current token is not markup, which can be html start tag or @:
                     if (!(At(SyntaxKind.OpenAngle) ||
-                        (At(SyntaxKind.Transition) && Lookahead(count: 1).Content.StartsWith(":"))))
+                        (At(SyntaxKind.Transition) && Lookahead(count: 1).Content.StartsWith(":", StringComparison.Ordinal))))
                     {
                         // Don't accept whitespace as markup if the end text tag is followed by csharp.
                         shouldAcceptWhitespaceAndNewLine = false;
@@ -2026,8 +2026,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 CurrentToken.Content[position] == sequence[0] &&
                 position + sequence.Length <= CurrentToken.Content.Length)
             {
-                var possibleStart = CurrentToken.Content.Substring(position, sequence.Length);
-                if (string.Equals(possibleStart, sequence, Comparison))
+                var possibleStart = new StringSegment(CurrentToken.Content, position, sequence.Length);
+                if (possibleStart.Equals(sequence, Comparison))
                 {
                     // Capture the current token and "put it back" (really we just want to clear CurrentToken)
                     var bookmark = CurrentStart;
@@ -2184,7 +2184,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return false;
             }
 
-            if (tagName.StartsWith("!"))
+            if (tagName.StartsWith("!", StringComparison.Ordinal))
             {
                 tagName = tagName.Substring(1);
             }

@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 {
                     if (member is IFieldSymbol field &&
                         field.Type.SpecialType == SpecialType.System_Int32 &&
-                        field.Name.StartsWith("Status") &&
+                        field.Name.StartsWith("Status", StringComparison.Ordinal) &&
                         field.HasConstantValue &&
                         field.ConstantValue is int statusCode)
                     {

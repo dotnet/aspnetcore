@@ -286,9 +286,9 @@ namespace Microsoft.AspNetCore.Http
 
         private static void AppendKeyValuePair(StringBuilder builder, string key, string? value, bool first)
         {
-            builder.Append(first ? "?" : "&");
+            builder.Append(first ? '?' : '&');
             builder.Append(UrlEncoder.Default.Encode(key));
-            builder.Append("=");
+            builder.Append('=');
             if (!string.IsNullOrEmpty(value))
             {
                 builder.Append(UrlEncoder.Default.Encode(value));

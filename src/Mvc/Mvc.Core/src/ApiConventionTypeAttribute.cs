@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
                     continue;
                 }
 
-                var methodDisplayName = TypeNameHelper.GetTypeDisplayName(method.DeclaringType) + "." + method.Name;
+                var methodDisplayName = TypeNameHelper.GetTypeDisplayName(method.DeclaringType!) + "." + method.Name;
                 var errorMessage = Resources.FormatApiConvention_UnsupportedAttributesOnConvention(
                     methodDisplayName,
                     Environment.NewLine + string.Join(Environment.NewLine, unsupportedAttributes) + Environment.NewLine,

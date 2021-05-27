@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Testing
             // Assert
             Assert.True(isMet);
             Assert.Equal(
-                string.Format(_skipReason, "Run", environmentVariableValue, attribute.RunOnMatch),
+                string.Format(CultureInfo.InvariantCulture, _skipReason, "Run", environmentVariableValue, attribute.RunOnMatch),
                 attribute.SkipReason);
         }
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Testing
             // Assert
             Assert.True(isMet);
             Assert.Equal(
-                string.Format(_skipReason, "Run", "(null)", attribute.RunOnMatch),
+                string.Format(CultureInfo.InvariantCulture, _skipReason, "Run", "(null)", attribute.RunOnMatch),
                 attribute.SkipReason);
         }
 

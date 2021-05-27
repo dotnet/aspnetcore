@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         public static bool IsDelegateProperty(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             var key = ComponentMetadata.Component.DelegateSignatureKey;
             return 
                 attribute.Metadata.TryGetValue(key, out var value) &&
@@ -28,11 +23,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// <returns><c>true</c> if the attribute is an event callback, otherwise <c>false</c>.</returns>
         public static bool IsEventCallbackProperty(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             var key = ComponentMetadata.Component.EventCallbackKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
@@ -41,11 +31,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static bool IsGenericTypedProperty(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-            
             return
                 attribute.Metadata.TryGetValue(ComponentMetadata.Component.GenericTypedKey, out var value) &&
                 string.Equals(value, bool.TrueString);
@@ -53,23 +38,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static bool IsTypeParameterProperty(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
-            return
+             return
                 attribute.Metadata.TryGetValue(ComponentMetadata.Component.TypeParameterKey, out var value) &&
+                string.Equals(value, bool.TrueString);
+        }
+
+        public static bool IsCascadingTypeParameterProperty(this BoundAttributeDescriptor attribute)
+        {
+              return
+                attribute.Metadata.TryGetValue(ComponentMetadata.Component.TypeParameterIsCascadingKey, out var value) &&
                 string.Equals(value, bool.TrueString);
         }
 
         public static bool IsWeaklyTyped(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             var key = ComponentMetadata.Component.WeaklyTypedKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
@@ -84,11 +66,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// <returns>Returns <c>true</c> if the property is child content, otherwise <c>false</c>.</returns>
         public static bool IsChildContentProperty(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             var key = ComponentMetadata.Component.ChildContentKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
@@ -103,11 +80,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// <returns>Returns <c>true</c> if the property is child content, otherwise <c>false</c>.</returns>
         public static bool IsChildContentProperty(this BoundAttributeDescriptorBuilder attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             var key = ComponentMetadata.Component.ChildContentKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
@@ -122,11 +94,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// <returns>Returns <c>true</c> if the property is parameterized child content, otherwise <c>false</c>.</returns>
         public static bool IsParameterizedChildContentProperty(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             return attribute.IsChildContentProperty() &&
                 !string.Equals(attribute.TypeName, ComponentsApi.RenderFragment.FullTypeName, StringComparison.Ordinal);
         }
@@ -139,11 +106,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// <returns>Returns <c>true</c> if the property is parameterized child content, otherwise <c>false</c>.</returns>
         public static bool IsParameterizedChildContentProperty(this BoundAttributeDescriptorBuilder attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             return attribute.IsChildContentProperty() &&
                 !string.Equals(attribute.TypeName, ComponentsApi.RenderFragment.FullTypeName, StringComparison.Ordinal);
         }
@@ -159,11 +121,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// </returns>
         public static bool IsChildContentParameterNameProperty(this BoundAttributeDescriptor attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
             var key = ComponentMetadata.Component.ChildContentParameterNameKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&

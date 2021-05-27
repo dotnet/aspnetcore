@@ -8,8 +8,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
   "groupIdentity": "Microsoft.Web.WebApi",
-  "precedence": "7000",
-  "identity": "Microsoft.Web.WebApi.FSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.Web.WebApi.FSharp.6.0",
   "shortName": "webapi",
   "tags": {
     "language": "F#",
@@ -82,12 +82,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net5.0",
-          "description": "Target net5.0"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "replaces": "net5.0",
-      "defaultValue": "net5.0"
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "copyrightYear": {
       "type": "generated",

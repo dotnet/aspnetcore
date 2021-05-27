@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
         [Theory]
         [MemberData(nameof(LargeUploadData))]
-        [QuarantinedTest] // This is inherently flaky and should never be unquarantined.
+        [QuarantinedTest("This is inherently flaky and should never be unquarantined.")]
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
             // Parameters
@@ -204,7 +204,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24557")]
         public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
         {
             // Parameters
@@ -352,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                                 return;
                             }
 
-                            await context.Response.WriteAsync($"bytesRead: {bytesRead.ToString()}");
+                            await context.Response.WriteAsync($"bytesRead: {bytesRead}");
                         }));
                 })
                 .ConfigureServices(AddTestLogging)

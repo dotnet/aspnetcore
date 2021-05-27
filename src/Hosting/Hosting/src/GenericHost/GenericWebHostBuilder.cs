@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private readonly IHostBuilder _builder;
         private readonly IConfiguration _config;
-        private object _startupObject;
+        private object? _startupObject;
         private readonly object _startupKey = new object();
 
-        private AggregateException _hostingStartupErrors;
-        private HostingStartupWebHostBuilder _hostingStartupWebHostBuilder;
+        private AggregateException? _hostingStartupErrors;
+        private HostingStartupWebHostBuilder? _hostingStartupWebHostBuilder;
 
         public GenericWebHostBuilder(IHostBuilder builder, WebHostBuilderOptions options)
         {
@@ -84,9 +84,9 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
                 // We need to flow this differently
-                var listener = new DiagnosticListener("Microsoft.AspNetCore");
-                services.TryAddSingleton<DiagnosticListener>(listener);
-                services.TryAddSingleton<DiagnosticSource>(listener);
+                services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
+                services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
+                services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
 
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         private void ExecuteHostingStartups()
         {
-            var webHostOptions = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name);
+            var webHostOptions = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
 
             if (webHostOptions.PreventHostingStartup)
             {
@@ -130,18 +130,26 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var exceptions = new List<Exception>();
+            var processed = new HashSet<Assembly>();
+
             _hostingStartupWebHostBuilder = new HostingStartupWebHostBuilder(this);
 
             // Execute the hosting startup assemblies
-            foreach (var assemblyName in webHostOptions.GetFinalHostingStartupAssemblies().Distinct(StringComparer.OrdinalIgnoreCase))
+            foreach (var assemblyName in webHostOptions.GetFinalHostingStartupAssemblies())
             {
                 try
                 {
                     var assembly = Assembly.Load(new AssemblyName(assemblyName));
 
+                    if (!processed.Add(assembly))
+                    {
+                        // Already processed, skip it
+                        continue;
+                    }
+
                     foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
                     {
-                        var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType);
+                        var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType)!;
                         hostingStartup.Configure(_hostingStartupWebHostBuilder);
                     }
                 }
@@ -240,13 +248,13 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "We need to call a generic method on IHostBuilder.")]
-        private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object instance = null)
+        private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object? instance = null)
         {
             var webHostBuilderContext = GetWebHostBuilderContext(context);
             var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
 
-            ExceptionDispatchInfo startupError = null;
-            ConfigureBuilder configureBuilder = null;
+            ExceptionDispatchInfo? startupError = null;
+            ConfigureBuilder? configureBuilder = null;
 
             try
             {
@@ -281,12 +289,12 @@ namespace Microsoft.AspNetCore.Hosting
                     var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
 
                     // Get the private ConfigureContainer method on this type then close over the container type
-                    var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)
+                    var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)!
                                                      .MakeGenericMethod(containerType)
                                                      .CreateDelegate(actionType, this);
 
                     // _builder.ConfigureContainer<T>(ConfigureContainer);
-                    typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))
+                    typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))!
                         .MakeGenericMethod(containerType)
                         .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
                 }
@@ -316,7 +324,7 @@ namespace Microsoft.AspNetCore.Hosting
             });
         }
 
-        private void ConfigureContainerImpl<TContainer>(HostBuilderContext context, TContainer container)
+        private void ConfigureContainerImpl<TContainer>(HostBuilderContext context, TContainer container) where TContainer : notnull
         {
             var instance = context.Properties[_startupKey];
             var builder = (ConfigureContainerBuilder)context.Properties[typeof(ConfigureContainerBuilder)];
@@ -347,7 +355,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {
-                var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name);
+                var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
                 var webHostBuilderContext = new WebHostBuilderContext
                 {
                     Configuration = context.Configuration,
@@ -370,7 +378,7 @@ namespace Microsoft.AspNetCore.Hosting
             return _config[key];
         }
 
-        public IWebHostBuilder UseSetting(string key, string value)
+        public IWebHostBuilder UseSetting(string key, string? value)
         {
             _config[key] = value;
             return this;
@@ -386,7 +394,7 @@ namespace Microsoft.AspNetCore.Hosting
                 _context = context;
             }
 
-            public object GetService(Type serviceType)
+            public object? GetService(Type serviceType)
             {
                 // The implementation of the HostingEnvironment supports both interfaces
 #pragma warning disable CS0618 // Type or member is obsolete

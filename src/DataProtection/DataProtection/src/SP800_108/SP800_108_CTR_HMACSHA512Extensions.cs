@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
             var cbCombinedContext = checked((uint)contextHeader.Length + cbContext);
 
             // Try allocating the combined context on the stack to avoid temporary managed objects; only fall back to heap if buffers are too large.
-            byte[] heapAllocatedCombinedContext = (cbCombinedContext > Constants.MAX_STACKALLOC_BYTES) ? new byte[cbCombinedContext] : null;
+            byte[]? heapAllocatedCombinedContext = (cbCombinedContext > Constants.MAX_STACKALLOC_BYTES) ? new byte[cbCombinedContext] : null;
             fixed (byte* pbHeapAllocatedCombinedContext = heapAllocatedCombinedContext)
             {
                 byte* pbCombinedContext = pbHeapAllocatedCombinedContext;

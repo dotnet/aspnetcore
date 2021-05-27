@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Runtime.InteropServices;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
@@ -23,7 +23,7 @@ namespace NegotiateAuthSample
             services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
                 .AddNegotiate(options =>
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    if (OperatingSystem.IsLinux())
                     {
                         /*
                         options.EnableLdap("DOMAIN.net");

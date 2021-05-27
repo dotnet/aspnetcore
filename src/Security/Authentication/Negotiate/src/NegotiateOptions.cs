@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// The application may use the existing NegotiateEvents instance and assign delegates only to the events it
         /// wants to process. The application may also replace it with its own derived instance.
         /// </summary>
-        public new NegotiateEvents Events
+        public new NegotiateEvents? Events
         {
-            get { return (NegotiateEvents)base.Events; }
+            get { return (NegotiateEvents?)base.Events; }
             set { base.Events = value; }
         }
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// This option must not be used if connections may be shared by requests from different users.
         /// </summary>
         /// <value>Defaults to <see langword="false"/>.</value>
-        public bool PersistKerberosCredentials { get; set; } = false;
+        public bool PersistKerberosCredentials { get; set; }
 
         /// <summary>
         /// Indicates if NTLM credentials should be persisted and re-used for subsquent anonymous requests.

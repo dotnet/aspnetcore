@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
     {
         public OpenApiRefreshTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
         public async Task OpenApi_Refresh_Basic()
         {
             CreateBasicProject(withOpenApi: false);

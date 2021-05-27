@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-export function getParameterByName(name: string) {
+export function getParameterByName(name: string): string | null {
     const url = window.location.href;
+    // eslint-disable-next-line no-useless-escape
     name = name.replace(/[\[\]]/g, "\\$&");
     const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
     const results = regex.exec(url);
@@ -18,22 +19,26 @@ export function getParameterByName(name: string) {
 export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
-    private resolver!: (value?: T | PromiseLike<T>) => void;
-    private rejecter!: (reason?: any) => void;
+    private _resolver!: (value: T | PromiseLike<T>) => void;
+    private _rejecter!: (reason?: any) => void;
 
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {
-            this.resolver = resolve;
-            this.rejecter = reject;
+            this._resolver = resolve;
+            this._rejecter = reject;
         });
     }
 
-    public resolve(value?: T | PromiseLike<T>) {
-        this.resolver(value);
+    public finally(onfinally?: (() => void) | null): Promise<T> {
+        return this.promise.finally(onfinally);
     }
 
-    public reject(reason?: any) {
-        this.rejecter(reason);
+    public resolve(value: T | PromiseLike<T>): void {
+        this._resolver(value);
+    }
+
+    public reject(reason?: any): void {
+        this._rejecter(reason);
     }
 
     // Look like a promise so we can be awaited directly;

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     internal class DefaultCollectionValidationStrategy : IValidationStrategy
     {
         private static readonly MethodInfo _getEnumerator = typeof(DefaultCollectionValidationStrategy)
-            .GetMethod(nameof(GetEnumerator), BindingFlags.Static | BindingFlags.NonPublic);
+            .GetMethod(nameof(GetEnumerator), BindingFlags.Static | BindingFlags.NonPublic)!;
 
         /// <summary>
         /// Gets an instance of <see cref="DefaultCollectionValidationStrategy"/>.
@@ -59,13 +61,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             object model)
         {
             var enumerator = GetEnumeratorForElementType(metadata, model);
-            return new Enumerator(metadata.ElementMetadata, key, enumerator);
+            return new Enumerator(metadata.ElementMetadata!, key, enumerator);
         }
 
         public IEnumerator GetEnumeratorForElementType(ModelMetadata metadata, object model)
         {
             Func<object, IEnumerator> getEnumerator = _genericGetEnumeratorCache.GetOrAdd(
-                key: metadata.ElementType,
+                key: metadata.ElementType!,
                 valueFactory: (type) => {
                     var getEnumeratorMethod = _getEnumerator.MakeGenericMethod(type);
                     var parameter = Expression.Parameter(typeof(object), "model");

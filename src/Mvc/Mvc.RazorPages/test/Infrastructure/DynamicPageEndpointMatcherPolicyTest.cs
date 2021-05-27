@@ -81,8 +81,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var loader = new Mock<PageLoader>();
             loader
-                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
-                .Returns<PageActionDescriptor>(descriptor => Task.FromResult(new CompiledPageActionDescriptor
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()))
+                .Returns((PageActionDescriptor descriptor, EndpointMetadataCollection endpoint) => Task.FromResult(new CompiledPageActionDescriptor
                 {
                     Endpoint = descriptor.DisplayName switch
                     {

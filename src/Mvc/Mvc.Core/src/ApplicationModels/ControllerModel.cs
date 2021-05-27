@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(attributes);
             ControllerProperties = new List<PropertyModel>();
             Filters = new List<IFilterMetadata>();
-            Properties = new Dictionary<object, object>();
-            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Properties = new Dictionary<object, object?>();
+            RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             Selectors = new List<SelectorModel>();
         }
 
@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // These are just metadata, safe to create new collections
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
-            RouteValues = new Dictionary<string, string>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
-            Properties = new Dictionary<object, object>(other.Properties);
+            RouteValues = new Dictionary<string, string?>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
+            Properties = new Dictionary<object, object?>(other.Properties);
 
             // Make a deep copy of other 'model' types.
             Actions = new List<ActionModel>(other.Actions.Select(a => new ActionModel(a) { Controller = this }));
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the <see cref="ApplicationModel"/> of this controller.
         /// </summary>
-        public ApplicationModel Application { get; set; }
+        public ApplicationModel? Application { get; set; }
 
         /// <summary>
         /// The attributes of this controller.
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the name of this controller.
         /// </summary>
-        public string ControllerName { get; set; }
+        public string ControllerName { get; set; } = default!;
 
         /// <summary>
         /// The type of this controller.
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Entries in <see cref="RouteValues"/> can be overridden by entries in
         /// <see cref="ActionModel.RouteValues"/>.
         /// </remarks>
-        public IDictionary<string, string> RouteValues { get; }
+        public IDictionary<string, string?> RouteValues { get; }
 
         /// <summary>
         /// Gets a set of properties associated with the controller.
@@ -149,10 +149,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Entries will take precedence over entries with the same key
         /// in <see cref="ApplicationModel.Properties"/>.
         /// </remarks>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         /// <summary>
-        /// The selector models of this controller..
+        /// The selector models of this controller.
         /// </summary>
         public IList<SelectorModel> Selectors { get; }
 

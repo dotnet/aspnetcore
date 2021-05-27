@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         /// <returns>An <see cref="HubEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static HubEndpointConventionBuilder MapHub<[DynamicallyAccessedMembers(HubAccessibility)]THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
+        public static HubEndpointConventionBuilder MapHub<[DynamicallyAccessedMembers(HubAccessibility)]THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions>? configureOptions) where THub : Hub
         {
             var marker = endpoints.ServiceProvider.GetService<SignalRMarkerService>();
 

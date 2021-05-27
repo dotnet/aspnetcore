@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.TestHost
             Protocol = HttpProtocol.Http11;
             QueryString = "";
             Scheme = "http";
+            RawTarget = "";
         }
 
         public Stream Body { get; set; }

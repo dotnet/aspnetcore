@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <summary>
         /// Gets or sets the validated security token.
         /// </summary>
-        public SecurityToken SecurityToken { get; set; }
+        public SecurityToken SecurityToken { get; set; } = default!;
     }
 }

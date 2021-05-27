@@ -204,11 +204,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see BuildChallengeUrl
             if (context.Properties.Items.TryGetValue(OAuthConstants.CodeVerifierKey, out var codeVerifier))
             {
-                tokenRequestParameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+                tokenRequestParameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier!);
                 context.Properties.Items.Remove(OAuthConstants.CodeVerifierKey);
             }
 
-            var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
+            var requestContent = new FormUrlEncodedContent(tokenRequestParameters!);
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, Options.TokenEndpoint);
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
-                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted));
                 return OAuthTokenResponse.Success(payload);
             }
             else
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             {
                 var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, user.RootElement);
                 await Events.CreatingTicket(context);
-                return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+                return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
             }
         }
 
@@ -270,12 +270,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 properties, authorizationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
 
-            var location = Context.Response.Headers[HeaderNames.Location];
+            var location = Context.Response.Headers.Location;
             if (location == StringValues.Empty)
             {
                 location = "(not set)";
             }
-            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            var cookie = Context.Response.Headers.SetCookie;
             if (cookie == StringValues.Empty)
             {
                 cookie = "(not set)";
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             parameters["state"] = Options.StateDataFormat.Protect(properties);
 
-            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters);
+            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters!);
         }
 
         /// <summary>

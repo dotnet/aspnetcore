@@ -114,7 +114,7 @@ namespace CookiePolicySample
             }
             await response.WriteAsync("<br>\r\n");
 
-            var responseCookies = response.Headers[HeaderNames.SetCookie];
+            var responseCookies = response.Headers.SetCookie;
             await response.WriteAsync($"{responseCookies.Count} Response Cookies:<br>\r\n");
             foreach (var cookie in responseCookies)
             {

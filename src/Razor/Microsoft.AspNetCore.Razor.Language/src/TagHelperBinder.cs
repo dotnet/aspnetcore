@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Razor.Language
     /// <summary>
     /// Enables retrieval of <see cref="TagHelperBinding"/>'s.
     /// </summary>
-    internal class TagHelperBinder
+    internal sealed class TagHelperBinder
     {
-        private IDictionary<string, HashSet<TagHelperDescriptor>> _registrations;
+        private readonly Dictionary<string, HashSet<TagHelperDescriptor>> _registrations;
         private readonly string _tagHelperPrefix;
 
         /// <summary>
@@ -75,27 +75,41 @@ namespace Microsoft.AspNetCore.Razor.Language
                 descriptors = matchingDescriptors.Concat(descriptors);
             }
 
-            var tagNameWithoutPrefix = _tagHelperPrefix != null ? tagName.Substring(_tagHelperPrefix.Length) : tagName;
-            var parentTagNameWithoutPrefix = parentTagName;
+            var tagNameWithoutPrefix = _tagHelperPrefix != null ? new StringSegment(tagName, _tagHelperPrefix.Length) : tagName;
+            StringSegment parentTagNameWithoutPrefix = parentTagName;
             if (_tagHelperPrefix != null && parentIsTagHelper)
             {
-                parentTagNameWithoutPrefix = parentTagName.Substring(_tagHelperPrefix.Length);
+                parentTagNameWithoutPrefix = new StringSegment(parentTagName, _tagHelperPrefix.Length);
             }
 
             Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> applicableDescriptorMappings = null;
             foreach (var descriptor in descriptors)
             {
-                var applicableRules = descriptor.TagMatchingRules.Where(
-                    rule => TagHelperMatchingConventions.SatisfiesRule(tagNameWithoutPrefix, parentTagNameWithoutPrefix, attributes, rule));
+                // We're avoiding desccriptor.TagMatchingRules.Where and applicableRules.Any() to avoid
+                // Enumerator allocations on this hotpath
+                List<TagMatchingRuleDescriptor> applicableRules = null;
+                for (var i = 0; i < descriptor.TagMatchingRules.Count; i++)
+                {
+                    var rule = descriptor.TagMatchingRules[i];
+                    if (TagHelperMatchingConventions.SatisfiesRule(tagNameWithoutPrefix, parentTagNameWithoutPrefix, attributes, rule))
+                    {
+                        if (applicableRules is null)
+                        {
+                            applicableRules = new List<TagMatchingRuleDescriptor>();
+                        }
 
-                if (applicableRules.Any())
+                        applicableRules.Add(rule);
+                    }
+                }
+
+                if (applicableRules != null && applicableRules.Count > 0)
                 {
                     if (applicableDescriptorMappings == null)
                     {
                         applicableDescriptorMappings = new Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>>();
                     }
 
-                    applicableDescriptorMappings[descriptor] = applicableRules.ToList();
+                    applicableDescriptorMappings[descriptor] = applicableRules;
                 }
             }
 
@@ -116,8 +130,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private void Register(TagHelperDescriptor descriptor)
         {
-            foreach (var rule in descriptor.TagMatchingRules)
+            var count = descriptor.TagMatchingRules.Count;
+            for (var i = 0; i < count; i++)
             {
+                var rule = descriptor.TagMatchingRules[i];
                 var registrationKey =
                     string.Equals(rule.TagName, TagHelperMatchingConventions.ElementCatchAllName, StringComparison.Ordinal) ?
                     TagHelperMatchingConventions.ElementCatchAllName :

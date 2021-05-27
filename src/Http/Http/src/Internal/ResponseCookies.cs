@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http
         internal ResponseCookies(IFeatureCollection features)
         {
             _features = features;
-            Headers = _features.Get<IHttpResponseFeature>().Headers;
+            Headers = _features.Get<IHttpResponseFeature>()!.Headers;
         }
 
         private IHeaderDictionary Headers { get; set; }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
             };
             var cookieValue = setCookieHeaderValue.ToString();
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
         }
 
         /// <inheritdoc />
@@ -85,7 +85,58 @@ namespace Microsoft.AspNetCore.Http
 
             var cookieValue = setCookieHeaderValue.ToString();
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
+        }
+
+        /// <inheritdoc />
+        public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            // SameSite=None cookies must be marked as Secure.
+            if (!options.Secure && options.SameSite == SameSiteMode.None)
+            {
+                if (_logger == null)
+                {
+                    var services = _features.Get<IServiceProvidersFeature>()?.RequestServices;
+                    _logger = services?.GetService<ILogger<ResponseCookies>>();
+                }
+
+                if (_logger != null)
+                {
+                    foreach (var keyValuePair in keyValuePairs)
+                    {
+                        Log.SameSiteCookieNotSecure(_logger, keyValuePair.Key);
+                    }
+                }
+            }
+
+            var setCookieHeaderValue = new SetCookieHeaderValue(string.Empty)
+            {
+                Domain = options.Domain,
+                Path = options.Path,
+                Expires = options.Expires,
+                MaxAge = options.MaxAge,
+                Secure = options.Secure,
+                SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
+                HttpOnly = options.HttpOnly
+            };
+
+            var cookierHeaderValue = setCookieHeaderValue.ToString()[1..];
+            var cookies = new string[keyValuePairs.Length];
+            var position = 0;
+
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                var key = _enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key;
+                cookies[position] = string.Concat(key, "=", Uri.EscapeDataString(keyValuePair.Value), cookierHeaderValue);
+                position++;
+            }
+
+            Headers.Append(HeaderNames.SetCookie, cookies);
         }
 
         /// <inheritdoc />
@@ -107,7 +158,14 @@ namespace Microsoft.AspNetCore.Http
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
             Func<string, string, CookieOptions, bool> rejectPredicate;
-            if (domainHasValue)
+            if (domainHasValue && pathHasValue)
+            {
+                rejectPredicate = (value, encKeyPlusEquals, opts) =>
+                    value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
+                        value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1 &&
+                        value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
+            }
+            else if (domainHasValue)
             {
                 rejectPredicate = (value, encKeyPlusEquals, opts) =>
                     value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
@@ -124,7 +182,7 @@ namespace Microsoft.AspNetCore.Http
                 rejectPredicate = (value, encKeyPlusEquals, opts) => value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
             }
 
-            var existingValues = Headers[HeaderNames.SetCookie];
+            var existingValues = Headers.SetCookie;
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
                 var values = existingValues.ToArray();
@@ -138,7 +196,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
-                Headers[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
+                Headers.SetCookie = new StringValues(newValues.ToArray());
             }
 
             Append(key, string.Empty, new CookieOptions

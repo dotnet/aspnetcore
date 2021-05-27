@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// A <see cref="ValueProviderResult"/> that represents a lack of data.
         /// </summary>
-        public static ValueProviderResult None = new ValueProviderResult(new string[0]);
+        public static ValueProviderResult None = new ValueProviderResult(Array.Empty<string>());
 
         /// <summary>
         /// Creates a new <see cref="ValueProviderResult"/> using <see cref="CultureInfo.InvariantCulture"/>.
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="values">The submitted values.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> associated with this value.</param>
-        public ValueProviderResult(StringValues values, CultureInfo culture)
+        public ValueProviderResult(StringValues values, CultureInfo? culture)
         {
             Values = values;
             Culture = culture ?? _invariantCulture;

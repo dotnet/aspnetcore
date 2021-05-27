@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -19,8 +18,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     /// </summary>
     public class MessagePackHubProtocol : IHubProtocol
     {
-        private static readonly string ProtocolName = "messagepack";
-        private static readonly int ProtocolVersion = 1;
+        private const string ProtocolName = "messagepack";
+        private const int ProtocolVersion = 1;
         private readonly DefaultMessagePackHubProtocolWorker _worker;
 
         /// <inheritdoc />
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         }
 
         /// <inheritdoc />
-        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, [NotNullWhen(true)] out HubMessage? message)
             => _worker.TryParseMessage(ref input, binder, out message);
 
         /// <inheritdoc />
@@ -88,14 +87,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 ContractlessStandardResolver.Instance,
             };
 
-            public IMessagePackFormatter<T> GetFormatter<T>()
+            public IMessagePackFormatter<T>? GetFormatter<T>()
             {
                 return Cache<T>.Formatter;
             }
 
             private static class Cache<T>
             {
-                public static readonly IMessagePackFormatter<T> Formatter;
+                public static readonly IMessagePackFormatter<T>? Formatter;
 
                 static Cache()
                 {

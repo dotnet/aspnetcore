@@ -324,8 +324,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             client.Options.AddSubProtocol("protocol2");
             await client.ConnectAsync(new Uri(address), CancellationToken.None);
             Assert.Equal("protocol1", client.SubProtocol);
-            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).OrTimeout();
-            var result = await client.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), CancellationToken.None).OrTimeout();
+            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).DefaultTimeout();
+            var result = await client.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), CancellationToken.None).DefaultTimeout();
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
         }
 

@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Tools.Internal
 {
     public class TestConsole : IConsole
     {
-        private event ConsoleCancelEventHandler _cancelKeyPress;
+        private event ConsoleCancelEventHandler _cancelKeyPress = default!;
         private readonly TaskCompletionSource<bool> _cancelKeySubscribed = new TaskCompletionSource<bool>();
         private readonly TestOutputWriter _testWriter;
 
@@ -39,9 +39,9 @@ namespace Microsoft.Extensions.Tools.Internal
         public TextWriter Error { get; }
         public TextWriter Out { get; }
         public TextReader In { get; set; } = new StringReader(string.Empty);
-        public bool IsInputRedirected { get; set; } = false;
-        public bool IsOutputRedirected { get; } = false;
-        public bool IsErrorRedirected { get; } = false;
+        public bool IsInputRedirected { get; set; }
+        public bool IsOutputRedirected { get; }
+        public bool IsErrorRedirected { get; }
         public ConsoleColor ForegroundColor { get; set; }
 
         public ConsoleCancelEventArgs ConsoleCancelKey()

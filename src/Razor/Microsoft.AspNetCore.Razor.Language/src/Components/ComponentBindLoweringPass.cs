@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -496,7 +497,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return true;
             }
 
-            if (!attributeName.StartsWith("bind-"))
+            if (!attributeName.StartsWith("bind-", StringComparison.Ordinal))
             {
                 return false;
             }
@@ -517,7 +518,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             out BoundAttributeDescriptor changeAttribute,
             out BoundAttributeDescriptor expressionAttribute)
         {
-            valueAttributeName = null;
             changeAttributeName = null;
             expressionAttributeName = null;
             changeAttributeNode = null;
@@ -548,7 +548,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             if (bindEntry.BindEventNode == null)
             {
                 // @bind:event not specified
-                changeAttributeName ??= node.TagHelper.GetChangeAttributeName();
+                changeAttributeName = node.TagHelper.GetChangeAttributeName();
             }
             else if (TryExtractEventNodeStaticText(bindEntry.BindEventNode, out var text))
             {
@@ -775,7 +775,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private static IntermediateToken GetAttributeContent(IntermediateNode node)
         {
-            var template = node.FindDescendantNodes<TemplateIntermediateNode>().FirstOrDefault();
+            var nodes = node.FindDescendantNodes<TemplateIntermediateNode>();
+            var template = nodes.Count > 0 ? nodes[0] : default;
             if (template != null)
             {
                 // See comments in TemplateDiagnosticPass

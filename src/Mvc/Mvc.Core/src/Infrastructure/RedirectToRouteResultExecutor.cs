@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 context.HttpContext.Response.StatusCode = result.Permanent ?
                     StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
-                context.HttpContext.Response.Headers[HeaderNames.Location] = destinationUrl;
+                context.HttpContext.Response.Headers.Location = destinationUrl;
             }
             else
             {

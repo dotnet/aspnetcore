@@ -101,7 +101,7 @@ authToken=''
 repoName=''
 
 while [[ $# > 0 ]]; do
-  opt="$(echo "$1" | awk '{print tolower($0)}')"
+  opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     --operation)
       operation=$2

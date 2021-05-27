@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -15,9 +16,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class BinaryHttpClientTest : BrowserTestBase,
         IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>,
-        IClassFixture<DevHostServerFixture<BasicTestApp.Program>>
+        IClassFixture<BlazorWasmTestAppFixture<BasicTestApp.Program>>
     {
-        private readonly DevHostServerFixture<BasicTestApp.Program> _devHostServerFixture;
+        private readonly BlazorWasmTestAppFixture<BasicTestApp.Program> _devHostServerFixture;
         readonly ServerFixture _apiServerFixture;
         IWebElement _appElement;
         IWebElement _responseStatus;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         public BinaryHttpClientTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
             BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
             : base(browserFixture, output)
@@ -42,8 +43,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             _appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
         }
 
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanSendAndReceiveBytes()
         {
             IssueRequest("/subdir/api/data");

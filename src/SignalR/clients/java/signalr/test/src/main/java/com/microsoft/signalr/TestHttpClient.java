@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 class TestHttpClient extends HttpClient {
     private TestHttpRequestHandler handler;

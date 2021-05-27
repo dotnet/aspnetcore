@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.CommandLine;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -63,7 +64,7 @@ public class Program
             logPath             : cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
             aspnetLog           : cmdline.ValueForOption<bool>("-aspnetlog"),
             listOps             : cmdline.ValueForOption<bool>("-listOps"),
-            seed                : cmdline.ValueForOption<int?>("-seed") ?? new Random().Next());
+            seed                : cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
     }
 
     private static void Run(int concurrentRequests, int maxContentLength, Version[] httpVersions, int? connectionLifetime, int[] opIndices, string logPath, bool aspnetLog, bool listOps, int seed)
@@ -522,12 +523,12 @@ public class Program
                         Console.ForegroundColor = ConsoleColor.Cyan;
                         Console.Write("[" + DateTime.Now + "]");
                         Console.ResetColor();
-                        Console.WriteLine(" Total: " + total.ToString("N0"));
+                        Console.WriteLine(" Total: " + total.ToString("N0", CultureInfo.InvariantCulture));
 
                         if (reuseAddressFailure > 0)
                         {
                             Console.ForegroundColor = ConsoleColor.DarkRed;
-                            Console.WriteLine("~~ Reuse address failures: " + reuseAddressFailure.ToString("N0") + "~~");
+                            Console.WriteLine("~~ Reuse address failures: " + reuseAddressFailure.ToString("N0", CultureInfo.InvariantCulture) + "~~");
                             Console.ResetColor();
                         }
 
@@ -539,11 +540,11 @@ public class Program
                             Console.ForegroundColor = ConsoleColor.Green;
                             Console.Write("Success: ");
                             Console.ResetColor();
-                            Console.Write(success[i].ToString("N0"));
+                            Console.Write(success[i].ToString("N0", CultureInfo.InvariantCulture));
                             Console.ForegroundColor = ConsoleColor.DarkRed;
                             Console.Write("\tFail: ");
                             Console.ResetColor();
-                            Console.WriteLine(fail[i].ToString("N0"));
+                            Console.WriteLine(fail[i].ToString("N0", CultureInfo.InvariantCulture));
                         }
                         Console.WriteLine();
                     }

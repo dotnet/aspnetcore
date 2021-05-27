@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         }
 
         // Get the given subProperty from a property.
-        private static string GetValue(JsonElement userData, string propertyName, string subProperty)
+        private static string? GetValue(JsonElement userData, string propertyName, string subProperty)
         {
             if (userData.TryGetProperty(propertyName, out var value)
                 && value.ValueKind == JsonValueKind.Object && value.TryGetProperty(subProperty, out value))

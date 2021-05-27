@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
     internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvider
     {
-        private CacheableKeyRing _cacheableKeyRing;
+        private CacheableKeyRing? _cacheableKeyRing;
         private readonly object _cacheableKeyRingLockObj = new object();
         private readonly IDefaultKeyResolver _defaultKeyResolver;
         private readonly KeyManagementOptions _keyManagementOptions;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         internal bool InAutoRefreshWindow() => DateTime.UtcNow < AutoRefreshWindowEnd;
 
-        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey keyJustAdded)
+        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey? keyJustAdded)
         {
             // Refresh the list of all keys
             var cacheExpirationToken = _keyManager.GetCacheExpirationToken();
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Debug.Assert(utcNow.Kind == DateTimeKind.Utc);
 
             // Can we return the cached keyring to the caller?
-            CacheableKeyRing existingCacheableKeyRing = null;
+            CacheableKeyRing? existingCacheableKeyRing = null;
             if (!forceRefresh)
             {
                 existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
@@ -259,7 +259,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // hit a single repository simultaneously. For instance, if the refresh period is 1 hour,
             // we'll return a value in the vicinity of 48 - 60 minutes. We use the Random class since
             // we don't need a secure PRNG for this.
-            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (new Random().NextDouble() / 5))));
+#if NET6_0_OR_GREATER
+            var random = Random.Shared;
+#else
+            var random = new Random();
+#endif
+            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (random.NextDouble() / 5))));
         }
 
         private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b)

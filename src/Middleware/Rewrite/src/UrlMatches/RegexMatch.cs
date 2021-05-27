@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.RegularExpressions;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
         public override MatchResults Evaluate(string pattern, RewriteContext context)
         {
             var res = _match.Match(pattern);
-            return new MatchResults { BackReferences = new BackReferenceCollection(res.Groups), Success = (res.Success != Negate) };
+            return new MatchResults(success: res.Success != Negate, new BackReferenceCollection(res.Groups));
         }
     }
 }

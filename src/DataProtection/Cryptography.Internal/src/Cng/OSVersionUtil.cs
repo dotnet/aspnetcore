@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Cryptography.Cng
         private static OSVersion GetOSVersion()
         {
             const string BCRYPT_LIB = "bcrypt.dll";
-            SafeLibraryHandle bcryptLibHandle = null;
+            SafeLibraryHandle? bcryptLibHandle = null;
             try
             {
                 bcryptLibHandle = SafeLibraryHandle.Open(BCRYPT_LIB);

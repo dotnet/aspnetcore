@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -40,7 +41,7 @@ namespace VersioningWebSite
 
             if (constraint == null)
             {
-                var message = string.Format("Invalid version format: {0}", versionRange);
+                var message =  $"Invalid version format: {versionRange}";
                 throw new ArgumentException(message, "versionRange");
             }
 
@@ -82,8 +83,8 @@ namespace VersioningWebSite
                 return null;
             }
 
-            var minVersion = int.Parse(rangeValues[0]);
-            var maxVersion = int.Parse(rangeValues[1]);
+            var minVersion = int.Parse(rangeValues[0], CultureInfo.InvariantCulture);
+            var maxVersion = int.Parse(rangeValues[1], CultureInfo.InvariantCulture);
 
             // Adjust min version and max version if the limit is exclusive.
             minVersion = lowerBound == "(" ? minVersion + 1 : minVersion;
@@ -109,7 +110,7 @@ namespace VersioningWebSite
                 return null;
             }
 
-            var version = int.Parse(rangeValues[0]);
+            var version = int.Parse(rangeValues[0], CultureInfo.InvariantCulture);
             if (!string.IsNullOrEmpty(lowerBound))
             {
                 // [5]

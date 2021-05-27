@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,17 +48,17 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 foreach (var kvp in data)
                 {
-                    _logger.LogInformation($"Configuring API resource '{kvp.Key}'.");
+                    _logger.LogInformation(LoggerEventIds.ConfiguringAPIResource, "Configuring API resource '{ApiResourceName}'.", kvp.Key);
                     yield return GetResource(kvp.Key, kvp.Value);
                 }
             }
 
-            var localResources = _localApiDescriptor.GetResourceDefinitions();
+            var localResources = _localApiDescriptor?.GetResourceDefinitions();
             if (localResources != null)
             {
                 foreach (var kvp in localResources)
                 {
-                    _logger.LogInformation($"Configuring local API resource '{kvp.Key}'.");
+                    _logger.LogInformation(LoggerEventIds.ConfiguringLocalAPIResource, "Configuring local API resource '{ApiResourceName}'.", kvp.Key);
                     yield return GetResource(kvp.Key, kvp.Value);
                 }
             }

@@ -7,13 +7,13 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _signInWithoutWResult;
-        private static Action<ILogger, Exception> _signInWithoutToken;
+        private static Action<ILogger, Exception?> _signInWithoutWResult;
+        private static Action<ILogger, Exception?> _signInWithoutToken;
         private static Action<ILogger, Exception> _exceptionProcessingMessage;
-        private static Action<ILogger, string, Exception> _malformedRedirectUri;
-        private static Action<ILogger, Exception> _remoteSignOutHandledResponse;
-        private static Action<ILogger, Exception> _remoteSignOutSkipped;
-        private static Action<ILogger, Exception> _remoteSignOut;
+        private static Action<ILogger, string, Exception?> _malformedRedirectUri;
+        private static Action<ILogger, Exception?> _remoteSignOutHandledResponse;
+        private static Action<ILogger, Exception?> _remoteSignOutSkipped;
+        private static Action<ILogger, Exception?> _remoteSignOut;
 
         static LoggingExtensions()
         {

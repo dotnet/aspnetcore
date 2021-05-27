@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.DependencyInjection
             // Arrange
             var manager = new ApplicationPartManager();
             var builder = new MvcCoreBuilder(Mock.Of<IServiceCollection>(), manager);
-            var assembly = typeof(MvcCoreBuilder).GetTypeInfo().Assembly;
+            var assembly = typeof(MvcCoreBuilder).Assembly;
 
             // Act
             var result = builder.AddApplicationPart(assembly);

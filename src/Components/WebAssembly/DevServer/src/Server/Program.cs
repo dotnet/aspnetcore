@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
             Host.CreateDefaultBuilder(args)
                 .ConfigureHostConfiguration(config =>
                 {
-                    var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).FirstOrDefault();
-                    var applicationDirectory = Path.GetDirectoryName(applicationPath);
+                    var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).First();
+                    var applicationDirectory = Path.GetDirectoryName(applicationPath)!;
                     var name = Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml");
 
                     var inMemoryConfiguration = new Dictionary<string, string>

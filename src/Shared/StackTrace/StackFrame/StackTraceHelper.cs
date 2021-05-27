@@ -49,14 +49,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     continue;
                 }
 
-                var stackFrame = new StackFrameInfo
-                {
-                    StackFrame = frame,
-                    FilePath = frame.GetFileName(),
-                    LineNumber = frame.GetFileLineNumber(),
-                    MethodDisplayInfo = GetMethodDisplayString(frame.GetMethod()),
-                };
-
+                var stackFrame = new StackFrameInfo(frame.GetFileLineNumber(), frame.GetFileName(), frame, GetMethodDisplayString(frame.GetMethod()));
                 frames.Add(stackFrame);
             }
 
@@ -78,39 +71,38 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return null;
             }
 
-            var methodDisplayInfo = new MethodDisplayInfo();
-
             // Type name
             var type = method.DeclaringType;
 
             var methodName = method.Name;
 
+            string? subMethod = null;
             if (type != null && type.IsDefined(typeof(CompilerGeneratedAttribute)) &&
                 (typeof(IAsyncStateMachine).IsAssignableFrom(type) || typeof(IEnumerator).IsAssignableFrom(type)))
             {
                 // Convert StateMachine methods to correct overload +MoveNext()
                 if (TryResolveStateMachineMethod(ref method, out type))
                 {
-                    methodDisplayInfo.SubMethod = methodName;
+                    subMethod = methodName;
                 }
             }
+
+            string? declaringTypeName = null;
             // ResolveStateMachineMethod may have set declaringType to null
             if (type != null)
             {
-                methodDisplayInfo.DeclaringTypeName = TypeNameHelper.GetTypeDisplayName(type, includeGenericParameterNames: true);
+                declaringTypeName = TypeNameHelper.GetTypeDisplayName(type, includeGenericParameterNames: true);
             }
 
-            // Method name
-            methodDisplayInfo.Name = method.Name;
+            string? genericArguments = null;
             if (method.IsGenericMethod)
             {
-                var genericArguments = string.Join(", ", method.GetGenericArguments()
-                    .Select(arg => TypeNameHelper.GetTypeDisplayName(arg, fullName: false, includeGenericParameterNames: true)));
-                methodDisplayInfo.GenericArguments += "<" + genericArguments + ">";
+                genericArguments = "<" + string.Join(", ", method.GetGenericArguments()
+                    .Select(arg => TypeNameHelper.GetTypeDisplayName(arg, fullName: false, includeGenericParameterNames: true))) + ">";
             }
 
             // Method parameters
-            methodDisplayInfo.Parameters = method.GetParameters().Select(parameter =>
+            var parameters = method.GetParameters().Select(parameter =>
             {
                 var parameterType = parameter.ParameterType;
 
@@ -142,6 +134,8 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     Type = parameterTypeString,
                 };
             });
+
+            var methodDisplayInfo = new MethodDisplayInfo(declaringTypeName, method.Name, genericArguments, subMethod, parameters);
 
             return methodDisplayInfo;
         }

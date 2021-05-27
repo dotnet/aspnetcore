@@ -18,6 +18,13 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        (function(){
+            Blazor.start().then(function () {
+                window['__aspnetcore__testing__blazor_wasm__started__'] = true;
+            });
+        })();
+    </script>
 </body>
 </html>

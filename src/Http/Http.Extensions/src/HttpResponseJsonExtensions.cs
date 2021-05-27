@@ -10,15 +10,16 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-#nullable enable
-
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Provides extension methods for writing a JSON serialized value to the HTTP response.
+    /// </summary>
     public static partial class HttpResponseJsonExtensions
     {
         /// <summary>
         /// Write the specified value as JSON to the response body. The response content-type will be set to
-        /// <c>application/json; charset=utf-8</c> and the status code set to <c>200</c>.
+        /// <c>application/json; charset=utf-8</c>.
         /// </summary>
         /// <typeparam name="TValue">The type of object to write.</typeparam>
         /// <param name="response">The response to write JSON to.</param>
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Write the specified value as JSON to the response body. The response content-type will be set to
-        /// <c>application/json; charset=utf-8</c> and the status code set to <c>200</c>.
+        /// <c>application/json; charset=utf-8</c>.
         /// </summary>
         /// <typeparam name="TValue">The type of object to write.</typeparam>
         /// <param name="response">The response to write JSON to.</param>
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Write the specified value as JSON to the response body. The response content-type will be set to
-        /// the specified content-type and the status code set to <c>200</c>.
+        /// the specified content-type.
         /// </summary>
         /// <typeparam name="TValue">The type of object to write.</typeparam>
         /// <param name="response">The response to write JSON to.</param>
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Write the specified value as JSON to the response body. The response content-type will be set to
-        /// <c>application/json; charset=utf-8</c> and the status code set to <c>200</c>.
+        /// <c>application/json; charset=utf-8</c>.
         /// </summary>
         /// <param name="response">The response to write JSON to.</param>
         /// <param name="value">The value to write as JSON.</param>
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Write the specified value as JSON to the response body. The response content-type will be set to
-        /// <c>application/json; charset=utf-8</c> and the status code set to <c>200</c>.
+        /// <c>application/json; charset=utf-8</c>.
         /// </summary>
         /// <param name="response">The response to write JSON to.</param>
         /// <param name="value">The value to write as JSON.</param>
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Write the specified value as JSON to the response body. The response content-type will be set to
-        /// the specified content-type and the status code set to <c>200</c>.
+        /// the specified content-type.
         /// </summary>
         /// <param name="response">The response to write JSON to.</param>
         /// <param name="value">The value to write as JSON.</param>

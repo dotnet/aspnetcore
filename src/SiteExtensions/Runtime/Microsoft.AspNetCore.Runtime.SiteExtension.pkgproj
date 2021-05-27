@@ -16,6 +16,8 @@
     <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
+  <Import Project="..\..\..\src\Servers\IIS\build\assets.props" />
+
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
@@ -33,11 +35,18 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
+
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
   </ItemGroup>
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
+      <Content Include="%(ShimComponents.DllLocation)"
+            Pack="true"
+            Condition="'%(ShimComponents.Platform)' == '$(TargetArchitecture)'"
+            PackagePath="content\ancm\%(ShimComponents.TempSubfolder)" />
     </ItemGroup>
   </Target>
 

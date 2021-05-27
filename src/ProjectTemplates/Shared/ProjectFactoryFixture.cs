@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.E2ETesting;
 using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
@@ -24,16 +23,15 @@ namespace Templates.Test.Helpers
             DiagnosticsMessageSink = diagnosticsMessageSink;
         }
 
-        static ProjectFactoryFixture()
-        {
-            // There is no good place to put this, so this is the best one.
-            // This sets the defualt timeout for all the Selenium test assertions.
-            WaitAssert.DefaultTimeout = TimeSpan.FromSeconds(30);
-        }
-
         public async Task<Project> GetOrCreateProject(string projectKey, ITestOutputHelper output)
         {
             await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
+            // Different tests may have different output helpers, so need to fix up the output to write to the correct log
+            if (_projects.TryGetValue(projectKey, out var project))
+            {
+                project.Output = output;
+                return project;
+            }
             return _projects.GetOrAdd(
                 projectKey,
                 (key, outputHelper) =>

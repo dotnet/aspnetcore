@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -250,14 +250,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var filePath = document.Source.FilePath;
-            var relativePath = document.Source.RelativePath;
-            if (filePath == null || relativePath == null || filePath.Length < relativePath.Length)
+            if (filePath == null || document.Source.RelativePath == null || filePath.Length < document.Source.RelativePath.Length)
             {
                 @namespace = null;
                 return false;
             }
 
-            relativePath = NormalizePath(relativePath);
             // If the document or it's imports contains a @namespace directive, we want to use that over the root namespace.
             var baseNamespace = string.Empty;
             var appendSuffix = true;
@@ -284,6 +282,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 lastNamespaceLocation = namespaceLocation;
             }
 
+            StringSegment relativePath = document.Source.RelativePath;
+
             // If there are multiple @namespace directives in the heirarchy,
             // we want to pick the closest one to the current document.
             if (!string.IsNullOrEmpty(lastNamespaceContent))
@@ -291,9 +291,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 baseNamespace = lastNamespaceContent;
                 var directiveLocationDirectory = NormalizeDirectory(lastNamespaceLocation.FilePath);
 
+                var sourceFilePath = new StringSegment(document.Source.FilePath);
                 // We're specifically using OrdinalIgnoreCase here because Razor treats all paths as case-insensitive.
-                if (!document.Source.FilePath.StartsWith(directiveLocationDirectory, StringComparison.OrdinalIgnoreCase) ||
-                    document.Source.FilePath.Length <= directiveLocationDirectory.Length)
+                if (!sourceFilePath.StartsWith(directiveLocationDirectory, StringComparison.OrdinalIgnoreCase) ||
+                    sourceFilePath.Length <= directiveLocationDirectory.Length)
                 {
                     // The most relevant directive is not from the directory hierarchy, can't compute a suffix.
                     appendSuffix = false;
@@ -302,7 +303,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     // We know that the document containing the namespace directive is in the current document's heirarchy.
                     // Let's compute the actual relative path that we'll use to compute the namespace suffix.
-                    relativePath = document.Source.FilePath.Substring(directiveLocationDirectory.Length);
+                    relativePath = sourceFilePath.Subsegment(directiveLocationDirectory.Length);
                 }
             }
             else if (fallbackToRootNamespace)
@@ -322,25 +323,48 @@ namespace Microsoft.AspNetCore.Razor.Language
             var builder = new StringBuilder();
 
             // Sanitize the base namespace, but leave the dots.
-            var segments = baseNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
-            builder.Append(CSharpIdentifier.SanitizeIdentifier(segments[0]));
-            for (var i = 1; i < segments.Length; i++)
+            var segments = new StringTokenizer(baseNamespace, NamespaceSeparators);
+            var first = true;
+            foreach (var token in segments)
             {
-                builder.Append('.');
-                builder.Append(CSharpIdentifier.SanitizeIdentifier(segments[i]));
+                if (token.IsEmpty)
+                {
+                    continue;
+                }
+
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    builder.Append('.');
+                }
+
+                CSharpIdentifier.AppendSanitized(builder, token);
+
             }
 
             if (appendSuffix)
             {
                 // If we get here, we already have a base namespace and the relative path that should be used as the namespace suffix.
-                segments = relativePath.Split(PathSeparators, StringSplitOptions.RemoveEmptyEntries);
-
-                // Skip the last segment because it's the FileName.
-                for (var i = 0; i < segments.Length - 1; i++)
+                segments = new StringTokenizer(relativePath, PathSeparators);
+                var previousLength = builder.Length;
+                foreach (var token in segments)
                 {
+                    if (token.IsEmpty)
+                    {
+                        continue;
+                    }
+
+                    previousLength = builder.Length;
+
                     builder.Append('.');
-                    builder.Append(CSharpIdentifier.SanitizeIdentifier(segments[i]));
+                    CSharpIdentifier.AppendSanitized(builder, token);
                 }
+
+                // Trim the last segment because it's the FileName.
+                builder.Length = previousLength;
             }
 
             @namespace = builder.ToString();
@@ -356,30 +380,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             // We also don't normalize the separators here. We expect that all documents are using a consistent style of path.
             // 
             // If we can't normalize the path, we just return null so it will be ignored.
-            string NormalizeDirectory(string path)
+            StringSegment NormalizeDirectory(string path)
             {
-                char[] Separators = new char[] { '\\', '/' };
                 if (string.IsNullOrEmpty(path))
                 {
-                    return null;
+                    return default;
                 }
 
-                var lastSeparator = path.LastIndexOfAny(Separators);
+                var lastSeparator = path.LastIndexOfAny(PathSeparators);
                 if (lastSeparator == -1)
                 {
-                    return null;
+                    return default;
                 }
 
                 // Includes the separator
-                return path.Substring(0, lastSeparator + 1);
+                return new StringSegment(path, 0, lastSeparator + 1);
             }
-        }
-
-        private static string NormalizePath(string path)
-        {
-            path = path.Replace('\\', '/');
-
-            return path;
         }
 
         private class ImportSyntaxTreesHolder
@@ -451,7 +467,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     var directiveContent = node.Body?.GetContent();
 
                     // In practice, this should never be null and always start with 'namespace'. Just being defensive here.
-                    if (directiveContent != null && directiveContent.StartsWith(NamespaceDirective.Directive.Directive))
+                    if (directiveContent != null && directiveContent.StartsWith(NamespaceDirective.Directive.Directive, StringComparison.Ordinal))
                     {
                         LastNamespaceContent = directiveContent.Substring(NamespaceDirective.Directive.Directive.Length).Trim();
                         LastNamespaceLocation = node.GetSourceSpan(_source);

@@ -9,7 +9,7 @@
     and @page authorization rules.
 *@
 
-<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" PreferExactMatches="true">
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(AuthRouterLayout)">
             <Authorizing>Authorizing...</Authorizing>

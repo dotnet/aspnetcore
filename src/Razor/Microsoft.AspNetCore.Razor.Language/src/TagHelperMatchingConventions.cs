@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Security.Cryptography;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -16,26 +15,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public const char ElementOptOutCharacter = '!';
 
         public static bool SatisfiesRule(
-            string tagNameWithoutPrefix,
-            string parentTagNameWithoutPrefix,
-            IEnumerable<KeyValuePair<string, string>> tagAttributes,
+            StringSegment tagNameWithoutPrefix,
+            StringSegment parentTagNameWithoutPrefix,
+            IReadOnlyList<KeyValuePair<string, string>> tagAttributes,
             TagMatchingRuleDescriptor rule)
         {
-            if (tagNameWithoutPrefix == null)
-            {
-                throw new ArgumentNullException(nameof(tagNameWithoutPrefix));
-            }
-
-            if (tagAttributes == null)
-            {
-                throw new ArgumentNullException(nameof(tagAttributes));
-            }
-
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
             var satisfiesTagName = SatisfiesTagName(tagNameWithoutPrefix, rule);
             if (!satisfiesTagName)
             {
@@ -57,19 +41,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesTagName(string tagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
+        public static bool SatisfiesTagName(StringSegment tagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
         {
-            if (tagNameWithoutPrefix == null)
-            {
-                throw new ArgumentNullException(nameof(tagNameWithoutPrefix));
-            }
-
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
-            if (string.IsNullOrEmpty(tagNameWithoutPrefix))
+            if (StringSegment.IsNullOrEmpty(tagNameWithoutPrefix))
             {
                 return false;
             }
@@ -82,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (rule.TagName != ElementCatchAllName &&
                 rule.TagName != null &&
-                !string.Equals(tagNameWithoutPrefix, rule.TagName, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
+                !tagNameWithoutPrefix.Equals(rule.TagName, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -90,14 +64,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesParentTag(string parentTagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
+        public static bool SatisfiesParentTag(StringSegment parentTagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
         {
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
-            if (rule.ParentTag != null && !string.Equals(parentTagNameWithoutPrefix, rule.ParentTag, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
+            if (rule.ParentTag != null &&
+                !parentTagNameWithoutPrefix.Equals(rule.ParentTag, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -105,21 +75,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesAttributes(IEnumerable<KeyValuePair<string, string>> tagAttributes, TagMatchingRuleDescriptor rule)
+        public static bool SatisfiesAttributes(IReadOnlyList<KeyValuePair<string, string>> tagAttributes, TagMatchingRuleDescriptor rule)
         {
-            if (tagAttributes == null)
-            {
-                throw new ArgumentNullException(nameof(tagAttributes));
-            }
-
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
             if (!rule.Attributes.All(
-                requiredAttribute => tagAttributes.Any(
-                    attribute => SatisfiesRequiredAttribute(attribute.Key, attribute.Value, requiredAttribute))))
+                static (requiredAttribute, tagAttributes) => tagAttributes.Any(
+                    static (attribute, requiredAttribute) => SatisfiesRequiredAttribute(attribute.Key, attribute.Value, requiredAttribute),
+                    requiredAttribute),
+                tagAttributes))
             {
                 return false;
             }
@@ -131,10 +93,24 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return SatisfiesBoundAttributeName(name, descriptor) ||
                 SatisfiesBoundAttributeIndexer(name, descriptor) ||
-                descriptor.BoundAttributeParameters.Any(p => SatisfiesBoundAttributeWithParameter(name, descriptor, p));
+                GetSatifyingBoundAttributeWithParameter(name, descriptor, descriptor.BoundAttributeParameters) is not null;
         }
 
-        public static bool SatisfiesBoundAttributeIndexer(string name, BoundAttributeDescriptor descriptor)
+        private static BoundAttributeParameterDescriptor GetSatifyingBoundAttributeWithParameter(string name, BoundAttributeDescriptor descriptor, IReadOnlyList<BoundAttributeParameterDescriptor> boundAttributeParameters)
+        {
+            var count = boundAttributeParameters.Count;
+            for (var i = 0; i < count; i++)
+            {
+                if (SatisfiesBoundAttributeWithParameter(name, descriptor, boundAttributeParameters[i]))
+                {
+                    return boundAttributeParameters[i];
+                }
+            }
+
+            return null;
+        }
+
+        public static bool SatisfiesBoundAttributeIndexer(StringSegment name, BoundAttributeDescriptor descriptor)
         {
             return descriptor.IndexerNamePrefix != null &&
                 !SatisfiesBoundAttributeName(name, descriptor) &&
@@ -147,27 +123,51 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var satisfiesBoundAttributeName = SatisfiesBoundAttributeName(attributeName, parent);
                 var satisfiesBoundAttributeIndexer = SatisfiesBoundAttributeIndexer(attributeName, parent);
-                var matchesParameter = string.Equals(descriptor.Name, parameterName, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+                var matchesParameter = parameterName.Equals(descriptor.Name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
                 return (satisfiesBoundAttributeName || satisfiesBoundAttributeIndexer) && matchesParameter;
             }
 
             return false;
         }
 
-        public static bool TryGetBoundAttributeParameter(string fullAttributeName, out string boundAttributeName, out string parameterName)
+        public static bool TryGetBoundAttributeParameter(string fullAttributeName, out StringSegment boundAttributeName)
         {
-            boundAttributeName = null;
-            parameterName = null;
+            boundAttributeName = default;
 
-            if (!string.IsNullOrEmpty(fullAttributeName) && fullAttributeName.IndexOf(':') != -1)
+            if (string.IsNullOrEmpty(fullAttributeName))
             {
-                var segments = fullAttributeName.Split(new[] { ':' }, 2);
-                boundAttributeName = segments[0];
-                parameterName = segments[1];
-                return true;
+                return false;
             }
 
-            return false;
+            var index = fullAttributeName.IndexOf(':');
+            if (index == -1)
+            {
+                return false;
+            }
+
+            boundAttributeName = new StringSegment(fullAttributeName, 0, index);
+            return true;
+        }
+
+        public static bool TryGetBoundAttributeParameter(string fullAttributeName, out StringSegment boundAttributeName, out StringSegment parameterName)
+        {
+            boundAttributeName = default;
+            parameterName = default;
+
+            if (string.IsNullOrEmpty(fullAttributeName))
+            {
+                return false;
+            }
+
+            var index = fullAttributeName.IndexOf(':');
+            if (index == -1)
+            {
+                return false;
+            }
+
+            boundAttributeName = new StringSegment(fullAttributeName, 0 , index);
+            parameterName = new StringSegment(fullAttributeName, index + 1);
+            return true;
         }
 
         public static bool TryGetFirstBoundAttributeMatch(
@@ -191,8 +191,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // First, check if we have a bound attribute descriptor that matches the parameter if it exists.
             foreach (var attribute in descriptor.BoundAttributes)
             {
-                boundAttributeParameter = attribute.BoundAttributeParameters.FirstOrDefault(
-                    p => SatisfiesBoundAttributeWithParameter(name, attribute, p));
+                boundAttributeParameter = GetSatifyingBoundAttributeWithParameter(name, attribute, attribute.BoundAttributeParameters);
 
                 if (boundAttributeParameter != null)
                 {
@@ -219,9 +218,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             return false;
         }
 
-        private static bool SatisfiesBoundAttributeName(string name, BoundAttributeDescriptor descriptor)
+        private static bool SatisfiesBoundAttributeName(StringSegment name, BoundAttributeDescriptor descriptor)
         {
-            return string.Equals(descriptor.Name, name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            return name.Equals(descriptor.Name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         // Internal for testing

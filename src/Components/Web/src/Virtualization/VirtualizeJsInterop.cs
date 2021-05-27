@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         private DotNetObjectReference<VirtualizeJsInterop>? _selfReference;
 
+        [DynamicDependency(nameof(OnSpacerBeforeVisible))]
+        [DynamicDependency(nameof(OnSpacerAfterVisible))]
         public VirtualizeJsInterop(IVirtualizeJsCallbacks owner, IJSRuntime jsRuntime)
         {
             _owner = owner;
@@ -45,7 +48,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         {
             if (_selfReference != null)
             {
-                await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.dispose", _selfReference);
+                try
+                {
+                    await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.dispose", _selfReference);
+                }
+                catch (JSDisconnectedException)
+                {
+                    // If the browser is gone, we don't need it to clean up any browser-side state
+                }
             }
         }
     }

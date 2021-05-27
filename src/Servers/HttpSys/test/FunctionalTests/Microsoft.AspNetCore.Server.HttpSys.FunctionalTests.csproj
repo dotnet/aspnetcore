@@ -12,6 +12,7 @@
     <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" />
   </ItemGroup>

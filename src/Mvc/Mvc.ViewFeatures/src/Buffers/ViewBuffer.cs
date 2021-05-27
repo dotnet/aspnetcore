@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
     [DebuggerDisplay("{DebuggerToString()}")]
     internal class ViewBuffer : IHtmlContentBuilder
     {
-        public static readonly int PartialViewPageSize = 32;
-        public static readonly int TagHelperPageSize = 32;
-        public static readonly int ViewComponentPageSize = 32;
-        public static readonly int ViewPageSize = 256;
+        public const int PartialViewPageSize = 32;
+        public const int TagHelperPageSize = 32;
+        public const int ViewComponentPageSize = 32;
+        public const int ViewPageSize = 256;
 
         private readonly IViewBufferScope _bufferScope;
         private readonly string _name;

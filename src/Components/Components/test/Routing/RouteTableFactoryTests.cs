@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.Extensions.DependencyModel;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Test.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     public class RouteTableFactoryTests
     {
@@ -16,10 +15,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanCacheRouteTable()
         {
             // Arrange
-            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+            var routes1 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, null));
 
             // Act
-            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+            var routes2 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, null));
 
             // Assert
             Assert.Same(routes1, routes2);
@@ -29,10 +28,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanCacheRouteTableWithDifferentAssembliesAndOrder()
         {
             // Arrange
-            var routes1 = RouteTableFactory.Create(new[] { typeof(object).Assembly, GetType().Assembly, });
+            var routes1 = RouteTableFactory.Create(new RouteKey(typeof(object).Assembly, new[] { typeof(ComponentBase).Assembly, GetType().Assembly, }));
 
             // Act
-            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+            var routes2 = RouteTableFactory.Create(new RouteKey(typeof(object).Assembly, new[] { GetType().Assembly, typeof(ComponentBase).Assembly, }));
 
             // Assert
             Assert.Same(routes1, routes2);
@@ -42,10 +41,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void DoesNotCacheRouteTableForDifferentAssemblies()
         {
             // Arrange
-            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+            var routes1 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, null));
 
             // Act
-            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+            var routes2 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, new[] { typeof(object).Assembly }));
 
             // Assert
             Assert.NotSame(routes1, routes2);
@@ -55,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanDiscoverRoute()
         {
             // Arrange & Act
-            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), });
+            var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), });
 
             // Assert
             Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
@@ -70,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanDiscoverRoutes_WithInheritance()
         {
             // Arrange & Act
-            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), typeof(MyInheritedComponent), });
+            var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), typeof(MyInheritedComponent), });
 
             // Assert
             Assert.Collection(
@@ -479,7 +478,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 // Segments present in the path have the corresponding value.
                 Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
-                Assert.Equal(i.ToString(), value);
+                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), value);
             }
             for (int i = segments + 1; i <= 3; i++)
             {
@@ -513,7 +512,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 // Segments present in the path have the corresponding value.
                 Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
-                Assert.Equal(i.ToString(), value);
+                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), value);
             }
             for (int i = segments + 1; i <= 3; i++)
             {
@@ -936,7 +935,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Equal(17, routeTable.Routes.Length);
             for (var i = 0; i < 17; i++)
             {
-                var templateText = "r" + i.ToString().PadLeft(2, '0');
+                var templateText = "r" + i.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
                 Assert.Equal(templateText, routeTable.Routes[i].Template.TemplateText);
             }
         }
@@ -977,7 +976,8 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             routeTable.Route(context);
 
             // Assert
-            Assert.Collection(routeTable.Routes,
+            Assert.Collection(
+                routeTable.Routes,
                 route =>
                 {
                     Assert.Same(typeof(TestHandler1), route.Handler);
@@ -994,13 +994,13 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 {
                     Assert.Same(typeof(TestHandler1), route.Handler);
                     Assert.Equal("products/{param2}/{PaRam1}", route.Template.TemplateText);
-                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
+                    Assert.Null(route.UnusedRouteParameterNames);
                 },
                 route =>
                 {
                     Assert.Same(typeof(TestHandler2), route.Handler);
                     Assert.Equal("{unrelated}", route.Template.TemplateText);
-                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
+                    Assert.Null(route.UnusedRouteParameterNames);
                 });
 
             Assert.Same(typeof(TestHandler1), context.Handler);

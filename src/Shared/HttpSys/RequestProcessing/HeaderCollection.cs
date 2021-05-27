@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             get
             {
                 long value;
-                var rawValue = this[HttpKnownHeaderNames.ContentLength];
+                var rawValue = this[HeaderNames.ContentLength];
 
                 if (_contentLengthText.Equals(rawValue))
                 {
@@ -144,15 +145,15 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 {
                     if (value.Value < 0)
                     {
-                        throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
+                        throw new ArgumentOutOfRangeException(nameof(value), value.Value, "Cannot be negative.");
                     }
                     _contentLengthText = HeaderUtilities.FormatNonNegativeInt64(value.Value);
-                    this[HttpKnownHeaderNames.ContentLength] = _contentLengthText;
+                    this[HeaderNames.ContentLength] = _contentLengthText;
                     _contentLength = value;
                 }
                 else
                 {
-                    Remove(HttpKnownHeaderNames.ContentLength);
+                    Remove(HeaderNames.ContentLength);
                     _contentLengthText = StringValues.Empty;
                     _contentLength = null;
                 }
@@ -275,7 +276,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 {
                     if (ch < 0x20)
                     {
-                        throw new InvalidOperationException(string.Format("Invalid control character in header: 0x{0:X2}", (byte)ch));
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Invalid control character in header: 0x{0:X2}", (byte)ch));
                     }
                 }
             }

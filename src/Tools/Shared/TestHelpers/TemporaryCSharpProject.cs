@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.Extensions.Tools.Internal
@@ -72,7 +75,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public TemporaryCSharpProject WithItem(ItemSpec item)
         {
             var sb = new StringBuilder("<");
-            sb.Append(item.Name).Append(" ");
+            sb.Append(item.Name).Append(' ');
             if (item.Include != null) sb.Append(" Include=\"").Append(item.Include).Append('"');
             if (item.Remove != null) sb.Append(" Remove=\"").Append(item.Remove).Append('"');
             if (item.Update != null) sb.Append(" Update=\"").Append(item.Update).Append('"');
@@ -98,7 +101,7 @@ namespace Microsoft.Extensions.Tools.Internal
 
         public void Create()
         {
-            _directory.CreateFile(_filename, string.Format(Template, string.Join("\r\n", _properties), string.Join("\r\n", _items), Sdk));
+            _directory.CreateFile(_filename, string.Format(CultureInfo.InvariantCulture, Template, string.Join("\r\n", _properties), string.Join("\r\n", _items), Sdk));
         }
 
         public class ItemSpec

@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRole, string>
     {
-        private DefaultKeyRing _keyRing = new DefaultKeyRing();
-
         public ProtectedUserStoreTest(ScratchDatabaseFixture fixture)
             : base(fixture)
         { }
@@ -58,7 +56,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             public string Unprotect(string keyId, string data)
             {
                 var pad = _keyRing[keyId];
-                if (!data.StartsWith(pad))
+                if (!data.StartsWith(pad, StringComparison.Ordinal))
                 {
                     throw new InvalidOperationException("Didn't find pad.");
                 }
@@ -135,7 +133,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                     if (reader.Read())
                     {
                         var value = reader.GetString(0);
-                        return value.StartsWith("Default:ink:");
+                        return value.StartsWith("Default:ink:", StringComparison.Ordinal);
                     }
                 }
             }
@@ -157,7 +155,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                     if (reader.Read())
                     {
                         var value = reader.GetString(0);
-                        return value.StartsWith("Default:ink:");
+                        return value.StartsWith("Default:ink:", StringComparison.Ordinal);
                     }
                 }
             }
@@ -198,7 +196,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 var applicationServiceProvider = services.BuildServiceProvider();
 
                 using (var scope = applicationServiceProvider.CreateScope())
-                { 
+                {
                     var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
                     dbContext.Database.EnsureCreated();
 

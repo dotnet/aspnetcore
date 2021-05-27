@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         /// <inheritdoc/>
-        public Action<PageContext, object> CreateReleaser(CompiledPageActionDescriptor descriptor)
+        public Action<PageContext, object>? CreateReleaser(CompiledPageActionDescriptor descriptor)
         {
             return null;
         }

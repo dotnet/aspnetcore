@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Initializes a new instance of <see cref="RemoteSignOutContext"/>.
         /// </summary>
         /// <inheritdoc />
-        public RemoteSignOutContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage message)
+        public RemoteSignOutContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage? message)
             : base(context, scheme, options, new AuthenticationProperties())
             => ProtocolMessage = message;
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
         /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        public OpenIdConnectMessage? ProtocolMessage { get; set; }
     }
 }

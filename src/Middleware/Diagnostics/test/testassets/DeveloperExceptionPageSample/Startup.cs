@@ -32,7 +32,7 @@ namespace DeveloperExceptionPageSample
                     "Endpoint display name");
 
                 context.SetEndpoint(endpoint);
-                return next();
+                return next(context);
             });
             app.UseDeveloperExceptionPage();
             app.Run(context =>

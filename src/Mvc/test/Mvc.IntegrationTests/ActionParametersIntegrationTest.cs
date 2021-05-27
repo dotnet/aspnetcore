@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -408,6 +409,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Record types must have a single primary constructor. " +
                     "Alternatively, set the '{1}' property to a non-null value in the '{2}' constructor.",
@@ -474,6 +476,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Alternatively, set the '{1}' property to" +
                     " a non-null value in the '{2}' constructor.",
@@ -500,6 +503,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
                     typeof(PointStruct).FullName),
@@ -522,6 +526,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
                     typeof(AbstractClassWithNoDefaultConstructor).FullName),
@@ -560,10 +565,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Equal(
                 string.Format(
-                        "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
-                        "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
-                        typeof(ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel).FullName),
-                    exception.Message);
+                    CultureInfo.CurrentCulture,
+                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                    "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
+                    typeof(ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel).FullName),
+                exception.Message);
         }
 
         public record ActionParameter_RecordTypeWithMultipleConstructors(string Name, int Age)
@@ -592,6 +598,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
                     typeof(ActionParameter_RecordTypeWithMultipleConstructors).FullName),
@@ -719,7 +726,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             {
                 if (input.HasValue)
                 {
-                    request.QueryString = QueryString.Create(parameter.Name, input.Value.ToString());
+                    request.QueryString = QueryString.Create(parameter.Name, input.Value.ToString(CultureInfo.InvariantCulture));
                 }
             });
 

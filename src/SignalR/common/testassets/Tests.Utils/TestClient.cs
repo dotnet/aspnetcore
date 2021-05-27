@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
@@ -11,6 +12,11 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+#if TESTUTILS
+using Microsoft.AspNetCore.Testing;
+#else
+using System.Threading.Tasks.Extensions;
+#endif
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -48,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.Features.Set<ITransferFormatFeature>(this);
             Connection.Features.Set<IConnectionHeartbeatFeature>(this);
 
-            var claimValue = Interlocked.Increment(ref _id).ToString();
+            var claimValue = Interlocked.Increment(ref _id).ToString(CultureInfo.InvariantCulture);
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, claimValue) };
             if (userIdentifier != null)
             {
@@ -81,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // note that the handshake response might not immediately be readable
                 // e.g. server is waiting for request, times out after configured duration,
                 // and sends response with timeout error
-                HandshakeResponseMessage = (HandshakeResponseMessage)await ReadAsync(true).OrTimeout();
+                HandshakeResponseMessage = (HandshakeResponseMessage)await ReadAsync(true).DefaultTimeout();
             }
 
             return connection;
@@ -95,8 +101,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task<IList<HubMessage>> StreamAsync(string methodName, string[] streamIds, params object[] args)
         {
             var invocationId = await SendStreamInvocationAsync(methodName, streamIds, args);
+            return await ListenAllAsync(invocationId);
+        }
 
-            var messages = new List<HubMessage>();
+        public async Task<IList<HubMessage>> ListenAllAsync(string invocationId)
+        {
+            var result = new List<HubMessage>();
+            await foreach(var item in ListenAsync(invocationId))
+            {
+                result.Add(item);
+            }
+            return result;
+        }
+
+        public async IAsyncEnumerable<HubMessage> ListenAsync(string invocationId)
+        {
             while (true)
             {
                 var message = await ReadAsync();
@@ -114,11 +133,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 switch (message)
                 {
                     case StreamItemMessage _:
-                        messages.Add(message);
+                        yield return message;
                         break;
                     case CompletionMessage _:
-                        messages.Add(message);
-                        return messages;
+                        yield return message;
+                        yield break;
                     default:
                         // Message implement ToString so this should be helpful.
                         throw new NotSupportedException($"TestClient recieved an unexpected message: {message}.");
@@ -186,7 +205,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var message = new InvocationMessage(invocationId, methodName, args, streamIds);
             return SendHubMessageAsync(message);
-        } 
+        }
 
         public async Task<string> SendHubMessageAsync(HubMessage message)
         {

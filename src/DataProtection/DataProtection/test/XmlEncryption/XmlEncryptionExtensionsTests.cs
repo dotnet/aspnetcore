@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Internal;
@@ -151,7 +152,9 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                   </node2>
                 </rootNode>");
 
-            var expected = string.Format(@"
+            var expected = string.Format(
+              CultureInfo.InvariantCulture,
+              @"
                 <rootNode xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
                   <x:encryptedSecret decryptorType='{0}'>
                     <node1_encrypted />
@@ -194,7 +197,9 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                   </node2>
                 </rootNode>");
 
-            var expected = string.Format(@"
+            var expected = string.Format(
+              CultureInfo.InvariantCulture,
+              @"
                 <rootNode xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
                   <x:encryptedSecret decryptorType='{0}'>
                     <node1 x:requiresEncryption='true'>

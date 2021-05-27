@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         //
         // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
         // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
-        private int _current = 0;
+        private int _current;
 
         public int GetNext()
         {

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void OnCompleted(Action continuation)
         {
-            ThreadPool.UnsafeQueueUserWorkItem(state => ((Action)state)(), continuation);
+            ThreadPool.UnsafeQueueUserWorkItem(state => ((Action)state!)(), continuation);
         }
 
         public void UnsafeOnCompleted(Action continuation)

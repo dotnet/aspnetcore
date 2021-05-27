@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var builder = new StringBuilder("DirectiveToken {");
             builder.Append(Descriptor.Name);
-            builder.Append(";");
+            builder.Append(';');
             builder.Append(Descriptor.Kind);
             builder.Append(";Opt:");
             builder.Append(Descriptor.Optional);
-            builder.Append("}");
+            builder.Append('}');
 
             return builder.ToString();
         }

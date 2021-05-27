@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        length.ToString("x"),
+                        length.ToString("x" , CultureInfo.InvariantCulture),
                         new string('a', length),
                         "0",
                         "",
@@ -260,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        partialLength.ToString("x"),
+                        partialLength.ToString("x", CultureInfo.InvariantCulture),
                         new string('a', partialLength),
                         "0",
                         "",
@@ -694,7 +695,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        length.Value.ToString("x"),
+                        length.Value.ToString("x" , CultureInfo.InvariantCulture),
                         new string('a', length.Value),
                         "6",
                         "World!",
@@ -750,7 +751,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        length.Value.ToString("x"),
+                        length.Value.ToString("x" , CultureInfo.InvariantCulture),
                         new string('a', length.Value),
                         "6",
                         "World!",
@@ -807,7 +808,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        length.ToString("x"),
+                        length.ToString("x" , CultureInfo.InvariantCulture),
                         new string('a', length),
                         "6",
                         "World!",
@@ -1091,7 +1092,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        writeSize.ToString("X").ToLower(),
+                        writeSize.ToString("X", CultureInfo.InvariantCulture).ToLowerInvariant(),
                         new string('a', writeSize),
                         "0",
                         "",
@@ -1130,7 +1131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        writeSize.ToString("X").ToLower(),
+                        writeSize.ToString("X", CultureInfo.InvariantCulture).ToLowerInvariant(),
                         new string('a', writeSize),
                         "0",
                         "",

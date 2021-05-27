@@ -41,19 +41,6 @@ namespace ServerComparison.TestSites
                     return context.Response.WriteAsync(helloWorldBody);
                 });
             });
-            /* If we implement DisableResponseBuffering on IISMiddleware
-            app.Map("/NoBuffer", subApp =>
-            {
-                subApp.UseResponseCompression();
-                subApp.Run(context =>
-                {
-                    context.Features.Get<IHttpBufferingFeature>().DisableResponseBuffering();
-                    context.Response.ContentType = "text/plain";
-                    context.Response.ContentLength = helloWorldBody.Length;
-                    return context.Response.WriteAsync(helloWorldBody);
-                });
-            });
-            */
             app.Run(context =>
             {
                 context.Response.ContentType = "text/plain";

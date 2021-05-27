@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 return false;
             }
 
-            return symbol.Name.EndsWith(ViewComponentTypes.ViewComponentSuffix) ||
+            return symbol.Name.EndsWith(ViewComponentTypes.ViewComponentSuffix, StringComparison.Ordinal) ||
                 AttributeIsDefined(symbol, _viewComponentAttribute);
         }
 

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name!);
+            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name!);
+            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!);
         }
 
         private static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp, string startupAssemblyName)
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(startupFactory));
             }
 
-            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
 
             hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(startupType));
             }
 
-            var startupAssemblyName = startupType.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = startupType.Assembly.GetName().Name;
 
             hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder
                 .ConfigureServices(services =>
                 {
-                    if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
+                    if (typeof(IStartup).IsAssignableFrom(startupType))
                     {
                         services.AddSingleton(typeof(IStartup), startupType);
                     }

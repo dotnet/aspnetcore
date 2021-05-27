@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             _originalCulture = CultureInfo.CurrentCulture;
             _originalUICulture = CultureInfo.CurrentUICulture;
-            _threadId = Thread.CurrentThread.ManagedThreadId;
+            _threadId = Environment.CurrentManagedThreadId;
             CultureInfo.CurrentCulture = culture;
             CultureInfo.CurrentUICulture = uiCulture;
         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             if (disposing)
             {
-                Assert.True(Thread.CurrentThread.ManagedThreadId == _threadId,
+                Assert.True(Environment.CurrentManagedThreadId == _threadId,
                     "The current thread is not the same as the thread invoking the constructor. This should never happen.");
                 CultureInfo.CurrentCulture = _originalCulture;
                 CultureInfo.CurrentUICulture = _originalUICulture;

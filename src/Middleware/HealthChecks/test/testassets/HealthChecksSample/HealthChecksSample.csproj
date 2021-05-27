@@ -15,10 +15,6 @@
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Newtonsoft.Json" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
-    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
   </ItemGroup>
 
 </Project>

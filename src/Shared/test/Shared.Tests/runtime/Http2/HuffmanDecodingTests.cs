@@ -237,7 +237,9 @@ namespace System.Net.Http.Unit.Tests.HPack
 
             // Sequences that uncovered errors
             { new byte[] { 0xb6, 0xb9, 0xac, 0x1c, 0x85, 0x58, 0xd5, 0x20, 0xa4, 0xb6, 0xc2, 0xad, 0x61, 0x7b, 0x5a, 0x54, 0x25, 0x1f }, Encoding.ASCII.GetBytes("upgrade-insecure-requests") },
-            { new byte[] { 0xfe, 0x53 }, Encoding.ASCII.GetBytes("\"t") }
+            { new byte[] { 0xfe, 0x53 }, Encoding.ASCII.GetBytes("\"t") },
+            { new byte[] { 0xff, 0xff, 0xf6, 0xff, 0xff, 0xfd, 0x68 }, new byte[] { 0xcf, 0xf0, 0x73 } },
+            { new byte[] { 0xff, 0xff, 0xf9, 0xff, 0xff, 0xfd, 0x86 }, new byte[] { 0xd5, 0xc7, 0x69 } },
         };
 
         [Theory]
@@ -352,29 +354,6 @@ namespace System.Net.Http.Unit.Tests.HPack
             (uint encoded, int bitLength) = Huffman.Encode(code);
             Assert.Equal(expectedEncoded, encoded);
             Assert.Equal(expectedBitLength, bitLength);
-        }
-
-        [Theory]
-        [MemberData(nameof(HuffmanData))]
-        public void HuffmanDecode(int code, uint encoded, int bitLength)
-        {
-            Assert.Equal(code, Huffman.DecodeValue(encoded, bitLength, out int decodedBits));
-            Assert.Equal(bitLength, decodedBits);
-        }
-
-        [Theory]
-        [MemberData(nameof(HuffmanData))]
-        public void HuffmanEncodeDecode(
-            int code,
-            // Suppresses the warning about an unused theory parameter because
-            // this test shares data with other methods
-#pragma warning disable xUnit1026
-            uint encoded,
-#pragma warning restore xUnit1026
-            int bitLength)
-        {
-            Assert.Equal(code, Huffman.DecodeValue(Huffman.Encode(code).encoded, bitLength, out int decodedBits));
-            Assert.Equal(bitLength, decodedBits);
         }
 
         public static TheoryData<int, uint, int> HuffmanData

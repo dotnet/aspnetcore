@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 {
     internal class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
     {
-        private static readonly string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
+        private const string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
         private const byte TokenVersion = 0x01;
 
         private readonly IDataProtector _cryptoSystem;

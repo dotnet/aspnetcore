@@ -17,6 +17,7 @@ DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 HANDLE              g_hEventLog = nullptr;
 BOOL                g_fRecycleProcessCalled = FALSE;
 BOOL                g_fInShutdown = FALSE;
+BOOL                g_fInAppOfflineShutdown = FALSE;
 HINSTANCE           g_hServerModule;
 
 VOID
@@ -128,7 +129,7 @@ HRESULT
 
     RETURN_IF_FAILED(pModuleInfo->SetGlobalNotifications(
                                      pGlobalModule.release(),
-                                     GL_CONFIGURATION_CHANGE | // Configuration change trigers IIS application stop
+                                     GL_CONFIGURATION_CHANGE | // Configuration change triggers IIS application stop
                                      GL_STOP_LISTENING));   // worker process stop or recycle
 
     return S_OK;

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private string _pipeName;
         private byte[] _pipeMessage;
         private IntPtr _fileCompletionInfoPtr;
-        private bool _tryDetachFromIOCP = PlatformApis.IsWindows;
+        private bool _tryDetachFromIOCP = OperatingSystem.IsWindows();
 
         // this message is passed to write2 because it must be non-zero-length,
         // but it has no other functional significance
@@ -163,11 +163,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
+#pragma warning disable CA1823 // Avoid unused private fields
         private struct IO_STATUS_BLOCK
         {
             uint status;
             ulong information;
         }
+#pragma warning restore CA1823
 
         private struct FILE_COMPLETION_INFORMATION
         {

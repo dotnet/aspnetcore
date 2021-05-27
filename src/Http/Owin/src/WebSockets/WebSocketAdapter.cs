@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Owin
             CancellationToken /* cancel */,
             Task>;
 
+    /// <summary>
+    /// WebSocket adapter.
+    /// </summary>
     public class WebSocketAdapter
     {
         private readonly WebSocket _webSocket;

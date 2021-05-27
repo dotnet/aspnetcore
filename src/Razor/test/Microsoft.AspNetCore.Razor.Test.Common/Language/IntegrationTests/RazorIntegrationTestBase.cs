@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
             var filePath = cshtmlRelativePath.Replace('\\', '/');
-            if (!filePath.StartsWith("/"))
+            if (!filePath.StartsWith("/", StringComparison.Ordinal))
             {
                 filePath = '/' + filePath;
             }

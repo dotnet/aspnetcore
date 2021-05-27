@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -88,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IValueProvider valueProvider,
             ParameterDescriptor parameter,
             ModelMetadata metadata,
-            object value)
+            object? value)
             => BindModelAsync(actionContext, modelBinder, valueProvider, parameter, metadata, value, container: null).AsTask();
 
         /// <summary>
@@ -108,8 +110,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IValueProvider valueProvider,
             ParameterDescriptor parameter,
             ModelMetadata metadata,
-            object value,
-            object container)
+            object? value,
+            object? container)
         {
             if (actionContext == null)
             {
@@ -215,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelMetadata metadata,
             ModelBindingContext modelBindingContext,
             ModelBindingResult modelBindingResult,
-            object container)
+            object? container)
         {
             RecalculateModelMetadata(parameter, modelBindingResult, ref metadata);
 
@@ -280,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (!modelBindingResult.IsModelSet ||
                 modelBindingResult.Model == null ||
-                !(_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider))
+                _modelMetadataProvider is not ModelMetadataProvider modelMetadataProvider)
             {
                 return;
             }

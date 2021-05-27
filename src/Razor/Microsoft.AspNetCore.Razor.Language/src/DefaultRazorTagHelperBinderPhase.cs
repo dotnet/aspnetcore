@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -12,8 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorTagHelperBinderPhase : RazorEnginePhaseBase, IRazorTagHelperBinderPhase
     {
-        private static readonly char[] NamespaceSeparators = new char[] { '.' };
-
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var syntaxTree = codeDocument.GetSyntaxTree();
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var descriptors = codeDocument.GetTagHelpers();
             if (descriptors == null)
             {
-                var feature = Engine.Features.OfType<ITagHelperFeature>().FirstOrDefault();
+                var feature = Engine.GetFeature<ITagHelperFeature>();
                 if (feature == null)
                 {
                     // No feature, nothing to do.
@@ -32,12 +31,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                 descriptors = feature.GetDescriptors();
             }
 
+            var parserOptions = codeDocument.GetParserOptions();
+
             // We need to find directives in all of the *imports* as well as in the main razor file
             //
             // The imports come logically before the main razor file and are in the order they
             // should be processed.
-            DirectiveVisitor visitor = null;
-            var parserOptions = codeDocument.GetParserOptions();
+            DirectiveVisitor visitor;
             if (FileKinds.IsComponent(codeDocument.GetFileKind()) &&
                 (parserOptions == null || parserOptions.FeatureFlags.AllowComponentFileKind))
             {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var rewrittenSyntaxTree = TagHelperParseTreeRewriter.Rewrite(syntaxTree, tagHelperPrefix, descriptors);
-            
+
             codeDocument.SetSyntaxTree(rewrittenSyntaxTree);
         }
 
@@ -94,9 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return true;
                 }
 
-                var lookupTypeName = typePattern.Substring(0, typePattern.Length - 1);
-
-                return descriptor.Name.StartsWith(lookupTypeName, StringComparison.Ordinal);
+               return new StringSegment(descriptor.Name).StartsWith(new StringSegment(typePattern, 0, typePattern.Length - 1), StringComparison.Ordinal);
             }
 
             return string.Equals(descriptor.Name, typePattern, StringComparison.Ordinal);
@@ -111,15 +109,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             public abstract void Visit(RazorSyntaxTree tree);
         }
 
-        internal class TagHelperDirectiveVisitor : DirectiveVisitor
+        internal sealed class TagHelperDirectiveVisitor : DirectiveVisitor
         {
-            private IReadOnlyList<TagHelperDescriptor> _tagHelpers;
+            private readonly List<TagHelperDescriptor> _tagHelpers;
             private string _tagHelperPrefix;
 
             public TagHelperDirectiveVisitor(IReadOnlyList<TagHelperDescriptor> tagHelpers)
             {
                 // We don't want to consider components in a view document.
-                _tagHelpers = tagHelpers.Where(t => !t.IsAnyComponentDocumentTagHelper()).ToList();
+                _tagHelpers = new();
+                for (var i = 0; i < tagHelpers.Count; i++)
+                {
+                    var tagHelper = tagHelpers[i];
+                    if (!tagHelper.IsAnyComponentDocumentTagHelper())
+                    {
+                        _tagHelpers.Add(tagHelper);
+                    }
+                }
             }
 
             public override string TagHelperPrefix => _tagHelperPrefix;
@@ -219,9 +225,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        internal class ComponentDirectiveVisitor : DirectiveVisitor
+        internal sealed class ComponentDirectiveVisitor : DirectiveVisitor
         {
-            private IReadOnlyList<TagHelperDescriptor> _tagHelpers;
+            private readonly List<TagHelperDescriptor> _notFullyQualifiedComponents;
             private string _filePath;
             private RazorSourceDocument _source;
 
@@ -229,12 +235,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _filePath = filePath;
 
-                // We don't want to consider non-component tag helpers in a component document.
-                _tagHelpers = tagHelpers.Where(t => t.IsAnyComponentDocumentTagHelper() && !IsTagHelperFromMangledClass(t)).ToList();
-
-                for (var i = 0; i < _tagHelpers.Count; i++)
+                for (var i = 0; i < tagHelpers.Count; i++)
                 {
-                    var tagHelper = _tagHelpers[i];
+                    var tagHelper = tagHelpers[i];
+                    // We don't want to consider non-component tag helpers in a component document.
+                    if (!tagHelper.IsAnyComponentDocumentTagHelper() || IsTagHelperFromMangledClass(tagHelper))
+                    {
+                        continue;
+                    }
+
                     if (tagHelper.IsComponentFullyQualifiedNameMatch())
                     {
                         // If the component descriptor matches for a fully qualified name, using directives shouldn't matter.
@@ -242,16 +251,25 @@ namespace Microsoft.AspNetCore.Razor.Language
                         continue;
                     }
 
-                    var typeName = tagHelper.GetTypeName();
+                    _notFullyQualifiedComponents ??= new();
+                    _notFullyQualifiedComponents.Add(tagHelper);
+
+                    if (currentNamespace is null)
+                    {
+                        continue;
+                    }
+
                     if (tagHelper.IsChildContentTagHelper())
                     {
                         // If this is a child content tag helper, we want to add it if it's original type is in scope.
                         // E.g, if the type name is `Test.MyComponent.ChildContent`, we want to add it if `Test.MyComponent` is in scope.
-                        TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _);
-                        typeName = GetTextSpanContent(namespaceTextSpan, typeName);
+                        TrySplitNamespaceAndType(tagHelper, out var typeNamespace);
+                        if (!typeNamespace.IsEmpty && IsTypeInScope(typeNamespace, currentNamespace))
+                        {
+                            Matches.Add(tagHelper);
+                        }
                     }
-
-                    if (currentNamespace != null && IsTypeInScope(typeName, currentNamespace))
+                    else if (IsTypeInScope(tagHelper, currentNamespace))
                     {
                         // Also, if the type is already in scope of the document's namespace, using isn't necessary.
                         Matches.Add(tagHelper);
@@ -275,7 +293,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 var descendantLiterals = node.DescendantNodes();
                 foreach (var child in descendantLiterals)
                 {
-                    if (!(child is CSharpStatementLiteralSyntax literal))
+                    if (child is not CSharpStatementLiteralSyntax literal)
                     {
                         continue;
                     }
@@ -317,30 +335,28 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         // Get the namespace from the using statement.
                         var @namespace = usingStatement.ParsedNamespace;
-                        if (@namespace.Contains('='))
+                        if (@namespace.IndexOf('=') != -1)
                         {
                             // We don't support usings with alias.
                             continue;
                         }
 
-                        for (var i = 0; i < _tagHelpers.Count; i++)
+                        for (var i = 0; _notFullyQualifiedComponents is not null && i < _notFullyQualifiedComponents.Count; i++)
                         {
-                            var tagHelper = _tagHelpers[i];
-                            if (tagHelper.IsComponentFullyQualifiedNameMatch())
-                            {
-                                // We've already added these to our list of matches.
-                                continue;
-                            }
+                            var tagHelper = _notFullyQualifiedComponents[i];
+                            Debug.Assert(!tagHelper.IsComponentFullyQualifiedNameMatch(), "We've already processed these.");
 
-                            var typeName = tagHelper.GetTypeName();
                             if (tagHelper.IsChildContentTagHelper())
                             {
                                 // If this is a child content tag helper, we want to add it if it's original type is in scope of the given namespace.
                                 // E.g, if the type name is `Test.MyComponent.ChildContent`, we want to add it if `Test.MyComponent` is in this namespace.
-                                TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _);
-                                typeName = GetTextSpanContent(namespaceTextSpan, typeName);
+                                TrySplitNamespaceAndType(tagHelper, out var typeName);
+                                if (!typeName.IsEmpty && IsTypeInNamespace(typeName, @namespace))
+                                {
+                                    Matches.Add(tagHelper);
+                                }
                             }
-                            if (typeName != null && IsTypeInNamespace(typeName, @namespace))
+                            else if (IsTypeInNamespace(tagHelper, @namespace))
                             {
                                 // If the type is at the top-level or if the type's namespace matches the using's namespace, add it.
                                 Matches.Add(tagHelper);
@@ -350,15 +366,26 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            internal static bool IsTypeInNamespace(string typeName, string @namespace)
+            internal static bool IsTypeInNamespace(StringSegment typeName, string @namespace)
             {
-                if (!TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _) || namespaceTextSpan.Length == 0)
+                if (!TrySplitNamespaceAndType(typeName, out var typeNamespace, out var _) || typeNamespace.IsEmpty)
                 {
                     // Either the typeName is not the full type name or this type is at the top level.
                     return true;
                 }
 
-                return @namespace.Length == namespaceTextSpan.Length && 0 == string.CompareOrdinal(typeName, namespaceTextSpan.Start, @namespace, 0, @namespace.Length);
+                return typeNamespace.Equals(@namespace, StringComparison.Ordinal);
+            }
+
+            internal static bool IsTypeInNamespace(TagHelperDescriptor tagHelper, string @namespace)
+            {
+                if (!TrySplitNamespaceAndType(tagHelper, out var typeNamespace) || typeNamespace.IsEmpty)
+                {
+                    // Either the typeName is not the full type name or this type is at the top level.
+                    return true;
+                }
+
+                return typeNamespace.Equals(@namespace, StringComparison.Ordinal);
             }
 
             // Check if the given type is already in scope given the namespace of the current document.
@@ -366,61 +393,94 @@ namespace Microsoft.AspNetCore.Razor.Language
             // If the namespace of the document is `MyComponents.Components.Shared`,
             // then the types `MyComponents.FooComponent`, `MyComponents.Components.BarComponent`, `MyComponents.Components.Shared.BazComponent` are all in scope.
             // Whereas `MyComponents.SomethingElse.OtherComponent` is not in scope.
-            internal static bool IsTypeInScope(string typeName, string currentNamespace)
+            internal static bool IsTypeInScope(TagHelperDescriptor descriptor, string currentNamespace)
             {
-                if (!TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _) || namespaceTextSpan.Length == 0)
+                if (!TrySplitNamespaceAndType(descriptor, out var typeNamespace, out _) || typeNamespace.IsEmpty)
                 {
                     // Either the typeName is not the full type name or this type is at the top level.
                     return true;
                 }
 
-                var typeNamespace = GetTextSpanContent(namespaceTextSpan, typeName);
-                var typeNamespaceSegments = typeNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
-                var currentNamespaceSegments = currentNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
-                if (typeNamespaceSegments.Length > currentNamespaceSegments.Length)
+                return IsTypeInScopeCore(currentNamespace, typeNamespace);
+            }
+
+            // Check if the given type is already in scope given the namespace of the current document.
+            // E.g,
+            // If the namespace of the document is `MyComponents.Components.Shared`,
+            // then the types `MyComponents.FooComponent`, `MyComponents.Components.BarComponent`, `MyComponents.Components.Shared.BazComponent` are all in scope.
+            // Whereas `MyComponents.SomethingElse.OtherComponent` is not in scope.
+            internal static bool IsTypeInScope(StringSegment typeName, string currentNamespace)
+            {
+                if (!TrySplitNamespaceAndType(typeName, out var typeNamespace, out _) || typeNamespace.IsEmpty)
                 {
+                    // Either the typeName is not the full type name or this type is at the top level.
+                    return true;
+                }
+
+                return IsTypeInScopeCore(currentNamespace, typeNamespace);
+            }
+
+            private static bool IsTypeInScopeCore(string currentNamespace, StringSegment typeNamespace)
+            {
+                if (!new StringSegment(currentNamespace).StartsWith(typeNamespace, StringComparison.Ordinal))
+                {
+                    // typeName: MyComponents.Shared.SomeCoolNamespace
+                    // currentNamespace: MyComponents.Shared
                     return false;
                 }
 
-                for (var i = 0; i < typeNamespaceSegments.Length; i++)
+                if (typeNamespace.Length > currentNamespace.Length && typeNamespace[currentNamespace.Length] != '.')
                 {
-                    if (!typeNamespaceSegments[i].Equals(currentNamespaceSegments[i], StringComparison.Ordinal))
-                    {
-                        return false;
-                    }
+                    // typeName: MyComponents.SharedFoo
+                    // currentNamespace: MyComponent.Shared
+                    return false;
                 }
 
                 return true;
             }
 
-            // We need to filter out the duplicate tag helper descriptors that come from the 
+            // We need to filter out the duplicate tag helper descriptors that come from the
             // open file in the editor. We mangle the class name for its generated code, so using that here to filter these out.
             internal static bool IsTagHelperFromMangledClass(TagHelperDescriptor tagHelper)
             {
-                var typeName = tagHelper.GetTypeName();
+                StringSegment className;
                 if (tagHelper.IsChildContentTagHelper())
                 {
                     // If this is a child content tag helper, we want to look at it's original type.
                     // E.g, if the type name is `Test.__generated__MyComponent.ChildContent`, we want to look at `Test.__generated__MyComponent`.
-                    TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _);
-                    typeName = GetTextSpanContent(namespaceTextSpan, typeName);
+                    TrySplitNamespaceAndType(tagHelper, out var typeNamespace);
+                    return TrySplitNamespaceAndType(typeNamespace, out var _, out className)
+                        && ComponentMetadata.IsMangledClass(className);
                 }
-                if (!TrySplitNamespaceAndType(typeName, out var _, out var classNameTextSpan))
-                {
-                    return false;
-                }
-                var className = GetTextSpanContent(classNameTextSpan, typeName);
 
-                return ComponentMetadata.IsMangledClass(className);
+                return TrySplitNamespaceAndType(tagHelper, out var _, out className) &&
+                    ComponentMetadata.IsMangledClass(className);
+            }
+
+            internal static bool TrySplitNamespaceAndType(TagHelperDescriptor tagHelperDescriptor, out StringSegment @namespace)
+                => TrySplitNamespaceAndType(tagHelperDescriptor, out @namespace, out _);
+
+            internal static bool TrySplitNamespaceAndType(TagHelperDescriptor tagHelperDescriptor, out StringSegment @namespace, out StringSegment typeName)
+            {
+                if (tagHelperDescriptor.ParsedTypeInfo is { } value)
+                {
+                    @namespace = value.Namespace;
+                    typeName = value.TypeName;
+                    return value.Success;
+                }
+
+                var success = TrySplitNamespaceAndType(tagHelperDescriptor.GetTypeName(), out @namespace, out typeName);
+                tagHelperDescriptor.ParsedTypeInfo = new(success, @namespace, typeName);
+                return success;
             }
 
             // Internal for testing.
-            internal static bool TrySplitNamespaceAndType(string fullTypeName, out TextSpan @namespace, out TextSpan typeName)
+            internal static bool TrySplitNamespaceAndType(StringSegment fullTypeName, out StringSegment @namespace, out StringSegment typeName)
             {
-                @namespace = default;
-                typeName = default;
+                @namespace = StringSegment.Empty;
+                typeName = StringSegment.Empty;
 
-                if (string.IsNullOrEmpty(fullTypeName))
+                if (fullTypeName.IsEmpty)
                 {
                     return false;
                 }
@@ -447,25 +507,19 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 if (splitLocation == -1)
                 {
-                    typeName = new TextSpan(0, fullTypeName.Length);
+                    typeName = fullTypeName;
                     return true;
                 }
 
-                @namespace = new TextSpan(0, splitLocation);
+                @namespace = fullTypeName.Subsegment(0, splitLocation);
 
                 var typeNameStartLocation = splitLocation + 1;
                 if (typeNameStartLocation < fullTypeName.Length)
                 {
-                    typeName = new TextSpan(typeNameStartLocation, fullTypeName.Length - typeNameStartLocation);
+                    typeName = fullTypeName.Subsegment(typeNameStartLocation, fullTypeName.Length - typeNameStartLocation);
                 }
 
                 return true;
-            }
-
-            // Internal for testing.
-            internal static string GetTextSpanContent(TextSpan textSpan, string s)
-            {
-                return s.Substring(textSpan.Start, textSpan.Length);
             }
         }
     }

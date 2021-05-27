@@ -2,4 +2,4 @@ The code in this directory is shared between the runtime libraries and AspNetCor
 
 For additional details see:
 - runtime/src/libraries/Common/src/System/Net/Http/aspnetcore/ReadMe.SharedCode.md
-- AspNetCore/src/Shared/runtime/ReadMe.SharedCode.md
+- aspnetcore/src/Shared/runtime/ReadMe.SharedCode.md

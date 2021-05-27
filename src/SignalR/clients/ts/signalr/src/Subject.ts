@@ -7,7 +7,7 @@ import { SubjectSubscription } from "./Utils";
 /** Stream implementation to stream items to the server. */
 export class Subject<T> implements IStreamResult<T> {
     /** @internal */
-    public observers: Array<IStreamSubscriber<T>>;
+    public observers: IStreamSubscriber<T>[];
 
     /** @internal */
     public cancelCallback?: () => Promise<void>;
