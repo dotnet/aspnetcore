@@ -298,6 +298,27 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 });
         }
 
+        [Fact]
+        public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningOkResultExpression()
+        {
+            // Arrange
+            var typeName = typeof(TryGetActualResponseMetadataController).FullName;
+            var methodName = nameof(TryGetActualResponseMetadataController.ActionWithActionResultOfTReturningOkResultExpression);
+
+            // Act
+            var (success, responseMetadatas, _) = await TryGetActualResponseMetadata(typeName, methodName);
+
+            // Assert
+            Assert.True(success);
+            Assert.Collection(
+                responseMetadatas,
+                metadata =>
+                {
+                    Assert.False(metadata.IsDefaultResponse);
+                    Assert.Equal(200, metadata.StatusCode);
+                });
+        }
+
         private async Task<(bool result, IList<ActualApiResponseMetadata> responseMetadatas, TestSource testSource)> TryGetActualResponseMetadata(string typeName, string methodName)
         {
             var testSource = MvcTestSource.Read(GetType().Name, "TryGetActualResponseMetadataTests");

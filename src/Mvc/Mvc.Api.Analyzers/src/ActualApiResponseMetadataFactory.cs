@@ -29,9 +29,28 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             CancellationToken cancellationToken,
             out IList<ActualApiResponseMetadata> actualResponseMetadata)
         {
-            actualResponseMetadata = new List<ActualApiResponseMetadata>();
+            var localActualResponseMetadata = new List<ActualApiResponseMetadata>();
 
             var allReturnStatementsReadable = true;
+            var localSymbolCache = symbolCache;
+
+            void AnalyzeResponseExpression(ExpressionSyntax expressionSyntax)
+            {
+                var responseMetadata = InspectReturnStatementSyntax(
+                    localSymbolCache,
+                    semanticModel,
+                    expressionSyntax,
+                    cancellationToken);
+
+                if (responseMetadata != null)
+                {
+                    localActualResponseMetadata.Add(responseMetadata.Value);
+                }
+                else
+                {
+                    allReturnStatementsReadable = false;
+                }
+            }
 
             foreach (var returnStatementSyntax in methodSyntax.DescendantNodes(_shouldDescendIntoChildren).OfType<ReturnStatementSyntax>())
             {
@@ -42,21 +61,23 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                     continue;
                 }
 
-                var responseMetadata = InspectReturnStatementSyntax(
-                    symbolCache,
-                    semanticModel,
-                    returnStatementSyntax.Expression,
-                    cancellationToken);
+                AnalyzeResponseExpression(returnStatementSyntax.Expression);
+            }
 
-                if (responseMetadata != null)
+            if (methodSyntax.ExpressionBody != null)
+            {
+                if (methodSyntax.ExpressionBody.IsMissing || methodSyntax.ExpressionBody.Expression.IsMissing)
                 {
-                    actualResponseMetadata.Add(responseMetadata.Value);
+                    // Ignore malformed expression bodies.
+                    allReturnStatementsReadable = false;
                 }
                 else
                 {
-                    allReturnStatementsReadable = false;
+                    AnalyzeResponseExpression(methodSyntax.ExpressionBody.Expression);
                 }
             }
+
+            actualResponseMetadata = localActualResponseMetadata;
 
             return allReturnStatementsReadable;
         }
