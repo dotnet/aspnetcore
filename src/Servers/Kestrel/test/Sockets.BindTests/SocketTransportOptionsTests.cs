@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -21,34 +20,40 @@ namespace Sockets.BindTests
     {
         [Theory]
         [MemberData(nameof(GetEndpoints))]
-        public async Task SocketTransportCallsConfigureListenSocket(EndPoint endpointToTest)
+        public async Task SocketTransportCallsCreateBoundListenSocket(EndPoint endpointToTest)
         {
             var wasCalled = false;
 
             Socket CreateListenSocket(EndPoint endpoint)
             {
                 wasCalled = true;
-                return SocketTransportOptions.CreateDefaultListenSocket(endpoint);
+                return SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
             }
 
             using var host = CreateWebHost(
                 endpointToTest,
                 options =>
                 {
-                    options.CreateListenSocket = CreateListenSocket;
+                    options.CreateBoundListenSocket = CreateListenSocket;
                 }
             );
 
             await host.StartAsync();
-            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.CreateListenSocket)} to be called.");
+            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.CreateBoundListenSocket)} to be called.");
             await host.StopAsync();
         }
 
-        // static to ensure that the underlying handle doesn't get closed
-        // when our underlying connection listener is disposed
-        private static readonly Socket _fileHandleSocket = new(
-            AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp
-        );
+        [Theory]
+        [MemberData(nameof(GetEndpoints))]
+        public void CreateDefaultBoundListenSocket_BindsForAllEndPoints(EndPoint endpoint)
+        {
+            using var listenSocket = SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
+            Assert.NotNull(listenSocket.LocalEndPoint);
+        }
+
+        // static to ensure that the underlying handle doesn't get disposed
+        // when a local reference is GCed by the iterator in GetEndPoints
+        private static Socket _fileHandleSocket;
 
         public static IEnumerable<object[]> GetEndpoints()
         {
@@ -61,13 +66,16 @@ namespace Sockets.BindTests
             {
                 yield return new object[]
                 {
-                    new UnixDomainSocketEndPoint($"/tmp/{DateTime.UtcNow:yyyyMMddTHHmmss}.sock")
+                    new UnixDomainSocketEndPoint($"/tmp/{DateTime.UtcNow:yyyyMMddTHHmmss.fff}.sock")
                 };
             }
 
             // file handle
             // slightly messy but allows us to create a FileHandleEndPoint
             // from the underlying OS handle used by the socket
+            _fileHandleSocket = new(
+                AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp
+            );
             _fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
             yield return new object[]
             {

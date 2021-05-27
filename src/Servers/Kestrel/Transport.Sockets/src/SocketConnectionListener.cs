@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
@@ -89,20 +90,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
-            
-            var listenSocket = _options.CreateListenSocket(EndPoint);
-            // we only call Bind on sockets that were _not_ created
-            // using a file handle, otherwise underlying PAL call throws
-            if (!(EndPoint is FileHandleEndPoint))
+
+            Socket listenSocket;
+            try
             {
-                try
-                {
-                    listenSocket.Bind(EndPoint);
-                }
-                catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
-                {
-                    throw new AddressInUseException(e.Message, e);
-                }
+                listenSocket = _options.CreateBoundListenSocket(EndPoint);
+            }
+            catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+            {
+                throw new AddressInUseException(e.Message, e);
             }
 
             Debug.Assert(listenSocket.LocalEndPoint != null);

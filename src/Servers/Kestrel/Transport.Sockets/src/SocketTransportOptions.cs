@@ -70,13 +70,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         /// <summary>
         /// A function used to create a new <see cref="Socket"/> to listen with. If
-        /// not set, <see cref="CreateDefaultListenSocket" /> is used.
+        /// not set, <see cref="CreateDefaultBoundListenSocket" /> is used.
         /// </summary>
-        public Func<EndPoint, Socket> CreateListenSocket { get; set; } = CreateDefaultListenSocket;
+        /// <remarks>
+        /// Implementors are expected to call <see cref="Socket.Bind"/> on the
+        /// <see cref="Socket"/>. Please note that <see cref="CreateDefaultBoundListenSocket"/>
+        /// calls <see cref="Socket.Bind"/> as part of its implementation, so implementors
+        /// using this method do not need to call it again.
+        /// </remarks>
+        public Func<EndPoint, Socket> CreateBoundListenSocket { get; set; } = CreateDefaultBoundListenSocket;
 
         /// <summary>
         /// Creates a default instance of <see cref="Socket"/> for the given <see cref="EndPoint"/>
-        /// that can be used by a connection listener to listen for inbound requests.
+        /// that can be used by a connection listener to listen for inbound requests. <see cref="Socket.Bind"/>
+        /// is called by this method.
         /// </summary>
         /// <param name="endpoint">
         /// An <see cref="EndPoint"/>.
@@ -84,8 +91,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// <returns>
         /// A <see cref="Socket"/> instance.
         /// </returns>
-        public static Socket CreateDefaultListenSocket(EndPoint endpoint)
+        public static Socket CreateDefaultBoundListenSocket(EndPoint endpoint)
         {
+            Socket listenSocket;
             switch (endpoint)
             {
                 case FileHandleEndPoint fileHandle:
@@ -98,13 +106,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     // If we don't do this then we run the risk of Kestrel hanging because the
                     // the underlying socket is never closed and the transport manager can hang
                     // when it attempts to stop.
-                    return new Socket(
+                    listenSocket = new Socket(
                         new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true)
                     );
+                    break;
                 case UnixDomainSocketEndPoint unix:
-                    return new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                    listenSocket = new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                    break;
                 case IPEndPoint ip:
-                    var listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                     // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
                     if (ip.Address == IPAddress.IPv6Any)
@@ -112,10 +122,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         listenSocket.DualMode = true;
                     }
 
-                    return listenSocket;
+                    break;
                 default:
-                    return new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    listenSocket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    break;
             }
+
+            // we only call Bind on sockets that were _not_ created
+            // using a file handle; the handle is already bound
+            // to an underlying socket so doing it again causes the
+            // underlying PAL call to throw
+            if (!(endpoint is FileHandleEndPoint))
+            {
+                listenSocket.Bind(endpoint);
+            }
+
+            return listenSocket;
         }
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
