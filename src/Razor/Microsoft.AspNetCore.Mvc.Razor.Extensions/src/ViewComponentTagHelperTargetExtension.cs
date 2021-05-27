@@ -147,6 +147,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     IViewContextAwareContextualizeMethodName,
                     new[] { ViewContextPropertyName });
 
+                // The attribute names stored in the __context.Attributes dictionary reflect the
+                // kebab-case attribute names used in the markup. However, the `InvokeCoreAsync` method
+                // expects attribute names to be in the camelCase used by parameters. We use the
+                // `ToCamelCase` method to map the attribute names appropriately.
+                var processAttributeName = @"static string ToCamelCase(string attr) {
+                    var mappedString = string.Join(string.Empty, attr.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1).ToLower()));
+                    return char.ToLower(mappedString[0]) + mappedString.Substring(1);
+                };";
+                writer.Write(processAttributeName).WriteLine();
+
                 var methodParameters = GetMethodParameters(tagHelper);
                 writer.Write("var ")
                     .WriteStartAssignment(TagHelperContentVariableName)
@@ -164,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             var propertyNames = tagHelper.BoundAttributes.Select(attribute => attribute.GetPropertyName());
             var joinedPropertyNames = string.Join(", ", propertyNames);
-            var parametersString = $"{TagHelperContextVariableName}.{TagHelperContextAttributesVariableName}.ToDictionary(attr => attr.Name, attr => attr.Value)";
+            var parametersString = $"{TagHelperContextVariableName}.{TagHelperContextAttributesVariableName}.ToDictionary(attr => ToCamelCase(attr.Name), attr => attr.Value)";
             var viewComponentName = tagHelper.GetViewComponentName();
             var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
             return methodParameters;

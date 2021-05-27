@@ -86,7 +86,11 @@ global::System.Object __typeHelper = "*, AppCode";
             public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
             {
                 (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-                var __helperContent = await __helper.InvokeAsync("Test", __context.AllAttributes.ToDictionary(attr => attr.Name, attr => attr.Value));
+                static string ToCamelCase(string attr) {
+                    var mappedString = string.Join(string.Empty, attr.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1).ToLower()));
+                    return char.ToLower(mappedString[0]) + mappedString.Substring(1);
+                };
+                var __helperContent = await __helper.InvokeAsync("Test", __context.AllAttributes.ToDictionary(attr => ToCamelCase(attr.Name), attr => attr.Value));
                 __output.TagName = null;
                 __output.Content.SetHtmlContent(__helperContent);
             }
