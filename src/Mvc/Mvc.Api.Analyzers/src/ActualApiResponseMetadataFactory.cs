@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 var responseMetadata = InspectReturnStatementSyntax(
                     symbolCache,
                     semanticModel,
-                    returnStatementSyntax,
+                    returnStatementSyntax.Expression,
                     cancellationToken);
 
                 if (responseMetadata != null)
@@ -64,10 +64,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         internal static ActualApiResponseMetadata? InspectReturnStatementSyntax(
             in ApiControllerSymbolCache symbolCache,
             SemanticModel semanticModel,
-            ReturnStatementSyntax returnStatementSyntax,
+            ExpressionSyntax returnExpression,
             CancellationToken cancellationToken)
         {
-            var returnExpression = returnStatementSyntax.Expression;
             var typeInfo = semanticModel.GetTypeInfo(returnExpression, cancellationToken);
             if (typeInfo.Type == null || typeInfo.Type.TypeKind == TypeKind.Error)
             {
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             if (!symbolCache.IActionResult.IsAssignableFrom(statementReturnType))
             {
                 // Return expression is not an instance of IActionResult. Must be returning the "model".
-                return new ActualApiResponseMetadata(returnStatementSyntax, statementReturnType);
+                return new ActualApiResponseMetadata(returnExpression, statementReturnType);
             }
 
             var defaultStatusCodeAttribute = statementReturnType
@@ -124,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return null;
             }
 
-            return new ActualApiResponseMetadata(returnStatementSyntax, statusCode.Value, returnType);
+            return new ActualApiResponseMetadata(returnExpression, statusCode.Value, returnType);
         }
 
         private static (int? statusCode, ITypeSymbol? returnType) InspectInitializers(

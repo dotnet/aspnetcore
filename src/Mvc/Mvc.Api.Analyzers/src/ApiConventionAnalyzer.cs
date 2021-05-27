@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 var hasUndocumentedStatusCodes = false;
                 foreach (var actualMetadata in actualResponseMetadata)
                 {
-                    var location = actualMetadata.ReturnStatement.GetLocation();
+                    var location = actualMetadata.ReturnExpression.GetLocation();
 
                     if (!DeclaredApiResponseMetadata.Contains(declaredResponseMetadata, actualMetadata))
                     {

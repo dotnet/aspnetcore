@@ -11,21 +11,21 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
     {
         private readonly int? _statusCode;
 
-        public ActualApiResponseMetadata(ReturnStatementSyntax returnStatement, ITypeSymbol returnType)
+        public ActualApiResponseMetadata(ExpressionSyntax returnExpression, ITypeSymbol returnType)
         {
-            ReturnStatement = returnStatement;
+            ReturnExpression = returnExpression;
             ReturnType = returnType;
             _statusCode = null;
         }
 
-        public ActualApiResponseMetadata(ReturnStatementSyntax returnStatement, int statusCode, ITypeSymbol? returnType)
+        public ActualApiResponseMetadata(ExpressionSyntax returnExpression, int statusCode, ITypeSymbol? returnType)
         {
-            ReturnStatement = returnStatement;
+            ReturnExpression = returnExpression;
             _statusCode = statusCode;
             ReturnType = returnType;
         }
 
-        public ReturnStatementSyntax ReturnStatement { get; }
+        public ExpressionSyntax ReturnExpression { get; }
 
         public int StatusCode => _statusCode ?? throw new ArgumentException("Status code is not available when IsDefaultResponse is true");
 

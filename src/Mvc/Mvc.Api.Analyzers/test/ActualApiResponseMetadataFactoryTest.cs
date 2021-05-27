@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var actualResponseMetadata = ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
                 symbolCache,
                 compilation.GetSemanticModel(syntaxTree),
-                returnStatement,
+                returnStatement.Expression,
                 CancellationToken.None);
 
             // Assert
@@ -288,13 +288,13 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 {
                     Assert.False(metadata.IsDefaultResponse);
                     Assert.Equal(204, metadata.StatusCode);
-                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM1"], metadata.ReturnStatement.GetLocation());
+                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM1"], metadata.ReturnExpression.GetLocation());
 
                 },
                 metadata =>
                 {
                     Assert.True(metadata.IsDefaultResponse);
-                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM2"], metadata.ReturnStatement.GetLocation());
+                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM2"], metadata.ReturnExpression.GetLocation());
                 });
         }
 
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
                 symbolCache,
                 compilation.GetSemanticModel(syntaxTree),
-                returnStatement,
+                returnStatement.Expression,
                 CancellationToken.None);
         }
 
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
                 symbolCache,
                 compilation.GetSemanticModel(syntaxTree),
-                returnStatement,
+                returnStatement.Expression,
                 CancellationToken.None);
         }
 

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             if (id < 0)
             {
-                /*MM*/return BadRequest();
+                return /*MM*/BadRequest();
             }
 
             if (id == 0)

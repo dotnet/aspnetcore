@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
                     symbolCache,
                     semanticModel,
-                    returnStatementSyntax,
+                    returnStatementSyntax.Expression,
                     operationAnalysisContext.CancellationToken);
 
                 if (actualMetadata == null || actualMetadata.Value.StatusCode != 400)
