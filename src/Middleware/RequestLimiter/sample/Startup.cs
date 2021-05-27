@@ -51,37 +51,39 @@ namespace RateLimiterSample
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Default!");
-                }).EnforceLimit();
+                }).EnforceDefaultRequestLimit();
 
                 endpoints.MapGet("/instance", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Hello World!");
-                }).EnforceLimit(new TokenBucketRateLimiter(2, 2));
+                }).EnforceRequestLimit(new TokenBucketRateLimiter(2, 2));
 
                 endpoints.MapGet("/concurrent", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Wrote!");
-                }).EnforceConcurrencyLimit(concurrentRequests: 1);
+                }).EnforceRequestConcurrencyLimit(concurrentRequests: 1);
 
                 endpoints.MapGet("/adhoc", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Tested!");
-                }).EnforceRateLimit(requestPerSecond: 2);
+                }).EnforceRequestRateLimit(requestPerSecond: 2);
 
                 endpoints.MapGet("/ipFromDI", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("IP limited!");
-                }).EnforceLimit("ipPolicy");
+                }).EnforceRequestLimitPolicy("ipPolicy");
 
                 endpoints.MapGet("/multiple", async context =>
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("IP limited!");
-                }).EnforceLimit("concurrency").EnforceLimit("rate");
+                })
+                .EnforceRequestLimitPolicy("ipPolicy")
+                .EnforceRequestLimitPolicy("rate");
 
                 endpoints.MapControllerRoute(
                     name: "default",

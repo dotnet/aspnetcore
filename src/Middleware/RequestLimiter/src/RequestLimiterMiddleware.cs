@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.ResourceLimits;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -24,28 +25,30 @@ namespace Microsoft.AspNetCore.RequestLimiter
             _options = options.Value;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             _logger.LogInformation("Resource limiting: " + context.Request.Path);
 
             var endpoint = context.GetEndpoint();
             var attributes = endpoint?.Metadata.GetOrderedMetadata<RequestLimitAttribute>();
+            var noLimitAttributes = endpoint?.Metadata.GetOrderedMetadata<NoRequestLimitAttribute>();
 
-            if (attributes == null)
+            if (attributes == null || noLimitAttributes != null)
             {
-                await _next.Invoke(context);
-                return;
+                return _next.Invoke(context);
             }
 
+            return InvokeAsync(context, attributes);
+        }
+        private async Task InvokeAsync(HttpContext context, IReadOnlyList<RequestLimitAttribute> attributes)
+        {
             var resourceLeases = new Stack<ResourceLease>();
             try
             {
                 foreach (var attribute in attributes)
                 {
-                    if (!string.IsNullOrEmpty(attribute.Policy) && attribute.Limiter != null)
-                    {
-                        throw new InvalidOperationException("Cannot specify both policy and limiter");
-                    }
+                    // At most one of Policy or Limiter can be set.
+                    Debug.Assert(string.IsNullOrEmpty(attribute.Policy) || attribute.Limiter == null);
 
                     if (string.IsNullOrEmpty(attribute.Policy) && attribute.Limiter == null)
                     {
@@ -97,11 +100,38 @@ namespace Microsoft.AspNetCore.RequestLimiter
                 }
             };
         }
-
-        private async Task<bool> ApplyLimitAsync(AggregatedResourceLimiter<HttpContext> limiter, HttpContext context, Stack<ResourceLease> obtainedResources)
+        private Task<bool> ApplyLimitAsync(AggregatedResourceLimiter<HttpContext> limiter, HttpContext context, Stack<ResourceLease> obtainedResources)
         {
             _logger.LogInformation("Resource count: " + limiter.EstimatedCount(context));
-            var resourceLease = await limiter.WaitAsync(context);
+            var resourceLeaseTask = limiter.WaitAsync(context);
+
+            if (resourceLeaseTask.IsCompletedSuccessfully)
+            {
+                var resourceLease = resourceLeaseTask.Result;
+                if (!resourceLease.IsAcquired)
+                {
+                    _logger.LogInformation("Resource exhausted");
+                    context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                    return OnRejectAsync(context, resourceLease);
+                }
+
+                _logger.LogInformation("Resource obtained");
+                obtainedResources.Push(resourceLease);
+                return Task.FromResult(true);
+            }
+
+            return ApplyLimitAsyncAwaited(resourceLeaseTask, context, obtainedResources);
+        }
+
+        private async Task<bool> OnRejectAsync(HttpContext context, ResourceLease resourceLease)
+        {
+            await _options.OnRejected(context, resourceLease);
+            return false;
+        }
+
+        private async Task<bool> ApplyLimitAsyncAwaited(ValueTask<ResourceLease> resourceLeaseTask, HttpContext context, Stack<ResourceLease> obtainedResources)
+        {
+            var resourceLease = await resourceLeaseTask;
             if (!resourceLease.IsAcquired)
             {
                 _logger.LogInformation("Resource exhausted");
