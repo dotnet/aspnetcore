@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -90,8 +89,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private ApiDescription CreateApiDescription(
             ControllerActionDescriptor action,
-            string httpMethod,
-            string groupName)
+            string? httpMethod,
+            string? groupName)
         {
             var parsedTemplate = ParseTemplate(action);
 
@@ -180,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         metadata = _modelMetadataProvider.GetMetadataForType(actionParameter.ParameterType);
                     }
 
-                    var bindingContext = ApiParameterDescriptionContext.GetContext(
+                    var bindingContext = new ApiParameterDescriptionContext(
                         metadata,
                         actionParameter.BindingInfo,
                         propertyName: actionParameter.Name);
@@ -197,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         containerType: context.ActionDescriptor.ControllerTypeInfo.AsType(),
                         propertyName: actionParameter.Name);
 
-                    var bindingContext = ApiParameterDescriptionContext.GetContext(
+                    var bindingContext = new ApiParameterDescriptionContext(
                         modelMetadata,
                         actionParameter.BindingInfo,
                         propertyName: actionParameter.Name);
@@ -235,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var routeParameters = new Dictionary<string, ApiParameterRouteInfo>(StringComparer.OrdinalIgnoreCase);
             foreach (var routeParameter in context.RouteParameters)
             {
-                routeParameters.Add(routeParameter.Name, CreateRouteInfo(routeParameter));
+                routeParameters.Add(routeParameter.Name!, CreateRouteInfo(routeParameter));
             }
 
             foreach (var parameter in context.Results)
@@ -327,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 foreach (var constraint in routeParameter.InlineConstraints)
                 {
-                    constraints.Add(_constraintResolver.ResolveConstraint(constraint.Constraint));
+                    constraints.Add(_constraintResolver.ResolveConstraint(constraint.Constraint)!);
                 }
             }
 
@@ -339,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             };
         }
 
-        private IEnumerable<string> GetHttpMethods(ControllerActionDescriptor action)
+        private IEnumerable<string?> GetHttpMethods(ControllerActionDescriptor action)
         {
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
@@ -347,11 +346,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
             else
             {
-                return new string[] { null };
+                return new string?[] { null };
             }
         }
 
-        private RouteTemplate ParseTemplate(ControllerActionDescriptor action)
+        private RouteTemplate? ParseTemplate(ControllerActionDescriptor action)
         {
             if (action.AttributeRouteInfo?.Template != null)
             {
@@ -361,7 +360,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return null;
         }
 
-        private string GetRelativePath(RouteTemplate parsedTemplate)
+        private string? GetRelativePath(RouteTemplate? parsedTemplate)
         {
             if (parsedTemplate == null)
             {
@@ -378,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     if (part.IsLiteral)
                     {
                         currentSegment += _routeOptions.LowercaseUrls ?
-                            part.Text.ToLowerInvariant() :
+                            part.Text!.ToLowerInvariant() :
                             part.Text;
                     }
                     else if (part.IsParameter)
@@ -399,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 contentTypes = new MediaTypeCollection
                 {
-                    (string)null,
+                    (string)null!,
                 };
             }
 
@@ -430,7 +429,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return results;
         }
 
-        private static MediaTypeCollection GetDeclaredContentTypes(IApiRequestMetadataProvider[] requestMetadataAttributes)
+        private static MediaTypeCollection GetDeclaredContentTypes(IApiRequestMetadataProvider[]? requestMetadataAttributes)
         {
             // Walk through all 'filter' attributes in order, and allow each one to see or override
             // the results of the previous ones. This is similar to the execution path for content-negotiation.
@@ -446,7 +445,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return contentTypes;
         }
 
-        private IApiRequestMetadataProvider[] GetRequestMetadataAttributes(ControllerActionDescriptor action)
+        private IApiRequestMetadataProvider[]? GetRequestMetadataAttributes(ControllerActionDescriptor action)
         {
             if (action.FilterDescriptors == null)
             {
@@ -465,30 +464,27 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private class ApiParameterDescriptionContext
         {
-            public ModelMetadata ModelMetadata { get; set; }
+            public ModelMetadata ModelMetadata { get; }
 
-            public string BinderModelName { get; set; }
+            public string? BinderModelName { get; }
 
-            public BindingSource BindingSource { get; set; }
+            public BindingSource? BindingSource { get; }
 
-            public string PropertyName { get; set; }
+            public string? PropertyName { get; }
 
-            public BindingInfo BindingInfo { get; set; }
+            public BindingInfo? BindingInfo { get; }
 
-            public static ApiParameterDescriptionContext GetContext(
+            public ApiParameterDescriptionContext(
                 ModelMetadata metadata,
-                BindingInfo bindingInfo,
-                string propertyName)
+                BindingInfo? bindingInfo,
+                string? propertyName)
             {
                 // BindingMetadata can be null if the metadata represents properties.
-                return new ApiParameterDescriptionContext
-                {
-                    ModelMetadata = metadata,
-                    BinderModelName = bindingInfo?.BinderModelName,
-                    BindingSource = bindingInfo?.BindingSource,
-                    PropertyName = propertyName ?? metadata.Name,
-                    BindingInfo = bindingInfo,
-                };
+                ModelMetadata = metadata;
+                BinderModelName = bindingInfo?.BinderModelName;
+                BindingSource = bindingInfo?.BindingSource;
+                PropertyName = propertyName ?? metadata.Name;
+                BindingInfo = bindingInfo;
             }
         }
 
@@ -587,7 +583,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     var key = new PropertyKey(propertyMetadata, source);
                     var bindingInfo = BindingInfo.GetBindingInfo(Enumerable.Empty<object>(), propertyMetadata);
 
-                    var propertyContext = ApiParameterDescriptionContext.GetContext(
+                    var propertyContext = new ApiParameterDescriptionContext(
                         propertyMetadata,
                         bindingInfo: bindingInfo,
                         propertyName: null);
@@ -633,12 +629,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 public readonly string PropertyName;
 
-                public readonly BindingSource Source;
+                public readonly BindingSource? Source;
 
-                public PropertyKey(ModelMetadata metadata, BindingSource source)
+                public PropertyKey(ModelMetadata metadata, BindingSource? source)
                 {
-                    ContainerType = metadata.ContainerType;
-                    PropertyName = metadata.PropertyName;
+                    ContainerType = metadata.ContainerType!;
+                    PropertyName = metadata.PropertyName!;
                     Source = source;
                 }
             }

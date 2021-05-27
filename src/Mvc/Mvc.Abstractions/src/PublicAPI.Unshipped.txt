@@ -107,3 +107,5 @@ virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object?[]!, object!>?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.ModelValidationResult(string? memberName, string? message) -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string!
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string?

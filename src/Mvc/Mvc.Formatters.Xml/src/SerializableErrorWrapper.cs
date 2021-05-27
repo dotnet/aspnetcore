@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         public SerializableError SerializableError { get; }
 
         /// <inheritdoc />
-        public XmlSchema GetSchema()
+        public XmlSchema? GetSchema()
         {
             return null;
         }

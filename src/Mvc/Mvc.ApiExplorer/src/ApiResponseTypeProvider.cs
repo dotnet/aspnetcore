@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 action.Properties.TryGetValue(typeof(ApiConventionResult), out var result))
             {
                 // Action does not have any conventions. Use conventions on it if present.
-                var apiConventionResult = (ApiConventionResult)result;
+                var apiConventionResult = (ApiConventionResult)result!;
                 responseMetadataAttributes.AddRange(apiConventionResult.ResponseMetadataProviders);
             }
 
             var defaultErrorType = typeof(void);
             if (action.Properties.TryGetValue(typeof(ProducesErrorResponseTypeAttribute), out result))
             {
-                defaultErrorType = ((ProducesErrorResponseTypeAttribute)result).Type;
+                defaultErrorType = ((ProducesErrorResponseTypeAttribute)result!).Type;
             }
 
             var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, runtimeReturnType, defaultErrorType);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private ICollection<ApiResponseType> GetApiResponseTypes(
            IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
-           Type type,
+           Type? type,
            Type defaultErrorType)
         {
             var results = new Dictionary<int, ApiResponseType>();
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 // and respond to the incoming request.
                 // Querying IApiResponseTypeMetadataProvider.GetSupportedContentTypes with "null" should retrieve all supported
                 // content types that each formatter may respond in.
-                contentTypes.Add((string)null);
+                contentTypes.Add((string)null!);
             }
 
             var responseTypes = results.Values;
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private Type GetDeclaredReturnType(ControllerActionDescriptor action)
+        private Type? GetDeclaredReturnType(ControllerActionDescriptor action)
         {
             var declaredReturnType = action.MethodInfo.ReturnType;
             if (declaredReturnType == typeof(void) ||
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return unwrappedType;
         }
 
-        private Type GetRuntimeReturnType(Type declaredReturnType)
+        private Type? GetRuntimeReturnType(Type? declaredReturnType)
         {
             // If we get here, then a filter didn't give us an answer, so we need to figure out if we
             // want to use the declared return type.

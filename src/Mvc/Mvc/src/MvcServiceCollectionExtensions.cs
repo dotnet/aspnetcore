@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// on the resulting builder.
         /// </para>
         /// </remarks>
-        public static IMvcBuilder AddControllers(this IServiceCollection services, Action<MvcOptions> configure)
+        public static IMvcBuilder AddControllers(this IServiceCollection services, Action<MvcOptions>? configure)
         {
             if (services == null)
             {
@@ -208,7 +208,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
         /// </para>
         /// </remarks>
-        public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Action<MvcOptions> configure)
+        public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Action<MvcOptions>? configure)
         {
             if (services == null)
             {
@@ -291,7 +291,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
         /// </para>
         /// </remarks>
-        public static IMvcBuilder AddRazorPages(this IServiceCollection services, Action<RazorPagesOptions> configure)
+        public static IMvcBuilder AddRazorPages(this IServiceCollection services, Action<RazorPagesOptions>? configure)
         {
             if (services == null)
             {
