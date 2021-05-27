@@ -139,8 +139,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             }
 
             var semanticModel = await _document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var methodReturnStatement = (ReturnStatementSyntax)root.FindNode(_diagnostic.Location.SourceSpan);
-            var methodSyntax = methodReturnStatement.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+            var diagnosticNode = root.FindNode(_diagnostic.Location.SourceSpan);
+            var methodSyntax = diagnosticNode.FirstAncestorOrSelf<MethodDeclarationSyntax>();
             var method = semanticModel.GetDeclaredSymbol(methodSyntax, cancellationToken);
 
             if (semanticModel == null)
