@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
         private async Task InitializeWebView2()
         {
-            await _webview.EstablishEnvironmentAsync().ConfigureAwait(true);
-            await _webview.EnsureCoreWebView2WithEstablishedEnvironmentAsync();
+            await _webview.CreateEnvironmentAsync().ConfigureAwait(true);
+            await _webview.EnsureCoreWebView2Async();
             ApplyDefaultWebViewSettings();
 
             _webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContextWrapper.All);
@@ -92,8 +92,17 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                 };
             ").ConfigureAwait(true);
 
+            QueueBlazorStart();
+
             _webview.CoreWebView2.AddWebMessageReceivedHandler(e
                 => MessageReceived(new Uri(e.Source), e.WebMessageAsString));
+        }
+
+        /// <summary>
+        /// Override this method to queue a call to Blazor.start(). Not all platforms require this.
+        /// </summary>
+        protected virtual void QueueBlazorStart()
+        {
         }
 
         private static string GetHeaderString(IDictionary<string, string> headers) =>
