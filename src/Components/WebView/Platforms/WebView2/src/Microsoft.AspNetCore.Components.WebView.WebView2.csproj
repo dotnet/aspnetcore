@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebView" />
-    <Reference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
 </Project>
