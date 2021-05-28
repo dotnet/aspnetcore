@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,9 +26,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitHandler[] handlers = null,
             CircuitClientProxy clientProxy = null)
         {
-            serviceScope = serviceScope ?? Mock.Of<IServiceScope>();
-            clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
-            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            serviceScope ??= Mock.Of<IServiceScope>();
+            clientProxy ??= new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
+            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
             if (remoteRenderer == null)
             {
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     null);
             }
 
-            handlers = handlers ?? Array.Empty<CircuitHandler>();
+            handlers ??= Array.Empty<CircuitHandler>();
             return new TestCircuitHost(
                 circuitId is null ? new CircuitId(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()) : circuitId.Value,
                 serviceScope,

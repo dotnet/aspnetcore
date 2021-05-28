@@ -16,6 +16,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
@@ -30,6 +31,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             : base(browserFixture, serverFixture, output)
         {
         }
+
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
         protected override void InitializeAsyncCore()
         {
