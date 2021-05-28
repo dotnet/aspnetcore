@@ -37,6 +37,9 @@ namespace Microsoft.AspNetCore.SpaProxy
                 // It's ok for us to do this here since this service is only plugged in during development.
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
+            // Certain frontend build tools rely on the the ACCEPT Header being set, otherwise these tools
+            // might be unable to perform their client-side fallback logic.
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
             _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
 
             // We are not waiting for the SPA proxy to launch, instead we are going to rely on a piece of
