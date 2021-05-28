@@ -12,13 +12,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
     internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
-        internal static readonly DefaultWebAssemblyJSRuntime Instance = new DefaultWebAssemblyJSRuntime();
+        internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
         [DynamicDependency(nameof(InvokeDotNet))]
         [DynamicDependency(nameof(EndInvokeJS))]
         [DynamicDependency(nameof(BeginInvokeDotNet))]
+        [DynamicDependency(nameof(NotifyByteArrayAvailable))]
         private DefaultWebAssemblyJSRuntime()
         {
             ElementReferenceContext = new WebElementReferenceContext(this);
@@ -71,6 +72,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 // exceptions into a failure on the JS Promise object.
                 DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
             });
+        }
+
+        /// <summary>
+        /// Invoked via Mono's JS interop mechanism (invoke_method)
+        /// 
+        /// Notifies .NET of an array that's available for transfer from JS to .NET
+        /// 
+        /// Ideally that byte array would be transferred directly as a parameter on this
+        /// call, however that's not currently possible due to: <INSERT_BUG_HERE></INSERT_BUG_HERE>
+        /// </summary>
+        /// <param name="id">Id of the byte array</param>
+        public static void NotifyByteArrayAvailable(int id)
+        {
+            var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
+
+            DotNetDispatcher.ReceiveByteArray(Instance, id, data);
         }
     }
 }
