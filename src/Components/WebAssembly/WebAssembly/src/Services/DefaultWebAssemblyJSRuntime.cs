@@ -88,17 +88,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
 
             DotNetDispatcher.ReceiveByteArray(Instance, id, data);
-
-            // Is the above technique acceptable or do we have to queue the call as below?
-            // The below approach doesn't work as the call to receive the byte array is executed
-            // AFTER we receive the main begin invoke call (which tries to deserialize the byte array
-            // we haven't yet processed here).
-            //WebAssemblyCallQueue.Schedule((id, data), static state =>
-            //{
-            //    // This is not expected to throw, as it takes care of converting any unhandled user code
-            //    // exceptions into a failure on the Task that was returned when calling InvokeAsync.
-            //    DotNetDispatcher.ReceiveByteArray(Instance, state.id, state.data);
-            //});
         }
     }
 }
