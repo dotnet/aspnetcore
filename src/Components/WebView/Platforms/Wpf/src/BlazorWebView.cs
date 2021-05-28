@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-            _webviewManager = new WebView2WebViewManager(new WpfWeb2ViewWrapper(_webview), Services, WpfDispatcher.Instance, fileProvider, hostPageRelativePath);
+            _webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance, fileProvider, hostPageRelativePath);
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously
