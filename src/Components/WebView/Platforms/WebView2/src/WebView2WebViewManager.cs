@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
     /// An implementation of <see cref="WebViewManager"/> that uses the Edge WebView2 browser control
     /// to render web content.
     /// </summary>
-    public class WebView2WebViewManager<TWebView2, T2> : WebViewManager
+    public class WebView2WebViewManager<TWebView2, TCoreWebView2Environment> : WebViewManager
     {
         // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
         // making it substantially faster. Note that this isn't real HTTP traffic, since
         // we intercept all the requests within this origin.
         private const string AppOrigin = "https://0.0.0.0/";
 
-        private readonly IWebView2Wrapper<TWebView2, T2> _webview;
+        private readonly IWebView2Wrapper<TWebView2, TCoreWebView2Environment> _webview;
         private readonly Task _webviewReadyTask;
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
         /// <param name="fileProvider">Provides static content to the webview.</param>
         /// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-        public WebView2WebViewManager(IWebView2Wrapper<TWebView2, T2> webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
+        public WebView2WebViewManager(IWebView2Wrapper<TWebView2, TCoreWebView2Environment> webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
             : base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
