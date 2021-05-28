@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo ExecuteTaskResultOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteValueResultTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
-        private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(IResult).GetMethod(nameof(IResult.ExecuteAsync), BindingFlags.Public | BindingFlags.Instance)!;
+        private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
         private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
         private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (typeof(IResult).IsAssignableFrom(returnType))
             {
-                return Expression.Call(methodCall, ResultWriteResponseAsyncMethod, HttpContextExpr);
+                return Expression.Call(ResultWriteResponseAsyncMethod, methodCall, HttpContextExpr);
             }
             else if (returnType == typeof(string))
             {
@@ -679,7 +679,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
         {
-            EnsureRequestTaskResultNotNull(task);
+            EnsureRequestTaskOfNotNull(task);
             static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsJsonAsync(await task);
@@ -695,7 +695,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTaskOfString(Task<string> task, HttpContext httpContext)
         {
-            EnsureRequestTaskResultNotNull(task);
+            EnsureRequestTaskOfNotNull(task);
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -711,6 +711,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTask(ValueTask task)
         {
+            EnsureRequestTaskNotNull(task.AsTask());
             static async Task ExecuteAwaited(ValueTask task)
             {
                 await task;
@@ -726,6 +727,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext)
         {
+            EnsureRequestValueTaskOfNotNull(task);
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsJsonAsync(await task);
@@ -741,6 +743,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskOfString(ValueTask<string> task, HttpContext httpContext)
         {
+            EnsureRequestValueTaskOfNotNull(task);
             static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -756,6 +759,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskResult<T>(ValueTask<T> task, HttpContext httpContext) where T : IResult
         {
+            EnsureRequestValueTaskOfNotNull(task);
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
             {
                 await (await task).ExecuteAsync(httpContext);
@@ -771,8 +775,14 @@ namespace Microsoft.AspNetCore.Http
 
         private static async Task ExecuteTaskResult<T>(Task<T> task, HttpContext httpContext) where T : IResult
         {
-            EnsureRequestTaskResultNotNull(task);
+            EnsureRequestTaskOfNotNull(task);
             await (await task).ExecuteAsync(httpContext);
+        }
+
+        private static async Task ExecuteResultWriteResponse(IResult result, HttpContext httpContext)
+        {
+            EnsureRequestResultNotNull(result);
+            await result.ExecuteAsync(httpContext);
         }
 
         private class FactoryContext
@@ -823,11 +833,35 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static void EnsureRequestTaskResultNotNull<T>(Task<T> task)
+        private static void EnsureRequestTaskOfNotNull<T>(Task<T> task)
         {
             if (task is null)
             {
                 throw new InvalidOperationException("Task Result should not be null");
+            }
+        }
+
+        private static void EnsureRequestTaskNotNull(Task task)
+        {
+            if (task is null)
+            {
+                throw new InvalidOperationException("Task Result should not be null");
+            }
+        }
+
+        private static void EnsureRequestValueTaskOfNotNull<T>(ValueTask<T> task)
+        {
+            if (task.Result is null)
+            {
+                throw new InvalidOperationException("ValueTask Result should not be null");
+            }
+        }
+
+        private static void EnsureRequestResultNotNull<T>(T result) where T : IResult
+        {
+            if (result is null)
+            {
+                throw new InvalidOperationException("Result should not be null");
             }
         }
     }
