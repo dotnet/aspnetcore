@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
     {
         /// <summary>
         /// Creates a WebView2 Environment using the installed or a custom WebView2 Runtime version.
+        /// The implementation should store the CoreWebView2Environment created in this method so that it can
+        /// be used in <see cref="CreateEnvironmentAsync"/>.
         /// </summary>
         Task CreateEnvironmentAsync();
 
@@ -30,7 +32,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         Uri Source { get; set; }
 
         /// <summary>
-        /// Explicitly trigger initialization of the control's CoreWebView2.
+        /// Explicitly trigger initialization of the control's CoreWebView2. The implementation should use the CoreWebView2Environment that was
+        /// created in <see cref="CreateEnvironmentAsync"/>.
         /// </summary>
         Task EnsureCoreWebView2Async();
 
