@@ -30,7 +30,7 @@ namespace Microsoft.JSInterop
             }
 
             var result = JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions)!;
-            ResetByteArraysToBeRevived();
+            ByteArraysToBeRevived.Clear();
             return result;
         }
 

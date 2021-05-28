@@ -25,7 +25,6 @@ namespace Microsoft.JSInterop
         private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
 
         internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
-        internal int ByteArraysToBeRevivedTotalBytes;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JSRuntime"/>.
@@ -55,12 +54,6 @@ namespace Microsoft.JSInterop
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
         /// </summary>
         protected TimeSpan? DefaultAsyncTimeout { get; set; }
-
-        /// <summary>
-        /// Stores the maximum SignalR message size accepted.
-        /// Used to restrict the total byte array transfers of a single call.
-        /// </summary>
-        protected long SignalRMaxMessageSizeBytes { get; set; } = 31 * 1024;
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -184,7 +177,7 @@ namespace Microsoft.JSInterop
             in DotNetInvocationResult invocationResult);
 
         /// <summary>
-        /// Invoked by JS
+        /// Transfers a byte array from .NET to JS.
         /// </summary>
         /// <param name="id">Atomically incrementing identifier for the byte array being transfered.</param>
         /// <param name="data">Byte array to be transfered to JS.</param>
@@ -198,29 +191,21 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="id">Identifier for the byte array being transfered.</param>
         /// <param name="data">Byte array to be transfered from JS.</param>
-        public void ReceiveByteArray(int id, byte[] data)
+        protected internal virtual void ReceiveByteArray(int id, byte[] data)
         {
             if (id == 0)
             {
                 // Starting a new transfer, clear out previously stored byte arrays
-                ResetByteArraysToBeRevived();
+                // in case they haven't been cleared already.
+                ByteArraysToBeRevived.Clear();
             }
-            else if (id != (ByteArraysToBeRevived.Count + 1))
+
+            if (id != ByteArraysToBeRevived.Count)
             {
                 throw new ArgumentOutOfRangeException($"Element id '{id}' cannot be added to the byte arrays to be revived with length '{ByteArraysToBeRevived.Count}'.");
             }
-            else if (SignalRMaxMessageSizeBytes - data.Length < ByteArraysToBeRevivedTotalBytes)
-            {
-                throw new ArgumentOutOfRangeException("Exceeded the maximum byte array transfer limit for a call.");
-            }
 
             ByteArraysToBeRevived.Append(data);
-
-            // We also store the total number of bytes seen so far to compare against
-            // the max SignalR message size limit.
-            // We take the larger of the size of the array or 4, to ensure we're not inundated
-            // with small/empty arrays.
-            ByteArraysToBeRevivedTotalBytes += Math.Max(4, data.Length);
         }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
@@ -242,7 +227,7 @@ namespace Microsoft.JSInterop
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
                     var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
-                    ResetByteArraysToBeRevived();
+                    ByteArraysToBeRevived.Clear();
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }
                 else
@@ -256,12 +241,6 @@ namespace Microsoft.JSInterop
                 var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
                 TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
             }
-        }
-
-        internal void ResetByteArraysToBeRevived()
-        {
-            ByteArraysToBeRevived.Clear();
-            ByteArraysToBeRevivedTotalBytes = 0;
         }
 
         internal long TrackObjectReference<TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class

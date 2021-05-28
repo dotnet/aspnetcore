@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     Log.ReceiveByteArraySuccess(_logger, id);
-                    JSRuntime.ReceiveByteArray(id, data);
+                    DotNetDispatcher.ReceiveByteArray(JSRuntime, id, data);
                 });
             }
             catch (Exception ex)

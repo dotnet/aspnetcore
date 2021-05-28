@@ -423,7 +423,7 @@ export module DotNet {
         if (jsObject) {
           return jsObject.getWrappedObject();
         } else {
-          throw new Error(`JS object instance with ID ${id} does not exist (has it been disposed?).`);
+          throw new Error(`JS object instance with Id '${id}' does not exist. It may have been disposed.`);
         }
       } else if (value.hasOwnProperty(byteArrayRefKey)) {
         const index = value[byteArrayRefKey];

@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger<RemoteJSRuntime> _logger;
         private CircuitClientProxy _clientProxy;
         private bool _permanentlyDisconnected;
+        private readonly long _maximumIncomingBytes;
+        private int _byteArraysToBeRevivedTotalBytes;
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -28,8 +30,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             ILogger<RemoteJSRuntime> logger)
         {
             _options = circuitOptions.Value;
-            SignalRMaxMessageSizeBytes = hubOptions.Value.MaximumReceiveMessageSize is null ?
-                SignalRMaxMessageSizeBytes : hubOptions.Value.MaximumReceiveMessageSize.Value;
+            _maximumIncomingBytes = hubOptions.Value.MaximumReceiveMessageSize is null
+                ? long.MaxValue
+                : hubOptions.Value.MaximumReceiveMessageSize.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
             ElementReferenceContext = new WebElementReferenceContext(this);
@@ -107,6 +110,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
             _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
+        }
+
+        protected override void ReceiveByteArray(int id, byte[] data)
+        {
+            if (id == 0)
+            {
+                // Starting a new transfer, clear out number of bytes read.
+                _byteArraysToBeRevivedTotalBytes = 0;
+            }
+
+            if (_maximumIncomingBytes - data.Length < _byteArraysToBeRevivedTotalBytes)
+            {
+                throw new ArgumentOutOfRangeException("Exceeded the maximum byte array transfer limit for a call.");
+            }
+
+            // We also store the total number of bytes seen so far to compare against
+            // the MaximumIncomingBytes limit.
+            // We take the larger of the size of the array or 4, to ensure we're not inundated
+            // with small/empty arrays.
+            _byteArraysToBeRevivedTotalBytes += Math.Max(4, data.Length);
+
+            base.ReceiveByteArray(id, data);
         }
 
         public void MarkPermanentlyDisconnected()

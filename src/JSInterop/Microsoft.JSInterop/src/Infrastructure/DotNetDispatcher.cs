@@ -203,9 +203,6 @@ namespace Microsoft.JSInterop.Infrastructure
                 var parameterType = parameterTypes[index];
                 if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
                 {
-                    // We don't strictly have to clear the ByteArraysToBeRevived because it will auto-clear at the start of the next call,
-                    // but since we know we won't be using it for this call, we might as well clear it
-                    jsRuntime.ResetByteArraysToBeRevived();
                     throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
                 }
 
@@ -213,7 +210,10 @@ namespace Microsoft.JSInterop.Infrastructure
                 index++;
             }
 
-            jsRuntime.ResetByteArraysToBeRevived();
+            // Note it's possible not all ByteArraysToBeRevived were actually revived
+            // due to potential differences between the JS & .NET data models for a
+            // particular type.
+            jsRuntime.ByteArraysToBeRevived.Clear();
 
             if (index < parameterTypes.Length)
             {
@@ -295,6 +295,17 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 throw new JsonException("Invalid JSON");
             }
+        }
+
+        /// <summary>
+        /// Accepts the byte array data being transferred from JS to DotNet.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
+        /// <param name="id">Identifier for the byte array being transfered.</param>
+        /// <param name="data">Byte array to be transfered from JS.</param>
+        public static void ReceiveByteArray(JSRuntime jsRuntime, int id, byte[] data)
+        {
+            jsRuntime.ReceiveByteArray(id, data);
         }
 
         private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
