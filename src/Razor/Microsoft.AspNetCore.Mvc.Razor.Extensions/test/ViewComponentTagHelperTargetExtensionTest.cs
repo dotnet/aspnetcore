@@ -61,7 +61,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
         Dictionary<string, object> args = new();
         if (__context.AllAttributes.ContainsName(""Foo""))
         {
-        args[nameof(Foo)] = Foo;
+            args[nameof(Foo)] = Foo;
         }
         return args;
     }
@@ -125,7 +125,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
         Dictionary<string, object> args = new();
         if (__context.AllAttributes.ContainsName(""Foo""))
         {
-        args[nameof(Tags)] = Tags;
+            args[nameof(Tags)] = Tags;
         }
         return args;
     }

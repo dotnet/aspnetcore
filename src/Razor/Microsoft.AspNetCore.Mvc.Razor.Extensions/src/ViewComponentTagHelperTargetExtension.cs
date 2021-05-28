@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     IViewContextAwareContextualizeMethodName,
                     new[] { ViewContextPropertyName });
 
-                var methodParameters = GetMethodParameters(writer, tagHelper);
+                var methodParameters = GetMethodParameters(tagHelper);
                 writer.Write("var ")
                     .WriteStartAssignment(TagHelperContentVariableName)
                     .WriteInstanceMethodInvocation($"await {ViewComponentHelperVariableName}", ViewComponentInvokeMethodName, methodParameters);
@@ -183,14 +183,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     var parameterName = tagHelper.BoundAttributes[i].GetPropertyName();
                     writer.WriteLine($"if (__context.AllAttributes.ContainsName(\"{attributeName}\"))");
                     writer.WriteLine("{");
+                    writer.CurrentIndent += writer.TabSize;
                     writer.WriteLine($"args[nameof({parameterName})] = {parameterName};");
+                    writer.CurrentIndent -= writer.TabSize;
                     writer.WriteLine("}");
                 }
                 writer.WriteLine("return args;");
             }
         }
 
-        private string[] GetMethodParameters(CodeWriter writer, TagHelperDescriptor tagHelper)
+        private string[] GetMethodParameters(TagHelperDescriptor tagHelper)
         {
             var viewComponentName = tagHelper.GetViewComponentName();
             var methodParameters = new[] { $"\"{viewComponentName}\"", $"{TagHelperProcessInvokeAsyncArgsMethodName}({TagHelperContextVariableName})" };

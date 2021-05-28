@@ -95,7 +95,7 @@ global::System.Object __typeHelper = "*, AppCode";
                 Dictionary<string, object> args = new();
                 if (__context.AllAttributes.ContainsName("first-name"))
                 {
-                args[nameof(firstName)] = firstName;
+                    args[nameof(firstName)] = firstName;
                 }
                 return args;
             }
