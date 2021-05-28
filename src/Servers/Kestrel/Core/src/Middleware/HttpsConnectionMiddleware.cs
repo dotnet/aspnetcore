@@ -142,14 +142,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 return;
             }
 
-            var feature = new Core.Internal.TlsConnectionFeature();
-            context.Features.Set<ITlsConnectionFeature>(feature);
-            context.Features.Set<ITlsHandshakeFeature>(feature);
-
             var sslDuplexPipe = CreateSslDuplexPipe(
                 context.Transport,
                 context.Features.Get<IMemoryPoolFeature>()?.MemoryPool ?? MemoryPool<byte>.Shared);
             var sslStream = sslDuplexPipe.Stream;
+
+            var feature = new Core.Internal.TlsConnectionFeature(sslStream);
+            context.Features.Set<ITlsConnectionFeature>(feature);
+            context.Features.Set<ITlsHandshakeFeature>(feature);
+            context.Features.Set<ITlsApplicationProtocolFeature>(feature);
 
             try
             {
@@ -195,17 +196,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 return;
             }
 
-            feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
-            context.Features.Set<ITlsApplicationProtocolFeature>(feature);
-
-            feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
-            feature.CipherAlgorithm = sslStream.CipherAlgorithm;
-            feature.CipherStrength = sslStream.CipherStrength;
-            feature.HashAlgorithm = sslStream.HashAlgorithm;
-            feature.HashStrength = sslStream.HashStrength;
-            feature.KeyExchangeAlgorithm = sslStream.KeyExchangeAlgorithm;
-            feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
-            feature.Protocol = sslStream.SslProtocol;
 
             KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
