@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             ApplyDefaultWebViewSettings();
 
             _webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContextWrapper.All);
-            _webview.CoreWebView2.AddWebResourceRequestedHandler((s, eventArgs) =>
+            var removeResourceCallback = _webview.CoreWebView2.AddWebResourceRequestedHandler((s, eventArgs) =>
             {
                 // Unlike server-side code, we get told exactly why the browser is making the request,
                 // so we can be smarter about fallback. We can ensure that 'fetch' requests never result
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
             QueueBlazorStart();
 
-            _webview.CoreWebView2.AddWebMessageReceivedHandler(e
+            var removeMessageCallback = _webview.CoreWebView2.AddWebMessageReceivedHandler(e
                 => MessageReceived(new Uri(e.Source), e.WebMessageAsString));
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             // Desktop applications don't normally want to enable things like "alt-left to go back"
             // or "ctrl+f to find". Developers should explicitly opt into allowing these.
             // Issues #30511 and #30624 track making an option to control this.
-            var removeCallback = _webview.AddAcceleratorKeyPressedHandler((sender, eventArgs) =>
+            var removeKeyPressCallback = _webview.AddAcceleratorKeyPressedHandler((sender, eventArgs) =>
             {
                 if (eventArgs.VirtualKey != 0x49) // Allow ctrl+shift+i to open dev tools, at least for now
                 {

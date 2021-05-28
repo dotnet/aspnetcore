@@ -8,7 +8,7 @@
     <Description>WebView2 wrappers for BlazorWebView components on Windows.</Description>
     <IsShippingPackage>true</IsShippingPackage>
     <Nullable>disable</Nullable>
-    <NoWarn>$(NoWarn);CS1591;RS0016;RS0017</NoWarn>
+    <NoWarn>$(NoWarn);RS0016;RS0017</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

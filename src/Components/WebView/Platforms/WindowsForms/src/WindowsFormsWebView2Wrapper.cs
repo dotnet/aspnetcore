@@ -148,9 +148,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             };
         }
 
-        public void PostWebMessageAsString(string message)
+        public void PostWebMessageAsString(string webMessageAsString)
         {
-            _webView2.WebView2.CoreWebView2.PostWebMessageAsString(message);
+            _webView2.WebView2.CoreWebView2.PostWebMessageAsString(webMessageAsString);
         }
     }
 
