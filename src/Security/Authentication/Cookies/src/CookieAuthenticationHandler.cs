@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return _readCookieTask;
         }
 
-        private void CheckForRefresh(AuthenticationTicket ticket)
+        private async Task CheckForRefreshAsync(AuthenticationTicket ticket)
         {
             var currentUtc = Clock.UtcNow;
             var issuedUtc = ticket.Properties.IssuedUtc;
@@ -91,7 +91,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
                 var timeRemaining = expiresUtc.Value.Subtract(currentUtc);
 
-                if (timeRemaining < timeElapsed)
+                var eventContext = new CookieSlidingExpirationContext(Context, Scheme, Options, ticket, timeElapsed, timeRemaining)
+                {
+                    ShouldRenew = timeRemaining < timeElapsed,
+                };
+                await Options.Events.OnCheckSlidingExpiration(eventContext);
+
+                if (eventContext.ShouldRenew)
                 {
                     RequestRefresh(ticket);
                 }
@@ -174,8 +180,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 return AuthenticateResult.Fail("Ticket expired");
             }
 
-            CheckForRefresh(ticket);
-
             // Finally we have a valid ticket
             return AuthenticateResult.Success(ticket);
         }
@@ -188,6 +192,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 return result;
             }
+
+            // We check this before the ValidatePrincipal event because we want to make sure we capture a clean clone
+            // without picking up any per-request modifications to the principal.
+            await CheckForRefreshAsync(result.Ticket);
 
             Debug.Assert(result.Ticket != null);
             var context = new CookieValidatePrincipalContext(Context, Scheme, Options, result.Ticket);

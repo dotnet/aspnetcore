@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.WebSockets
     /// <summary>
     /// Extends the <see cref="WebSocketAcceptContext"/> class with additional properties.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.AspNetCore.Http.WebSocketAcceptContext.")]
     public class ExtendedWebSocketAcceptContext : WebSocketAcceptContext
     {
         /// <inheritdoc />
@@ -23,6 +24,6 @@ namespace Microsoft.AspNetCore.WebSockets
         /// <summary>
         /// The interval to send pong frames. This is a heart-beat that keeps the connection alive.
         /// </summary>
-        public TimeSpan? KeepAliveInterval { get; set; }
+        public new TimeSpan? KeepAliveInterval { get; set; }
     }
 }

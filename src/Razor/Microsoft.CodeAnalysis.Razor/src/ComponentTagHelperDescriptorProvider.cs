@@ -288,7 +288,7 @@ namespace Microsoft.CodeAnalysis.Razor
             builder.TagMatchingRule(r =>
             {
                 r.TagName = attribute.Name;
-                r.ParentTag = component.TagMatchingRules.First().TagName;
+                r.ParentTag = component.TagMatchingRules[0].TagName;
             });
 
             if (attribute.IsParameterizedChildContentProperty())

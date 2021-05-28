@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else if (!hasData && !addTrailers)
             {
                 // No data
-                dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[0];
+                dataChunks = Array.Empty<HttpApiTypes.HTTP_DATA_CHUNK>();
                 return pins;
             }
 

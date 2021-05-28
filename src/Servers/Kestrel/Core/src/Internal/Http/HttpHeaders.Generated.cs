@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
     internal partial class HttpHeaders
     {
-        private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(95, StringComparer.OrdinalIgnoreCase)
+        private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(96, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
@@ -174,6 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HeaderNames.SecWebSocketKey,
             HeaderNames.SecWebSocketProtocol,
             HeaderNames.SecWebSocketVersion,
+            HeaderNames.SecWebSocketExtensions,
             HeaderNames.Server,
             HeaderNames.SetCookie,
             HeaderNames.Status,
@@ -2125,6 +2126,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
 
                 SetValueUnknown(HeaderNames.SecWebSocketVersion, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketExtensions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketExtensions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketExtensions, value);
             }
         }
         StringValues IHeaderDictionary.Server
@@ -10012,6 +10031,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 SetValueUnknown(HeaderNames.SecWebSocketVersion, value);
             }
         }
+        StringValues IHeaderDictionary.SecWebSocketExtensions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketExtensions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketExtensions, value);
+            }
+        }
         StringValues IHeaderDictionary.StrictTransportSecurity
         {
             get
@@ -16385,6 +16422,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
 
                 SetValueUnknown(HeaderNames.SecWebSocketVersion, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketExtensions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketExtensions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketExtensions, value);
             }
         }
         StringValues IHeaderDictionary.Server

@@ -350,7 +350,7 @@ namespace CodeGenerator
 
         static string AppendSwitchSection(int length, IList<KnownHeader> values)
         {
-            var useVarForFirstTerm = values.Count() > 1 && values.Select(h => h.FirstNameIgnoreCaseSegment()).Distinct().Count() == 1;
+            var useVarForFirstTerm = values.Count > 1 && values.Select(h => h.FirstNameIgnoreCaseSegment()).Distinct().Count() == 1;
             var firstTermVarExpression = values.Select(h => h.FirstNameIgnoreCaseSegment()).FirstOrDefault();
             var firstTermVar = $"firstTerm{length}";
 
@@ -1188,7 +1188,7 @@ $@"        private void Clear(long bitsToClear)
                                 return;
                             }}")}
                         }}
-                        {(hi.Index + 1 < loop.Headers.Count() ? $"goto case {hi.Index + 1};" : "return;")}")}
+                        {(hi.Index + 1 < loop.Headers.Length ? $"goto case {hi.Index + 1};" : "return;")}")}
                     default:
                         return;
                 }}
@@ -1272,7 +1272,7 @@ $@"        private void Clear(long bitsToClear)
                 {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                     case {header.Index}:
                         goto Header{header.Identifier};")}
-                    {(!loop.ClassName.Contains("Trailers") ? $@"case {loop.Headers.Count() - 1}:
+                    {(!loop.ClassName.Contains("Trailers") ? $@"case {loop.Headers.Length - 1}:
                         goto HeaderContentLength;" : "")}
                     default:
                         goto ExtraHeaders;
@@ -1286,12 +1286,12 @@ $@"        private void Clear(long bitsToClear)
                         ")}_next = {header.Index + 1};
                         return true;
                     }}")}
-                {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Count() - 1}
+                {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Length - 1}
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.ContentLength;
-                        ")}_next = {loop.Headers.Count()};
+                        ")}_next = {loop.Headers.Length};
                         return true;
                     }}" : "")}
                 ExtraHeaders:

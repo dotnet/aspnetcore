@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.WebSockets
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
             if (upgradeFeature != null && context.Features.Get<IHttpWebSocketFeature>() == null)
             {
-                var webSocketFeature = new UpgradeHandshake(context, upgradeFeature, _options);
+                var webSocketFeature = new UpgradeHandshake(context, upgradeFeature, _options, _logger);
                 context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
 
                 if (!_anyOriginAllowed)
@@ -97,13 +97,15 @@ namespace Microsoft.AspNetCore.WebSockets
             private readonly HttpContext _context;
             private readonly IHttpUpgradeFeature _upgradeFeature;
             private readonly WebSocketOptions _options;
+            private readonly ILogger _logger;
             private bool? _isWebSocketRequest;
 
-            public UpgradeHandshake(HttpContext context, IHttpUpgradeFeature upgradeFeature, WebSocketOptions options)
+            public UpgradeHandshake(HttpContext context, IHttpUpgradeFeature upgradeFeature, WebSocketOptions options, ILogger logger)
             {
                 _context = context;
                 _upgradeFeature = upgradeFeature;
                 _options = options;
+                _logger = logger;
             }
 
             public bool IsWebSocketRequest
@@ -133,13 +135,22 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
 
                 string? subProtocol = null;
+                bool enableCompression = false;
+                bool serverContextTakeover = true;
+                int serverMaxWindowBits = 15;
+                TimeSpan keepAliveInterval = _options.KeepAliveInterval;
                 if (acceptContext != null)
                 {
                     subProtocol = acceptContext.SubProtocol;
+                    enableCompression = acceptContext.DangerousEnableCompression;
+                    serverContextTakeover = !acceptContext.DisableServerContextTakeover;
+                    serverMaxWindowBits = acceptContext.ServerMaxWindowBits;
+                    keepAliveInterval = acceptContext.KeepAliveInterval ?? keepAliveInterval;
                 }
 
-                TimeSpan keepAliveInterval = _options.KeepAliveInterval;
+#pragma warning disable CS0618 // Type or member is obsolete
                 if (acceptContext is ExtendedWebSocketAcceptContext advancedAcceptContext)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     if (advancedAcceptContext.KeepAliveInterval.HasValue)
                     {
@@ -151,9 +162,45 @@ namespace Microsoft.AspNetCore.WebSockets
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
+                WebSocketDeflateOptions? deflateOptions = null;
+                if (enableCompression)
+                {
+                    var ext = _context.Request.Headers.SecWebSocketExtensions;
+                    if (ext.Count != 0)
+                    {
+                        // loop over each extension offer, extensions can have multiple offers, we can accept any
+                        foreach (var extension in _context.Request.Headers.GetCommaSeparatedValues(HeaderNames.SecWebSocketExtensions))
+                        {
+                            if (extension.AsSpan().TrimStart().StartsWith("permessage-deflate", StringComparison.Ordinal))
+                            {
+                                if (HandshakeHelpers.ParseDeflateOptions(extension.AsSpan().TrimStart(), serverContextTakeover, serverMaxWindowBits, out var parsedOptions, out var response))
+                                {
+                                    Log.CompressionAccepted(_logger, response);
+                                    deflateOptions = parsedOptions;
+                                    // If more extension types are added, this would need to be a header append
+                                    // and we wouldn't want to break out of the loop
+                                    _context.Response.Headers.SecWebSocketExtensions = response;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (deflateOptions is null)
+                        {
+                            Log.CompressionNotAccepted(_logger);
+                        }
+                    }
+                }
+
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
-                return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+                return WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
+                {
+                    IsServer = true,
+                    KeepAliveInterval = keepAliveInterval,
+                    SubProtocol = subProtocol,
+                    DangerousDeflateOptions = deflateOptions
+                });
             }
 
             public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)
@@ -225,6 +272,25 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
 
                 return HandshakeHelpers.IsRequestKeyValid(requestHeaders.SecWebSocketKey.ToString());
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception?> _compressionAccepted =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "CompressionAccepted"), "WebSocket compression negotiation accepted with values '{CompressionResponse}'.");
+
+            private static readonly Action<ILogger, Exception?> _compressionNotAccepted =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "CompressionNotAccepted"), "Compression negotiation not accepted by server.");
+
+            public static void CompressionAccepted(ILogger logger, string response)
+            {
+                _compressionAccepted(logger, response, null);
+            }
+
+            public static void CompressionNotAccepted(ILogger logger)
+            {
+                _compressionNotAccepted(logger, null);
             }
         }
     }

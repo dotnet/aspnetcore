@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private const int NumberOfIPv6Labels = 8;
         // Lower case hex, no leading zeros
         private const string IPv6NumberFormat = "{0:x}";
-        private const string IPv6StringSeparator = ":";
+        private const char IPv6StringSeparator = ':';
         private const string IPv4StringFormat = "{0:d}.{1:d}.{2:d}.{3:d}";
 
         internal const int IPv6AddressSize = 28;
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 if (i > WriteableOffset)
                 {
-                    bytes.Append(",");
+                    bytes.Append(',');
                 }
                 bytes.Append(this[i].ToString(NumberFormatInfo.InvariantInfo));
             }

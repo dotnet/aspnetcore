@@ -182,12 +182,12 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
             int currentPosition = 0;
             while (currentPosition + 4 < unformattedKey.Length)
             {
-                result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
+                result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
                 currentPosition += 4;
             }
             if (currentPosition < unformattedKey.Length)
             {
-                result.Append(unformattedKey.Substring(currentPosition));
+                result.Append(unformattedKey.AsSpan(currentPosition));
             }
 
             return result.ToString().ToLowerInvariant();

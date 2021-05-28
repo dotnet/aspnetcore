@@ -22,7 +22,10 @@ namespace AutobahnTestApp
                 if (context.WebSockets.IsWebSocketRequest)
                 {
                     logger.LogInformation("Received WebSocket request");
-                    using (var webSocket = await context.WebSockets.AcceptWebSocketAsync())
+                    using (var webSocket = await context.WebSockets.AcceptWebSocketAsync(new WebSocketAcceptContext()
+                    {
+                        DangerousEnableCompression = true
+                    }))
                     {
                         await Echo(webSocket, context.RequestAborted);
                     }

@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             builder
                 .Append(CacheKeyTokenSeparator)
                 .Append(collectionName)
-                .Append("(");
+                .Append('(');
 
             for (var i = 0; i < values.Count; i++)
             {
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                     .Append(item.Value);
             }
 
-            builder.Append(")");
+            builder.Append(')');
         }
 
         private static void CombineCollectionHashCode(

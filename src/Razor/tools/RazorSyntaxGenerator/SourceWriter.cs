@@ -2087,7 +2087,7 @@ namespace RazorSyntaxGenerator
 
             var minimalFactoryfields = new HashSet<Field>(DetermineMinimalFactoryFields(nd));
 
-            if (withStringNames && minimalFactoryfields.Count(f => IsRequiredFactoryField(nd, f) && CanAutoConvertFromString(f)) == 0)
+            if (withStringNames && !minimalFactoryfields.Any(f => IsRequiredFactoryField(nd, f) && CanAutoConvertFromString(f)))
                 return; // no string-name overload necessary
 
             WriteLine();

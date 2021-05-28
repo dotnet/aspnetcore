@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 {
                     matchesSb.Insert(0, branch);
                 }
-                sb.Append(matchesSb.ToString());
+                sb.Append(matchesSb);
                 sb.Append(" (Matches: ");
                 sb.AppendJoin(", ", node.Matches.Select(m => m.Entry.RouteTemplate.TemplateText));
                 sb.AppendLine(")");
