@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public string TagHelperProcessMethodName { get; set; } = "ProcessAsync";
 
+        public string TagHelperProcessInvokeAsyncArgsMethodName { get; set; } = "ProcessInvokeAsyncArgs";
+
         public string TagHelperContextTypeName { get; set; } = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext";
 
         public string TagHelperContextVariableName { get; set; } = "__context";
@@ -83,6 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                 // Add process method.
                 WriteProcessMethodString(context.CodeWriter, node.TagHelper);
+
+                // We pre-process the arguments passed to `InvokeAsync` to ensure that the
+                // provided markup attributes (in kebab-case) are matched to the associated
+                // properties in the VCTH class.
+                WriteProcessInvokeAsyncArgsMethodString(context.CodeWriter, node.TagHelper);
             }
         }
 
@@ -147,17 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     IViewContextAwareContextualizeMethodName,
                     new[] { ViewContextPropertyName });
 
-                // The attribute names stored in the __context.Attributes dictionary reflect the
-                // kebab-case attribute names used in the markup. However, the `InvokeCoreAsync` method
-                // expects attribute names to be in the camelCase used by parameters. We use the
-                // `ToCamelCase` method to map the attribute names appropriately.
-                var processAttributeName = @"static string ToCamelCase(string attr) {
-                    var mappedString = string.Join(string.Empty, attr.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1).ToLower()));
-                    return char.ToLower(mappedString[0]) + mappedString.Substring(1);
-                };";
-                writer.Write(processAttributeName).WriteLine();
-
-                var methodParameters = GetMethodParameters(tagHelper);
+                var methodParameters = GetMethodParameters(writer, tagHelper);
                 writer.Write("var ")
                     .WriteStartAssignment(TagHelperContentVariableName)
                     .WriteInstanceMethodInvocation($"await {ViewComponentHelperVariableName}", ViewComponentInvokeMethodName, methodParameters);
@@ -170,13 +167,33 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private string[] GetMethodParameters(TagHelperDescriptor tagHelper)
+        private void WriteProcessInvokeAsyncArgsMethodString(CodeWriter writer, TagHelperDescriptor tagHelper)
         {
-            var propertyNames = tagHelper.BoundAttributes.Select(attribute => attribute.GetPropertyName());
-            var joinedPropertyNames = string.Join(", ", propertyNames);
-            var parametersString = $"{TagHelperContextVariableName}.{TagHelperContextAttributesVariableName}.ToDictionary(attr => ToCamelCase(attr.Name), attr => attr.Value)";
+            var methodReturnType = "Dictionary<string, object>";
+            using (writer.BuildMethodDeclaration(
+                "private",
+                methodReturnType,
+                TagHelperProcessInvokeAsyncArgsMethodName,
+                new Dictionary<string, string>() { { TagHelperContextTypeName, TagHelperContextVariableName } }))
+            {
+                writer.WriteStartAssignment($"{methodReturnType} args").WriteLine("new();");
+                for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
+                {
+                    var attributeName = tagHelper.BoundAttributes[i].Name;
+                    var parameterName = tagHelper.BoundAttributes[i].GetPropertyName();
+                    writer.WriteLine($"if (__context.AllAttributes.ContainsName(\"{attributeName}\"))");
+                    writer.WriteLine("{");
+                    writer.WriteLine($"args[nameof({parameterName})] = {parameterName};");
+                    writer.WriteLine("}");
+                }
+                writer.WriteLine("return args;");
+            }
+        }
+
+        private string[] GetMethodParameters(CodeWriter writer, TagHelperDescriptor tagHelper)
+        {
             var viewComponentName = tagHelper.GetViewComponentName();
-            var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
+            var methodParameters = new[] { $"\"{viewComponentName}\"", $"{TagHelperProcessInvokeAsyncArgsMethodName}({TagHelperContextVariableName})" };
             return methodParameters;
         }
 

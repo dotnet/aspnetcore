@@ -298,13 +298,18 @@ __OptionalWithMultipleTypesViewComponentTagHelper.birthDate = DateTime.Now;
             public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
             {
                 (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-                static string ToCamelCase(string attr) {
-                    var mappedString = string.Join(string.Empty, attr.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1).ToLower()));
-                    return char.ToLower(mappedString[0]) + mappedString.Substring(1);
-                };
-                var __helperContent = await __helper.InvokeAsync("OptionalTest", __context.AllAttributes.ToDictionary(attr => ToCamelCase(attr.Name), attr => attr.Value));
+                var __helperContent = await __helper.InvokeAsync("OptionalTest", ProcessInvokeAsyncArgs(__context));
                 __output.TagName = null;
                 __output.Content.SetHtmlContent(__helperContent);
+            }
+            private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
+            {
+                Dictionary<string, object> args = new();
+                if (__context.AllAttributes.ContainsName("show-secret"))
+                {
+                args[nameof(showSecret)] = showSecret;
+                }
+                return args;
             }
         }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("vc:optional-test-with-param")]
@@ -322,13 +327,22 @@ __OptionalWithMultipleTypesViewComponentTagHelper.birthDate = DateTime.Now;
             public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
             {
                 (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-                static string ToCamelCase(string attr) {
-                    var mappedString = string.Join(string.Empty, attr.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1).ToLower()));
-                    return char.ToLower(mappedString[0]) + mappedString.Substring(1);
-                };
-                var __helperContent = await __helper.InvokeAsync("OptionalTestWithParam", __context.AllAttributes.ToDictionary(attr => ToCamelCase(attr.Name), attr => attr.Value));
+                var __helperContent = await __helper.InvokeAsync("OptionalTestWithParam", ProcessInvokeAsyncArgs(__context));
                 __output.TagName = null;
                 __output.Content.SetHtmlContent(__helperContent);
+            }
+            private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
+            {
+                Dictionary<string, object> args = new();
+                if (__context.AllAttributes.ContainsName("secret"))
+                {
+                args[nameof(secret)] = secret;
+                }
+                if (__context.AllAttributes.ContainsName("show-secret"))
+                {
+                args[nameof(showSecret)] = showSecret;
+                }
+                return args;
             }
         }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("vc:optional-with-multiple-types")]
@@ -349,13 +363,34 @@ __OptionalWithMultipleTypesViewComponentTagHelper.birthDate = DateTime.Now;
             public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
             {
                 (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-                static string ToCamelCase(string attr) {
-                    var mappedString = string.Join(string.Empty, attr.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1).ToLower()));
-                    return char.ToLower(mappedString[0]) + mappedString.Substring(1);
-                };
-                var __helperContent = await __helper.InvokeAsync("OptionalWithMultipleTypes", __context.AllAttributes.ToDictionary(attr => ToCamelCase(attr.Name), attr => attr.Value));
+                var __helperContent = await __helper.InvokeAsync("OptionalWithMultipleTypes", ProcessInvokeAsyncArgs(__context));
                 __output.TagName = null;
                 __output.Content.SetHtmlContent(__helperContent);
+            }
+            private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
+            {
+                Dictionary<string, object> args = new();
+                if (__context.AllAttributes.ContainsName("age"))
+                {
+                args[nameof(age)] = age;
+                }
+                if (__context.AllAttributes.ContainsName("favorite-decimal"))
+                {
+                args[nameof(favoriteDecimal)] = favoriteDecimal;
+                }
+                if (__context.AllAttributes.ContainsName("favorite-letter"))
+                {
+                args[nameof(favoriteLetter)] = favoriteLetter;
+                }
+                if (__context.AllAttributes.ContainsName("birth-date"))
+                {
+                args[nameof(birthDate)] = birthDate;
+                }
+                if (__context.AllAttributes.ContainsName("another-one"))
+                {
+                args[nameof(anotherOne)] = anotherOne;
+                }
+                return args;
             }
         }
     }
