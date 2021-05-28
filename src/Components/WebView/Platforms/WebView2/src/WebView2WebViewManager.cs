@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
     /// An implementation of <see cref="WebViewManager"/> that uses the Edge WebView2 browser control
     /// to render web content.
     /// </summary>
-    public class WebView2WebViewManager<TWebView2, TCoreWebView2Environment> : WebViewManager
+    public class WebView2WebViewManager : WebViewManager
     {
         // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
         // making it substantially faster. Note that this isn't real HTTP traffic, since
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         private readonly Task _webviewReadyTask;
 
         /// <summary>
-        /// Constructs an instance of <see cref="WebView2WebViewManager{T1, T2}"/>.
+        /// Constructs an instance of <see cref="WebView2WebViewManager"/>.
         /// </summary>
         /// <param name="webview">A wrapper to access platform-specific WebView2 APIs.</param>
         /// <param name="services">A service provider containing services to be used by this class and also by application code.</param>

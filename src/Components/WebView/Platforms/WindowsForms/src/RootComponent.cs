@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             return webViewManager.AddRootComponentAsync(ComponentType, Selector, parameterView);
         }
 
-        internal Task RemoveFromWebViewManagerAsync(WebView2WebViewManager<WebView2Control, CoreWebView2Environment> webviewManager)
+        internal Task RemoveFromWebViewManagerAsync(WebView2WebViewManager webviewManager)
         {
             return webviewManager.RemoveRootComponentAsync(Selector);
         }
