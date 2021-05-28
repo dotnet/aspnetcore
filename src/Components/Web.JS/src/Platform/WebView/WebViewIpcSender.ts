@@ -21,8 +21,8 @@ export function sendEndInvokeJSFromDotNet(asyncHandle: number, succeeded: boolea
   send('EndInvokeJS', asyncHandle, succeeded, argsJson);
 }
 
-export function sendSupplyByteArray(id: number, data: Uint8Array) {
-  send('SupplyByteArray', id, data);
+export function sendByteArray(id: number, data: Uint8Array) {
+  send('ReceiveByteArrayFromJS', id, data);
 }
 
 export function sendLocationChanged(uri: string, intercepted: boolean) {

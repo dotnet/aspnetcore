@@ -12,13 +12,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
     internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
-        internal static readonly DefaultWebAssemblyJSRuntime Instance = new DefaultWebAssemblyJSRuntime();
+        internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
         [DynamicDependency(nameof(InvokeDotNet))]
         [DynamicDependency(nameof(EndInvokeJS))]
         [DynamicDependency(nameof(BeginInvokeDotNet))]
+        [DynamicDependency(nameof(NotifyByteArrayAvailable))]
         private DefaultWebAssemblyJSRuntime()
         {
             ElementReferenceContext = new WebElementReferenceContext(this);
@@ -71,6 +72,33 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 // exceptions into a failure on the JS Promise object.
                 DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
             });
+        }
+
+        /// <summary>
+        /// Invoked via Mono's JS interop mechanism (invoke_method)
+        /// 
+        /// Notifies .NET of an array that's available for transfer from JS to .NET
+        /// 
+        /// Ideally that byte array would be transferred directly as a parameter on this
+        /// call, however that's not currently possible due to: <INSERT_BUG_HERE></INSERT_BUG_HERE>
+        /// </summary>
+        /// <param name="id">Id of the byte array</param>
+        public static void NotifyByteArrayAvailable(int id)
+        {
+            var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
+
+            DotNetDispatcher.ReceiveByteArray(Instance, id, data);
+
+            // Is the above technique acceptable or do we have to queue the call as below?
+            // The below approach doesn't work as the call to receive the byte array is executed
+            // AFTER we receive the main begin invoke call (which tries to deserialize the byte array
+            // we haven't yet processed here).
+            //WebAssemblyCallQueue.Schedule((id, data), static state =>
+            //{
+            //    // This is not expected to throw, as it takes care of converting any unhandled user code
+            //    // exceptions into a failure on the Task that was returned when calling InvokeAsync.
+            //    DotNetDispatcher.ReceiveByteArray(Instance, state.id, state.data);
+            //});
         }
     }
 }
