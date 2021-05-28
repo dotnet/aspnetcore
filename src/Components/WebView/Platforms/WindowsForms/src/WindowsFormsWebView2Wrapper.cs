@@ -10,10 +10,9 @@ using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
-    internal class WindowsFormsWebView2Wrapper : IWebView2Wrapper<WebView2Control, CoreWebView2Environment>
+    internal class WindowsFormsWebView2Wrapper : IWebView2Wrapper
     {
         private readonly WindowsFormsCoreWebView2Wrapper _coreWebView2Wrapper;
-        private CoreWebView2Environment _environment;
 
         public WindowsFormsWebView2Wrapper(WebView2Control webView2)
         {
@@ -26,13 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             _coreWebView2Wrapper = new WindowsFormsCoreWebView2Wrapper(this);
         }
 
-        public ICoreWebView2Wrapper<CoreWebView2Environment> CoreWebView2 => _coreWebView2Wrapper;
-
-        public async Task<ICoreWebView2EnvironmentWrapper<CoreWebView2Environment>> CreateEnvironmentAsync()
-        {
-            return new WindowsFormsCoreWebView2EnvironmentWrapper(await CoreWebView2Environment.CreateAsync());
-        }
-
+        public ICoreWebView2Wrapper CoreWebView2 => _coreWebView2Wrapper;
 
         public Uri Source
         {
@@ -42,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
         public WebView2Control WebView2 { get; }
 
-        public CoreWebView2Environment Environment => _environment;
+        public CoreWebView2Environment Environment { get; set; }
 
         public Action AddAcceleratorKeyPressedHandler(EventHandler<ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler)
         {
@@ -56,10 +49,15 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             return () => { WebView2.AcceleratorKeyPressed -= realHandler; };
         }
 
-        public Task EnsureCoreWebView2Async(ICoreWebView2EnvironmentWrapper<CoreWebView2Environment> environment)
+        public async Task EstablishEnvironmentAsync()
         {
-            _environment = environment.CoreWebView2Environment;
-            return WebView2.EnsureCoreWebView2Async(environment.CoreWebView2Environment);
+            //return new WindowsFormsCoreWebView2EnvironmentWrapper(await CoreWebView2Environment.CreateAsync());
+            Environment = await CoreWebView2Environment.CreateAsync();
+        }
+
+        public Task EnsureCoreWebView2WithEstablishedEnvironmentAsync()
+        {
+            return WebView2.EnsureCoreWebView2Async(Environment);
         }
     }
 
@@ -97,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         public CoreWebView2Environment CoreWebView2Environment { get; }
     }
 
-    internal class WindowsFormsCoreWebView2Wrapper : ICoreWebView2Wrapper<CoreWebView2Environment>
+    internal class WindowsFormsCoreWebView2Wrapper : ICoreWebView2Wrapper
     {
         private readonly WindowsFormsWebView2Wrapper _webView2;
         private WindowsFormsCoreWebView2SettingsWrapper _settings;

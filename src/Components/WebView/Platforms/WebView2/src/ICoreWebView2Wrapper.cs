@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
-    public interface ICoreWebView2Wrapper<TCoreWebView2Environment>
+    public interface ICoreWebView2Wrapper
     {
         public ICoreWebView2SettingsWrapper Settings { get; }
         void PostWebMessageAsString(string message);

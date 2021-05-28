@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         // we intercept all the requests within this origin.
         private const string AppOrigin = "https://0.0.0.0/";
 
-        private readonly IWebView2Wrapper<TWebView2, TCoreWebView2Environment> _webview;
+        private readonly IWebView2Wrapper _webview;
         private readonly Task _webviewReadyTask;
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
         /// <param name="fileProvider">Provides static content to the webview.</param>
         /// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-        public WebView2WebViewManager(IWebView2Wrapper<TWebView2, TCoreWebView2Environment> webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
+        public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
             : base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
         private async Task InitializeWebView2()
         {
-            var environment = await _webview.CreateEnvironmentAsync().ConfigureAwait(true);
-            await _webview.EnsureCoreWebView2Async(environment);
+            await _webview.EstablishEnvironmentAsync().ConfigureAwait(true);
+            await _webview.EnsureCoreWebView2WithEstablishedEnvironmentAsync();
             ApplyDefaultWebViewSettings();
 
             _webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContextWrapper.All);

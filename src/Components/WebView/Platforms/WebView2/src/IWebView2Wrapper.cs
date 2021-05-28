@@ -13,23 +13,19 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
     /// Provides an abstraction for different UI frameworks to provide access to APIs from
     /// Microsoft.Web.WebView2.Core.CoreWebView2 and related controls.
     /// </summary>
-    public interface IWebView2Wrapper<TWebView2, TCoreWebView2Environment>
+    public interface IWebView2Wrapper
     {
-        TWebView2 WebView2 { get; }
-
-        Task<ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment>> CreateEnvironmentAsync();
+        Task EstablishEnvironmentAsync();
 
 
-        ICoreWebView2Wrapper<TCoreWebView2Environment> CoreWebView2 { get; }
-
-        TCoreWebView2Environment Environment { get; }
+        ICoreWebView2Wrapper CoreWebView2 { get; }
 
         /// <summary>
         /// Gets or sets the source URI of the control. Setting the source URI causes page navigation.
         /// </summary>
         Uri Source { get; set; }
 
-        Task EnsureCoreWebView2Async(ICoreWebView2EnvironmentWrapper<TCoreWebView2Environment> environment);
+        Task EnsureCoreWebView2WithEstablishedEnvironmentAsync();
 
         /// <summary>
         /// Event that occurs when an accelerator key is pressed.
