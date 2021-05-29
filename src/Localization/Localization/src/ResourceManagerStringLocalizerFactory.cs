@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.Localization
             // Get without Add to prevent unnecessary lambda allocation
             if (_localizerCache.TryGetValue(resourceSource.AssemblyQualifiedName!, out var cache))
             {
-                return cache;
+                return localizer;
             }
 
             return _localizerCache.GetOrAdd(resourceSource.AssemblyQualifiedName!, _ =>
