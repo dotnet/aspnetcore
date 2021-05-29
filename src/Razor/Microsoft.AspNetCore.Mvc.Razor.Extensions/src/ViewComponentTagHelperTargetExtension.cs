@@ -34,9 +34,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public string TagHelperProcessMethodName { get; set; } = "ProcessAsync";
 
+        public string TagHelperProcessInvokeAsyncArgsMethodName { get; set; } = "ProcessInvokeAsyncArgs";
+
         public string TagHelperContextTypeName { get; set; } = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext";
 
         public string TagHelperContextVariableName { get; set; } = "__context";
+
+        public string TagHelperContextAttributesVariableName { get; set; } = "AllAttributes";
 
         public string TagHelperOutputTypeName { get; set; } = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput";
 
@@ -81,6 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                 // Add process method.
                 WriteProcessMethodString(context.CodeWriter, node.TagHelper);
+
+                // We pre-process the arguments passed to `InvokeAsync` to ensure that the
+                // provided markup attributes (in kebab-case) are matched to the associated
+                // properties in the VCTH class.
+                WriteProcessInvokeAsyncArgsMethodString(context.CodeWriter, node.TagHelper);
             }
         }
 
@@ -158,13 +167,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
+        private void WriteProcessInvokeAsyncArgsMethodString(CodeWriter writer, TagHelperDescriptor tagHelper)
+        {
+            var methodReturnType = "Dictionary<string, object>";
+            using (writer.BuildMethodDeclaration(
+                "private",
+                methodReturnType,
+                TagHelperProcessInvokeAsyncArgsMethodName,
+                new Dictionary<string, string>() { { TagHelperContextTypeName, TagHelperContextVariableName } }))
+            {
+                writer.WriteStartAssignment($"{methodReturnType} args").WriteLine("new();");
+                for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
+                {
+                    var attributeName = tagHelper.BoundAttributes[i].Name;
+                    var parameterName = tagHelper.BoundAttributes[i].GetPropertyName();
+                    writer.WriteLine($"if (__context.AllAttributes.ContainsName(\"{attributeName}\"))");
+                    writer.WriteLine("{");
+                    writer.CurrentIndent += writer.TabSize;
+                    writer.WriteLine($"args[nameof({parameterName})] = {parameterName};");
+                    writer.CurrentIndent -= writer.TabSize;
+                    writer.WriteLine("}");
+                }
+                writer.WriteLine("return args;");
+            }
+        }
+
         private string[] GetMethodParameters(TagHelperDescriptor tagHelper)
         {
-            var propertyNames = tagHelper.BoundAttributes.Select(attribute => attribute.GetPropertyName());
-            var joinedPropertyNames = string.Join(", ", propertyNames);
-            var parametersString = $"new {{ { joinedPropertyNames } }}";
             var viewComponentName = tagHelper.GetViewComponentName();
-            var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
+            var methodParameters = new[] { $"\"{viewComponentName}\"", $"{TagHelperProcessInvokeAsyncArgsMethodName}({TagHelperContextVariableName})" };
             return methodParameters;
         }
 
