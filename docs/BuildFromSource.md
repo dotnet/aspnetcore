@@ -9,6 +9,7 @@ For more info on issues related to build infrastructure and ongoing work, see <h
 This tutorial assumes that you are familiar with:
 
 - Git
+- The basics of [forking and contributing to GitHub projects](https://guides.github.com/activities/forking/)
 - Command line fundamentals in your operating system of choice
 
 ## Step 1: Getting the source code
