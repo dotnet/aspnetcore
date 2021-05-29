@@ -741,7 +741,7 @@ namespace Microsoft.AspNetCore.Http
             return ExecuteAwaited(task, httpContext);
         }
 
-        private static Task ExecuteValueTaskOfString(ValueTask<string> task, HttpContext httpContext)
+        private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
         {
             EnsureRequestValueTaskOfNotNull(task);
             static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
@@ -751,13 +751,13 @@ namespace Microsoft.AspNetCore.Http
 
             if (task.IsCompletedSuccessfully)
             {
-                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult());
+                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult()!);
             }
 
-            return ExecuteAwaited(task, httpContext);
+            return ExecuteAwaited(task!, httpContext);
         }
 
-        private static Task ExecuteValueTaskResult<T>(ValueTask<T> task, HttpContext httpContext) where T : IResult
+        private static Task ExecuteValueTaskResult<T>(ValueTask<T?> task, HttpContext httpContext) where T : IResult
         {
             EnsureRequestValueTaskOfNotNull(task);
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
@@ -767,16 +767,16 @@ namespace Microsoft.AspNetCore.Http
 
             if (task.IsCompletedSuccessfully)
             {
-                return task.GetAwaiter().GetResult().ExecuteAsync(httpContext);
+                return task.GetAwaiter().GetResult()!.ExecuteAsync(httpContext);
             }
 
-            return ExecuteAwaited(task, httpContext);
+            return ExecuteAwaited(task!, httpContext);
         }
 
-        private static async Task ExecuteTaskResult<T>(Task<T> task, HttpContext httpContext) where T : IResult
+        private static async Task ExecuteTaskResult<T>(Task<T?> task, HttpContext httpContext) where T : IResult
         {
             EnsureRequestTaskOfNotNull(task);
-            await (await task).ExecuteAsync(httpContext);
+            await (await task)!.ExecuteAsync(httpContext);
         }
 
         private static async Task ExecuteResultWriteResponse(IResult result, HttpContext httpContext)
@@ -851,7 +851,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static void EnsureRequestValueTaskOfNotNull<T>(ValueTask<T> task)
         {
-            if (task.Result is null)
+            if (task.Equals(default(ValueTask<T>)))
             {
                 throw new InvalidOperationException("ValueTask Result should not be null");
             }
