@@ -153,9 +153,6 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(resourceSource));
             }
 
-            // throw new Exception("HERE!");
-            Console.WriteLine("HERE");
-
             // Get without Add to prevent unnecessary lambda allocation
             if (_localizerCache.TryGetValue(resourceSource.AssemblyQualifiedName!, out var cache))
             {
