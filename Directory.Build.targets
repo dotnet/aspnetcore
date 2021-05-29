@@ -154,12 +154,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <KnownAppHostPackOrFrameworkReferenceTfm>$(DefaultNetCoreTargetFramework)</KnownAppHostPackOrFrameworkReferenceTfm>
-    <_DefaultTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(DefaultNetCoreTargetFramework)'))</_DefaultTargetFrameworkIdentifier>
-    <_DefaultTargetFrameworkVersionNoV>$([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))</_DefaultTargetFrameworkVersionNoV>
-    <KnownAppHostPackOrFrameworkReferenceTfm Condition=" '$(_DefaultTargetFrameworkIdentifier)' == '$(NETCoreAppFrameworkIdentifier)' AND
-      $([MSBuild]::VersionGreaterThanOrEquals('$(_DefaultTargetFrameworkVersionNoV)', '5.0')) ">netcoreapp$(_DefaultTargetFrameworkVersionNoV)</KnownAppHostPackOrFrameworkReferenceTfm>
-
     <!-- Do not update the Microsoft.AspNetCore.App KnownFrameworkReference item unless requested. -->
     <UpdateAspNetCoreKnownFramework>false</UpdateAspNetCoreKnownFramework>
     <UpdateAspNetCoreKnownFramework Condition=" '$(UseAspNetCoreSharedRuntime)' == 'true' AND
