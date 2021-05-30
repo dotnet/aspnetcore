@@ -106,7 +106,6 @@ namespace Microsoft.AspNetCore.Mvc
                     EntityTag,
                     logger!);
 
-
             await FileStreamResultExecutor.ExecuteAsyncInternal(
                 httpContext,
                 this,
