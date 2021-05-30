@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -45,9 +44,27 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <inheritdoc />
         public virtual Task ExecuteAsync(ActionContext context, LocalRedirectResult result)
         {
-            if (context == null)
+            var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
+
+            return ExecuteAsyncInternal(
+                context.HttpContext,
+                result,
+                urlHelper.IsLocalUrl,
+                urlHelper.Content,
+                _logger);
+        }
+
+        internal static Task ExecuteAsyncInternal(
+            HttpContext httpContext,
+            LocalRedirectResult result,
+            Func<string, bool> isLocalUrl,
+            Func<string, string> getContent,
+            ILogger logger
+            )
+        {
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
             if (result == null)
@@ -55,26 +72,24 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(result));
             }
 
-            var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
-
             // IsLocalUrl is called to handle  Urls starting with '~/'.
-            if (!urlHelper.IsLocalUrl(result.Url))
+            if (!isLocalUrl(result.Url))
             {
                 throw new InvalidOperationException(Resources.UrlNotLocal);
             }
 
-            var destinationUrl = urlHelper.Content(result.Url);
-            _logger.LocalRedirectResultExecuting(destinationUrl);
+            var destinationUrl = getContent(result.Url);
+            logger.LocalRedirectResultExecuting(destinationUrl);
 
             if (result.PreserveMethod)
             {
-                context.HttpContext.Response.StatusCode = result.Permanent ?
+                httpContext.Response.StatusCode = result.Permanent ?
                     StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
-                context.HttpContext.Response.Headers.Location = destinationUrl;
+                httpContext.Response.Headers.Location = destinationUrl;
             }
             else
             {
-                context.HttpContext.Response.Redirect(destinationUrl, result.Permanent);
+                httpContext.Response.Redirect(destinationUrl, result.Permanent);
             }
 
             return Task.CompletedTask;

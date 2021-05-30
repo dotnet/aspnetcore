@@ -84,39 +84,35 @@ namespace Microsoft.AspNetCore.Mvc
 
         async Task IResult.ExecuteAsync(HttpContext httpContext)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<RedirectResult>();
 
-            using (FileStream)
-            {
-                var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger<RedirectResult>();
-                logger.ExecutingFileResult(this);
+            Task writeFileAsync(HttpContext httpContext, FileStreamResult result, RangeItemHeaderValue? range, long rangeLength)
+                => FileStreamResultExecutor.WriteFileAsyncInternal(httpContext, this, range, rangeLength, logger!);
 
-                long? fileLength = null;
-                if (FileStream.CanSeek)
-                {
-                    fileLength = FileStream.Length;
-                }
-
-                var (range, rangeLength, serveBody) = FileResultExecutorBase.SetHeadersAndLog(
+            (RangeItemHeaderValue? range, long rangeLength, bool serveBody) setHeadersAndLog(
+                HttpContext httpContext,
+                FileResult result,
+                long? fileLength,
+                bool enableRangeProcessing,
+                DateTimeOffset? lastModified,
+                EntityTagHeaderValue? etag)
+                => FileResultExecutorBase.SetHeadersAndLog(
                     httpContext,
                     this,
                     fileLength,
                     EnableRangeProcessing,
                     LastModified,
                     EntityTag,
-                    logger);
+                    logger!);
 
-                if (!serveBody)
-                {
-                    return;
-                }
 
-                await FileStreamResultExecutor.WriteFileAsyncInternal(httpContext, this, range, rangeLength, logger);
-            }
+            await FileStreamResultExecutor.ExecuteAsyncInternal(
+                httpContext,
+                this,
+                setHeadersAndLog,
+                writeFileAsync,
+                logger);
         }
     }
 }

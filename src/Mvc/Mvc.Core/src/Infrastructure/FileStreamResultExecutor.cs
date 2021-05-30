@@ -28,6 +28,37 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <inheritdoc />
         public virtual async Task ExecuteAsync(ActionContext context, FileStreamResult result)
         {
+            await ExecuteAsyncInternal(
+                context,
+                result,
+                SetHeadersAndLog,
+                WriteFileAsync,
+                Logger);
+        }
+
+        /// <summary>
+        /// Write the contents of the FileStreamResult to the response body.
+        /// </summary>
+        /// <param name="context">The <see cref="ActionContext"/>.</param>
+        /// <param name="result">The FileStreamResult to write.</param>
+        /// <param name="range">The <see cref="RangeItemHeaderValue"/>.</param>
+        /// <param name="rangeLength">The range length.</param>
+        protected virtual Task WriteFileAsync(
+            ActionContext context,
+            FileStreamResult result,
+            RangeItemHeaderValue? range,
+            long rangeLength)
+        {
+            return WriteFileAsyncInternal(context.HttpContext, result, range, rangeLength, Logger);
+        }
+
+        internal static async Task ExecuteAsyncInternal<TContext>(
+            TContext context,
+            FileStreamResult result,
+            Func<TContext, FileStreamResult, long?, bool, DateTimeOffset?, EntityTagHeaderValue?, (RangeItemHeaderValue?, long, bool)> SetHeadersAndLog,
+            Func<TContext, FileStreamResult, RangeItemHeaderValue?, long, Task> WriteFileAsync,
+            ILogger logger)
+        {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
@@ -40,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             using (result.FileStream)
             {
-                Logger.ExecutingFileResult(result);
+                logger.ExecutingFileResult(result);
 
                 long? fileLength = null;
                 if (result.FileStream.CanSeek)
@@ -63,22 +94,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 await WriteFileAsync(context, result, range, rangeLength);
             }
-        }
-
-        /// <summary>
-        /// Write the contents of the FileStreamResult to the response body.
-        /// </summary>
-        /// <param name="context">The <see cref="ActionContext"/>.</param>
-        /// <param name="result">The FileStreamResult to write.</param>
-        /// <param name="range">The <see cref="RangeItemHeaderValue"/>.</param>
-        /// <param name="rangeLength">The range length.</param>
-        protected virtual Task WriteFileAsync(
-            ActionContext context,
-            FileStreamResult result,
-            RangeItemHeaderValue? range,
-            long rangeLength)
-        {
-            return WriteFileAsyncInternal(context.HttpContext, result, range, rangeLength, Logger);
         }
 
         internal static Task WriteFileAsyncInternal(HttpContext httpContext, FileStreamResult result, RangeItemHeaderValue? range, long rangeLength, ILogger logger)

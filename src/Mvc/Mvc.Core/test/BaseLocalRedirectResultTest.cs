@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new LocalRedirectResult(contentPath);
 
             // Act
-            await result.ExecuteResultAsync(actionContext);
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            await function(result, (TContext)context);
 
             // Assert
             Assert.Equal(expectedPath, httpContext.Response.Headers.Location.ToString());
@@ -48,7 +49,8 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new LocalRedirectResult(contentPath);
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteResultAsync(actionContext));
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => function(result, (TContext)context));
             Assert.Equal(
                 "The supplied URL is not local. A URL with an absolute path is considered local if it does not " +
                 "have a host/authority part. URLs using virtual paths ('~/') are also local.",
@@ -66,7 +68,9 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new LocalRedirectResult(contentPath);
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteResultAsync(actionContext));
+            object context = typeof(TContext) == typeof(HttpContext) ? httpContext : actionContext;
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => function(result, (TContext)context));
             Assert.Equal(
                 "The supplied URL is not local. A URL with an absolute path is considered local if it does not " +
                 "have a host/authority part. URLs using virtual paths ('~/') are also local.",

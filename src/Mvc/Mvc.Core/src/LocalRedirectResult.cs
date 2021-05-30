@@ -109,36 +109,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         Task IResult.ExecuteAsync(HttpContext httpContext)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            // IsLocalUrl is called to handle  Urls starting with '~/'.
-            if (!UrlHelperBase.CheckIsLocalUrl(Url))
-            {
-                throw new InvalidOperationException(Resources.UrlNotLocal);
-            }
-
-            var destinationUrl = UrlHelperBase.Content(httpContext, Url);
-
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<RedirectResult>();
-            logger.LocalRedirectResultExecuting(destinationUrl);
 
-            if (PreserveMethod)
-            {
-                httpContext.Response.StatusCode = Permanent
-                    ? StatusCodes.Status308PermanentRedirect
-                    : StatusCodes.Status307TemporaryRedirect;
-                httpContext.Response.Headers.Location = destinationUrl;
-            }
-            else
-            {
-                httpContext.Response.Redirect(destinationUrl, Permanent);
-            }
-
-            return Task.CompletedTask;
+            return LocalRedirectResultExecutor.ExecuteAsyncInternal(
+                httpContext,
+                this,
+                UrlHelperBase.CheckIsLocalUrl,
+                url => UrlHelperBase.Content(httpContext, Url),
+                logger);
         }
     }
 }
