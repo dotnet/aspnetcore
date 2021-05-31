@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc
         Task IResult.ExecuteAsync(HttpContext httpContext)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<RedirectResult>();
+            var logger = loggerFactory.CreateLogger<LocalRedirectResult>();
 
             return LocalRedirectResultExecutor.ExecuteAsyncInternal(
                 httpContext,
