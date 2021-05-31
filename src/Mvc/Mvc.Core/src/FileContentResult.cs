@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<RedirectResult>();
+            var logger = loggerFactory.CreateLogger<FileContentResult>();
 
             var (range, rangeLength, serveBody) = FileResultExecutorBase.SetHeadersAndLog(
                 httpContext,
