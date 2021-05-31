@@ -20,6 +20,10 @@ namespace Microsoft.AspNetCore.Http
         // Please do NOT change these to 'const'
 
         /// <summary>
+        ///  HTTP protocol version 0.9.
+        /// </summary>
+        public static readonly string Http09 = "HTTP/0.9";
+        /// <summary>
         ///  HTTP protocol version 1.0.
         /// </summary>
         public static readonly string Http10 = "HTTP/1.0";
@@ -35,6 +39,18 @@ namespace Microsoft.AspNetCore.Http
         ///  HTTP protcol version 3.
         /// </summary>
         public static readonly string Http3 = "HTTP/3";
+
+        /// <summary>
+        /// Returns a value that indicates if the HTTP request protocol is HTTP/0.9.
+        /// </summary>
+        /// <param name="protocol">The HTTP request protocol.</param>
+        /// <returns>
+        /// <see langword="true" /> if the protocol is HTTP/0.9; otherwise, <see langword="false" />.
+        /// </returns>
+        public static bool IsHttp09(string protocol)
+        {
+            return object.ReferenceEquals(Http09, protocol) || StringComparer.OrdinalIgnoreCase.Equals(Http09, protocol);
+        }
 
         /// <summary>
         /// Returns a value that indicates if the HTTP request protocol is HTTP/1.0.
@@ -102,6 +118,7 @@ namespace Microsoft.AspNetCore.Http
                 { Major: 2, Minor: 0 } => Http2,
                 { Major: 1, Minor: 1 } => Http11,
                 { Major: 1, Minor: 0 } => Http10,
+                { Major: 0, Minor: 9 } => Http09,
                 _ => throw new ArgumentOutOfRangeException(nameof(version), "Version doesn't map to a known HTTP protocol.")
             };
         }
