@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc
         async Task IResult.ExecuteAsync(HttpContext httpContext)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<RedirectResult>();
+            var logger = loggerFactory.CreateLogger<FileStreamResult>();
 
             Task writeFileAsync(HttpContext httpContext, FileStreamResult result, RangeItemHeaderValue? range, long rangeLength)
                 => FileStreamResultExecutor.WriteFileAsyncInternal(httpContext, this, range, rangeLength, logger!);
