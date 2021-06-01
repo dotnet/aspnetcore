@@ -18,9 +18,7 @@ namespace Sockets.BindTests
 {
     public class SocketTransportOptionsTests : LoggedTestBase
     {
-        [Theory]
-        [MemberData(nameof(GetEndpoints))]
-        public async Task SocketTransportCallsCreateBoundListenSocket(EndPoint endpointToTest)
+        private async Task VerifySocketTransportCallsCreateBoundListenSocketAsync(EndPoint endpointToTest)
         {
             var wasCalled = false;
 
@@ -45,15 +43,49 @@ namespace Sockets.BindTests
 
         [Theory]
         [MemberData(nameof(GetEndpoints))]
-        public void CreateDefaultBoundListenSocket_BindsForAllEndPoints(EndPoint endpoint)
+        public Task SocketTransportCallsCreateBoundListenSocketForNewEndpoints(EndPoint endpointToTest)
+        {
+            return VerifySocketTransportCallsCreateBoundListenSocketAsync(endpointToTest);
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33206")]
+        public async Task SocketTransportCallsCreateBoundListenSocketForFileHandleEndpoint()
+        {
+            // file handle
+            // slightly messy but allows us to create a FileHandleEndPoint
+            // from the underlying OS handle used by the socket
+            using var fileHandleSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, FileHandleType.Auto);
+
+            await VerifySocketTransportCallsCreateBoundListenSocketAsync(endpoint);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetEndpoints))]
+        public void CreateDefaultBoundListenSocket_BindsForNewEndPoints(EndPoint endpoint)
         {
             using var listenSocket = SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
             Assert.NotNull(listenSocket.LocalEndPoint);
         }
 
-        // static to ensure that the underlying handle doesn't get disposed
-        // when a local reference is GCed by the iterator in GetEndPoints
-        private static Socket _fileHandleSocket;
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33206")]
+        public void CreateDefaultBoundListenSocket_PreservesLocalEndpointFromFileHandleEndpoint()
+        {
+            // file handle
+            // slightly messy but allows us to create a FileHandleEndPoint
+            // from the underlying OS handle used by the socket
+            using var fileHandleSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, FileHandleType.Auto);
+
+            using var listenSocket = SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
+
+            Assert.NotNull(fileHandleSocket.LocalEndPoint);
+            Assert.Equal(fileHandleSocket.LocalEndPoint, listenSocket.LocalEndPoint);
+        }
 
         public static IEnumerable<object[]> GetEndpoints()
         {
@@ -69,18 +101,6 @@ namespace Sockets.BindTests
                     new UnixDomainSocketEndPoint($"/tmp/{DateTime.UtcNow:yyyyMMddTHHmmss.fff}.sock")
                 };
             }
-
-            // file handle
-            // slightly messy but allows us to create a FileHandleEndPoint
-            // from the underlying OS handle used by the socket
-            _fileHandleSocket = new(
-                AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp
-            );
-            _fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-            yield return new object[]
-            {
-                new FileHandleEndPoint((ulong) _fileHandleSocket.Handle, FileHandleType.Auto)
-            };
 
             // TODO: other endpoint types?
         }
