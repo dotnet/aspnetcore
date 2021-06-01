@@ -3048,7 +3048,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task RST_STREAM_IncompleteRequest_AdditionalResetFrame_ConnectionAborted()
+        public async Task RST_STREAM_IncompleteRequest_AdditionalResetFrame_IgnoreAdditionalReset()
         {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -3066,8 +3066,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendRstStreamAsync(1);
             tcs.TrySetResult(0);
 
-            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
-                Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.RST_STREAM, 1));
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
