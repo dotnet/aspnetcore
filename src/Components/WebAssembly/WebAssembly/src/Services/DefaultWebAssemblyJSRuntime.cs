@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// Notifies .NET of an array that's available for transfer from JS to .NET
         /// 
         /// Ideally that byte array would be transferred directly as a parameter on this
-        /// call, however that's not currently possible due to: <INSERT_BUG_HERE></INSERT_BUG_HERE>
+        /// call, however that's not currently possible due to: https://github.com/dotnet/runtime/issues/53540
         /// </summary>
         /// <param name="id">Id of the byte array</param>
         public static void NotifyByteArrayAvailable(int id)
