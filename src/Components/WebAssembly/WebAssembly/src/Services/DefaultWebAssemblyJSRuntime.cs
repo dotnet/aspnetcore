@@ -76,11 +76,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 
         /// <summary>
         /// Invoked via Mono's JS interop mechanism (invoke_method)
-        /// 
+        ///
         /// Notifies .NET of an array that's available for transfer from JS to .NET
-        /// 
+        ///
         /// Ideally that byte array would be transferred directly as a parameter on this
-        /// call, however that's not currently possible due to: https://github.com/dotnet/runtime/issues/53540
+        /// call, however that's not currently possible due to: https://github.com/dotnet/runtime/issues/53378
         /// </summary>
         /// <param name="id">Id of the byte array</param>
         public static void NotifyByteArrayAvailable(int id)
