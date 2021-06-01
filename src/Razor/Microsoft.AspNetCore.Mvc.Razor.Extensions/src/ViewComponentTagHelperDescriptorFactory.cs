@@ -172,7 +172,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             foreach (var parameter in methodParameters)
             {
-                if (GetIndexerValueTypeName(parameter) == null)
+                // HasExplicitDefaultValue is set on IParameterSymbol when a default value is passed
+                // in ala `int foo = 3`. This value can be used to determine the optionality of a parameter
+                // while ensuring that a default value has been set.
+                if (GetIndexerValueTypeName(parameter) == null && parameter.HasExplicitDefaultValue != true)
                 {
                     // Set required attributes only for non-indexer attributes. Indexer attributes can't be required attributes
                     // because there are two ways of setting values for the attribute.

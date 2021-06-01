@@ -73,8 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     rule
                     .RequireTagName("vc:various-parameter")
                     .RequireAttributeDescriptor(attribute => attribute.Name("test-enum"))
-                    .RequireAttributeDescriptor(attribute => attribute.Name("test-string"))
-                    .RequireAttributeDescriptor(attribute => attribute.Name("baz")))
+                    .RequireAttributeDescriptor(attribute => attribute.Name("test-string")))
                 .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("test-enum")

@@ -9,7 +9,6 @@
     <PropertyGroup>
       <_TemplateProperties>
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
-        KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
         MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
         MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);

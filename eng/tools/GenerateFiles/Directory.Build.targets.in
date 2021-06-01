@@ -7,24 +7,24 @@
       Condition=" '$(UpdateAspNetCoreKnownFramework)' == '' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
-  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 5.0. -->
+  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 6.0. -->
   <ItemGroup>
     <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
-      TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net6.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="@(KnownAppHostPack->Count()) != '0' AND
-        !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))" />
+        !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
-      TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net6.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="@(KnownFrameworkReference->Count()) != '0' AND
-        !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))" />
+        !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Use the same NETCore shared framework as repo built against except when building product code in servicing. -->
     <KnownFrameworkReference
-        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
+        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}'))"
         LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}">
       <!--
         Change the default shared framework and targeting pack version only when _not_ servicing. Avoid bumping
@@ -44,7 +44,7 @@
 
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
     <KnownFrameworkReference
-        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
+        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}'))"
         Condition=" $(UpdateAspNetCoreKnownFramework) "
         LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
         RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}">
