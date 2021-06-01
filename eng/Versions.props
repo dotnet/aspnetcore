@@ -8,8 +8,8 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>5</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>7</AspNetCorePatchVersion>
-    <ValidateBaseline>true</ValidateBaseline>
+    <AspNetCorePatchVersion>8</AspNetCorePatchVersion>
+    <ValidateBaseline>false</ValidateBaseline>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
@@ -268,7 +268,7 @@
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
     <SeleniumSupportPackageVersion>4.0.0-beta1</SeleniumSupportPackageVersion>
-    <SeleniumWebDriverChromeDriverPackageVersion>89.0.4389.2300-beta</SeleniumWebDriverChromeDriverPackageVersion>
+    <SeleniumWebDriverChromeDriverPackageVersion>91.0.4472.1900-beta</SeleniumWebDriverChromeDriverPackageVersion>
     <SeleniumWebDriverPackageVersion>4.0.0-beta1</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
