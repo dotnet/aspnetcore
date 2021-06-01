@@ -109,17 +109,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private static X509Certificate2? ConvertToX509Certificate2(X509Certificate? certificate)
         {
-            if (certificate == null)
+            return certificate switch
             {
-                return null;
-            }
-
-            if (certificate is X509Certificate2 cert2)
-            {
-                return cert2;
-            }
-
-            return new X509Certificate2(certificate);
+                null => null,
+                X509Certificate2 cert2 => cert2,
+                _ => new X509Certificate2(certificate),
+            };
         }
     }
 }
