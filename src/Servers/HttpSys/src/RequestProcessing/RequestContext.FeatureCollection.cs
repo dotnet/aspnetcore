@@ -742,7 +742,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Set the connection close feature if the response hasn't sent headers as yet
             if (!Response.HasStarted)
             {
-                Response.Headers["Connection"] = "close";
+                Response.Headers[HeaderNames.Connection] = "close";
             }
         }
     }
