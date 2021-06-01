@@ -5,6 +5,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +13,6 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.core" />
     <Reference Include="xunit.analyzers" PrivateAssets="All" />
