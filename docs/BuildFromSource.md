@@ -52,6 +52,8 @@ git remote -v
 > upstream  https://github.com/dotnet/aspnetcore.git (push)
 ```
 
+Once configured, the easiest way to keep your repository current with the upstream repository is using GitHub's feature to [fetch upstream changes](https://github.blog/changelog/2021-05-06-sync-an-out-of-date-branch-of-a-fork-from-the-web/).
+
 ### Branching
 
 If you ultimately want to be able to submit a PR back to the project or be able to periodically refresh your `main` branch with the latest code changes, you'll want to do all your work on a new branch.
