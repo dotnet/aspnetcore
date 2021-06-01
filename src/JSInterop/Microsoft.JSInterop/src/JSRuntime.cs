@@ -202,7 +202,7 @@ namespace Microsoft.JSInterop
 
             if (id != ByteArraysToBeRevived.Count)
             {
-                throw new ArgumentOutOfRangeException($"Element id '{id}' cannot be added to the byte arrays to be revived with length '{ByteArraysToBeRevived.Count}'.");
+                throw new ArgumentOutOfRangeException($"Element id '{id}' cannot be added to the byte arrays to be revived with length '{ByteArraysToBeRevived.Count}'.", innerException: null);
             }
 
             ByteArraysToBeRevived.Append(data);
