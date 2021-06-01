@@ -57,7 +57,6 @@ steps:
       **/*.log
       **/*.binlog
       artifacts/source-build/self/prebuilt-report/**
-      artifacts/packages/Release/NonShipping/*
     TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
     CleanTargetFolder: true
   continueOnError: true
