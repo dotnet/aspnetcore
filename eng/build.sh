@@ -342,6 +342,7 @@ if [[ "$binary_log" == true ]]; then
     if [[ "$found" == false ]]; then
         msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
     fi
+    toolset_build_args[${#toolset_build_args[*]}]="/bl:$log_dir/Build.repotasks.binlog"
 elif [[ "$ci" == true ]]; then
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
     touch "$log_dir/empty.log"
@@ -367,7 +368,6 @@ if [ "$build_repo_tasks" = true ]; then
         -p:Configuration=Release \
         -p:Restore=$run_restore \
         -p:Build=true \
-        -bl:RepoTasks.binlog \
         -clp:NoSummary \
         ${toolset_build_args[@]+"${toolset_build_args[@]}"}
 fi
