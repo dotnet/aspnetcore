@@ -18,17 +18,17 @@ This will restore, and then publish all the test project including some bootstra
 
 ## Overview of the helix usage in our pipelines
 
-- Required queues: Windows10, OSX, Ubuntu1604 
-- Full queue matrix: Windows[7, 81, 10], Ubuntu[1604, 1804, 2004], Centos7, Debian9, Redhat7, Fedora28, Arm64 (Win10, Debian9)
-- The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/master/eng/targets/Helix.Common.props)
+- Required queues: Windows10, OSX, Ubuntu1804
+- Full queue matrix: Windows[7, 81, 10], Ubuntu[1804, 2004], Debian9, Redhat7, Arm64 (Win10, Debian9)
+- The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/main/eng/targets/Helix.Common.props)
 
 [aspnetcore-ci](https://dev.azure.com/dnceng/public/_build?definitionId=278) runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
 
-[aspnetcore-helix-matrix](https://dev.azure.com/dnceng/public/_build?definitionId=837) runs non quarantined tests against all queues twice a day only on public master.
+[aspnetcore-helix-matrix](https://dev.azure.com/dnceng/public/_build?definitionId=837) runs non quarantined tests against all queues twice a day only on public main.
 
-[aspnetcore-quarantined-pr](https://dev.azure.com/dnceng/public/_build?definitionId=869) runs only quarantined tests against the required queues on PRs and on master every 4 hours.
+[aspnetcore-quarantined-pr](https://dev.azure.com/dnceng/public/_build?definitionId=869) runs only quarantined tests against the required queues on PRs and on main every 4 hours.
 
-[aspnetcore-quarantined-tests](https://dev.azure.com/dnceng/public/_build?definitionId=331) runs only quarantined tests against all queues only on public master once a day at 11 PM.
+[aspnetcore-quarantined-tests](https://dev.azure.com/dnceng/public/_build?definitionId=331) runs only quarantined tests against all queues only on public main once a day at 11 PM.
 
 You can always manually queue pipeline runs by clicking on the link to the pipeline -> Run Pipeline -> select your branch/tag and commit
 
