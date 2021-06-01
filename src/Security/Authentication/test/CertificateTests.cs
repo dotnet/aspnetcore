@@ -179,7 +179,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
         public async Task VerifyNotYetValidSelfSignedFails()
         {
             var server = CreateServer(
