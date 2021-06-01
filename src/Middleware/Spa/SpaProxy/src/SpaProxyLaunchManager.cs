@@ -97,9 +97,8 @@ namespace Microsoft.AspNetCore.SpaProxy
                 // It's ok for us to do this here since this service is only plugged in during development.
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
-            // Certain frontend build tools rely on the the ACCEPT Header being set, otherwise these tools
-            // might be unable to perform their client-side fallback logic.
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+            // We don't care about the returned content type as long as the server is able to answer with 2XX
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*", 0.1));
             return httpClient;
         }
 
