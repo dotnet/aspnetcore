@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -52,11 +55,7 @@ namespace Sockets.BindTests
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33206")]
         public async Task SocketTransportCallsCreateBoundListenSocketForFileHandleEndpoint()
         {
-            // file handle
-            // slightly messy but allows us to create a FileHandleEndPoint
-            // from the underlying OS handle used by the socket
-            using var fileHandleSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            using var fileHandleSocket = CreateBoundSocket();
             var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, FileHandleType.Auto);
 
             await VerifySocketTransportCallsCreateBoundListenSocketAsync(endpoint);
@@ -74,11 +73,7 @@ namespace Sockets.BindTests
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33206")]
         public void CreateDefaultBoundListenSocket_PreservesLocalEndpointFromFileHandleEndpoint()
         {
-            // file handle
-            // slightly messy but allows us to create a FileHandleEndPoint
-            // from the underlying OS handle used by the socket
-            using var fileHandleSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            using var fileHandleSocket = CreateBoundSocket();
             var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, FileHandleType.Auto);
 
             using var listenSocket = SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
@@ -103,6 +98,16 @@ namespace Sockets.BindTests
             }
 
             // TODO: other endpoint types?
+        }
+
+        private static Socket CreateBoundSocket()
+        {
+            // file handle
+            // slightly messy but allows us to create a FileHandleEndPoint
+            // from the underlying OS handle used by the socket
+            var fileHandleSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            fileHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            return fileHandleSocket;
         }
 
         private IHost CreateWebHost(EndPoint endpoint, Action<SocketTransportOptions> configureSocketOptions) =>
