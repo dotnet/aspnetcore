@@ -32,8 +32,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
         }
 
-        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
-
         protected override void InitializeAsyncCore()
         {
             _tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

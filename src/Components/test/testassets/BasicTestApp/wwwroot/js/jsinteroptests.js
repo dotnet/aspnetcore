@@ -41,6 +41,14 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     DotNet.disposeJSObjectReference(jsObjectReference);
     results['invokeDisposedJSObjectReferenceException'] = DotNet.invokeMethod(assemblyName, 'InvokeDisposedJSObjectReferenceException', jsObjectReference);
 
+    var byteArray = new Uint8Array(Array.from(Array(100).keys()));
+    var returnedByteArray = DotNet.invokeMethod(assemblyName, 'RoundTripByteArray', byteArray);
+    results['roundTripByteArrayFromJS'] = returnedByteArray;
+
+    var byteArrayWrapper = { 'strVal': "Some string", 'byteArrayVal': byteArray, 'intVal': 42 };
+    var returnedByteArrayWrapper = DotNet.invokeMethod(assemblyName, 'RoundTripByteArrayWrapperObject', byteArrayWrapper);
+    results['roundTripByteArrayWrapperObjectFromJS'] = returnedByteArrayWrapper;
+
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
       dtoByRef: dotNetObjectByRef
@@ -87,6 +95,14 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
 
   DotNet.disposeJSObjectReference(jsObjectReference);
   results['invokeDisposedJSObjectReferenceExceptionAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'InvokeDisposedJSObjectReferenceExceptionAsync', jsObjectReference);
+
+  var byteArray = new Uint8Array(Array.from(Array(100).keys()));
+  var returnedByteArray = await DotNet.invokeMethodAsync(assemblyName, 'RoundTripByteArrayAsync', byteArray);
+  results['roundTripByteArrayAsyncFromJS'] = returnedByteArray;
+
+  var byteArrayWrapper = { 'strVal': "Some string", 'byteArrayVal': byteArray, 'intVal': 42 };
+  var returnedByteArrayWrapper = await DotNet.invokeMethodAsync(assemblyName, 'RoundTripByteArrayWrapperObjectAsync', byteArrayWrapper);
+  results['roundTripByteArrayWrapperObjectAsyncFromJS'] = returnedByteArrayWrapper;
 
   const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
     stringValue: 'My string',
@@ -215,6 +231,42 @@ function returnArrayAsync() {
   return new Promise((resolve, reject) => {
     setTimeout(function () {
       resolve(returnArray());
+    }, 100);
+  });
+}
+
+function roundTripByteArray(byteArray) {
+  if (byteArray.constructor !== Uint8Array) {
+    throw new Error('roundTripByteArray did not receive a byte array.');
+  }
+  return byteArray;
+}
+
+function roundTripByteArrayAsync(byteArray) {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      if (byteArray.constructor !== Uint8Array) {
+        reject('roundTripByteArrayAsync did not receive a byte array.');
+      }
+      resolve(byteArray);
+    }, 100);
+  });
+}
+
+function roundTripByteArrayWrapperObject(byteArrayWrapperObject) {
+  if (byteArrayWrapperObject.byteArrayVal.constructor !== Uint8Array) {
+    throw new Error('roundTripByteArrayWrapperObject did not receive a byte array.');
+  }
+  return byteArrayWrapperObject;
+}
+
+function roundTripByteArrayWrapperObjectAsync(byteArrayWrapperObject) {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      if (byteArrayWrapperObject.byteArrayVal.constructor !== Uint8Array) {
+        reject('roundTripByteArrayWrapperObjectAsync did not receive a byte array.');
+      }
+      resolve(byteArrayWrapperObject);
     }, 100);
   });
 }

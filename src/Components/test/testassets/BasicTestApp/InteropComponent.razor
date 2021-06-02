@@ -159,6 +159,22 @@
             InvokeInProcessJSInterop();
         }
 
+        var byteArray = new byte[] { 1, 5, 7, 15, 35, 200 };
+        var byteArrayWrapperObject = new ByteArrayInterop.ByteArrayWrapper()
+        {
+            StrVal = "Some String",
+            ByteArrayVal = byteArray,
+            IntVal = 100000
+        };
+        ReturnValues["roundTripByteArrayAsyncFromDotNet"] = string.Join(",", (await JSRuntime.InvokeAsync<byte[]>("roundTripByteArrayAsync", byteArray)).ToArray());
+        ReturnValues["roundTripByteArrayWrapperObjectAsyncFromDotNet"] = (await JSRuntime.InvokeAsync<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObjectAsync", byteArrayWrapperObject)).ToString();
+
+        if (shouldSupportSyncInterop)
+        {
+            ReturnValues["roundTripByteArrayFromDotNet"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<byte[]>("roundTripByteArray", byteArray).ToArray());
+            ReturnValues["roundTripByteArrayWrapperObjectFromDotNet"] = ((IJSInProcessRuntime)JSRuntime).Invoke<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObject", byteArrayWrapperObject).ToString();
+        }
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
