@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
         internal Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>? ResolveDefaultRequestLimit { get; set; }
 
-        public void SetDefaultPolicy(ResourceLimiter limiter)
+        public void SetDefaultPolicy(RateLimiter limiter)
         {
             ResolveDefaultRequestLimit = _ => (HttpContextLimiter)limiter;
         }

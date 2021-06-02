@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
             return builder;
         }
 
-        public static IEndpointConventionBuilder EnforceRequestLimit(this IEndpointConventionBuilder builder, ResourceLimiter limiter)
+        public static IEndpointConventionBuilder EnforceRequestLimit(this IEndpointConventionBuilder builder, RateLimiter limiter)
             => builder.EnforceRequestLimit((HttpContextLimiter)limiter);
 
         public static IEndpointConventionBuilder EnforceRequestLimit(this IEndpointConventionBuilder builder, AggregatedResourceLimiter<HttpContext> limiter)

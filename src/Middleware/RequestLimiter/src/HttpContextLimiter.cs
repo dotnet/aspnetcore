@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.RequestLimiter
 {
     internal class HttpContextLimiter : AggregatedResourceLimiter<HttpContext> 
     {
-        private readonly ResourceLimiter _limiter;
+        private readonly RateLimiter _limiter;
 
-        public HttpContextLimiter(ResourceLimiter limiter)
+        public HttpContextLimiter(RateLimiter limiter)
         {
             _limiter = limiter;
         }
@@ -29,6 +29,6 @@ namespace Microsoft.AspNetCore.RequestLimiter
             return _limiter.WaitAsync(requestedCount, cancellationToken);
         }
 
-        public static implicit operator HttpContextLimiter(ResourceLimiter limiter) => new HttpContextLimiter(limiter);
+        public static implicit operator HttpContextLimiter(RateLimiter limiter) => new HttpContextLimiter(limiter);
     }
 }

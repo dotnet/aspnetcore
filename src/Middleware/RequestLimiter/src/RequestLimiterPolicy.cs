@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
     {
         internal ICollection<Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>> LimiterResolvers { get; } = new List<Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>>();
 
-        public void AddLimiter(ResourceLimiter limiter)
+        public void AddLimiter(RateLimiter limiter)
         {
             LimiterResolvers.Add(_ => (HttpContextLimiter)limiter);
         }
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
             LimiterResolvers.Add(_ => aggregatedLimiter);
         }
 
-        public void AddLimiter<TResourceLimiter>() where TResourceLimiter : ResourceLimiter
+        public void AddLimiter<TResourceLimiter>() where TResourceLimiter : RateLimiter
         {
             LimiterResolvers.Add(services => (HttpContextLimiter)services.GetRequiredService<TResourceLimiter>());
         }
