@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             var dataMemberAttribute = context
-                .PropertyAttributes
+                .PropertyAttributes!
                 .OfType<DataMemberAttribute>()
                 .FirstOrDefault();
             if (dataMemberAttribute == null || !dataMemberAttribute.IsRequired)
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             // isDataContract == true iff the container type has at least one DataContractAttribute
             var containerType = context.Key.ContainerType;
-            var isDataContract = containerType.IsDefined(typeof(DataContractAttribute));
+            var isDataContract = containerType!.IsDefined(typeof(DataContractAttribute));
             if (isDataContract)
             {
                 // We don't need to add a validator, just to set IsRequired = true. The validation

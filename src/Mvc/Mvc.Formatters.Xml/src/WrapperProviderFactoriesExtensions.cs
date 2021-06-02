@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// <param name="wrapperProviderContext">The <see cref="WrapperProviderContext"/>.</param>
         /// <returns>An instance of <see cref="IWrapperProvider"/> if there is a wrapping provider for the
         /// supplied type, else null.</returns>
-        public static IWrapperProvider GetWrapperProvider(
+        public static IWrapperProvider? GetWrapperProvider(
             this IEnumerable<IWrapperProviderFactory> wrapperProviderFactories,
             WrapperProviderContext wrapperProviderContext)
         {

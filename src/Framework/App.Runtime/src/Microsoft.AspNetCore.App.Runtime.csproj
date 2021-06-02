@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
@@ -100,10 +100,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!--
       Determine the crossgen2 package path property name. Special case linux-musl-arm and linux-musl-arm64 because they
       are built on an Ubuntu container with cross compilation tools. linux-musl-x64 is built in an alpine container.
+      Special case the crossgen2 package reference on Windows to avoid the x86 package when building in Visual Studio.
     -->
     <BuildOsName>$(TargetOsName)</BuildOsName>
     <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</BuildOsName>
-    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(BuildArchitecture)</Crossgen2PackageRootVariableName>
+    <Crossgen2BuildArchitecture Condition=" '$(BuildOsName)' == 'win' ">x64</Crossgen2BuildArchitecture>
+    <Crossgen2BuildArchitecture Condition=" '$(Crossgen2BuildArchitecture)' == '' ">$(BuildArchitecture)</Crossgen2BuildArchitecture>
+    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
@@ -126,7 +129,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       This package contains the crossgen2 tool. Unfortunately, it doesn't make the tool easy to use.
       $(GeneratePathProperty) and hacks in the _ExpandRuntimePackageRoot target work around the gaps.
     -->
-    <Reference Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(BuildArchitecture)"
+    <Reference Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(Crossgen2BuildArchitecture)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />

@@ -9,7 +9,6 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

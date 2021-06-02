@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>The <see cref="DataContractSerializer"/> used during deserialization.</returns>
-        protected virtual DataContractSerializer CreateSerializer(Type type)
+        protected virtual DataContractSerializer? CreateSerializer(Type type)
         {
             if (type == null)
             {
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            return (DataContractSerializer)serializer;
+            return (DataContractSerializer)serializer!;
         }
     }
 }
