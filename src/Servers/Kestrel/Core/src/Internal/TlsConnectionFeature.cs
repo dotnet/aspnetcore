@@ -40,12 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             get
             {
-                if (_clientCert is null)
-                {
-                    _clientCert = ConvertToX509Certificate2(_sslStream.RemoteCertificate);
-                }
-
-                return _clientCert;
+                return _clientCert ??= ConvertToX509Certificate2(_sslStream.RemoteCertificate);
             }
             set => _clientCert = value;
         }
