@@ -41,7 +41,7 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     DotNet.disposeJSObjectReference(jsObjectReference);
     results['invokeDisposedJSObjectReferenceException'] = DotNet.invokeMethod(assemblyName, 'InvokeDisposedJSObjectReferenceException', jsObjectReference);
 
-    var byteArray = new Uint8Array(Array.from(Array(100).keys()));
+    var byteArray = new Uint8Array([ 1, 5, 7, 17, 200, 138 ]);
     var returnedByteArray = DotNet.invokeMethod(assemblyName, 'RoundTripByteArray', byteArray);
     results['roundTripByteArrayFromJS'] = returnedByteArray;
 
@@ -96,7 +96,7 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
   DotNet.disposeJSObjectReference(jsObjectReference);
   results['invokeDisposedJSObjectReferenceExceptionAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'InvokeDisposedJSObjectReferenceExceptionAsync', jsObjectReference);
 
-  var byteArray = new Uint8Array(Array.from(Array(100).keys()));
+  var byteArray = new Uint8Array([ 1, 5, 7, 17, 200, 138 ]);
   var returnedByteArray = await DotNet.invokeMethodAsync(assemblyName, 'RoundTripByteArrayAsync', byteArray);
   results['roundTripByteArrayAsyncFromJS'] = returnedByteArray;
 
