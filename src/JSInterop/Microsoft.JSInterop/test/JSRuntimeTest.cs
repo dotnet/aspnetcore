@@ -320,7 +320,6 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var runtime = new TestJSRuntime();
-            runtime.DefaultTimeout = TimeSpan.FromSeconds(1);
 
             var byteArray = new byte[] { 1, 5, 7 };
 
@@ -337,7 +336,6 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var runtime = new TestJSRuntime();
-            runtime.DefaultTimeout = TimeSpan.FromSeconds(1);
 
             var byteArrays = new byte[10][];
             for (var i = 0; i < 10; i++)
@@ -366,7 +364,6 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var runtime = new TestJSRuntime();
-            runtime.DefaultTimeout = TimeSpan.FromSeconds(1);
             runtime.ByteArraysToBeRevived.Append(new byte[] { 1, 5, 7 });
             runtime.ByteArraysToBeRevived.Append(new byte[] { 3, 10, 15 });
 
@@ -385,7 +382,6 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var runtime = new TestJSRuntime();
-            runtime.DefaultTimeout = TimeSpan.FromSeconds(1);
             runtime.ByteArraysToBeRevived.Append(new byte[] { 1, 5, 7 });
             runtime.ByteArraysToBeRevived.Append(new byte[] { 3, 10, 15 });
 

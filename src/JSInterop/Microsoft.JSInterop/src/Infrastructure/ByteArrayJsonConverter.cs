@@ -22,8 +22,6 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public JSRuntime JSRuntime { get; }
 
-        public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(byte[]);
-
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Deserializing the ByteArrayRef struct.")]
         public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

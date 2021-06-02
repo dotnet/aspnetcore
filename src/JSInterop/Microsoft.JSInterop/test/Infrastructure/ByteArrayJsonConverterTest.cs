@@ -122,26 +122,7 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
-        public void Read_ReadsJson_WithFormatting()
-        {
-            // Arrange
-            var byteArray = new byte[] { 1, 5, 7 };
-            JSRuntime.ByteArraysToBeRevived.Append(byteArray);
-
-            var json =
-@$"{{
-            ""__byte[]"": 0
-        }}";
-
-            // Act
-            var deserialized = JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions)!;
-
-            // Assert
-            Assert.Equal(byteArray, deserialized);
-        }
-
-        [Fact]
-        public void WriteJsonTwice_KeepsObjectId()
+        public void WriteJsonMultipleTimes_IncrementsByteArrayId()
         {
             // Arrange
             var byteArray = new byte[] { 1, 5, 7 };
