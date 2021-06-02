@@ -127,14 +127,13 @@ namespace Microsoft.AspNetCore.Hosting
                 get => HttpActivityFeature?.Activity;
                 set
                 {
-                    Debug.Assert(value != null);
                     if (HttpActivityFeature is null)
                     {
-                        HttpActivityFeature = new ActivityFeature(value);
+                        HttpActivityFeature = new ActivityFeature(value!);
                     }
                     else
                     {
-                        HttpActivityFeature.Activity = value;
+                        HttpActivityFeature.Activity = value!;
                     }
                 }
             }
