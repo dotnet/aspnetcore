@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             catch (Exception ex)
             {
-                _logger?.FailedToCreateDataContractSerializer(type.FullName!, ex);
+                _logger.FailedToCreateDataContractSerializer(type.FullName!, ex);
 
                 // We do not surface the caught exception because if CanWriteResult returns
                 // false, then this Formatter is not picked up at all.
