@@ -31,6 +31,7 @@ namespace Templates.Test
         public override string ProjectType { get; } = "blazorwasm";
 
         [Theory]
+        [Retry]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
@@ -68,6 +69,7 @@ namespace Templates.Test
         }
 
         [Theory]
+        [Retry]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
@@ -117,6 +119,7 @@ namespace Templates.Test
         }
 
         [Theory]
+        [Retry]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
@@ -153,6 +156,7 @@ namespace Templates.Test
         }
 
         [Theory]
+        [Retry]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
@@ -224,6 +228,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
+        [Retry]
         [InlineData(BrowserKind.Chromium)]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
@@ -234,6 +239,7 @@ namespace Templates.Test
 
         // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
         [Theory]
+        [Retry]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
@@ -319,6 +325,7 @@ namespace Templates.Test
         }
 
         [Theory]
+        [Retry]
         [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
         {
@@ -418,6 +425,7 @@ namespace Templates.Test
         }
 
         [Theory]
+        [Retry]
         [MemberData(nameof(TemplateData))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30851")]
         public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)

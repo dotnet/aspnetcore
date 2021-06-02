@@ -26,6 +26,7 @@ namespace Templates.Test
         public override string ProjectType { get; } = "blazorserver";
 
         [Theory]
+        [Retry]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
@@ -82,6 +83,7 @@ namespace Templates.Test
                 BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
 
         [Theory]
+        [Retry]
         [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
@@ -172,6 +174,7 @@ namespace Templates.Test
         }
 
         [Theory]
+        [Retry]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]
