@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// <see cref="WrapperProviderContext.DeclaredType"/> is
         /// <see cref="Microsoft.AspNetCore.Mvc.SerializableError"/>; otherwise <c>null</c>.
         /// </returns>
-        public IWrapperProvider GetProvider(WrapperProviderContext context)
+        public IWrapperProvider? GetProvider(WrapperProviderContext context)
         {
             if (context == null)
             {

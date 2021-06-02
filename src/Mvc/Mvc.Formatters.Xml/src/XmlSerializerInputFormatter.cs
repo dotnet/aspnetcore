@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Called during deserialization to get the <see cref="XmlSerializer"/>.
         /// </summary>
         /// <returns>The <see cref="XmlSerializer"/> used during deserialization.</returns>
-        protected virtual XmlSerializer CreateSerializer(Type type)
+        protected virtual XmlSerializer? CreateSerializer(Type type)
         {
             try
             {
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            return (XmlSerializer)serializer;
+            return (XmlSerializer)serializer!;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     /// </summary>
     public class EnumerableWrapperProvider : IWrapperProvider
     {
-        private readonly IWrapperProvider _wrapperProvider;
+        private readonly IWrapperProvider? _wrapperProvider;
         private readonly ConstructorInfo _wrappingTypeConstructor;
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// Can be null.</param>
         public EnumerableWrapperProvider(
             Type sourceEnumerableOfT,
-            IWrapperProvider elementWrapperProvider)
+            IWrapperProvider? elementWrapperProvider)
         {
             if (sourceEnumerableOfT == null)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             {
                 sourceEnumerableOfT,
                 typeof(IWrapperProvider)
-            });
+            })!;
         }
 
         /// <inheritdoc />
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         /// <inheritdoc />
-        public object Wrap(object original)
+        public object? Wrap(object? original)
         {
             if (original == null)
             {

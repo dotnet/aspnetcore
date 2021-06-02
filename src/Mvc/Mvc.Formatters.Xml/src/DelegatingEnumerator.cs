@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     public class DelegatingEnumerator<TWrapped, TDeclared> : IEnumerator<TWrapped>
     {
         private readonly IEnumerator<TDeclared> _inner;
-        private readonly IWrapperProvider _wrapperProvider;
+        private readonly IWrapperProvider? _wrapperProvider;
 
         /// <summary>
         /// Initializes a <see cref="DelegatingEnumerable{TWrapped, TDeclared}"/> which enumerates 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// </summary>
         /// <param name="inner">The original enumerator.</param>
         /// <param name="wrapperProvider">The wrapper provider to wrap individual elements.</param>
-        public DelegatingEnumerator(IEnumerator<TDeclared> inner, IWrapperProvider wrapperProvider)
+        public DelegatingEnumerator(IEnumerator<TDeclared> inner, IWrapperProvider? wrapperProvider)
         {
             if (inner == null)
             {
@@ -41,19 +41,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         {
             get
             {
-                object obj = _inner.Current;
+                object obj = _inner.Current!;
                 if (_wrapperProvider == null)
                 {
                     // if there is no wrapper, then this cast should not fail
                     return (TWrapped)obj;
                 }
 
-                return (TWrapped)_wrapperProvider.Wrap(obj);
+                return (TWrapped)_wrapperProvider.Wrap(obj)!;
             }
         }
 
         /// <inheritdoc />
-        object IEnumerator.Current => Current;
+        object? IEnumerator.Current => Current;
 
         /// <inheritdoc />
         public void Dispose()

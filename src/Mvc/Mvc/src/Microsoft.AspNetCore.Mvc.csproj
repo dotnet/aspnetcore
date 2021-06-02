@@ -7,7 +7,6 @@
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
