@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27156")]
         public void SignalRClientWorksWithLongPolling()
         {
             Browser.Exists(By.Id("hub-url")).SendKeys(
