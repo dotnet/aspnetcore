@@ -1,9 +1,9 @@
 // Will be migrated to dotnet/runtime
 // Pending dotnet API review
 
-namespace System.Threading.ResourceLimits
+namespace System.Runtime.RateLimits
 {
-    public enum ResourceDepletedMode
+    public enum PermitsExhaustedMode
     {
         EnqueueIncomingRequest,
         PushIncomingRequest

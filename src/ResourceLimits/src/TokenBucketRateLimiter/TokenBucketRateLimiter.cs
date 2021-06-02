@@ -2,109 +2,183 @@
 // Pending dotnet API review
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace System.Threading.ResourceLimits
+namespace System.Runtime.RateLimits
 {
-    // TODO: rework implementation with options and queuing
-    public class TokenBucketRateLimiter : ResourceLimiter
+    public class TokenBucketRateLimiter : RateLimiter
     {
-        private long _resourceCount;
-        private readonly long _maxResourceCount;
-        private readonly long _newResourcePerSecond;
-        private Timer _renewTimer;
-        private readonly Queue<RateLimitRequest> _queue = new Queue<RateLimitRequest>();
-        private object _lock = new object();
+        private int _permitCount;
+        private int _queueCount;
 
-        public override long EstimatedCount => Interlocked.Read(ref _resourceCount);
+        private readonly Timer _renewTimer;
+        private readonly object _lock = new();
+        private readonly TokenBucketRateLimiterOptions _options;
+        private readonly Deque<RequestRegistration> _queue = new();
 
-        public TokenBucketRateLimiter(long resourceCount, long newResourcePerSecond)
+        private static readonly PermitLease SuccessfulLease = new(true, null, null);
+
+        public override int AvailablePermits => _permitCount;
+
+        public TokenBucketRateLimiter(TokenBucketRateLimiterOptions options)
         {
-            _resourceCount = 0;
-            _maxResourceCount = resourceCount; // Another variable for max resource count?
-            _newResourcePerSecond = newResourcePerSecond;
+            _permitCount = options.PermitLimit;
+            _options = options;
 
-            // Start timer (5s for demo)
-            _renewTimer = new Timer(Replenish, this, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+            // Assume self replenishing, add option for external replenishment
+            _renewTimer = new Timer(Replenish, this, _options.ReplenishmentPeriod, _options.ReplenishmentPeriod);
         }
 
-        public override ResourceLease Acquire(long requestedCount)
+        // Fast synchronous attempt to acquire resources
+        public override PermitLease Acquire(int permitCount)
         {
-            if (Interlocked.Add(ref _resourceCount, requestedCount) <= _maxResourceCount)
+            // These amounts of resources can never be acquired
+            if (permitCount < 0 || permitCount > _options.PermitLimit)
             {
-                return ResourceLease.SuccessfulAcquisition;
+                throw new ArgumentOutOfRangeException();
             }
 
-            Interlocked.Add(ref _resourceCount, -requestedCount);
-            return ResourceLease.FailedAcquisition;
+            // Return SuccessfulAcquisition or FailedAcquisition depending to indicate limiter state
+            if (permitCount == 0)
+            {
+                if (AvailablePermits > 0)
+                {
+                    return SuccessfulLease;
+                }
+
+                return CreateFailedPermitLease();
+            }
+
+            // These amounts of resources can never be acquired
+            if (Interlocked.Add(ref _permitCount, -permitCount) >= 0)
+            {
+                return SuccessfulLease;
+            }
+
+            Interlocked.Add(ref _permitCount, permitCount);
+
+            return CreateFailedPermitLease();
         }
 
-        public override ValueTask<ResourceLease> WaitAsync(long requestedCount, CancellationToken cancellationToken = default)
+        // Wait until the requested resources are available
+        public override ValueTask<PermitLease> WaitAsync(int permitCount, CancellationToken cancellationToken = default)
         {
-            if (Interlocked.Add(ref _resourceCount, requestedCount) <= _maxResourceCount)
+            // These amounts of resources can never be acquired
+            if (permitCount < 0 || permitCount > _options.PermitLimit)
             {
-                return ValueTask.FromResult(ResourceLease.SuccessfulAcquisition);
+                throw new ArgumentOutOfRangeException();
             }
 
-            Interlocked.Add(ref _resourceCount, -requestedCount);
+            // Return SuccessfulAcquisition if requestedCount is 0 and resources are available
+            if (permitCount == 0 && AvailablePermits > 0)
+            {
+                // Perf: static failed/successful value tasks?
+                return ValueTask.FromResult(SuccessfulLease);
+            }
 
-            var registration = new RateLimitRequest(requestedCount);
-            _queue.Enqueue(registration);
+            if (Interlocked.Add(ref _permitCount, -permitCount) >= 0)
+            {
+                // Perf: static failed/successful value tasks?
+                return ValueTask.FromResult(SuccessfulLease);
+            }
+
+            Interlocked.Add(ref _permitCount, permitCount);
+
+            // Don't queue if queue limit reached
+            if (_queueCount + permitCount > _options.QueueLimit)
+            {
+                return ValueTask.FromResult(CreateFailedPermitLease());
+            }
+
+            var registration = new RequestRegistration(permitCount);
+            _queue.EnqueueTail(registration);
+            Interlocked.Add(ref _permitCount, permitCount);
 
             // handle cancellation
-            return new ValueTask<ResourceLease>(registration.TCS.Task);
+            return new ValueTask<PermitLease>(registration.TCS.Task);
         }
 
-        private static void Replenish(object? state)
+        private PermitLease CreateFailedPermitLease()
+        {
+            var replenishAmount = _permitCount - AvailablePermits + _queueCount;
+            var replenishPeriods = (replenishAmount / _options.TokensPerPeriod) + 1;
+
+            return new PermitLease(
+                false,
+                new Dictionary<MetadataName, object?>
+                {
+                    {
+                        MetadataName.RetryAfter,
+                        TimeSpan.FromTicks(_options.ReplenishmentPeriod.Ticks*replenishPeriods)
+                    }
+                },
+                null);
+        }
+
+        public static void Replenish(object? state)
         {
             // Return if Replenish already running to avoid concurrency.
-            var limiter = state as TokenBucketRateLimiter;
-
-            if (limiter == null)
+            if (state is not TokenBucketRateLimiter limiter)
             {
                 return;
             }
 
-            if (limiter._resourceCount > 0)
+            var availablePermits = limiter.AvailablePermits;
+            var options = limiter._options;
+            var maxPermits = options.PermitLimit;
+
+            if (availablePermits < maxPermits)
             {
-                var resoucesToDeduct = Math.Min(limiter._newResourcePerSecond, limiter._resourceCount);
-                Interlocked.Add(ref limiter._resourceCount, -resoucesToDeduct);
+                var resoucesToAdd = Math.Min(options.TokensPerPeriod, maxPermits - availablePermits);
+                Interlocked.Add(ref limiter._permitCount, resoucesToAdd);
             }
 
             // Process queued requests
             var queue = limiter._queue;
             lock (limiter._lock)
             {
-                while (queue.TryPeek(out var request))
+                while (queue.Count > 0)
                 {
-                    if (Interlocked.Add(ref limiter._resourceCount, request.Count) <= limiter._maxResourceCount)
+                    var nextPendingRequest =
+                          options.PermitsExhaustedMode == PermitsExhaustedMode.EnqueueIncomingRequest
+                          ? queue.PeekHead()
+                          : queue.PeekTail();
+
+                    if (Interlocked.Add(ref limiter._permitCount, -nextPendingRequest.Count) >= 0)
                     {
                         // Request can be fulfilled
-                        queue.TryDequeue(out var requestToFulfill);
-                        requestToFulfill.TCS.SetResult(ResourceLease.SuccessfulAcquisition);
+                        var request =
+                            options.PermitsExhaustedMode == PermitsExhaustedMode.EnqueueIncomingRequest
+                            ? queue.DequeueHead()
+                            : queue.DequeueTail();
+                        Interlocked.Add(ref limiter._queueCount, -request.Count);
+
+                        // requestToFulfill == request
+                        request.TCS.SetResult(SuccessfulLease);
                     }
                     else
                     {
                         // Request cannot be fulfilled
-                        Interlocked.Add(ref limiter._resourceCount, -request.Count);
+                        Interlocked.Add(ref limiter._permitCount, nextPendingRequest.Count);
                         break;
                     }
                 }
             }
         }
 
-        private struct RateLimitRequest
+        private struct RequestRegistration
         {
-            public RateLimitRequest(long count)
+            public RequestRegistration(int permitCount)
             {
-                Count = count;
+                Count = permitCount;
                 // Use VoidAsyncOperationWithData<T> instead
-                TCS = new TaskCompletionSource<ResourceLease>();
+                TCS = new TaskCompletionSource<PermitLease>();
             }
 
-            public long Count { get; }
+            public int Count { get; }
 
-            public TaskCompletionSource<ResourceLease> TCS { get; }
+            public TaskCompletionSource<PermitLease> TCS { get; }
         }
     }
 }
