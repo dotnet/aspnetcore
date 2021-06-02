@@ -22,7 +22,6 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public JSRuntime JSRuntime { get; }
 
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Deserializing the ByteArrayRef struct.")]
         public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (JSRuntime.ByteArraysToBeRevived.Count == 0)
