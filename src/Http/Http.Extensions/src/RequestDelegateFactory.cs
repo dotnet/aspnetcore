@@ -680,6 +680,7 @@ namespace Microsoft.AspNetCore.Http
         private static Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
         {
             EnsureRequestTaskOfNotNull(task);
+
             static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsJsonAsync(await task);
