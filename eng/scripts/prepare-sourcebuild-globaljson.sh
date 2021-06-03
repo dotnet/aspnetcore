@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 while IFS= read -r line
 do
     # Remove dotnet/x64 runtimes
@@ -18,5 +20,5 @@ do
         # Change dotnet/x64 to dotnet
         echo "${line/dotnet\/x64/dotnet}"
     fi
-done < global.json > global.json.swap
-mv global.json.swap global.json
+done < $DIR/../../global.json > global.json.swap
+mv global.json.swap $DIR/../../global.json

@@ -6,18 +6,12 @@
     <CloneSubmodulesToInnerSourceBuildRepo>false</CloneSubmodulesToInnerSourceBuildRepo>
   </PropertyGroup>
 
-  <Target Name="ApplySourceBuildPatchFiles"
+  <Target Name="PrepareGlobalJsonForSourceBuild"
           AfterTargets="PrepareInnerSourceBuildRepoRoot"
           BeforeTargets="RunInnerSourceBuildCommand">
-
-    <ItemGroup>
-      <SourceBuildPatchFile Include="$(RepositoryEngineeringDir)source-build-patches\*.patch" />
-    </ItemGroup>
-
     <Exec
-      Command="git apply --ignore-whitespace --whitespace=nowarn &quot;%(SourceBuildPatchFile.FullPath)&quot;"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
-      Condition="'@(SourceBuildPatchFile)' != ''" />
+      Command="./eng/scripts/prepare-sourcebuild-globaljson.sh"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
   </Target>
 
   <!--
