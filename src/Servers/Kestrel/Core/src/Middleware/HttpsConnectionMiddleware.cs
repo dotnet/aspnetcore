@@ -112,10 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: null);
             }
 
-            var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
-                (RemoteCertificateValidationCallback?)null : RemoteCertificateValidationCallback;
-
-            _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
+            _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, RemoteCertificateValidationCallback);
         }
 
         internal HttpsConnectionMiddleware(

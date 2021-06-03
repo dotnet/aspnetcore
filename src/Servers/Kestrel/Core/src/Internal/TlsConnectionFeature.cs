@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private int? _hashStrength;
         private ExchangeAlgorithmType? _keyExchangeAlgorithm;
         private int? _keyExchangeStrength;
+        private bool _renegotiated;
 
         public TlsConnectionFeature(SslStream sslStream)
         {
@@ -97,9 +98,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             set => _keyExchangeStrength = value;
         }
 
-        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
+        public async Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(ClientCertificate);
+            if (ClientCertificate != null || _renegotiated
+                // Delayed client cert negotiation is not allowed on HTTP/2.
+                || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
+            {
+                return ClientCertificate;
+            }
+
+            _renegotiated = true; // Only try once
+            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+            return ClientCertificate;
         }
 
         private static X509Certificate2? ConvertToX509Certificate2(X509Certificate? certificate)

@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var env = new Mock<IHostEnvironment>();
             env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
 
-            var serviceProvider =  new ServiceCollection().AddLogging().BuildServiceProvider();
+            var serviceProvider = new ServiceCollection().AddLogging().BuildServiceProvider();
             options.ApplicationServices = serviceProvider;
 
             var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
@@ -485,6 +485,104 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await AssertConnectionResult(stream, true);
                 }
             }
+        }
+
+        [Fact]
+        public async Task CanRenegotiateForClientCertificateOnHttp1()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.Protocols = HttpProtocols.Http1;
+                listenOptions.UseHttps(options =>
+                {
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+                    options.AllowAnyClientCertificate();
+                });
+            }
+
+            await using var server = new TestServer(async context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+
+                var clientCert = await context.Connection.GetClientCertificateAsync();
+                Assert.NotNull(clientCert);
+                Assert.NotNull(tlsFeature.ClientCertificate);
+                Assert.NotNull(context.Connection.ClientCertificate);
+
+                await context.Response.WriteAsync("hello world");
+            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            // SslStream is used to ensure the certificate is actually passed to the server
+            // HttpClient might not send the certificate because it is invalid or it doesn't match any
+            // of the certificate authorities sent by the server in the SSL handshake.
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            clientOptions.LocalCertificateSelectionCallback
+                = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
+            await AssertConnectionResult(stream, true);
+        }
+
+        [Fact]
+        // Turning on HTTP/2 disables renegotiation.
+        // TODO: Tomas is changing it so AllowRenegotiation only applies to the remote,
+        // NegotiateClientCertificateAsync call be called locally and it's up to us to prevent that
+        // on HTTP/2.
+        public async Task ClientCertificateRenegotationDisabledOnHttp1WithHttp2()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                listenOptions.UseHttps(options =>
+                {
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+                    options.AllowAnyClientCertificate();
+                });
+            }
+
+            await using var server = new TestServer(async context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+
+                var ex = await Assert.ThrowsAsync<IOException>(() => context.Connection.GetClientCertificateAsync());
+                Assert.Equal("The remote party requested renegotiation when AllowRenegotiation was set to false.", ex.Message);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+
+                await context.Response.WriteAsync("hello world");
+            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            // SslStream is used to ensure the certificate is actually passed to the server
+            // HttpClient might not send the certificate because it is invalid or it doesn't match any
+            // of the certificate authorities sent by the server in the SSL handshake.
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            clientOptions.LocalCertificateSelectionCallback
+                = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
+            await AssertConnectionResult(stream, true);
         }
 
         [Fact]
