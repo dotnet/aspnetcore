@@ -27,6 +27,5 @@ namespace Microsoft.AspNetCore.Testing
             _canOverrideRetries++;
             if (_canOverrideRetries != 5) throw new Exception("NOOOOOOOO");
         }
-
     }
 }
