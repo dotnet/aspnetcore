@@ -1,4 +1,5 @@
-﻿Microsoft.Extensions.Logging.W3C.W3CLoggerFactoryExtensions
+﻿#nullable enable
+Microsoft.Extensions.Logging.W3C.W3CLoggerFactoryExtensions
 Microsoft.Extensions.Logging.W3C.W3CLoggerOptions
 Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.FileName.get -> string!
 Microsoft.Extensions.Logging.W3C.W3CLoggerOptions.FileName.set -> void

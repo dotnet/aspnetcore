@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Logger implementation to support W3C logging</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <IsShipping>true</IsShipping>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

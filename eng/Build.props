@@ -181,7 +181,7 @@
                           $(RepoRoot)src\Shared\**\*.*proj;
                           $(RepoRoot)src\Tools\**\*.*proj;
                           $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
-                          $(RepoRoot)src\Logging.W3C\**\src\*.csproj;
+                          $(RepoRoot)src\Logging.W3C\**\*.csproj;
                           $(RepoRoot)src\Middleware\**\*.csproj;
                           $(RepoRoot)src\Razor\**\*.*proj;
                           $(RepoRoot)src\Mvc\**\*.*proj;

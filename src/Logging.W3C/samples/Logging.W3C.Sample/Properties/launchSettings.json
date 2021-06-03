@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "HttpLogging.Sample": {
+    "Logging.W3C.Sample": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,
