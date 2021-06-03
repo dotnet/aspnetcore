@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
     /// <summary>
+    /// Types in the Microsoft.AspNetCore.Components.WebView.WebView2 are not recommended for use outside
+    /// of the Blazor framework. These types will change in a future release.
+    ///
     /// Provides an abstraction for different UI frameworks to provide access to APIs from
     /// Microsoft.Web.WebView2.Core.CoreWebView2 and related controls.
     /// </summary>

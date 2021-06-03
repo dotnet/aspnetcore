@@ -1,9 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
     /// <summary>
+    /// Types in the Microsoft.AspNetCore.Components.WebView.WebView2 are not recommended for use outside
+    /// of the Blazor framework. These types will change in a future release.
+    ///
     /// An HTTP request used with the <see cref="E:Microsoft.Web.WebView2.Core.CoreWebView2.WebResourceRequested" /> event.
     /// </summary>
     public interface ICoreWebView2WebResourceRequestWrapper

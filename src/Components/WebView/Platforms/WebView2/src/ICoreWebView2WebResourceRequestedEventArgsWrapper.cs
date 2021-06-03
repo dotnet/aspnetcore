@@ -6,6 +6,9 @@ using System.IO;
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
     /// <summary>
+    /// Types in the Microsoft.AspNetCore.Components.WebView.WebView2 are not recommended for use outside
+    /// of the Blazor framework. These types will change in a future release.
+    ///
     /// Event args for the WebResourceRequested event.
     /// </summary>
     public interface ICoreWebView2WebResourceRequestedEventArgsWrapper
