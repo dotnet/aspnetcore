@@ -23,7 +23,7 @@ Document -
                             LazyIntermediateToken - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                     ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value)
+                            IntermediateToken -  - CSharp - global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value)
                 HtmlContent - (43:0,43 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (43:0,43 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (52:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
