@@ -2590,7 +2590,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // ServiceScope will be disposed here
                 await connection.DisposeAsync().DefaultTimeout();
 
-                Assert.Throws<ObjectDisposedException>(() => connection.ServiceScope.ServiceProvider.GetService<MessageWrapper>());
+                Assert.Throws<ObjectDisposedException>(() => connection.ServiceScope.Value.ServiceProvider.GetService<MessageWrapper>());
             }
         }
 

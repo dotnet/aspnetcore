@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // to configure services inside *that scope* inside their startup code, we create *both* the
             // service provider and the scope here.
             var services = _createServiceProvider();
-            var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
             return new WebAssemblyHost(services, scope, Configuration, RootComponents, _persistedState);
         }
