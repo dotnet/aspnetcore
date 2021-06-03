@@ -541,7 +541,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var sw = Stopwatch.StartNew();
                     logger.LogInformation("Waiting for connection to abort.");
 
-                    await requestAborted.Task.DefaultTimeout();
+                    // Don't use the 5 second timeout for debug builds. This can actually take a while.
+                    await requestAborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                     await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                     await connectionStopMessageLogged.Task.DefaultTimeout();
                     await appFuncCompleted.Task.DefaultTimeout();
@@ -629,7 +630,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
                         await sslStream.WriteAsync(request, 0, request.Length);
 
-                        await aborted.Task.DefaultTimeout();
+                        // Don't use the 5 second timeout for debug builds. This can actually take a while.
+                        await aborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                         await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                         await connectionStopMessageLogged.Task.DefaultTimeout();
                         await appFuncCompleted.Task.DefaultTimeout();
@@ -722,7 +724,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                     });
 
-                    await requestAborted.Task.DefaultTimeout();
+                    // Don't use the 5 second timeout for debug builds. This can actually take a while.
+                    await requestAborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                     await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                     await connectionStopMessageLogged.Task.DefaultTimeout();
 
