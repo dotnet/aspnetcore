@@ -166,8 +166,8 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public ValueTask DisposeAsync() => ((IAsyncDisposable)_host).DisposeAsync();
 
-        internal RequestDelegate BuildRequstDelegate() => ApplicationBuilder.Build();
-        RequestDelegate IApplicationBuilder.Build() => BuildRequstDelegate();
+        internal RequestDelegate BuildRequestDelegate() => ApplicationBuilder.Build();
+        RequestDelegate IApplicationBuilder.Build() => BuildRequestDelegate();
 
         // REVIEW: Should this be wrapping another type?
         IApplicationBuilder IApplicationBuilder.New() => ApplicationBuilder.New();

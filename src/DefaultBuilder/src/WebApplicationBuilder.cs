@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Builder
                     app.Use(next =>
                     {
                         _builtApplication.Run(next);
-                        return _builtApplication.BuildRequstDelegate();
+                        return _builtApplication.BuildRequestDelegate();
                     });
 
                     // Add a UseEndpoints at the end
@@ -136,13 +136,13 @@ namespace Microsoft.AspNetCore.Builder
                     _builtApplication.UseEndpoints(_ => { });
 
                     // Wire the source pipeline to run in the destination pipeline
-                    app.Run(_builtApplication.BuildRequstDelegate());
+                    app.Run(_builtApplication.BuildRequestDelegate());
                 }
             }
             else
             {
                 // Wire the source pipeline to run in the destination pipeline
-                app.Run(_builtApplication.BuildRequstDelegate());
+                app.Run(_builtApplication.BuildRequestDelegate());
             }
 
             // Copy the properties to the destination app builder
