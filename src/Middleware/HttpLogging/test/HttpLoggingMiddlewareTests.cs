@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
@@ -36,28 +37,39 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(
                 null,
-                CreateOptionsAccessor(),
-                new NullLoggerFactory()));
+                CreateHttpLoggingOptionsAccessor(),
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor()));
 
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
                 return Task.CompletedTask;
             },
             null,
-            new NullLoggerFactory()));
+            LoggerFactory,
+            CreateLoggerFilterOptionsAccessor()));
 
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
                 return Task.CompletedTask;
             },
-            CreateOptionsAccessor(),
+            CreateHttpLoggingOptionsAccessor(),
+            null,
+            CreateLoggerFilterOptionsAccessor()));
+
+            Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
+            {
+                return Task.CompletedTask;
+            },
+            CreateHttpLoggingOptionsAccessor(),
+            LoggerFactory,
             null));
         }
 
         [Fact]
         public async Task NoopWhenLoggingDisabled()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.None;
 
             var middleware = new HttpLoggingMiddleware(
@@ -67,7 +79,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -109,8 +122,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                         }
                     }
                 },
-                CreateOptionsAccessor(),
-                new NullLoggerFactory());
+                CreateHttpLoggingOptionsAccessor(),
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -137,7 +151,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task RequestLogsAllRequestInfo()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.Request;
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -153,7 +167,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -180,7 +195,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task RequestPropertiesLogs()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestProperties;
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -196,7 +211,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -223,7 +239,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task RequestHeadersLogs()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestHeaders;
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -239,7 +255,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -279,8 +296,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                         }
                     }
                 },
-                CreateOptionsAccessor(),
-                new NullLoggerFactory());
+                CreateHttpLoggingOptionsAccessor(),
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -294,7 +312,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task CanConfigureRequestAllowList()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.RequestHeaders.Clear();
             options.CurrentValue.RequestHeaders.Add("foo");
             var middleware = new HttpLoggingMiddleware(
@@ -303,7 +321,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                      return Task.CompletedTask;
                  },
                  options,
-                 new NullLoggerFactory());
+                 LoggerFactory,
+                 CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -323,7 +342,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [MemberData(nameof(BodyData))]
         public async Task RequestBodyReadingWorks(string expected)
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
@@ -340,7 +359,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -355,7 +375,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task RequestBodyReadingLimitLongCharactersWorks()
         {
             var input = string.Concat(new string('あ', 5));
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
             options.CurrentValue.RequestBodyLogLimit = 4;
 
@@ -377,7 +397,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(15, count);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -393,7 +414,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task RequestBodyReadingLimitWorks()
         {
             var input = string.Concat(new string('a', 60000), new string('b', 3000));
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
@@ -414,7 +435,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(63000, count);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -430,7 +452,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task PartialReadBodyStillLogs()
         {
             var input = string.Concat(new string('a', 60000), new string('b', 3000));
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
@@ -440,7 +462,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     var res = await c.Request.Body.ReadAsync(arr);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -463,7 +486,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             // media headers that should work.
             var expected = new string('a', 1000);
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
@@ -480,7 +503,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType;
@@ -498,7 +522,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             // media headers that should work.
             var expected = new string('a', 1000);
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
@@ -520,7 +544,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(1000, count);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType;
@@ -537,7 +562,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var encoding = Encoding.Unicode;
             var expected = new string('a', 1000);
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
             options.CurrentValue.MediaTypeOptions.Clear();
             options.CurrentValue.MediaTypeOptions.AddText("text/plain", encoding);
@@ -560,7 +585,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Equal(2000, count);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -582,8 +608,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                     c.Response.ContentType = "text/plain";
                     await c.Response.WriteAsync("test");
                 },
-                CreateOptionsAccessor(),
-                new NullLoggerFactory());
+                CreateHttpLoggingOptionsAccessor(),
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -596,7 +623,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task ResponseInfoLogsAll()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
             var middleware = new HttpLoggingMiddleware(
@@ -608,7 +635,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -622,7 +650,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task StatusCodeLogs()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseStatusCode;
 
             var middleware = new HttpLoggingMiddleware(
@@ -634,7 +662,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -647,7 +676,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task ResponseHeadersLogs()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
 
             var middleware = new HttpLoggingMiddleware(
@@ -659,7 +688,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -672,7 +702,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task ResponseHeadersRedacted()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
 
             var middleware = new HttpLoggingMiddleware(
@@ -682,7 +712,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -693,7 +724,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task AllowedResponseHeadersModify()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
             options.CurrentValue.ResponseHeaders.Clear();
             options.CurrentValue.ResponseHeaders.Add("Test");
@@ -706,7 +737,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -719,7 +751,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [MemberData(nameof(BodyData))]
         public async Task ResponseBodyWritingWorks(string expected)
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
             var middleware = new HttpLoggingMiddleware(
                 c =>
@@ -728,7 +760,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return c.Response.WriteAsync(expected);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -741,7 +774,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task ResponseBodyWritingLimitWorks()
         {
             var input = string.Concat(new string('a', 30000), new string('b', 3000));
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
             var middleware = new HttpLoggingMiddleware(
                 c =>
@@ -750,7 +783,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return c.Response.WriteAsync(input);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -763,7 +797,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task FirstWriteResponseHeadersLogged()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
             var writtenHeaders = new TaskCompletionSource<object>();
@@ -780,7 +814,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await letBodyFinish.Task;
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -802,7 +837,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task StartAsyncResponseHeadersLogged()
         {
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
             var writtenHeaders = new TaskCompletionSource<object>();
@@ -819,7 +854,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     await letBodyFinish.Task;
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -840,7 +876,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task UnrecognizedMediaType()
         {
             var expected = "Hello world";
-            var options = CreateOptionsAccessor();
+            var options = CreateHttpLoggingOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
             var middleware = new HttpLoggingMiddleware(
                 c =>
@@ -849,7 +885,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return c.Response.WriteAsync(expected);
                 },
                 options,
-                new NullLoggerFactory());
+                LoggerFactory,
+                CreateLoggerFilterOptionsAccessor());
 
             var httpContext = new DefaultHttpContext();
 
@@ -858,10 +895,17 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
         }
 
-        private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()
+        private IOptionsMonitor<HttpLoggingOptions> CreateHttpLoggingOptionsAccessor()
         {
             var options = new HttpLoggingOptions();
             var optionsAccessor = Mock.Of<IOptionsMonitor<HttpLoggingOptions>>(o => o.CurrentValue == options);
+            return optionsAccessor;
+        }
+
+        private IOptionsMonitor<LoggerFilterOptions> CreateLoggerFilterOptionsAccessor()
+        {
+            var options = new LoggerFilterOptions();
+            var optionsAccessor = Mock.Of<IOptionsMonitor<LoggerFilterOptions>>(o => o.CurrentValue == options);
             return optionsAccessor;
         }
     }

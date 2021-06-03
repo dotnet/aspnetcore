@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -50,6 +51,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (filterOptions == null)
+            {
+                throw new ArgumentNullException(nameof(filterOptions));
             }
 
             _filterOptions = filterOptions;
