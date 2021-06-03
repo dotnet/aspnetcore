@@ -103,16 +103,19 @@ namespace Templates.Test.Helpers
             {
                 Output.WriteLine("Acquired DotNetNewLock");
                 
-                Output.WriteLine($"Deleting contents of {TemplateOutputDir}");
-                var di = new DirectoryInfo(TemplateOutputDir);
-                foreach (FileInfo file in di.EnumerateFiles())
+                if (Directory.Exists(TemplateOutputDir))
                 {
-                    file.Delete(); 
+                    Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
+                    var di = new DirectoryInfo(TemplateOutputDir);
+                    foreach (FileInfo file in di.EnumerateFiles())
+                    {
+                        file.Delete(); 
+                    }
+                    foreach (DirectoryInfo dir in di.EnumerateDirectories())
+                    {
+                        dir.Delete(true); 
+                    }                
                 }
-                foreach (DirectoryInfo dir in di.EnumerateDirectories())
-                {
-                    dir.Delete(true); 
-                }                
                 
                 // Temporary while investigating why this process occasionally never runs or exits on Debian 9
                 environmentVariables.Add("COREHOST_TRACE", "1");
