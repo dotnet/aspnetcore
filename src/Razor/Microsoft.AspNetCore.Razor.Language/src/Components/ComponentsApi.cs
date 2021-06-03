@@ -105,8 +105,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static class RuntimeHelpers
         {
-            public const string TypeCheck = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck";
-            public const string CreateInferredEventCallback = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback";
+            public const string TypeCheck = "global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck";
+            public const string CreateInferredEventCallback = "global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback";
         }
 
         public static class RouteAttribute
