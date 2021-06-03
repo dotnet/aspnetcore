@@ -36,13 +36,14 @@ namespace Microsoft.AspNetCore.RequestLimiter
             {
                 endpointBuilder.Metadata.Add(
                     new RequestLimitAttribute(
-                        (HttpContextLimiter)new TokenBucketRateLimiter(
-                            new TokenBucketRateLimiterOptions
-                            {
-                                PermitLimit = requestPerSecond,
-                                ReplenishmentPeriod = TimeSpan.FromSeconds(1),
-                                TokensPerPeriod = requestPerSecond
-                            })));
+                        new SimpleLimiterWrapper(
+                            new TokenBucketRateLimiter(
+                                new TokenBucketRateLimiterOptions
+                                {
+                                    PermitLimit = requestPerSecond,
+                                    ReplenishmentPeriod = TimeSpan.FromSeconds(1),
+                                    TokensPerPeriod = requestPerSecond
+                                }))));
             });
 
             return builder;
@@ -54,22 +55,29 @@ namespace Microsoft.AspNetCore.RequestLimiter
             {
                 endpointBuilder.Metadata.Add(
                     new RequestLimitAttribute(
-                        (HttpContextLimiter)new ConcurrencyLimiter(
-                            new ConcurrencyLimiterOptions { PermitLimit = concurrentRequests })));
+                        new SimpleLimiterWrapper(
+                            new ConcurrencyLimiter(
+                                new ConcurrencyLimiterOptions { PermitLimit = concurrentRequests }))));
             });
 
             return builder;
         }
 
         public static IEndpointConventionBuilder EnforceRequestLimit(this IEndpointConventionBuilder builder, RateLimiter limiter)
-            => builder.EnforceRequestLimit((HttpContextLimiter)limiter);
-
-        public static IEndpointConventionBuilder EnforceRequestLimit(this IEndpointConventionBuilder builder, AggregatedRateLimiter<HttpContext> limiter)
         {
-
             builder.Add(endpointBuilder =>
             {
-                endpointBuilder.Metadata.Add(new RequestLimitAttribute(limiter));
+                endpointBuilder.Metadata.Add(new RequestLimitAttribute(new SimpleLimiterWrapper(limiter)));
+            });
+
+            return builder;
+        }
+
+        public static IEndpointConventionBuilder EnforceRequestLimit<TContext>(this IEndpointConventionBuilder builder, AggregatedRateLimiter<TContext> limiter, Func<HttpContext, TContext> selector) where TContext: notnull
+        {
+            builder.Add(endpointBuilder =>
+            {
+                endpointBuilder.Metadata.Add(new RequestLimitAttribute(new AggregatedLimiterWrapper<TContext>(limiter, selector)));
             });
 
             return builder;

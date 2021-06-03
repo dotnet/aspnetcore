@@ -18,17 +18,21 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
         public void SetDefaultPolicy(RateLimiter limiter)
         {
-            ResolveDefaultRequestLimit = _ => (HttpContextLimiter)limiter;
+            ResolveDefaultRequestLimit = _ => new SimpleLimiterWrapper(limiter);
         }
 
-        public void SetDefaultPolicy(AggregatedRateLimiter<HttpContext> aggregatedLimiter)
+        public void SetDefaultPolicy<TContext>(AggregatedRateLimiter<TContext> aggregatedLimiter, Func<HttpContext, TContext> selector) where TContext : notnull
         {
-            ResolveDefaultRequestLimit = _ => aggregatedLimiter;
+            ResolveDefaultRequestLimit = _ => new AggregatedLimiterWrapper<TContext>(aggregatedLimiter, selector);
+        }
+        public void SetDefaultPolicy<TRateLimiter>() where TRateLimiter : RateLimiter
+        {
+            ResolveDefaultRequestLimit = services => new AggregatedLimiterWrapper<TContext>(services.GetRequiredService<TRateLimiter>(), selector);
         }
 
-        public void SetDefaultPolicy<TRateLimiter>() where TRateLimiter : AggregatedRateLimiter<HttpContext>
+        public void SetDefaultPolicy<TRateLimiter, TContext>(Func<HttpContext, TContext> selector) where TRateLimiter : AggregatedRateLimiter<TContext> where TContext : notnull
         {
-            ResolveDefaultRequestLimit = services => services.GetRequiredService<TRateLimiter>();
+            ResolveDefaultRequestLimit = services => new AggregatedLimiterWrapper<TContext>(services.GetRequiredService<TRateLimiter>(), selector);
         }
 
         public void AddPolicy(string name, Action<RequestLimiterPolicy> configurePolicy)

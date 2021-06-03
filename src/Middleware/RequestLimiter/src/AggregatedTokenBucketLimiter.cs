@@ -1,67 +1,49 @@
 using System;
 using System.Collections.Concurrent;
-using System.Net;
 using System.Threading;
 using System.Runtime.RateLimits;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
     // TODO: update implementation with WaitAsync 
-    public class IPAggregatedRateLimiter : AggregatedRateLimiter<HttpContext>
+    public class AggregatedTokenBucketLimiter<TContext> : AggregatedRateLimiter<TContext> where TContext: IEquatable<TContext>
     {
-        private int _permitCount;
-
         private readonly int _maxPermitCount;
         private readonly int _newPermitPerSecond;
         private readonly Timer _renewTimer;
+
         // TODO: This is racy
-        private readonly ConcurrentDictionary<IPAddress, int> _cache = new();
+        private readonly ConcurrentDictionary<TContext, int> _cache = new();
 
-        private static readonly RateLimitLease FailedLease = new RateLimitLease(false);
-        private static readonly RateLimitLease SuccessfulLease = new RateLimitLease(true);
+        private static readonly RateLimitLease FailedLease = new(false);
+        private static readonly RateLimitLease SuccessfulLease = new(true);
 
-        public IPAggregatedRateLimiter(int permitCount, int newPermitPerSecond)
+        public AggregatedTokenBucketLimiter(int maxPermitCount, int newPermitPerSecond)
         {
-            _permitCount = permitCount;
-            _maxPermitCount = permitCount;
+            _maxPermitCount = maxPermitCount;
             _newPermitPerSecond = newPermitPerSecond;
 
             // Start timer (5s for demo)
             _renewTimer = new Timer(Replenish, this, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         }
 
-        public override int AvailablePermits(HttpContext context)
+        public override int AvailablePermits(TContext context)
         {
-            if (context.Connection.RemoteIpAddress == null)
-            {
-                // Unknown IP?
-                return 0;
-            }
-
-            return _cache.TryGetValue(context.Connection.RemoteIpAddress, out var count) ? count : 0;
+            return _cache.TryGetValue(context, out var count) ? count : 0;
         }
 
-        public override PermitLease Acquire(HttpContext context, int permitCount)
+        public override PermitLease Acquire(TContext context, int permitCount)
         {
             if (permitCount > _maxPermitCount)
             {
                 return FailedLease;
             }
 
-            if (context.Connection.RemoteIpAddress == null)
+            if (!_cache.TryGetValue(context, out var count))
             {
-                // TODO: how should this case be handled?
-                return SuccessfulLease;
-            }
-
-            var key = context.Connection.RemoteIpAddress;
-
-            if (!_cache.TryGetValue(key, out var count))
-            {
-                if (_cache.TryAdd(key, _maxPermitCount - permitCount))
+                if (_cache.TryAdd(context, _maxPermitCount - permitCount))
                 {
                     return SuccessfulLease;
                 }
@@ -76,14 +58,14 @@ namespace Microsoft.AspNetCore.RequestLimiter
                     return FailedLease;
                 }
 
-                if (_cache.TryUpdate(key, newCount, count))
+                if (_cache.TryUpdate(context, newCount, count))
                 {
                     return SuccessfulLease;
                 }
 
-                if (!_cache.TryGetValue(key, out count))
+                if (!_cache.TryGetValue(context, out count))
                 {
-                    if (_cache.TryAdd(key, _maxPermitCount - permitCount))
+                    if (_cache.TryAdd(context, _maxPermitCount - permitCount))
                     {
                         return SuccessfulLease;
                     }
@@ -91,7 +73,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
             }
         }
 
-        public override ValueTask<PermitLease> WaitAsync(HttpContext context, int permitCount, CancellationToken cancellationToken = default)
+        public override ValueTask<PermitLease> WaitAsync(TContext context, int permitCount, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -99,7 +81,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
         private static void Replenish(object? state)
         {
             // Return if Replenish already running to avoid concurrency.
-            if (state is not IPAggregatedRateLimiter limiter)
+            if (state is not AggregatedTokenBucketLimiter<TContext> limiter)
             {
                 return;
             }

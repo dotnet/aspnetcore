@@ -15,22 +15,22 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
         public void AddLimiter(RateLimiter limiter)
         {
-            LimiterResolvers.Add(_ => (HttpContextLimiter)limiter);
+            LimiterResolvers.Add(_ => new SimpleLimiterWrapper(limiter));
         }
 
-        public void AddAggregatedLimiter(AggregatedRateLimiter<HttpContext> aggregatedLimiter)
+        public void AddAggregatedLimiter<TContext>(AggregatedRateLimiter<TContext> aggregatedLimiter, Func<HttpContext, TContext> selector) where TContext : notnull
         {
-            LimiterResolvers.Add(_ => aggregatedLimiter);
+            LimiterResolvers.Add(_ => new AggregatedLimiterWrapper<TContext>(aggregatedLimiter, selector));
         }
 
         public void AddLimiter<TRateLimiter>() where TRateLimiter : RateLimiter
         {
-            LimiterResolvers.Add(services => (HttpContextLimiter)services.GetRequiredService<TRateLimiter>());
+            LimiterResolvers.Add(services => new SimpleLimiterWrapper(services.GetRequiredService<TRateLimiter>()));
         }
 
-        public void AddAggregatedLimiter<TAggregatedRateLimiter>() where TAggregatedRateLimiter : AggregatedRateLimiter<HttpContext>
+        public void AddAggregatedLimiter<TAggregatedRateLimiter, TContext>(Func<HttpContext, TContext> selector) where TAggregatedRateLimiter : AggregatedRateLimiter<TContext> where TContext : notnull
         {
-            LimiterResolvers.Add(services => services.GetRequiredService<TAggregatedRateLimiter>());
+            LimiterResolvers.Add(services => new AggregatedLimiterWrapper<TContext>(services.GetRequiredService<TAggregatedRateLimiter>(), selector));
         }
     }
 }

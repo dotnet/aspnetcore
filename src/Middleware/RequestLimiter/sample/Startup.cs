@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.ResourceLimits;
+using System;
+using System.Net;
+using System.Runtime.RateLimits;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,21 +21,37 @@ namespace RateLimiterSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddSingleton(new IPAggregatedRateLimiter(2, 2));
-            services.AddSingleton(new TokenBucketRateLimiter(2, 2));
+            services.AddSingleton(
+                new TokenBucketRateLimiter(
+                    new TokenBucketRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        TokensPerPeriod = 2,
+                        ReplenishmentPeriod = TimeSpan.FromSeconds(1)
+                    }));
+            services.AddSingleton(new AggregatedTokenBucketLimiter<IPAddress>(2, 2));
 
             services.AddRequestLimiter(options =>
             {
-                options.SetDefaultPolicy(new ConcurrencyLimiter(new ConcurrencyLimiterOptions { ResourceLimit = 100 }));
+                options.SetDefaultPolicy(new ConcurrencyLimiter(new ConcurrencyLimiterOptions { PermitLimit = 100 }));
                 options.AddPolicy("ipPolicy", policy =>
                 {
                     // Add instance
-                    policy.AddAggregatedLimiter(new IPAggregatedRateLimiter(2, 2));
+                    policy.AddLimiter(
+                        new TokenBucketRateLimiter(
+                            new TokenBucketRateLimiterOptions
+                            {
+                                PermitLimit = 2,
+                                TokensPerPeriod = 2,
+                                ReplenishmentPeriod = TimeSpan.FromSeconds(1)
+                            }));
+                    policy.AddAggregatedLimiter(new AggregatedTokenBucketLimiter<IPAddress>(2, 2), context => context.Connection.RemoteIpAddress);
                 });
-                options.AddPolicy("rate", policy =>
+                options.AddPolicy("diPolicy", policy =>
                 {
                     // Add from DI
                     policy.AddLimiter<TokenBucketRateLimiter>();
+                    policy.AddAggregatedLimiter<AggregatedTokenBucketLimiter<IPAddress>, IPAddress>(context => context.Connection.RemoteIpAddress);
                 });
             });
         }
@@ -57,7 +75,13 @@ namespace RateLimiterSample
                 {
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Hello World!");
-                }).EnforceRequestLimit(new TokenBucketRateLimiter(2, 2));
+                }).EnforceRequestLimit(new TokenBucketRateLimiter(
+                    new TokenBucketRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        TokensPerPeriod = 2,
+                        ReplenishmentPeriod = TimeSpan.FromSeconds(1)
+                    }));
 
                 endpoints.MapGet("/concurrent", async context =>
                 {
@@ -70,12 +94,6 @@ namespace RateLimiterSample
                     await Task.Delay(5000);
                     await context.Response.WriteAsync("Tested!");
                 }).EnforceRequestRateLimit(requestPerSecond: 2);
-
-                endpoints.MapGet("/ipFromDI", async context =>
-                {
-                    await Task.Delay(5000);
-                    await context.Response.WriteAsync("IP limited!");
-                }).EnforceRequestLimitPolicy("ipPolicy");
 
                 endpoints.MapGet("/multiple", async context =>
                 {

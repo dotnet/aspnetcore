@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
-    internal class HttpContextLimiter : AggregatedRateLimiter<HttpContext> 
+    internal class SimpleLimiterWrapper : AggregatedRateLimiter<HttpContext>
     {
         private readonly RateLimiter _limiter;
 
-        public HttpContextLimiter(RateLimiter limiter)
+        public SimpleLimiterWrapper(RateLimiter limiter)
         {
             _limiter = limiter;
         }
@@ -28,7 +28,5 @@ namespace Microsoft.AspNetCore.RequestLimiter
         {
             return _limiter.WaitAsync(requestedCount, cancellationToken);
         }
-
-        public static implicit operator HttpContextLimiter(RateLimiter limiter) => new(limiter);
     }
 }
