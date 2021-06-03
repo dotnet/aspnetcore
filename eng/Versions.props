@@ -183,6 +183,8 @@
     <MicrosoftBuildVersion>16.9.0</MicrosoftBuildVersion>
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
     <MicrosoftBuildFrameworkVersion>16.9.0</MicrosoftBuildFrameworkVersion>
+    <MicrosoftBuildTaskCoreVersion>16.9.0</MicrosoftBuildTaskCoreVersion>
+    <MicrosoftBuildUtilitiesCoreVersion>16.9.0</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
     <MicrosoftBuildUtilitiesCoreVersion>16.9.0</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftCodeAnalysisCommonVersion>3.8.0</MicrosoftCodeAnalysisCommonVersion>
@@ -201,6 +203,7 @@
     <MicrosoftWebWebView2Version>1.0.705.50</MicrosoftWebWebView2Version>
     <MicrosoftWebXdtVersion>1.4.0</MicrosoftWebXdtVersion>
     <SystemIdentityModelTokensJwtVersion>6.10.0</SystemIdentityModelTokensJwtVersion>
+    <NuGetPackagingVersion>5.10.0-rc.7240</NuGetPackagingVersion>
     <NuGetVersioningVersion>5.10.0-rc.7240</NuGetVersioningVersion>
     <NuGetFrameworksVersion>5.10.0-rc.7240</NuGetFrameworksVersion>
     <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
