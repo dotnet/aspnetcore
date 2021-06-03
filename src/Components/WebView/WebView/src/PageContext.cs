@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     /// </summary>
     internal class PageContext : IDisposable
     {
-        private readonly IServiceScope _serviceScope;
+        private readonly AsyncServiceScope _serviceScope;
 
         public WebViewNavigationManager NavigationManager { get; }
         public WebViewJSRuntime JSRuntime { get; }
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public PageContext(
             Dispatcher dispatcher,
-            IServiceScope serviceScope,
+            AsyncServiceScope serviceScope,
             IpcSender ipcSender,
             string baseUrl,
             string startUrl)
