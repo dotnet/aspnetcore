@@ -7354,7 +7354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e454cu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4854u))
                     {
-                        if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                        if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
                         {
                             AppendContentLength(value);
                         }
@@ -7561,7 +7561,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     nameStr = HeaderNames.CacheControl;
                     break;
                 case 28:
-                    if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                    if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
                     {
                         AppendContentLength(value);
                     }
@@ -11141,7 +11141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, StringValues value)
         {
-            ValidateHeaderValueCharacters(value);
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);
             switch (key.Length)
             {
                 case 3:
@@ -11720,7 +11720,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, StringValues value)
         {
-            ValidateHeaderValueCharacters(value);
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);
             switch (key.Length)
             {
                 case 3:
@@ -16815,7 +16815,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, StringValues value)
         {
-            ValidateHeaderValueCharacters(value);
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);
             switch (key.Length)
             {
                 case 4:
@@ -16876,7 +16876,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, StringValues value)
         {
-            ValidateHeaderValueCharacters(value);
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);
             switch (key.Length)
             {
                 case 4:

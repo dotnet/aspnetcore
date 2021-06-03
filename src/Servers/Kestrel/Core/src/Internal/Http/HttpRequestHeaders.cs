@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null)
         {
             ReuseHeaderValues = reuseHeaderValues;
-            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
         }
 
         public void OnHeadersComplete()

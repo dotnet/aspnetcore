@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
@@ -260,24 +261,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return TryGetValueFast(key, out value);
         }
 
-        public static void ValidateHeaderValueCharacters(StringValues headerValues)
+        public static void ValidateHeaderValueCharacters(string headerName, StringValues headerValues, Func<string, Encoding?> encodingSelector)
         {
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
 
             {
-                ValidateHeaderValueCharacters(headerValues[i]);
+                ValidateHeaderValueCharacters(headerName, headerValues[i], encodingSelector);
             }
         }
 
-        public static void ValidateHeaderValueCharacters(string headerCharacters)
+        public static void ValidateHeaderValueCharacters(string headerName, string headerCharacters, Func<string, Encoding?> encodingSelector)
         {
             if (headerCharacters != null)
             {
-                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
-                if (invalid >= 0)
+                // Only validate here if we're using the default encoding (ASCII). Otherwise we'll validate later when encoding.
+                if (ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    || encodingSelector(headerName) == null)
                 {
-                    ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
+                    var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
+                    if (invalid >= 0)
+                    {
+                        ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
+                    }
                 }
             }
         }

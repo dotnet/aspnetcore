@@ -28,9 +28,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class KestrelServerOptions
     {
         // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
-        internal static readonly Func<string, Encoding?> DefaultRequestHeaderEncodingSelector = _ => null;
+        internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
-        private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultRequestHeaderEncodingSelector;
+        private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
+
+        private Func<string, Encoding?> _responseHeaderEncodingSelector = _ => Encoding.UTF8; // DefaultHeaderEncodingSelector;
 
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
@@ -91,6 +93,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             get => _requestHeaderEncodingSelector;
             set => _requestHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// Gets or sets a callback that returns the <see cref="Encoding"/> to encode the value for the specified response header
+        /// or trailer name, or <see langword="null"/> to use the default <see cref="ASCIIEncoding"/>.
+        /// </summary>
+        public Func<string, Encoding?> ResponseHeaderEncodingSelector
+        {
+            get => _responseHeaderEncodingSelector;
+            set => _responseHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>

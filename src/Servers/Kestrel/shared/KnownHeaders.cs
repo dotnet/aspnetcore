@@ -329,7 +329,7 @@ namespace CodeGenerator
             var header = group.Header;
             if (header.Name == HeaderNames.ContentLength)
             {
-                return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
                     {{
                         AppendContentLength(value);
                     }}
@@ -370,7 +370,7 @@ namespace CodeGenerator
                 if (header.Name == HeaderNames.ContentLength)
                 {
                     return $@"
-                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
                         {extraIndent}{{
                         {extraIndent}    AppendContentLength(value);
                         {extraIndent}}}
@@ -948,7 +948,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -979,7 +979,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:

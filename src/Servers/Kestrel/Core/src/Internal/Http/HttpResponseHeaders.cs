@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -18,6 +19,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> CrLf => new[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> ColonSpace => new[] { (byte)':', (byte)' ' };
+
+        public Func<string, Encoding?> EncodingSelector { get; set; }
+
+        public HttpResponseHeaders(Func<string, Encoding?>? encodingSelector = null)
+        {
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
+        }
 
         public Enumerator GetEnumerator()
         {
