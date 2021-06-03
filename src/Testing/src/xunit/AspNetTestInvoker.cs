@@ -88,7 +88,6 @@ namespace Microsoft.AspNetCore.Testing
             return timeTaken;
         }
 
-
         private RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
         {
             var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
