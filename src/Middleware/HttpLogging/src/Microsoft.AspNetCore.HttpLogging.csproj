@@ -19,8 +19,4 @@
     <Compile Include="$(SharedSourceRoot)Buffers\**\*.cs" LinkBase="Internal\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.Extensions.Logging.W3C" />
-  </ItemGroup>
-
 </Project>
