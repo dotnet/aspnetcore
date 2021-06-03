@@ -2,6 +2,7 @@
 // Pending dotnet API review
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace System.Runtime.RateLimits
         private readonly TokenBucketRateLimiterOptions _options;
         private readonly Deque<RequestRegistration> _queue = new();
 
-        private static readonly PermitLease SuccessfulLease = new(true, null, null);
+        private static readonly PermitLease SuccessfulLease = new RateLimitLease(true, null);
 
         public override int AvailablePermits => _permitCount;
 
@@ -104,16 +105,7 @@ namespace System.Runtime.RateLimits
             var replenishAmount = _permitCount - AvailablePermits + _queueCount;
             var replenishPeriods = (replenishAmount / _options.TokensPerPeriod) + 1;
 
-            return new PermitLease(
-                false,
-                new Dictionary<MetadataName, object?>
-                {
-                    {
-                        MetadataName.RetryAfter,
-                        TimeSpan.FromTicks(_options.ReplenishmentPeriod.Ticks*replenishPeriods)
-                    }
-                },
-                null);
+            return new RateLimitLease(false, TimeSpan.FromTicks(_options.ReplenishmentPeriod.Ticks*replenishPeriods));
         }
 
         public static void Replenish(object? state)
@@ -164,6 +156,33 @@ namespace System.Runtime.RateLimits
                         break;
                     }
                 }
+            }
+        }
+
+        private class RateLimitLease : PermitLease
+        {
+            private readonly TimeSpan? _retryAfter;
+
+            public RateLimitLease(bool isAcquired, TimeSpan? retryAfter)
+            {
+                IsAcquired = isAcquired;
+                _retryAfter = retryAfter;
+            }
+
+            public override bool IsAcquired { get; }
+
+            public override void Dispose() { }
+
+            public override bool TryGetMetadata(MetadataName metadataName, [NotNullWhen(true)] out object? metadata)
+            {
+                if (metadataName == MetadataName.RetryAfter && _retryAfter.HasValue)
+                {
+                    metadata = _retryAfter.Value;
+                    return true;
+                }
+
+                metadata = null;
+                return false;
             }
         }
 

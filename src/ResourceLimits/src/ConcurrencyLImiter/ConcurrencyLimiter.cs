@@ -2,6 +2,7 @@
 // Pending dotnet API review
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,8 +17,8 @@ namespace System.Runtime.RateLimits
         private readonly ConcurrencyLimiterOptions _options;
         private readonly Deque<RequestRegistration> _queue = new();
 
-        private static readonly PermitLease SuccessfulLease = new(false, null, null);
-        private static readonly PermitLease FailedLease = new(false, null, null);
+        private static readonly ConcurrencyLease SuccessfulLease = new(true, null, 0);
+        private static readonly ConcurrencyLease FailedLease = new(false, null, 0);
 
         public override int AvailablePermits => _permitCount;
 
@@ -50,11 +51,7 @@ namespace System.Runtime.RateLimits
                     if (AvailablePermits >= permitCount)
                     {
                         _permitCount -= permitCount;
-                        return new PermitLease(
-                            isAcquired: true,
-                            metadata: null,
-                            // Perf: This captures state
-                            disposable: new ConcurrencyLease(this, permitCount));
+                        return new ConcurrencyLease(true, this, permitCount);
                     }
                 }
             }
@@ -75,7 +72,7 @@ namespace System.Runtime.RateLimits
             if (permitCount == 0 && AvailablePermits > 0)
             {
                 // Perf: static failed/successful value tasks?
-                return ValueTask.FromResult(SuccessfulLease);
+                return ValueTask.FromResult((PermitLease)SuccessfulLease);
             }
 
             // Perf: Check SemaphoreSlim implementation instead of locking
@@ -84,18 +81,14 @@ namespace System.Runtime.RateLimits
                 if (AvailablePermits >= permitCount)
                 {
                     _permitCount -= permitCount;
-                    return ValueTask.FromResult(new PermitLease(
-                        isAcquired: true,
-                        metadata: null,
-                        // Perf: This captures state
-                        disposable: new ConcurrencyLease(this, permitCount)));
+                    return ValueTask.FromResult((PermitLease)new ConcurrencyLease(true, this, permitCount));
                 }
 
                 // Don't queue if queue limit reached
                 if (_queueCount + permitCount > _options.QueueLimit)
                 {
                     // Perf: static failed/successful value tasks?
-                    return ValueTask.FromResult(FailedLease);
+                    return ValueTask.FromResult((PermitLease)FailedLease);
                 }
 
                 var request = new RequestRegistration(permitCount);
@@ -131,10 +124,7 @@ namespace System.Runtime.RateLimits
                         _queueCount -= request.Count;
 
                         // requestToFulfill == request
-                        request.TCS.SetResult(new PermitLease(
-                            isAcquired: true,
-                            metadata: null,
-                            disposable: new ConcurrencyLease(this, request.Count)));
+                        request.TCS.SetResult(new ConcurrencyLease(true, this, request.Count));
                     }
                     else
                     {
@@ -144,27 +134,37 @@ namespace System.Runtime.RateLimits
             }
         }
 
-        // Perf: this allocation can be saved via an ID and associated count stored in a dictionary
-        // tracking outstanding permit leases on the limiter itself. Currently implemented as a class
-        // for simplicity
-        private class ConcurrencyLease : IDisposable
+        private class ConcurrencyLease : PermitLease
         {
-            private int _released = 0;
-            private readonly ConcurrencyLimiter _limiter;
+            private bool _disposed = false;
+            private readonly ConcurrencyLimiter? _limiter;
             private readonly int _count;
 
-            public ConcurrencyLease(ConcurrencyLimiter limiter, int count)
+            public ConcurrencyLease(bool isAcquired, ConcurrencyLimiter? limiter, int count)
             {
+                IsAcquired = isAcquired;
                 _limiter = limiter;
                 _count = count;
             }
 
-            public void Dispose()
+            public override bool IsAcquired { get; }
+
+            public override bool TryGetMetadata(MetadataName metadataName, [NotNullWhen(true)] out object? metadata)
             {
-                if (Interlocked.CompareExchange(ref _released, 1, 0) == 0)
+                metadata = default;
+                return false;
+            }
+
+            public override void Dispose()
+            {
+                if (_disposed)
                 {
-                    _limiter.Release(_count);
+                    return;
                 }
+
+                _disposed = true;
+
+                _limiter?.Release(_count);
             }
         }
 

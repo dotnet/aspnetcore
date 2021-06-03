@@ -5,7 +5,6 @@
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
