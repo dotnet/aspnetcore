@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHost : IAsyncDisposable
     {
-        private readonly AsyncServiceScope _scope;
+        private readonly IServiceScope _scope;
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
         internal WebAssemblyHost(
             IServiceProvider services,
-            AsyncServiceScope scope,
+            IServiceScope scope,
             IConfiguration configuration,
             RootComponentMappingCollection rootComponents,
             string? persistedState)
@@ -85,7 +85,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 await _renderer.DisposeAsync();
             }
 
-            await _scope.DisposeAsync();
+            if (_scope is IAsyncDisposable asyncDisposableScope)
+            {
+                await asyncDisposableScope.DisposeAsync();
+            }
+            else
+            {
+                _scope?.Dispose();
+            }
 
             if (_services is IAsyncDisposable asyncDisposableServices)
             {

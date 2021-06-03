@@ -73,54 +73,68 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var scope = _serviceScopeFactory.CreateScope();
             connection.HubCallerClients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
 
-            var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-            var hub = hubActivator.Create();
             try
             {
-                InitializeHub(hub, connection);
+                var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+                var hub = hubActivator.Create();
+                try
+                {
+                    InitializeHub(hub, connection);
 
-                if (_onConnectedMiddleware != null)
-                {
-                    var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
-                    await _onConnectedMiddleware(context);
+                    if (_onConnectedMiddleware != null)
+                    {
+                        var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                        await _onConnectedMiddleware(context);
+                    }
+                    else
+                    {
+                        await hub.OnConnectedAsync();
+                    }
                 }
-                else
+                finally
                 {
-                    await hub.OnConnectedAsync();
+                    hubActivator.Release(hub);
                 }
             }
             finally
             {
-                hubActivator.Release(hub);
+                await scope.DisposeAsync();
             }
         }
 
         public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
         {
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var scope = _serviceScopeFactory.CreateScope();
 
-            var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-            var hub = hubActivator.Create();
             try
             {
-                InitializeHub(hub, connection);
+                var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+                var hub = hubActivator.Create();
+                try
+                {
+                    InitializeHub(hub, connection);
 
-                if (_onDisconnectedMiddleware != null)
-                {
-                    var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
-                    await _onDisconnectedMiddleware(context, exception);
+                    if (_onDisconnectedMiddleware != null)
+                    {
+                        var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                        await _onDisconnectedMiddleware(context, exception);
+                    }
+                    else
+                    {
+                        await hub.OnDisconnectedAsync(exception);
+                    }
                 }
-                else
+                finally
                 {
-                    await hub.OnDisconnectedAsync(exception);
+                    hubActivator.Release(hub);
                 }
             }
             finally
             {
-                hubActivator.Release(hub);
+                await scope.DisposeAsync();
             }
         }
 
@@ -270,7 +284,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var methodExecutor = descriptor.MethodExecutor;
 
             var disposeScope = true;
-            var scope = _serviceScopeFactory.CreateAsyncScope();
+            var scope = _serviceScopeFactory.CreateScope();
             IHubActivator<THub>? hubActivator = null;
             THub? hub = null;
             try
@@ -325,7 +339,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                                             ObjectMethodExecutor methodExecutor,
                                                             THub hub,
                                                             object?[] arguments,
-                                                            AsyncServiceScope scope,
+                                                            IServiceScope scope,
                                                             IHubActivator<THub> hubActivator,
                                                             HubConnectionContext connection,
                                                             HubMethodInvocationMessage hubMethodInvocationMessage,
@@ -403,7 +417,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         }
 
         private ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub>? hubActivator,
-            THub? hub, AsyncServiceScope scope)
+            THub? hub, IServiceScope scope)
         {
             if (hubMessage.StreamIds != null)
             {
@@ -421,7 +435,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return scope.DisposeAsync();
         }
 
-        private async Task StreamAsync(string invocationId, HubConnectionContext connection, object?[] arguments, AsyncServiceScope scope,
+        private async Task StreamAsync(string invocationId, HubConnectionContext connection, object?[] arguments, IServiceScope scope,
             IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage, HubMethodDescriptor descriptor)
         {
             string? error = null;

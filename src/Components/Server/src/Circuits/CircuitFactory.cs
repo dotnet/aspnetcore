@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             ClaimsPrincipal user,
             IComponentApplicationStateStore store)
         {
-            var scope = _scopeFactory.CreateAsyncScope();
+            var scope = _scopeFactory.CreateScope();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
             jsRuntime.Initialize(client);
 

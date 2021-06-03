@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitHost : IAsyncDisposable
     {
-        private readonly AsyncServiceScope _scope;
+        private readonly IServiceScope _scope;
         private readonly CircuitOptions _options;
         private readonly CircuitHandler[] _circuitHandlers;
         private readonly ILogger _logger;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public CircuitHost(
             CircuitId circuitId,
-            AsyncServiceScope scope,
+            IServiceScope scope,
             CircuitOptions options,
             CircuitClientProxy client,
             RemoteRenderer renderer,
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new ArgumentException(nameof(circuitId));
             }
 
-            _scope = scope;
+            _scope = scope ?? throw new ArgumentNullException(nameof(scope));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             Client = client ?? throw new ArgumentNullException(nameof(client));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
@@ -179,7 +179,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     JSRuntime.MarkPermanentlyDisconnected();
 
                     await Renderer.DisposeAsync();
-                    await _scope.DisposeAsync();
+
+                    // This cast is needed because it's possible the scope may not support async dispose.
+                    // Our DI container does, but other DI systems may not.
+                    if (_scope is IAsyncDisposable asyncDisposable)
+                    {
+                        await asyncDisposable.DisposeAsync();
+                    }
+                    else
+                    {
+                        _scope.Dispose();
+                    }
 
                     Log.DisposeSucceeded(_logger, CircuitId);
                 }
