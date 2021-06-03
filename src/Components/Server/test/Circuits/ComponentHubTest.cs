@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
@@ -21,7 +22,7 @@ using Moq;
 using Xunit;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server
 {
     public class ComponentHubTest
     {
@@ -119,19 +120,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Options.Create(new CircuitOptions()),
                 NullLogger<CircuitRegistry>.Instance,
                 circuitIdFactory);
-            var serializer = new Mock<ServerComponentDeserializer>(
-                ephemeralDataProtectionProvider,
-                NullLogger<ServerComponentDeserializer>.Instance,
-                new RootComponentTypeCache(),
-                new ComponentParameterDeserializer(
-                    NullLogger<ComponentParameterDeserializer>.Instance,
-                    new ComponentParametersTypeCache()));
-            var hub = new TestComponentHub(
-                serializer: serializer.Object,
+            var serializer = new TestServerComponentDeserializer();
+            var circuitHandleRegistry = new TestCircuitHandleRegistry();
+            var hub = new ComponentHub(
+                serializer: serializer,
                 dataProtectionProvider: ephemeralDataProtectionProvider,
                 circuitFactory: circuitFactory,
                 circuitIdFactory: circuitIdFactory,
                 circuitRegistry: circuitRegistry,
+                circuitHandleRegistry: circuitHandleRegistry,
                 logger: NullLogger<ComponentHub>.Instance);
 
             // Here we mock out elements of the Hub that are typically configured
@@ -147,71 +144,54 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return (mockClientProxy, hub);
         }
 
-        private class TestComponentHub : ComponentHub
+        private class TestCircuitHandleRegistry : ICircuitHandleRegistry
         {
             private bool circuitSet = false;
 
-            public TestComponentHub(
-                ServerComponentDeserializer serializer,
-                IDataProtectionProvider dataProtectionProvider,
-                CircuitFactory circuitFactory,
-                CircuitIdFactory circuitIdFactory,
-                CircuitRegistry circuitRegistry,
-                ILogger<ComponentHub> logger) : base(
-                serializer,
-                dataProtectionProvider,
-                circuitFactory,
-                circuitIdFactory,
-                circuitRegistry,
-                logger)
-            { }
-
-            public override CircuitHandle GetCircuitHandle()
+            public CircuitHandle GetCircuitHandle(object circuitKey)
             {
                 return null;
             }
 
-            public override CircuitHost GetCircuit()
+            public CircuitHost GetCircuit(object circuitKey)
             {
                 if (circuitSet)
                 {
                     var serviceScope = new Mock<IServiceScope>();
                     var circuitHost = TestCircuitHost.Create(
-                    serviceScope: serviceScope.Object);
+                        serviceScope: new AsyncServiceScope(serviceScope.Object));
                     return circuitHost;
                 }
                 return null;
             }
 
-            public override void SetCircuit(CircuitHost circuitHost)
+            public void SetCircuit(object circuitKey, CircuitHost circuitHost)
             {
                 circuitSet = true;
                 return;
             }
+        }
 
-            public override (bool, List<ComponentDescriptor>) DeserializeComponentDescriptor(string serializedComponentRecords)
+        private class TestServerComponentDeserializer : IServerComponentDeserializer
+        {
+            public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
             {
-                List<ComponentDescriptor> descriptors = default;
-                return (true, descriptors);
+                descriptors = default;
+                return true;
             }
         }
 
-        private class TestCircuitFactory : CircuitFactory
+        private class TestCircuitFactory : ICircuitFactory
         {
             public TestCircuitFactory(
             IServiceScopeFactory scopeFactory,
             ILoggerFactory loggerFactory,
             CircuitIdFactory circuitIdFactory,
-            IOptions<CircuitOptions> options) : base(
-            scopeFactory,
-            loggerFactory,
-            circuitIdFactory,
-            options)
-            { }
+            IOptions<CircuitOptions> options) { }
 
             // We override the default `CreateCircuitHostAsync` so we can mock around
             // the work of initializing a host and all its service dependencies.
-            public override async ValueTask<CircuitHost> CreateCircuitHostAsync(
+            public async ValueTask<CircuitHost> CreateCircuitHostAsync(
                 IReadOnlyList<ComponentDescriptor> components,
                 CircuitClientProxy client,
                 string baseUri,
@@ -221,7 +201,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await Task.Delay(0);
                 var serviceScope = new Mock<IServiceScope>();
-                var circuitHost = TestCircuitHost.Create(serviceScope: serviceScope.Object);
+                var circuitHost = TestCircuitHost.Create(serviceScope: new AsyncServiceScope(serviceScope.Object));
                 return circuitHost;
             }
         }

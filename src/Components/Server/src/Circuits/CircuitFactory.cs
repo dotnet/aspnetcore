@@ -16,7 +16,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class CircuitFactory
+    internal class CircuitFactory : ICircuitFactory
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILoggerFactory _loggerFactory;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _logger = _loggerFactory.CreateLogger<CircuitFactory>();
         }
 
-        public virtual async ValueTask<CircuitHost> CreateCircuitHostAsync(
+        public async ValueTask<CircuitHost> CreateCircuitHostAsync(
             IReadOnlyList<ComponentDescriptor> components,
             CircuitClientProxy client,
             string baseUri,
