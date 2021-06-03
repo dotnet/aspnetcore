@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Text.Json;
 using Xunit;
 
@@ -38,7 +37,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act & Assert
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
-            Assert.Equal("Required property __byte[] not found.", ex.Message);
+            Assert.Equal("Unexpected JSON Token EndObject, expected 'PropertyName'.", ex.Message);
         }
 
         [Fact]
@@ -51,7 +50,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act & Assert
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
-            Assert.Equal("Unexpected JSON property foo.", ex.Message);
+            Assert.Equal("Unexpected JSON Property foo.", ex.Message);
         }
 
         [Fact]
@@ -96,7 +95,74 @@ namespace Microsoft.JSInterop.Infrastructure
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
 
             // Assert
-            Assert.Equal("Unexpected JSON property __byte[].", ex.Message);
+            Assert.Equal("Unexpected JSON Token PropertyName, expected 'EndObject'.", ex.Message);
+        }
+
+        [Fact]
+        public void Read_ByteArraysIdValueInvalidStringThrows()
+        {
+            // Arrange
+            var byteArray = new byte[] { 1, 5, 7 };
+            JSRuntime.ByteArraysToBeRevived.Append(byteArray);
+
+            var json = $"{{\"__byte[]\":\"something\"}}";
+
+            // Act
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
+
+            // Assert
+            Assert.Equal("Unexpected JSON Token String, expected 'Number'.", ex.Message);
+        }
+
+        [Fact]
+        public void Read_ByteArraysIdValueLargeNumberThrows()
+        {
+            // Arrange
+            var byteArray = new byte[] { 1, 5, 7 };
+            JSRuntime.ByteArraysToBeRevived.Append(byteArray);
+
+            var json = $"{{\"__byte[]\":5000000000}}";
+
+            // Act
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
+
+            // Assert
+            Assert.Equal("Unexpected number, expected 32-bit integer.", ex.Message);
+        }
+
+        [Fact]
+        public void Read_ByteArraysIdValueNegativeNumberThrows()
+        {
+            // Arrange
+            var byteArray = new byte[] { 1, 5, 7 };
+            JSRuntime.ByteArraysToBeRevived.Append(byteArray);
+
+            var json = $"{{\"__byte[]\":-5}}";
+
+            // Act
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
+
+            // Assert
+            Assert.Equal("Byte array -5 not found.", ex.Message);
+        }
+
+        [Fact]
+        public void Read_ReadsJson_WithFormatting()
+        {
+            // Arrange
+            var byteArray = new byte[] { 1, 5, 7 };
+            JSRuntime.ByteArraysToBeRevived.Append(byteArray);
+
+            var json =
+@$"{{
+            ""__byte[]"": 0
+        }}";
+
+            // Act
+            var deserialized = JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions)!;
+
+            // Assert
+            Assert.Equal(byteArray, deserialized);
         }
 
         [Fact]

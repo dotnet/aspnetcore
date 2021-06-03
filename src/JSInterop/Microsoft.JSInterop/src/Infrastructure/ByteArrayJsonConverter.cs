@@ -29,31 +29,36 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException("ByteArraysToBeRevived is empty.");
             }
 
-            int? byteArrayRef = null;
+            int byteArrayRef;
 
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            if (reader.TokenType != JsonTokenType.StartObject)
             {
-                if (reader.TokenType == JsonTokenType.PropertyName)
-                {
-                    if (byteArrayRef is null && reader.ValueTextEquals(ByteArrayRefKey.EncodedUtf8Bytes))
-                    {
-                        reader.Read();
-                        byteArrayRef = reader.GetInt32();
-                    }
-                    else
-                    {
-                        throw new JsonException($"Unexpected JSON property {reader.GetString()}.");
-                    }
-                }
-                else
-                {
-                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}.");
-                }
+                throw new JsonException($"Unexpected JSON Token {reader.TokenType}, expected 'StartObject'.");
             }
 
-            if (byteArrayRef is null)
+            if (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
             {
-                throw new JsonException($"Required property {ByteArrayRefKey} not found.");
+                if (!reader.ValueTextEquals(ByteArrayRefKey.EncodedUtf8Bytes))
+                {
+                    throw new JsonException($"Unexpected JSON Property {reader.GetString()}.");
+                }
+                else if (!reader.Read() || reader.TokenType != JsonTokenType.Number)
+                {
+                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}, expected 'Number'.");
+                }
+                else if (!reader.TryGetInt32(out byteArrayRef))
+                {
+                    throw new JsonException($"Unexpected number, expected 32-bit integer.");
+                }
+            }
+            else
+            {
+                throw new JsonException($"Unexpected JSON Token {reader.TokenType}, expected 'PropertyName'.");
+            }
+
+            if (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                throw new JsonException($"Unexpected JSON Token {reader.TokenType}, expected 'EndObject'.");
             }
 
             if (byteArrayRef >= JSRuntime.ByteArraysToBeRevived.Count || byteArrayRef < 0)
@@ -61,7 +66,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException($"Byte array {byteArrayRef} not found.");
             }
 
-            var byteArray = JSRuntime.ByteArraysToBeRevived.Buffer[byteArrayRef.Value];
+            var byteArray = JSRuntime.ByteArraysToBeRevived.Buffer[byteArrayRef];
             return byteArray;
         }
 

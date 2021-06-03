@@ -15,10 +15,9 @@ namespace BasicTestApp.InteropTest
         }
 
         [JSInvokable]
-        public static async Task<byte[]> RoundTripByteArrayAsync(byte[] byteArray)
+        public static Task<byte[]> RoundTripByteArrayAsync(byte[] byteArray)
         {
-            await Task.Yield();
-            return byteArray;
+            return Task.FromResult(byteArray);
         }
 
         [JSInvokable]
@@ -28,10 +27,9 @@ namespace BasicTestApp.InteropTest
         }
 
         [JSInvokable]
-        public static async Task<ByteArrayWrapper> RoundTripByteArrayWrapperObjectAsync(ByteArrayWrapper byteArrayWrapper)
+        public static Task<ByteArrayWrapper> RoundTripByteArrayWrapperObjectAsync(ByteArrayWrapper byteArrayWrapper)
         {
-            await Task.Yield();
-            return byteArrayWrapper;
+            return Task.FromResult(byteArrayWrapper);
         }
 
         public class ByteArrayWrapper
