@@ -35,7 +35,6 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.WebEncoders" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
-    <AspNetCoreAppReferenceAndPackage Include="System.Threading.ResourceLimits" />
 
     <!-- These assemblies are only in the shared framework -->
     <AspNetCoreAppReference Include="Microsoft.AspNetCore" />

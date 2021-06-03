@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.ResourceLimits;
+using System.Runtime.RateLimits;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,21 +14,21 @@ namespace Microsoft.AspNetCore.RequestLimiter
     {
         internal Dictionary<string, RequestLimiterPolicy> PolicyMap { get; } = new Dictionary<string, RequestLimiterPolicy>(StringComparer.OrdinalIgnoreCase);
 
-        internal Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>? ResolveDefaultRequestLimit { get; set; }
+        internal Func<IServiceProvider, AggregatedRateLimiter<HttpContext>>? ResolveDefaultRequestLimit { get; set; }
 
         public void SetDefaultPolicy(RateLimiter limiter)
         {
             ResolveDefaultRequestLimit = _ => (HttpContextLimiter)limiter;
         }
 
-        public void SetDefaultPolicy(AggregatedResourceLimiter<HttpContext> aggregatedLimiter)
+        public void SetDefaultPolicy(AggregatedRateLimiter<HttpContext> aggregatedLimiter)
         {
             ResolveDefaultRequestLimit = _ => aggregatedLimiter;
         }
 
-        public void SetDefaultPolicy<TResourceLimiter>() where TResourceLimiter : AggregatedResourceLimiter<HttpContext>
+        public void SetDefaultPolicy<TRateLimiter>() where TRateLimiter : AggregatedRateLimiter<HttpContext>
         {
-            ResolveDefaultRequestLimit = services => services.GetRequiredService<TResourceLimiter>();
+            ResolveDefaultRequestLimit = services => services.GetRequiredService<TRateLimiter>();
         }
 
         public void AddPolicy(string name, Action<RequestLimiterPolicy> configurePolicy)
@@ -44,6 +44,6 @@ namespace Microsoft.AspNetCore.RequestLimiter
             PolicyMap[name] = policy;
         }
 
-        public Func<HttpContext, ResourceLease, Task> OnRejected { get; set; } = (context, resourceLease) => Task.CompletedTask;
+        public Func<HttpContext, PermitLease, Task> OnRejected { get; set; } = (context, permitLease) => Task.CompletedTask;
     }
 }

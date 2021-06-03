@@ -2,89 +2,96 @@ using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Threading;
-using System.Threading.ResourceLimits;
+using System.Runtime.RateLimits;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
-    // TODO: update implementation with WaitAsync and use MemoryCache instead of ConcurrentDictionary
-    public class IPAggregatedRateLimiter : AggregatedResourceLimiter<HttpContext>
+    // TODO: update implementation with WaitAsync 
+    public class IPAggregatedRateLimiter : AggregatedRateLimiter<HttpContext>
     {
-        private long _resourceCount;
-        private readonly long _maxResourceCount;
-        private readonly long _newResourcePerSecond;
+        private int _permitCount;
 
-        private Timer _renewTimer;
+        private readonly int _maxPermitCount;
+        private readonly int _newPermitPerSecond;
+        private readonly Timer _renewTimer;
         // TODO: This is racy
-        private ConcurrentDictionary<IPAddress, long> _cache = new ConcurrentDictionary<IPAddress, long>();
+        private readonly ConcurrentDictionary<IPAddress, int> _cache = new();
 
-        public IPAggregatedRateLimiter(long resourceCount, long newResourcePerSecond)
+        private static readonly RateLimitLease FailedLease = new RateLimitLease(false);
+        private static readonly RateLimitLease SuccessfulLease = new RateLimitLease(true);
+
+        public IPAggregatedRateLimiter(int permitCount, int newPermitPerSecond)
         {
-            _resourceCount = resourceCount;
-            _maxResourceCount = resourceCount;
-            _newResourcePerSecond = newResourcePerSecond;
+            _permitCount = permitCount;
+            _maxPermitCount = permitCount;
+            _newPermitPerSecond = newPermitPerSecond;
 
             // Start timer (5s for demo)
             _renewTimer = new Timer(Replenish, this, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         }
 
-        public override long EstimatedCount(HttpContext resourceId)
+        public override int AvailablePermits(HttpContext context)
         {
-            if (resourceId.Connection.RemoteIpAddress == null)
+            if (context.Connection.RemoteIpAddress == null)
             {
                 // Unknown IP?
                 return 0;
             }
 
-            return _cache.TryGetValue(resourceId.Connection.RemoteIpAddress, out var count) ? count : 0;
+            return _cache.TryGetValue(context.Connection.RemoteIpAddress, out var count) ? count : 0;
         }
 
-        public override ResourceLease Acquire(HttpContext resourceId, long requestedCount)
+        public override PermitLease Acquire(HttpContext context, int permitCount)
         {
-            if (requestedCount > _maxResourceCount)
+            if (permitCount > _maxPermitCount)
             {
-                return ResourceLease.FailedAcquisition;
+                return FailedLease;
             }
 
-            if (resourceId.Connection.RemoteIpAddress == null)
+            if (context.Connection.RemoteIpAddress == null)
             {
-                return ResourceLease.SuccessfulAcquisition;
+                // TODO: how should this case be handled?
+                return SuccessfulLease;
             }
 
-            var key = resourceId.Connection.RemoteIpAddress;
+            var key = context.Connection.RemoteIpAddress;
 
             if (!_cache.TryGetValue(key, out var count))
             {
-                if (_cache.TryAdd(key, requestedCount))
+                if (_cache.TryAdd(key, _maxPermitCount - permitCount))
                 {
-                    return ResourceLease.SuccessfulAcquisition;
+                    return SuccessfulLease;
                 }
             }
 
             while (true)
             {
-                var newCount = count + requestedCount;
-                if (_cache.TryUpdate(key, count + requestedCount, count))
-                {
-                    if (newCount > _maxResourceCount)
-                    {
-                        return ResourceLease.FailedAcquisition;
-                    }
+                var newCount = count - permitCount;
 
-                    return ResourceLease.SuccessfulAcquisition;
+                if (newCount < 0)
+                {
+                    return FailedLease;
                 }
+
+                if (_cache.TryUpdate(key, newCount, count))
+                {
+                    return SuccessfulLease;
+                }
+
                 if (!_cache.TryGetValue(key, out count))
                 {
-                    if (_cache.TryAdd(key, requestedCount))
+                    if (_cache.TryAdd(key, _maxPermitCount - permitCount))
                     {
-                        return ResourceLease.SuccessfulAcquisition;
+                        return SuccessfulLease;
                     }
                 }
             }
         }
 
-        public override ValueTask<ResourceLease> WaitAsync(HttpContext resourceId, long requestedCount, CancellationToken cancellationToken = default)
+        public override ValueTask<PermitLease> WaitAsync(HttpContext context, int permitCount, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -92,9 +99,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
         private static void Replenish(object? state)
         {
             // Return if Replenish already running to avoid concurrency.
-            var limiter = state as IPAggregatedRateLimiter;
-
-            if (limiter == null)
+            if (state is not IPAggregatedRateLimiter limiter)
             {
                 return;
             }
@@ -103,7 +108,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
             foreach (var entry in cache)
             {
-                if (entry.Value < limiter._newResourcePerSecond)
+                if (entry.Value >= limiter._maxPermitCount - limiter._newPermitPerSecond)
                 {
                     if (cache.TryRemove(entry))
                     {
@@ -117,11 +122,29 @@ namespace Microsoft.AspNetCore.RequestLimiter
                     {
                         break;
                     }
-                    if (cache.TryUpdate(entry.Key, Math.Max(0, newCount - limiter._newResourcePerSecond), newCount))
+                    if (cache.TryUpdate(entry.Key, Math.Min(limiter._maxPermitCount, newCount + limiter._newPermitPerSecond), newCount))
                     {
                         break;
                     }
                 }
+            }
+        }
+
+        private class RateLimitLease : PermitLease
+        {
+            public RateLimitLease(bool isAcquired)
+            {
+                IsAcquired = isAcquired;
+            }
+
+            public override bool IsAcquired { get; }
+
+            public override void Dispose() { }
+
+            public override bool TryGetMetadata(MetadataName metadataName, [NotNullWhen(true)] out object? metadata)
+            {
+                metadata = null;
+                return false;
             }
         }
     }

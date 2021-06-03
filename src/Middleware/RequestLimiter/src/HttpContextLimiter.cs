@@ -1,11 +1,11 @@
 using System.Threading;
-using System.Threading.ResourceLimits;
+using System.Runtime.RateLimits;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RequestLimiter
 {
-    internal class HttpContextLimiter : AggregatedResourceLimiter<HttpContext> 
+    internal class HttpContextLimiter : AggregatedRateLimiter<HttpContext> 
     {
         private readonly RateLimiter _limiter;
 
@@ -14,21 +14,21 @@ namespace Microsoft.AspNetCore.RequestLimiter
             _limiter = limiter;
         }
 
-        public override ResourceLease Acquire(HttpContext resourceID, long requestedCount)
+        public override PermitLease Acquire(HttpContext context, int permitCount)
         {
-            return _limiter.Acquire(requestedCount);
+            return _limiter.Acquire(permitCount);
         }
 
-        public override long EstimatedCount(HttpContext resourceID)
+        public override int AvailablePermits(HttpContext context)
         {
-            return _limiter.EstimatedCount;
+            return _limiter.AvailablePermits;
         }
 
-        public override ValueTask<ResourceLease> WaitAsync(HttpContext resourceID, long requestedCount, CancellationToken cancellationToken = default)
+        public override ValueTask<PermitLease> WaitAsync(HttpContext context, int requestedCount, CancellationToken cancellationToken = default)
         {
             return _limiter.WaitAsync(requestedCount, cancellationToken);
         }
 
-        public static implicit operator HttpContextLimiter(RateLimiter limiter) => new HttpContextLimiter(limiter);
+        public static implicit operator HttpContextLimiter(RateLimiter limiter) => new(limiter);
     }
 }

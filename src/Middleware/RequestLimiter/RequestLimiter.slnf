@@ -14,7 +14,7 @@
       "src\\Middleware\\HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj",
       "src\\Middleware\\RequestLimiter\\sample\\RequestLimiterSample.csproj",
       "src\\Middleware\\RequestLimiter\\src\\Microsoft.AspNetCore.RequestLimiter.csproj",
-      "src\\ResourceLimits\\src\\System.Threading.ResourceLimits.csproj",
+      "src\\ResourceLimits\\src\\System.Runtime.RateLimits.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",

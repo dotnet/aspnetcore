@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.ResourceLimits;
+using System.Runtime.RateLimits;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RequestLimiter
@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.RequestLimiter
             Policy = policy;
         }
 
-        public RequestLimitAttribute(AggregatedResourceLimiter<HttpContext> limiter)
+        public RequestLimitAttribute(AggregatedRateLimiter<HttpContext> limiter)
         {
             Limiter = limiter;
         }
 
         internal string? Policy { get; }
 
-        internal AggregatedResourceLimiter<HttpContext>? Limiter { get; }
+        internal AggregatedRateLimiter<HttpContext>? Limiter { get; }
     }
 }

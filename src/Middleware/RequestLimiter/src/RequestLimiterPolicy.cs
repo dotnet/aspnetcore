@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.ResourceLimits;
+using System.Runtime.RateLimits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,27 +11,26 @@ namespace Microsoft.AspNetCore.RequestLimiter
 {
     public class RequestLimiterPolicy
     {
-        internal ICollection<Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>> LimiterResolvers { get; } = new List<Func<IServiceProvider, AggregatedResourceLimiter<HttpContext>>>();
+        internal ICollection<Func<IServiceProvider, AggregatedRateLimiter<HttpContext>>> LimiterResolvers { get; } = new List<Func<IServiceProvider, AggregatedRateLimiter<HttpContext>>>();
 
         public void AddLimiter(RateLimiter limiter)
         {
             LimiterResolvers.Add(_ => (HttpContextLimiter)limiter);
         }
 
-        public void AddAggregatedLimiter(AggregatedResourceLimiter<HttpContext> aggregatedLimiter)
+        public void AddAggregatedLimiter(AggregatedRateLimiter<HttpContext> aggregatedLimiter)
         {
             LimiterResolvers.Add(_ => aggregatedLimiter);
         }
 
-        public void AddLimiter<TResourceLimiter>() where TResourceLimiter : RateLimiter
+        public void AddLimiter<TRateLimiter>() where TRateLimiter : RateLimiter
         {
-            LimiterResolvers.Add(services => (HttpContextLimiter)services.GetRequiredService<TResourceLimiter>());
+            LimiterResolvers.Add(services => (HttpContextLimiter)services.GetRequiredService<TRateLimiter>());
         }
 
-        // TODO: non aggregated limiters
-        public void AddAggregatedLimiter<TResourceAggregatedLimiter>() where TResourceAggregatedLimiter : AggregatedResourceLimiter<HttpContext>
+        public void AddAggregatedLimiter<TAggregatedRateLimiter>() where TAggregatedRateLimiter : AggregatedRateLimiter<HttpContext>
         {
-            LimiterResolvers.Add(services => services.GetRequiredService<TResourceAggregatedLimiter>());
+            LimiterResolvers.Add(services => services.GetRequiredService<TAggregatedRateLimiter>());
         }
     }
 }

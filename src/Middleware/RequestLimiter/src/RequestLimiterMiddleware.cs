@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.ResourceLimits;
+using System.Runtime.RateLimits;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
         }
         private async Task InvokeAsync(HttpContext context, IReadOnlyList<RequestLimitAttribute> attributes)
         {
-            var resourceLeases = new Stack<ResourceLease>();
+            var permitLeases = new Stack<PermitLease>();
             try
             {
                 foreach (var attribute in attributes)
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
                     {
                         if (_options.ResolveDefaultRequestLimit != null)
                         {
-                            if (!await ApplyLimitAsync(_options.ResolveDefaultRequestLimit(context.RequestServices), context, resourceLeases))
+                            if (!await ApplyLimitAsync(_options.ResolveDefaultRequestLimit(context.RequestServices), context, permitLeases))
                             {
                                 return;
                             }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
                         foreach (var limitResolver in policy.LimiterResolvers)
                         {
-                            if (!await ApplyLimitAsync(limitResolver(context.RequestServices), context, resourceLeases))
+                            if (!await ApplyLimitAsync(limitResolver(context.RequestServices), context, permitLeases))
                             {
                                 return;
                             }
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
                     if (attribute.Limiter != null)
                     {
                         // Registrations based limiters
-                        if (!await ApplyLimitAsync(attribute.Limiter, context, resourceLeases))
+                        if (!await ApplyLimitAsync(attribute.Limiter, context, permitLeases))
                         {
                             return;
                         }
@@ -93,16 +93,16 @@ namespace Microsoft.AspNetCore.RequestLimiter
             }
             finally
             {
-                while (resourceLeases.TryPop(out var resource))
+                while (permitLeases.TryPop(out var resource))
                 {
                     _logger.LogInformation("Releasing resource");
                     resource.Dispose();
                 }
             };
         }
-        private Task<bool> ApplyLimitAsync(AggregatedResourceLimiter<HttpContext> limiter, HttpContext context, Stack<ResourceLease> obtainedResources)
+        private Task<bool> ApplyLimitAsync(AggregatedRateLimiter<HttpContext> limiter, HttpContext context, Stack<PermitLease> obtainedResources)
         {
-            _logger.LogInformation("Resource count: " + limiter.EstimatedCount(context));
+            _logger.LogInformation("Resource count: " + limiter.AvailablePermits(context));
             var resourceLeaseTask = limiter.WaitAsync(context);
 
             if (resourceLeaseTask.IsCompletedSuccessfully)
@@ -123,13 +123,13 @@ namespace Microsoft.AspNetCore.RequestLimiter
             return ApplyLimitAsyncAwaited(resourceLeaseTask, context, obtainedResources);
         }
 
-        private async Task<bool> OnRejectAsync(HttpContext context, ResourceLease resourceLease)
+        private async Task<bool> OnRejectAsync(HttpContext context, PermitLease resourceLease)
         {
             await _options.OnRejected(context, resourceLease);
             return false;
         }
 
-        private async Task<bool> ApplyLimitAsyncAwaited(ValueTask<ResourceLease> resourceLeaseTask, HttpContext context, Stack<ResourceLease> obtainedResources)
+        private async Task<bool> ApplyLimitAsyncAwaited(ValueTask<PermitLease> resourceLeaseTask, HttpContext context, Stack<PermitLease> obtainedResources)
         {
             var resourceLease = await resourceLeaseTask;
             if (!resourceLease.IsAcquired)
