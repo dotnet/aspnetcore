@@ -29,19 +29,39 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException("ByteArraysToBeRevived is empty.");
             }
 
-            var byteArrayRef = JsonSerializer.Deserialize<ByteArrayRef>(ref reader, options);
+            int? byteArrayRef = null;
 
-            if (byteArrayRef.Id is null)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    if (byteArrayRef is null && reader.ValueTextEquals(ByteArrayRefKey.EncodedUtf8Bytes))
+                    {
+                        reader.Read();
+                        byteArrayRef = reader.GetInt32();
+                    }
+                    else
+                    {
+                        throw new JsonException($"Unexpected JSON property {reader.GetString()}.");
+                    }
+                }
+                else
+                {
+                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}.");
+                }
+            }
+
+            if (byteArrayRef is null)
             {
                 throw new JsonException($"Required property {ByteArrayRefKey} not found.");
             }
 
-            if (byteArrayRef.Id >= JSRuntime.ByteArraysToBeRevived.Count || byteArrayRef.Id < 0)
+            if (byteArrayRef >= JSRuntime.ByteArraysToBeRevived.Count || byteArrayRef < 0)
             {
-                throw new JsonException($"Byte array {byteArrayRef.Id} not found.");
+                throw new JsonException($"Byte array {byteArrayRef} not found.");
             }
 
-            var byteArray = JSRuntime.ByteArraysToBeRevived.Buffer[byteArrayRef.Id.Value];
+            var byteArray = JSRuntime.ByteArraysToBeRevived.Buffer[byteArrayRef.Value];
             return byteArray;
         }
 

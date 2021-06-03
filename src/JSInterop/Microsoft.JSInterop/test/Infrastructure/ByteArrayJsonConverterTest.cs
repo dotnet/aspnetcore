@@ -51,7 +51,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act & Assert
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
-            Assert.Equal("Required property __byte[] not found.", ex.Message);
+            Assert.Equal("Unexpected JSON property foo.", ex.Message);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
-        public void Read_IfByteArraysIdAppearsMultipleTimesUseLastProperty()
+        public void Read_ByteArraysIdAppearsMultipleTimesThrows()
         {
             // Arrange
             var byteArray = new byte[] { 1, 5, 7 };
@@ -92,10 +92,11 @@ namespace Microsoft.JSInterop.Infrastructure
 
             var json = $"{{\"__byte[]\":9120,\"__byte[]\":0}}";
 
-            var deserialized = JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions)!;
+            // Act
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
 
-            // Act & Assert
-            Assert.Equal(byteArray, deserialized);
+            // Assert
+            Assert.Equal("Unexpected JSON property __byte[].", ex.Message);
         }
 
         [Fact]
