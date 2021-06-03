@@ -1363,6 +1363,12 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
+        public Task ConnectionRequestClose(HttpContext httpContext)
+        {
+            httpContext.Connection.RequestClose();
+            return Task.CompletedTask;
+        }
+
         private TaskCompletionSource _completeAsync = new TaskCompletionSource();
 
         public async Task CompleteAsync(HttpContext httpContext)

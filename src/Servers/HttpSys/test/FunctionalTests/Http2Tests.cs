@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2, SkipReason = "GoAway support was added in Win10_19H2.")]
-        public async Task ConnectionClose_OSSupport_SendsGoAway()
+        public async Task ConnectionHeaderClose_OSSupport_SendsGoAway()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
@@ -398,11 +398,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2, SkipReason = "GoAway support was added in Win10_19H2.")]
-        public async Task SetConnectionCloseHeader_AdditionalRequests_ReceivesSecondGoAway()
+        public async Task ConnectionRequestClose_OSSupport_SendsGoAway()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                httpContext.Response.Headers.Connection = "close";
+                httpContext.Connection.RequestClose();
                 return Task.FromResult(0);
             });
 
@@ -413,13 +413,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
                     h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 
-                    var streamId = 1;
-                    await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
                     var goAwayFrame = await h2Connection.ReceiveFrameAsync();
                     h2Connection.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
 
-                    await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                     {
                         // HTTP/2 filters out the connection header
                         Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
@@ -427,43 +426,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
-
-                    for (var i = 1; i < 200; i++)
-                    {
-                        streamId = 1 + (i * 2); // Odds.
-                        await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
-
-                        await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
-                        {
-                            // HTTP/2 filters out the connection header
-                            Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                            Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                        });
-
-                        dataFrame = await h2Connection.ReceiveFrameAsync();
-                        Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
-                    }
-
-                    streamId = 1 + (200 * 2); // Odds.
-                    await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
-
-                    // Final GoAway
-                    goAwayFrame = await h2Connection.ReceiveFrameAsync();
-                    h2Connection.VerifyGoAway(goAwayFrame, streamId, Http2ErrorCode.NO_ERROR);
-
-                    // Normal response
-                    await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
-                    {
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                    });
-
-                    dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
@@ -472,11 +437,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2, SkipReason = "GoAway support was added in Win10_19H2.")]
-        public async Task ConnectionRequestClose_AdditionalRequests_ReceivesSecondGoAway()
+        public async Task ConnectionClose_AdditionalRequests_ReceivesSecondGoAway()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                httpContext.Connection.RequestClose();
+                httpContext.Response.Headers.Connection = "close";
                 return Task.FromResult(0);
             });
 
