@@ -315,6 +315,86 @@ namespace Microsoft.JSInterop
             Assert.Equal(invocation, error.InvocationInfo);
         }
 
+        [Fact]
+        public void ReceiveByteArray_AddsInitialByteArray()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            runtime.ReceiveByteArray(0, byteArray);
+
+            // Assert
+            Assert.Equal(1, runtime.ByteArraysToBeRevived.Count);
+            Assert.Equal(byteArray, runtime.ByteArraysToBeRevived.Buffer[0]);
+        }
+
+        [Fact]
+        public void ReceiveByteArray_AddsMultipleByteArrays()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            var byteArrays = new byte[10][];
+            for (var i = 0; i < 10; i++)
+            {
+                var byteArray = new byte[3];
+                Random.Shared.NextBytes(byteArray);
+                byteArrays[i] = byteArray;
+            }
+
+            // Act
+            for (var i = 0; i < 10; i++)
+            {
+                runtime.ReceiveByteArray(i, byteArrays[i]);
+            }
+
+            // Assert
+            Assert.Equal(10, runtime.ByteArraysToBeRevived.Count);
+            for (var i = 0; i < 10; i++)
+            {
+                Assert.Equal(byteArrays[i], runtime.ByteArraysToBeRevived.Buffer[i]);
+            }
+        }
+
+        [Fact]
+        public void ReceiveByteArray_ClearsByteArraysToBeRevivedWhenIdIsZero()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 1, 5, 7 });
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 3, 10, 15 });
+
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            runtime.ReceiveByteArray(0, byteArray);
+
+            // Assert
+            Assert.Equal(1, runtime.ByteArraysToBeRevived.Count);
+            Assert.Equal(byteArray, runtime.ByteArraysToBeRevived.Buffer[0]);
+        }
+
+        [Fact]
+        public void ReceiveByteArray_ThrowsExceptionIfUnexpectedId()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 1, 5, 7 });
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 3, 10, 15 });
+
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => runtime.ReceiveByteArray(7, byteArray));
+
+            // Assert
+            Assert.Equal(2, runtime.ByteArraysToBeRevived.Count);
+            Assert.Equal("Element id '7' cannot be added to the byte arrays to be revived with length '2'.", ex.Message);
+        }
+
         private class JSError
         {
             public DotNetInvocationInfo InvocationInfo { get; set; }

@@ -33,6 +33,8 @@ export interface HeapLock {
 export interface MethodHandle { MethodHandle__DO_NOT_IMPLEMENT: any }
 export interface System_Object { System_Object__DO_NOT_IMPLEMENT: any }
 export interface System_Boolean { System_Boolean__DO_NOT_IMPLEMENT: any }
+export interface System_Byte { System_Byte__DO_NOT_IMPLEMENT: any }
+export interface System_Int { System_Int__DO_NOT_IMPLEMENT: any }
 export interface System_String extends System_Object { System_String__DO_NOT_IMPLEMENT: any }
 export interface System_Array<T> extends System_Object { System_Array__DO_NOT_IMPLEMENT: any }
 export interface Pointer { Pointer__DO_NOT_IMPLEMENT: any }

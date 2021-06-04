@@ -388,6 +388,31 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        // ReceiveByteArray is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        internal async Task ReceiveByteArray(int id, byte[] data)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            try
+            {
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    Log.ReceiveByteArraySuccess(_logger, id);
+                    DotNetDispatcher.ReceiveByteArray(JSRuntime, id, data);
+                });
+            }
+            catch (Exception ex)
+            {
+                // An error completing JS interop means that the user sent invalid data, a well-behaved
+                // client won't do this.
+                Log.ReceiveByteArrayException(_logger, id, ex);
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid byte array."));
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
         // DispatchEvent is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
         public async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
@@ -603,6 +628,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, Exception> _endInvokeDispatchException;
             private static readonly Action<ILogger, long, string, Exception> _endInvokeJSFailed;
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
+            private static readonly Action<ILogger, long, Exception> _receiveByteArraySuccess;
+            private static readonly Action<ILogger, long, Exception> _receiveByteArrayException;
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
             private static readonly Action<ILogger, string, CircuitId, Exception> _locationChange;
@@ -645,6 +672,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId LocationChangeFailed = new EventId(210, "LocationChangeFailed");
                 public static readonly EventId LocationChangeFailedInCircuit = new EventId(211, "LocationChangeFailedInCircuit");
                 public static readonly EventId OnRenderCompletedFailed = new EventId(212, "OnRenderCompletedFailed");
+                public static readonly EventId ReceiveByteArraySucceeded = new EventId(213, "ReceiveByteArraySucceeded");
+                public static readonly EventId ReceiveByteArrayException = new EventId(214, "ReceiveByteArrayException");
             }
 
             static Log()
@@ -764,6 +793,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.EndInvokeJSSucceeded,
                     "The JS interop call with callback id '{AsyncCall}' succeeded.");
 
+                _receiveByteArraySuccess = LoggerMessage.Define<long>(
+                    LogLevel.Debug,
+                    EventIds.ReceiveByteArraySucceeded,
+                    "The ReceiveByteArray call with id '{id}' succeeded.");
+
+                _receiveByteArrayException = LoggerMessage.Define<long>(
+                    LogLevel.Debug,
+                    EventIds.ReceiveByteArrayException,
+                    "The ReceiveByteArray call with id '{id}' failed.");
+
                 _dispatchEventFailedToParseEventData = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.DispatchEventFailedToParseEventData,
@@ -826,6 +865,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void EndInvokeDispatchException(ILogger logger, Exception ex) => _endInvokeDispatchException(logger, ex);
             public static void EndInvokeJSFailed(ILogger logger, long asyncHandle, string arguments) => _endInvokeJSFailed(logger, asyncHandle, arguments, null);
             public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
+            internal static void ReceiveByteArraySuccess(ILogger logger, long id) => _receiveByteArraySuccess(logger, id, null);
+            internal static void ReceiveByteArrayException(ILogger logger, long id, Exception ex) => _receiveByteArrayException(logger, id, ex);
             public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 

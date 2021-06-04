@@ -5,3 +5,4 @@ Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, 
 Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
 Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string!
+override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.SendByteArray(int id, byte[]! data) -> void

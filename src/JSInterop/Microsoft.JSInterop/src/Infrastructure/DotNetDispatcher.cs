@@ -210,6 +210,11 @@ namespace Microsoft.JSInterop.Infrastructure
                 index++;
             }
 
+            // Note it's possible not all ByteArraysToBeRevived were actually revived
+            // due to potential differences between the JS & .NET data models for a
+            // particular type.
+            jsRuntime.ByteArraysToBeRevived.Clear();
+
             if (index < parameterTypes.Length)
             {
                 // If we parsed fewer parameters, we can always make a definitive claim about how many parameters were received.
@@ -290,6 +295,17 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 throw new JsonException("Invalid JSON");
             }
+        }
+
+        /// <summary>
+        /// Accepts the byte array data being transferred from JS to DotNet.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
+        /// <param name="id">Identifier for the byte array being transfered.</param>
+        /// <param name="data">Byte array to be transfered from JS.</param>
+        public static void ReceiveByteArray(JSRuntime jsRuntime, int id, byte[] data)
+        {
+            jsRuntime.ReceiveByteArray(id, data);
         }
 
         private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)

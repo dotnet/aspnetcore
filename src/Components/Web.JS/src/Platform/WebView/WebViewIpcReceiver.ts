@@ -33,6 +33,8 @@ export function startIpcReceiver() {
 
     'EndInvokeDotNet': DotNet.jsCallDispatcher.endInvokeDotNetFromJS,
 
+    'ReceiveByteArray': DotNet.jsCallDispatcher.receiveByteArray,
+
     'Navigate': navigationManagerFunctions.navigateTo,
   };
 

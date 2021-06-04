@@ -36,7 +36,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act & Assert
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<DotNetObjectReference<TestModel>>(json, JsonSerializerOptions));
-            Assert.Equal("Unexcepted JSON property foo.", ex.Message);
+            Assert.Equal("Unexpected JSON property foo.", ex.Message);
         }
 
         [Fact]

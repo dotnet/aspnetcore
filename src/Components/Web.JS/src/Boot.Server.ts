@@ -105,6 +105,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId));
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', DotNet.jsCallDispatcher.endInvokeDotNetFromJS);
+  connection.on('JS.ReceiveByteArray', DotNet.jsCallDispatcher.receiveByteArray);
 
   const renderQueue = RenderQueue.getOrCreate(logger);
   connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
@@ -133,6 +134,9 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
       connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
+    },
+    sendByteArray: (id: number, data: Uint8Array): void => {
+      connection.send('ReceiveByteArray', id, data);
     },
   });
 
