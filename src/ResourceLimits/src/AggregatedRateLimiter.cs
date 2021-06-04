@@ -9,7 +9,7 @@ namespace System.Runtime.RateLimits
     public abstract class AggregatedRateLimiter<TKey>
     {
         // an inaccurate view of resources
-        public abstract int EstimatedCount(TKey resourceID);
+        public abstract int AvailablePermits(TKey resourceID);
 
         // Fast synchronous attempt to acquire resources
         public abstract PermitLease Acquire(TKey resourceID, int requestedCount);

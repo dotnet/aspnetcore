@@ -20,7 +20,7 @@ namespace System.Runtime.RateLimits
         private static readonly ConcurrencyLease SuccessfulLease = new(true, null, 0);
         private static readonly ConcurrencyLease FailedLease = new(false, null, 0);
 
-        public override int AvailablePermits => _permitCount;
+        public override int AvailablePermits() => _permitCount;
 
         public ConcurrencyLimiter(ConcurrencyLimiterOptions options)
         {
@@ -40,15 +40,15 @@ namespace System.Runtime.RateLimits
             // Return SuccessfulAcquisition or FailedAcquisition depending to indicate limiter state
             if (permitCount == 0)
             {
-                return AvailablePermits > 0 ? SuccessfulLease : FailedLease;
+                return AvailablePermits() > 0 ? SuccessfulLease : FailedLease;
             }
 
             // Perf: Check SemaphoreSlim implementation instead of locking
-            if (AvailablePermits >= permitCount)
+            if (AvailablePermits() >= permitCount)
             {
                 lock (_lock)
                 {
-                    if (AvailablePermits >= permitCount)
+                    if (AvailablePermits() >= permitCount)
                     {
                         _permitCount -= permitCount;
                         return new ConcurrencyLease(true, this, permitCount);
@@ -69,7 +69,7 @@ namespace System.Runtime.RateLimits
             }
 
             // Return SuccessfulAcquisition if requestedCount is 0 and resources are available
-            if (permitCount == 0 && AvailablePermits > 0)
+            if (permitCount == 0 && AvailablePermits() > 0)
             {
                 // Perf: static failed/successful value tasks?
                 return ValueTask.FromResult((PermitLease)SuccessfulLease);
@@ -78,7 +78,7 @@ namespace System.Runtime.RateLimits
             // Perf: Check SemaphoreSlim implementation instead of locking
             lock (_lock) // Check lock check
             {
-                if (AvailablePermits >= permitCount)
+                if (AvailablePermits() >= permitCount)
                 {
                     _permitCount -= permitCount;
                     return ValueTask.FromResult((PermitLease)new ConcurrencyLease(true, this, permitCount));
@@ -113,7 +113,7 @@ namespace System.Runtime.RateLimits
                         ? _queue.PeekHead()
                         : _queue.PeekTail(); 
 
-                    if (AvailablePermits >= nextPendingRequest.Count)
+                    if (AvailablePermits() >= nextPendingRequest.Count)
                     {
                         var request =
                             _options.PermitsExhaustedMode == PermitsExhaustedMode.EnqueueIncomingRequest
@@ -136,7 +136,7 @@ namespace System.Runtime.RateLimits
 
         private class ConcurrencyLease : PermitLease
         {
-            private bool _disposed = false;
+            private bool _disposed;
             private readonly ConcurrencyLimiter? _limiter;
             private readonly int _count;
 

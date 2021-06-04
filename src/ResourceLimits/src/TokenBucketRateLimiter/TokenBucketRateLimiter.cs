@@ -20,7 +20,7 @@ namespace System.Runtime.RateLimits
 
         private static readonly PermitLease SuccessfulLease = new RateLimitLease(true, null);
 
-        public override int AvailablePermits => _permitCount;
+        public override int AvailablePermits() => _permitCount;
 
         public TokenBucketRateLimiter(TokenBucketRateLimiterOptions options)
         {
@@ -43,7 +43,7 @@ namespace System.Runtime.RateLimits
             // Return SuccessfulAcquisition or FailedAcquisition depending to indicate limiter state
             if (permitCount == 0)
             {
-                if (AvailablePermits > 0)
+                if (AvailablePermits() > 0)
                 {
                     return SuccessfulLease;
                 }
@@ -72,7 +72,7 @@ namespace System.Runtime.RateLimits
             }
 
             // Return SuccessfulAcquisition if requestedCount is 0 and resources are available
-            if (permitCount == 0 && AvailablePermits > 0)
+            if (permitCount == 0 && AvailablePermits() > 0)
             {
                 // Perf: static failed/successful value tasks?
                 return ValueTask.FromResult(SuccessfulLease);
@@ -102,7 +102,7 @@ namespace System.Runtime.RateLimits
 
         private PermitLease CreateFailedPermitLease()
         {
-            var replenishAmount = _permitCount - AvailablePermits + _queueCount;
+            var replenishAmount = _permitCount - AvailablePermits() + _queueCount;
             var replenishPeriods = (replenishAmount / _options.TokensPerPeriod) + 1;
 
             return new RateLimitLease(false, TimeSpan.FromTicks(_options.ReplenishmentPeriod.Ticks*replenishPeriods));
@@ -116,7 +116,7 @@ namespace System.Runtime.RateLimits
                 return;
             }
 
-            var availablePermits = limiter.AvailablePermits;
+            var availablePermits = limiter.AvailablePermits();
             var options = limiter._options;
             var maxPermits = options.PermitLimit;
 

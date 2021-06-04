@@ -10,7 +10,7 @@ namespace System.Runtime.RateLimits
     public abstract class RateLimiter
     {
         // An estimated count of the underlying permits
-        public abstract int AvailablePermits { get; }
+        public abstract int AvailablePermits();
 
         // Fast synchronous attempt to acquire permits
         // Set permitCount to 0 to get whether permits are exhausted
