@@ -80,7 +80,7 @@ namespace Templates.Test.Helpers
                 DotNetMuxer.MuxerPathOrDefault(),
                 //--debug:disable-sdk-templates means, don't include C:\Program Files\dotnet\templates, aka. what comes with SDK, so we don't need to uninstall
                 //--debug:custom-hive means, don't install templates on CI/developer machine, instead create new temporary instance
-                $"new {arguments} --force --debug:disable-sdk-templates --debug:custom-hive \"{CustomHivePath}\"");
+                $"new {arguments} --debug:disable-sdk-templates --debug:custom-hive \"{CustomHivePath}\"");
 
             await proc.Exited;
 
