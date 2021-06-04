@@ -68,6 +68,24 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        public void Add(ReadOnlyMemory<byte> memory)
+        {
+            ThrowIfDisposed();
+
+            while (!memory.IsEmpty)
+            {
+                var currentPage = CurrentPage;
+                var copyLength = Math.Min(memory.Length, currentPage.Length - _currentPageIndex);
+
+                memory.Slice(0, copyLength).CopyTo(currentPage.AsMemory(_currentPageIndex, copyLength));
+
+                Length += copyLength;
+                _currentPageIndex += copyLength;
+
+                memory = memory.Slice(copyLength);
+            }
+        }
+
         public void MoveTo(Stream stream)
         {
             ThrowIfDisposed();
@@ -113,7 +131,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     _currentPageIndex :
                     page.Length;
 
-                await stream.WriteAsync(page, 0, length, cancellationToken);
+                await stream.WriteAsync(page.AsMemory(0, length), cancellationToken);
             }
 
             ClearBuffers();
