@@ -154,22 +154,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         ServerPort = 0x8000,
 
         /// <summary>
-        /// Flag for logging the query, if any,
-        /// the client was trying to perform.
-        /// </summary>
-        RequestQuery = 0x10000,
-
-        /// <summary>
         /// Flag for logging the content of the cookie
         /// sent by the client, if any.
         /// </summary>
-        RequestCookie = 0x20000,
+        RequestCookie = 0x10000,
 
         /// <summary>
         /// Flag for logging the name of the
         /// authenticated user that accessed the server.
         /// </summary>
-        UserName = 0x40000,
+        UserName = 0x20000,
 
         /// <summary>
         /// Flag for logging properties that are part of the <see cref="HttpContext"/>
@@ -180,10 +174,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Flag for logging the default collection of properties that are included in the
         /// W3C Server Logs, including <see cref="DateTime"/>, <see cref="ConnectionInfoFields"/>, <see cref="RequestHeaders"/>,
-        /// <see cref="RequestProtocol"/>, <see cref="RequestMethod"/>, <see cref="RequestQuery"/>, <see cref="ResponseStatusCode"/>,
+        /// <see cref="RequestProtocol"/>, <see cref="RequestMethod"/>, <see cref="RequestQueryString"/>, <see cref="ResponseStatusCode"/>,
         /// and <see cref="ResponseHeaders"/>.
         /// </summary>
-        W3CDefaultFields = DateTime | ConnectionInfoFields | RequestHeaders | RequestProtocol | RequestMethod | RequestQuery | ResponseStatusCode | ResponseHeaders,
+        W3CDefaultFields = DateTime | ConnectionInfoFields | RequestHeaders | RequestProtocol | RequestMethod | RequestQueryString | ResponseStatusCode | ResponseHeaders,
 
         /// <summary>
         /// Flag for logging properties which are considered optional for
@@ -202,9 +196,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Flag for logging a collection of HTTP Request properties,
         /// including <see cref="RequestPath"/>, <see cref="RequestQueryString"/>, <see cref="RequestProtocol"/>,
-        /// <see cref="RequestMethod"/>, <see cref="RequestScheme"/>, <see cref="RequestQuery"/>, and <see cref="RequestCookie"/>.
+        /// <see cref="RequestMethod"/>, <see cref="RequestScheme"/>, <see cref="RequestQueryString"/>, and <see cref="RequestCookie"/>.
         /// </summary>
-        RequestProperties = RequestPath | RequestQueryString | RequestProtocol | RequestMethod | RequestScheme | RequestQuery | RequestCookie,
+        RequestProperties = RequestPath | RequestQueryString | RequestProtocol | RequestMethod | RequestScheme | RequestCookie,
 
         /// <summary>
         /// Flag for logging HTTP Request properties and headers.

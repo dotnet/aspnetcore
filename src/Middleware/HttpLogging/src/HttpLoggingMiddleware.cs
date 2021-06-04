@@ -172,25 +172,16 @@ namespace Microsoft.AspNetCore.HttpLogging
                     AddToList(list, nameof(request.Path), request.Path);
                 }
 
-                if (httpEnabled && options.LoggingFields.HasFlag(HttpLoggingFields.RequestQueryString))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQueryString))
                 {
-                    AddToList(list, nameof(request.QueryString), request.QueryString.Value);
-                }
-
-                if (w3cEnabled && options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
-                {
-                    // TODO - query is written as a list of {Key}:{Value} pairs delimited by semicolon -
-                    // is there a better/standardized format?
-                    var query = request.Query;
-                    StringBuilder sb = new StringBuilder();
-                    foreach (string key in query.Keys)
+                    if (httpEnabled)
                     {
-                        sb.Append(key);
-                        sb.Append(':');
-                        sb.Append(query[key]);
-                        sb.Append(';');
+                        AddToList(list, nameof(request.QueryString), request.QueryString.Value);
                     }
-                    AddToList(w3cList, nameof(request.Query), sb.ToString());
+                    if (w3cEnabled)
+                    {
+                        AddToList(w3cList, nameof(request.QueryString), request.QueryString.Value);
+                    }
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))

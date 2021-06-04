@@ -37,15 +37,18 @@ namespace Microsoft.Extensions.Logging.W3C.Tests
         [Fact]
         public void WritesToTextFile()
         {
-            var provider = new TestW3CLoggerProvider(TempPath, W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken);
-            var logger = provider.CreateLogger("Microsoft.AspNetCore.W3CLogging");
-            var state = new List<KeyValuePair<string, object>>();
-            state.Add(new KeyValuePair<string, object>(nameof(DateTime), _timestampOne));
+            string fileName;
+            using (var provider = new TestW3CLoggerProvider(TempPath, W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken))
+            {
+                var logger = provider.CreateLogger("Microsoft.AspNetCore.W3CLogging");
+                var state = new List<KeyValuePair<string, object>>();
+                state.Add(new KeyValuePair<string, object>(nameof(DateTime), _timestampOne));
 
-            logger.Log(LogLevel.Information, new EventId(7, "W3CLog"), state, null, (st, ex) => null);
-            provider.Dispose();
+                logger.Log(LogLevel.Information, new EventId(7, "W3CLog"), state, null, (st, ex) => null);
+                fileName = provider.GetLogFileFullName("Microsoft.AspNetCore.W3CLogging");
+            }
 
-            var lines = File.ReadAllLines(provider.GetLogFileFullName("Microsoft.AspNetCore.W3CLogging"));
+            var lines = File.ReadAllLines(fileName);
             Assert.Equal("#Version: 1.0", lines[0]);
             Assert.StartsWith("#Start-Date: ", lines[1]);
             var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
