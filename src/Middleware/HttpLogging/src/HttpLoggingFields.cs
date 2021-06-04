@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Flag for logging a collection of HTTP Request properties,
         /// including <see cref="RequestPath"/>, <see cref="RequestQueryString"/>, <see cref="RequestProtocol"/>,
-        /// <see cref="RequestMethod"/>, <see cref="RequestScheme"/>, <see cref="RequestQueryString"/>, and <see cref="RequestCookie"/>.
+        /// <see cref="RequestMethod"/>, <see cref="RequestScheme"/>, and <see cref="RequestCookie"/>.
         /// </summary>
         RequestProperties = RequestPath | RequestQueryString | RequestProtocol | RequestMethod | RequestScheme | RequestCookie,
 
