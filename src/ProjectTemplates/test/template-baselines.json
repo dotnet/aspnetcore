@@ -1253,50 +1253,5 @@
         "Startup.cs"
       ]
     }
-  },
-  "reactredux": {
-    "None": {
-      "Template": "reactredux",
-      "Arguments": "new reactredux",
-      "Files": [
-        "ClientApp/public/favicon.ico",
-        "ClientApp/public/index.html",
-        "ClientApp/public/manifest.json",
-        "ClientApp/src/components/Counter.tsx",
-        "ClientApp/src/components/FetchData.tsx",
-        "ClientApp/src/components/Home.tsx",
-        "ClientApp/src/components/Layout.tsx",
-        "ClientApp/src/components/NavMenu.css",
-        "ClientApp/src/components/NavMenu.tsx",
-        "ClientApp/src/store/configureStore.ts",
-        "ClientApp/src/store/Counter.ts",
-        "ClientApp/src/store/index.ts",
-        "ClientApp/src/store/WeatherForecasts.ts",
-        "ClientApp/src/App.tsx",
-        "ClientApp/src/App.test.tsx",
-        "ClientApp/src/custom.css",
-        "ClientApp/src/index.tsx",
-        "ClientApp/src/react-app-env.d.ts",
-        "ClientApp/src/registerServiceWorker.ts",
-        "ClientApp/.env",
-        "ClientApp/.eslintrc.json",
-        "ClientApp/.gitignore",
-        "ClientApp/package-lock.json",
-        "ClientApp/package.json",
-        "ClientApp/README.md",
-        "ClientApp/tsconfig.json",
-        "WeatherForecast.cs",
-        "Controllers/WeatherForecastController.cs",
-        "Pages/_ViewImports.cshtml",
-        "Pages/Error.cshtml",
-        "Pages/Error.cshtml.cs",
-        "Properties/launchSettings.json",
-        ".gitignore",
-        "appsettings.Development.json",
-        "appsettings.json",
-        "Program.cs",
-        "Startup.cs"
-      ]
-    }
   }
 }
