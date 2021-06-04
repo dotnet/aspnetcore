@@ -18,6 +18,12 @@
       Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '$(DefaultNetCoreTargetFrameworkIdentifier)') AND '$(DefaultNetCoreTargetFrameworkVersion)' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
       TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
+
+    <FrameworkReference
+      Update="Microsoft.WindowsDesktop.App"
+      Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '$(DefaultNetCoreTargetFrameworkIdentifier)') AND '$(DefaultNetCoreTargetFrameworkVersion)' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
+      RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimeVersion)"
+      TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefVersion)" />
   </ItemGroup>
 
   <!--
