@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -679,6 +680,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
         {
+            EnsureRequestTaskNotNull(task);
+
             static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsJsonAsync(await task);
@@ -692,8 +695,10 @@ namespace Microsoft.AspNetCore.Http
             return ExecuteAwaited(task, httpContext);
         }
 
-        private static Task ExecuteTaskOfString(Task<string> task, HttpContext httpContext)
+        private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
         {
+            EnsureRequestTaskOfNotNull(task);
+
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -701,10 +706,10 @@ namespace Microsoft.AspNetCore.Http
 
             if (task.IsCompletedSuccessfully)
             {
-                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult());
+                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult()!);
             }
 
-            return ExecuteAwaited(task, httpContext);
+            return ExecuteAwaited(task!, httpContext);
         }
 
         private static Task ExecuteValueTask(ValueTask task)
@@ -754,16 +759,14 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskResult<T>(ValueTask<T?> task, HttpContext httpContext) where T : IResult
         {
-            EnsureRequestTaskOfNotNull(task.AsTask());
-
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
             {
-                await (await task).ExecuteAsync(httpContext);
+                await EnsureRequestResultNotNull(await task)!.ExecuteAsync(httpContext);
             }
 
             if (task.IsCompletedSuccessfully)
             {
-                return task.GetAwaiter().GetResult()!.ExecuteAsync(httpContext);
+                return EnsureRequestResultNotNull(task.GetAwaiter().GetResult())!.ExecuteAsync(httpContext);
             }
 
             return ExecuteAwaited(task!, httpContext);
@@ -773,14 +776,12 @@ namespace Microsoft.AspNetCore.Http
         {
             EnsureRequestTaskOfNotNull(task);
 
-            await (await task)!.ExecuteAsync(httpContext);
+            await EnsureRequestResultNotNull(await task)!.ExecuteAsync(httpContext);
         }
 
         private static async Task ExecuteResultWriteResponse(IResult result, HttpContext httpContext)
         {
-            EnsureRequestResultNotNull(result);
-
-            await result.ExecuteAsync(httpContext);
+            await EnsureRequestResultNotNull(result)!.ExecuteAsync(httpContext);
         }
 
         private class FactoryContext
@@ -835,7 +836,8 @@ namespace Microsoft.AspNetCore.Http
         {
             if (task is null)
             {
-                throw new InvalidOperationException("Task Result should not be null");
+                var message = $"Task<{typeof(T).Name}> response should not be null";
+                throw new InvalidOperationException(message);
             }
         }
 
@@ -843,16 +845,18 @@ namespace Microsoft.AspNetCore.Http
         {
             if (task is null)
             {
-                throw new InvalidOperationException("Task Result should not be null");
+                throw new InvalidOperationException("Task response should not be null");
             }
         }
 
-        private static void EnsureRequestResultNotNull(IResult result)
+        private static IResult EnsureRequestResultNotNull(IResult? result)
         {
             if (result is null)
             {
-                throw new InvalidOperationException("Result should not be null");
+                throw new InvalidOperationException("IResult response should not be null");
             }
+
+            return result;
         }
     }
 }

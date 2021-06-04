@@ -1081,6 +1081,39 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal("true", responseBody);
         }
 
+        public static IEnumerable<object[]> NullResult
+        {
+            get
+            {
+                IResult? TestAction() => null;
+                Task<bool?>? TestTaskBoolAction() => null;
+                Task<IResult?> TaskTestAction() => Task.FromResult<IResult?>(null);
+                ValueTask<IResult?> ValueTaskTestAction() => ValueTask.FromResult<IResult?>(null);
+
+                return new List<object[]>
+                {
+                    new object[] { (Func<Task<bool?>?>)TestTaskBoolAction },
+                    new object[] { (Func<IResult?>)TestAction },
+                    new object[] { (Func<Task<IResult?>>)TaskTestAction },
+                    new object[] { (Func<ValueTask<IResult?>>)ValueTaskTestAction },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NullResult))]
+        public async Task RequestDelegateThrowsInvalidOperationExceptionOnNullDelegate(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+
+            var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestDelegate(httpContext));
+            Assert.Contains("response should not be null", exception.Message);
+        }
+
         private class Todo
         {
             public int Id { get; set; }
