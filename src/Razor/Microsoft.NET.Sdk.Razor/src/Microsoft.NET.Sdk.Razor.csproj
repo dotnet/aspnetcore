@@ -23,7 +23,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.Core" />
-    <Reference Include="System.Reflection.Metadata"  Condition="'$(TargetFramework)'=='net46'" />
+    <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)'=='net46' OR '$(MSBuildRestoreSessionId)' == ''" />
 
     <Reference Include="rzc"
       Targets="Publish"
