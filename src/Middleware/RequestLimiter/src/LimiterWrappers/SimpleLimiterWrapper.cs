@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.RequestLimiter
 
         public override int AvailablePermits(HttpContext context)
         {
-            return _limiter.AvailablePermits;
+            return _limiter.AvailablePermits();
         }
 
         public override ValueTask<PermitLease> WaitAsync(HttpContext context, int requestedCount, CancellationToken cancellationToken = default)
