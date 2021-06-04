@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly TimeSpan _handshakeTimeout;
         private readonly ILogger<HttpsConnectionMiddleware> _logger;
         private readonly Func<Stream, SslStream> _sslStreamFactory;
+        private readonly ClientCertificateMode _clientCertificateMode;
 
         // The following fields are only set by HttpsConnectionAdapterOptions ctor.
         private readonly HttpsConnectionAdapterOptions? _options;
@@ -112,7 +113,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: null);
             }
 
-            _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, RemoteCertificateValidationCallback);
+            _clientCertificateMode = _options.ClientCertificateMode;
+
+            var remoteCertificateValidationCallback = _clientCertificateMode == ClientCertificateMode.NoCertificate ?
+                (RemoteCertificateValidationCallback?)null : RemoteCertificateValidationCallback;
+
+            _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
         }
 
         internal HttpsConnectionMiddleware(
@@ -120,7 +126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             HttpsOptionsCallback httpsOptionsCallback,
             object httpsOptionsCallbackState,
             TimeSpan handshakeTimeout,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            ClientCertificateMode clientCertificateMode)
         {
             _next = next;
             _handshakeTimeout = handshakeTimeout;
@@ -128,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             _httpsOptionsCallback = httpsOptionsCallback;
             _httpsOptionsCallbackState = httpsOptionsCallbackState;
+            _clientCertificateMode = clientCertificateMode;
             _sslStreamFactory = s => new SslStream(s);
         }
 
@@ -144,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 context.Features.Get<IMemoryPoolFeature>()?.MemoryPool ?? MemoryPool<byte>.Shared);
             var sslStream = sslDuplexPipe.Stream;
 
-            var feature = new Core.Internal.TlsConnectionFeature(sslStream);
+            var feature = new Core.Internal.TlsConnectionFeature(sslStream, _clientCertificateMode);
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);

@@ -10,12 +10,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
     {
         private readonly SslStream _sslStream;
+        private readonly ClientCertificateMode _clientCertificateMode;
         private X509Certificate2? _clientCert;
         private ReadOnlyMemory<byte>? _applicationProtocol;
         private SslProtocols? _protocol;
@@ -27,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private int? _keyExchangeStrength;
         private bool _renegotiated;
 
-        public TlsConnectionFeature(SslStream sslStream)
+        public TlsConnectionFeature(SslStream sslStream, ClientCertificateMode clientCertificateMode)
         {
             if (sslStream is null)
             {
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             _sslStream = sslStream;
+            _clientCertificateMode = clientCertificateMode;
         }
 
         public X509Certificate2? ClientCertificate
@@ -100,7 +103,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public async Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
-            if (ClientCertificate != null || _renegotiated
+            if (ClientCertificate != null
+                || _clientCertificateMode != ClientCertificateMode.DelayCertificate
+                || _renegotiated
                 // Delayed client cert negotiation is not allowed on HTTP/2.
                 || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
             {

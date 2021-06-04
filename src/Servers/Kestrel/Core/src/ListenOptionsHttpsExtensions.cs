@@ -254,14 +254,31 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="state">State for the <paramref name="serverOptionsSelectionCallback"/>.</param>
         /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
+        public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback,
+            object state, TimeSpan handshakeTimeout)
+        {
+            return listenOptions.UseHttps(serverOptionsSelectionCallback, state, handshakeTimeout, ClientCertificateMode.NoCertificate);
+        }
+
+        /// <summary>
+        /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+        /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
+        /// </summary>
+        /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+        /// <param name="serverOptionsSelectionCallback">Callback to configure HTTPS options.</param>
+        /// <param name="state">State for the <paramref name="serverOptionsSelectionCallback"/>.</param>
+        /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
+        /// <param name="clientCertificateMode">The mode used for accepting client certificates.</param>
+        /// <returns>The <see cref="ListenOptions"/>.</returns>
+        public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback,
+            object state, TimeSpan handshakeTimeout, ClientCertificateMode clientCertificateMode)
         {
             // HttpsOptionsCallback is an internal delegate that is just the ServerOptionsSelectionCallback + a ConnectionContext parameter.
             // Given that ConnectionContext will eventually be replaced by System.Net.Connections, it doesn't make much sense to make the HttpsOptionsCallback delegate public.
             HttpsOptionsCallback adaptedCallback = (connection, stream, clientHelloInfo, state, cancellationToken) =>
                 serverOptionsSelectionCallback(stream, clientHelloInfo, state, cancellationToken);
 
-            return listenOptions.UseHttps(adaptedCallback, state, handshakeTimeout);
+            return listenOptions.UseHttps(adaptedCallback, state, handshakeTimeout, clientCertificateMode);
         }
 
         /// <summary>
@@ -271,15 +288,16 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="httpsOptionsCallback">Callback to configure HTTPS options.</param>
         /// <param name="state">State for the <paramref name="httpsOptionsCallback"/>.</param>
         /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
+        /// <param name="clientCertificateMode">The mode used for accepting client certificates.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout)
+        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout, ClientCertificateMode clientCertificateMode)
         {
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
             listenOptions.IsTls = true;
             listenOptions.Use(next =>
             {
-                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, handshakeTimeout, loggerFactory);
+                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, handshakeTimeout, loggerFactory, clientCertificateMode);
                 return middleware.OnConnectionAsync;
             });
 
