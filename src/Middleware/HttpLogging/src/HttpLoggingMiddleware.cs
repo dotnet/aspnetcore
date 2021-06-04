@@ -166,10 +166,17 @@ namespace Microsoft.AspNetCore.HttpLogging
                     AddToList(list, nameof(request.Scheme), request.Scheme);
                 }
 
-                if (httpEnabled && options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
                 {
-                    AddToList(list, nameof(request.PathBase), request.PathBase);
-                    AddToList(list, nameof(request.Path), request.Path);
+                    if (httpEnabled)
+                    {
+                        AddToList(list, nameof(request.PathBase), request.PathBase);
+                        AddToList(list, nameof(request.Path), request.Path);
+                    }
+                    if (w3cEnabled)
+                    {
+                        AddToList(w3cList, nameof(request.Path), request.Path.Value);
+                    }
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQueryString))

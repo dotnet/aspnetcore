@@ -93,6 +93,9 @@ namespace Microsoft.Extensions.Logging.W3C
                     case nameof(HttpRequest.Method):
                         elements[BitOperations.Log2((int)W3CLoggingFields.Method)] = val.Trim();
                         break;
+                    case nameof(HttpRequest.Path):
+                        elements[BitOperations.Log2((int)W3CLoggingFields.UriStem)] = val.Trim();
+                        break;
                     case nameof(HttpRequest.QueryString):
                         elements[BitOperations.Log2((int)W3CLoggingFields.UriQuery)] = val.Trim();
                         break;

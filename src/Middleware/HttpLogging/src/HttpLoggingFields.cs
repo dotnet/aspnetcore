@@ -173,11 +173,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Flag for logging the default collection of properties that are included in the
-        /// W3C Server Logs, including <see cref="DateTime"/>, <see cref="ConnectionInfoFields"/>, <see cref="RequestHeaders"/>,
-        /// <see cref="RequestProtocol"/>, <see cref="RequestMethod"/>, <see cref="RequestQueryString"/>, <see cref="ResponseStatusCode"/>,
-        /// and <see cref="ResponseHeaders"/>.
+        /// W3C Server Logs, including <see cref="DateTime"/>, <see cref="ConnectionInfoFields"/>, <see cref="RequestPath"/>,
+        /// <see cref="RequestHeaders"/>, <see cref="RequestProtocol"/>, <see cref="RequestMethod"/>, <see cref="RequestQueryString"/>,
+        /// <see cref="ResponseStatusCode"/>, and <see cref="ResponseHeaders"/>.
         /// </summary>
-        W3CDefaultFields = DateTime | ConnectionInfoFields | RequestHeaders | RequestProtocol | RequestMethod | RequestQueryString | ResponseStatusCode | ResponseHeaders,
+        W3CDefaultFields = DateTime | ConnectionInfoFields | RequestPath | RequestHeaders | RequestProtocol | RequestMethod | RequestQueryString | ResponseStatusCode | ResponseHeaders,
 
         /// <summary>
         /// Flag for logging properties which are considered optional for
