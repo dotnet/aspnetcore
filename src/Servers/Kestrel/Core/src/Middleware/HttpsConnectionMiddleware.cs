@@ -326,7 +326,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 ServerCertificate = _serverCertificate,
                 ServerCertificateContext = _serverCertificateContext,
                 ServerCertificateSelectionCallback = selector,
-                ClientCertificateRequired = _options.ClientCertificateMode != ClientCertificateMode.NoCertificate,
+                ClientCertificateRequired = _options.ClientCertificateMode == ClientCertificateMode.AllowCertificate
+                    || _options.ClientCertificateMode == ClientCertificateMode.RequireCertificate,
                 EnabledSslProtocols = _options.SslProtocols,
                 CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
             };
