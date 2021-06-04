@@ -46,27 +46,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         public void Add(byte[] buffer, int offset, int count)
-        {
-            ThrowIfDisposed();
-
-            while (count > 0)
-            {
-                var currentPage = CurrentPage;
-                var copyLength = Math.Min(count, currentPage.Length - _currentPageIndex);
-
-                Buffer.BlockCopy(
-                    buffer,
-                    offset,
-                    currentPage,
-                    _currentPageIndex,
-                    copyLength);
-
-                Length += copyLength;
-                _currentPageIndex += copyLength;
-                offset += copyLength;
-                count -= copyLength;
-            }
-        }
+            => Add(buffer.AsMemory(offset, count));
 
         public void Add(ReadOnlyMemory<byte> memory)
         {
