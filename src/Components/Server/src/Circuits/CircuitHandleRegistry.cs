@@ -22,12 +22,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public CircuitHandle GetCircuitHandle(object circuitKey)
         {
-            return _circuitHandles[circuitKey];
+            if (_circuitHandles.ContainsKey(circuitKey))
+            {
+                return _circuitHandles[circuitKey];
+            }
+            return null;;
         }
 
         public CircuitHost GetCircuit(object circuitKey)
         {
-            return _circuitHandles[circuitKey]?.CircuitHost;
+            if (_circuitHandles.ContainsKey(circuitKey))
+            {
+                return ((CircuitHandle)_circuitHandles[circuitKey]).CircuitHost;
+            }
+            return null;
         }
 
         public void SetCircuit(object circuitKey, CircuitHost circuitHost)

@@ -60,9 +60,9 @@ namespace Microsoft.Extensions.DependencyInjection
             // user's configuration. So even if the user has multiple independent server-side
             // Components entrypoints, this lot is the same and repeated registrations are a no-op.
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
-            services.TryAddSingleton<CircuitFactory>();
-            services.TryAddSingleton<ServerComponentDeserializer>();
-            services.TryAddSingleton<CircuitHandleRegistry>();
+            services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
+            services.TryAddSingleton<IServerComponentDeserializer, ServerComponentDeserializer>();
+            services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
             services.TryAddSingleton<RootComponentTypeCache>();
             services.TryAddSingleton<ComponentParameterDeserializer>();
             services.TryAddSingleton<ComponentParametersTypeCache>();
