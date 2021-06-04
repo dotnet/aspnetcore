@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Certificates.Generation
 {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         {
         }
 
-        protected override void TrustCertificateCore(X509Certificate2 publicCertificate)
+        protected override void TrustCertificateCore(X509Certificate2 publicCertificate, IReporter reporter, bool isInteractive)
         {
             var tmpFile = Path.GetTempFileName();
             try
@@ -159,7 +160,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
         }
 
-        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
+        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate, IReporter reporter, bool isInteractive)
         {
             if (IsTrusted(certificate)) // On OSX this check just ensures its on the system keychain
             {

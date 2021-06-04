@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Certificates.Generation
 {
     internal class UnixCertificateManager : CertificateManager
     {
+        private string CertificateStoreKey => $"aspnet-{Environment.UserName}";
+
+        private List<CertificateStore> _certificateStores;
+
+        private List<CertificateStore> CertificateStores
+            => _certificateStores ??= CertificateStoreFinder.FindCertificateStores();
+
         public UnixCertificateManager()
         {
         }
@@ -15,7 +23,19 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         {
         }
 
-        public override bool IsTrusted(X509Certificate2 certificate) => false;
+        public override bool IsTrusted(X509Certificate2 certificate)
+        {
+            // Return true when all stores trust the cert.
+            using var pemCertificateFile = new PemCertificateFile(certificate);
+            foreach (var store in CertificateStores)
+            {
+                if (!store.HasCertificate(CertificateStoreKey, certificate))
+                {
+                    return false;
+                }
+            }
+            return CertificateStores.Count > 0;
+        }
 
         protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
         {
@@ -47,12 +67,23 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected override bool IsExportable(X509Certificate2 c) => true;
 
-        protected override void TrustCertificateCore(X509Certificate2 certificate) =>
-            throw new InvalidOperationException("Trusting the certificate is not supported on linux");
-
-        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
+        protected override void TrustCertificateCore(X509Certificate2 certificate, IReporter reporter, bool isInteractive)
         {
-            // No-op here as is benign
+            using var pemFile = new PemCertificateFile(certificate);
+            foreach (var store in CertificateStores)
+            {
+                reporter.Output($"Installing into {store.StoreName}");
+                store.TryInstallCertificate(CertificateStoreKey, pemFile, reporter, isInteractive);
+                // TODO: handle failure.
+            }
+        }
+
+        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate, IReporter reporter, bool isInteractive)
+        {
+            foreach (var store in CertificateStores)
+            {
+                store.DeleteCertificate(CertificateStoreKey, reporter, isInteractive);
+            }
         }
 
         protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)

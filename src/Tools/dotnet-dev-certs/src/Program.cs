@@ -115,6 +115,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     c.OnExecute(() =>
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
+                        bool isInteractive = !Console.IsInputRedirected;
 
                         if (verbose.HasValue())
                         {
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                         if (clean.HasValue())
                         {
-                            var clean = CleanHttpsCertificates(reporter);
+                            var clean = CleanHttpsCertificates(reporter, isInteractive);
                             if (clean != Success || !import.HasValue())
                             {
                                 return clean;
@@ -179,7 +180,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                             return ImportCertificate(import, password, reporter);
                         }
 
-                        return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter);
+                        return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter, isInteractive);
                     });
                 });
 
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             return Success;
         }
 
-        private static int CleanHttpsCertificates(IReporter reporter)
+        private static int CleanHttpsCertificates(IReporter reporter, bool isInteractive)
         {
             var manager = CertificateManager.Instance;
             try
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "require elevated privileges. If that is the case, a prompt for credentials will be displayed.");
                 }
 
-                manager.CleanupHttpsCertificates();
+                manager.CleanupHttpsCertificates(reporter, isInteractive);
                 reporter.Output("HTTPS development certificates successfully removed from the machine.");
                 return Success;
             }
@@ -296,32 +297,21 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
             if (trust != null && trust.HasValue())
             {
-                if(!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                var trustedCertificates = certificates.Where(c => certificateManager.IsTrusted(c)).ToList();
+                if (!trustedCertificates.Any())
                 {
-                    var trustedCertificates = certificates.Where(c => certificateManager.IsTrusted(c)).ToList();
-                    if (!trustedCertificates.Any())
-                    {
-                        reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
-                        return ErrorCertificateNotTrusted;
-                    }
-                    else
-                    {
-                        ReportCertificates(reporter, trustedCertificates, "trusted");
-                    }
+                    reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
+                    return ErrorCertificateNotTrusted;
                 }
                 else
                 {
-                    reporter.Warn("Checking the HTTPS development certificate trust status was requested. Checking whether the certificate is trusted or not is not supported on Linux distributions." +
-                        "For instructions on how to manually validate the certificate is trusted on your Linux distribution, go to https://aka.ms/dev-certs-trust");
+                    ReportCertificates(reporter, trustedCertificates, "trusted");
                 }
             }
             else
             {
                 ReportCertificates(reporter, validCertificates, "valid");
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
-                }
+                reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
             }
 
             return Success;
@@ -336,7 +326,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             });
         }
 
-        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
+        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter, bool isInteractive)
         {
             var now = DateTimeOffset.Now;
             var manager = CertificateManager.Instance;
@@ -378,8 +368,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    reporter.Warn("Trusting the HTTPS development certificate was requested. Trusting the certificate on Linux distributions automatically is not supported. " +
-                        "For instructions on how to manually trust the certificate on your Linux distribution, go to https://aka.ms/dev-certs-trust");
+                    reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
+                        "already trusted we will run commands using 'sudo'." +
+                        Environment.NewLine + "This might prompt you for your password.");
                 }
             }
 
@@ -394,10 +385,12 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 now,
                 now.Add(HttpsCertificateValidity),
                 exportPath.Value(),
-                trust == null ? false : trust.HasValue() && !RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                trust == null ? false : trust.HasValue(),
                 password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
                 password.Value(),
-                exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
+                exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx,
+                reporter,
+                isInteractive);
 
             switch (result)
             {

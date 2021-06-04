@@ -10,6 +10,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.Extensions.Tools.Internal;
 
 #nullable enable
 
@@ -171,6 +172,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool includePrivateKey = false,
             string? password = null,
             CertificateKeyExportFormat keyExportFormat = CertificateKeyExportFormat.Pfx,
+            IReporter? reporter = null,
             bool isInteractive = true)
         {
             var result = EnsureCertificateResult.Succeeded;
@@ -327,7 +329,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 try
                 {
-                    TrustCertificate(certificate);
+                    TrustCertificate(certificate, reporter, isInteractive);
                 }
                 catch (UserCancelledTrustException)
                 {
@@ -408,7 +410,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return ImportCertificateResult.Succeeded;
         }
 
-        public void CleanupHttpsCertificates()
+        public void CleanupHttpsCertificates(IReporter? reporter = null, bool isInteractive = false)
         {
             // On OS X we don't have a good way to manage trusted certificates in the system keychain
             // so we do everything by invoking the native toolchain.
@@ -429,7 +431,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             foreach (var certificate in filteredCertificates)
             {
-                RemoveCertificate(certificate, RemoveLocations.All);
+                RemoveCertificate(certificate, RemoveLocations.All, reporter, isInteractive);
             }
         }
 
@@ -437,11 +439,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected abstract X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation);
 
-        protected abstract void TrustCertificateCore(X509Certificate2 certificate);
+        protected abstract void TrustCertificateCore(X509Certificate2 certificate, IReporter? reporter, bool isInteractive);
 
         protected abstract bool IsExportable(X509Certificate2 c);
 
-        protected abstract void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate);
+        protected abstract void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate, IReporter? reporter, bool isInteractive);
 
         protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
@@ -639,7 +641,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return certificate;
         }
 
-        internal void TrustCertificate(X509Certificate2 certificate)
+        internal void TrustCertificate(X509Certificate2 certificate, IReporter? reporter, bool isInteractive)
         {
             try
             {
@@ -647,7 +649,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     Log.TrustCertificateStart(GetDescription(certificate));
                 }
-                TrustCertificateCore(certificate);
+                TrustCertificateCore(certificate, reporter, isInteractive);
                 Log.TrustCertificateEnd();
             }
             catch (Exception ex) when (Log.IsEnabled())
@@ -658,7 +660,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         }
 
         // Internal, for testing purposes only.
-        internal void RemoveAllCertificates(StoreName storeName, StoreLocation storeLocation)
+        internal void RemoveAllCertificates(StoreName storeName, StoreLocation storeLocation, IReporter? reporter = null, bool isInteractive = false)
         {
             var certificates = GetCertificatesToRemove(storeName, storeLocation);
             var certificatesWithName = certificates.Where(c => c.Subject == Subject);
@@ -667,13 +669,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             foreach (var certificate in certificates)
             {
-                RemoveCertificate(certificate, removeLocation);
+                RemoveCertificate(certificate, removeLocation, reporter, isInteractive);
             }
 
             DisposeCertificates(certificates);
         }
 
-        internal void RemoveCertificate(X509Certificate2 certificate, RemoveLocations locations)
+        internal void RemoveCertificate(X509Certificate2 certificate, RemoveLocations locations, IReporter? reporter, bool isInteractive)
         {
             switch (locations)
             {
@@ -683,10 +685,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     RemoveCertificateFromUserStore(certificate);
                     break;
                 case RemoveLocations.Trusted:
-                    RemoveCertificateFromTrustedRoots(certificate);
+                    RemoveCertificateFromTrustedRoots(certificate, reporter, isInteractive);
                     break;
                 case RemoveLocations.All:
-                    RemoveCertificateFromTrustedRoots(certificate);
+                    RemoveCertificateFromTrustedRoots(certificate, reporter, isInteractive);
                     RemoveCertificateFromUserStore(certificate);
                     break;
                 default:
