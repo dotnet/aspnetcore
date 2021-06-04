@@ -402,7 +402,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
                 // of the serializer settings.
-                _jsonContext ??= new(new JsonSerializerOptions(JSRuntime.ReadJsonSerializerOptions()));
+                if (_jsonContext is null)
+                {
+                    _jsonContext = new(new JsonSerializerOptions(JSRuntime.ReadJsonSerializerOptions()));
+                }
+
                 webEventData = WebEventData.Parse(Renderer, _jsonContext, eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)

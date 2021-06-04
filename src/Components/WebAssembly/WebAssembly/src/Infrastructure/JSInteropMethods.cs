@@ -41,7 +41,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
 
             // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
             // of the serializer settings.
-            _jsonContext ??= new(new JsonSerializerOptions(jsonSerializerOptions));
+            if (_jsonContext is null)
+            {
+                _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
+            }
 
             var webEvent = WebEventData.Parse(renderer, _jsonContext, eventDescriptor, eventArgsJson);
             return renderer.DispatchEventAsync(

@@ -23,10 +23,9 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Logging" />
-
     <!-- Required for S.T.J source generation -->
     <Reference Include="System.Text.Json" PrivateAssets="All" />
-
+    
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
 

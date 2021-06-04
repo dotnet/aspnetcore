@@ -93,7 +93,11 @@ namespace Microsoft.AspNetCore.Components.WebView
             var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
             // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
             // of the serializer settings.
-            _jsonContext ??= new(new JsonSerializerOptions(jsonSerializerOptions));
+            if (_jsonContext is null)
+            {
+                _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
+            }
+
             var webEventData = WebEventData.Parse(renderer, _jsonContext, eventDescriptor, eventArgs);
             return renderer.DispatchEventAsync(
                 webEventData.EventHandlerId,
