@@ -9,40 +9,53 @@ using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
-    internal class WpfWeb2ViewWrapper : IWebView2Wrapper
+    internal class WpfWebView2Wrapper : IWebView2Wrapper
     {
-        private readonly WebView2Control _webView2;
-        private bool _hasInitialized;
+        private readonly WpfCoreWebView2Wrapper _coreWebView2Wrapper;
 
-        public WpfWeb2ViewWrapper(WebView2Control webView2)
+        public WpfWebView2Wrapper(WebView2Control webView2)
         {
-            _webView2 = webView2 ?? throw new ArgumentNullException(nameof(webView2));
+            if (webView2 is null)
+            {
+                throw new ArgumentNullException(nameof(webView2));
+            }
+
+            WebView2 = webView2;
+            _coreWebView2Wrapper = new WpfCoreWebView2Wrapper(this);
         }
 
-        public CoreWebView2 CoreWebView2 => _webView2.CoreWebView2;
+        public ICoreWebView2Wrapper CoreWebView2 => _coreWebView2Wrapper;
 
         public Uri Source
         {
-            get => _webView2.Source;
-            set => _webView2.Source = value;
+            get => WebView2.Source;
+            set => WebView2.Source = value;
         }
 
-        public event EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> AcceleratorKeyPressed
-        {
-            add => _webView2.AcceleratorKeyPressed += value;
-            remove => _webView2.AcceleratorKeyPressed -= value;
-        }
+        public WebView2Control WebView2 { get; }
 
-        public Task EnsureCoreWebView2Async(CoreWebView2Environment environment = null)
+        public CoreWebView2Environment Environment { get; set; }
+
+        public Action AddAcceleratorKeyPressedHandler(EventHandler<ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler)
         {
-            if (_hasInitialized)
+            EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> realHandler = (object sender, CoreWebView2AcceleratorKeyPressedEventArgs e) =>
             {
-                // We don't want people to think they can set more than one environment
-                throw new InvalidOperationException($"{nameof(EnsureCoreWebView2Async)} may only be called once per control.");
-            }
+                eventHandler(WebView2, new WpfCoreWebView2AcceleratorKeyPressedEventArgsWrapper(e));
+            };
+            WebView2.AcceleratorKeyPressed += realHandler;
 
-            _hasInitialized = true;
-            return _webView2.EnsureCoreWebView2Async(environment);
+            // Return removal callback
+            return () => { WebView2.AcceleratorKeyPressed -= realHandler; };
+        }
+
+        public async Task CreateEnvironmentAsync()
+        {
+            Environment = await CoreWebView2Environment.CreateAsync();
+        }
+
+        public Task EnsureCoreWebView2Async()
+        {
+            return WebView2.EnsureCoreWebView2Async(Environment);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
     internal class WindowsFormsWebView2Wrapper : IWebView2Wrapper
     {
-        private readonly WebView2Control _webView2;
+        private readonly WindowsFormsCoreWebView2Wrapper _coreWebView2Wrapper;
 
         public WindowsFormsWebView2Wrapper(WebView2Control webView2)
         {
@@ -20,26 +20,42 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
                 throw new ArgumentNullException(nameof(webView2));
             }
 
-            _webView2 = webView2;
+            WebView2 = webView2;
+            _coreWebView2Wrapper = new WindowsFormsCoreWebView2Wrapper(this);
         }
 
-        public CoreWebView2 CoreWebView2 => _webView2.CoreWebView2;
+        public ICoreWebView2Wrapper CoreWebView2 => _coreWebView2Wrapper;
 
         public Uri Source
         {
-            get => _webView2.Source;
-            set => _webView2.Source = value;
+            get => WebView2.Source;
+            set => WebView2.Source = value;
         }
 
-        public event EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> AcceleratorKeyPressed
+        public WebView2Control WebView2 { get; }
+
+        public CoreWebView2Environment Environment { get; set; }
+
+        public Action AddAcceleratorKeyPressedHandler(EventHandler<ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler)
         {
-            add => _webView2.AcceleratorKeyPressed += value;
-            remove => _webView2.AcceleratorKeyPressed -= value;
+            EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> realHandler = (object sender, CoreWebView2AcceleratorKeyPressedEventArgs e) =>
+            {
+                eventHandler(WebView2, new WindowsFormsCoreWebView2AcceleratorKeyPressedEventArgsWrapper(e));
+            };
+            WebView2.AcceleratorKeyPressed += realHandler;
+
+            // Return removal callback
+            return () => { WebView2.AcceleratorKeyPressed -= realHandler; };
         }
 
-        public Task EnsureCoreWebView2Async(CoreWebView2Environment environment = null)
+        public async Task CreateEnvironmentAsync()
         {
-            return _webView2.EnsureCoreWebView2Async(environment);
+            Environment = await CoreWebView2Environment.CreateAsync();
+        }
+
+        public Task EnsureCoreWebView2Async()
+        {
+            return WebView2.EnsureCoreWebView2Async(Environment);
         }
     }
 }

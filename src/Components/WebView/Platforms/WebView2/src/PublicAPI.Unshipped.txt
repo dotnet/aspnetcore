@@ -1,11 +1,75 @@
 ﻿#nullable enable
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.All = 0 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.CspViolationReport = 15 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Document = 1 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.EventSource = 10 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Fetch = 8 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Font = 5 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Image = 3 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Manifest = 12 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Media = 4 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Other = 16 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Ping = 14 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Script = 6 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.SignedExchange = 13 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Stylesheet = 2 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.TextTrack = 9 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.Websocket = 11 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper.XmlHttpRequest = 7 -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2AcceleratorKeyPressedEventArgsWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2AcceleratorKeyPressedEventArgsWrapper.Handled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2AcceleratorKeyPressedEventArgsWrapper.Handled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2AcceleratorKeyPressedEventArgsWrapper.KeyEventLParam.get -> int
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2AcceleratorKeyPressedEventArgsWrapper.VirtualKey.get -> uint
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreDefaultContextMenusEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreDefaultContextMenusEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreDefaultScriptDialogsEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreDefaultScriptDialogsEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreDevToolsEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreDevToolsEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreHostObjectsAllowed.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.AreHostObjectsAllowed.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsBuiltInErrorPageEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsBuiltInErrorPageEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsScriptEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsScriptEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsStatusBarEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsStatusBarEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsWebMessageEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsWebMessageEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsZoomControlEnabled.get -> bool
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper.IsZoomControlEnabled.set -> void
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestedEventArgsWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestedEventArgsWrapper.ResourceContext.get -> Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper
+Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper
 Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper
-Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.AcceleratorKeyPressed -> System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2AcceleratorKeyPressedEventArgs>
-~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.CoreWebView2.get -> Microsoft.Web.WebView2.Core.CoreWebView2
-~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.EnsureCoreWebView2Async(Microsoft.Web.WebView2.Core.CoreWebView2Environment environment = null) -> System.Threading.Tasks.Task
+Microsoft.AspNetCore.Components.WebView.WebView2.WebMessageReceivedEventArgs
+virtual Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager.QueueBlazorStart() -> void
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestWrapper.Method.get -> string
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestWrapper.Method.set -> void
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestWrapper.Uri.get -> string
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestWrapper.Uri.set -> void
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestedEventArgsWrapper.Request.get -> Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestWrapper
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestedEventArgsWrapper.SetResponse(System.IO.Stream content, int statusCode, string statusMessage, string headerString) -> void
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper.AddScriptToExecuteOnDocumentCreatedAsync(string javaScript) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper.AddWebMessageReceivedHandler(System.Action<Microsoft.AspNetCore.Components.WebView.WebView2.WebMessageReceivedEventArgs> messageReceivedHandler) -> System.Action
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper.AddWebResourceRequestedFilter(string uri, Microsoft.AspNetCore.Components.WebView.WebView2.CoreWebView2WebResourceContextWrapper resourceContext) -> void
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper.AddWebResourceRequestedHandler(System.EventHandler<Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2WebResourceRequestedEventArgsWrapper> webResourceRequestedHandler) -> System.Action
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper.PostWebMessageAsString(string webMessageAsString) -> void
+~Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper.Settings.get -> Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2SettingsWrapper
+~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.AddAcceleratorKeyPressedHandler(System.EventHandler<Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler) -> System.Action
+~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.CoreWebView2.get -> Microsoft.AspNetCore.Components.WebView.WebView2.ICoreWebView2Wrapper
+~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.CreateEnvironmentAsync() -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.EnsureCoreWebView2Async() -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.Source.get -> System.Uri
 ~Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.Source.set -> void
 Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager
+~Microsoft.AspNetCore.Components.WebView.WebView2.WebMessageReceivedEventArgs.Source.get -> string
+~Microsoft.AspNetCore.Components.WebView.WebView2.WebMessageReceivedEventArgs.WebMessageAsString.get -> string
+~Microsoft.AspNetCore.Components.WebView.WebView2.WebMessageReceivedEventArgs.WebMessageReceivedEventArgs(string source, string webMessageAsString) -> void
 ~Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager.WebView2WebViewManager(Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper webview, System.IServiceProvider services, Microsoft.AspNetCore.Components.Dispatcher dispatcher, Microsoft.Extensions.FileProviders.IFileProvider fileProvider, string hostPageRelativePath) -> void
 ~override Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager.NavigateCore(System.Uri absoluteUri) -> void
 ~override Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager.SendMessage(string message) -> void
