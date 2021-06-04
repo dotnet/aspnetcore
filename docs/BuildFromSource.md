@@ -218,8 +218,6 @@ cd src\Components
 
 After opening the solution in Visual Studio, you can build/rebuild using the controls in Visual Studio.
 
-> :exclamation: VS for Mac does not currently support opening .slnf files. So, you must use VS Code when developing on macOS.
-
 #### A brief interlude on solution files
 
 We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio
