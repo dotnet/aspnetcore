@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         // Other reserved feature slots
         internal protected IServiceProvidersFeature? _currentIServiceProvidersFeature;
+        internal protected IHttpActivityFeature? _currentIHttpActivityFeature;
         internal protected IItemsFeature? _currentIItemsFeature;
         internal protected IQueryFeature? _currentIQueryFeature;
         internal protected IFormFeature? _currentIFormFeature;
@@ -84,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpRequestBodyDetectionFeature = this;
 
             _currentIServiceProvidersFeature = null;
+            _currentIHttpActivityFeature = null;
             _currentIItemsFeature = null;
             _currentIQueryFeature = null;
             _currentIFormFeature = null;
@@ -191,6 +193,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IServiceProvidersFeature))
                 {
                     feature = _currentIServiceProvidersFeature;
+                }
+                else if (key == typeof(IHttpActivityFeature))
+                {
+                    feature = _currentIHttpActivityFeature;
                 }
                 else if (key == typeof(IItemsFeature))
                 {
@@ -315,6 +321,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IServiceProvidersFeature))
                 {
                     _currentIServiceProvidersFeature = (IServiceProvidersFeature?)value;
+                }
+                else if (key == typeof(IHttpActivityFeature))
+                {
+                    _currentIHttpActivityFeature = (IHttpActivityFeature?)value;
                 }
                 else if (key == typeof(IItemsFeature))
                 {
@@ -441,6 +451,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IServiceProvidersFeature))
             {
                 feature = Unsafe.As<IServiceProvidersFeature?, TFeature?>(ref _currentIServiceProvidersFeature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpActivityFeature))
+            {
+                feature = Unsafe.As<IHttpActivityFeature?, TFeature?>(ref _currentIHttpActivityFeature);
             }
             else if (typeof(TFeature) == typeof(IItemsFeature))
             {
@@ -574,6 +588,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIServiceProvidersFeature = Unsafe.As<TFeature?, IServiceProvidersFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IHttpActivityFeature))
+            {
+                _currentIHttpActivityFeature = Unsafe.As<TFeature?, IHttpActivityFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IItemsFeature))
             {
                 _currentIItemsFeature = Unsafe.As<TFeature?, IItemsFeature?>(ref feature);
@@ -693,6 +711,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIServiceProvidersFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IServiceProvidersFeature), _currentIServiceProvidersFeature);
+            }
+            if (_currentIHttpActivityFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpActivityFeature), _currentIHttpActivityFeature);
             }
             if (_currentIItemsFeature != null)
             {
