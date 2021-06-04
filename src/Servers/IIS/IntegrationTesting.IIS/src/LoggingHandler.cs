@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 var count = 0;
                 do
                 {
-                    count = await readAsStreamAsync.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset));
+                    count = await readAsStreamAsync.ReadAsync(buffer.AsMemory(offset));
                     offset += count;
                 } while (count != 0 && offset != buffer.Length);
 
