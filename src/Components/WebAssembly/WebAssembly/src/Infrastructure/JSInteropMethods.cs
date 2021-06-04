@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class JSInteropMethods
     {
-        private static JsonSourceGeneration.JsonContext? _jsonContext;
+        private static WebEventJsonContext? _jsonContext;
 
         /// <summary>
         /// For framework use only.

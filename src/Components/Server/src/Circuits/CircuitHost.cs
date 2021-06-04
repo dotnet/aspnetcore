@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger _logger;
         private bool _initialized;
         private bool _disposed;
-        private JsonSourceGeneration.JsonContext _jsonContext;
+        private WebEventJsonContext _jsonContext;
 
         // This event is fired when there's an unrecoverable exception coming from the circuit, and
         // it need so be torn down. The registry listens to this even so that the circuit can

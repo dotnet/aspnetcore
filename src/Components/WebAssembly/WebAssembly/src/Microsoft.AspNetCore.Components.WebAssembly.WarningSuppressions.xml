@@ -17,7 +17,7 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Web.WebEventData.ParseEventArgsJson(Microsoft.AspNetCore.Components.RenderTree.Renderer,Microsoft.AspNetCore.Components.Web.WebEventData.IWebEventJsonSerializerContext,System.UInt64,System.String,System.String)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Web.WebEventData.ParseEventArgsJson(Microsoft.AspNetCore.Components.RenderTree.Renderer,Microsoft.AspNetCore.Components.Web.WebEventJsonContext,System.UInt64,System.String,System.String)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -53,19 +53,7 @@
       <argument>ILLink</argument>
       <argument>IL2072</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Web.WebEventData.ParseEventArgsJson(Microsoft.AspNetCore.Components.RenderTree.Renderer,Microsoft.AspNetCore.Components.Web.WebEventData.IWebEventJsonSerializerContext,System.UInt64,System.String,System.String)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2072</argument>
-      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.InitializeRegisteredRootComponents(Microsoft.JSInterop.IJSUnmarshalledRuntime)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2072</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssemblyComponentParameterDeserializer.DeserializeParameters(System.Collections.Generic.IList{Microsoft.AspNetCore.Components.ComponentParameter},System.Collections.Generic.IList{System.Object})</property>
     </attribute>
   </assembly>
 </linker>

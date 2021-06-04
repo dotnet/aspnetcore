@@ -8,23 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
-
-[assembly: JsonSerializable(typeof(WebEventDescriptor))]
-[assembly: JsonSerializable(typeof(EventArgs))]
-[assembly: JsonSerializable(typeof(ChangeEventArgs))]
-[assembly: JsonSerializable(typeof(ClipboardEventArgs))]
-[assembly: JsonSerializable(typeof(DragEventArgs))]
-[assembly: JsonSerializable(typeof(ErrorEventArgs))]
-[assembly: JsonSerializable(typeof(FocusEventArgs))]
-[assembly: JsonSerializable(typeof(KeyboardEventArgs))]
-[assembly: JsonSerializable(typeof(MouseEventArgs))]
-[assembly: JsonSerializable(typeof(PointerEventArgs))]
-[assembly: JsonSerializable(typeof(ProgressEventArgs))]
-[assembly: JsonSerializable(typeof(TouchEventArgs))]
-[assembly: JsonSerializable(typeof(WheelEventArgs))]
 
 namespace Microsoft.AspNetCore.Components.Web
 {
@@ -34,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Web
         // once the event ID (and possibly the type of the eventArgs) becomes known.
         public static WebEventData Parse(
             Renderer renderer,
-            IWebEventJsonSerializerContext jsonSerializerContext,
+            WebEventJsonContext jsonSerializerContext,
             string eventDescriptorJson,
             string eventArgsJson)
         {
@@ -57,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public static WebEventData Parse(
             Renderer renderer,
-            IWebEventJsonSerializerContext jsonSerializerContext,
+            WebEventJsonContext jsonSerializerContext,
             WebEventDescriptor eventDescriptor,
             string eventArgsJson)
         {
@@ -87,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
         private static EventArgs ParseEventArgsJson(
             Renderer renderer,
-            IWebEventJsonSerializerContext jsonSerializerContext,
+            WebEventJsonContext jsonSerializerContext,
             ulong eventHandlerId,
             string eventName,
             string eventArgsJson)
@@ -112,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.Web
         private static bool TryDeserializeStandardWebEventArgs(
             string eventName,
             string eventArgsJson,
-            IWebEventJsonSerializerContext jsonSerializerContext,
+            WebEventJsonContext jsonSerializerContext,
             [NotNullWhen(true)] out EventArgs? eventArgs)
         {
             // For back-compatibility, we recognize the built-in list of web event names and hard-code
@@ -252,7 +236,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
         static T Deserialize<T>(string json, JsonTypeInfo<T?> jsonTypeInfo) => JsonSerializer.Deserialize(json, jsonTypeInfo)!;
 
-        private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson, IWebEventJsonSerializerContext jsonSerializerContext)
+        private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson, WebEventJsonContext jsonSerializerContext)
         {
             var changeArgs = Deserialize(eventArgsJson, jsonSerializerContext.ChangeEventArgs);
             var jsonElement = (JsonElement)changeArgs.Value!;
@@ -273,28 +257,23 @@ namespace Microsoft.AspNetCore.Components.Web
             }
             return changeArgs;
         }
+    }
 
-#nullable disable
-        // WebView has different nullability settings compared to Server and WebAssembly
-        // which weirds out JSON's nullability for these types. Disable nullability for this contract
-        // until we can update everything to haave uniform nullability.
-        internal interface IWebEventJsonSerializerContext
-        {
-            JsonSerializerOptions Options { get; }
-
-            JsonTypeInfo<ChangeEventArgs> ChangeEventArgs { get; }
-            JsonTypeInfo<WebEventDescriptor> WebEventDescriptor { get; }
-            JsonTypeInfo<ClipboardEventArgs> ClipboardEventArgs { get; }
-            JsonTypeInfo<DragEventArgs> DragEventArgs { get; }
-            JsonTypeInfo<FocusEventArgs> FocusEventArgs { get; }
-            JsonTypeInfo<KeyboardEventArgs> KeyboardEventArgs { get; }
-            JsonTypeInfo<MouseEventArgs> MouseEventArgs { get; }
-            JsonTypeInfo<ErrorEventArgs> ErrorEventArgs { get; }
-            JsonTypeInfo<ProgressEventArgs> ProgressEventArgs { get; }
-            JsonTypeInfo<TouchEventArgs> TouchEventArgs { get; }
-            JsonTypeInfo<PointerEventArgs> PointerEventArgs { get; }
-            JsonTypeInfo<WheelEventArgs> WheelEventArgs { get; }
-            JsonTypeInfo<EventArgs> EventArgs { get; }
-        }
+    [JsonSerializable(typeof(WebEventDescriptor), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(WebEventDescriptor), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(EventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(ChangeEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(ClipboardEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(DragEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(ErrorEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(FocusEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(KeyboardEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(MouseEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(PointerEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(ProgressEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(TouchEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(WheelEventArgs), GenerationMode = JsonSourceGenerationMode.Serialization)]
+    internal sealed partial class WebEventJsonContext : JsonSerializerContext
+    {
     }
 }

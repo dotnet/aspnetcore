@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     internal class IpcReceiver
     {
         private readonly Func<string, string, Task> _onAttachMessage;
-        private JsonSourceGeneration.JsonContext _jsonContext;
+        private WebEventJsonContext _jsonContext;
 
         public IpcReceiver(Func<string,string,Task> onAttachMessage)
         {
