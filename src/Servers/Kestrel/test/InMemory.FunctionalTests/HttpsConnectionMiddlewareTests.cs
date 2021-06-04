@@ -634,7 +634,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         // TODO: Tomas is changing it so AllowRenegotiation only applies to the remote,
         // NegotiateClientCertificateAsync call be called locally and it's up to us to prevent that
         // on HTTP/2.
-        public async Task ClientCertificateRenegotationDisabledOnHttp1WithHttp2()
+        public async Task CanRenegotiateForClientCertificateOnHttp1WithHttp2()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
@@ -654,10 +654,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(tlsFeature.ClientCertificate);
                 Assert.Null(context.Connection.ClientCertificate);
 
-                var ex = await Assert.ThrowsAsync<IOException>(() => context.Connection.GetClientCertificateAsync());
-                Assert.Equal("The remote party requested renegotiation when AllowRenegotiation was set to false.", ex.Message);
-                Assert.Null(tlsFeature.ClientCertificate);
-                Assert.Null(context.Connection.ClientCertificate);
+                var cert = await context.Connection.GetClientCertificateAsync();
+                Assert.NotNull(cert);
+                Assert.NotNull(tlsFeature.ClientCertificate);
+                Assert.NotNull(context.Connection.ClientCertificate);
 
                 await context.Response.WriteAsync("hello world");
             }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
@@ -677,7 +677,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
 
             await stream.AuthenticateAsClientAsync(clientOptions);
-            await AssertConnectionResult(stream, false);
+            await AssertConnectionResult(stream, true);
         }
 
         [Fact]
