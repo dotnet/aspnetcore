@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
     {
-        private static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
-        private static readonly string RouteTemplateKey = "RouteTemplate";
+        private const string RazorPageDocumentKind = "mvc.1.0.razor-page";
+        private const string RouteTemplateKey = "RouteTemplate";
         private readonly ApplicationPartManager _applicationManager;
         private readonly RazorPagesOptions _pagesOptions;
         private readonly PageRouteModelFactory _routeModelFactory;
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 var relativePath = viewDescriptor.RelativePath;
                 var routeTemplate = GetRouteTemplate(viewDescriptor);
-                PageRouteModel routeModel = null;
+                PageRouteModel? routeModel = null;
 
                 // When RootDirectory and AreaRootDirectory overlap (e.g. RootDirectory = '/', AreaRootDirectory = '/Areas'), we
                 // only want to allow a page to be associated with the area route.
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        internal static string GetRouteTemplate(CompiledViewDescriptor viewDescriptor)
+        internal static string? GetRouteTemplate(CompiledViewDescriptor viewDescriptor)
         {
             if (viewDescriptor.Item != null)
             {

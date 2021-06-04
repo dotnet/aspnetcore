@@ -110,6 +110,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard. See https://tools.ietf.org/html/rfc7636.
         /// The default value is `false` but derived handlers should enable this if their provider supports it.
         /// </summary>
-        public bool UsePkce { get; set; } = false;
+        public bool UsePkce { get; set; }
     }
 }

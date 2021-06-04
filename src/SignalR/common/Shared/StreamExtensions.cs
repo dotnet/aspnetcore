@@ -15,7 +15,7 @@ namespace System.IO
         {
             if (buffer.IsSingleSegment)
             {
-#if NETCOREAPP
+#if NETCOREAPP || NETSTANDARD2_1
                 return stream.WriteAsync(buffer.First, cancellationToken);
 #else
                 var isArray = MemoryMarshal.TryGetArray(buffer.First, out var arraySegment);
@@ -33,7 +33,7 @@ namespace System.IO
             var position = buffer.Start;
             while (buffer.TryGet(ref position, out var segment))
             {
-#if NETCOREAPP
+#if NETCOREAPP || NETSTANDARD2_1
                 await stream.WriteAsync(segment, cancellationToken);
 #else
                 var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);

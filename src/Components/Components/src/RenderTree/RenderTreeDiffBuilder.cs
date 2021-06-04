@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -541,16 +542,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
             var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
             var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
-            if (!newParameters.DefinitelyEquals(oldParameters) || IsHotReloading(diffContext.Renderer))
+            if (!newParameters.DefinitelyEquals(oldParameters) || (HotReloadFeature.IsSupported && diffContext.Renderer.IsHotReloading))
             {
                 componentState.SetDirectParameters(newParameters);
             }
         }
-
-        /// <remarks>
-        /// Intentionally authored as a separate method so we can trim this code.
-        /// </remarks>
-        private static bool IsHotReloading(Renderer renderer) => renderer.HotReloadContext.IsHotReloading;
 
         private static int NextSiblingIndex(in RenderTreeFrame frame, int frameIndex)
         {

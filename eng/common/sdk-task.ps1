@@ -53,7 +53,7 @@ try {
   }
 
   if ($task -eq "") {
-    Write-PipelineTelemetryError -Category 'Build' -Message "Missing required parameter '-task <value>'" -ForegroundColor Red
+    Write-PipelineTelemetryError -Category 'Build' -Message "Missing required parameter '-task <value>'"
     Print-Usage
     ExitWithExitCode 1
   }
@@ -78,7 +78,7 @@ try {
 
   $taskProject = GetSdkTaskProject $task
   if (!(Test-Path $taskProject)) {
-    Write-PipelineTelemetryError -Category 'Build' -Message "Unknown task: $task" -ForegroundColor Red
+    Write-PipelineTelemetryError -Category 'Build' -Message "Unknown task: $task"
     ExitWithExitCode 1
   }
 

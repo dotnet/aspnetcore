@@ -190,7 +190,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813")]
         public async Task VerifyNotYetValidSelfSignedFails()
         {
             using var host = await CreateHost(
@@ -283,6 +284,30 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyValidationFailureCanBeHandled()
+        {
+            var failCalled = false;
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = new CertificateAuthenticationEvents()
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            context.Fail("Validation failed: " + context.Exception);
+                            failCalled = true;
+                            return Task.CompletedTask;
+                        }
+                    }
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.True(failCalled);
         }
 
         [Fact]
@@ -464,7 +489,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.SubjectName.Name))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.X500DistinguishedName);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.SubjectName.Name, actual.First().Value);
@@ -474,7 +499,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.SerialNumber))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.SerialNumber);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.SerialNumber, actual.First().Value);
@@ -484,7 +509,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.DnsName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Dns);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.DnsName, false), actual.First().Value);
@@ -494,7 +519,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.EmailName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Email);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.EmailName, false), actual.First().Value);
@@ -504,7 +529,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.SimpleName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.SimpleName, false), actual.First().Value);
@@ -514,7 +539,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UpnName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Upn);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UpnName, false), actual.First().Value);
@@ -524,7 +549,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UrlName, false)))
             {
                 actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Uri);
-                if (actual.Count() > 0)
+                if (actual.Any())
                 {
                     Assert.Single(actual);
                     Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UrlName, false), actual.First().Value);
@@ -677,7 +702,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                                 {
                                     context.Connection.ClientCertificate = clientCertificate;
                                 }
-                                return next();
+                                return next(context);
                             });
 
 
@@ -688,7 +713,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
                             app.UseAuthentication();
 
-                            app.Use(async (context, next) =>
+                            app.Run(async (context) =>
                             {
                                 var request = context.Request;
                                 var response = context.Response;
@@ -751,7 +776,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 .Build();
 
             await host.StartAsync();
-
 
             var server = host.GetTestServer();
             server.BaseAddress = baseAddress;

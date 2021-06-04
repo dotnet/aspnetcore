@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// <param name="context">The <see cref="WrapperProviderContext"/>.</param>
         /// <returns>An instance of <see cref="EnumerableWrapperProvider"/> if the declared type is
         /// an interface and implements <see cref="IEnumerable{T}"/>.</returns>
-        public IWrapperProvider GetProvider(WrapperProviderContext context)
+        public IWrapperProvider? GetProvider(WrapperProviderContext context)
         {
             if (context == null)
             {

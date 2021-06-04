@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.Mvc
 
                 var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
                 return services
-                    .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
+                    .Where(sd => !multiRegistrationServiceTypes.ContainsKey(sd.ServiceType))
                     .Where(sd => sd.ServiceType.Assembly.FullName.Contains("Mvc"))
                     .Select(sd => sd.ServiceType);
             }
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.True(
                 (expectedServiceRegistrationCount == actual),
                 $"Expected service type '{serviceType}' to be registered {expectedServiceRegistrationCount}" +
-                $" time(s) but was actually registered {actual} time(s)." + 
+                $" time(s) but was actually registered {actual} time(s)." +
                 string.Join(Environment.NewLine, serviceDescriptors.Select(sd => sd.ImplementationType)));
         }
 

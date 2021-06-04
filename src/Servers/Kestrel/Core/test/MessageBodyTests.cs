@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
@@ -558,19 +559,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData((int)HttpMethod.Post)]
         [InlineData((int)HttpMethod.Put)]
-        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthOrTransferEncodingIsSet(int intMethod)
+        public void ForReturnsZeroLengthWhenNoContentLengthOrTransferEncodingIsSetHttp11(int intMethod)
         {
             var method = (HttpMethod)intMethod;
             using (var input = new TestInput())
             {
                 input.Http1Connection.Method = method;
-#pragma warning disable CS0618 // Type or member is obsolete
-                var ex = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
-                    Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection));
+                var result = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
 
-                Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
-                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequired(((IHttpRequestFeature)input.Http1Connection).Method), ex.Message);
+                Assert.Same(MessageBody.ZeroContentLengthKeepAlive, result);
             }
         }
 

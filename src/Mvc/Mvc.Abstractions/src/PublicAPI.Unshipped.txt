@@ -50,6 +50,9 @@
 *REMOVED*Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Name.get -> string!
 *REMOVED*static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object! model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 *REMOVED*static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object! model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
+*REMOVED*Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.ModelValidationResult(string! memberName, string! message) -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string?>!
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.Constraint.get -> Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint?
@@ -95,9 +98,14 @@ abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertyGetter.get 
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertySetter.get -> System.Action<object!, object?>?
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.SimpleDisplayProperty.get -> string?
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.TemplateHint.get -> string?
+*REMOVED*static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.GetProperty<T>(this Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! actionDescriptor) -> T
+static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.GetProperty<T>(this Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! actionDescriptor) -> T?
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object? model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult?
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object?[]!, object!>?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.ModelValidationResult(string? memberName, string? message) -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string!
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string?

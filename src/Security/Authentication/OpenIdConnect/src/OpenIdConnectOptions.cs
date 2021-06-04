@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// CallbackPath to a dedicated endpoint may provide better error handling.
         /// This is disabled by default.
         /// </summary>
-        public bool SkipUnrecognizedRequests { get; set; } = false;
+        public bool SkipUnrecognizedRequests { get; set; }
 
         /// <summary>
         /// Indicates whether telemetry should be disabled. When this feature is enabled,
@@ -339,10 +339,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// The minimum time between <see cref="ConfigurationManager" /> retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested. 30 seconds is the default.
         /// </summary>
         public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
-        
+
         /// <summary>
-        /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidator, which is used when determining 
-        /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>. 
+        /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidator, which is used when determining
+        /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>.
         /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
         /// <para>The default value is true.</para>
         /// </summary>
@@ -350,6 +350,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             get => _defaultHandler.MapInboundClaims;
             set => _defaultHandler.MapInboundClaims = value;
-        }        
+        }
     }
 }

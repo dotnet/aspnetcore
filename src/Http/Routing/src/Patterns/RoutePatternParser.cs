@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         private const char Separator = '/';
         private const char OpenBrace = '{';
         private const char CloseBrace = '}';
-        private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
         private const string PeriodString = ".";

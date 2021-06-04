@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             _ipcSender = ipcSender;
         }
 
+        public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
+
         protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             _ipcSender.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
@@ -30,19 +32,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
         {
-            if (!invocationResult.Success)
-            {
-                EndInvokeDotNetCore(invocationInfo.CallId, success: false, invocationResult.Exception.ToString());
-            }
-            else
-            {
-                EndInvokeDotNetCore(invocationInfo.CallId, success: true, invocationResult.Result);
-            }
-
-            void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
-            {
-                _ipcSender.EndInvokeDotNet(callId, success, JsonSerializer.Serialize(resultOrError, JsonSerializerOptions));
-            }
+            var resultJsonOrErrorMessage = invocationResult.Success
+                ? invocationResult.ResultJson
+                : invocationResult.Exception.ToString();
+            _ipcSender.EndInvokeDotNet(invocationInfo.CallId, invocationResult.Success, resultJsonOrErrorMessage);
         }
     }
 }

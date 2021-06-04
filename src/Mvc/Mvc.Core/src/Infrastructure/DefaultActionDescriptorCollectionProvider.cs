@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private ActionDescriptorCollection? _collection;
         private IChangeToken? _changeToken;
         private CancellationTokenSource? _cancellationTokenSource;
-        private int _version = 0;
+        private int _version;
 
         public DefaultActionDescriptorCollectionProvider(
             IEnumerable<IActionDescriptorProvider> actionDescriptorProviders,

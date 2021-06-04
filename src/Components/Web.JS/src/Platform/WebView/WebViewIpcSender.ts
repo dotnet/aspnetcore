@@ -21,6 +21,10 @@ export function sendEndInvokeJSFromDotNet(asyncHandle: number, succeeded: boolea
   send('EndInvokeJS', asyncHandle, succeeded, argsJson);
 }
 
+export function sendByteArray(id: number, data: Uint8Array) {
+  send('ReceiveByteArrayFromJS', id, data);
+}
+
 export function sendLocationChanged(uri: string, intercepted: boolean) {
   send('OnLocationChanged', uri, intercepted);
   return Promise.resolve(); // Like in Blazor Server, we only issue the notification here - there's no need to wait for a response

@@ -272,9 +272,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
-                Response.Headers[HeaderNames.Pragma] = "no-cache";
-                Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
+                Response.Headers.CacheControl = "no-cache, no-store";
+                Response.Headers.Pragma = "no-cache";
+                Response.Headers.Expires = HeaderValueEpocDate;
 
                 await Response.Body.WriteAsync(buffer);
             }
@@ -339,12 +339,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             await HandleChallengeAsyncInternal(properties);
-            var location = Context.Response.Headers[HeaderNames.Location];
+            var location = Context.Response.Headers.Location;
             if (location == StringValues.Empty)
             {
                 location = "(not set)";
             }
-            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            var cookie = Context.Response.Headers.SetCookie;
             if (cookie == StringValues.Empty)
             {
                 cookie = "(not set)";
@@ -475,9 +475,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
-                Response.Headers[HeaderNames.Pragma] = "no-cache";
-                Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
+                Response.Headers.CacheControl = "no-cache, no-store";
+                Response.Headers.Pragma = "no-cache";
+                Response.Headers.Expires = HeaderValueEpocDate;
 
                 await Response.Body.WriteAsync(buffer);
                 return;

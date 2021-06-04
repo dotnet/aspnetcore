@@ -118,23 +118,23 @@ namespace FunctionalTests
             // This is for testing purposes only (karma hosts the client on its own server), never do this in production
             app.Use((context, next) =>
             {
-                var originHeader = context.Request.Headers[HeaderNames.Origin];
+                var originHeader = context.Request.Headers.Origin;
                 if (!StringValues.IsNullOrEmpty(originHeader))
                 {
                     logger.LogInformation("Setting CORS headers.");
-                    context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = originHeader;
-                    context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
+                    context.Response.Headers.AccessControlAllowOrigin = originHeader;
+                    context.Response.Headers.AccessControlAllowCredentials = "true";
 
-                    var requestMethod = context.Request.Headers[HeaderNames.AccessControlRequestMethod];
+                    var requestMethod = context.Request.Headers.AccessControlRequestMethod;
                     if (!StringValues.IsNullOrEmpty(requestMethod))
                     {
-                        context.Response.Headers[HeaderNames.AccessControlAllowMethods] = requestMethod;
+                        context.Response.Headers.AccessControlAllowMethods = requestMethod;
                     }
 
-                    var requestHeaders = context.Request.Headers[HeaderNames.AccessControlRequestHeaders];
+                    var requestHeaders = context.Request.Headers.AccessControlRequestHeaders;
                     if (!StringValues.IsNullOrEmpty(requestHeaders))
                     {
-                        context.Response.Headers[HeaderNames.AccessControlAllowHeaders] = requestHeaders;
+                        context.Response.Headers.AccessControlAllowHeaders = requestHeaders;
                     }
                 }
 
@@ -145,7 +145,7 @@ namespace FunctionalTests
                     return Task.CompletedTask;
                 }
 
-                return next.Invoke();
+                return next.Invoke(context);
             });
 
             app.Use((context, next) =>
@@ -159,7 +159,7 @@ namespace FunctionalTests
                     return Task.CompletedTask;
                 }
 
-                return next.Invoke();
+                return next.Invoke(context);
             });
 
             app.Use((context, next) =>
@@ -170,7 +170,7 @@ namespace FunctionalTests
                     return context.Response.WriteAsync($"{{ \"url\": \"{newUrl}\" }}");
                 }
 
-                return next();
+                return next(context);
             });
 
             app.Use(async (context, next) =>
@@ -194,7 +194,18 @@ namespace FunctionalTests
                     context.Response.Cookies.Append("expiredCookie", "doesntmatter", expiredCookieOptions);
                 }
 
-                await next.Invoke();
+                await next.Invoke(context);
+            });
+
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/bad-negotiate"))
+                {
+                    context.Response.StatusCode = 400;
+                    return context.Response.WriteAsync("Some response from server");
+                }
+
+                return next(context);
             });
 
             app.UseRouting();

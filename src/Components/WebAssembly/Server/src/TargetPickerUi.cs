@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             else if (OperatingSystem.IsMacOS())
             {
                 return $@"<p>Execute the following:</p>
-                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
+                          <p><strong><code>open -n /Applications/Google\ Chrome.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
             }
             else
             {
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             else if (OperatingSystem.IsMacOS())
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
+                          <p><strong><code>open -n /Applications/Microsoft\ Edge.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
             }
             else
             {

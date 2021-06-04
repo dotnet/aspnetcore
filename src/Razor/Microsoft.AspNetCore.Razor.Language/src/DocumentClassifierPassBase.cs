@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected override void OnInitialized()
         {
-            var feature = Engine.Features.OfType<IRazorTargetExtensionFeature>();
-            TargetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? Array.Empty<ICodeTargetExtension>();
+            var feature = Engine.GetFeature<IRazorTargetExtensionFeature>();
+            TargetExtensions = feature?.TargetExtensions.ToArray() ?? Array.Empty<ICodeTargetExtension>();
         }
 
         protected sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <param name="relativePath">The application relative path of the page.</param>
         /// <param name="viewEnginePath">The path relative to the base path for page discovery.</param>
         /// <param name="areaName">The area name.</param>
-        public PageRouteModel(string relativePath, string viewEnginePath, string areaName)
+        public PageRouteModel(string relativePath, string viewEnginePath, string? areaName)
         {
             RelativePath = relativePath ?? throw new ArgumentNullException(nameof(relativePath));
             ViewEnginePath = viewEnginePath ?? throw new ArgumentNullException(nameof(viewEnginePath));
             AreaName = areaName;
 
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
             Selectors = new List<SelectorModel>();
             RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             AreaName = other.AreaName;
             RouteParameterTransformer = other.RouteParameterTransformer;
 
-            Properties = new Dictionary<object, object>(other.Properties);
+            Properties = new Dictionary<object, object?>(other.Properties);
             Selectors = new List<SelectorModel>(other.Selectors.Select(m => new SelectorModel(m)));
             RouteValues = new Dictionary<string, string>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
         }
@@ -83,12 +83,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets the area name. Will be <c>null</c> for non-area pages.
         /// </summary>
-        public string AreaName { get; }
+        public string? AreaName { get; }
 
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="PageRouteModel"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         /// <summary>
         /// Gets the <see cref="SelectorModel"/> instances.
@@ -125,6 +125,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// This feature only applies when using endpoint routing.
         /// </para>
         /// </remarks>
-        public IOutboundParameterTransformer RouteParameterTransformer { get; set; }
+        public IOutboundParameterTransformer? RouteParameterTransformer { get; set; }
     }
 }

@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task ProtocolError()
         {
-            return Clients.Caller.SendAsync("Send",  new SelfRef());
+            return Clients.Caller.SendAsync("Send", new SelfRef());
         }
 
         public void InvalidArgument(CancellationToken token)
@@ -1025,6 +1025,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             await token.WaitForCancellationAsync();
             _tcsService.EndMethod.SetResult(null);
             yield break;
+        }
+
+        public async IAsyncEnumerable<int> CountingCancelableStreamGeneratedAsyncEnumerable(int count, [EnumeratorCancellation] CancellationToken token)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                await Task.Yield();
+                yield return i;
+            }
+            _tcsService.StartedMethod.SetResult(null);
+            await token.WaitForCancellationAsync();
+            _tcsService.EndMethod.SetResult(null);
+            yield break;
+        }
+
+        public ChannelReader<int> CountingCancelableStreamGeneratedChannel(int count, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    await Task.Yield();
+                    await channel.Writer.WriteAsync(i);
+                }
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
         }
 
         public IAsyncEnumerable<int> CancelableStreamCustomAsyncEnumerable()

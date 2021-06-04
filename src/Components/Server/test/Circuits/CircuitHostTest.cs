@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             // Act
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             // Act
@@ -76,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 .Throws<InvalidTimeZoneException>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer,
                 handlers: new[] { handler.Object });
 
@@ -99,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             var component = new DispatcherComponent(circuitHost.Renderer.Dispatcher);
@@ -120,6 +119,38 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // Not sure if the line above messes up the xunit sync context, so just being cautious here.
                 SynchronizationContext.SetSynchronizationContext(original);
             }
+        }
+
+        [Fact]
+        public async Task DisposeAsync_MarksJSRuntimeAsDisconnectedBeforeDisposingRenderer()
+        {
+            // Arrange
+            var serviceScope = new Mock<IServiceScope>();
+            var remoteRenderer = GetRemoteRenderer();
+            var circuitHost = TestCircuitHost.Create(
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
+                remoteRenderer: remoteRenderer);
+
+            var component = new PerformJSInteropOnDisposeComponent(circuitHost.JSRuntime);
+            circuitHost.Renderer.AssignRootComponentId(component);
+
+            var circuitUnhandledExceptions = new List<UnhandledExceptionEventArgs>();
+            circuitHost.UnhandledException += (sender, eventArgs) =>
+            {
+                circuitUnhandledExceptions.Add(eventArgs);
+            };
+
+            // Act
+            await circuitHost.DisposeAsync();
+
+            // Assert: Component disposal logic sees the exception
+            var componentException = Assert.IsType<JSDisconnectedException>(component.ExceptionDuringDisposeAsync);
+
+            // Assert: Circuit host notifies about the exception
+            Assert.Collection(circuitUnhandledExceptions, eventArgs =>
+            {
+                Assert.Same(componentException, eventArgs.ExceptionObject);
+            });
         }
 
         [Fact]
@@ -307,6 +338,38 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 DidCallDispose = true;
                 throw new InvalidFilterCriteriaException();
+            }
+        }
+
+        private class PerformJSInteropOnDisposeComponent : IComponent, IAsyncDisposable
+        {
+            private readonly IJSRuntime _js;
+
+            public PerformJSInteropOnDisposeComponent(IJSRuntime jsRuntime)
+            {
+                _js = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+            }
+
+            public Exception ExceptionDuringDisposeAsync { get; private set; }
+
+            public void Attach(RenderHandle renderHandle)
+            {
+            }
+
+            public Task SetParametersAsync(ParameterView parameters)
+                => Task.CompletedTask;
+
+            public async ValueTask DisposeAsync()
+            {
+                try
+                {
+                    await _js.InvokeVoidAsync("SomeJsCleanupCode");
+                }
+                catch (Exception ex)
+                {
+                    ExceptionDuringDisposeAsync = ex;
+                    throw;
+                }
             }
         }
     }

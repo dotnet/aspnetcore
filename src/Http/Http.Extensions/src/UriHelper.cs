@@ -77,12 +77,15 @@ namespace Microsoft.AspNetCore.Http.Extensions
                 queryText.Length +
                 fragmentText.Length;
 
-            if (string.IsNullOrEmpty(pathBaseText) && string.IsNullOrEmpty(pathText))
+            if (string.IsNullOrEmpty(pathText))
             {
-                pathText = "/";
-                length++;
+                if (string.IsNullOrEmpty(pathBaseText))
+                {
+                    pathText = "/";
+                    length++;
+                }
             }
-            else if (pathBaseText.Length > 0 && pathBaseText[^1] == '/')
+            else if (pathBaseText.EndsWith('/'))
             {
                 // If the path string has a trailing slash and the other string has a leading slash, we need
                 // to trim one of them.

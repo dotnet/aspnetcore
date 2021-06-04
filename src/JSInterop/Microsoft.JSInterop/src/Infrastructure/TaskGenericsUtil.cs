@@ -91,7 +91,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 // If necessary, attempt a cast
                 var typedResult = result is T resultT
                     ? resultT
-                    : (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture);
+                    : (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture)!;
 
                 typedTcs.SetResult(typedResult!);
             }

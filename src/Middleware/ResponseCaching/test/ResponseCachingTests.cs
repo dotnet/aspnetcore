@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task ServesCachedContent_IfVaryHeader_Matches()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
             foreach (var builder in builders)
             {
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task ServesFreshContent_IfVaryHeader_Mismatches()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
             foreach (var builder in builders)
             {
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task ServesFreshContent_IfSetCookie_IsSpecified()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue");
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.SetCookie = "cookieName=cookieValue");
 
             foreach (var builder in builders)
             {
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task ServesFreshContent_IfInitialResponseContainsNoStore()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.CacheControl] = CacheControlHeaderValue.NoStoreString);
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.CacheControl = CacheControlHeaderValue.NoStoreString);
 
             foreach (var builder in builders)
             {
@@ -644,8 +644,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
             {
                 context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
-                context.Response.Headers[HeaderNames.ContentLocation] = "/";
-                context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
+                context.Response.Headers.ContentLocation = "/";
+                context.Response.Headers.Vary = HeaderNames.From;
             });
 
             foreach (var builder in builders)
@@ -697,8 +697,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
             {
                 context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
-                context.Response.Headers[HeaderNames.ContentLocation] = "/";
-                context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
+                context.Response.Headers.ContentLocation = "/";
+                context.Response.Headers.Vary = HeaderNames.From;
             });
 
             foreach (var builder in builders)
@@ -822,7 +822,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
             foreach (var builder in builders)
             {
@@ -848,7 +848,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task ServesFreshContent_IfCachedVaryByUpdated_OnCacheMiss()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma]);
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
 
             foreach (var builder in builders)
             {
@@ -883,7 +883,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma]);
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
 
             foreach (var builder in builders)
             {

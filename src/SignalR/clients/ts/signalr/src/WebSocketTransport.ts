@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
@@ -59,7 +60,7 @@ export class WebSocketTransport implements ITransport {
                 headers[name] = value;
 
                 if (cookies) {
-                    headers[`Cookie`] = `${cookies}`;
+                    headers[HeaderNames.Cookie] = `${cookies}`;
                 }
 
                 // Only pass headers when in non-browser environments
@@ -77,7 +78,6 @@ export class WebSocketTransport implements ITransport {
                 webSocket.binaryType = "arraybuffer";
             }
 
-            // tslint:disable-next-line:variable-name
             webSocket.onopen = (_event: Event) => {
                 this._logger.log(LogLevel.Information, `WebSocket connected to ${url}.`);
                 this._webSocket = webSocket;
@@ -91,10 +91,10 @@ export class WebSocketTransport implements ITransport {
                 if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                     error = event.error;
                 } else {
-                    error = new Error("There was an error with the transport.");
+                    error = "There was an error with the transport";
                 }
 
-                reject(error);
+                this._logger.log(LogLevel.Information, `(WebSockets transport) ${error}.`);
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
@@ -120,10 +120,13 @@ export class WebSocketTransport implements ITransport {
                     if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                         error = event.error;
                     } else {
-                        error = new Error("There was an error with the transport.");
+                        error = "WebSocket failed to connect. The connection could not be found on the server,"
+                        + " either the endpoint may not be a SignalR endpoint,"
+                        + " the connection ID is not present on the server, or there is a proxy blocking WebSockets."
+                        + " If you have multiple servers check that sticky sessions are enabled.";
                     }
 
-                    reject(error);
+                    reject(new Error(error));
                 }
             };
         });
@@ -163,7 +166,7 @@ export class WebSocketTransport implements ITransport {
         this._logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
         if (this.onclose) {
             if (this._isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {
-                this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason}).`));
+                this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason || "no reason given"}).`));
             } else if (event instanceof Error) {
                 this.onclose(event);
             } else {

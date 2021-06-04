@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
-        internal static readonly HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
+        internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
 
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
         internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
@@ -176,9 +176,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return app;
         }
 
-        internal virtual async Task BindAsync(AddressBindContext context)
+        internal virtual async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
         {
-            await AddressBinder.BindEndpointAsync(this, context).ConfigureAwait(false);
+            await AddressBinder.BindEndpointAsync(this, context, cancellationToken).ConfigureAwait(false);
             context.Addresses.Add(GetDisplayName());
         }
     }

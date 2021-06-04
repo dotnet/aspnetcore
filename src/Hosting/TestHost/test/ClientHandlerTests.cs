@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.TestHost
             var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0";
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
             {
-                var actualResult = context.Request.Headers[HeaderNames.UserAgent];
+                var actualResult = context.Request.Headers.UserAgent;
                 Assert.Equal(userAgent, actualResult);
 
                 return Task.CompletedTask;
@@ -146,7 +147,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 Assert.True(context.Request.CanHaveBody());
                 Assert.Null(context.Request.ContentLength);
-                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+                Assert.Equal("chunked", context.Request.Headers.TransferEncoding);
 
                 return Task.CompletedTask;
             }));
@@ -163,7 +164,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 Assert.True(context.Request.CanHaveBody());
                 Assert.Null(context.Request.ContentLength);
-                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+                Assert.Equal("chunked", context.Request.Headers.TransferEncoding);
 
                 return Task.CompletedTask;
             }));
@@ -392,7 +393,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 
@@ -415,7 +416,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted, "Not Completed");
             cts.Cancel();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -102,8 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             var serverOptions = options.Value ?? new KestrelServerOptions();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
-            var trace = new KestrelTrace(logger);
+            var trace = new KestrelTrace(loggerFactory);
             var connectionManager = new ConnectionManager(
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
@@ -160,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 ServiceContext.Heartbeat?.Start();
 
-                async Task OnBind(ListenOptions options)
+                async Task OnBind(ListenOptions options, CancellationToken onBindCancellationToken)
                 {
                     // INVESTIGATE: For some reason, MsQuic needs to bind before
                     // sockets for it to successfully listen. It also seems racy.
@@ -171,13 +169,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
                         }
 
-                        options.UseHttp3Server(ServiceContext, application, options.Protocols);
+                        options.UseHttp3Server(ServiceContext, application);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware
                         multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
                     }
 
                     // Add the HTTP middleware as the terminal connection middleware
@@ -197,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         // Add the connection limit middleware
                         connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -275,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 Options.ConfigurationLoader?.Load();
 
-                await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext!).ConfigureAwait(false);
+                await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext!, cancellationToken).ConfigureAwait(false);
                 _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
             }
             finally
@@ -342,8 +340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     {
                         try
                         {
-                            // TODO: This should probably be canceled by the _stopCts too, but we don't currently support bind cancellation even in StartAsync().
-                            await listenOption.BindAsync(AddressBindContext!).ConfigureAwait(false);
+                            await listenOption.BindAsync(AddressBindContext!, _stopCts.Token).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {

@@ -50,38 +50,6 @@ namespace Test
 }
 ");
 
-        private readonly CSharpSyntaxTree RenderMultipleChildContent = Parse(@"
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering
-namespace Test
-{
-    public class RenderMultipleChildContent : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.AddContent(0, Header, Name);
-            builder.AddContent(1, ChildContent, Value);
-            builder.AddContent(2, Footer);
-        }
-
-        [Parameter]
-        public string Name { get; set; }
-
-        [Parameter]
-        public RenderFragment<string> Header { get; set; }
-
-        [Parameter]
-        public RenderFragment<string> ChildContent { get; set; }
-
-        [Parameter]
-        public RenderFragment Footer { get; set; }
-
-        [Parameter]
-        public string Value { get; set; }
-    }
-}
-");
-
         internal override string FileKind => FileKinds.Component;
 
         internal override bool UseTwoPhaseCompilation => true;

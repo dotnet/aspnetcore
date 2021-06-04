@@ -374,8 +374,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Assert
             stream.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Never());
             stream.Verify(
-                s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+                s => s.WriteAsync(It.IsAny<ReadOnlyMemory<byte>>(), It.IsAny<CancellationToken>()),
                 Times.Exactly((int)expectedWriteCallCount));
+            stream.Verify(
+                s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+                Times.Never());
             stream.Verify(s => s.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
         }
 

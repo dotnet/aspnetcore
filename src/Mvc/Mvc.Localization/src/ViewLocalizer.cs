@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
     {
         private readonly IHtmlLocalizerFactory _localizerFactory;
         private readonly string _applicationName;
-        private IHtmlLocalizer _localizer;
+        private IHtmlLocalizer _localizer = default!;
 
         /// <summary>
         /// Creates a new <see cref="ViewLocalizer"/>.

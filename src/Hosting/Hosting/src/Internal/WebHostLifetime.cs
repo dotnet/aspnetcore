@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly ManualResetEventSlim _resetEvent;
         private readonly string _shutdownMessage;
 
-        private bool _disposed = false;
-        private bool _exitedGracefully = false;
+        private bool _disposed;
+        private bool _exitedGracefully;
 
         public WebHostLifetime(CancellationTokenSource cts, ManualResetEventSlim resetEvent, string shutdownMessage)
         {

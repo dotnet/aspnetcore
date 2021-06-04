@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             ClassDeclarationIntermediateNode @class,
             MethodDeclarationIntermediateNode method)
         {
-            var configuration = Engine.Features.OfType<DefaultDocumentClassifierPassFeature>().FirstOrDefault();
+            var configuration = Engine.GetFeature<DefaultDocumentClassifierPassFeature>();
             if (configuration != null)
             {
                 for (var i = 0; i < configuration.ConfigureClass.Count; i++)

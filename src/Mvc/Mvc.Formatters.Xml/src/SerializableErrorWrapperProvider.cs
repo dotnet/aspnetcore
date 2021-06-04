@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         public Type WrappingType => typeof(SerializableErrorWrapper);
 
         /// <inheritdoc />
-        public object Wrap(object original)
+        public object? Wrap(object? original)
         {
             if (original == null)
             {

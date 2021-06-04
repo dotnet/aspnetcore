@@ -21,6 +21,7 @@ run_pack=false
 run_tests=false
 build_all=false
 build_deps=true
+only_build_repo_tasks=false
 build_repo_tasks=true
 build_managed=''
 build_native=''
@@ -64,13 +65,14 @@ Options:
                                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
     --no-build-deps                   Do not build project-to-project references and only build the specified project.
     --no-build-repo-tasks             Suppress building RepoTasks.
+    --only-build-repo-tasks           Only build RepoTasks.
 
     --all                             Build all project types.
     --[no-]build-native               Build native projects (C, C++). Ignored in most cases i.e. with `dotnet msbuild`.
     --[no-]build-managed              Build managed projects (C#, F#, VB).
     --[no-]build-nodejs               Build NodeJS projects (TypeScript, JS).
     --[no-]build-java                 Build Java projects.
-    --[no-]build-installers           Build Java projects.
+    --[no-]build-installers           Build installers.
 
     --ci                              Apply CI specific settings and environment variables.
     --binarylog|-bl                   Use a binary logger
@@ -194,6 +196,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         -no-build-repo-tasks|-nobuildrepotasks)
             build_repo_tasks=false
+            ;;
+        -only-build-repo-tasks|-onlybuildrepotasks)
+            only_build_repo_tasks=true
             ;;
         -arch)
             shift
@@ -337,6 +342,7 @@ if [[ "$binary_log" == true ]]; then
     if [[ "$found" == false ]]; then
         msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
     fi
+    toolset_build_args[${#toolset_build_args[*]}]="/bl:$log_dir/Build.repotasks.binlog"
 elif [[ "$ci" == true ]]; then
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
     touch "$log_dir/empty.log"
@@ -366,8 +372,10 @@ if [ "$build_repo_tasks" = true ]; then
         ${toolset_build_args[@]+"${toolset_build_args[@]}"}
 fi
 
-# This incantation avoids unbound variable issues if msbuild_args is empty
-# https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
+if [ "$only_build_repo_tasks" != true ]; then
+    # This incantation avoids unbound variable issues if msbuild_args is empty
+    # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
+    MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
+fi
 
 ExitWithExitCode 0

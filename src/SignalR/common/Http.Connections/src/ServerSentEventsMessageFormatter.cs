@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Http.Connections
 {
     internal static class ServerSentEventsMessageFormatter
     {
-        private static readonly byte[] DataPrefix = { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
-        private static readonly byte[] Newline = { (byte)'\r', (byte)'\n' };
+        private static readonly ReadOnlyMemory<byte> DataPrefix = new[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
+        private static readonly ReadOnlyMemory<byte> Newline = new[] { (byte)'\r', (byte)'\n' };
 
         private const byte LineFeed = (byte)'\n';
 
@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 if (payload.Length > 0)
                 {
-                    await output.WriteAsync(DataPrefix, 0, DataPrefix.Length, token);
+                    await output.WriteAsync(DataPrefix, token);
                     await output.WriteAsync(payload, token);
-                    await output.WriteAsync(Newline, 0, Newline.Length, token);
+                    await output.WriteAsync(Newline, token);
                 }
 
-                await output.WriteAsync(Newline, 0, Newline.Length, token);
+                await output.WriteAsync(Newline, token);
                 return;
             }
 
@@ -100,12 +100,12 @@ namespace Microsoft.AspNetCore.Http.Connections
                 }
 
                 // Write line
-                await output.WriteAsync(DataPrefix, 0, DataPrefix.Length);
+                await output.WriteAsync(DataPrefix);
                 await output.WriteAsync(lineSegment);
-                await output.WriteAsync(Newline, 0, Newline.Length);
+                await output.WriteAsync(Newline);
             }
 
-            await output.WriteAsync(Newline, 0, Newline.Length);
+            await output.WriteAsync(Newline);
         }
     }
 }

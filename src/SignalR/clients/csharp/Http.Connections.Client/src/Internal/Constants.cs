@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class Constants
     {
+#pragma warning disable CA1802
         public static readonly string UserAgent = "User-Agent";
+#pragma warning restore CA1802
         public static readonly string UserAgentHeader;
 
         static Constants()

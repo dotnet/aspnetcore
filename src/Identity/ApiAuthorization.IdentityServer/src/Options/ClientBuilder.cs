@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         private const string NativeAppClientRedirectUri = "urn:ietf:wg:oauth:2.0:oob";
 
         Client _client;
-        private bool _built = false;
+        private bool _built;
 
         /// <summary>
         /// Creates a new builder for a single page application that coexists with an authorization server.
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// Adds the <paramref name="redirectUri"/> to the list of valid redirect uris for the client.
         /// </summary>
         /// <param name="redirectUri">The redirect uri to add.</param>
-        /// <returns>The <see cref="ClientBuilder"/>.</returns>        
+        /// <returns>The <see cref="ClientBuilder"/>.</returns>
         public ClientBuilder WithRedirectUri(string redirectUri)
         {
             _client.RedirectUris.Add(redirectUri);
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// Adds the <paramref name="logoutUri"/> to the list of valid logout redirect uris for the client.
         /// </summary>
         /// <param name="logoutUri">The logout uri to add.</param>
-        /// <returns>The <see cref="ClientBuilder"/>.</returns>        
+        /// <returns>The <see cref="ClientBuilder"/>.</returns>
         public ClientBuilder WithLogoutRedirectUri(string logoutUri)
         {
             _client.PostLogoutRedirectUris.Add(logoutUri);

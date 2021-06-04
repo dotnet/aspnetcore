@@ -12,23 +12,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.Extensions.Features" />
+    <Reference Include="System.IO.Pipelines" />
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)CodeAnalysis\*.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+  <!-- Special case building from source because Microsoft.Bcl.AsyncInterfaces isn't available for source builds. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR
+      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
+      ('$(MSBuildRestoreSessionId)' == '' AND '$(DotNetBuildFromSource)' != 'true') ">
     <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' ">
-    <!--
-      Dependency (a transitive reference) was removed in 5.0. Suppression can be
-      removed after 5.0 RTM is released.
-    -->
-    <SuppressBaselineReference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

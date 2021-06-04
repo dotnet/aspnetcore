@@ -1,6 +1,6 @@
 # Build ASP.NET Core from Source
 
-This document outlines how to build the source in the aspnetcore repo locally for development purposes.
+This document outlines how to build the source in the `aspnetcore` repo locally for development purposes.
 
 For more info on issues related to build infrastructure and ongoing work, see <https://github.com/dotnet/aspnetcore/labels/area-infrastructure>.
 
@@ -9,17 +9,24 @@ For more info on issues related to build infrastructure and ongoing work, see <h
 This tutorial assumes that you are familiar with:
 
 - Git
+- The basics of [forking and contributing to GitHub projects](https://guides.github.com/activities/forking/)
 - Command line fundamentals in your operating system of choice
 
-## Step 1: Clone the source code
+## Step 1: Getting the source code
+
+Development is done in your own repo, not directly against the official `dotnet/aspnetcore` repo. To create your own fork, click the __Fork__ button from our GitHub repo as a signed-in user and your own fork will be created.
+
+> :bulb: All other steps below will be against your fork of the aspnetcore repo (e.g. `YOUR_USERNAME/aspnetcore`), not the official `dotnet/aspnetcore` repo.
+
+### Cloning your repo locally
 
 ASP.NET Core uses git submodules to include the source from a few other projects. In order to pull the sources of the these submodules when cloning the repo, be sure to pass the `--recursive` flag to the `git clone` command.
 
 ```powershell
-git clone --recursive https://github.com/dotnet/aspnetcore
+git clone --recursive https://github.com/YOUR_USERNAME/aspnetcore
 ```
 
-If you've already cloned the aspnetcore repo without fetching submodule sources, you can fetch them after cloning by running the following command.
+If you've already cloned the `aspnetcore` repo without fetching submodule sources, you can fetch them after cloning by running the following command.
 
 ```powershell
 git submodule update --init --recursive
@@ -27,9 +34,37 @@ git submodule update --init --recursive
 
 > :bulb: Some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>.
 
+### Tracking remote changes
+
+The first time you clone your repo locally, you'll want to set an additional Git remote back to the official repo so that you can periodically refresh your repo with the latest official changes.
+
+```powershell
+git remote add upstream https://github.com/dotnet/aspnetcore.git
+```
+
+You can verify the `upstream` remote has been set correctly.
+
+```powershell
+git remote -v
+> origin    https://github.com/YOUR_USERNAME/aspnetcore (fetch)
+> origin    https://github.com/YOUR_USERNAME/aspnetcore (push)
+> upstream  https://github.com/dotnet/aspnetcore.git (fetch)
+> upstream  https://github.com/dotnet/aspnetcore.git (push)
+```
+
+Once configured, the easiest way to keep your repository current with the upstream repository is using GitHub's feature to [fetch upstream changes](https://github.blog/changelog/2021-05-06-sync-an-out-of-date-branch-of-a-fork-from-the-web/).
+
+### Branching
+
+If you ultimately want to be able to submit a PR back to the project or be able to periodically refresh your `main` branch with the latest code changes, you'll want to do all your work on a new branch.
+
+```powershell
+git checkout -b NEW_BRANCH
+```
+
 ## Step 2: Install pre-requisites
 
-Developing in the aspnetcore repo requires some additional tools to build the source code and run integration tests.
+Developing in the `aspnetcore` repo requires some additional tools to build the source code and run integration tests.
 
 ### On Windows
 
@@ -39,7 +74,7 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 
 #### [Visual Studio 2019](https://visualstudio.com)
 
-Visual Studio 2019 (16.8) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
+Visual Studio 2019 (16.10 Preview 3) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 > :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).
@@ -53,7 +88,7 @@ Visual Studio 2019 (16.8) is required to build the repo locally. If you don't ha
 > You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
 > in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-The  [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
+The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
 
 > :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
 
@@ -94,6 +129,14 @@ The build should find any JDK 11 or newer installation on the machine as long as
 #### Chrome
 
 This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>.
+
+#### Visual Studio Code Extension
+
+The following extensions are recommended when developing in the ASP.NET Core repository with Visual Studio Code.
+
+- [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
+
+- [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
 
 #### WiX (Optional)
 
@@ -155,9 +198,11 @@ Studio because those projects are not listed in AspNetCore.sln.
 This will download the required tools and restore all projects inside the repository. At that point, you should be able
 to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
-   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
-   > branch, we regularly update the versions of .NET Core SDK required to build the repo.
-   > You will need to restart Visual Studio every time we update the .NET Core SDK.
+
+> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
+> branch, we regularly update the versions of .NET Core SDK required to build the repo.
+> You will need to restart Visual Studio every time we update the .NET Core SDK.
+
 
 > :bulb: Rerunning the above command or, perhaps, the quicker `.\build.cmd -noBuildNative -noBuildManaged` may be
 > necessary after switching branches, especially if the `$(DefaultNetCoreTargetFramework)` value changes.
@@ -195,6 +240,8 @@ These principles guide how we create and manage .slnf files:
 Before opening the project in Visual Studio Code, you will need to make sure that you have built the project.
 You can find more info on this in the "Building on command-line" section below.
 
+To open specific folder inside Visual studio code, you have to open it with `startvscode.cmd` file. Ths will setup neccessary environment variables and will open given directory in Visual Studio Code.
+
 Using Visual Studio Code with this repo requires setting environment variables on command line first.
 Use these command to launch VS Code with the right settings.
 
@@ -216,13 +263,13 @@ code .
 ```
 
 > :bulb: Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
-> to the process in WSL.  You can workaround this by explicitly setting the environment variables
+> to the process in WSL. You can workaround this by explicitly setting the environment variables
 > in `~/.vscode-server/server-env-setup`.
 > See <https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script> for details.
 
 ### Building on command-line
 
-When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
+When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](#using-dotnet-on-command-line-in-this-repo).
 
 > :warning: Most of the time, you will want to build a particular project instead of the entire repository. It's faster and will allow you to focus on a particular area of concern. If you need to build all code in the repo for any reason, you can use the top-level build script located under `eng\build.cmd` or `eng\build.sh`.
 
@@ -302,11 +349,11 @@ Additional properties can be added as an argument in the form `/property:$name=$
 
 Common properties include:
 
-Property                 | Description
--------------------------|-------------------------------------------------------------------------------------------------------------
-Configuration            | `Debug` or `Release`. Default = `Debug`.
-TargetArchitecture       | The CPU architecture to build for (x64, x86, arm, arm64).
-TargetOsName             | The base runtime identifier to build for (win, linux, osx, linux-musl).
+| Property           | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| Configuration      | `Debug` or `Release`. Default = `Debug`.                                |
+| TargetArchitecture | The CPU architecture to build for (x64, x86, arm, arm64).               |
+| TargetOsName       | The base runtime identifier to build for (win, linux, osx, linux-musl). |
 
 ### Resx files
 
@@ -325,7 +372,7 @@ Building installers does not run as part of `build.cmd` run without parameters, 
 .\build.cmd -buildInstallers
 ```
 
-*Note*: Additional build steps listed above aren't necessary on Linux or macOS.
+_Note_: Additional build steps listed above aren't necessary on Linux or macOS.
 
 - Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
@@ -341,7 +388,7 @@ Building installers does not run as part of `build.cmd` run without parameters, 
   </configuration>
   ```
 
-  *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
+  _NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine._
 
 - Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
 

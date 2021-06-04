@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
 
-        private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
-            new UriBuilderContextPooledObjectPolicy());
-
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
         [InlineData("template/5", "template/{parameter}")]

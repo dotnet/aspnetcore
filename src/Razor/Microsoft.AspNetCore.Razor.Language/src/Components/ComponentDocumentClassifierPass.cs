@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal class ComponentDocumentClassifierPass : DocumentClassifierPassBase
     {
-        public static readonly string ComponentDocumentKind = "component.1.0";
+        public const string ComponentDocumentKind = "component.1.0";
 
         /// <summary>
         /// The fallback value of the root namespace. Only used if the fallback root namespace
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         /// <summary>
         /// Gets or sets whether to mangle class names.
-        /// 
+        ///
         /// Set to true in the IDE so we can generated mangled class names. This is needed
         /// to avoid conflicts between generated design-time code and the code in the editor.
         ///
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         /// the codegen process when a document is open, but this is more involved, so hacking
         /// it for now.
         /// </summary>
-        public bool MangleClassNames { get; set; } = false;
+        public bool MangleClassNames { get; set; }
 
         protected override string DocumentKind => ComponentDocumentKind;
 
@@ -109,7 +109,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         continue;
                     }
 
-                    @class.TypeParameters.Add(new TypeParameter() { ParameterName = typeParamNode.Tokens.First().Content, });
+                    @class.TypeParameters.Add(new TypeParameter()
+                    {
+                        ParameterName = typeParamNode.Tokens.First().Content,
+                        Constraints = typeParamNode.Tokens.Skip(1).FirstOrDefault()?.Content
+                    });
                 }
 
                 method.ReturnType = "void";

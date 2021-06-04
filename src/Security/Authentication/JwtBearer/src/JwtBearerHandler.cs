@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         { }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new JwtBearerEvents Events
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    string authorization = Request.Headers[HeaderNames.Authorization];
+                    string authorization = Request.Headers.Authorization;
 
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 }
 
                 List<Exception>? validationFailures = null;
-                SecurityToken validatedToken;
+                SecurityToken? validatedToken = null;
                 foreach (var validator in Options.SecurityTokenValidators)
                 {
                     if (validator.CanReadToken(token))
@@ -142,6 +142,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             Principal = principal,
                             SecurityToken = validatedToken
                         };
+
+                        tokenValidatedContext.Properties.ExpiresUtc = validatedToken.ValidTo;
+                        tokenValidatedContext.Properties.IssuedUtc = validatedToken.ValidFrom;
 
                         await Events.TokenValidated(tokenValidatedContext);
                         if (tokenValidatedContext.Result != null)
@@ -280,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             Response.StatusCode = 403;
             return Events.Forbidden(forbiddenContext);
         }
-        
+
         private static string CreateErrorDescription(Exception authFailure)
         {
             IReadOnlyCollection<Exception> exceptions;

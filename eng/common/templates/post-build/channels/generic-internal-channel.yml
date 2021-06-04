@@ -40,6 +40,9 @@ stages:
     pool:
       vmImage: 'windows-2019'
     steps:
+      - script: echo "##vso[task.logissue type=warning]Going forward, v2 Arcade publishing is no longer supported. Please read https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md for details, then contact dnceng if you have further questions."
+        displayName: Warn about v2 Arcade Publishing Usage
+
       # This is necessary whenever we want to publish/restore to an AzDO private feed
       - task: NuGetAuthenticate@0
         displayName: 'Authenticate to AzDO Feeds'
@@ -110,6 +113,9 @@ stages:
     pool:
       vmImage: 'windows-2019'
     steps:
+      - script: echo "##vso[task.logissue type=warning]Going forward, v2 Arcade publishing is no longer supported. Please read https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md for details, then contact dnceng if you have further questions."
+        displayName: Warn about v2 Arcade Publishing Usage
+
       - task: DownloadBuildArtifacts@0
         displayName: Download Build Assets
         continueOnError: true

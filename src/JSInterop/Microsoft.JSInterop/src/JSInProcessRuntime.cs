@@ -12,6 +12,7 @@ namespace Microsoft.JSInterop
     /// </summary>
     public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     {
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
             var resultJson = InvokeJS(
@@ -28,7 +29,9 @@ namespace Microsoft.JSInterop
                 return default!;
             }
 
-            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions)!;
+            var result = JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions)!;
+            ByteArraysToBeRevived.Clear();
+            return result;
         }
 
         /// <summary>
@@ -38,6 +41,7 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         public TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, params object?[]? args)
             => Invoke<TValue>(identifier, 0, args);
 

@@ -11,7 +11,6 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -37,19 +36,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private ConnectionManager ConnectionManager => _serviceContext.ConnectionManager;
         private IKestrelTrace Trace => _serviceContext.Log;
 
-        public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig)
+        public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig, CancellationToken cancellationToken)
         {
             if (_transportFactory is null)
             {
                 throw new InvalidOperationException($"Cannot bind with {nameof(ConnectionDelegate)} no {nameof(IConnectionListenerFactory)} is registered.");
             }
 
-            var transport = await _transportFactory.BindAsync(endPoint).ConfigureAwait(false);
+            var transport = await _transportFactory.BindAsync(endPoint, cancellationToken).ConfigureAwait(false);
             StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), endpointConfig);
             return transport.EndPoint;
         }
 
-        public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, ListenOptions listenOptions)
+        public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, ListenOptions listenOptions, CancellationToken cancellationToken)
         {
             if (_multiplexedTransportFactory is null)
             {
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 features.Set(sslServerAuthenticationOptions);
             }
 
-            var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features).ConfigureAwait(false);
+            var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
             StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
             return transport.EndPoint;
         }

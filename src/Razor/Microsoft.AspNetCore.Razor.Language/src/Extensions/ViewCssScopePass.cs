@@ -41,8 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 var child = node.Children[i];
                 if (child is IntermediateToken token && token.IsHtml)
                 {
-                    var content = token.Content;
-                    if (content.StartsWith("<", StringComparison.Ordinal) && !content.StartsWith("</", StringComparison.Ordinal))
+                    if (IsValidElement(token))
                     {
                         node.Children.Insert(i + 1, new IntermediateToken()
                         {
@@ -53,6 +52,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         i++;
                     }
                 }
+            }
+
+            bool IsValidElement(IntermediateToken token)
+            {
+                var content = token.Content;
+                var isValidToken = content.StartsWith("<", StringComparison.Ordinal) 
+                    && !content.StartsWith("</", StringComparison.Ordinal)
+                    && !content.StartsWith("<!", StringComparison.Ordinal);
+                /// <remarks>
+                /// We want to avoid adding the CSS scope to elements that do not appear
+                /// within the body element of the document. When this pass executes over the
+                /// nodes, we don't have the ability to store whether we are a descandant of a
+                /// `head` or `body` element so it is not possible to discern whether the tag
+                /// is valid this way. Instead, we go for a straight-forward check on the tag
+                /// name that we are currently inspecting.
+                /// </remarks>
+                var isInvalidTag = content.IndexOf("head", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("meta", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("title", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("link", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("base", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("script", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("style", StringComparison.OrdinalIgnoreCase) >= 0
+                    || content.IndexOf("html", StringComparison.OrdinalIgnoreCase) >= 0;
+                return isValidToken && !isInvalidTag;
             }
         }
     }

@@ -23,10 +23,11 @@ namespace Microsoft.AspNetCore.Hosting
             RequestDelegate application,
             ILogger logger,
             DiagnosticListener diagnosticSource,
+            ActivitySource activitySource,
             IHttpContextFactory httpContextFactory)
         {
             _application = application;
-            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource);
+            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource);
             if (httpContextFactory is DefaultHttpContextFactory factory)
             {
                 _defaultHttpContextFactory = factory;
@@ -121,12 +122,28 @@ namespace Microsoft.AspNetCore.Hosting
         {
             public HttpContext? HttpContext { get; set; }
             public IDisposable? Scope { get; set; }
-            public Activity? Activity { get; set; }
+            public Activity? Activity
+            {
+                get => HttpActivityFeature?.Activity;
+                set
+                {
+                    if (HttpActivityFeature is null)
+                    {
+                        HttpActivityFeature = new ActivityFeature(value!);
+                    }
+                    else
+                    {
+                        HttpActivityFeature.Activity = value!;
+                    }
+                }
+            }
             internal HostingRequestStartingLog? StartLog { get; set; }
 
             public long StartTimestamp { get; set; }
             internal bool HasDiagnosticListener { get; set; }
             public bool EventLogEnabled { get; set; }
+
+            internal IHttpActivityFeature? HttpActivityFeature;
 
             public void Reset()
             {

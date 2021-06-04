@@ -11,10 +11,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal class ComponentImportProjectFeature : IImportProjectFeature
     {
-        private static readonly char[] PathSeparators = new char[]{ '/', '\\' };
-
         // Using explicit newlines here to avoid fooling our baseline tests
-        private readonly static string DefaultUsingImportContent =
+        private const string DefaultUsingImportContent =
             "\r\n" +
             "@using System\r\n" +
             "@using System.Collections.Generic\r\n" +

@@ -597,8 +597,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             headers.Append(cookieNameBytes, headerValueBytes);
             headers.OnHeadersComplete();
 
-            var parsedAcceptHeaderValue = ((IHeaderDictionary)headers)[HeaderNames.Accept].ToString();
-            var parsedCookieHeaderValue = ((IHeaderDictionary)headers)[HeaderNames.Cookie].ToString();
+            var parsedAcceptHeaderValue = ((IHeaderDictionary)headers).Accept.ToString();
+            var parsedCookieHeaderValue = ((IHeaderDictionary)headers).Cookie.ToString();
 
             Assert.Empty(parsedAcceptHeaderValue);
             Assert.Equal(headerValue, parsedCookieHeaderValue);

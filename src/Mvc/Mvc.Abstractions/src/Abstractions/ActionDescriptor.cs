@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         public ActionDescriptor()
         {
             Id = Guid.NewGuid().ToString();
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
             RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; set; } = default!;
+        public IDictionary<object, object?> Properties { get; set; } = default!;
+
+        internal IFilterMetadata[]? CachedReusableFilters { get; set; }
     }
 }

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using IHttpHeadersHandler = System.Net.Http.IHttpHeadersHandler;
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Http2Cat
         public static readonly byte[] _helloBytes = Encoding.ASCII.GetBytes("hello");
         public static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
         public static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
-        public static readonly byte[] _noData = new byte[0];
+        public static readonly byte[] _noData = Array.Empty<byte>();
         public static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
@@ -143,64 +144,7 @@ namespace Microsoft.AspNetCore.Http2Cat
 
         void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            _decodedHeaders[GetAsciiStringNonNullCharacters(name)] = GetAsciiOrUTF8StringNonNullCharacters(value);
-        }
-
-        public unsafe string GetAsciiStringNonNullCharacters(ReadOnlySpan<byte> span)
-        {
-            if (span.IsEmpty)
-            {
-                return string.Empty;
-            }
-
-            var asciiString = new string('\0', span.Length);
-
-            fixed (char* output = asciiString)
-            fixed (byte* buffer = span)
-            {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
-                {
-                    throw new InvalidOperationException();
-                }
-            }
-            return asciiString;
-        }
-
-        public unsafe string GetAsciiOrUTF8StringNonNullCharacters(ReadOnlySpan<byte> span)
-        {
-            if (span.IsEmpty)
-            {
-                return string.Empty;
-            }
-
-            var resultString = new string('\0', span.Length);
-
-            fixed (char* output = resultString)
-            fixed (byte* buffer = span)
-            {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
-                {
-                    // null characters are considered invalid
-                    if (span.IndexOf((byte)0) != -1)
-                    {
-                        throw new InvalidOperationException();
-                    }
-
-                    try
-                    {
-                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
-                    }
-                    catch (DecoderFallbackException)
-                    {
-                        throw new InvalidOperationException();
-                    }
-                }
-            }
-            return resultString;
+            _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }

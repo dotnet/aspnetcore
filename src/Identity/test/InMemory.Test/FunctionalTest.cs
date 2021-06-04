@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                             }
                             else
                             {
-                                await next();
+                                await next(context);
                             }
                         });
                     })

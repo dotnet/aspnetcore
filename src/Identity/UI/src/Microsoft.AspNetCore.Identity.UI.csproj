@@ -18,6 +18,7 @@
     </GetCurrentProjectStaticWebAssetsDependsOn>
 
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,11 +35,6 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' ">
-    <!-- This dependency was removed in 5.0. The suppression can be removed after 5.0 RTM is released. -->
-    <SuppressBaselineReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">

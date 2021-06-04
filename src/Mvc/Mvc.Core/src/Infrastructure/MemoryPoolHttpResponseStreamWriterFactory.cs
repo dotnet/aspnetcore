@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <see cref="MemoryPoolHttpResponseStreamWriterFactory"/> maintains <see cref="ArrayPool{T}"/>s
         /// for these arrays.
         /// </remarks>
-        public static readonly int DefaultBufferSize = 16 * 1024;
+        public const int DefaultBufferSize = 16 * 1024;
 
         private readonly ArrayPool<byte> _bytePool;
         private readonly ArrayPool<char> _charPool;

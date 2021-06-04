@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
             }
 
-            var localResources = _localApiDescriptor.GetResourceDefinitions();
+            var localResources = _localApiDescriptor?.GetResourceDefinitions();
             if (localResources != null)
             {
                 foreach (var kvp in localResources)

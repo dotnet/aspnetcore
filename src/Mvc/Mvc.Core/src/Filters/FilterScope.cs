@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// First filter scope.
         /// </summary>
-        public static readonly int First = 0;
+        public static readonly int First;
 
         /// <summary>
         /// Global filter scope.

@@ -305,9 +305,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = CreateManager();
             manager.Options.User.RequireUniqueEmail = true;
             manager.UserValidators.Add(new UserValidator<TUser>());
-            var random = new Random();
-            var email = "foo" + random.Next() + "@example.com";
-            var newEmail = "bar" + random.Next() + "@example.com";
+            var email = "foo" + Random.Shared.Next() + "@example.com";
+            var newEmail = "bar" + Random.Shared.Next() + "@example.com";
             var user = CreateTestUser(email: email);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, newEmail));
@@ -1827,7 +1826,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             await manager.ConfirmEmailAsync(user, token);
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(2, factors.Count());
+            Assert.Equal(2, factors.Count);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, null));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
@@ -1836,7 +1835,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(2, factors.Count());
+            Assert.Equal(2, factors.Count);
             Assert.Equal("Authenticator", factors[1]);
         }
 

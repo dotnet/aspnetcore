@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly Stream _inner;
         private readonly byte[] _buffer;
         private readonly ArrayPool<byte> _bytePool;
-        private int _bufferOffset = 0;
-        private int _bufferCount = 0;
+        private int _bufferOffset;
+        private int _bufferCount;
         private bool _disposed;
 
         /// <summary>
@@ -218,21 +218,26 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <inheritdoc/>
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             ValidateBuffer(buffer, offset, count);
+            return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        }
 
+        /// <inheritdoc/>
+        public async override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
             // Drain buffer
             if (_bufferCount > 0)
             {
-                int toCopy = Math.Min(_bufferCount, count);
-                Buffer.BlockCopy(_buffer, _bufferOffset, buffer, offset, toCopy);
+                int toCopy = Math.Min(_bufferCount, buffer.Length);
+                _buffer.AsMemory(_bufferOffset, toCopy).CopyTo(buffer);
                 _bufferOffset += toCopy;
                 _bufferCount -= toCopy;
                 return toCopy;
             }
 
-            return await _inner.ReadAsync(buffer, offset, count, cancellationToken);
+            return await _inner.ReadAsync(buffer, cancellationToken);
         }
 
         /// <summary>
@@ -264,7 +269,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             // Downshift to make room
             _bufferOffset = 0;
-            _bufferCount = await _inner.ReadAsync(_buffer, 0, _buffer.Length, cancellationToken);
+            _bufferCount = await _inner.ReadAsync(_buffer.AsMemory(), cancellationToken);
             return _bufferCount > 0;
         }
 
@@ -323,7 +328,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     }
                     _bufferOffset = 0;
                 }
-                int read = await _inner.ReadAsync(_buffer, _bufferOffset + _bufferCount, _buffer.Length - _bufferCount - _bufferOffset, cancellationToken);
+                int read = await _inner.ReadAsync(_buffer.AsMemory(_bufferOffset + _bufferCount, _buffer.Length - _bufferCount - _bufferOffset), cancellationToken);
                 _bufferCount += read;
                 if (read == 0)
                 {

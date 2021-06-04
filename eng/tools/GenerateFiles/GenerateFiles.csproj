@@ -9,7 +9,6 @@
     <PropertyGroup>
       <_TemplateProperties>
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
-        KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
         MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
         MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
@@ -22,12 +21,12 @@
     <MakeDir Directories="$(BaseOutputPath)" />
 
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.props" />
-    <GenerateFileFromTemplate TemplateFile="$(MSBuildProjectDirectory)\Directory.Build.props.in"
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Directory.Build.props.in"
       Properties="$(_TemplateProperties)"
       OutputPath="$(BaseOutputPath)Directory.Build.props" />
 
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.targets" />
-    <GenerateFileFromTemplate TemplateFile="$(MSBuildProjectDirectory)\Directory.Build.targets.in"
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Directory.Build.targets.in"
       Properties="$(_TemplateProperties)"
       OutputPath="$(BaseOutputPath)Directory.Build.targets" />
   </Target>

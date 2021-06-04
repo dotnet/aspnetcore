@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class DisconnectListener
+    internal partial class DisconnectListener
     {
         private readonly ConcurrentDictionary<ulong, ConnectionCancellation> _connectionCancellationTokens = new();
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Win32Exception exception)
             {
-                _logger.LogError(LoggerEventIds.DisconnectRegistrationError, exception, "Unable to register for disconnect notifications.");
+                Log.DisconnectRegistrationError(_logger, exception);
                 return CancellationToken.None;
             }
         }
@@ -56,26 +56,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private unsafe CancellationToken CreateDisconnectToken(ulong connectionId)
         {
-            _logger.LogDebug(LoggerEventIds.RegisterDisconnectListener, "CreateDisconnectToken; Registering connection for disconnect for connection ID: {0}", connectionId);
+            Log.RegisterDisconnectListener(_logger, connectionId);
 
             // Create a nativeOverlapped callback so we can register for disconnect callback
             var cts = new CancellationTokenSource();
             var returnToken = cts.Token;
+            var boundHandle = _requestQueue.BoundHandle;
 
-            var overlapped = new Overlapped
+            // Making sure we don't capture the execution context
+            var nativeOverlapped = boundHandle.UnsafeAllocateNativeOverlapped((errorCode, numBytes, pOverlapped) =>
             {
-                OffsetHigh = 0,
-                OffsetLow = 0
-            };
-
-            // We're not using boundHandle.AllocateNativeOverlapped here because we want to avoid capturing the ExecutionContext (see https://github.com/dotnet/runtime/issues/42549)
-            // Instead, we're going to use lower level APIs to get access to UnsafePack (which avoids the capture)
-            var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOverlapped) =>
-            {
-                _logger.LogDebug(LoggerEventIds.DisconnectTriggered, "CreateDisconnectToken; http.sys disconnect callback fired for connection ID: {0}", connectionId);
+                Log.DisconnectTriggered(_logger, connectionId);
 
                 // Free the overlapped
-                Overlapped.Free(pOverlapped);
+                boundHandle.FreeNativeOverlapped(pOverlapped);
 
                 // Pull the token out of the list and Cancel it.
                 _connectionCancellationTokens.TryRemove(connectionId, out _);
@@ -85,9 +79,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (AggregateException exception)
                 {
-                    _logger.LogError(LoggerEventIds.DisconnectHandlerError, exception, "CreateDisconnectToken Callback");
+                    Log.DisconnectHandlerError(_logger, exception);
                 }
             },
+            null,
             null);
 
             uint statusCode;
@@ -99,23 +94,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             catch (Win32Exception exception)
             {
                 statusCode = (uint)exception.NativeErrorCode;
-                _logger.LogError(LoggerEventIds.DisconnectRegistrationError, exception, "CreateDisconnectToken");
+                Log.CreateDisconnectTokenError(_logger, exception);
             }
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING &&
                 statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 // We got an unknown result, assume the connection has been closed.
-                Overlapped.Free(nativeOverlapped);
+                boundHandle.FreeNativeOverlapped(nativeOverlapped);
                 _connectionCancellationTokens.TryRemove(connectionId, out _);
-                _logger.LogDebug(LoggerEventIds.UnknownDisconnectError, new Win32Exception((int)statusCode), "HttpWaitForDisconnectEx");
+                Log.UnknownDisconnectError(_logger, new Win32Exception((int)statusCode));
                 cts.Cancel();
             }
 
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 // IO operation completed synchronously - callback won't be called to signal completion
-                Overlapped.Free(nativeOverlapped);
+                boundHandle.FreeNativeOverlapped(nativeOverlapped);
                 _connectionCancellationTokens.TryRemove(connectionId, out _);
                 cts.Cancel();
             }

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class StreamSourceDocument : RazorSourceDocument
+    internal sealed class StreamSourceDocument : RazorSourceDocument
     {
         // Internal for testing
         internal readonly RazorSourceDocument _innerSourceDocument;

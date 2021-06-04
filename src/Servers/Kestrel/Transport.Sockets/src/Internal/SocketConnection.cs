@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection
+    internal sealed partial class SocketConnection : TransportConnection
     {
-        private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
+        private static readonly int MinAllocBufferSize = PinnedBlockMemoryPool.BlockSize / 2;
 
         private readonly Socket _socket;
         private readonly ISocketsTrace _trace;
@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly object _shutdownLock = new object();
         private volatile bool _socketDisposed;
         private volatile Exception? _shutdownReason;
-        private Task? _processingTask;
+        private Task? _sendingTask;
+        private Task? _receivingTask;
         private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
         private bool _connectionClosed;
         private readonly bool _waitForData;
@@ -69,6 +70,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Set the transport and connection id
             Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
+
+            InitiaizeFeatures();
         }
 
         public PipeWriter Input => Application.Output;
@@ -79,27 +82,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void Start()
         {
-            _processingTask = StartAsync();
-        }
-
-        private async Task StartAsync()
-        {
             try
             {
                 // Spawn send and receive logic
-                var receiveTask = DoReceive();
-                var sendTask = DoSend();
-
-                // Now wait for both to complete
-                await receiveTask;
-                await sendTask;
-
-                _receiver.Dispose();
-                _sender?.Dispose();
+                _receivingTask = DoReceive();
+                _sendingTask = DoSend();
             }
             catch (Exception ex)
             {
-                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(StartAsync)}.");
+                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
             }
         }
 
@@ -118,9 +109,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _originalTransport.Input.Complete();
             _originalTransport.Output.Complete();
 
-            if (_processingTask != null)
+            try
             {
-                await _processingTask;
+                // Now wait for both to complete
+                if (_receivingTask != null)
+                {
+                    await _receivingTask;
+                }
+
+                if (_sendingTask != null)
+                {
+                    await _sendingTask;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
+            }
+            finally
+            {
+                _receiver.Dispose();
+                _sender?.Dispose();
             }
 
             _connectionClosedTokenSource.Dispose();
@@ -132,7 +142,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             try
             {
-                await ProcessReceives();
+                while (true)
+                {
+                    if (_waitForData)
+                    {
+                        // Wait for data before allocating a buffer.
+                        await _receiver.WaitForDataAsync(_socket);
+                    }
+
+                    // Ensure we have some reasonable amount of buffer space
+                    var buffer = Input.GetMemory(MinAllocBufferSize);
+
+                    var bytesReceived = await _receiver.ReceiveAsync(_socket, buffer);
+
+                    if (bytesReceived == 0)
+                    {
+                        // FIN
+                        _trace.ConnectionReadFin(this);
+                        break;
+                    }
+
+                    Input.Advance(bytesReceived);
+
+                    var flushTask = Input.FlushAsync();
+
+                    var paused = !flushTask.IsCompleted;
+
+                    if (paused)
+                    {
+                        _trace.ConnectionPause(this);
+                    }
+
+                    var result = await flushTask;
+
+                    if (paused)
+                    {
+                        _trace.ConnectionResume(this);
+                    }
+
+                    if (result.IsCompleted || result.IsCanceled)
+                    {
+                        // Pipe consumer is shut down, do we stop writing
+                        break;
+                    }
+                }
             }
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
@@ -143,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
                 if (!_socketDisposed)
                 {
-                    _trace.ConnectionReset(ConnectionId);
+                    _trace.ConnectionReset(this);
                 }
             }
             catch (Exception ex)
@@ -156,14 +209,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 if (!_socketDisposed)
                 {
                     // This is unexpected if the socket hasn't been disposed yet.
-                    _trace.ConnectionError(ConnectionId, error);
+                    _trace.ConnectionError(this, error);
                 }
             }
             catch (Exception ex)
             {
                 // This is unexpected.
                 error = ex;
-                _trace.ConnectionError(ConnectionId, error);
+                _trace.ConnectionError(this, error);
             }
             finally
             {
@@ -176,56 +229,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        private async Task ProcessReceives()
-        {
-            // Resolve `input` PipeWriter via the IDuplexPipe interface prior to loop start for performance.
-            var input = Input;
-            while (true)
-            {
-                if (_waitForData)
-                {
-                    // Wait for data before allocating a buffer.
-                    await _receiver.WaitForDataAsync(_socket);
-                }
-
-                // Ensure we have some reasonable amount of buffer space
-                var buffer = input.GetMemory(MinAllocBufferSize);
-
-                var bytesReceived = await _receiver.ReceiveAsync(_socket, buffer);
-
-                if (bytesReceived == 0)
-                {
-                    // FIN
-                    _trace.ConnectionReadFin(ConnectionId);
-                    break;
-                }
-
-                input.Advance(bytesReceived);
-
-                var flushTask = input.FlushAsync();
-
-                var paused = !flushTask.IsCompleted;
-
-                if (paused)
-                {
-                    _trace.ConnectionPause(ConnectionId);
-                }
-
-                var result = await flushTask;
-
-                if (paused)
-                {
-                    _trace.ConnectionResume(ConnectionId);
-                }
-
-                if (result.IsCompleted || result.IsCanceled)
-                {
-                    // Pipe consumer is shut down, do we stop writing
-                    break;
-                }
-            }
-        }
-
         private async Task DoSend()
         {
             Exception? shutdownReason = null;
@@ -233,12 +236,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             try
             {
-                await ProcessSends();
+                while (true)
+                {
+                    var result = await Output.ReadAsync();
+
+                    if (result.IsCanceled)
+                    {
+                        break;
+                    }
+                    var buffer = result.Buffer;
+
+                    if (!buffer.IsEmpty)
+                    {
+                        _sender = _socketSenderPool.Rent();
+                        await _sender.SendAsync(_socket, buffer);
+                        // We don't return to the pool if there was an exception, and
+                        // we keep the _sender assigned so that we can dispose it in StartAsync.
+                        _socketSenderPool.Return(_sender);
+                        _sender = null;
+                    }
+
+                    Output.AdvanceTo(buffer.End);
+
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+                }
             }
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
-                _trace.ConnectionReset(ConnectionId);
+                _trace.ConnectionReset(this);
             }
             catch (Exception ex)
                 when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
@@ -251,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _trace.ConnectionError(ConnectionId, unexpectedError);
+                _trace.ConnectionError(this, unexpectedError);
             }
             finally
             {
@@ -262,42 +291,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 // Cancel any pending flushes so that the input loop is un-paused
                 Input.CancelPendingFlush();
-            }
-        }
-
-        private async Task ProcessSends()
-        {
-            // Resolve `output` PipeReader via the IDuplexPipe interface prior to loop start for performance.
-            var output = Output;
-            while (true)
-            {
-                var result = await output.ReadAsync();
-
-                if (result.IsCanceled)
-                {
-                    break;
-                }
-
-                var buffer = result.Buffer;
-
-                var end = buffer.End;
-                var isCompleted = result.IsCompleted;
-                if (!buffer.IsEmpty)
-                {
-                    _sender = _socketSenderPool.Rent();
-                    await _sender.SendAsync(_socket, buffer);
-                    // We don't return to the pool if there was an exception, and
-                    // we keep the _sender assigned so that we can dispose it in StartAsync.
-                    _socketSenderPool.Return(_sender);
-                    _sender = null;
-                }
-
-                output.AdvanceTo(end);
-
-                if (isCompleted)
-                {
-                    break;
-                }
             }
         }
 
@@ -339,8 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // ever observe the nondescript ConnectionAbortedException except for connection middleware attempting
                 // to half close the connection which is currently unsupported.
                 _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
-
-                _trace.ConnectionWriteFin(ConnectionId, _shutdownReason.Message);
+                _trace.ConnectionWriteFin(this, _shutdownReason.Message);
 
                 try
                 {

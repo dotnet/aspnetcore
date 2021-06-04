@@ -6,7 +6,7 @@ package com.microsoft.signalr;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 import okhttp3.OkHttpClient;
 
 /**

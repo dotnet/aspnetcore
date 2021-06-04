@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
@@ -55,6 +57,18 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 return null;
             }
 
+            var parameters = actionDescriptor.Parameters switch
+            {
+                List<ParameterDescriptor> list => list.ToArray(),
+                _ => actionDescriptor.Parameters.ToArray()
+            };
+
+            var properties = actionDescriptor.BoundProperties switch
+            {
+                List<ParameterDescriptor> list => list.ToArray(),
+                _ => actionDescriptor.BoundProperties.ToArray()
+            };
+
             return Bind;
 
             async Task Bind(ControllerContext controllerContext, object controller, Dictionary<string, object?> arguments)
@@ -67,9 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
                 Debug.Assert(valueProvider is not null);
 
-                var parameters = actionDescriptor.Parameters;
-
-                for (var i = 0; i < parameters.Count; i++)
+                for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
                     var bindingInfo = parameterBindingInfo![i];
@@ -95,8 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                     }
                 }
 
-                var properties = actionDescriptor.BoundProperties;
-                for (var i = 0; i < properties.Count; i++)
+                for (var i = 0; i < properties.Length; i++)
                 {
                     var property = properties[i];
                     var bindingInfo = propertyBindingInfo![i];

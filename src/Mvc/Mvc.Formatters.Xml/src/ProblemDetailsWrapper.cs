@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         internal ProblemDetails ProblemDetails { get; }
 
         /// <inheritdoc />
-        public XmlSchema GetSchema() => null;
+        public XmlSchema? GetSchema() => null;
 
         /// <inheritdoc />
         public virtual void ReadXml(XmlReader reader)

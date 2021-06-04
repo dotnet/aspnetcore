@@ -4,7 +4,7 @@
 import { ITransport } from "signalr/src/ITransport";
 
 export class TestTransport implements ITransport {
-    public connect() {
+    public connect(): Promise<void> {
         return Promise.resolve();
     }
 

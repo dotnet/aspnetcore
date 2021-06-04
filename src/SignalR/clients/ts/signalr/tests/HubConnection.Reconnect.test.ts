@@ -876,6 +876,6 @@ describe("auto reconnect", () => {
             expect(closeCount).toBe(1);
         },
         "Failed to complete negotiation with the server: Error with negotiate",
-        "Failed to start the connection: Error with negotiate");
+        "Failed to start the connection: Error: Failed to complete negotiation with the server: Error with negotiate");
     });
 });

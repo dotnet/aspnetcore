@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         /// </summary>
         /// <param name="attribute">The <see cref="RequiredAttribute"/>.</param>
         /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
-        public RequiredAttributeAdapter(RequiredAttribute attribute, IStringLocalizer stringLocalizer)
+        public RequiredAttributeAdapter(RequiredAttribute attribute, IStringLocalizer? stringLocalizer)
             : base(attribute, stringLocalizer)
         {
         }

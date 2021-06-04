@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.Antiforgery
         {
             if (bitLength < 32 || bitLength % 8 != 0)
             {
-                throw new ArgumentOutOfRangeException("bitLength");
+                throw new ArgumentOutOfRangeException(nameof(bitLength));
             }
             if (data == null || data.Length != bitLength / 8)
             {
-                throw new ArgumentOutOfRangeException("data");
+                throw new ArgumentOutOfRangeException(nameof(data));
             }
 
             _data = data;

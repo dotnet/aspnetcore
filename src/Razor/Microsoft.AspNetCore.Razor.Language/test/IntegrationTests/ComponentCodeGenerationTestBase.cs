@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Components;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -231,6 +232,37 @@ namespace Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32193")]
+        public void ComponentWithConstrainedTypeParameters()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components;
+@typeparam TItem1 where TItem1 : class
+@typeparam TItem2 where TItem2 : struct
+
+<h1>Item1</h1>
+@foreach (var item2 in Items2)
+{
+    <p>
+    @ChildContent(item2);
+    </p>
+}
+@code {
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_WithExplicitStringParameter()
         {
             // Arrange
@@ -429,6 +461,57 @@ namespace Test2
 <Test2.MyComponent2 />");
 
             // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithNullableActionParameter()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithNullableAction : ComponentBase
+    {
+        [Parameter] public Action NullableAction { get; set; }
+    }
+} 
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithNullableAction NullableAction=""@NullableAction"" />
+@code {
+	[Parameter]
+	public Action NullableAction { get; set; }
+}            
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithNullableRenderFragmentParameter()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithNullableRenderFragment : ComponentBase
+    {
+        [Parameter] public RenderFragment Header { get; set; }
+    }
+} 
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithNullableRenderFragment Header=""@Header"" />
+@code {
+	[Parameter] public RenderFragment Header { get; set; }
+}            
+");
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);

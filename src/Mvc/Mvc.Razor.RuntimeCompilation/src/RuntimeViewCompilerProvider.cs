@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal class RuntimeViewCompilerProvider : IViewCompilerProvider
+    internal sealed class RuntimeViewCompilerProvider : IViewCompilerProvider
     {
         private readonly RazorProjectEngine _razorProjectEngine;
         private readonly ApplicationPartManager _applicationPartManager;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
         private object _initializeLock = new object();
         private bool _initialized;
-        private IViewCompiler _compiler;
+        private IViewCompiler? _compiler;
 
         public RuntimeViewCompilerProvider(
             ApplicationPartManager applicationPartManager,
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 ref _compiler,
                 ref _initialized,
                 ref _initializeLock,
-                _createCompiler);
+                _createCompiler)!;
         }
 
         private IViewCompiler CreateCompiler()

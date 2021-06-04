@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
         private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
         private const string MacOSFindCertificateCommandLine = "security";
-        private static readonly string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
+        private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
         private const string MacOSRemoveCertificateTrustCommandLine = "sudo";
         private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "security remove-trusted-cert -d {0}";
         private const string MacOSDeleteCertificateCommandLine = "sudo";
         private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
         private const string MacOSTrustCertificateCommandLine = "sudo";
-        private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
+        private const string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
 
         private const string MacOSAddCertificateToKeyChainCommandLine = "security";
         private static readonly string MacOSAddCertificateToKeyChainCommandLineArgumentsFormat = "import {0} -k " + MacOSUserKeyChain + " -t cert -f pkcs12 -P {1} -A";
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         // We don't have a good way of checking on the underlying implementation if ti is exportable, so just return true.
         protected override bool IsExportable(X509Certificate2 c) => true;
 
-        protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate)
+        protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
         {
             // security import https.pfx -k $loginKeyChain -t cert -f pkcs12 -P password -A;
             var passwordBytes = new byte[48];

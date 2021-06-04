@@ -81,9 +81,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return;
             }
 
+            // HTTP/2
             // Don't enforce the rate timeout if there is back pressure due to HTTP/2 connection-level input
             // flow control. We don't consider stream-level flow control, because we wouldn't be timing a read
             // for any stream that didn't have a completely empty stream-level flow control window.
+            //
+            // HTTP/3
+            // This isn't (currently) checked. Reasons:
+            // - We're not sure how often people in the real-world run into this. If it
+            //   becomes a problem then we'll need to revisit.
+            // - There isn't a way to get this information easily and efficently from msquic.
+            // - With QUIC, bytes can be received out of order. The connection window could
+            //   be filled up out of order so that availablility is low but there is still
+            //   no data available to use. Would need a smarter way to handle this situation.
             if (_connectionInputFlowControl?.IsAvailabilityLow == true)
             {
                 return;

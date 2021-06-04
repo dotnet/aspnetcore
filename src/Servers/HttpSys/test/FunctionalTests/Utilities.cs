@@ -168,10 +168,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             throw new Exception("Failed to locate a free port.");
         }
 
-        internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);
-
-        internal static Task<T> WithTimeout<T>(this Task<T> task) => task.TimeoutAfter(DefaultTimeout);
-
         internal static bool? CanHaveBody(this HttpRequest request)
         {
             return request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;

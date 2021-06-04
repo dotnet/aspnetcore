@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     public class FileProviderRazorProjectItem : RazorProjectItem
     {
         private string _root;
-        private string _relativePhysicalPath;
+        private string? _relativePhysicalPath;
         private bool _isRelativePhysicalPathSet;
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         /// <param name="filePath">The file path.</param>
         /// <param name="root">The root.</param>
         /// <param name="fileKind">The kind of file.</param>
-        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root, string fileKind)
+        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root, string? fileKind)
         {
             FileInfo = fileInfo;
             BasePath = basePath;
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public override string PhysicalPath => FileInfo.PhysicalPath;
 
         /// <inheritdoc/>
-        public override string RelativePhysicalPath
+        public override string? RelativePhysicalPath
         {
             get
             {

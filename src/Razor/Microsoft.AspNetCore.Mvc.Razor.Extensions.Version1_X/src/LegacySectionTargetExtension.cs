@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal class LegacySectionTargetExtension : ISectionTargetExtension
     {
-        private static readonly string DefaultWriterName = "__razor_section_writer";
+        private const string DefaultWriterName = "__razor_section_writer";
 
-        public static readonly string DefaultSectionMethodName = "DefineSection";
+        public const string DefaultSectionMethodName = "DefineSection";
 
         public string SectionMethodName { get; set; } = DefaultSectionMethodName;
 

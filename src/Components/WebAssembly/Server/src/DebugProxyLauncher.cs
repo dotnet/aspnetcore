@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Builder
             var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
             var executablePath = LocateDebugProxyExecutable(environment);
             var muxerPath = DotNetMuxer.MuxerPathOrDefault();
-            var ownerPid = Process.GetCurrentProcess().Id;
+            var ownerPid = Environment.ProcessId;
 
             var processStartInfo = new ProcessStartInfo
             {

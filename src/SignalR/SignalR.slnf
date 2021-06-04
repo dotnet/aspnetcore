@@ -13,6 +13,7 @@
       "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
       "src\\Http\\Authentication.Abstractions\\src\\Microsoft.AspNetCore.Authentication.Abstractions.csproj",
       "src\\Http\\Authentication.Core\\src\\Microsoft.AspNetCore.Authentication.Core.csproj",
+      "src\\Http\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
@@ -28,6 +29,7 @@
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\Middleware\\WebSockets\\src\\Microsoft.AspNetCore.WebSockets.csproj",
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
       "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
       "src\\Security\\Authentication\\JwtBearer\\src\\Microsoft.AspNetCore.Authentication.JwtBearer.csproj",
@@ -66,6 +68,7 @@
       "src\\SignalR\\server\\Specification.Tests\\src\\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj",
       "src\\SignalR\\server\\StackExchangeRedis\\src\\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj",
       "src\\SignalR\\server\\StackExchangeRedis\\test\\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }

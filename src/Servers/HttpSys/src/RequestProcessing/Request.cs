@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
 
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         internal Request(RequestContext requestContext)
         {
@@ -133,14 +134,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (_contentBoundaryType == BoundaryType.None)
                 {
                     // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
-                    string transferEncoding = Headers[HttpKnownHeaderNames.TransferEncoding];
+                    string transferEncoding = Headers[HeaderNames.TransferEncoding];
                     if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         _contentBoundaryType = BoundaryType.Chunked;
                     }
                     else
                     {
-                        string length = Headers[HttpKnownHeaderNames.ContentLength];
+                        string length = Headers[HeaderNames.ContentLength];
                         long value;
                         if (length != null && long.TryParse(length.Trim(), NumberStyles.None,
                             CultureInfo.InvariantCulture.NumberFormat, out value))
@@ -337,11 +338,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (CryptographicException ce)
                     {
-                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, ce, "An error occurred reading the client certificate.");
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, ce);
                     }
                     catch (SecurityException se)
                     {
-                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, se, "An error occurred reading the client certificate.");
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, se);
                     }
                 }
 
@@ -450,6 +451,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _nativeStream = new RequestStream(RequestContext);
             }
             _nativeStream.SwitchToOpaqueMode();
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception?> _errorInReadingCertificate =
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorInReadingCertificate, "An error occurred reading the client certificate.");
+
+            public static void ErrorInReadingCertificate(ILogger logger, Exception exception)
+            {
+                _errorInReadingCertificate(logger, exception);
+            }
         }
     }
 }

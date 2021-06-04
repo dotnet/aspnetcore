@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="content">The response content</param>
         /// <param name="headers">The response headers</param>
         /// <returns><c>true</c> if the response can be provided; <c>false</c> otherwise.</returns>
-        protected bool TryGetResponseContent(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out string headers)
+        protected bool TryGetResponseContent(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
             => _staticContentProvider.TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 
         internal async Task AttachToPageAsync(string baseUrl, string startUrl)
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             // change this if any important reason emerges.
             _currentPageContext?.Dispose();
 
-            var serviceScope = _provider.CreateScope();
+            var serviceScope = _provider.CreateAsyncScope();
             _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
 
             // Add any root components that were registered before the page attached

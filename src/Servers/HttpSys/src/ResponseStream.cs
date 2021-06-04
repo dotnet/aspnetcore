@@ -67,49 +67,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             await _onStart();
-            await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+            await _innerStream.WriteAsync(buffer, cancellationToken);
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        {
-            return ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
-        }
+            => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
 
         public override void EndWrite(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-            ((Task)asyncResult).GetAwaiter().GetResult();
-        }
-
-        private static IAsyncResult ToIAsyncResult(Task task, AsyncCallback? callback, object? state)
-        {
-            var tcs = new TaskCompletionSource<int>(state);
-            task.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    tcs.TrySetException(t.Exception!.InnerExceptions);
-                }
-                else if (t.IsCanceled)
-                {
-                    tcs.TrySetCanceled();
-                }
-                else
-                {
-                    tcs.TrySetResult(0);
-                }
-
-                if (callback != null)
-                {
-                    callback(tcs.Task);
-                }
-            }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
-            return tcs.Task;
-        }
+            => TaskToApm.End(asyncResult);
     }
 }

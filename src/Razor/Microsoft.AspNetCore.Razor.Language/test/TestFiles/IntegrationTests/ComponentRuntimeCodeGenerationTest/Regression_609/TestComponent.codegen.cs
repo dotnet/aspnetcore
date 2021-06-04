@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __builder.AddAttribute(2, "NameChanged", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserName = __value, UserName));
+            __builder.AddAttribute(2, "NameChanged", global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserName = __value, UserName));
             __builder.AddAttribute(3, "IsActive", 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -33,7 +33,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __builder.AddAttribute(4, "IsActiveChanged", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserIsActive = __value, UserIsActive));
+            __builder.AddAttribute(4, "IsActiveChanged", global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserIsActive = __value, UserIsActive));
             __builder.CloseComponent();
         }
         #pragma warning restore 1998

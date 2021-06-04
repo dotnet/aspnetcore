@@ -334,7 +334,7 @@ namespace Microsoft.Extensions.Internal
         /// The implementation of PropertyHelper will cache the property accessors per-type. This is
         /// faster when the same type is used multiple times with ObjectToDictionary.
         /// </remarks>
-        public static IDictionary<string, object?> ObjectToDictionary(object value)
+        public static IDictionary<string, object?> ObjectToDictionary(object? value)
         {
             if (value is IDictionary<string, object?> dictionary)
             {
@@ -343,7 +343,7 @@ namespace Microsoft.Extensions.Internal
 
             dictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-            if (value != null)
+            if (value is not null)
             {
                 foreach (var helper in GetProperties(value.GetType()))
                 {

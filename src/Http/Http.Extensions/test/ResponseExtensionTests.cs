@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
 
             context.Response.Redirect(location, permanent, preserveMethod);
 
-            Assert.Equal(location, context.Response.Headers[HeaderNames.Location].First());
+            Assert.Equal(location, context.Response.Headers.Location.First());
             Assert.Equal(expectedStatusCode, context.Response.StatusCode);
         }
 

@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                             Exception exception = null;
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             catch (InvalidOperationException ex)
                             {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             finally
                             {
@@ -313,6 +313,73 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
+        public async Task ExceptionHandlerSucceeded_IfExceptionHandlerResponseHasStarted()
+        {
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Use(async (httpContext, next) =>
+                        {
+                            Exception exception = null;
+                            try
+                            {
+                                await next(httpContext);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                exception = ex;
+                            }
+
+                            Assert.Null(exception);
+                        });
+
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                                await httpContext.Response.WriteAsync("Custom 404");
+                            });
+                        });
+
+                        app.Run(httpContext =>
+                        {
+                            httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Pragma", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Expires", new[] { DateTime.UtcNow.AddDays(10).ToString("R") });
+                            httpContext.Response.Headers.Add("ETag", new[] { "abcdef" });
+
+                            throw new InvalidOperationException("Something bad happened");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                Assert.Equal("Custom 404", await response.Content.ReadAsStringAsync());
+                IEnumerable<string> values;
+                Assert.True(response.Headers.CacheControl.NoCache);
+                Assert.True(response.Headers.CacheControl.NoStore);
+                Assert.True(response.Headers.TryGetValues("Pragma", out values));
+                Assert.Single(values);
+                Assert.Equal("no-cache", values.First());
+                Assert.False(response.Headers.TryGetValues("Expires", out _));
+                Assert.False(response.Headers.TryGetValues("ETag", out _));
+            }
+        }
+
+        [Fact]
         public async Task DoesNotClearCacheHeaders_WhenResponseHasAlreadyStarted()
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
@@ -328,7 +395,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                             Exception exception = null;
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             catch (InvalidOperationException ex)
                             {
@@ -469,20 +536,13 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
-        public async Task ExceptionHandlerNotFound_RethrowsOriginalError()
+        public async Task ExceptionHandlerNotFound_ThrowsIOEWithOriginalError()
         {
-            var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
                     .UseTestServer()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    })
                     .Configure(app =>
                     {
                         app.Use(async (httpContext, next) =>
@@ -490,7 +550,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                             Exception exception = null;
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             catch (InvalidOperationException ex)
                             {
@@ -500,9 +560,16 @@ namespace Microsoft.AspNetCore.Diagnostics
                                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                             }
 
-                            // The original exception is thrown
+                            // Invalid operation exception
                             Assert.NotNull(exception);
-                            Assert.Equal("Something bad happened.", exception.Message);
+                            Assert.Equal("The exception handler configured on ExceptionHandlerOptions produced a 404 status response. " +
+                "This InvalidOperationException containing the original exception was thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
+                "If the exception handler is expected to return 404 status responses then set AllowStatusCode404Response to true.", exception.Message);
+
+                            // The original exception is inner exception
+                            Assert.NotNull(exception.InnerException);
+                            Assert.IsType<ApplicationException>(exception.InnerException);
+                            Assert.Equal("Something bad happened.", exception.InnerException.Message);
 
                         });
 
@@ -520,7 +587,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         {
                             innerAppBuilder.Run(httpContext =>
                             {
-                                throw new InvalidOperationException("Something bad happened.");
+                                throw new ApplicationException("Something bad happened.");
                             });
                         });
                     });
@@ -535,11 +602,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
             }
-
-            Assert.Contains(sink.Writes, w =>
-                w.LogLevel == LogLevel.Warning
-                && w.EventId == 4
-                && w.Message == "No exception handler was found, rethrowing original exception.");
         }
 
         [Fact]

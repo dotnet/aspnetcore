@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         private readonly ScopeStack _scopeStack = new ScopeStack();
 
-        private static readonly string DesignTimeVariable = "__o";
+        private const string DesignTimeVariable = "__o";
 
         public override void WriteMarkupBlock(CodeRenderingContext context, MarkupBlockIntermediateNode node)
         {
@@ -660,7 +660,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     context.CodeWriter.Write(".");
                     context.CodeWriter.Write(ComponentsApi.EventCallbackFactory.CreateMethod);
 
-                    if (node.TryParseEventCallbackTypeArgument(out var argument))
+                    if (node.TryParseEventCallbackTypeArgument(out StringSegment argument))
                     {
                         context.CodeWriter.Write("<");
                         context.CodeWriter.Write(argument);

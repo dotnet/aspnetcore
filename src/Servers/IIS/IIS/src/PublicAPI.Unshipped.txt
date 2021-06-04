@@ -13,6 +13,8 @@
 *REMOVED*~override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>
 *REMOVED*~static Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions.UseIIS(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
 *REMOVED*~static Microsoft.AspNetCore.Server.IIS.HttpContextExtensions.GetIISServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) -> string
+Microsoft.AspNetCore.Builder.IISServerOptions.MaxRequestBodyBufferSize.get -> int
+Microsoft.AspNetCore.Builder.IISServerOptions.MaxRequestBodyBufferSize.set -> void
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Features)
 Microsoft.AspNetCore.Builder.IISServerOptions.AuthenticationDisplayName.get -> string?
 Microsoft.AspNetCore.Builder.IISServerOptions.AuthenticationDisplayName.set -> void

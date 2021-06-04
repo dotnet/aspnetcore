@@ -6,7 +6,11 @@ One of the easiest ways to contribute is to participate in discussions on GitHub
 Start a discussion on the [repository issue tracker](https://github.com/dotnet/aspnetcore/issues).
 
 ## Bugs and feature requests?
-For non-security related bugs, log a new issue in the appropriate GitHub repository. Here are some of the most common repositories:
+❗ **IMPORTANT: If you want to report a security related issue, please see the `Reporting security issues and bugs` section below.**
+
+Before reporting a new issue, try to find an existing issue if one already exists. If it already exists, upvote (👍) it. Also consider adding a comment with your unique scenarios and requirements related to that issue.  Upvotes and clear details on the issue's impact help us prioritize the most important issues to be worked on sooner rather than later. If you can't find one, that's okay, we'd rather get a duplicate report than none.
+
+If you can't find an existing issue, log a new issue in the appropriate GitHub repository. Here are some of the most common repositories:
 
 * [Docs](https://github.com/aspnet/Docs)
 * [AspNetCore](https://github.com/dotnet/aspnetcore)
@@ -37,9 +41,9 @@ To help you be successful we've put together a few simple rules to follow when y
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
   To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with `help wanted` label. You can find all these issues at: [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
   
-
-    Within that set, we have additionally marked issues which are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
-  If there is some other area not included here where you want to contribute to, first open an issue to describe the problem you are trying to solve and state that you're willing to contribute a fix for it. We will then discuss in that issue, whether we think it belongs in the platform and the best approach to solve it.
+Within that set, we have additionally marked issues which are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
+  
+If there is some other area not included here where you want to contribute to, first open an issue to describe the problem you are trying to solve and state that you're willing to contribute a fix for it. We will then discuss in that issue, whether we think it belongs in the platform and the best approach to solve it.
   
 **Before writing code**
 

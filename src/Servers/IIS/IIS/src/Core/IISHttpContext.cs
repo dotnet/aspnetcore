@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -32,8 +33,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
-        private const int PauseWriterThreshold = 65536;
-        private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
 
         protected readonly NativeSafeHandle _requestNativeHandle;
 
@@ -91,6 +90,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
         }
+
+        private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
+        private int ResumeWriterTheshold => PauseWriterThreshold / 2;
 
         public Version HttpVersion { get; set; } = default!;
         public string Scheme { get; set; } = default!;
@@ -259,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // Http/1.x requests with bodies require either a Content-Length or Transfer-Encoding header.
             // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
             // Transfer-Encoding takes priority over Content-Length.
-            string transferEncoding = RequestHeaders[HttpKnownHeaderNames.TransferEncoding];
+            string transferEncoding = RequestHeaders[HeaderNames.TransferEncoding];
             if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -604,7 +606,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             AsyncIO!.NotifyCompletion(hr, bytes);
         }
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

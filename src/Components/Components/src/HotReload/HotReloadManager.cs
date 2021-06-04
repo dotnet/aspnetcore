@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
+using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.HotReload;
 
-[assembly: AssemblyMetadata("ReceiveHotReloadDeltaNotification", "Microsoft.AspNetCore.Components.HotReload.HotReloadManager")]
+[assembly: MetadataUpdateHandler(typeof(HotReloadManager))]
 
 namespace Microsoft.AspNetCore.Components.HotReload
 {
@@ -16,5 +17,7 @@ namespace Microsoft.AspNetCore.Components.HotReload
         {
             OnDeltaApplied?.Invoke();
         }
+
+        public static void UpdateApplication(Type[]? _) => OnDeltaApplied?.Invoke();
     }
 }

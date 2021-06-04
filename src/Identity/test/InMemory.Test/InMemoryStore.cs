@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
     public class InMemoryStore<TUser, TRole> :
         InMemoryUserStore<TUser>,
         IUserRoleStore<TUser>,
-        IQueryableRoleStore<TRole>, 
+        IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
         where TRole : PocoRole
         where TUser : PocoUser
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             {
                 return Task.FromResult<IList<TUser>>(new List<TUser>());
             }
-            return Task.FromResult<IList<TUser>>(Users.Where(u => (u.Roles.Where(x => x.RoleId == role.Id).Count() > 0)).Select(x => x).ToList());
+            return Task.FromResult<IList<TUser>>(Users.Where(u => (u.Roles.Where(x => x.RoleId == role.Id).Any())).Select(x => x).ToList());
         }
 
         private readonly Dictionary<string, TRole> _roles = new Dictionary<string, TRole>();

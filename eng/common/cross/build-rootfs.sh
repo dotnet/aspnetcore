@@ -74,6 +74,10 @@ __IllumosPackages+=" mit-krb5-1.16.2nb4"
 __IllumosPackages+=" openssl-1.1.1e"
 __IllumosPackages+=" zlib-1.2.11"
 
+# ML.NET dependencies
+__UbuntuPackages+=" libomp5"
+__UbuntuPackages+=" libomp-dev"
+
 __UseMirror=0
 
 __UnprocessedBuildArgs=

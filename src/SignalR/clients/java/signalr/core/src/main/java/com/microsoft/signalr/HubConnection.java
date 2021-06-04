@@ -19,10 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.stream.JsonReader;
 
-import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.subjects.*;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.subjects.*;
 import okhttp3.OkHttpClient;
 
 /**
@@ -1413,14 +1413,14 @@ public class HubConnection implements AutoCloseable {
                     handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
                 } catch (RuntimeException ex) {
                     RuntimeException exception = new RuntimeException("An invalid handshake response was received from the server.", ex);
-                    handshakeResponseSubject.onError(exception);
+                    errorHandshake(exception);
                     throw exception;
                 }
                 if (handshakeResponse.getHandshakeError() != null) {
                     String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
                     logger.error(errorMessage);
                     RuntimeException exception = new RuntimeException(errorMessage);
-                    handshakeResponseSubject.onError(exception);
+                    errorHandshake(exception);
                     throw exception;
                 }
                 handshakeReceived = true;
@@ -1431,12 +1431,7 @@ public class HubConnection implements AutoCloseable {
         public void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
             handshakeTimeout = Executors.newSingleThreadScheduledExecutor();
             handshakeTimeout.schedule(() -> {
-                // If onError is called on a completed subject the global error handler is called
-                if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable()))
-                {
-                    handshakeResponseSubject.onError(
-                        new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
-                }
+                errorHandshake(new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
             }, timeout, unit);
         }
 
@@ -1475,6 +1470,18 @@ public class HubConnection implements AutoCloseable {
             }
 
             return handlers.get(0).getTypes();
+        }
+
+        private void errorHandshake(Exception error) {
+            lock.lock();
+            try {
+                // If onError is called on a completed subject the global error handler is called
+                if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable())) {
+                    handshakeResponseSubject.onError(error);
+                }
+            } finally {
+                lock.unlock();
+            }
         }
     }
 

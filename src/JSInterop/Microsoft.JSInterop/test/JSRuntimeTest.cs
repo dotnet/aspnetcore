@@ -297,19 +297,9 @@ namespace Microsoft.JSInterop
         public void CanSanitizeDotNetInteropExceptions()
         {
             // Arrange
-            var expectedMessage = "An error ocurred while invoking '[Assembly]::Method'. Swapping to 'Development' environment will " +
-                "display more detailed information about the error that occurred.";
-
-            string GetMessage(DotNetInvocationInfo info) => $"An error ocurred while invoking '[{info.AssemblyName}]::{info.MethodIdentifier}'. Swapping to 'Development' environment will " +
-                "display more detailed information about the error that occurred.";
-
-            var runtime = new TestJSRuntime()
-            {
-                OnDotNetException = (invocationInfo) => new JSError { Message = GetMessage(invocationInfo) }
-            };
-
+            var runtime = new TestJSRuntime();
             var exception = new Exception("Some really sensitive data in here");
-            var invocation = new DotNetInvocationInfo("Assembly", "Method", 0, "0");
+            var invocation = new DotNetInvocationInfo("TestAssembly", "TestMethod", 0, "0");
             var result = new DotNetInvocationResult(exception, default);
 
             // Act
@@ -319,13 +309,102 @@ namespace Microsoft.JSInterop
             var call = runtime.EndInvokeDotNetCalls.Single();
             Assert.Equal("0", call.CallId);
             Assert.False(call.Success);
-            var jsError = Assert.IsType<JSError>(call.ResultOrError);
-            Assert.Equal(expectedMessage, jsError.Message);
+
+            var error = Assert.IsType<JSError>(call.ResultError);
+            Assert.Same(exception, error.InnerException);
+            Assert.Equal(invocation, error.InvocationInfo);
+        }
+
+        [Fact]
+        public void ReceiveByteArray_AddsInitialByteArray()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            runtime.ReceiveByteArray(0, byteArray);
+
+            // Assert
+            Assert.Equal(1, runtime.ByteArraysToBeRevived.Count);
+            Assert.Equal(byteArray, runtime.ByteArraysToBeRevived.Buffer[0]);
+        }
+
+        [Fact]
+        public void ReceiveByteArray_AddsMultipleByteArrays()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            var byteArrays = new byte[10][];
+            for (var i = 0; i < 10; i++)
+            {
+                var byteArray = new byte[3];
+                Random.Shared.NextBytes(byteArray);
+                byteArrays[i] = byteArray;
+            }
+
+            // Act
+            for (var i = 0; i < 10; i++)
+            {
+                runtime.ReceiveByteArray(i, byteArrays[i]);
+            }
+
+            // Assert
+            Assert.Equal(10, runtime.ByteArraysToBeRevived.Count);
+            for (var i = 0; i < 10; i++)
+            {
+                Assert.Equal(byteArrays[i], runtime.ByteArraysToBeRevived.Buffer[i]);
+            }
+        }
+
+        [Fact]
+        public void ReceiveByteArray_ClearsByteArraysToBeRevivedWhenIdIsZero()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 1, 5, 7 });
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 3, 10, 15 });
+
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            runtime.ReceiveByteArray(0, byteArray);
+
+            // Assert
+            Assert.Equal(1, runtime.ByteArraysToBeRevived.Count);
+            Assert.Equal(byteArray, runtime.ByteArraysToBeRevived.Buffer[0]);
+        }
+
+        [Fact]
+        public void ReceiveByteArray_ThrowsExceptionIfUnexpectedId()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 1, 5, 7 });
+            runtime.ByteArraysToBeRevived.Append(new byte[] { 3, 10, 15 });
+
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => runtime.ReceiveByteArray(7, byteArray));
+
+            // Assert
+            Assert.Equal(2, runtime.ByteArraysToBeRevived.Count);
+            Assert.Equal("Element id '7' cannot be added to the byte arrays to be revived with length '2'.", ex.Message);
         }
 
         private class JSError
         {
-            public string? Message { get; set; }
+            public DotNetInvocationInfo InvocationInfo { get; set; }
+            public Exception? InnerException { get; set; }
+
+            public JSError(DotNetInvocationInfo invocationInfo, Exception? innerException)
+            {
+                InvocationInfo = invocationInfo;
+                InnerException = innerException;
+            }
         }
 
         private class TestPoco
@@ -359,24 +438,18 @@ namespace Microsoft.JSInterop
             {
                 public string? CallId { get; set; }
                 public bool Success { get; set; }
-                public object? ResultOrError { get; set; }
+                public string? ResultJson { get; set; }
+                public JSError? ResultError { get; set; }
             }
-
-            public Func<DotNetInvocationInfo, object>? OnDotNetException { get; set; }
 
             protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
             {
-                var resultOrError = invocationResult.Success ? invocationResult.Result : invocationResult.Exception;
-                if (OnDotNetException != null && !invocationResult.Success)
-                {
-                    resultOrError = OnDotNetException(invocationInfo);
-                }
-
                 EndInvokeDotNetCalls.Add(new EndInvokeDotNetArgs
                 {
                     CallId = invocationInfo.CallId,
                     Success = invocationResult.Success,
-                    ResultOrError = resultOrError,
+                    ResultJson = invocationResult.ResultJson,
+                    ResultError = invocationResult.Success ? null : new JSError(invocationInfo, invocationResult.Exception),
                 });
             }
 

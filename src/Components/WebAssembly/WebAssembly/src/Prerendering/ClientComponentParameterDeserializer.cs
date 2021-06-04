@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -73,6 +74,9 @@ namespace Microsoft.AspNetCore.Components
             return ParameterView.FromDictionary(parametersDictionary);
         }
 
+        [DynamicDependency(JsonSerialized, typeof(ComponentParameter))]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
+        // This should use JSON source generation
         public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
         {
             return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;

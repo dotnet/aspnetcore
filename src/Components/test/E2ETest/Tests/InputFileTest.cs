@@ -16,6 +16,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
@@ -131,10 +132,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CanUploadAndConvertImageFile()
         {
             var sourceImageId = "image-source";
+            var imageStatus = Browser.Exists(By.Id("image-status"));
+            Browser.Equal("ready", () => imageStatus.Text);
 
             // Get the source image base64
             var base64 = Browser.ExecuteJavaScript<string>($@"

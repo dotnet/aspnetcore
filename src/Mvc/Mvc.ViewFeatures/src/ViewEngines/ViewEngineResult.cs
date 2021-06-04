@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -13,19 +16,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
     /// </summary>
     public class ViewEngineResult
     {
-        private ViewEngineResult()
+        private ViewEngineResult(string viewName)
         {
+            ViewName = viewName;
         }
 
         /// <summary>
         /// The list of locations searched.
         /// </summary>
-        public IEnumerable<string> SearchedLocations { get; private set; }
+        public IEnumerable<string> SearchedLocations { get; private init; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// The <see cref="IView"/>.
         /// </summary>
-        public IView View { get; private set; }
+        public IView? View { get; private init; }
 
         /// <summary>
         /// Gets or sets the name of the view.
@@ -35,6 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         /// <summary>
         /// Whether the result was successful
         /// </summary>
+        [MemberNotNullWhen(true, nameof(View))]
         public bool Success => View != null;
 
         /// <summary>
@@ -57,10 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 throw new ArgumentNullException(nameof(searchedLocations));
             }
 
-            return new ViewEngineResult
+            return new ViewEngineResult(viewName)
             {
                 SearchedLocations = searchedLocations,
-                ViewName = viewName,
             };
         }
 
@@ -82,10 +86,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 throw new ArgumentNullException(nameof(view));
             }
 
-            return new ViewEngineResult
+            return new ViewEngineResult(viewName)
             {
                 View = view,
-                ViewName = viewName,
             };
         }
 
@@ -100,7 +103,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         /// Thrown if <see cref="Success"/> is <c>false</c>.
         /// </exception>
         /// <returns>This <see cref="ViewEngineResult"/> if <see cref="Success"/> is <c>true</c>.</returns>
-        public ViewEngineResult EnsureSuccessful(IEnumerable<string> originalLocations)
+        [MemberNotNull(nameof(View))]
+        public ViewEngineResult EnsureSuccessful(IEnumerable<string>? originalLocations)
         {
             if (!Success)
             {

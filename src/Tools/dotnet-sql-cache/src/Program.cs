@@ -13,10 +13,10 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 {
     public class Program
     {
-        private string _connectionString = null;
-        private string _schemaName = null;
-        private string _tableName = null;
-        private string _outputPath = null;
+        private string _connectionString;
+        private string _schemaName;
+        private string _tableName;
+        private string _outputPath;
         private bool _idempotent;
 
         private readonly IConsole _console;

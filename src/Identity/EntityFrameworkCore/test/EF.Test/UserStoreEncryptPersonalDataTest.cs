@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRole, string>
     {
-        private DefaultKeyRing _keyRing = new DefaultKeyRing();
-
         public ProtectedUserStoreTest(ScratchDatabaseFixture fixture)
             : base(fixture)
         { }

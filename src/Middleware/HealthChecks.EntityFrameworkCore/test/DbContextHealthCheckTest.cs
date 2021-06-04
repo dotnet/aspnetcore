@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Arrange
             var services = CreateServices(async (c, ct) =>
             {
-                return 0 < await c.Blogs.CountAsync();
+                return await c.Blogs.AnyAsync();
             });
 
             using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Arrange
             var services = CreateServices(async (c, ct) =>
             {
-                return 0 < await c.Blogs.CountAsync();
+                return await c.Blogs.AnyAsync();
             }, failureStatus: HealthStatus.Degraded);
 
             using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
@@ -88,7 +88,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Arrange
             var services = CreateServices(async (c, ct) =>
             {
-                return 0 < await c.Blogs.CountAsync();
+                return await c.Blogs.AnyAsync();
             }, failureStatus: HealthStatus.Unhealthy);
 
             using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
@@ -110,7 +110,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Arrange
             var services = CreateServices(async (c, ct) =>
             {
-                return 0 < await c.Blogs.CountAsync();
+                return await c.Blogs.AnyAsync();
             }, failureStatus: null);
 
             using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())

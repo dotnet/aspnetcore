@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
+
 using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -154,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Needed to delay the completion of Content-Length responses.
         internal bool TrailersExpected => HasTrailers
             || (HttpApi.SupportsTrailers && Request.ProtocolVersion >= HttpVersion.Version20
-                    && Headers.ContainsKey(HttpKnownHeaderNames.Trailer));
+                    && Headers.ContainsKey(HeaderNames.Trailer));
 
         internal long ExpectedBodyLength
         {
@@ -397,14 +399,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             // Gather everything from the request that affects the response:
             var requestVersion = Request.ProtocolVersion;
-            var requestConnectionString = Request.Headers[HttpKnownHeaderNames.Connection];
+            var requestConnectionString = Request.Headers[HeaderNames.Connection];
             var isHeadRequest = Request.IsHeadMethod;
             var requestCloseSet = Matches(Constants.Close, requestConnectionString);
 
             // Gather everything the app may have set on the response:
             // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
-            var responseConnectionString = Headers[HttpKnownHeaderNames.Connection];
-            var transferEncodingString = Headers[HttpKnownHeaderNames.TransferEncoding];
+            var responseConnectionString = Headers[HeaderNames.Connection];
+            var transferEncodingString = Headers[HeaderNames.TransferEncoding];
             var responseContentLength = ContentLength;
             var responseCloseSet = Matches(Constants.Close, responseConnectionString);
             var responseChunkedSet = Matches(Constants.Chunked, transferEncodingString);
@@ -442,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (!isHeadRequest && statusCanHaveBody)
                 {
-                    Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
+                    Headers[HeaderNames.ContentLength] = Constants.Zero;
                 }
                 _boundaryType = BoundaryType.ContentLength;
                 _expectedBodyLength = 0;
@@ -450,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else if (requestVersion == Constants.V1_1)
             {
                 _boundaryType = BoundaryType.Chunked;
-                Headers[HttpKnownHeaderNames.TransferEncoding] = Constants.Chunked;
+                Headers[HeaderNames.TransferEncoding] = Constants.Chunked;
             }
             else
             {
@@ -467,7 +469,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Note that if we don't add this header, Http.Sys will often do it for us.
                 if (!responseCloseSet)
                 {
-                    Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
+                    Headers.Append(HeaderNames.Connection, Constants.Close);
                 }
                 flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
                 if (responseCloseSet && requestVersion >= Constants.V2 && SupportsGoAway)

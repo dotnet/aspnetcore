@@ -130,12 +130,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            await WriteAsync(buffer.AsMemory(offset, count));
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             try
             {
                 _startResponseCallback();
-                await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+                await _innerStream.WriteAsync(buffer, cancellationToken);
             }
             catch
             {
@@ -145,13 +148,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             if (BufferingEnabled)
             {
-                if (_segmentWriteStream.Length + count > _maxBufferSize)
+                if (_segmentWriteStream.Length + buffer.Length > _maxBufferSize)
                 {
                     DisableBuffering();
                 }
                 else
                 {
-                    await _segmentWriteStream.WriteAsync(buffer, offset, count, cancellationToken);
+                    await _segmentWriteStream.WriteAsync(buffer, cancellationToken);
                 }
             }
         }
@@ -182,17 +185,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        {
-            return StreamUtilities.ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
-        }
+            => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
 
         public override void EndWrite(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-            ((Task)asyncResult).GetAwaiter().GetResult();
-        }
+            => TaskToApm.End(asyncResult);
     }
 }

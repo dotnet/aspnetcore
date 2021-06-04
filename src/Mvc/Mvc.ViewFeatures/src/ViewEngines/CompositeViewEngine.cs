@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,8 +48,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             }
 
             // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.
-            IEnumerable<string> searchedLocations = null;
-            List<string> searchedList = null;
+            IEnumerable<string>? searchedLocations = null;
+            List<string>? searchedList = null;
             for (var i = 0; i < ViewEngines.Count; i++)
             {
                 var result = ViewEngines[i].FindView(context, viewName, isMainPage);
@@ -82,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         }
 
         /// <inheritdoc />
-        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isMainPage)
+        public ViewEngineResult GetView(string? executingFilePath, string viewPath, bool isMainPage)
         {
             if (string.IsNullOrEmpty(viewPath))
             {
@@ -98,8 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             }
 
             // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.
-            IEnumerable<string> searchedLocations = null;
-            List<string> searchedList = null;
+            IEnumerable<string>? searchedLocations = null;
+            List<string>? searchedList = null;
             for (var i = 0; i < ViewEngines.Count; i++)
             {
                 var result = ViewEngines[i].GetView(executingFilePath, viewPath, isMainPage);
@@ -122,7 +124,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                         searchedLocations = searchedList;
                     }
 
-                    searchedList.AddRange(result.SearchedLocations);
+                    if (result.SearchedLocations is not null)
+                    {
+                        searchedList.AddRange(result.SearchedLocations);
+                    }
                 }
             }
 

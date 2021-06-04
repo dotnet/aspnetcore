@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -57,17 +60,20 @@ namespace Microsoft.JSInterop.WebAssembly
         }
 
         /// <inheritdoc />
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "TODO: This should be in the xml suppressions file, but can't be because https://github.com/mono/linker/issues/2006")]
         protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
-            // For failures, the common case is to call EndInvokeDotNet with the Exception object.
-            // For these we'll serialize as something that's useful to receive on the JS side.
-            // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
-            var resultOrError = dispatchResult.Success ? dispatchResult.Result : dispatchResult.Exception!.ToString();
+            var resultJsonOrErrorMessage = dispatchResult.Success
+                ? dispatchResult.ResultJson!
+                : dispatchResult.Exception!.ToString();
+            InvokeUnmarshalled<string?, bool, string, object>("Blazor._internal.endInvokeDotNetFromJS",
+                callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
+        }
 
-            // We pass 0 as the async handle because we don't want the JS-side code to
-            // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerOptions);
-            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, JSCallResultType.Default, 0);
+        /// <inheritdoc />
+        protected override void SendByteArray(int id, byte[] data)
+        {
+            InvokeUnmarshalled<int, byte[], object>("Blazor._internal.receiveByteArray", id, data);
         }
 
         internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)

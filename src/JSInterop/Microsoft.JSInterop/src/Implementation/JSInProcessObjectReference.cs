@@ -24,6 +24,7 @@ namespace Microsoft.JSInterop.Implementation
         }
 
         /// <inheritdoc />
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         public TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, params object?[]? args)
         {
             ThrowIfDisposed();

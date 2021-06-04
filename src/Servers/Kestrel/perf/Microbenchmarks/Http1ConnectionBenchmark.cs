@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 {
     public class Http1ConnectionBenchmark
     {
-        private const int InnerLoopCount = 512;
-
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
         private ReadOnlySequence<byte> _buffer;
@@ -29,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         [GlobalSetup]
         public void Setup()
         {
-            var memoryPool = SlabMemoryPoolFactory.Create();
+            var memoryPool = PinnedBlockMemoryPoolFactory.Create();
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 

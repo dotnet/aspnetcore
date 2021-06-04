@@ -37,19 +37,19 @@ namespace Microsoft.Extensions.StackTrace.Sources
             {
                 builder
                     .Append(DeclaringTypeName)
-                    .Append(".");
+                    .Append('.');
             }
 
             builder.Append(Name);
             builder.Append(GenericArguments);
 
-            builder.Append("(");
+            builder.Append('(');
             builder.AppendJoin(", ", Parameters.Select(p => p.ToString()));
-            builder.Append(")");
+            builder.Append(')');
 
             if (!string.IsNullOrEmpty(SubMethod))
             {
-                builder.Append("+");
+                builder.Append('+');
                 builder.Append(SubMethod);
                 builder.Append("()");
             }

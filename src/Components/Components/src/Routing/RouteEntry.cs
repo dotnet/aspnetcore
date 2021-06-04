@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     [DebuggerDisplay("Handler = {Handler}, Template = {Template}")]
     internal class RouteEntry
     {
-        public RouteEntry(RouteTemplate template, [DynamicallyAccessedMembers(Component)] Type handler, string[] unusedRouteParameterNames)
+        public RouteEntry(RouteTemplate template, [DynamicallyAccessedMembers(Component)] Type handler, List<string>? unusedRouteParameterNames)
         {
             Template = template;
             UnusedRouteParameterNames = unusedRouteParameterNames;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public RouteTemplate Template { get; }
 
-        public string[] UnusedRouteParameterNames { get; }
+        public List<string>? UnusedRouteParameterNames { get; }
 
         [DynamicallyAccessedMembers(Component)]
         public Type Handler { get; }
@@ -113,10 +113,10 @@ namespace Microsoft.AspNetCore.Components.Routing
                     parameters ??= new Dictionary<string, object>(StringComparer.Ordinal);
                     AddDefaultValues(parameters, templateIndex, Template.Segments);
                 }
-                if (UnusedRouteParameterNames?.Length > 0)
+                if (UnusedRouteParameterNames?.Count > 0)
                 {
                     parameters ??= new Dictionary<string, object>(StringComparer.Ordinal);
-                    for (var i = 0; i < UnusedRouteParameterNames.Length; i++)
+                    for (var i = 0; i < UnusedRouteParameterNames.Count; i++)
                     {
                         parameters[UnusedRouteParameterNames[i]] = null;
                     }

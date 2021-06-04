@@ -75,8 +75,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private RouteValueDictionary? _routeValues;
         private Endpoint? _endpoint;
 
-        protected string? _methodText = null;
-        private string? _scheme = null;
+        protected string? _methodText;
+        private string? _scheme;
         private Stream? _requestStreamInternal;
         private Stream? _responseStreamInternal;
 
@@ -400,8 +400,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             lock (_abortLock)
             {
                 _preventRequestAbortedCancellation = false;
-                localAbortCts = _abortedCts;
-                _abortedCts = null;
+                if (_abortedCts?.TryReset() == false)
+                {
+                    localAbortCts = _abortedCts;
+                    _abortedCts = null;
+                }
             }
 
             localAbortCts?.Dispose();
@@ -906,27 +909,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        public void ProduceContinue()
+        public ValueTask<FlushResult> ProduceContinueAsync()
         {
             if (HasResponseStarted)
             {
-                return;
+                return default;
             }
 
             if (_httpVersion != Http.HttpVersion.Http10 &&
                 ((IHeaderDictionary)HttpRequestHeaders).TryGetValue(HeaderNames.Expect, out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                ValueTask<FlushResult> vt = Output.Write100ContinueAsync();
-                if (vt.IsCompleted)
-                {
-                    vt.GetAwaiter().GetResult();
-                }
-                else
-                {
-                    vt.AsTask().GetAwaiter().GetResult();
-                }
+                return Output.Write100ContinueAsync();
             }
+
+            return default;
         }
 
         public Task InitializeResponseAsync(int firstWriteByteCount)
@@ -1122,7 +1119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_keepAlive &&
                 hasConnection &&
-                (HttpHeaders.ParseConnection(responseHeaders.HeaderConnection) & ConnectionOptions.KeepAlive) == 0)
+                (HttpHeaders.ParseConnection(responseHeaders) & ConnectionOptions.KeepAlive) == 0)
             {
                 _keepAlive = false;
             }

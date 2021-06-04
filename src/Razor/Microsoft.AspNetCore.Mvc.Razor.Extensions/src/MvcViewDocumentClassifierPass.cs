@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class MvcViewDocumentClassifierPass : DocumentClassifierPassBase
     {
-        private bool _useConsolidatedMvcViews = false;
+        private bool _useConsolidatedMvcViews;
 
         public static readonly string MvcViewDocumentKind = "mvc.1.0.view";
 
@@ -25,9 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         protected override void OnDocumentStructureCreated(
-            RazorCodeDocument codeDocument, 
-            NamespaceDeclarationIntermediateNode @namespace, 
-            ClassDeclarationIntermediateNode @class, 
+            RazorCodeDocument codeDocument,
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
             MethodDeclarationIntermediateNode method)
         {
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
@@ -46,14 +47,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 // It's possible for a Razor document to not have a file path.
                 // Eg. When we try to generate code for an in memory document like default imports.
                 var checksum = Checksum.BytesToString(codeDocument.Source.GetChecksum());
-                @class.ClassName = $"AspNetCore_{checksum}";
+                @class.ClassName = "AspNetCore_" + checksum;
             }
             else
             {
                 @class.ClassName = className;
             }
-            
-
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
             @class.Modifiers.Clear();
             if (_useConsolidatedMvcViews)
@@ -96,12 +95,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 return path;
             }
 
+            var pathSegment = new StringSegment(path);
             if (path.EndsWith(cshtmlExtension, StringComparison.OrdinalIgnoreCase))
             {
-                path = path.Substring(0, path.Length - cshtmlExtension.Length);
+                pathSegment = pathSegment.Subsegment(0, path.Length - cshtmlExtension.Length);
             }
 
-            return CSharpIdentifier.SanitizeIdentifier(path);
+            return CSharpIdentifier.SanitizeIdentifier(pathSegment);
         }
     }
 }

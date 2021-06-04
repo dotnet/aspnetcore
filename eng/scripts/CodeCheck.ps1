@@ -208,10 +208,12 @@ try {
             foreach ($file in $changedFilesFromTarget) {
                 # Check for changes in Shipped in all branches
                 if ($file -like '*PublicAPI.Shipped.txt') {
-                    $changedAPIBaselines.Add($file)
+                    if (!$file.Contains('DevServer/src/PublicAPI.Shipped.txt')) {
+                        $changedAPIBaselines.Add($file)
+                    }
                 }
                 # Check for changes in Unshipped in servicing branches
-                if ($targetBranch -like 'release*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                if ($targetBranch -like 'release*' -and $targetBranch -notlike '*preview*' -and $file -like '*PublicAPI.Unshipped.txt') {
                     $changedAPIBaselines.Add($file)
                 }
             }

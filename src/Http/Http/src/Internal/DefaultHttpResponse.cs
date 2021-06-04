@@ -94,17 +94,17 @@ namespace Microsoft.AspNetCore.Http
         {
             get
             {
-                return Headers[HeaderNames.ContentType];
+                return Headers.ContentType;
             }
             set
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    HttpResponseFeature.Headers.Remove(HeaderNames.ContentType);
+                    HttpResponseFeature.Headers.ContentType = default;
                 }
                 else
                 {
-                    HttpResponseFeature.Headers[HeaderNames.ContentType] = value;
+                    HttpResponseFeature.Headers.ContentType = value;
                 }
             }
         }
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Http
                 HttpResponseFeature.StatusCode = 302;
             }
 
-            Headers[HeaderNames.Location] = location;
+            Headers.Location = location;
         }
 
         public override Task StartAsync(CancellationToken cancellationToken = default)

@@ -509,6 +509,54 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
         }
 
         [Fact]
+        public void ViewComponentTagHelperOptionalParam_Runtime()
+        {
+            // Arrange
+            AddCSharpSyntaxTree($@"
+using System;
+
+public class OptionalTestViewComponent
+{{
+    public string Invoke(bool showSecret = false)
+    {{
+        return showSecret ? ""what a secret"" : ""not a secret"";
+    }}
+}}
+public class OptionalTestWithParamViewComponent
+{{
+    public string Invoke(string secret, bool showSecret = false)
+    {{
+        var isSecret = showSecret ? ""what a secret"" : ""not a secret"";
+        return isSecret + "" : "" + secret;
+    }}
+}}
+public class OptionalWithMultipleTypesViewComponent
+{{
+    public string Invoke(
+        int age = 42,
+        double favoriteDecimal = 12.3,
+        char favoriteLetter = 'b',
+        DateTime? birthDate = null,
+        string anotherOne = null)
+    {{
+        birthDate = new DateTime(1979, 8, 23);
+        return age + "" : "" + favoriteDecimal + "" : "" + favoriteLetter + "" : "" + birthDate + "" : "" + anotherOne;
+    }}
+}}
+");
+
+            var projectItem = CreateProjectItemFromFile();
+
+            // Act
+            var compiled = CompileToAssembly(projectItem, designTime: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
+            AssertLinePragmas(compiled.CodeDocument, designTime: false);
+        }
+
+        [Fact]
         public void RazorPageWithNoLeadingPageDirective_Runtime()
         {
             // Arrange
@@ -609,6 +657,45 @@ public class FormTagHelper : {typeof(TagHelper).FullName}
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void RazorView_Layout_WithCssScope()
+        {
+                        // Arrange
+            AddCSharpSyntaxTree($@"
+[{typeof(HtmlTargetElementAttribute).FullName}({"\"all\""})]
+public class AllTagHelper : {typeof(TagHelper).FullName}
+{{
+    public string Bar {{ get; set; }}
+}}
+[{typeof(HtmlTargetElementAttribute).FullName}({"\"form\""})]
+public class FormTagHelper : {typeof(TagHelper).FullName}
+{{
+}}
+");
+
+            // Act
+            // This test case attempts to use all syntaxes that might interact with auto-generated attributes
+            var generated = CompileToCSharp(@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""utf-8"" />
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />
+    <title>@ViewData[""Title""] - Test layout component</title>
+</head>
+<body>
+    <p>This is a body.</p>
+</body>
+</html>
+", cssScope: "TestCssScope");
+
+            // Assert
+            var intermediate = generated.CodeDocument.GetDocumentIntermediateNode();
+            var csharp = generated.CodeDocument.GetCSharpDocument();
+            AssertDocumentNodeMatchesBaseline(intermediate);
+            AssertCSharpDocumentMatchesBaseline(csharp);
+            CompileToAssembly(generated);
+        }
         #endregion
 
         #region DesignTime

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         MemberInfo ICommonModel.MemberInfo => PropertyInfo;
 
         /// <inheritdoc/>
-        public new IDictionary<object, object> Properties => base.Properties;
+        public new IDictionary<object, object?> Properties => base.Properties;
 
         /// <inheritdoc/>
         public new IReadOnlyList<object> Attributes => base.Attributes;

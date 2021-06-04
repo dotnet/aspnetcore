@@ -18,6 +18,7 @@ describe("WebSockets", () => {
                 return;
             }
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const websocketModule = require("ws");
             if (websocketModule) {
                 webSocket = new websocketModule(ECHOENDPOINT_URL.replace(/^http/, "ws"));

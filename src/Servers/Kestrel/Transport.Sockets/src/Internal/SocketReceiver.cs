@@ -4,6 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
@@ -13,28 +14,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
         }
 
-        public SocketAwaitableEventArgs WaitForDataAsync(Socket socket)
+        public ValueTask<int> WaitForDataAsync(Socket socket)
         {
             SetBuffer(Memory<byte>.Empty);
 
-            if (!socket.ReceiveAsync(this))
+            if (socket.ReceiveAsync(this))
             {
-                Complete();
+                return new ValueTask<int>(this, 0);
             }
 
-            return this;
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
 
-        public SocketAwaitableEventArgs ReceiveAsync(Socket socket, Memory<byte> buffer)
+        public ValueTask<int> ReceiveAsync(Socket socket, Memory<byte> buffer)
         {
             SetBuffer(buffer);
 
-            if (!socket.ReceiveAsync(this))
+            if (socket.ReceiveAsync(this))
             {
-                Complete();
+                return new ValueTask<int>(this, 0);
             }
 
-            return this;
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
     }
 }

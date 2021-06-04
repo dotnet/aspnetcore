@@ -7,8 +7,7 @@ import { InputFile } from './InputFile';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { Platform } from './Platform/Platform';
-import { Pointer, System_String, System_Array, System_Object } from './Platform/Platform';
+import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
 
 interface IBlazor {
   navigateTo: (uri: string, forceLoad: boolean, replace: boolean) => void;
@@ -27,6 +26,9 @@ interface IBlazor {
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile,
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
+    endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
+    receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
+    retrieveByteArray?: () => System_Object;
     getPersistedState?: () => System_String;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any) => void;
     registeredComponents?: {

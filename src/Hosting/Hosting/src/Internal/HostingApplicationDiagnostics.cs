@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -16,7 +17,8 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
-        private const string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
+        // internal so it can be used in tests
+        internal const string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
         private const string ActivityStartKey = ActivityName + ".Start";
         private const string ActivityStopKey = ActivityName + ".Stop";
 
@@ -24,16 +26,15 @@ namespace Microsoft.AspNetCore.Hosting
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
         private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
-        private const string ActivitySourceName = "Microsoft.AspNetCore.Hosting";
-        private static readonly ActivitySource _activitySource = new ActivitySource(ActivitySourceName);
-
+        private readonly ActivitySource _activitySource;
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
-        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener)
+        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener, ActivitySource activitySource)
         {
             _logger = logger;
             _diagnosticListener = diagnosticListener;
+            _activitySource = activitySource;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,6 +58,18 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
                 context.HasDiagnosticListener = hasDiagnosticListener;
+
+                if (context.Activity is Activity activity)
+                {
+                    if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
+                    {
+                        feature.Activity = activity;
+                    }
+                    else
+                    {
+                        httpContext.Features.Set(context.HttpActivityFeature);
+                    }
+                }
             }
 
             if (diagnosticListenerEnabled)
@@ -138,7 +151,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var activity = context.Activity;
             // Always stop activity if it was started
-            if (activity != null)
+            if (activity is not null)
             {
                 StopActivity(httpContext, activity, context.HasDiagnosticListener);
             }
@@ -265,15 +278,17 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var headers = httpContext.Request.Headers;
-            if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
+            var requestId = headers.TraceParent;
+            if (requestId.Count == 0)
             {
-                headers.TryGetValue(HeaderNames.RequestId, out requestId);
+                requestId = headers.RequestId;
             }
 
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
-                if (headers.TryGetValue(HeaderNames.TraceState, out var traceState))
+                var traceState = headers.TraceState;
+                if (traceState.Count > 0)
                 {
                     activity.TraceStateString = traceState;
                 }

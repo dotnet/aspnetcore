@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly object _workSync = new object();
         private readonly object _closeHandleSync = new object();
         private readonly object _startSync = new object();
-        private bool _stopImmediate = false;
-        private bool _initCompleted = false;
+        private bool _stopImmediate;
+        private bool _initCompleted;
         private Exception _closeError;
         private readonly ILibuvTrace _log;
 
