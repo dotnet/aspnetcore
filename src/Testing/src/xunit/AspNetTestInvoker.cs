@@ -81,6 +81,8 @@ namespace Microsoft.AspNetCore.Testing
                 }
                 else if (attempts < retryAttribute.MaxRetries - 1)
                 {
+                    _testOutputHelper.WriteLine($"Retrying test, attempt {attempts} of {retryAttribute.MaxRetries} failed.");
+                    await Task.Delay(5000);
                     Aggregator.Clear();
                 }
             }
