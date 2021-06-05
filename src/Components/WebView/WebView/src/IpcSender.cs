@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public void SendByteArray(int id, byte[] data)
         {
-            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.ReceiveByteArray, id, data));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.SendByteArrayToJS, id, data));
         }
 
         public void NotifyUnhandledException(Exception exception)
