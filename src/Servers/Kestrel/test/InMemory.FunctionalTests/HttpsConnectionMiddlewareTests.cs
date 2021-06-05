@@ -520,8 +520,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
-            var stream = OpenSslStreamWithCert(connection.Stream);
-            await stream.AuthenticateAsClientAsync("localhost");
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            clientOptions.LocalCertificateSelectionCallback
+                = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
             await AssertConnectionResult(stream, true);
         }
 
@@ -559,8 +568,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
-            var stream = OpenSslStreamWithCert(connection.Stream);
-            await stream.AuthenticateAsClientAsync("localhost");
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            clientOptions.LocalCertificateSelectionCallback
+                = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
             await AssertConnectionResult(stream, true);
         }
 
@@ -598,14 +616,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
-            var stream = new SslStream(connection.Stream, false, (sender, certificate, chain, errors) => true,
-                (sender, host, certificates, certificate, issuers) => null);
-            await stream.AuthenticateAsClientAsync("localhost");
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
             await AssertConnectionResult(stream, true);
         }
 
-        // [ConditionalFact(Skip = "Depends on https://github.com/dotnet/runtime/pull/53719")]
-        [Fact]
+        [ConditionalFact(Skip = "Depends on https://github.com/dotnet/runtime/pull/53719")]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
         // Turning on HTTP/2 disables renegotiation.
         // TODO: Tomas is changing it so AllowRenegotiation only applies to the remote,
@@ -643,9 +666,120 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
-            var stream = OpenSslStreamWithCert(connection.Stream);
-            await stream.AuthenticateAsClientAsync("localhost");
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            clientOptions.LocalCertificateSelectionCallback
+                = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
             await AssertConnectionResult(stream, true);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.Protocols = HttpProtocols.Http1;
+                listenOptions.UseHttps(options =>
+                {
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                    options.AllowAnyClientCertificate();
+                });
+            }
+
+            // Under 4kb can sometimes work because it fits into Kestrel's header parsing buffer.
+            var expectedBody = new string('a', 1024 * 4);
+
+            await using var server = new TestServer(async context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
+                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            // SslStream is used to ensure the certificate is actually passed to the server
+            // HttpClient might not send the certificate because it is invalid or it doesn't match any
+            // of the certificate authorities sent by the server in the SSL handshake.
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            clientOptions.LocalCertificateSelectionCallback
+                = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
+            await AssertConnectionResult(stream, false, expectedBody);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        public async Task CanRenegotiateForClientCertificateOnPostIfDrained()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.Protocols = HttpProtocols.Http1;
+                listenOptions.UseHttps(options =>
+                {
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                    options.AllowAnyClientCertificate();
+                });
+            }
+
+            var expectedBody = new string('a', 1024 * 4);
+
+            await using var server = new TestServer(async context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+
+                // Read the body before requesting the client cert
+                var body = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                Assert.Equal(expectedBody, body);
+
+                var clientCert = await context.Connection.GetClientCertificateAsync();
+                Assert.NotNull(clientCert);
+                Assert.NotNull(tlsFeature.ClientCertificate);
+                Assert.NotNull(context.Connection.ClientCertificate);
+                await context.Response.WriteAsync("hello world");
+            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            // SslStream is used to ensure the certificate is actually passed to the server
+            // HttpClient might not send the certificate because it is invalid or it doesn't match any
+            // of the certificate authorities sent by the server in the SSL handshake.
+            var stream = new SslStream(connection.Stream);
+            var clientOptions = new SslClientAuthenticationOptions()
+            {
+                TargetHost = "localhost",
+                EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+            };
+            clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            clientOptions.LocalCertificateSelectionCallback
+                = (sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers) => _x509Certificate2;
+
+            await stream.AuthenticateAsClientAsync(clientOptions);
+            await AssertConnectionResult(stream, true, expectedBody);
         }
 
         [Fact]
@@ -1015,9 +1149,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 (sender, host, certificates, certificate, issuers) => clientCertificate ?? _x509Certificate2);
         }
 
-        private static async Task AssertConnectionResult(SslStream stream, bool success)
+        private static async Task AssertConnectionResult(SslStream stream, bool success, string body = null)
         {
-            var request = Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n");
+            var request = body == null ? Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n")
+                : Encoding.UTF8.GetBytes($"POST / HTTP/1.0\r\nContent-Length: {body.Length}\r\n\r\n{body}");
             await stream.WriteAsync(request, 0, request.Length);
             var reader = new StreamReader(stream);
             string line = null;
