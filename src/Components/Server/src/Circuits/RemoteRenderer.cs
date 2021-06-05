@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CompleteRender(entry.CompletionSource, errorMessageOrNull);
         }
 
-        private void CompleteRender(TaskCompletionSource pendingRenderInfo, string? errorMessageOrNull)
+        private static void CompleteRender(TaskCompletionSource pendingRenderInfo, string? errorMessageOrNull)
         {
             if (errorMessageOrNull == null)
             {
@@ -352,15 +352,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public ValueStopwatch ValueStopwatch { get; }
         }
 
-        private void CaptureAsyncExceptions(Task task)
+        private async void CaptureAsyncExceptions(Task task)
         {
-            task.ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
-                {
-                    UnhandledException?.Invoke(this, t.Exception);
-                }
-            });
+                await task;
+            }
+            catch (Exception exception)
+            {
+                UnhandledException?.Invoke(this, exception);
+            }
         }
 
         private static class Log

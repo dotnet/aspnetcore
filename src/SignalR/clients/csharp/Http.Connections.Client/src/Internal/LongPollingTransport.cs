@@ -188,9 +188,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     else
                     {
                         Log.ReceivedMessages(_logger);
-
+#if NETCOREAPP
+                        await response.Content.CopyToAsync(applicationStream, cancellationToken);
+#else
                         await response.Content.CopyToAsync(applicationStream);
-                        var flushResult = await _application.Output.FlushAsync();
+#endif
+
+                        var flushResult = await _application.Output.FlushAsync(cancellationToken);
 
                         // We canceled in the middle of applying back pressure
                         // or if the consumer is done

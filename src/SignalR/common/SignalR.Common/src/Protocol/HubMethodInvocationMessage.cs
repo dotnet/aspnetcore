@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             if (string.IsNullOrEmpty(target))
             {
-                throw new ArgumentException(nameof(target));
+                throw new ArgumentNullException(nameof(target));
             }
 
             Target = target;

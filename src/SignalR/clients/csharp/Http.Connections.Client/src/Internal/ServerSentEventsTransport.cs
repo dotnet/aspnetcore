@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             if (httpClient == null)
             {
-                throw new ArgumentNullException(nameof(_httpClient));
+                throw new ArgumentNullException(nameof(httpClient));
             }
 
             _httpClient = httpClient;
@@ -138,7 +138,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             static void CancelReader(object? state) => ((PipeReader)state!).CancelPendingRead();
 
             using (response)
+#if NETCOREAPP
+            using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
+#else
             using (var stream = await response.Content.ReadAsStreamAsync())
+#endif
             {
                 var reader = PipeReader.Create(stream);
 
@@ -148,7 +152,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 {
                     while (true)
                     {
-                        var result = await reader.ReadAsync();
+                        var result = await reader.ReadAsync(cancellationToken);
                         var buffer = result.Buffer;
                         var consumed = buffer.Start;
                         var examined = buffer.End;
@@ -173,7 +177,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                                     case ServerSentEventsMessageParser.ParseResult.Completed:
                                         Log.MessageToApplication(_logger, message!.Length);
 
-                                        flushResult = await _application.Output.WriteAsync(message);
+                                        flushResult = await _application.Output.WriteAsync(message, cancellationToken);
 
                                         _parser.Reset();
                                         break;

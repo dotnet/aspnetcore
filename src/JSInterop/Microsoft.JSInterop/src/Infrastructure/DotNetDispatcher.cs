@@ -312,7 +312,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
             {
-                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyKey.AssemblyName));
+                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyKey));
             }
 
             if (string.IsNullOrWhiteSpace(methodIdentifier))

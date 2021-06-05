@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             var connection = _connections[connectionId];
             if (connection != null)
             {
-                return connection.WriteAsync(new InvocationMessage(methodName, args)).AsTask();
+                return connection.WriteAsync(new InvocationMessage(methodName, args), cancellationToken).AsTask();
             }
 
             var message = _protocol.WriteInvocation(methodName, args);

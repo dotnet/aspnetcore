@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (_currentSegment.Length - bytes < _position)
                         {
-                            throw new ArgumentOutOfRangeException("Can't advance past buffer size.");
+                            throw new ArgumentOutOfRangeException(nameof(bytes), "Can't advance past buffer size.");
                         }
 
                         _position += bytes;
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (_advancedBytesForChunk > _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - bytes)
                     {
-                        throw new ArgumentOutOfRangeException("Can't advance past buffer size.");
+                        throw new ArgumentOutOfRangeException(nameof(bytes), "Can't advance past buffer size.");
                     }
                     _advancedBytesForChunk += bytes;
                 }

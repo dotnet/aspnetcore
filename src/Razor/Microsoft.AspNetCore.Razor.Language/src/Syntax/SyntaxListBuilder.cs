@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         {
             if (item == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(item));
             }
 
             if (_nodes == null || Count >= _nodes.Length)

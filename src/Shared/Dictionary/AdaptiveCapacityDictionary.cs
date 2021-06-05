@@ -638,7 +638,7 @@ namespace Microsoft.AspNetCore.Internal
             {
                 if (dictionary == null)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException(nameof(dictionary));
                 }
 
                 _dictionary = dictionary;

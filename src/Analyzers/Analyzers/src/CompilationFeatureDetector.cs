@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Analyzers
                     var semanticModel = compilation.GetSemanticModel(syntaxReferences[j].SyntaxTree);
 
                     var syntax = await syntaxReferences[j].GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
-                    var operation = semanticModel.GetOperation(syntax);
+                    var operation = semanticModel.GetOperation(syntax, cancellationToken);
 
                     // Look for a call to one of the SignalR gestures that applies to the Configure method.
                     if (operation

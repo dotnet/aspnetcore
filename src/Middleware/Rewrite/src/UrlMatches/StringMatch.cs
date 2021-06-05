@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
                 case StringOperationType.LessEqual:
                     return string.Compare(input, _value, _stringComparison) <= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 default:
-                    throw new ArgumentOutOfRangeException("operation"); // Will never be thrown
+                    throw new ArgumentOutOfRangeException(nameof(input)); // Will never be thrown
             }
         }
     }

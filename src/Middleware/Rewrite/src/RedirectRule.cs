@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Rewrite
         {
             if (string.IsNullOrEmpty(regex))
             {
-                throw new ArgumentException(nameof(regex));
+                throw new ArgumentNullException(nameof(regex));
             }
 
             if (string.IsNullOrEmpty(replacement))
             {
-                throw new ArgumentException(nameof(replacement));
+                throw new ArgumentNullException(nameof(replacement));
             }
 
             InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);

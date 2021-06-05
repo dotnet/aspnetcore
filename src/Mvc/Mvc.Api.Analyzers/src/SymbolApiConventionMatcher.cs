@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             if (argEnum == null)
             {
-                throw new ArgumentNullException(nameof(argEnum));
+                throw new ArgumentNullException(nameof(symbol));
             }
 
             var intValue = (int)argEnum;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             if (argEnum == null)
             {
-                throw new ArgumentNullException(nameof(argEnum));
+                throw new ArgumentNullException(nameof(symbol));
             }
 
             var intValue = (int)argEnum;

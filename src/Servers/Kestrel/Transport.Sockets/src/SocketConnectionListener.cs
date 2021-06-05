@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 {
                     Debug.Assert(_listenSocket != null, "Bind must be called first.");
 
-                    var acceptSocket = await _listenSocket.AcceptAsync();
+                    var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
 
                     // Only apply no delay to Tcp based endpoints
                     if (acceptSocket.LocalEndPoint is IPEndPoint)

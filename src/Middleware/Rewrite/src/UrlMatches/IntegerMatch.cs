@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
                 case IntegerOperationType.NotEqual:
                     return compValue != _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 default:
-                    throw new ArgumentOutOfRangeException("operation"); // Will never be thrown
+                    throw new ArgumentOutOfRangeException(nameof(input)); // Will never be thrown
             }
         }
     }

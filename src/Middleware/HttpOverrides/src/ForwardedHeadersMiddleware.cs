@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException($"options.{propertyName} is required", "options");
+                throw new ArgumentException($"options.{propertyName} is required", nameof(value));
             }
         }
 

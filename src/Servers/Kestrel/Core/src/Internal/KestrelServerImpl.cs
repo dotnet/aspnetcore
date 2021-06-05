@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             _stopCts.Cancel();
 
             // Don't use cancellationToken when acquiring the semaphore. Dispose calls this with a pre-canceled token.
-            await _bindSemaphore.WaitAsync().ConfigureAwait(false);
+            await _bindSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {

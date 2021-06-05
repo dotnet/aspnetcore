@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Internal
             if (_completedSegments == null && _currentSegment is not null)
             {
                 // There is only one segment so write without awaiting.
-                return destination.WriteAsync(_currentSegment, 0, _position);
+                return destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
             }
 
             return CopyToSlowAsync(destination);

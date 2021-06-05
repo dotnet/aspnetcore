@@ -471,7 +471,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
+#if NETCOREAPP
+                        var responseBuffer = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+#else
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
+#endif
                         var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
                         {

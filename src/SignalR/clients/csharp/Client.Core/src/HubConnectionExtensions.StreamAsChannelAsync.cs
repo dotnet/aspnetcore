@@ -284,13 +284,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 try
                 {
-                    while (await inputChannel.WaitToReadAsync())
+                    while (await inputChannel.WaitToReadAsync(cancellationToken))
                     {
                         while (inputChannel.TryRead(out var item))
                         {
                             while (!outputChannel.Writer.TryWrite((TResult)item!))
                             {
-                                if (!await outputChannel.Writer.WaitToWriteAsync())
+                                if (!await outputChannel.Writer.WaitToWriteAsync(cancellationToken))
                                 {
                                     // Failed to write to the output channel because it was closed. Nothing really we can do but abort here.
                                     return;

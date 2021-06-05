@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             {
                 if (method.OverriddenMethod == null)
                 {
-                    throw new ArgumentNullException(nameof(method.OverriddenMethod));
+                    throw new ArgumentNullException(nameof(method));
                 }
 
                 method = method.OverriddenMethod;

@@ -207,11 +207,11 @@ namespace Microsoft.AspNetCore.TestHost
             }
             if (buffer.Offset < 0 || buffer.Offset > buffer.Array.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(buffer.Offset), buffer.Offset, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(buffer), buffer.Offset, string.Empty);
             }
             if (buffer.Count < 0 || buffer.Count > buffer.Array.Length - buffer.Offset)
             {
-                throw new ArgumentOutOfRangeException(nameof(buffer.Count), buffer.Count, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(buffer), buffer.Count, string.Empty);
             }
         }
 
