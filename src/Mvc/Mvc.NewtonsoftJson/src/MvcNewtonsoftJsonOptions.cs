@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </value>
         public bool ReadJsonWithRequestCulture { get; set; }
 
+        /// <summary>
         /// Gets the maximum size to buffer in memory when <see cref="MvcOptions.SuppressOutputFormatterBuffering"/> is not set.
         /// <para>
         /// <see cref="NewtonsoftJsonOutputFormatter"/> buffers the output stream by default, buffering up to a certain amount in memory, before buffering to disk.
