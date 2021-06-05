@@ -58,6 +58,11 @@ namespace Microsoft.AspNetCore.Components.WebView
             DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.EndInvokeDotNet, callId, success, invocationResultOrError));
         }
 
+        public void SendByteArray(int id, byte[] data)
+        {
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.ReceiveByteArray, id, data));
+        }
+
         public void NotifyUnhandledException(Exception exception)
         {
             var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.Message, exception.StackTrace);

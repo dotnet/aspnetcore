@@ -22,7 +22,8 @@ export function sendEndInvokeJSFromDotNet(asyncHandle: number, succeeded: boolea
 }
 
 export function sendByteArray(id: number, data: Uint8Array) {
-  send('ReceiveByteArrayFromJS', id, data);
+  const dataBase64Encoded = btoa(String.fromCharCode.apply(null, data as unknown as number[]));
+  send('ReceiveByteArrayFromJS', id, dataBase64Encoded);
 }
 
 export function sendLocationChanged(uri: string, intercepted: boolean) {

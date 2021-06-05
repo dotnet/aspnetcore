@@ -28,6 +28,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             // We could come up with something a little more low-level here if we
             // wanted to avoid a couple of allocations
             var messageTypeAndArgs = args.Prepend(messageType);
+
+            // Note we do NOT need the JSRuntime specific JsonSerializerOptions as the args needing special handling
+            // (JS/DotNetObjectReference & Byte Arrays) have already been serialized earlier in the JSRuntime.
+            // We run the serialization here to get the add the message type.
             return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(messageTypeAndArgs, JsonSerializerOptionsProvider.Options)}";
         }
 
@@ -59,6 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             DispatchBrowserEvent,
             OnRenderCompleted,
             OnLocationChanged,
+            ReceiveByteArrayFromJS
         }
 
         public enum OutgoingMessageType
@@ -70,6 +75,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             EndInvokeDotNet,
             NotifyUnhandledException,
             BeginInvokeJS,
+            ReceiveByteArray
         }
     }
 }
