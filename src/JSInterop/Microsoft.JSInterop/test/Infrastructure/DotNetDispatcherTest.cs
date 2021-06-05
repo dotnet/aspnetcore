@@ -5,7 +5,6 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -711,6 +710,21 @@ namespace Microsoft.JSInterop.Infrastructure
 
             Assert.True(task.IsCompletedSuccessfully);
             Assert.Null(task.Result);
+        }
+
+        [Fact]
+        public void ReceiveByteArray_Works()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            DotNetDispatcher.ReceiveByteArray(jsRuntime, 0, byteArray);
+
+            // Assert
+            Assert.Equal(1, jsRuntime.ByteArraysToBeRevived.Count);
+            Assert.Equal(byteArray, jsRuntime.ByteArraysToBeRevived.Buffer[0]);
         }
 
         internal class SomeInteralType

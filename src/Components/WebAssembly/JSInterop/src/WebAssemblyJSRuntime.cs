@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -66,6 +68,12 @@ namespace Microsoft.JSInterop.WebAssembly
                 : dispatchResult.Exception!.ToString();
             InvokeUnmarshalled<string?, bool, string, object>("Blazor._internal.endInvokeDotNetFromJS",
                 callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
+        }
+
+        /// <inheritdoc />
+        protected override void SendByteArray(int id, byte[] data)
+        {
+            InvokeUnmarshalled<int, byte[], object>("Blazor._internal.receiveByteArray", id, data);
         }
 
         internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)

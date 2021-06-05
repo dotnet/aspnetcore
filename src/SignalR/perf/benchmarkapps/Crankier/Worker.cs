@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
         {
             _agentProcess = Process.GetProcessById(agentProcessId);
             _agent = new AgentSender(new StreamWriter(Console.OpenStandardOutput()));
-            _processId = Process.GetCurrentProcess().Id;
+            _processId = Environment.ProcessId;
             _clients = new ConcurrentBag<Client>();
             _sendStatusCts = new CancellationTokenSource();
         }

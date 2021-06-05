@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc
 
                 var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
                 return services
-                    .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
+                    .Where(sd => !multiRegistrationServiceTypes.ContainsKey(sd.ServiceType))
                     .Select(sd => sd.ServiceType);
             }
         }

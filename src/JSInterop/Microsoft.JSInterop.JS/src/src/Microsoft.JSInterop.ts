@@ -5,6 +5,7 @@ export module DotNet {
 
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
+  const byteArraysToBeRevived = new Map<number, Uint8Array>();
 
   class JSObject {
     _cachedFunctions: Map<string, Function>;
@@ -169,7 +170,7 @@ export module DotNet {
   function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
     const dispatcher = getRequiredDispatcher();
     if (dispatcher.invokeDotNetFromJS) {
-      const argsJson = JSON.stringify(args, argReplacer);
+      const argsJson = stringifyArgs(args);
       const resultJson = dispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
       return resultJson ? parseJsonWithRevivers(resultJson) : null;
     } else {
@@ -188,7 +189,7 @@ export module DotNet {
     });
 
     try {
-      const argsJson = JSON.stringify(args, argReplacer);
+      const argsJson = stringifyArgs(args);
       getRequiredDispatcher().beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
     } catch (ex) {
       // Synchronous failure
@@ -267,6 +268,13 @@ export module DotNet {
      * @param resultOrError The serialized result or the serialized error from the async operation.
      */
     endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
+
+    /**
+     * Invoked by the runtime to transfer a byte array from JS to .NET.
+     * @param id The identifier for the byte array used during revival.
+     * @param data The byte array being transferred for eventual revival.
+     */
+     sendByteArray(id: number, data: Uint8Array): void;
   }
 
   /**
@@ -304,7 +312,7 @@ export module DotNet {
 
       return result === null || result === undefined
         ? null
-        : JSON.stringify(result, argReplacer);
+        : stringifyArgs(result);
     },
 
     /**
@@ -329,7 +337,7 @@ export module DotNet {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
-          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, createJSCallResult(result, resultType)], argReplacer)),
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, stringifyArgs([asyncHandle, true, createJSCallResult(result, resultType)])),
           error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
         );
       }
@@ -346,6 +354,15 @@ export module DotNet {
         ? parseJsonWithRevivers(resultJsonOrExceptionMessage)
         : new Error(resultJsonOrExceptionMessage);
       completePendingCall(parseInt(asyncCallId), success, resultOrError);
+    },
+
+    /**
+     * Receives notification that a byte array is being transferred from .NET to JS.
+     * @param id The identifier for the byte array used during revival.
+     * @param data The byte array being transferred for eventual revival.
+     */
+    receiveByteArray: (id: number, data: Uint8Array): void => {
+      byteArraysToBeRevived.set(id, data);
     }
   }
 
@@ -394,24 +411,28 @@ export module DotNet {
   }
 
   const dotNetObjectRefKey = '__dotNetObject';
-  attachReviver(function reviveDotNetObject(key: any, value: any) {
-    if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
-      return new DotNetObject(value.__dotNetObject);
-    }
+  const byteArrayRefKey = '__byte[]';
+  attachReviver(function reviveReference(key: any, value: any) {
+    if (value && typeof value === 'object') {
+      if (value.hasOwnProperty(dotNetObjectRefKey)) {
+        return new DotNetObject(value.__dotNetObject);
+      } else if (value.hasOwnProperty(jsObjectIdKey)) {
+        const id = value[jsObjectIdKey];
+        const jsObject = cachedJSObjectsById[id];
 
-    // Unrecognized - let another reviver handle it
-    return value;
-  });
+        if (jsObject) {
+          return jsObject.getWrappedObject();
+        } else {
+          throw new Error(`JS object instance with Id '${id}' does not exist. It may have been disposed.`);
+        }
+      } else if (value.hasOwnProperty(byteArrayRefKey)) {
+        const index = value[byteArrayRefKey];
+        const byteArray = byteArraysToBeRevived.get(index);
+        if (byteArray === undefined) {
+          throw new Error(`Byte array index '${index}' does not exist.`);
+        }
 
-  attachReviver(function reviveJSObjectReference(key: any, value: any) {
-    if (value && typeof value === 'object' && value.hasOwnProperty(jsObjectIdKey)) {
-      const id = value[jsObjectIdKey];
-      const jsObject = cachedJSObjectsById[id];
-
-      if (jsObject) {
-        return jsObject.getWrappedObject();
-      } else {
-        throw new Error(`JS object instance with ID ${id} does not exist (has it been disposed?).`);
+        return byteArray;
       }
     }
 
@@ -430,7 +451,22 @@ export module DotNet {
     }
   }
 
+  let nextByteArrayIndex = 0;
+  function stringifyArgs(args: any[] | null) {
+    nextByteArrayIndex = 0;
+    return JSON.stringify(args, argReplacer);
+  }
+
   function argReplacer(key: string, value: any) {
-    return value instanceof DotNetObject ? value.serializeAsArg() : value;
+    if (value instanceof DotNetObject) {
+      return value.serializeAsArg();
+    } else if (value instanceof Uint8Array) {
+      dotNetDispatcher!.sendByteArray(nextByteArrayIndex, value);
+      const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
+      nextByteArrayIndex++;
+      return jsonValue;
+    }
+
+    return value;
   }
 }

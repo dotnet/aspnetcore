@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public void RemoveDisconnectedConnection(string connectionId)
         {
-            var groupNames = _groups.Where(x => x.Value.Keys.Contains(connectionId)).Select(x => x.Key);
+            var groupNames = _groups.Where(x => x.Value.ContainsKey(connectionId)).Select(x => x.Key);
             foreach (var groupName in groupNames)
             {
                 Remove(connectionId, groupName);

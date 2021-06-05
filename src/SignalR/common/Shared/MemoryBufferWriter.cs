@@ -197,13 +197,21 @@ namespace Microsoft.AspNetCore.Internal
                 for (var i = 0; i < count; i++)
                 {
                     var segment = _completedSegments[i];
+#if NETCOREAPP
+                    await destination.WriteAsync(segment.Buffer.AsMemory(0, segment.Length));
+#else
                     await destination.WriteAsync(segment.Buffer, 0, segment.Length);
+#endif
                 }
             }
 
             if (_currentSegment is not null)
             {
+#if NETCOREAPP
+                await destination.WriteAsync(_currentSegment.AsMemory(0, _position));
+#else
                 await destination.WriteAsync(_currentSegment, 0, _position);
+#endif
             }
         }
 

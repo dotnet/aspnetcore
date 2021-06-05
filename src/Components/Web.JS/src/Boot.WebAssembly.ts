@@ -1,7 +1,8 @@
+/* eslint-disable array-element-newline */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
-import { monoPlatform } from './Platform/Mono/MonoPlatform';
+import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
@@ -9,7 +10,7 @@ import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
-import { Pointer, System_Boolean, System_String } from './Platform/Platform';
+import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_Object, System_String } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
@@ -45,6 +46,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   // Configure JS interop
   Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
+  Blazor._internal.receiveByteArray = receiveByteArray;
+  Blazor._internal.retrieveByteArray = retrieveByteArray;
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
@@ -159,6 +162,21 @@ function endInvokeDotNetFromJS(callId: System_String, success: System_Boolean, r
   const successBool = (success as any as number) !== 0;
   const resultJsonOrErrorMessageString = BINDING.conv_string(resultJsonOrErrorMessage)!;
   DotNet.jsCallDispatcher.endInvokeDotNetFromJS(callIdString, successBool, resultJsonOrErrorMessageString);
+}
+
+function receiveByteArray(id: System_Int, data: System_Array<System_Byte>): void {
+  const idLong = id as any as number;
+  const dataByteArray = monoPlatform.toUint8Array(data);
+  DotNet.jsCallDispatcher.receiveByteArray(idLong, dataByteArray);
+}
+
+function retrieveByteArray(): System_Object {
+  if (byteArrayBeingTransferred === null) {
+    throw new Error('Byte array not available for transfer');
+  }
+
+  const typedArray = BINDING.js_typed_array_to_array(byteArrayBeingTransferred);
+  return typedArray;
 }
 
 Blazor.start = boot;

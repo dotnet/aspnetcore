@@ -294,10 +294,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     do
                     {
                         Debug.Assert(charsRemaining == 0);
-                        _bytesRead = await _stream.ReadAsync(
-                            _byteBuffer,
-                            0,
-                            _byteBufferSize);
+                        _bytesRead = await _stream.ReadAsync(_byteBuffer.AsMemory(0, _byteBufferSize));
                         if (_bytesRead == 0)  // EOF
                         {
                             _isBlocked = true;
@@ -534,10 +531,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             do
             {
-                _bytesRead = await _stream.ReadAsync(
-                    _byteBuffer,
-                    0,
-                    _byteBufferSize).ConfigureAwait(false);
+                _bytesRead = await _stream.ReadAsync(_byteBuffer.AsMemory(0, _byteBufferSize)).ConfigureAwait(false);
                 if (_bytesRead == 0)
                 {
                     // We're at EOF
