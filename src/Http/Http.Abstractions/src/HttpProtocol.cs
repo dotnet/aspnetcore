@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Http
         ///  HTTP protocol version 0.9.
         /// </summary>
         public static readonly string Http09 = "HTTP/0.9";
-        
         /// <summary>
         ///  HTTP protocol version 1.0.
         /// </summary>
