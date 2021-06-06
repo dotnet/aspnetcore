@@ -2595,6 +2595,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        private class TestActivityFeature : IHttpActivityFeature
+        {
+            public TestActivityFeature(Activity activity)
+            {
+                Activity = activity;
+            }
+
+            public Activity Activity { get; set; }
+        }
+
         [Fact]
         public async Task LongRunningActivityTagSetOnExecuteAsync()
         {
@@ -2616,16 +2626,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
 
-                using var activity = new Activity("name");
-                activity.Start();
+                var activityFeature = new TestActivityFeature(new Activity("name"));
+                activityFeature.Activity.Start();
+                context.Features.Set<IHttpActivityFeature>(activityFeature);
 
                 _ = dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
 
-                Assert.Equal("true", Activity.Current.GetTagItem("long-running-name-tbd"));
+                Assert.Equal("true", Activity.Current.GetTagItem("http.long_running"));
 
                 connection.Transport.Output.Complete();
 
                 await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+
+                activityFeature.Activity.Dispose();
             }
         }
 

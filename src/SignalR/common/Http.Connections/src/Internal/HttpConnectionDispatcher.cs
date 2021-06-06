@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
         {
-            System.Diagnostics.Activity.Current?.AddTag("long-running-name-tbd", "true");
+            context.Features.Get<IHttpActivityFeature>()?.Activity.AddTag("http.long_running", "true");
             var supportedTransports = options.Transports;
 
             // Server sent events transport
