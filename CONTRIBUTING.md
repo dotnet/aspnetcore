@@ -16,7 +16,7 @@ If you can't find an existing issue, log a new issue in the appropriate GitHub r
 * [AspNetCore](https://github.com/dotnet/aspnetcore)
 * [Entity Framework Core](https://github.com/dotnet/efcore)
 * [Tooling](https://github.com/aspnet/Tooling)
-* [Extensions](https://github.com/dotnet/extensions)
+* [Runtime](https://github.com/dotnet/runtime)
 
 Or browse the full list of repositories in the [aspnet](https://github.com/aspnet/) organization.
 
@@ -30,7 +30,7 @@ Our team members also monitor several other discussion forums:
 * [ASP.NET Core forum](https://forums.asp.net/1255.aspx/1?ASP+NET+5)
 * [Stack Overflow](https://stackoverflow.com/) with the [`asp.net-core`](https://stackoverflow.com/questions/tagged/asp.net-core), [`asp.net-core-mvc`](https://stackoverflow.com/questions/tagged/asp.net-core-mvc), or [`entity-framework-core`](https://stackoverflow.com/questions/tagged/entity-framework-core) tags.
 
-## How to submit a PR 
+## How to submit a PR
 
 We are always happy to see PRs from community members both for bug fixes as well as new features.
 To help you be successful we've put together a few simple rules to follow when you prepare to contribute to our codebase:
@@ -40,18 +40,18 @@ To help you be successful we've put together a few simple rules to follow when y
   Over the years we've seen many PRs targeting areas of the framework, which we didn't plan to expand further at the time.
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
   To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with `help wanted` label. You can find all these issues at: [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
-  
+
 Within that set, we have additionally marked issues which are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
-  
+
 If there is some other area not included here where you want to contribute to, first open an issue to describe the problem you are trying to solve and state that you're willing to contribute a fix for it. We will then discuss in that issue, whether we think it belongs in the platform and the best approach to solve it.
-  
+
 **Before writing code**
 
   This can save you a lot of time. We've seen PRs, where customers would solve an issue in a way, which either wouldn't fit into the framework because of how it's designed or it would change the framework in a way, which is not something we'd like to do. To avoid these situations, we encourage customers to discuss the preferred design with the team first. To do so, file a new `design proposal` issue, link to the issue you'd like to address and provide detailed information about how you'd like to solve a specific problem. We triage issues peridocially and it will not take long for a team member to engage with you on that proposal.
   When you get an agreement from our team members that the design proposal you have is solid, then go ahead and prepare the PR.
   To file a design proposal, look for the relevant issue in the `New issue` page or simply click [this link](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=design-proposal&template=4_design_proposal.md):
   ![image](https://user-images.githubusercontent.com/34246760/107969904-41b9ae80-6f65-11eb-8b84-d15e7d94753b.png)
-  
+
 **Before submitting the pull request**
 
 Before submitting a pull request, make sure that it checks the following requirements:
@@ -61,7 +61,7 @@ Before submitting a pull request, make sure that it checks the following require
 - You add test coverage following existing patterns within the codebase
 - Your code matches the existing syntax conventions within the codebase
 - Your PR is small, focused, and avoids making unrelated changes
-  
+
 If your pull request contains any of the below, it's less likely to be merged.
 
 - Changes that break backward compatibility
