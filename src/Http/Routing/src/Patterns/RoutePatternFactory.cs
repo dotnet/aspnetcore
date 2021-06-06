@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Each Required Value either needs to either:
             // 1. be null-ish
             // 2. have a corresponding parameter
-            // 3. have a corrsponding default that matches both key and value
+            // 3. have a corresponding default that matches both key and value
             if (requiredValues != null)
             {
                 foreach (var kvp in requiredValues)
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         }
                     }
 
-                    // 3. have a corrsponding default that matches both key and value
+                    // 3. have a corresponding default that matches both key and value
                     if (!found &&
                         updatedDefaults != null &&
                         updatedDefaults.TryGetValue(kvp.Key, out var defaultValue) &&
@@ -806,7 +806,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <param name="constraint">
         /// The constraint object, which must be of type <see cref="IRouteConstraint"/>
         /// or <see cref="string"/>. If the constraint object is a <see cref="string"/>
-        /// then it will be tranformed into an instance of <see cref="RegexRouteConstraint"/>.
+        /// then it will be transformed into an instance of <see cref="RegexRouteConstraint"/>.
         /// </param>
         /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
         public static RoutePatternParameterPolicyReference Constraint(object constraint)

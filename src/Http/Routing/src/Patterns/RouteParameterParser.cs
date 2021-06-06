@@ -163,8 +163,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             case ':':
                             case '=':
                                 // In the original implementation, the Regex would've backtracked if it encountered an
-                                // unbalanced opening bracket followed by (not necessarily immediatiely) a delimiter.
-                                // Simply verifying that the parantheses will eventually be closed should suffice to
+                                // unbalanced opening bracket followed by (not necessarily immediately) a delimiter.
+                                // Simply verifying that the parentheses will eventually be closed should suffice to
                                 // determine if the terminator needs to be consumed as part of the current constraint
                                 // specification.
                                 var indexOfClosingParantheses = text.IndexOf(')', currentIndex + 1);

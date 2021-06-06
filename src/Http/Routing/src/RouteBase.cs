@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Routing
         protected abstract Task OnRouteMatched(RouteContext context);
 
         /// <summary>
-        /// Executes whenever a virtual path is dervied from a <paramref name="context"/>.
+        /// Executes whenever a virtual path is derived from a <paramref name="context"/>.
         /// </summary>
         /// <param name="context">A <see cref="VirtualPathContext"/> instance.</param>
         /// <returns>A <see cref="VirtualPathData"/> instance.</returns>
