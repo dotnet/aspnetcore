@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             {
                 // If the path string has a trailing slash and the other string has a leading slash, we need
                 // to trim one of them.
-                // Just decrement the total lenght, for now.
+                // Just decrement the total length, for now.
                 length--;
             }
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             {
                 // If the path string has a trailing slash and the other string has a leading slash, we need
                 // to trim one of them.
-                // Trim the last slahs from pathBase. The total lenght was decremented before the call to string.Create.
+                // Trim the last slahs from pathBase. The total length was decremented before the call to string.Create.
                 pathBaseSpan = pathBaseSpan[..^1];
             }
 

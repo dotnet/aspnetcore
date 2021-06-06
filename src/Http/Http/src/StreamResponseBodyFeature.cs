@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Copies the specified file segment to the given response stream.
-        /// This calls StartAsync if it has not previoulsy been called.
+        /// This calls StartAsync if it has not previously been called.
         /// </summary>
         /// <param name="path">The full disk path to the file.</param>
         /// <param name="offset">The offset in the file to start at.</param>
