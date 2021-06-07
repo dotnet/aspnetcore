@@ -159,6 +159,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
         }
 
+        public override bool SupportsTrust => true;
+
         protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
         {
             if (IsTrusted(certificate)) // On OSX this check just ensures its on the system keychain

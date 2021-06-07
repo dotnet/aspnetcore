@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public override bool IsTrusted(X509Certificate2 certificate)
         {
+            // TODO: support 'partial' return.
+
             // Return true when all stores trust the cert.
             using var pemCertificateFile = new PemCertificateFile(certificate);
             foreach (var store in CertificateStores)
@@ -35,6 +37,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
             return CertificateStores.Count > 0;
         }
+
+        public override bool SupportsTrust => CertificateStores.Count > 0;
 
         protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
         {

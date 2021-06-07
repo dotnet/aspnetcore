@@ -350,26 +350,34 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
             if (trust?.HasValue() == true)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (!manager.SupportsTrust)
                 {
-                    reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
-                        "already trusted we will run the following command:" + Environment.NewLine +
-                        "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
-                        Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                        "on the system keychain.");
+                    reporter.Warn("Trusting the HTTPS development certificate was requested. Trusting the certificate automatically is not supported on this distribition. " +
+                        "For instructions on how to manually trust the certificate, go to https://aka.ms/dev-certs-trust");
                 }
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                else
                 {
-                    reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
-                        "if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.");
-                }
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
+                            "already trusted we will run the following command:" + Environment.NewLine +
+                            "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
+                            Environment.NewLine + "This command might prompt you for your password to install the certificate " +
+                            "on the system keychain.");
+                    }
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
-                        "already trusted we will run commands using 'sudo'." +
-                        Environment.NewLine + "This might prompt you for your password.");
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
+                            "if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.");
+                    }
+
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
+                            "already trusted we will run commands using 'sudo'." +
+                            Environment.NewLine + "This might prompt you for your password.");
+                    }
                 }
             }
 
@@ -384,7 +392,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 now,
                 now.Add(HttpsCertificateValidity),
                 exportPath.Value(),
-                trust == null ? false : trust.HasValue(),
+                trust == null ? false : trust.HasValue() && manager.SupportsTrust,
                 password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
                 password.Value(),
                 exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);

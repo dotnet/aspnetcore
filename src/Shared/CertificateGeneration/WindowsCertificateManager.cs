@@ -126,6 +126,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 .Any(c => c.Thumbprint == certificate.Thumbprint);
         }
 
+        public override bool SupportsTrust => true;
+
         protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)
         {
             return ListCertificates(storeName, storeLocation, isValid: false);

@@ -435,6 +435,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public abstract bool IsTrusted(X509Certificate2 certificate);
 
+        public virtual bool SupportsTrust => false;
+
         protected abstract X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation);
 
         protected abstract void TrustCertificateCore(X509Certificate2 certificate);
