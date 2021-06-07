@@ -101,6 +101,7 @@ namespace SampleApp
                             options.ConfigureHttpsDefaults(httpsOptions =>
                             {
                                 httpsOptions.SslProtocols = SslProtocols.Tls12;
+                                httpsOptions.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                             });
 
                             options.Listen(IPAddress.Loopback, basePort, listenOptions =>
@@ -113,6 +114,7 @@ namespace SampleApp
 
                             options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
                             {
+                                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
                                 listenOptions.UseHttps();
                                 listenOptions.UseConnectionLogging();
                             });
