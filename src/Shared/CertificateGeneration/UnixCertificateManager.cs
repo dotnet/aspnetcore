@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 {
     internal class UnixCertificateManager : CertificateManager
     {
-        private List<CertificateStore> _certificateStores;
+        private List<CertificateStore>? _certificateStores;
 
         private List<CertificateStore> CertificateStores
             => _certificateStores ??= CertificateStoreFinder.FindCertificateStores();
