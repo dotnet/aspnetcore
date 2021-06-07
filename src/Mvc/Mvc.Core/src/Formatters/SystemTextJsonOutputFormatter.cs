@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -43,7 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 };
             }
 
-            return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
+            return new SystemTextJsonOutputFormatter(jsonSerializerOptions)
+            {
+                JsonOptions = jsonOptions,
+            };
         }
 
         /// <summary>
@@ -54,6 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// changes to the options will affect all output formatting.
         /// </remarks>
         public JsonSerializerOptions SerializerOptions { get; }
+
+        internal JsonOptions? JsonOptions { get; init; }
 
         /// <inheritdoc />
         public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
@@ -79,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var responseStream = httpContext.Response.Body;
             if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
             {
-                await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions);
+                await SerializeAsync(responseStream, context.Object, objectType);
                 await responseStream.FlushAsync();
             }
             else
@@ -91,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 ExceptionDispatchInfo? exceptionDispatchInfo = null;
                 try
                 {
-                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, objectType, SerializerOptions);
+                    await SerializeAsync(transcodingStream, context.Object, objectType);
                     await transcodingStream.FlushAsync();
                 }
                 catch (Exception ex)
@@ -114,6 +120,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     exceptionDispatchInfo?.Throw();
                 }
             }
+        }
+
+        private Task SerializeAsync(Stream stream, object? value, Type serializedType)
+        {
+            if (JsonOptions?.CompositeContext.GetSerializerContext(serializedType) is { } serializerContext)
+            {
+                return JsonSerializer.SerializeAsync(stream, value, serializedType, serializerContext);
+            }
+
+            return JsonSerializer.SerializeAsync(stream, value, serializedType, SerializerOptions);
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class JsonOptions
     {
+        internal CompositeJsonserializerContext CompositeContext = new();
+
         /// <summary>
         /// Gets or sets a flag to determine whether error messages from JSON deserialization by the
         /// <see cref="SystemTextJsonInputFormatter"/> will be added to the <see cref="ModelStateDictionary"/>. If
@@ -38,5 +41,11 @@ namespace Microsoft.AspNetCore.Mvc
             // This value is the same for model binding and Json.Net's serialization.
             MaxDepth = MvcOptions.DefaultMaxModelBindingRecursionDepth,
         };
+
+        /// <summary>
+        /// Configures a <see cref="JsonSerializerContext"/> to be used during JSON serialization and deserialization.
+        /// </summary>
+        /// <param name="jsonSerializerContext">The <see cref="JsonSerializerContext"/>.</param>
+        public void AddJsonSerializerContext(JsonSerializerContext jsonSerializerContext) => CompositeContext.Add(jsonSerializerContext);
     }
 }

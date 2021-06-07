@@ -528,6 +528,7 @@
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Content(string contentPath) -> string
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.IsLocalUrl(string url) -> bool
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Link(string routeName, object values) -> string
+Microsoft.AspNetCore.Mvc.JsonOptions.AddJsonSerializerContext(System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.get -> bool
 Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.set -> void
 Microsoft.AspNetCore.Mvc.Controllers.ControllerActivatorProvider.CreateAsyncReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor! descriptor) -> System.Func<Microsoft.AspNetCore.Mvc.ControllerContext!, object!, System.Threading.Tasks.ValueTask>?
@@ -3221,4 +3222,3 @@ virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuted(Microsoft.As
 virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext! context) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.HandleNonHttpsRequest(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.OnAuthorization(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
-

@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MvcSandbox.Controllers;
 
 namespace MvcSandbox
 {
@@ -26,7 +28,7 @@ namespace MvcSandbox
                 options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
             });
             services.AddServerSideBlazor();
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(o => o.AddJsonSerializerContext(new MyJsonContext(new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
