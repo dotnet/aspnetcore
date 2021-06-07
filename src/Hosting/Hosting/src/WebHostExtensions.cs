@@ -173,7 +173,9 @@ namespace Microsoft.AspNetCore.Hosting
             await waitForStop.Task;
 
             // WebHost will use its default ShutdownTimeout if none is specified.
-            await host.StopAsync(cancellationToken);
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods. StopAsync should not be canceled by the token to RunAsync.
+            await host.StopAsync();
+#pragma warning restore CA2016
         }
     }
 }

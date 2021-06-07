@@ -152,7 +152,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 {
                     while (true)
                     {
-                        var result = await reader.ReadAsync(cancellationToken);
+#pragma warning disable CA2016 // We rely on the CancelReader callback to cancel pending reads. Do not pass the token to ReadAsync since that would result in an exception on cancelation.
+                        var result = await reader.ReadAsync();
+#pragma warning restore CA2016
                         var buffer = result.Buffer;
                         var consumed = buffer.Start;
                         var examined = buffer.End;

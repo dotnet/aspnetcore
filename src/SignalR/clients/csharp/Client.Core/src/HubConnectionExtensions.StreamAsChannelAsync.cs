@@ -278,44 +278,45 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var inputChannel = await hubConnection.StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cancellationToken);
             var outputChannel = Channel.CreateUnbounded<TResult>();
 
-            // Local function to provide a way to run async code as fire-and-forget
-            // The output channel is how we signal completion to the caller.
-            async Task RunChannel()
+            // Intentionally avoid passing the CancellationToken to RunChannel. The token is only meant to cancel the intial setup, not the enumeration.
+            _ = RunChannel(inputChannel, outputChannel);
+
+            return outputChannel.Reader;
+        }
+
+        // Function to provide a way to run async code as fire-and-forget
+        // The output channel is how we signal completion to the caller.
+        private static async Task RunChannel<TResult>(ChannelReader<object?> inputChannel, Channel<TResult> outputChannel)
+        {
+            try
             {
-                try
+                while (await inputChannel.WaitToReadAsync())
                 {
-                    while (await inputChannel.WaitToReadAsync(cancellationToken))
+                    while (inputChannel.TryRead(out var item))
                     {
-                        while (inputChannel.TryRead(out var item))
+                        while (!outputChannel.Writer.TryWrite((TResult)item!))
                         {
-                            while (!outputChannel.Writer.TryWrite((TResult)item!))
+                            if (!await outputChannel.Writer.WaitToWriteAsync())
                             {
-                                if (!await outputChannel.Writer.WaitToWriteAsync(cancellationToken))
-                                {
-                                    // Failed to write to the output channel because it was closed. Nothing really we can do but abort here.
-                                    return;
-                                }
+                                // Failed to write to the output channel because it was closed. Nothing really we can do but abort here.
+                                return;
                             }
                         }
                     }
+                }
 
-                    // Manifest any errors in the completion task
-                    await inputChannel.Completion;
-                }
-                catch (Exception ex)
-                {
-                    outputChannel.Writer.TryComplete(ex);
-                }
-                finally
-                {
-                    // This will safely no-op if the catch block above ran.
-                    outputChannel.Writer.TryComplete();
-                }
+                // Manifest any errors in the completion task
+                await inputChannel.Completion;
             }
-
-            _ = RunChannel();
-
-            return outputChannel.Reader;
+            catch (Exception ex)
+            {
+                outputChannel.Writer.TryComplete(ex);
+            }
+            finally
+            {
+                // This will safely no-op if the catch block above ran.
+                outputChannel.Writer.TryComplete();
+            }
         }
     }
 }

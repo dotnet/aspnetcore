@@ -222,8 +222,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             _stopCts.Cancel();
 
-            // Don't use cancellationToken when acquiring the semaphore. Dispose calls this with a pre-canceled token.
-            await _bindSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+#pragma warning disable CA2016 // Don't use cancellationToken when acquiring the semaphore. Dispose calls this with a pre-canceled token.
+            await _bindSemaphore.WaitAsync().ConfigureAwait(false);
+#pragma warning restore CA2016
 
             try
             {

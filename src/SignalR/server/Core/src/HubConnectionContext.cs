@@ -174,7 +174,9 @@ namespace Microsoft.AspNetCore.SignalR
         internal ValueTask WriteAsync(HubMessage message, bool ignoreAbort, CancellationToken cancellationToken = default)
         {
             // Try to grab the lock synchronously, if we fail, go to the slower path
-            if (!_writeLock.Wait(0, cancellationToken))
+#pragma warning disable CA2016 // This will always finish synchronously so we do not need to both with cancel
+            if (!_writeLock.Wait(0))
+#pragma warning restore CA2016
             {
                 return new ValueTask(WriteSlowAsync(message, ignoreAbort, cancellationToken));
             }
@@ -217,8 +219,10 @@ namespace Microsoft.AspNetCore.SignalR
         public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
         {
             // Try to grab the lock synchronously, if we fail, go to the slower path
-            if (!_writeLock.Wait(0, cancellationToken))
+#pragma warning disable CA2016 // This will always finish synchronously so we do not need to both with cancel
+            if (!_writeLock.Wait(0))
             {
+#pragma warning restore CA2016
                 return new ValueTask(WriteSlowAsync(message, cancellationToken));
             }
 
