@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 #nullable enable
@@ -20,13 +21,16 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private static void FindSystemCertificateStore(List<CertificateStore> stores)
         {
             const string StoreName = "System certificates";
-            if (ProcessRunner.HasProgram("yum"))
+            if (ProcessHelper.HasProgram("yum"))
             {
-                stores.Add(new CertificateFolderStore(StoreName, "/etc/pki/tls/certs", new()
-                {
-                    Command = { "update-ca-trust" },
-                    Elevate = true
-                }));
+                stores.Add(new CertificateFolderStore(StoreName, "/etc/pki/tls/certs",
+                    new ProcessStartInfo()
+                    {
+                        FileName = "sudo",
+                        ArgumentList = { "update-ca-trust" },
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }));
             }
         }
 

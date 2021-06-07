@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Certificates.Generation;
@@ -10,14 +12,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
     {
         public string FolderPath { get; }
 
-        private readonly ProcessRunOptions _updateStore;
+        private readonly ProcessStartInfo _updateStore;
 
-        private bool Elevate => _updateStore.Elevate;
+        private readonly bool _elevate;
 
-        public CertificateFolderStore(string name, string path, ProcessRunOptions updateStore) :
+        public CertificateFolderStore(string name, string path, ProcessStartInfo updateStore) :
             base(name)
         {
+            if (!updateStore.RedirectStandardError)
+            {
+                throw new ArgumentException(nameof(updateStore));
+            }
+
             FolderPath = path;
+            _elevate = updateStore.FileName == "sudo";
             _updateStore = updateStore;
         }
 
@@ -32,9 +40,44 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             try
             {
                 CertificateManager.ExportCertificate(certificate, pemFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
-                CopyFile(pemFile, GetCertificatePath(certificate));
-                ProcessRunner.Run(_updateStore);
-                return true;
+
+                string sourceFileName = pemFile;
+                string destFileName = GetCertificatePath(certificate);
+                if (_elevate)
+                {
+                    var copyProcess = Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = "sudo",
+                        ArgumentList = { "cp", sourceFileName, destFileName },
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                    })!;
+                    copyProcess.WaitForExit();
+                    var stderr = copyProcess.StandardError.ReadToEnd();
+                    copyProcess.WaitForExit();
+                    if (copyProcess.ExitCode != 0)
+                    {
+                        string cmdline = ProcessHelper.GetCommandLine(copyProcess.StartInfo);
+                        CertificateManager.Log.LinuxCertificateInstallCommandFailed(cmdline, copyProcess.ExitCode, stderr);
+                        return false;
+                    }
+                }
+                else
+                {
+                    File.Copy(sourceFileName, destFileName);
+                }
+
+                {
+                    Process updateStoreProcess = Process.Start(_updateStore)!;
+                    var stderr = updateStoreProcess.StandardError.ReadToEnd();
+                    updateStoreProcess.WaitForExit();
+                    if (updateStoreProcess.ExitCode != 0)
+                    {
+                        string cmdline = ProcessHelper.GetCommandLine(updateStoreProcess.StartInfo);
+                        CertificateManager.Log.LinuxCertificateInstallCommandFailed(cmdline, updateStoreProcess.ExitCode, stderr);
+                    }
+                    return updateStoreProcess.ExitCode != 0;
+                }
             }
             finally
             {
@@ -73,13 +116,16 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 return;
             }
 
-            if (Elevate)
+            if (_elevate)
             {
-                ProcessRunner.Run(new()
+                var process = Process.Start(new ProcessStartInfo()
                 {
-                    Command = { "rm", path },
-                    Elevate = true
-                });
+                    FileName = "sudo",
+                    ArgumentList = { "rm", path },
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                })!;
+                process.WaitForExit();
             }
             else
             {
@@ -91,18 +137,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         {
             DeleteFile(destFileName);
 
-            if (Elevate)
-            {
-                ProcessRunner.Run(new()
-                {
-                    Command = { "cp", sourceFileName, destFileName },
-                    Elevate = true
-                });
-            }
-            else
-            {
-                File.Copy(sourceFileName, destFileName);
-            }
+
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -28,14 +29,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 CertificateManager.ExportCertificate(certificate, pemFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
                 string name = GetCertificateNickname(certificate);
-                var result = ProcessRunner.Run(new() {
-                    Command = { "certutil", "-d", DatabasePath, "-A", "-t", "C,,", "-n", name, "-i", pemFile },
-                    ThrowOnFailure = false });
-                if (!result.IsSuccess)
+                Process process = Process.Start(new ProcessStartInfo() {
+                    FileName = "certutil",
+                    ArgumentList = { "-d", DatabasePath, "-A", "-t", "C,,", "-n", name, "-i", pemFile },
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true })!;
+                var stderr = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+                bool success = process.ExitCode != 0;
+                if (!success)
                 {
-                    CertificateManager.Log.LinuxCertutilInstallFailed(result.CommandLine, result.ExitCode, result.StandardError!.ToString());
+                    string cmdline = ProcessHelper.GetCommandLine(process.StartInfo);
+                    CertificateManager.Log.LinuxCertificateInstallCommandFailed(cmdline, process.ExitCode, stderr);
                 }
-                return result.IsSuccess;
+                return success;
             }
             finally
             {
@@ -51,18 +58,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public override bool HasCertificate(X509Certificate2 certificate)
         {
             string name = GetCertificateNickname(certificate);
-            ProcessRunResult runResult = ProcessRunner.Run(new()
+            Process process = Process.Start(new ProcessStartInfo()
             {
-                Command = { "certutil", "-d", DatabasePath, "-L", "-n", name, "-a" },
-                ReadStandardOutput = true,
-                ThrowOnFailure = false
-            });
-            if (runResult.IsSuccess)
+                FileName = "cerutil",
+                ArgumentList = { "-d", DatabasePath, "-L", "-n", name, "-a" },
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            })!;
+            string stdout = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            if (process.ExitCode == 0)
             {
-                runResult.StandardOutput!.Replace("\r\n", "\n");
+                stdout = stdout.Replace("\r\n", "\n");
                 const string BeginCertificate = "-----BEGIN CERTIFICATE-----";
-                var pemCertificates = runResult.StandardOutput.ToString()
-                    .Split(BeginCertificate, StringSplitOptions.RemoveEmptyEntries);
+                var pemCertificates = stdout.Split(BeginCertificate, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var pem in pemCertificates)
                 {
                     X509Certificate2 cert = X509Certificate2.CreateFromPem(BeginCertificate + "\n" + pem);
@@ -78,11 +87,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public override void DeleteCertificate(X509Certificate2 certificate)
         {
             string name = GetCertificateNickname(certificate);
-            ProcessRunner.Run(new()
+            var process = Process.Start(new ProcessStartInfo()
             {
-                Command = { "certutil", "-d", DatabasePath, "-D", "-n", name },
-                ThrowOnFailure = false
-            });
+                FileName = "certutil",
+                ArgumentList = { "-d", DatabasePath, "-D", "-n", name },
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            })!;
+            process.WaitForExit();
         }
 
         private string GetCertificateNickname(X509Certificate2 certificate)

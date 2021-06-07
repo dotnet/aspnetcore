@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 
 #nullable enable
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected bool CheckProgramDependency(string program)
         {
-            if (!ProcessRunner.HasProgram(program))
+            if (!ProcessHelper.HasProgram(program))
             {
                 // TODO reporter?.Warn($"Cannot use '{StoreName}' because '{program}' is not installed.");
                 return false;
@@ -32,10 +33,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return true;
         }
 
-        protected bool CheckProgramDependency(ProcessRunOptions runOptions)
+        protected bool CheckProgramDependency(ProcessStartInfo psi)
         {
-            return CheckProgramDependency(runOptions.Command[0])
-                & (!runOptions.Elevate || CheckProgramDependency("sudo"));
+            return CheckProgramDependency(psi.FileName)
+                & (psi.FileName != "sudo" || CheckProgramDependency(psi.ArgumentList[0]));
         }
 
         protected bool ContainsCertificate(string storeContent, string certificateContent)

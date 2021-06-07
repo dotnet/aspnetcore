@@ -977,7 +977,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             internal void LinuxTrustCertificate(string certificate, string storeName) => WriteEvent(65, certificate, storeName);
 
             [Event(66, Level = EventLevel.Error, Message = "An error has occurred while running command '{0}' to install certificate. Exit code: {1}. Error: {2}.")]
-            internal void LinuxCertutilInstallFailed(string command, int exitCode, string stderr) => WriteEvent(66, command, exitCode, stderr);
+            internal void LinuxCertificateInstallCommandFailed(string command, int exitCode, string stderr) => WriteEvent(66, command, exitCode, stderr);
         }
 
         internal class UserCancelledTrustException : Exception
