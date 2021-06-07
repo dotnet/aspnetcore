@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop.Infrastructure;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     internal class IpcReceiver
     {
         private readonly Func<string, string, Task> _onAttachMessage;
+        private WebEventJsonContext _jsonContext;
 
         public IpcReceiver(Func<string,string,Task> onAttachMessage)
         {
@@ -96,8 +98,15 @@ namespace Microsoft.AspNetCore.Components.WebView
         private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
         {
             var renderer = pageContext.Renderer;
-            var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
-            var webEventData = WebEventData.Parse(renderer, jsonSerializerOptions, eventDescriptor, eventArgs);
+            // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
+            // of the serializer settings.
+            if (_jsonContext is null)
+            {
+                var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
+                _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
+            }
+
+            var webEventData = WebEventData.Parse(renderer, _jsonContext, eventDescriptor, eventArgs);
             return renderer.DispatchEventAsync(
                 webEventData.EventHandlerId,
                 webEventData.EventFieldInfo,

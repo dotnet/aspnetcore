@@ -144,6 +144,7 @@ function parseTouchEvent(event: TouchEvent): TouchEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
+    type: event.type
   };
 }
 
@@ -357,6 +358,7 @@ interface TouchEventArgs {
   shiftKey: boolean;
   altKey: boolean;
   metaKey: boolean;
+  type: string;
 }
 
 interface TouchPoint {
