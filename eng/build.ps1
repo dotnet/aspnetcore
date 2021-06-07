@@ -370,8 +370,8 @@ $msbuildEngine = 'dotnet'
 
 # Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
 # $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
-if ($CI -and -not $excludeCIBinarylog) {
-    $binaryLog = $true
+if ($CI -and -not $ExcludeCIBinarylog) {
+    $BinaryLog = $true
 }
 
 # tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
