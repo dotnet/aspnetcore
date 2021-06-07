@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal interface ICircuitHandleRegistry
     {
-        public CircuitHandle GetCircuitHandle(object circuitKey);
+        CircuitHandle GetCircuitHandle(IDictionary<object, object?>  circuitHandles, object circuitKey);
 
-        public CircuitHost GetCircuit(object circuitKey);
+        CircuitHost GetCircuit(IDictionary<object, object?>  circuitHandles, object circuitKey);
 
-        public void SetCircuit(object circuitKey, CircuitHost circuitHost);
+        void SetCircuit(IDictionary<object, object?>  circuitHandles, object circuitKey, CircuitHost circuitHost);
     }
 }

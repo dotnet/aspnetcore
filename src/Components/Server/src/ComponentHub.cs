@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             // If the CircuitHost is gone now this isn't an error. This could happen if the disconnect
             // if the result of well behaving client hanging up after an unhandled exception.
-            var circuitHost = _circuitHandleRegistry.GetCircuit(CircuitKey);
+            var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
             if (circuitHost == null)
             {
                 return Task.CompletedTask;
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
         {
-            var circuitHost = _circuitHandleRegistry.GetCircuit(CircuitKey);
+            var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
             if (circuitHost != null)
             {
                 // This is an error condition and an attempt to bind multiple circuits to a single connection.
@@ -143,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 // It's safe to *publish* the circuit now because nothing will be able
                 // to run inside it until after InitializeAsync completes.
                 _circuitRegistry.Register(circuitHost);
-                _circuitHandleRegistry.SetCircuit(CircuitKey, circuitHost);
+                _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 
                 // Returning the secret here so the client can reconnect.
                 //
@@ -180,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 Context.ConnectionAborted);
             if (circuitHost != null)
             {
-                _circuitHandleRegistry.SetCircuit(CircuitKey, circuitHost);
+                _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
                 circuitHost.SetCircuitUser(Context.User);
                 circuitHost.SendPendingBatches();
                 return true;
@@ -255,7 +254,7 @@ namespace Microsoft.AspNetCore.Components.Server
         // See comment on error handling on the class definition.
         private async ValueTask<CircuitHost> GetActiveCircuitAsync([CallerMemberName] string callSite = "")
         {
-            var handle = _circuitHandleRegistry.GetCircuitHandle(CircuitKey);
+            var handle = _circuitHandleRegistry.GetCircuitHandle(Context.Items, CircuitKey);
             var circuitHost = handle?.CircuitHost;
             if (handle != null && circuitHost == null)
             {

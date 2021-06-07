@@ -18,29 +18,29 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitHandleRegistry : ICircuitHandleRegistry
     {
-        private Dictionary<object, CircuitHandle> _circuitHandles = new();
-
-        public CircuitHandle GetCircuitHandle(object circuitKey)
+        public CircuitHandle GetCircuitHandle(IDictionary<object, object?>   circuitHandles, object circuitKey)
         {
-            if (_circuitHandles.ContainsKey(circuitKey))
+            if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
             {
-                return _circuitHandles[circuitKey];
+                return (CircuitHandle) circuitHandle;
             }
+            
             return null;;
         }
 
-        public CircuitHost GetCircuit(object circuitKey)
+        public CircuitHost GetCircuit(IDictionary<object, object?>   circuitHandles, object circuitKey)
         {
-            if (_circuitHandles.ContainsKey(circuitKey))
+            if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
             {
-                return ((CircuitHandle)_circuitHandles[circuitKey]).CircuitHost;
+                return ((CircuitHandle)circuitHandle).CircuitHost;
             }
+
             return null;
         }
 
-        public void SetCircuit(object circuitKey, CircuitHost circuitHost)
+        public void SetCircuit(IDictionary<object, object?>   circuitHandles, object circuitKey, CircuitHost circuitHost)
         {
-            _circuitHandles[circuitKey] = circuitHost?.Handle;
+            circuitHandles[circuitKey] = circuitHost?.Handle;
         }
     }
 }

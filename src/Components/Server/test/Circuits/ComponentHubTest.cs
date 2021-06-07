@@ -148,12 +148,12 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             private bool circuitSet = false;
 
-            public CircuitHandle GetCircuitHandle(object circuitKey)
+            public CircuitHandle GetCircuitHandle(IDictionary<object, object>   circuitHandles, object circuitKey)
             {
                 return null;
             }
 
-            public CircuitHost GetCircuit(object circuitKey)
+            public CircuitHost GetCircuit(IDictionary<object, object>   circuitHandles, object circuitKey)
             {
                 if (circuitSet)
                 {
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            public void SetCircuit(object circuitKey, CircuitHost circuitHost)
+            public void SetCircuit(IDictionary<object, object>   circuitHandles, object circuitKey, CircuitHost circuitHost)
             {
                 circuitSet = true;
                 return;
@@ -189,9 +189,9 @@ namespace Microsoft.AspNetCore.Components.Server
             CircuitIdFactory circuitIdFactory,
             IOptions<CircuitOptions> options) { }
 
-            // We override the default `CreateCircuitHostAsync` so we can mock around
-            // the work of initializing a host and all its service dependencies.
-            public async ValueTask<CircuitHost> CreateCircuitHostAsync(
+            // Implement a `CreateCircuitHostAsync` that mocks the construction
+            // of the CircuitHost.
+            public ValueTask<CircuitHost> CreateCircuitHostAsync(
                 IReadOnlyList<ComponentDescriptor> components,
                 CircuitClientProxy client,
                 string baseUri,
@@ -199,10 +199,9 @@ namespace Microsoft.AspNetCore.Components.Server
                 ClaimsPrincipal user,
                 IComponentApplicationStateStore store)
             {
-                await Task.Delay(0);
                 var serviceScope = new Mock<IServiceScope>();
                 var circuitHost = TestCircuitHost.Create(serviceScope: new AsyncServiceScope(serviceScope.Object));
-                return circuitHost;
+                return ValueTask.FromResult(circuitHost);
             }
         }
     }
