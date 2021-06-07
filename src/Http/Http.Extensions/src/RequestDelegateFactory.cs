@@ -697,6 +697,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
         {
+            EnsureRequestTaskNotNull(task);
+
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -772,7 +774,9 @@ namespace Microsoft.AspNetCore.Http
 
         private static async Task ExecuteTaskResult<T>(Task<T?> task, HttpContext httpContext) where T : IResult
         {
-            await EnsureRequestTaskOfNotNull(task)!.ExecuteAsync(httpContext);
+            EnsureRequestTaskOfNotNull(task);
+
+            await EnsureRequestResultNotNull(await task)!.ExecuteAsync(httpContext);
         }
 
         private static async Task ExecuteResultWriteResponse(IResult result, HttpContext httpContext)
@@ -828,20 +832,12 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static IResult EnsureRequestTaskOfNotNull<T>(Task<T?> task) where T : IResult
+        private static void EnsureRequestTaskOfNotNull<T>(Task<T?> task) where T : IResult
         {
             if (task is null)
             {
-                throw new InvalidOperationException("The Task returned by the Delegate must not be null.");
-            }
-
-            var result = task.GetAwaiter().GetResult();
-            if (result == null)
-            {
                 throw new InvalidOperationException("The IResult in Task<IResult> response must not be null.");
             }
-
-            return result!;
         }
 
         private static void EnsureRequestTaskNotNull(Task? task)

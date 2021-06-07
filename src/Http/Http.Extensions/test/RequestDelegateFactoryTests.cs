@@ -1086,15 +1086,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
             get
             {
                 IResult? TestAction() => null;
-                Task<IResult?>? TaskNullTestAction() => null;
+                Task<bool?>? TaskBoolAction() => null;
+                Task<IResult?>? TaskNullAction() => null;
                 Task<IResult?> TaskTestAction() => Task.FromResult<IResult?>(null);
                 ValueTask<IResult?> ValueTaskTestAction() => ValueTask.FromResult<IResult?>(null);
 
                 return new List<object[]>
                 {
                     new object[] { (Func<IResult?>)TestAction, "The IResult returned by the Delegate must not be null." },
-                    new object[] { (Func<Task<IResult?>?>)TaskNullTestAction, "The Task returned by the Delegate must not be null." },
-                    new object[] { (Func<Task<IResult?>>)TaskTestAction, "The IResult in Task<IResult> response must not be null." },
+                    new object[] { (Func<Task<IResult?>?>)TaskNullAction, "The IResult in Task<IResult> response must not be null." },
+                    new object[] { (Func<Task<bool?>?>)TaskBoolAction, "The Task returned by the Delegate must not be null." },
+                    new object[] { (Func<Task<IResult?>>)TaskTestAction, "The IResult returned by the Delegate must not be null." },
                     new object[] { (Func<ValueTask<IResult?>>)ValueTaskTestAction, "The IResult returned by the Delegate must not be null." },
                 };
             }
