@@ -123,9 +123,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Flag for logging properties that are part of the <see cref="HttpRequest.Headers"/>
-        /// Includes <see cref="Host"/>, <see cref="Referer"/>, and <see cref="UserAgent"/>.
+        /// Includes <see cref="Host"/>, <see cref="Referer"/>, <see cref="Cookie"/>,
+        /// and <see cref="UserAgent"/>.
         /// </summary>
-        RequestHeaders = Host | Referer | UserAgent,
+        RequestHeaders = Host | Referer | UserAgent | Cookie,
 
         /// <summary>
         /// Flag for logging properties that are part of the <see cref="HttpResponse.Headers"/>
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <see cref="Method"/>, <see cref="Cookie"/>, <see cref="Host"/>,
         /// <see cref="Referer"/>, and <see cref="UserAgent"/>.
         /// </summary>
-        Request = UriStem | UriQuery | ProtocolVersion | Method | Cookie | RequestHeaders,
+        Request = UriStem | UriQuery | ProtocolVersion | Method | RequestHeaders,
 
         /// <summary>
         /// Flag for logging all default fields.

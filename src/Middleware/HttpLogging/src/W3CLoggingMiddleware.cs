@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Host, out var host))
                         {
-                            AddToList(w3cList, HeaderNames.Host, host);
+                            AddToList(w3cList, HeaderNames.Host, host.ToString());
                         }
                     }
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Referer, out var referer))
                         {
-                            AddToList(w3cList, HeaderNames.Referer, referer);
+                            AddToList(w3cList, HeaderNames.Referer, referer.ToString());
                         }
                     }
 
@@ -128,25 +128,17 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.UserAgent, out var agent))
                         {
-                            AddToList(w3cList, HeaderNames.UserAgent, agent);
+                            AddToList(w3cList, HeaderNames.UserAgent, agent.ToString());
                         }
                     }
-                }
 
-                if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
-                {
-                    // TODO - cookies are written as a list of {Key}:{Value} pairs delimited by semicolon -
-                    // is there a better/standardized format?
-                    var cookies = request.Cookies;
-                    StringBuilder sb = new StringBuilder();
-                    foreach (string key in cookies.Keys)
+                    if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
                     {
-                        sb.Append(key);
-                        sb.Append(':');
-                        sb.Append(cookies[key]);
-                        sb.Append(';');
+                        if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
+                        {
+                            AddToList(w3cList, HeaderNames.Cookie, cookie.ToString());
+                        }
                     }
-                    AddToList(w3cList, nameof(request.Cookies), sb.ToString());
                 }
             }
 
@@ -168,7 +160,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     if (headers.TryGetValue(HeaderNames.Server, out var server))
                     {
-                        AddToList(w3cList, HeaderNames.Server, server);
+                        AddToList(w3cList, HeaderNames.Server, server.ToString());
                     }
                 }
             }

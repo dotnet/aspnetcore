@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     case nameof(HttpContext.User):
                         elements[BitOperations.Log2((int)W3CLoggingFields.UserName)] = val.Trim();
                         break;
-                    case nameof(HttpRequest.Cookies):
+                    case nameof(HeaderNames.Cookie):
                         // Cookie can have whitespace - we replace whitespace characters with the '+' character
                         elements[BitOperations.Log2((int)W3CLoggingFields.Cookie)] = Regex.Replace(val.Trim(), @"\s", "+");
                         break;
