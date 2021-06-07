@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31313.381
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31324.12
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{C28A32F6-8314-412E-9F3B-CBD31C23E878}"
 EndProject
@@ -1614,11 +1614,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spa", "Spa", "{0A064174-8E5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpaProxy", "SpaProxy", "{5AC2A052-1D4F-4C2F-BCF5-3F07A3E31857}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaProxy", "src\Middleware\Spa\SpaProxy\src\Microsoft.AspNetCore.SpaProxy.csproj", "{0DBACF8E-2EDB-47FC-B998-B76522637B2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaProxy", "src\Middleware\Spa\SpaProxy\src\Microsoft.AspNetCore.SpaProxy.csproj", "{0DBACF8E-2EDB-47FC-B998-B76522637B2E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpaServices.Extensions", "SpaServices.Extensions", "{7F99E967-3DC1-4198-9D55-47CD9471D0B6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "src\Middleware\Spa\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{DF4637DA-5F07-4903-8461-4E2DAB235F3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices.Extensions", "src\Middleware\Spa\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{DF4637DA-5F07-4903-8461-4E2DAB235F3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices.Extensions.Tests", "src\Middleware\Spa\SpaServices.Extensions\test\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj", "{AAB50C64-39AA-4AED-8E9C-50D68E7751AD}"
 EndProject
