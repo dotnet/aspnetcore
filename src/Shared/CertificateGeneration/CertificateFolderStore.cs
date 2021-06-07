@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
                 string sourceFileName = pemFile;
                 string destFileName = GetCertificatePath(certificate);
+                DeleteFile(destFileName);
                 if (_elevate)
                 {
                     var copyProcess = Process.Start(new ProcessStartInfo()
@@ -131,13 +132,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 File.Delete(path);
             }
-        }
-
-        private void CopyFile(string sourceFileName, string destFileName)
-        {
-            DeleteFile(destFileName);
-
-
         }
     }
 }
