@@ -697,8 +697,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
         {
-            EnsureRequestTaskOfNotNull(task);
-
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -774,9 +772,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static async Task ExecuteTaskResult<T>(Task<T?> task, HttpContext httpContext) where T : IResult
         {
-            EnsureRequestTaskOfNotNull(task);
-
-            await EnsureRequestResultNotNull(await task)!.ExecuteAsync(httpContext);
+            await EnsureRequestTaskOfNotNull(task)!.ExecuteAsync(httpContext);
         }
 
         private static async Task ExecuteResultWriteResponse(IResult result, HttpContext httpContext)
@@ -832,20 +828,27 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static void EnsureRequestTaskOfNotNull<T>(Task<T?> task)
+        private static IResult EnsureRequestTaskOfNotNull<T>(Task<T?> task) where T : IResult
         {
             if (task is null)
             {
-                var message = $"Task<{typeof(T).Name}> response should not be null";
-                throw new InvalidOperationException(message);
+                throw new InvalidOperationException("The Task returned by the Delegate must not be null.");
             }
+
+            var result = task.GetAwaiter().GetResult();
+            if (result == null)
+            {
+                throw new InvalidOperationException("The IResult in Task<IResult> response must not be null.");
+            }
+
+            return result!;
         }
 
         private static void EnsureRequestTaskNotNull(Task? task)
         {
             if (task is null)
             {
-                throw new InvalidOperationException("Task response should not be null");
+                throw new InvalidOperationException("The Task returned by the Delegate must not be null.");
             }
         }
 
@@ -853,7 +856,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (result is null)
             {
-                throw new InvalidOperationException("IResult response should not be null");
+                throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");
             }
 
             return result;

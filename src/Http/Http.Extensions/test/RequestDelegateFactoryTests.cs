@@ -1086,23 +1086,23 @@ namespace Microsoft.AspNetCore.Routing.Internal
             get
             {
                 IResult? TestAction() => null;
-                Task<bool?>? TestTaskBoolAction() => null;
+                Task<IResult?>? TaskNullTestAction() => null;
                 Task<IResult?> TaskTestAction() => Task.FromResult<IResult?>(null);
                 ValueTask<IResult?> ValueTaskTestAction() => ValueTask.FromResult<IResult?>(null);
 
                 return new List<object[]>
                 {
-                    new object[] { (Func<Task<bool?>?>)TestTaskBoolAction },
-                    new object[] { (Func<IResult?>)TestAction },
-                    new object[] { (Func<Task<IResult?>>)TaskTestAction },
-                    new object[] { (Func<ValueTask<IResult?>>)ValueTaskTestAction },
+                    new object[] { (Func<IResult?>)TestAction, "The IResult returned by the Delegate must not be null." },
+                    new object[] { (Func<Task<IResult?>?>)TaskNullTestAction, "The Task returned by the Delegate must not be null." },
+                    new object[] { (Func<Task<IResult?>>)TaskTestAction, "The IResult in Task<IResult> response must not be null." },
+                    new object[] { (Func<ValueTask<IResult?>>)ValueTaskTestAction, "The IResult returned by the Delegate must not be null." },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(NullResult))]
-        public async Task RequestDelegateThrowsInvalidOperationExceptionOnNullDelegate(Delegate @delegate)
+        public async Task RequestDelegateThrowsInvalidOperationExceptionOnNullDelegate(Delegate @delegate, string message)
         {
             var httpContext = new DefaultHttpContext();
             var responseBodyStream = new MemoryStream();
@@ -1111,7 +1111,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var requestDelegate = RequestDelegateFactory.Create(@delegate);
 
             var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestDelegate(httpContext));
-            Assert.Contains("response should not be null", exception.Message);
+            Assert.Contains(message, exception.Message);
         }
 
         private class Todo
