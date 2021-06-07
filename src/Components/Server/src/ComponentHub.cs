@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Server
     // needs access to the circuit/application state to unblock the message loop. Using async in our
     // Hub methods allows us to ensure message delivery to the client before we abort the connection
     // in error cases.
-    internal class ComponentHub : Hub
+    internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
         private readonly IServerComponentDeserializer _serverComponentSerializer;
