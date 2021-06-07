@@ -106,15 +106,7 @@ namespace Templates.Test.Helpers
                 if (Directory.Exists(TemplateOutputDir))
                 {
                     Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
-                    var di = new DirectoryInfo(TemplateOutputDir);
-                    foreach (FileInfo file in di.EnumerateFiles())
-                    {
-                        file.Delete(); 
-                    }
-                    foreach (DirectoryInfo dir in di.EnumerateDirectories())
-                    {
-                        dir.Delete(true); 
-                    }                
+                    Directory.Delete(TemplateOutputDir, recursive: true)
                 }
                 
                 // Temporary while investigating why this process occasionally never runs or exits on Debian 9
