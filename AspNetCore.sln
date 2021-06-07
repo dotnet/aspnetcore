@@ -1614,11 +1614,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spa", "Spa", "{0A064174-8E5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpaProxy", "SpaProxy", "{5AC2A052-1D4F-4C2F-BCF5-3F07A3E31857}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaProxy", "src\Middleware\Spa\SpaProxy\src\Microsoft.AspNetCore.SpaProxy.csproj", "{0DBACF8E-2EDB-47FC-B998-B76522637B2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaProxy", "src\Middleware\Spa\SpaProxy\src\Microsoft.AspNetCore.SpaProxy.csproj", "{0DBACF8E-2EDB-47FC-B998-B76522637B2E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpaServices.Extensions", "SpaServices.Extensions", "{7F99E967-3DC1-4198-9D55-47CD9471D0B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices.Extensions", "src\Middleware\Spa\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{DF4637DA-5F07-4903-8461-4E2DAB235F3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "src\Middleware\Spa\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{DF4637DA-5F07-4903-8461-4E2DAB235F3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices.Extensions.Tests", "src\Middleware\Spa\SpaServices.Extensions\test\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj", "{AAB50C64-39AA-4AED-8E9C-50D68E7751AD}"
 EndProject
@@ -1643,6 +1643,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features.Tests", "src\Http\Features\test\Microsoft.Extensions.Features.Tests.csproj", "{09FFBC53-3EFF-45C4-9822-5D66089CD6AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Migration.E2ETests", "src\Components\test\E2ETestMigration\Microsoft.AspNetCore.Components.Migration.E2ETests.csproj", "{A1D02CE6-1077-410A-81CB-D4BD500FD765}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logging.W3C.Sample", "src\Middleware\HttpLogging\samples\Logging.W3C.Sample\Logging.W3C.Sample.csproj", "{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -7811,6 +7813,18 @@ Global
 		{A1D02CE6-1077-410A-81CB-D4BD500FD765}.Release|x64.Build.0 = Release|Any CPU
 		{A1D02CE6-1077-410A-81CB-D4BD500FD765}.Release|x86.ActiveCfg = Release|Any CPU
 		{A1D02CE6-1077-410A-81CB-D4BD500FD765}.Release|x86.Build.0 = Release|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Debug|x64.Build.0 = Debug|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Debug|x86.Build.0 = Debug|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Release|x64.ActiveCfg = Release|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Release|x64.Build.0 = Release|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Release|x86.ActiveCfg = Release|Any CPU
+		{5D5BFFD0-F5B2-4EBA-9D5E-1F53374DFE6A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
