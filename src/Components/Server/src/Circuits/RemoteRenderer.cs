@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var componentId = AssignRootComponentId(component);
 
             var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
-            CaptureAsyncExceptions(attachComponentTask);
+            _ = CaptureAsyncExceptions(attachComponentTask);
 
             return RenderRootComponentAsync(componentId);
         }
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var componentId = AssignRootComponentId(component);
 
             var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
-            CaptureAsyncExceptions(attachComponentTask);
+            _ = CaptureAsyncExceptions(attachComponentTask);
 
             return RenderRootComponentAsync(componentId, parameters);
         }
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public ValueStopwatch ValueStopwatch { get; }
         }
 
-        private async void CaptureAsyncExceptions(Task task)
+        private async Task CaptureAsyncExceptions(Task task)
         {
             try
             {
