@@ -1,7 +1,6 @@
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Certificates.Generation;
-using Microsoft.Extensions.Tools.Internal;
 
 #nullable enable
 
@@ -22,31 +21,21 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             _updateStore = updateStore;
         }
 
-        private void ReportElevationNeeded(IReporter? reporter)
+        public override bool CheckDependencies()
         {
-            if (Elevate)
-            {
-                reporter?.Output($"Changing '{StoreName}' requires root priviledges. You may be prompted for your password.");
-            }
+            return CheckProgramDependency(_updateStore);
         }
 
-        public override bool CheckDependencies(IReporter? reporter)
+        public override bool TryInstallCertificate(string name, PemCertificateFile pemFile)
         {
-            return CheckProgramDependency(_updateStore, reporter);
-        }
-
-        public override bool TryInstallCertificate(string name, PemCertificateFile pemFile, IReporter? reporter, bool isInteractive)
-        {
-            ReportElevationNeeded(reporter);
-            CopyFile(pemFile.FilePath, GetCertificatePath(name), isInteractive);
-            ProcessRunner.Run(_updateStore with { IsInteractive = isInteractive });
+            CopyFile(pemFile.FilePath, GetCertificatePath(name));
+            ProcessRunner.Run(_updateStore);
             return true;
         }
 
-        public override void DeleteCertificate(string name, IReporter? reporter, bool isInteractive)
+        public override void DeleteCertificate(string name)
         {
-            ReportElevationNeeded(reporter);
-            DeleteFile(GetCertificatePath(name), isInteractive);
+            DeleteFile(GetCertificatePath(name));
         }
 
         public override bool HasCertificate(string name, X509Certificate2 certificate)
@@ -63,7 +52,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private string GetCertificatePath(string name)
             => Path.Combine(FolderPath, name + ".pem");
 
-        private void DeleteFile(string path, bool isInteractive)
+        private void DeleteFile(string path)
         {
             if (!File.Exists(path))
             {
@@ -75,8 +64,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 ProcessRunner.Run(new()
                 {
                     Command = { "rm", path },
-                    Elevate = true,
-                    IsInteractive = isInteractive
+                    Elevate = true
                 });
             }
             else
@@ -85,17 +73,16 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-        private void CopyFile(string sourceFileName, string destFileName, bool isInteractive)
+        private void CopyFile(string sourceFileName, string destFileName)
         {
-            DeleteFile(destFileName, isInteractive);
+            DeleteFile(destFileName);
 
             if (Elevate)
             {
                 ProcessRunner.Run(new()
                 {
                     Command = { "cp", sourceFileName, destFileName },
-                    Elevate = true,
-                    IsInteractive = isInteractive
+                    Elevate = true
                 });
             }
             else

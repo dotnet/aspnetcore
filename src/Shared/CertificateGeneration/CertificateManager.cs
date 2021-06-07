@@ -10,7 +10,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Microsoft.Extensions.Tools.Internal;
 
 #nullable enable
 
@@ -172,7 +171,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool includePrivateKey = false,
             string? password = null,
             CertificateKeyExportFormat keyExportFormat = CertificateKeyExportFormat.Pfx,
-            IReporter? reporter = null,
             bool isInteractive = true)
         {
             var result = EnsureCertificateResult.Succeeded;
@@ -329,7 +327,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 try
                 {
-                    TrustCertificate(certificate, reporter, isInteractive);
+                    TrustCertificate(certificate);
                 }
                 catch (UserCancelledTrustException)
                 {
@@ -410,7 +408,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return ImportCertificateResult.Succeeded;
         }
 
-        public void CleanupHttpsCertificates(IReporter? reporter = null, bool isInteractive = false)
+        public void CleanupHttpsCertificates()
         {
             // On OS X we don't have a good way to manage trusted certificates in the system keychain
             // so we do everything by invoking the native toolchain.
@@ -431,7 +429,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             foreach (var certificate in filteredCertificates)
             {
-                RemoveCertificate(certificate, RemoveLocations.All, reporter, isInteractive);
+                RemoveCertificate(certificate, RemoveLocations.All);
             }
         }
 
@@ -439,11 +437,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected abstract X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation);
 
-        protected abstract void TrustCertificateCore(X509Certificate2 certificate, IReporter? reporter, bool isInteractive);
+        protected abstract void TrustCertificateCore(X509Certificate2 certificate);
 
         protected abstract bool IsExportable(X509Certificate2 c);
 
-        protected abstract void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate, IReporter? reporter, bool isInteractive);
+        protected abstract void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate);
 
         protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
@@ -641,7 +639,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return certificate;
         }
 
-        internal void TrustCertificate(X509Certificate2 certificate, IReporter? reporter, bool isInteractive)
+        internal void TrustCertificate(X509Certificate2 certificate)
         {
             try
             {
@@ -649,7 +647,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     Log.TrustCertificateStart(GetDescription(certificate));
                 }
-                TrustCertificateCore(certificate, reporter, isInteractive);
+                TrustCertificateCore(certificate);
                 Log.TrustCertificateEnd();
             }
             catch (Exception ex) when (Log.IsEnabled())
@@ -660,7 +658,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         }
 
         // Internal, for testing purposes only.
-        internal void RemoveAllCertificates(StoreName storeName, StoreLocation storeLocation, IReporter? reporter = null, bool isInteractive = false)
+        internal void RemoveAllCertificates(StoreName storeName, StoreLocation storeLocation)
         {
             var certificates = GetCertificatesToRemove(storeName, storeLocation);
             var certificatesWithName = certificates.Where(c => c.Subject == Subject);
@@ -669,13 +667,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             foreach (var certificate in certificates)
             {
-                RemoveCertificate(certificate, removeLocation, reporter, isInteractive);
+                RemoveCertificate(certificate, removeLocation);
             }
 
             DisposeCertificates(certificates);
         }
 
-        internal void RemoveCertificate(X509Certificate2 certificate, RemoveLocations locations, IReporter? reporter, bool isInteractive)
+        internal void RemoveCertificate(X509Certificate2 certificate, RemoveLocations locations)
         {
             switch (locations)
             {
@@ -685,10 +683,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     RemoveCertificateFromUserStore(certificate);
                     break;
                 case RemoveLocations.Trusted:
-                    RemoveCertificateFromTrustedRoots(certificate, reporter, isInteractive);
+                    RemoveCertificateFromTrustedRoots(certificate);
                     break;
                 case RemoveLocations.All:
-                    RemoveCertificateFromTrustedRoots(certificate, reporter, isInteractive);
+                    RemoveCertificateFromTrustedRoots(certificate);
                     RemoveCertificateFromUserStore(certificate);
                     break;
                 default:
@@ -972,6 +970,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             [Event(64, Level = EventLevel.Error, Message = "The provided certificate '{0}' is not a valid ASP.NET Core HTTPS development certificate.")]
             internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, description);
+
+            [Event(65, Level = EventLevel.Informational, Message = "Adding '{0}' to '{1}'.")]
+            internal void LinuxTrustCertificate(string certificate, string storeName) => WriteEvent(65, certificate, storeName);
+
+            [Event(66, Level = EventLevel.Error, Message = "An error has occurred while running command '{0}' to install certificate. Exit code: {1}. Error: {2}.")]
+            internal void LinuxCertutilInstallFailed(string command, int exitCode, string stderr) => WriteEvent(66, command, exitCode, stderr);
         }
 
         internal class UserCancelledTrustException : Exception

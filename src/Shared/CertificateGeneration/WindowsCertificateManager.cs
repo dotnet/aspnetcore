@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Certificates.Generation
 {
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return certificate;
         }
 
-        protected override void TrustCertificateCore(X509Certificate2 certificate, IReporter reporter, bool isInteractive)
+        protected override void TrustCertificateCore(X509Certificate2 certificate)
         {
             using var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
 
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate, IReporter reporter, bool isInteractive)
+        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
         {
             Log.WindowsRemoveCertificateFromRootStoreStart();
             using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);

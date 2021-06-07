@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Certificates.Generation
 {
@@ -67,22 +66,22 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected override bool IsExportable(X509Certificate2 c) => true;
 
-        protected override void TrustCertificateCore(X509Certificate2 certificate, IReporter reporter, bool isInteractive)
+        protected override void TrustCertificateCore(X509Certificate2 certificate)
         {
             using var pemFile = new PemCertificateFile(certificate);
             foreach (var store in CertificateStores)
             {
-                reporter.Output($"Installing into {store.StoreName}");
-                store.TryInstallCertificate(CertificateStoreKey, pemFile, reporter, isInteractive);
+                CertificateManager.Log.LinuxTrustCertificate(CertificateManager.GetDescription(certificate), store.StoreName);
+                store.TryInstallCertificate(CertificateStoreKey, pemFile);
                 // TODO: handle failure.
             }
         }
 
-        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate, IReporter reporter, bool isInteractive)
+        protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
         {
             foreach (var store in CertificateStores)
             {
-                store.DeleteCertificate(CertificateStoreKey, reporter, isInteractive);
+                store.DeleteCertificate(CertificateStoreKey);
             }
         }
 

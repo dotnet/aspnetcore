@@ -1,6 +1,5 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Tools.Internal;
 
 #nullable enable
 
@@ -16,19 +15,19 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             DatabasePath = path;
         }
 
-        public override bool CheckDependencies(IReporter? reporter)
+        public override bool CheckDependencies()
         {
-            return CheckProgramDependency("certutil", reporter);
+            return CheckProgramDependency("certutil");
         }
 
-        public override bool TryInstallCertificate(string name, PemCertificateFile pemFile, IReporter? reporter, bool isInteractive)
+        public override bool TryInstallCertificate(string name, PemCertificateFile pemFile)
         {
             var result = ProcessRunner.Run(new() {
                 Command = { "certutil", "-d", DatabasePath, "-A", "-t", "C,,", "-n", name, "-i", pemFile.FilePath },
                 ThrowOnFailure = false });
             if (!result.IsSuccess)
             {
-                reporter?.Error($"Failed to install certificate using command '{result.CommandLine}': {result.StandardError}");
+                CertificateManager.Log.LinuxCertutilInstallFailed(result.CommandLine, result.ExitCode, result.StandardError!.ToString());
             }
             return result.IsSuccess;
         }
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return false;
         }
 
-        public override void DeleteCertificate(string name, IReporter? reporter, bool isInteractive)
+        public override void DeleteCertificate(string name)
         {
             ProcessRunner.Run(new()
             {

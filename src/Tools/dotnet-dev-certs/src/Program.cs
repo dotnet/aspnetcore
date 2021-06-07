@@ -115,7 +115,6 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     c.OnExecute(() =>
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
-                        bool isInteractive = !Console.IsInputRedirected;
 
                         if (verbose.HasValue())
                         {
@@ -171,7 +170,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                         if (clean.HasValue())
                         {
-                            var clean = CleanHttpsCertificates(reporter, isInteractive);
+                            var clean = CleanHttpsCertificates(reporter);
                             if (clean != Success || !import.HasValue())
                             {
                                 return clean;
@@ -180,7 +179,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                             return ImportCertificate(import, password, reporter);
                         }
 
-                        return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter, isInteractive);
+                        return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter);
                     });
                 });
 
@@ -239,7 +238,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             return Success;
         }
 
-        private static int CleanHttpsCertificates(IReporter reporter, bool isInteractive)
+        private static int CleanHttpsCertificates(IReporter reporter)
         {
             var manager = CertificateManager.Instance;
             try
@@ -255,7 +254,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "require elevated privileges. If that is the case, a prompt for credentials will be displayed.");
                 }
 
-                manager.CleanupHttpsCertificates(reporter, isInteractive);
+                manager.CleanupHttpsCertificates();
                 reporter.Output("HTTPS development certificates successfully removed from the machine.");
                 return Success;
             }
@@ -326,7 +325,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             });
         }
 
-        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter, bool isInteractive)
+        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
         {
             var now = DateTimeOffset.Now;
             var manager = CertificateManager.Instance;
@@ -388,9 +387,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 trust == null ? false : trust.HasValue(),
                 password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
                 password.Value(),
-                exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx,
-                reporter,
-                isInteractive);
+                exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
 
             switch (result)
             {

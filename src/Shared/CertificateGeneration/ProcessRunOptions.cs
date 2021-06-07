@@ -11,7 +11,5 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public bool ReadStandardOutput { get; init; }
         public bool ReadStandardError { get; init; } = true;
         public bool Elevate { get; init; }
-        public bool IsInteractive { get; init; }
-        public string? StandardInput { get; init; }
     }
 }

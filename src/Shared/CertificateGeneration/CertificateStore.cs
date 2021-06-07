@@ -1,6 +1,5 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Tools.Internal;
 
 #nullable enable
 
@@ -15,28 +14,28 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             StoreName = name;
         }
 
-        public abstract bool CheckDependencies(IReporter? reporter);
+        public abstract bool CheckDependencies();
 
-        public abstract bool TryInstallCertificate(string name, PemCertificateFile pemFile, IReporter? reporter, bool isInteractive);
+        public abstract bool TryInstallCertificate(string name, PemCertificateFile pemFile);
 
-        public abstract void DeleteCertificate(string name, IReporter? reporter, bool isInteractive);
+        public abstract void DeleteCertificate(string name);
 
         public abstract bool HasCertificate(string name, X509Certificate2 pemContent);
 
-        protected bool CheckProgramDependency(string program, IReporter? reporter)
+        protected bool CheckProgramDependency(string program)
         {
             if (!ProcessRunner.HasProgram(program))
             {
-                reporter?.Warn($"Cannot use '{StoreName}' because '{program}' is not installed.");
+                // TODO reporter?.Warn($"Cannot use '{StoreName}' because '{program}' is not installed.");
                 return false;
             }
             return true;
         }
 
-        protected bool CheckProgramDependency(ProcessRunOptions runOptions, IReporter? reporter)
+        protected bool CheckProgramDependency(ProcessRunOptions runOptions)
         {
-            return CheckProgramDependency(runOptions.Command[0], reporter)
-                & (!runOptions.Elevate || CheckProgramDependency("sudo", reporter));
+            return CheckProgramDependency(runOptions.Command[0])
+                & (!runOptions.Elevate || CheckProgramDependency("sudo"));
         }
 
         protected bool ContainsCertificate(string storeContent, string certificateContent)

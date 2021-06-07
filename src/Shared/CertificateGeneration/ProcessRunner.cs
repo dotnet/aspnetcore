@@ -24,10 +24,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             if (options.Elevate)
             {
                 process.StartInfo.FileName = "sudo";
-                if (!options.IsInteractive)
-                {
-                    process.StartInfo.ArgumentList.Add("--non-interactive");
-                }
             }
             else
             {
@@ -65,10 +61,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             process.Start();
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
-            if (!string.IsNullOrEmpty(options.StandardInput))
-            {
-                process.StandardInput.Write(options.StandardInput);
-            }
             process.StandardInput.Close();
             process.WaitForExit();
             if (options.ThrowOnFailure && process.ExitCode != 0)
