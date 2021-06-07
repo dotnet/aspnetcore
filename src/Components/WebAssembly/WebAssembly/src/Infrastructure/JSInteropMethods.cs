@@ -37,12 +37,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         public static Task DispatchEvent(WebEventDescriptor eventDescriptor, string eventArgsJson)
         {
             var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
-            var jsonSerializerOptions = DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions();
 
             // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
             // of the serializer settings.
             if (_jsonContext is null)
             {
+                var jsonSerializerOptions = DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions();
                 _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
             }
 
