@@ -44,12 +44,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>HttpResponseLog.cs
-        public Task Invoke(HttpContext context)
-        {
-            return InvokeInternal(context);
-        }
-
-        private async Task InvokeInternal(HttpContext context)
+        public async Task Invoke(HttpContext context)
         {
             var options = _options.CurrentValue;
 

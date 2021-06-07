@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             string fileName;
             using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(new W3CLoggerOptions()
             {
-                LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken
+                LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken,
+                FileName = TempPath
             })))
             {
                 var state = new List<KeyValuePair<string, object>>();
@@ -72,7 +73,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             string fileName;
             using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(new W3CLoggerOptions()
             {
-                LoggingFields = W3CLoggingFields.UriQuery | W3CLoggingFields.Host | W3CLoggingFields.ProtocolStatus
+                LoggingFields = W3CLoggingFields.UriQuery | W3CLoggingFields.Host | W3CLoggingFields.ProtocolStatus,
+                FileName = TempPath
             })))
             {
                 var state = new List<KeyValuePair<string, object>>();
