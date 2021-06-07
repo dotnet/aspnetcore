@@ -59,6 +59,9 @@ namespace Microsoft.AspNetCore.Components.WebView
                     case IpcCommon.IncomingMessageType.EndInvokeJS:
                         EndInvokeJS(pageContext, args[0].GetInt64(), args[1].GetBoolean(), args[2].GetString());
                         break;
+                    case IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS:
+                        ReceiveByteArrayFromJS(pageContext, args[0].GetInt32(), args[1].GetBytesFromBase64());
+                        break;
                     case IpcCommon.IncomingMessageType.DispatchBrowserEvent:
                         await DispatchBrowserEventAsync(pageContext, args[0].GetRawText(), args[1].GetRawText());
                         break;
@@ -85,6 +88,11 @@ namespace Microsoft.AspNetCore.Components.WebView
         private void EndInvokeJS(PageContext pageContext, long asyncHandle, bool succeeded, string argumentsOrError)
         {
             DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
+        }
+
+        private static void ReceiveByteArrayFromJS(PageContext pageContext, int id, byte[] data)
+        {
+            DotNetDispatcher.ReceiveByteArray(pageContext.JSRuntime, id, data);
         }
 
         private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)

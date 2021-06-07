@@ -80,11 +80,5 @@ namespace Microsoft.JSInterop.Infrastructure
             writer.WriteNumber(ByteArrayRefKey, id);
             writer.WriteEndObject();
         }
-
-        private struct ByteArrayRef
-        {
-            [JsonPropertyName("__byte[]")]
-            public int? Id { get; set; }
-        }
     }
 }

@@ -37,5 +37,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
                 : invocationResult.Exception.ToString();
             _ipcSender.EndInvokeDotNet(invocationInfo.CallId, invocationResult.Success, resultJsonOrErrorMessage);
         }
+
+        protected override void SendByteArray(int id, byte[] data)
+        {
+           _ipcSender.SendByteArray(id, data);
+        }
     }
 }
