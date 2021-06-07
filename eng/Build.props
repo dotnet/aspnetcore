@@ -181,7 +181,6 @@
                           $(RepoRoot)src\Shared\**\*.*proj;
                           $(RepoRoot)src\Tools\**\*.*proj;
                           $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
-                          $(RepoRoot)src\Logging.W3C\**\*.csproj;
                           $(RepoRoot)src\Middleware\**\*.csproj;
                           $(RepoRoot)src\Razor\**\*.*proj;
                           $(RepoRoot)src\Mvc\**\*.*proj;
@@ -223,7 +222,6 @@
                           $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
                           $(RepoRoot)src\Tools\**\src\*.csproj;
                           $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
-                          $(RepoRoot)src\Logging.W3C\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\src\*.csproj;
                           $(RepoRoot)src\Razor\**\src\*.csproj;
                           $(RepoRoot)src\Mvc\**\src\*.csproj;

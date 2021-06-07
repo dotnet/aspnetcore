@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.HttpLogging
     public sealed class HttpLoggingOptions
     {
         /// <summary>
-        /// Fields to log for the Request and Response. Defaults to logging request and response properties and headers, and all possible W3C fields.
+        /// Fields to log for the Request and Response. Defaults to logging request and response properties and headers.
         /// </summary>
-        public HttpLoggingFields LoggingFields { get; set; } = HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.W3CAllFields;
+        public HttpLoggingFields LoggingFields { get; set; } = HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders;
 
         /// <summary>
         /// Request header values that are allowed to be logged.
@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// the header name will be logged with a redacted value.
         /// </p>
         /// </summary>
-        public ISet<string> RequestHeaders => _internalHttpRequestHeaders;
+        public ISet<string> RequestHeaders => _internalRequestHeaders;
 
-        internal HashSet<string> _internalHttpRequestHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal HashSet<string> _internalRequestHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptEncoding,
@@ -40,13 +40,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             HeaderNames.UserAgent
         };
 
-        internal HashSet<string> _internalW3CRequestHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            HeaderNames.Host,
-            HeaderNames.Referer,
-            HeaderNames.UserAgent
-        };
-
         /// <summary>
         /// Response header values that are allowed to be logged.
         /// <p>
@@ -54,18 +47,13 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// the header name will be logged with a redacted value.
         /// </p>
         /// </summary>
-        public ISet<string> ResponseHeaders => _internalHttpResponseHeaders;
+        public ISet<string> ResponseHeaders => _internalResponseHeaders;
 
-        internal HashSet<string> _internalHttpResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal HashSet<string> _internalResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.ContentLength,
             HeaderNames.ContentType,
             HeaderNames.TransferEncoding
-        };
-
-        internal HashSet<string> _internalW3CResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            HeaderNames.Server
         };
 
         /// <summary>

@@ -117,10 +117,7 @@
       "src\\Middleware\\SpaServices.Extensions\\test\\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj",
       "src\\Middleware\\perf\\Microbenchmarks\\Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj",
       "src\\Middleware\\SpaServices\\test\\Microsoft.AspNetCore.SpaServices.Tests.csproj",
-      "src\\Middleware\\perf\\ResponseCaching.Microbenchmarks\\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj",
-      "src\\Logging.W3C\\src\\Microsoft.Extensions.Logging.W3C.csproj",
-      "src\\Logging.W3C\\test\\Microsoft.Extensions.Logging.W3C.Tests.csproj",
-      "src\\Logging.W3C\\samples\\Logging.W3C.Sample.csproj"
+      "src\\Middleware\\perf\\ResponseCaching.Microbenchmarks\\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj"
     ]
   }
 }

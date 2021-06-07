@@ -36,11 +36,5 @@ namespace Microsoft.AspNetCore.HttpLogging
         public static void ResponseBody(this ILogger logger, string body) => _responseBody(logger, body, null);
         public static void DecodeFailure(this ILogger logger, Exception ex) => _decodeFailure(logger, ex);
         public static void UnrecognizedMediaType(this ILogger logger) => _unrecognizedMediaType(logger, null);
-        public static void W3CLog(this ILogger logger, HttpW3CLog httpW3CLog) => logger.Log(
-            LogLevel.Information,
-            new EventId(7, "W3CLog"),
-            httpW3CLog,
-            exception: null,
-            formatter: HttpW3CLog.Callback);
     }
 }
