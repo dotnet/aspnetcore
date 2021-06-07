@@ -115,6 +115,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
         {
+            // set a tag to allow Application Performance Management tools to differentiate long running requests for reporting purposes
+            context.Features.Get<IHttpActivityFeature>()?.Activity.AddTag("http.long_running", "true");
+
             var supportedTransports = options.Transports;
 
             // Server sent events transport
