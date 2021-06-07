@@ -190,6 +190,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         Log.ReceivedMessages(_logger);
 #if NETCOREAPP
                         await response.Content.CopyToAsync(applicationStream, cancellationToken);
+
 #else
                         await response.Content.CopyToAsync(applicationStream);
 #endif

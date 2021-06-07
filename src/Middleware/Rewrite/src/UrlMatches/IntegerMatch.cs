@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
-using Microsoft.AspNetCore.Rewrite;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches
 {
@@ -25,6 +25,12 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
                 throw new FormatException(Resources.Error_IntegerMatch_FormatExceptionMessage);
             }
             _value = compValue;
+
+            if (operation < IntegerOperationType.Equal || operation > IntegerOperationType.NotEqual)
+            {
+                throw new ArgumentOutOfRangeException(nameof(operation));
+            }
+
             _operation = operation;
         }
 
@@ -51,7 +57,8 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
                 case IntegerOperationType.NotEqual:
                     return compValue != _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(input)); // Will never be thrown
+                    Debug.Fail("This is never reached.");
+                    throw new InvalidOperationException(); // Will never be thrown
             }
         }
     }

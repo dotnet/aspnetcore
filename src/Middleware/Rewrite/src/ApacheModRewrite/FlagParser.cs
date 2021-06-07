@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
         {
             if (string.IsNullOrEmpty(flagString))
             {
-                throw new ArgumentNullException(nameof(flagString));
+                throw new ArgumentException("Argument cannot be null or empty string.", nameof(flagString));
             }
 
             // Check that flags are contained within []

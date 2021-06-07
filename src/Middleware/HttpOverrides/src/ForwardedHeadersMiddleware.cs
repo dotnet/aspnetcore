@@ -99,13 +99,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _next = next;
 
             PreProcessHosts();
-        }
 
-        private static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
-        {
-            if (string.IsNullOrWhiteSpace(value))
+            static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
             {
-                throw new ArgumentException($"options.{propertyName} is required", "options");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException($"options.{propertyName} is required", nameof(options));
+                }
             }
         }
 
