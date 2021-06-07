@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
         private IDisposable? _changeTokenRegistration;
 
         /// <summary>
-        /// Creates an empty  mutable configuration object that is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
+        /// Creates an empty mutable configuration object that is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
         /// </summary>
         public Configuration()
         {
@@ -103,6 +103,7 @@ namespace Microsoft.AspNetCore.Builder
                 Update();
             }
         }
+
         private ConfigurationRoot BuildConfigurationRoot()
         {
             var providers = new List<IConfigurationProvider>();
