@@ -17,11 +17,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             DatabasePath = path;
         }
 
-        public override bool CheckDependencies()
-        {
-            return CheckProgramDependency("certutil");
-        }
-
         public override bool TryInstallCertificate(X509Certificate2 certificate)
         {
             string pemFile = Paths.GetUserTempFile(".pem");
@@ -36,7 +31,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     RedirectStandardError = true })!;
                 var stderr = process.StandardError.ReadToEnd();
                 process.WaitForExit();
-                bool success = process.ExitCode != 0;
+                bool success = process.ExitCode == 0;
                 if (!success)
                 {
                     string cmdline = ProcessHelper.GetCommandLine(process.StartInfo);

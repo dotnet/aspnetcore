@@ -15,29 +15,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             StoreName = name;
         }
 
-        public abstract bool CheckDependencies();
-
         public abstract bool TryInstallCertificate(X509Certificate2 certificate);
 
         public abstract void DeleteCertificate(X509Certificate2 certificate);
 
         public abstract bool HasCertificate(X509Certificate2 certificate);
-
-        protected bool CheckProgramDependency(string program)
-        {
-            if (!ProcessHelper.HasProgram(program))
-            {
-                // TODO reporter?.Warn($"Cannot use '{StoreName}' because '{program}' is not installed.");
-                return false;
-            }
-            return true;
-        }
-
-        protected bool CheckProgramDependency(ProcessStartInfo psi)
-        {
-            return CheckProgramDependency(psi.FileName)
-                & (psi.FileName != "sudo" || CheckProgramDependency(psi.ArgumentList[0]));
-        }
 
         protected bool ContainsCertificate(string storeContent, string certificateContent)
         {

@@ -20,17 +20,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         private static void FindSystemCertificateStore(List<CertificateStore> stores)
         {
-            const string StoreName = "System certificates";
-            if (ProcessHelper.HasProgram("yum"))
+            CertificateStore? store = SystemCertificateFolderStore.Instance;
+            if (store is not null)
             {
-                stores.Add(new CertificateFolderStore(StoreName, "/etc/pki/tls/certs",
-                    new ProcessStartInfo()
-                    {
-                        FileName = "sudo",
-                        ArgumentList = { "update-ca-trust" },
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true
-                    }));
+                stores.Add(store);
             }
         }
 

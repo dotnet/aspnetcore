@@ -254,6 +254,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "require elevated privileges. If that is the case, a prompt for credentials will be displayed.");
                 }
 
+                // TODO: check if system tools are available for deleting certificates.
+
                 manager.CleanupHttpsCertificates();
                 reporter.Output("HTTPS development certificates successfully removed from the machine.");
                 return Success;
@@ -387,6 +389,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 reporter.Error($"Unknown key format '{exportFormat.Value()}'.");
                 return InvalidKeyExportFormat;
             }
+
+            // TODO: check if system tools are available for trusting certificates.
 
             var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(
                 now,
