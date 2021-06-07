@@ -11,6 +11,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -27,6 +28,22 @@ namespace SampleApp
         {
             var logger = loggerFactory.CreateLogger("Default");
 
+            app.Use((context, next) =>
+            {
+                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                var bodyFeature = context.Features.Get<IHttpRequestBodyDetectionFeature>();
+                var connectionItems = context.Features.Get<IConnectionItemsFeature>();
+
+                // Look for TLS connections that don't already have a client cert, and requests that could have a body.
+                if (tlsFeature != null && tlsFeature.ClientCertificate == null && bodyFeature.CanHaveBody
+                    && !connectionItems.Items.TryGetValue("tls.clientcert.negotiated", out var _))
+                {
+                    context.Features.Set<ITlsConnectionFeature>(new BufferingTlsFeature(tlsFeature, context));
+                }
+
+                return next(context);
+            });
+            /*
             // Add an exception handler that prevents throwing due to large request body size
             app.Use(async (context, next) =>
             {
@@ -39,16 +56,20 @@ namespace SampleApp
                 }
                 catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
             });
-
+            */
             app.Run(async context =>
             {
                 // Drain the request body
-                await context.Request.Body.CopyToAsync(Stream.Null);
+                // await context.Request.Body.CopyToAsync(Stream.Null);
+
+                var cert = await context.Connection.GetClientCertificateAsync();
 
                 var connectionFeature = context.Connection;
                 logger.LogDebug($"Peer: {connectionFeature.RemoteIpAddress?.ToString()}:{connectionFeature.RemotePort}"
                     + $"{Environment.NewLine}"
-                    + $"Sock: {connectionFeature.LocalIpAddress?.ToString()}:{connectionFeature.LocalPort}");
+                    + $"Sock: {connectionFeature.LocalIpAddress?.ToString()}:{connectionFeature.LocalPort}"
+                    + $"{Environment.NewLine}"
+                    + cert);
 
                 var response = $"hello, world{Environment.NewLine}";
                 context.Response.ContentLength = response.Length;
@@ -126,7 +147,7 @@ namespace SampleApp
                                     {
                                         ServerCertificate = localhostCert
                                     });
-                                }, state: null);
+                                }, state: null, TimeSpan.FromSeconds(5), ClientCertificateMode.DelayCertificate);
                             });
 
                             options
