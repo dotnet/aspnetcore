@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.NodeServices.Util
         {
             _streamReader = streamReader ?? throw new ArgumentNullException(nameof(streamReader));
             _linesBuffer = new StringBuilder();
-            Task.Factory.StartNew(Run, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
+            Task.Factory.StartNew(Run, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
         }
 
         public Task<Match> WaitForMatch(Regex regex)

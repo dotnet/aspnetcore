@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (CircuitId.Secret is null)
             {
                 // Prevent the use of a 'default' secret.
-                throw new ArgumentNullException(nameof(circuitId));
+                throw new ArgumentException($"Property '{nameof(CircuitId.Secret)}' cannot be null.", nameof(circuitId));
             }
 
             _scope = scope;

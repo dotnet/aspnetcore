@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Async offload, don't let the test code block the caller.
             if (_preserveExecutionContext)
             {
-                _ = Task.Factory.StartNew(RunRequestAsync, default, TaskCreationOptions.None, TaskScheduler.Default);
+                _ = Task.Factory.StartNew(RunRequestAsync, default, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
             }
             else
             {
