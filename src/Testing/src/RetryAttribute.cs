@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Testing
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = false)]
-    public class RetryAttribute : Attribute
+    public sealed class RetryAttribute : Attribute
     {
         public RetryAttribute(int maxRetries = 3)
         {
