@@ -1157,10 +1157,6 @@
       "Template": "angular",
       "Arguments": "new angular",
       "Files": [
-        "ClientApp/e2e/src/app.e2e-spec.ts",
-        "ClientApp/e2e/src/app.po.ts",
-        "ClientApp/e2e/protractor.conf.js",
-        "ClientApp/e2e/tsconfig.json",
         "ClientApp/src/app/counter/counter.component.html",
         "ClientApp/src/app/counter/counter.component.spec.ts",
         "ClientApp/src/app/counter/counter.component.ts",
@@ -1185,7 +1181,6 @@
         "ClientApp/src/test.ts",
         "ClientApp/.browserslistrc",
         "ClientApp/.editorconfig",
-        "ClientApp/.eslintrc.json",
         "ClientApp/.gitignore",
         "ClientApp/angular.json",
         "ClientApp/aspnetcore-https.js",
