@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // we currently don't have a good way to detect mounted file systems within Windows ctonainers
+                // we currently don't have a good way to detect mounted file systems within Windows containers
                 return false;
             }
 

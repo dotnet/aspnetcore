@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         /// <summary>
         /// Gets a value which indicates where the <see cref="Http.Endpoint"/> is considered
-        /// a valid candiate for the current request.
+        /// a valid candidate for the current request.
         /// </summary>
         /// <param name="index">The candidate index.</param>
         /// <returns>
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         /// <summary>
-        /// Sets the validitity of the candidate at the provided index.
+        /// Sets the validity of the candidate at the provided index.
         /// </summary>
         /// <param name="index">The candidate index.</param>
         /// <param name="value">

@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             else
             {
-                // If the MemoryStream is incapable of accomodating the content to be written
+                // If the MemoryStream is incapable of accommodating the content to be written
                 // spool to disk.
                 EnsureFileStream();
 

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing
     public sealed class SuppressMatchingMetadata : ISuppressMatchingMetadata
     {
         /// <summary>
-        /// Gets a value indicating whether the assocated endpoint should be used for URL matching.
+        /// Gets a value indicating whether the associated endpoint should be used for URL matching.
         /// </summary>
         public bool SuppressMatching => true;
     }

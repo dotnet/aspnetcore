@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
             else if (node.Parameters != null)
             {
-                // This node has paramters but no catchall.
+                // This node has parameters but no catchall.
                 currentDefaultDestination = Transition(node.Parameters);
             }
             else if (node.CatchAll != null)
