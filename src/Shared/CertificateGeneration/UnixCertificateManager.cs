@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // TODO: support 'partial' return.
 
             // Return true when all stores trust the cert.
-            using var pemCertificateFile = new PemCertificateFile(certificate);
             foreach (var store in CertificateStores)
             {
                 if (!store.HasCertificate(certificate))

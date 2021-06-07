@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 #nullable enable
@@ -22,16 +23,29 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public override bool TryInstallCertificate(X509Certificate2 certificate)
         {
-            using var pemFile = new PemCertificateFile(certificate);
-            string name = GetCertificateNickname(certificate);
-            var result = ProcessRunner.Run(new() {
-                Command = { "certutil", "-d", DatabasePath, "-A", "-t", "C,,", "-n", name, "-i", pemFile.FilePath },
-                ThrowOnFailure = false });
-            if (!result.IsSuccess)
+            string pemFile = Paths.GetUserTempFile(".pem");
+            try
             {
-                CertificateManager.Log.LinuxCertutilInstallFailed(result.CommandLine, result.ExitCode, result.StandardError!.ToString());
+                CertificateManager.ExportCertificate(certificate, pemFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
+                string name = GetCertificateNickname(certificate);
+                var result = ProcessRunner.Run(new() {
+                    Command = { "certutil", "-d", DatabasePath, "-A", "-t", "C,,", "-n", name, "-i", pemFile },
+                    ThrowOnFailure = false });
+                if (!result.IsSuccess)
+                {
+                    CertificateManager.Log.LinuxCertutilInstallFailed(result.CommandLine, result.ExitCode, result.StandardError!.ToString());
+                }
+                return result.IsSuccess;
             }
-            return result.IsSuccess;
+            finally
+            {
+                try
+                {
+                    File.Delete(pemFile);
+                }
+                catch
+                { }
+            }
         }
 
         public override bool HasCertificate(X509Certificate2 certificate)

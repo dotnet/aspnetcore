@@ -28,10 +28,23 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public override bool TryInstallCertificate(X509Certificate2 certificate)
         {
-            using var pemFile = new PemCertificateFile(certificate);
-            CopyFile(pemFile.FilePath, GetCertificatePath(certificate));
-            ProcessRunner.Run(_updateStore);
-            return true;
+            string pemFile = Paths.GetUserTempFile(".pem");
+            try
+            {
+                CertificateManager.ExportCertificate(certificate, pemFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
+                CopyFile(pemFile, GetCertificatePath(certificate));
+                ProcessRunner.Run(_updateStore);
+                return true;
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(pemFile);
+                }
+                catch
+                { }
+            }
         }
 
         public override void DeleteCertificate(X509Certificate2 certificate)
