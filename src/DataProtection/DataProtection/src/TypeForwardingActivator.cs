@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.DataProtection
             return base.CreateInstance(expectedBaseType, originalTypeName);
         }
 
-        protected string RemoveVersionFromAssemblyName(string forwardedTypeName)
+        protected static string RemoveVersionFromAssemblyName(string forwardedTypeName)
         {
             // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
 

@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private bool IsPseudoHeaderField(ReadOnlySpan<byte> name, out PseudoHeaderFields headerField)
+        private static bool IsPseudoHeaderField(ReadOnlySpan<byte> name, out PseudoHeaderFields headerField)
         {
             headerField = PseudoHeaderFields.None;
 
@@ -464,7 +464,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private Task ProcessUnknownFrameAsync()
+        private static Task ProcessUnknownFrameAsync()
         {
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-9
             // Unknown frames must be explicitly ignored.

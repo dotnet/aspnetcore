@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private Dictionary<string, string> ReadHeaders(JsonTextReader reader)
+        private static Dictionary<string, string> ReadHeaders(JsonTextReader reader)
         {
             var headers = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private void WriteHeaders(JsonTextWriter writer, HubInvocationMessage message)
+        private static void WriteHeaders(JsonTextWriter writer, HubInvocationMessage message)
         {
             if (message.Headers != null && message.Headers.Count > 0)
             {
@@ -536,7 +536,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private void WriteCancelInvocationMessage(CancelInvocationMessage message, JsonTextWriter writer)
+        private static void WriteCancelInvocationMessage(CancelInvocationMessage message, JsonTextWriter writer)
         {
             WriteInvocationId(message, writer);
         }
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteStreamIds(message.StreamIds, writer);
         }
 
-        private void WriteCloseMessage(CloseMessage message, JsonTextWriter writer)
+        private static void WriteCloseMessage(CloseMessage message, JsonTextWriter writer)
         {
             if (message.Error != null)
             {
@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteEndArray();
         }
 
-        private void WriteStreamIds(string[]? streamIds, JsonTextWriter writer)
+        private static void WriteStreamIds(string[]? streamIds, JsonTextWriter writer)
         {
             if (streamIds == null)
             {
@@ -628,7 +628,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteValue(type);
         }
 
-        private HubMessage BindCancelInvocationMessage(string? invocationId)
+        private static HubMessage BindCancelInvocationMessage(string? invocationId)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -638,7 +638,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new CancelInvocationMessage(invocationId);
         }
 
-        private HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult, IInvocationBinder binder)
+        private static HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new CompletionMessage(invocationId, error, result: null, hasResult: false);
         }
 
-        private HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem, IInvocationBinder binder)
+        private static HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new StreamItemMessage(invocationId, item);
         }
 
-        private HubMessage BindStreamInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
+        private static HubMessage BindStreamInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -695,7 +695,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new StreamInvocationMessage(invocationId, target, arguments, streamIds);
         }
 
-        private HubMessage BindInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
+        private static HubMessage BindInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(target))
             {
@@ -712,7 +712,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new InvocationMessage(invocationId, target, arguments, streamIds);
         }
 
-        private bool ReadArgumentAsType(JsonTextReader reader, IReadOnlyList<Type> paramTypes, int paramIndex)
+        private static bool ReadArgumentAsType(JsonTextReader reader, IReadOnlyList<Type> paramTypes, int paramIndex)
         {
             if (paramIndex < paramTypes.Count)
             {
@@ -771,7 +771,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             throw new JsonReaderException("Unexpected end when reading JSON");
         }
 
-        private CloseMessage BindCloseMessage(string? error, bool allowReconnect)
+        private static CloseMessage BindCloseMessage(string? error, bool allowReconnect)
         {
             // An empty string is still an error
             if (error == null && !allowReconnect)
@@ -814,7 +814,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string>? headers)
+        private static HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string>? headers)
         {
             if (headers != null && message is HubInvocationMessage invocationMessage)
             {

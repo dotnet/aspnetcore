@@ -91,13 +91,19 @@ dotnet_diagnostic.CA1802.severity = warning
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = warning
 
-# CA1823: Remove empty Finalizers
+# CA1810: Do not initialize unnecessarily
+dotnet_diagnostic.CA1810.severity = suggestion
+
+# CA1821: Remove empty Finalizers
 dotnet_diagnostic.CA1821.severity = warning
+
+# CA1822: Make member static
+dotnet_diagnostic.CA1822.severity = suggestion
 
 # CA1823: Avoid unused private fields
 dotnet_diagnostic.CA1823.severity = warning
 
-# CA1823: Avoid zero-length array allocations
+# CA1825: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = warning
 
 # CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
@@ -185,9 +191,21 @@ dotnet_diagnostic.CA2200.severity = warning
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = warning
 
-[**/HostFactoryResolver.cs]
-# CA1823: Use literals where appropriate
-dotnet_diagnostic.CA1802.severity = suggestion
+# IDE0035: Remove unreachable code
+dotnet_diagnostic.IDE0035.severity = warning
+
+# IDE0036: Order modifiers
+dotnet_diagnostic.IDE0036.severity = warning
+
+# IDE0043: Format string contains invalid placeholder
+dotnet_diagnostic.IDE0043.severity = warning
+
+# IDE0044: Make field readonly
+dotnet_diagnostic.IDE0044.severity = warning
+
+# IDE0073: File header
+dotnet_diagnostic.IDE0073.severity = warning
+file_header_template = Copyright (c) .NET Foundation. All rights reserved.\nLicensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 [**/{test,samples,perf}/**.{cs,vb}]
 # CA1018: Mark attributes with AttributeUsageAttribute

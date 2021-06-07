@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private ValueTask DisposeFilter(IHubFilter filter)
+        private static ValueTask DisposeFilter(IHubFilter filter)
         {
             if (filter is IAsyncDisposable asyncDispsable)
             {

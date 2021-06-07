@@ -163,19 +163,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
+                LogLevel.Critical,
+                EventIds.UnhandledExceptionRenderingComponent,
+                "Unhandled exception rendering component: {Message}");
 
             private static class EventIds
             {
                 public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
-            }
-
-            static Log()
-            {
-                _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
-                    LogLevel.Critical,
-                    EventIds.UnhandledExceptionRenderingComponent,
-                    "Unhandled exception rendering component: {Message}");
             }
 
             public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)

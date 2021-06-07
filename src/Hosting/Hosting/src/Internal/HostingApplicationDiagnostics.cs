@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ContextDisposed(HostingApplication.Context context)
+        public static void ContextDisposed(HostingApplication.Context context)
         {
             if (context.EventLogEnabled)
             {

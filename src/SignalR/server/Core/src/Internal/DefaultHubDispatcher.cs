@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             catch (Exception ex)
                             {
                                 Log.FailedInvokingHubMethod(logger, hubMethodInvocationMessage.Target, ex);
-                                await dispatcher.SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                     ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, enableDetailedErrors));
                                 return;
                             }
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 // And normal invocations handle cleanup below in the finally
                                 if (isStreamCall)
                                 {
-                                    await dispatcher.CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                                 }
                             }
 
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub>? hubActivator,
+        private static ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub>? hubActivator,
             THub? hub, AsyncServiceScope scope)
         {
             if (hubMessage.StreamIds != null)
@@ -513,7 +513,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return ExecuteMethod(methodExecutor, hub, arguments);
         }
 
-        private async ValueTask<object?> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object?[] arguments)
+        private static async ValueTask<object?> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object?[] arguments)
         {
             if (methodExecutor.IsMethodAsync)
             {
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private async Task SendInvocationError(string? invocationId,
+        private static async Task SendInvocationError(string? invocationId,
             HubConnectionContext connection, string errorMessage)
         {
             if (string.IsNullOrEmpty(invocationId))
@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             hub.Groups = _hubContext.Groups;
         }
 
-        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, HubMethodDescriptor descriptor, object?[] hubMethodArguments, Hub hub)
+        private static Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, HubMethodDescriptor descriptor, object?[] hubMethodArguments, Hub hub)
         {
             // If there are no policies we don't need to run auth
             if (descriptor.Policies.Count == 0)
