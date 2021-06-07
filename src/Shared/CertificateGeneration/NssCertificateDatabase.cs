@@ -20,8 +20,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return CheckProgramDependency("certutil");
         }
 
-        public override bool TryInstallCertificate(string name, PemCertificateFile pemFile)
+        public override bool TryInstallCertificate(X509Certificate2 certificate)
         {
+            using var pemFile = new PemCertificateFile(certificate);
+            string name = GetCertificateNickname(certificate);
             var result = ProcessRunner.Run(new() {
                 Command = { "certutil", "-d", DatabasePath, "-A", "-t", "C,,", "-n", name, "-i", pemFile.FilePath },
                 ThrowOnFailure = false });
@@ -32,8 +34,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return result.IsSuccess;
         }
 
-        public override bool HasCertificate(string name, X509Certificate2 certificate)
+        public override bool HasCertificate(X509Certificate2 certificate)
         {
+            string name = GetCertificateNickname(certificate);
             ProcessRunResult runResult = ProcessRunner.Run(new()
             {
                 Command = { "certutil", "-d", DatabasePath, "-L", "-n", name, "-a" },
@@ -58,13 +61,17 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return false;
         }
 
-        public override void DeleteCertificate(string name)
+        public override void DeleteCertificate(X509Certificate2 certificate)
         {
+            string name = GetCertificateNickname(certificate);
             ProcessRunner.Run(new()
             {
                 Command = { "certutil", "-d", DatabasePath, "-D", "-n", name },
                 ThrowOnFailure = false
             });
         }
+
+        private string GetCertificateNickname(X509Certificate2 certificate)
+            => "aspnet-" + certificate.Thumbprint;
     }
 }

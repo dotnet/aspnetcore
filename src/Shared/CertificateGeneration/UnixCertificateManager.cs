@@ -6,8 +6,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 {
     internal class UnixCertificateManager : CertificateManager
     {
-        private string CertificateStoreKey => $"aspnet-{Environment.UserName}";
-
         private List<CertificateStore> _certificateStores;
 
         private List<CertificateStore> CertificateStores
@@ -30,7 +28,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             using var pemCertificateFile = new PemCertificateFile(certificate);
             foreach (var store in CertificateStores)
             {
-                if (!store.HasCertificate(CertificateStoreKey, certificate))
+                if (!store.HasCertificate(certificate))
                 {
                     return false;
                 }
@@ -72,11 +70,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected override void TrustCertificateCore(X509Certificate2 certificate)
         {
-            using var pemFile = new PemCertificateFile(certificate);
             foreach (var store in CertificateStores)
             {
                 CertificateManager.Log.LinuxTrustCertificate(CertificateManager.GetDescription(certificate), store.StoreName);
-                store.TryInstallCertificate(CertificateStoreKey, pemFile);
+                store.TryInstallCertificate(certificate);
                 // TODO: handle failure.
             }
         }
@@ -85,7 +82,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         {
             foreach (var store in CertificateStores)
             {
-                store.DeleteCertificate(CertificateStoreKey);
+                store.DeleteCertificate(certificate);
             }
         }
 

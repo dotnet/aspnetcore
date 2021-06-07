@@ -16,11 +16,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public abstract bool CheckDependencies();
 
-        public abstract bool TryInstallCertificate(string name, PemCertificateFile pemFile);
+        public abstract bool TryInstallCertificate(X509Certificate2 certificate);
 
-        public abstract void DeleteCertificate(string name);
+        public abstract void DeleteCertificate(X509Certificate2 certificate);
 
-        public abstract bool HasCertificate(string name, X509Certificate2 pemContent);
+        public abstract bool HasCertificate(X509Certificate2 certificate);
 
         protected bool CheckProgramDependency(string program)
         {

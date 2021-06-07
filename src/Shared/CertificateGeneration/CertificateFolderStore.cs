@@ -26,21 +26,22 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return CheckProgramDependency(_updateStore);
         }
 
-        public override bool TryInstallCertificate(string name, PemCertificateFile pemFile)
+        public override bool TryInstallCertificate(X509Certificate2 certificate)
         {
-            CopyFile(pemFile.FilePath, GetCertificatePath(name));
+            using var pemFile = new PemCertificateFile(certificate);
+            CopyFile(pemFile.FilePath, GetCertificatePath(certificate));
             ProcessRunner.Run(_updateStore);
             return true;
         }
 
-        public override void DeleteCertificate(string name)
+        public override void DeleteCertificate(X509Certificate2 certificate)
         {
-            DeleteFile(GetCertificatePath(name));
+            DeleteFile(GetCertificatePath(certificate));
         }
 
-        public override bool HasCertificate(string name, X509Certificate2 certificate)
+        public override bool HasCertificate(X509Certificate2 certificate)
         {
-            string certificatePath = GetCertificatePath(name);
+            string certificatePath = GetCertificatePath(certificate);
             if (!File.Exists(certificatePath))
             {
                 return false;
@@ -49,8 +50,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return storeCertificate.Equals(certificate);
         }
 
-        private string GetCertificatePath(string name)
-            => Path.Combine(FolderPath, name + ".pem");
+        private string GetCertificatePath(X509Certificate2 certificate)
+            => Path.Combine(FolderPath, "aspnet-" + certificate.Thumbprint + ".pem");
 
         private void DeleteFile(string path)
         {
