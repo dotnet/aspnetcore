@@ -136,7 +136,9 @@ namespace Microsoft.AspNetCore.Http
                 position++;
             }
 
-            Headers.Append(HeaderNames.SetCookie, cookies);
+            // Can't use += as StringValues does not override operator+
+            // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookies);
         }
 
         /// <inheritdoc />

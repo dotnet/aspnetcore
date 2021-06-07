@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression
@@ -204,8 +205,9 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             if (_provider.ShouldCompressResponse(_context))
             {
+                var headers = _context.Response.Headers;
                 // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
-                var varyValues = _context.Response.Headers.GetCommaSeparatedValues(HeaderNames.Vary);
+                var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
                 var varyByAcceptEncoding = false;
 
                 for (var i = 0; i < varyValues.Length; i++)
@@ -219,15 +221,19 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
                 if (!varyByAcceptEncoding)
                 {
-                    _context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.AcceptEncoding);
+                    // Can't use += as StringValues does not override operator+
+                    // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                    headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
                 }
 
                 var compressionProvider = ResolveCompressionProvider();
                 if (compressionProvider != null)
                 {
-                    _context.Response.Headers.Append(HeaderNames.ContentEncoding, compressionProvider.EncodingName);
-                    _context.Response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
-                    _context.Response.Headers.Remove(HeaderNames.ContentLength);
+                    // Can't use += as StringValues does not override operator+
+                    // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                    headers.ContentEncoding = StringValues.Concat(headers.ContentEncoding, compressionProvider.EncodingName);
+                    headers.ContentMD5 = default; // Reset the MD5 because the content changed.
+                    headers.ContentLength = default;
                 }
             }
         }

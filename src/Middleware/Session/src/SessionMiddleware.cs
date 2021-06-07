@@ -161,9 +161,9 @@ namespace Microsoft.AspNetCore.Session
                 response.Cookies.Append(_options.Cookie.Name!, _cookieValue, cookieOptions);
 
                 var responseHeaders = response.Headers;
-                responseHeaders[HeaderNames.CacheControl] = "no-cache,no-store";
-                responseHeaders[HeaderNames.Pragma] = "no-cache";
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders.CacheControl = "no-cache,no-store";
+                responseHeaders.Pragma = "no-cache";
+                responseHeaders.Expires = "-1";
             }
 
             // Returns true if the session has already been established, or if it still can be because the response has not been sent.
