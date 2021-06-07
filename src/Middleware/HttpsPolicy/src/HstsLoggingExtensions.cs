@@ -8,27 +8,18 @@ namespace Microsoft.AspNetCore.HttpsPolicy
 {
     internal static class HstsLoggingExtensions
     {
-        private static readonly Action<ILogger, Exception?> _notSecure;
-        private static readonly Action<ILogger, string, Exception?> _excludedHost;
-        private static readonly Action<ILogger, Exception?> _addingHstsHeader;
-
-        static HstsLoggingExtensions()
-        {
-            _notSecure = LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(1, "NotSecure"),
-                "The request is insecure. Skipping HSTS header.");
-
-            _excludedHost = LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                new EventId(2, "ExcludedHost"),
-                "The host '{host}' is excluded. Skipping HSTS header.");
-
-            _addingHstsHeader = LoggerMessage.Define(
-                LogLevel.Trace,
-                new EventId(3, "AddingHstsHeader"),
-                "Adding HSTS header to response.");
-        }
+        private static readonly Action<ILogger, Exception?> _notSecure = LoggerMessage.Define(
+            LogLevel.Debug,
+            new EventId(1, "NotSecure"),
+            "The request is insecure. Skipping HSTS header.");
+        private static readonly Action<ILogger, string, Exception?> _excludedHost = LoggerMessage.Define<string>(
+            LogLevel.Debug,
+            new EventId(2, "ExcludedHost"),
+            "The host '{host}' is excluded. Skipping HSTS header.");
+        private static readonly Action<ILogger, Exception?> _addingHstsHeader = LoggerMessage.Define(
+            LogLevel.Trace,
+            new EventId(3, "AddingHstsHeader"),
+            "Adding HSTS header to response.");
 
         public static void SkippingInsecure(this ILogger logger)
         {

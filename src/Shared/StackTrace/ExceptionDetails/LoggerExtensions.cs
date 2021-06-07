@@ -6,21 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
-    internal static class LoggerExtensions
+    internal static partial class LoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _failedToReadStackFrameInfo;
-
-        static LoggerExtensions()
-        {
-            _failedToReadStackFrameInfo = LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(0, "FailedToReadStackTraceInfo"),
-                formatString: "Failed to read stack trace information for exception.");
-        }
-
-        public static void FailedToReadStackTraceInfo(this ILogger logger, Exception exception)
-        {
-            _failedToReadStackFrameInfo(logger, exception);
-        }
+        [LoggerMessage(EventId = 0, EventName = "FailedToReadStackTraceInfo", Level = LogLevel.Debug, Message = "Failed to read stack trace information for exception.")]
+        public static partial void FailedToReadStackTraceInfo(this ILogger logger, Exception exception);
     }
 }

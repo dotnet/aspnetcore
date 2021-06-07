@@ -7,20 +7,14 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, string, Exception?> _authenticationSchemeSignedIn;
-        private static Action<ILogger, string, Exception?> _authenticationSchemeSignedOut;
-
-        static LoggingExtensions()
-        {
-            _authenticationSchemeSignedIn = LoggerMessage.Define<string>(
+        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeSignedIn = LoggerMessage.Define<string>(
                 eventId: new EventId(10, "AuthenticationSchemeSignedIn"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed in.");
-            _authenticationSchemeSignedOut = LoggerMessage.Define<string>(
+        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeSignedOut = LoggerMessage.Define<string>(
                 eventId: new EventId(11, "AuthenticationSchemeSignedOut"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
-        }
 
         public static void AuthenticationSchemeSignedIn(this ILogger logger, string authenticationScheme)
         {

@@ -7,15 +7,10 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception?> _noCertificate;
-
-        static LoggingExtensions()
-        {
-            _noCertificate = LoggerMessage.Define(
-                eventId: new EventId(0, "NoCertificate"),
-                logLevel: LogLevel.Warning,
-                formatString: "Could not read certificate from header.");
-        }
+        private static Action<ILogger, Exception?> _noCertificate = LoggerMessage.Define(
+            eventId: new EventId(0, "NoCertificate"),
+            logLevel: LogLevel.Warning,
+            formatString: "Could not read certificate from header.");
 
         public static void NoCertificate(this ILogger logger, Exception exception)
         {

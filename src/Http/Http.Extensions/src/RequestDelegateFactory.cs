@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Creates <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
     /// </summary>
-    public static class RequestDelegateFactory
+    public static partial class RequestDelegateFactory
     {
         private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -809,37 +809,25 @@ namespace Microsoft.AspNetCore.Http
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();
         }
 
-        private static class Log
+        internal static partial class Log
         {
-            private static readonly Action<ILogger, Exception> _requestBodyIOException = LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(1, "RequestBodyIOException"),
-                "Reading the request body failed with an IOException.");
+            public static void RequestBodyIOException(HttpContext httpContext, Exception exception)
+                => RequestBodyIOException(GetLogger(httpContext), exception);
 
-            private static readonly Action<ILogger, Exception> _requestBodyInvalidDataException = LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(2, "RequestBodyInvalidDataException"),
-                "Reading the request body failed with an InvalidDataException.");
-
-            private static readonly Action<ILogger, string, string, string, Exception?> _parameterBindingFailed = LoggerMessage.Define<string, string, string>(
-                LogLevel.Debug,
-                new EventId(3, "ParamaterBindingFailed"),
-                @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from ""{SourceValue}"".");
-
-            public static void RequestBodyIOException(HttpContext httpContext, IOException exception)
-            {
-                _requestBodyIOException(GetLogger(httpContext), exception);
-            }
+            [LoggerMessage(EventId = 1, EventName = "RequestBodyIOException", Level = LogLevel.Debug, Message = "Reading the request body failed with an IOException.")]
+            public static partial void RequestBodyIOException(ILogger logger, Exception exception);
 
             public static void RequestBodyInvalidDataException(HttpContext httpContext, InvalidDataException exception)
-            {
-                _requestBodyInvalidDataException(GetLogger(httpContext), exception);
-            }
+                => RequestBodyInvalidDataException(GetLogger(httpContext), exception);
+
+            [LoggerMessage(EventId = 2, EventName = "RequestBodyInvalidDataException", Level = LogLevel.Debug, Message = "Reading the request body failed with an InvalidDataException.")]
+            public static partial void RequestBodyInvalidDataException(ILogger logger, InvalidDataException exception);
 
             public static void ParameterBindingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, string sourceValue)
-            {
-                _parameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue, null);
-            }
+                => ParameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue);
+
+            [LoggerMessage(EventId = 3, EventName = "ParamaterBindingFailed", Level = LogLevel.Debug, Message = @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from ""{SourceValue}"".")]
+            public static partial void ParameterBindingFailed(ILogger logger, string parameterType, string parameterName, string sourceValue);
 
             private static ILogger GetLogger(HttpContext httpContext)
             {

@@ -91,6 +91,9 @@ dotnet_diagnostic.CA1802.severity = warning
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = warning
 
+# CA1810: Do not initialize unnecessarily
+dotnet_diagnostic.CA1810.severity = suggestion
+
 # CA1823: Remove empty Finalizers
 dotnet_diagnostic.CA1821.severity = warning
 

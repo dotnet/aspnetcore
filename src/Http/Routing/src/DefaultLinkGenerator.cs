@@ -18,7 +18,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal sealed class DefaultLinkGenerator : LinkGenerator, IDisposable
+    internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     {
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly TemplateBinderFactory _binderFactory;
@@ -336,136 +336,91 @@ namespace Microsoft.AspNetCore.Routing
         }
 
 #nullable disable
-        private static class Log
+        private static partial class Log
         {
-            public static class EventIds
-            {
-                public static readonly EventId EndpointsFound = new EventId(100, "EndpointsFound");
-                public static readonly EventId EndpointsNotFound = new EventId(101, "EndpointsNotFound");
+            [LoggerMessage(EventId = 100, EventName = "EndpointsFound", Level = LogLevel.Debug, Message = "Found the endpoints {Endpoints} for address {Address}")]
+            public static partial void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints);
 
-                public static readonly EventId TemplateSucceeded = new EventId(102, "TemplateSucceeded");
-                public static readonly EventId TemplateFailedRequiredValues = new EventId(103, "TemplateFailedRequiredValues");
-                public static readonly EventId TemplateFailedConstraint = new EventId(103, "TemplateFailedConstraint");
-                public static readonly EventId TemplateFailedExpansion = new EventId(104, "TemplateFailedExpansion");
-
-                public static readonly EventId LinkGenerationSucceeded = new EventId(105, "LinkGenerationSucceeded");
-                public static readonly EventId LinkGenerationFailed = new EventId(106, "LinkGenerationFailed");
-            }
-
-            private static readonly Action<ILogger, IEnumerable<string>, object, Exception> _endpointsFound = LoggerMessage.Define<IEnumerable<string>, object>(
-                LogLevel.Debug,
-                EventIds.EndpointsFound,
-                "Found the endpoints {Endpoints} for address {Address}",
-                skipEnabledCheck: true);
-
-            private static readonly Action<ILogger, object, Exception> _endpointsNotFound = LoggerMessage.Define<object>(
-                LogLevel.Debug,
-                EventIds.EndpointsNotFound,
-                "No endpoints found for address {Address}");
-
-            private static readonly Action<ILogger, string, string, string, string, Exception> _templateSucceeded = LoggerMessage.Define<string, string, string, string>(
-                LogLevel.Debug,
-                EventIds.TemplateSucceeded,
-                "Successfully processed template {Template} for {Endpoint} resulting in {Path} and {Query}");
-
-            private static readonly Action<ILogger, string, string, string, string, string, Exception> _templateFailedRequiredValues = LoggerMessage.Define<string, string, string, string, string>(
-                LogLevel.Debug,
-                EventIds.TemplateFailedRequiredValues,
-                "Failed to process the template {Template} for {Endpoint}. " +
-                "A required route value is missing, or has a different value from the required default values. " +
-                "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}",
-                skipEnabledCheck: true);
-
-            private static readonly Action<ILogger, string, string, IRouteConstraint, string, string, Exception> _templateFailedConstraint = LoggerMessage.Define<string, string, IRouteConstraint, string, string>(
-                LogLevel.Debug,
-                EventIds.TemplateFailedConstraint,
-                "Failed to process the template {Template} for {Endpoint}. " +
-                "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}",
-                skipEnabledCheck: true);
-
-            private static readonly Action<ILogger, string, string, string, Exception> _templateFailedExpansion = LoggerMessage.Define<string, string, string>(
-                LogLevel.Debug,
-                EventIds.TemplateFailedExpansion,
-                "Failed to process the template {Template} for {Endpoint}. " +
-                "The failure occurred while expanding the template with values {Values} " +
-                "This is usually due to a missing or empty value in a complex segment",
-                skipEnabledCheck: true);
-
-            private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _linkGenerationSucceeded = LoggerMessage.Define<IEnumerable<string>, string>(
-                LogLevel.Debug,
-                EventIds.LinkGenerationSucceeded,
-                "Link generation succeeded for endpoints {Endpoints} with result {URI}",
-                skipEnabledCheck: true);
-
-            private static readonly Action<ILogger, IEnumerable<string>, Exception> _linkGenerationFailed = LoggerMessage.Define<IEnumerable<string>>(
-                LogLevel.Debug,
-                EventIds.LinkGenerationFailed,
-                "Link generation failed for endpoints {Endpoints}",
-                skipEnabledCheck: true);
-
-            public static void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints)
-            {
-                // Checking level again to avoid allocation on the common path
-                if (logger.IsEnabled(LogLevel.Debug))
-                {
-                    _endpointsFound(logger, endpoints.Select(e => e.DisplayName), address, null);
-                }
-            }
-
-            public static void EndpointsNotFound(ILogger logger, object address)
-            {
-                _endpointsNotFound(logger, address, null);
-            }
+            [LoggerMessage(EventId = 101, EventName = "EndpointsNotFound", Level = LogLevel.Debug, Message = "No endpoints found for address {Address}")]
+            public static partial void EndpointsNotFound(ILogger logger, object address);
 
             public static void TemplateSucceeded(ILogger logger, RouteEndpoint endpoint, PathString path, QueryString query)
-            {
-                _templateSucceeded(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, path.Value, query.Value, null);
-            }
+                => TemplateSucceeded(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, path.Value, query.Value);
+
+            [LoggerMessage(EventId = 102, EventName = "TemplateSucceeded", Level = LogLevel.Debug,
+                Message = "Successfully processed template {Template} for {Endpoint} resulting in {Path} and {Query}")]
+            public static partial void TemplateSucceeded(ILogger logger, string template, string endpoint, string path, string query);
 
             public static void TemplateFailedRequiredValues(ILogger logger, RouteEndpoint endpoint, RouteValueDictionary ambientValues, RouteValueDictionary values)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _templateFailedRequiredValues(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, FormatRouteValues(ambientValues), FormatRouteValues(values), FormatRouteValues(endpoint.RoutePattern.Defaults), null);
+                    TemplateFailedRequiredValues(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, FormatRouteValues(ambientValues), FormatRouteValues(values), FormatRouteValues(endpoint.RoutePattern.Defaults));
                 }
             }
+
+            [LoggerMessage(EventId = 103, EventName = "TemplateFailedRequiredValues", Level = LogLevel.Debug,
+                Message = "Failed to process the template {Template} for {Endpoint}. " +
+                "A required route value is missing, or has a different value from the required default values. " +
+                "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}")]
+            public static partial void TemplateFailedRequiredValues(ILogger logger, string template, string endpoint, string ambientValues, string values, string defaults);
 
             public static void TemplateFailedConstraint(ILogger logger, RouteEndpoint endpoint, string parameterName, IRouteConstraint constraint, RouteValueDictionary values)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _templateFailedConstraint(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, constraint, parameterName, FormatRouteValues(values), null);
+                    TemplateFailedConstraint(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, parameterName, constraint, FormatRouteValues(values));
                 }
             }
+
+            [LoggerMessage(EventId = 103, EventName = "TemplateFailedConstraint", Level = LogLevel.Debug,
+                Message = "Failed to process the template {Template} for {Endpoint}. " +
+                "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}")]
+            public static partial void TemplateFailedConstraint(ILogger logger, string template, string endpoint, string parameterName, IRouteConstraint constraint, string values);
 
             public static void TemplateFailedExpansion(ILogger logger, RouteEndpoint endpoint, RouteValueDictionary values)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _templateFailedExpansion(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, FormatRouteValues(values), null);
+                    TemplateFailedExpansion(logger, endpoint.RoutePattern.RawText, endpoint.DisplayName, FormatRouteValues(values));
                 }
             }
+
+            [LoggerMessage(EventId = 104, EventName = "TemplateFailedExpansion", Level = LogLevel.Debug,
+                Message = "Failed to process the template {Template} for {Endpoint}. " +
+                "The failure occurred while expanding the template with values {Values} " +
+                "This is usually due to a missing or empty value in a complex segment")]
+            public static partial void TemplateFailedExpansion(ILogger logger, string template, string endpoint, string values);
+
 
             public static void LinkGenerationSucceeded(ILogger logger, IEnumerable<Endpoint> endpoints, string uri)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _linkGenerationSucceeded(logger, endpoints.Select(e => e.DisplayName), uri, null);
+                    LinkGenerationSucceeded(logger, endpoints.Select(e => e.DisplayName), uri);
                 }
             }
+
+            [LoggerMessage(EventId = 105, EventName = "LinkGenerationSucceeded", Level = LogLevel.Debug,
+                Message = "Link generation succeeded for endpoints {Endpoints} with result {URI}")]
+            public static partial void LinkGenerationSucceeded(ILogger logger, IEnumerable<string> endpoints, string uri);
 
             public static void LinkGenerationFailed(ILogger logger, IEnumerable<Endpoint> endpoints)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _linkGenerationFailed(logger, endpoints.Select(e => e.DisplayName), null);
+                    LinkGenerationFailed(logger, endpoints.Select(e => e.DisplayName));
                 }
             }
+
+            [LoggerMessage(EventId = 106, EventName = "LinkGenerationFailed", Level = LogLevel.Debug,
+                Message = "Link generation failed for endpoints {Endpoints}")]
+            public static partial void LinkGenerationFailed(ILogger logger, IEnumerable<string> endpoints);
 
             // EXPENSIVE: should only be used at Debug and higher levels of logging.
             private static string FormatRouteValues(IReadOnlyDictionary<string, object> values)

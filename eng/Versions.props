@@ -95,7 +95,7 @@
     <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0-preview.6.21314.2</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsHostingVersion>6.0.0-preview.6.21314.2</MicrosoftExtensionsHostingVersion>
     <MicrosoftExtensionsHttpVersion>6.0.0-preview.6.21314.2</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-preview.6.21314.2</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-preview.7.21316.3</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConfigurationVersion>6.0.0-preview.6.21314.2</MicrosoftExtensionsLoggingConfigurationVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>6.0.0-preview.6.21314.2</MicrosoftExtensionsLoggingConsoleVersion>
     <MicrosoftExtensionsLoggingDebugVersion>6.0.0-preview.6.21314.2</MicrosoftExtensionsLoggingDebugVersion>

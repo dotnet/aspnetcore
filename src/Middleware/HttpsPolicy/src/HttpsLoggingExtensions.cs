@@ -8,33 +8,25 @@ namespace Microsoft.AspNetCore.HttpsPolicy
 {
     internal static class HttpsLoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception?> _redirectingToHttps;
-        private static readonly Action<ILogger, int, Exception?> _portLoadedFromConfig;
-        private static readonly Action<ILogger, Exception?> _failedToDeterminePort;
-        private static readonly Action<ILogger, int, Exception?> _portFromServer;
+        private static readonly Action<ILogger, string, Exception?> _redirectingToHttps = LoggerMessage.Define<string>(
+            LogLevel.Debug,
+            new EventId(1, "RedirectingToHttps"),
+            "Redirecting to '{redirect}'.");
 
-        static HttpsLoggingExtensions()
-        {
-            _redirectingToHttps = LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                new EventId(1, "RedirectingToHttps"),
-                "Redirecting to '{redirect}'.");
+        private static readonly Action<ILogger, int, Exception?> _portLoadedFromConfig = LoggerMessage.Define<int>(
+            LogLevel.Debug,
+            new EventId(2, "PortLoadedFromConfig"),
+            "Https port '{port}' loaded from configuration.");
 
-            _portLoadedFromConfig = LoggerMessage.Define<int>(
-                LogLevel.Debug,
-                new EventId(2, "PortLoadedFromConfig"),
-                "Https port '{port}' loaded from configuration.");
+        private static readonly Action<ILogger, Exception?> _failedToDeterminePort = LoggerMessage.Define(
+            LogLevel.Warning,
+            new EventId(3, "FailedToDeterminePort"),
+            "Failed to determine the https port for redirect.");
 
-            _failedToDeterminePort = LoggerMessage.Define(
-                LogLevel.Warning,
-                new EventId(3, "FailedToDeterminePort"),
-                "Failed to determine the https port for redirect.");
-
-            _portFromServer = LoggerMessage.Define<int>(
+        private static readonly Action<ILogger, int, Exception?> _portFromServer = LoggerMessage.Define<int>(
                 LogLevel.Debug,
                 new EventId(5, "PortFromServer"),
                 "Https port '{httpsPort}' discovered from server endpoints.");
-        }
 
         public static void RedirectingToHttps(this ILogger logger, string redirect)
         {

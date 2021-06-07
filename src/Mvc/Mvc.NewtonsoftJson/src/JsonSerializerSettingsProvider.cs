@@ -17,12 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         // return shared resolver by default for perf so slow reflection logic is cached once
         // developers can set their own resolver after the settings are returned if desired
-        private static readonly DefaultContractResolver SharedContractResolver;
-
-        static JsonSerializerSettingsProvider()
-        {
-            SharedContractResolver = CreateContractResolver();
-        }
+        private static readonly DefaultContractResolver SharedContractResolver = CreateContractResolver();
 
         /// <summary>
         /// Creates default <see cref="JsonSerializerSettings"/>.

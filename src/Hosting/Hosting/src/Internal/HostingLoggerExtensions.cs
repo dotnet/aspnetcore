@@ -11,28 +11,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal static class HostingLoggerExtensions
+    internal static partial class HostingLoggerExtensions
     {
-        private static readonly Action<ILogger, string, Exception?> _startupAssemblyLoaded =
-                LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.HostingStartupAssemblyLoaded, "Loaded hosting startup assembly {assemblyName}", skipEnabledCheck: true);
-
-        private static readonly Action<ILogger, string, Exception?> _listeningOnAddress =
-                LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ServerListeningOnAddresses, "Now listening on: {address}");
-
         public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
             return logger.BeginScope(new HostingLogScope(httpContext));
         }
 
-        public static void ListeningOnAddress(this ILogger logger, string address)
-        {
-            _listeningOnAddress(logger, address, null);
-        }
+        [LoggerMessage(EventId = LoggerEventIds.HostingStartupAssemblyLoaded, EventName = "HostingStartupAssemblyLoaded", Level = LogLevel.Debug, Message = "Loaded hosting startup assembly {assemblyName}")]
+        public static partial void ListeningOnAddress(this ILogger logger, string address);
 
-        public static void StartupAssemblyLoaded(this ILogger logger, string assemblyName)
-        {
-            _startupAssemblyLoaded(logger, assemblyName, null);
-        }
+        [LoggerMessage(EventId = LoggerEventIds.ServerListeningOnAddresses, EventName = "ServerListeningOnAddresses", Level = LogLevel.Information, Message = "Now listening on: {address}")]
+        public static partial void StartupAssemblyLoaded(this ILogger logger, string assemblyName);
 
         public static void ApplicationError(this ILogger logger, Exception exception)
         {

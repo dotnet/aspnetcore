@@ -13,21 +13,16 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class PageRouteModelFactory
     {
-        private static readonly Action<ILogger, string, Exception?> _unsupportedAreaPath;
+        private static readonly Action<ILogger, string, Exception?> _unsupportedAreaPath = LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(1, "UnsupportedAreaPath"),
+            "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml");
 
         private static readonly string IndexFileName = "Index" + RazorViewEngine.ViewExtension;
         private readonly RazorPagesOptions _options;
         private readonly ILogger _logger;
         private readonly string _normalizedRootDirectory;
         private readonly string _normalizedAreaRootDirectory;
-
-        static PageRouteModelFactory()
-        {
-            _unsupportedAreaPath = LoggerMessage.Define<string>(
-                LogLevel.Warning,
-                new EventId(1, "UnsupportedAreaPath"),
-                "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml");
-        }
 
         public PageRouteModelFactory(
             RazorPagesOptions options,

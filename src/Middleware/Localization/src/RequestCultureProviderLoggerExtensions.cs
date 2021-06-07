@@ -10,20 +10,14 @@ namespace Microsoft.AspNetCore.Localization
 {
     internal static class RequestCultureProviderLoggerExtensions
     {
-        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedCulture;
-        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedUICulture;
-
-        static RequestCultureProviderLoggerExtensions()
-        {
-            _unsupportedCulture = LoggerMessage.Define<string, IList<StringSegment>>(
-                LogLevel.Debug,
-                 new EventId (1, "UnsupportedCulture"),
-                "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.");
-            _unsupportedUICulture = LoggerMessage.Define<string, IList<StringSegment>>(
+        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedCulture = LoggerMessage.Define<string, IList<StringSegment>>(
+            LogLevel.Debug,
+                new EventId(1, "UnsupportedCulture"),
+            "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.");
+        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedUICulture = LoggerMessage.Define<string, IList<StringSegment>>(
                 LogLevel.Debug,
                  new EventId(2, "UnsupportedUICulture"),
                 "{requestCultureProvider} returned the following unsupported UI Cultures '{uiCultures}'.");
-        }
 
         public static void UnsupportedCultures(this ILogger logger, string requestCultureProvider, IList<StringSegment> cultures)
         {
