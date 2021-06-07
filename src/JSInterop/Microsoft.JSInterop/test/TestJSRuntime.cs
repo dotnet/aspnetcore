@@ -17,5 +17,10 @@ namespace Microsoft.JSInterop
         {
             throw new NotImplementedException();
         }
+
+        protected internal override void SendByteArray(int id, byte[] data)
+        {
+            // No-op
+        }
     }
 }

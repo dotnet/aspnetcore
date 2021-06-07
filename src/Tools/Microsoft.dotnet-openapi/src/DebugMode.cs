@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.OpenApi
             {
                 args = args.Skip(1).ToArray();
 
-                Console.WriteLine("Waiting for debugger in pid: {0}", Process.GetCurrentProcess().Id);
+                Console.WriteLine("Waiting for debugger in pid: {0}", Environment.ProcessId);
                 while (!Debugger.IsAttached)
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(3));

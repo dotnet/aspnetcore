@@ -37,9 +37,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpResponseTrailersFeature,
                                             IHttpResetFeature
     {
-        // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
-        // then the list of `implementedFeatures` in the generated code project MUST also be updated.
-
         private int _featureRevision;
         private string? _httpProtocolVersion;
         private X509Certificate2? _certificate;

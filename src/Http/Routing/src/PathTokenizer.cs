@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing
                         return _count;
                     }
 
-                    // This is a non-trival PathString
+                    // This is a non-trivial PathString
                     _count = 1;
 
                     // Since a non-empty PathString must begin with a `/`, we can just count the number of occurrences

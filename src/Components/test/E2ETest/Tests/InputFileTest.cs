@@ -16,6 +16,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {

@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             }
 
             // Check to see if the assembly has already been loaded and avoids reloading it if so.
-            // Note: in the future, as an extra precuation, we can call `Assembly.Load` and check
+            // Note: in the future, as an extra precaution, we can call `Assembly.Load` and check
             // to see if it throws FileNotFound to ensure that an assembly hasn't been loaded
             // between when the cache of loaded assemblies was instantiated in the constructor
             // and the invocation of this method.

@@ -5,6 +5,12 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.ByteArrayJsonConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime,Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo,System.String)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -53,7 +59,7 @@
       <argument>ILLink</argument>
       <argument>IL2091</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.JSRuntime.&lt;InvokeAsync&gt;d__15`1.MoveNext</property>
+      <property name="Target">M:Microsoft.JSInterop.JSRuntime.&lt;InvokeAsync&gt;d__16`1.MoveNext</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

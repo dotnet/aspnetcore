@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -16,7 +17,8 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
-        private const string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
+        // internal so it can be used in tests
+        internal const string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
         private const string ActivityStartKey = ActivityName + ".Start";
         private const string ActivityStopKey = ActivityName + ".Stop";
 
@@ -56,6 +58,18 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
                 context.HasDiagnosticListener = hasDiagnosticListener;
+
+                if (context.Activity is Activity activity)
+                {
+                    if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
+                    {
+                        feature.Activity = activity;
+                    }
+                    else
+                    {
+                        httpContext.Features.Set(context.HttpActivityFeature);
+                    }
+                }
             }
 
             if (diagnosticListenerEnabled)
@@ -137,7 +151,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var activity = context.Activity;
             // Always stop activity if it was started
-            if (activity != null)
+            if (activity is not null)
             {
                 StopActivity(httpContext, activity, context.HasDiagnosticListener);
             }

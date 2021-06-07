@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Components.WebView
         private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
         {
             var renderer = pageContext.Renderer;
-            var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
             // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
             // of the serializer settings.
             if (_jsonContext is null)
             {
+                var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
                 _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
             }
 

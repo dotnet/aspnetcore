@@ -180,12 +180,15 @@ namespace Microsoft.AspNetCore.ResponseCompression
             => TaskToApm.End(asyncResult);
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             OnWrite();
 
             if (_compressionStream != null)
             {
-                await _compressionStream.WriteAsync(buffer, offset, count, cancellationToken);
+                await _compressionStream.WriteAsync(buffer, cancellationToken);
                 if (_autoFlush)
                 {
                     await _compressionStream.FlushAsync(cancellationToken);
@@ -193,7 +196,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+                await _innerStream.WriteAsync(buffer, cancellationToken);
             }
         }
 

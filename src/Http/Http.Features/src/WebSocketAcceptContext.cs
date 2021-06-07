@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Disables server context takeover when using compression.
-        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compresson ratio.
+        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compression ratio.
         /// </summary>
         /// <remarks>
         /// This property does nothing when <see cref="DangerousEnableCompression"/> is false,
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Sets the maximum base-2 logarithm of the LZ77 sliding window size that can be used for compression.
-        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compresson ratio.
+        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compression ratio.
         /// </summary>
         /// <remarks>
         /// This property does nothing when <see cref="DangerousEnableCompression"/> is false,

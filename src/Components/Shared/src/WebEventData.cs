@@ -259,20 +259,20 @@ namespace Microsoft.AspNetCore.Components.Web
         }
     }
 
-    [JsonSerializable(typeof(WebEventDescriptor), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(WebEventDescriptor), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(EventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(ChangeEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(ClipboardEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(DragEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(ErrorEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(FocusEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(KeyboardEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(MouseEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(PointerEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(ProgressEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(TouchEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
-    [JsonSerializable(typeof(WheelEventArgs), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
+    [JsonSerializable(typeof(WebEventDescriptor))]
+    [JsonSerializable(typeof(WebEventDescriptor))]
+    [JsonSerializable(typeof(EventArgs))]
+    [JsonSerializable(typeof(ChangeEventArgs))]
+    [JsonSerializable(typeof(ClipboardEventArgs))]
+    [JsonSerializable(typeof(DragEventArgs))]
+    [JsonSerializable(typeof(ErrorEventArgs))]
+    [JsonSerializable(typeof(FocusEventArgs))]
+    [JsonSerializable(typeof(KeyboardEventArgs))]
+    [JsonSerializable(typeof(MouseEventArgs))]
+    [JsonSerializable(typeof(PointerEventArgs))]
+    [JsonSerializable(typeof(ProgressEventArgs))]
+    [JsonSerializable(typeof(TouchEventArgs))]
+    [JsonSerializable(typeof(WheelEventArgs))]
     internal sealed partial class WebEventJsonContext : JsonSerializerContext
     {
     }
