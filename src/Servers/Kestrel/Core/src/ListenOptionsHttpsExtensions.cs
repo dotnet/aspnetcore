@@ -5,6 +5,9 @@ using System;
 using System.IO;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -258,10 +261,14 @@ namespace Microsoft.AspNetCore.Hosting
         {
             // HttpsOptionsCallback is an internal delegate that is just the ServerOptionsSelectionCallback + a ConnectionContext parameter.
             // Given that ConnectionContext will eventually be replaced by System.Net.Connections, it doesn't make much sense to make the HttpsOptionsCallback delegate public.
-            HttpsOptionsCallback adaptedCallback = (connection, stream, clientHelloInfo, state, cancellationToken) =>
-                serverOptionsSelectionCallback(stream, clientHelloInfo, state, cancellationToken);
+            return listenOptions.UseHttps(GetTlsOptionsAsync, state, handshakeTimeout);
 
-            return listenOptions.UseHttps(adaptedCallback, state, handshakeTimeout, ClientCertificateMode.DelayCertificate);
+            async ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> GetTlsOptionsAsync(
+                ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+            {
+                var tlsOptions = await serverOptionsSelectionCallback(stream, clientHelloInfo, state, cancellationToken);
+                return new (tlsOptions, ClientCertificateMode.DelayCertificate);
+            }
         }
 
         /// <summary>
@@ -271,16 +278,15 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="httpsOptionsCallback">Callback to configure HTTPS options.</param>
         /// <param name="state">State for the <paramref name="httpsOptionsCallback"/>.</param>
         /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
-        /// <param name="clientCertificateMode"></param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout, ClientCertificateMode clientCertificateMode)
+        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout)
         {
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
             listenOptions.IsTls = true;
             listenOptions.Use(next =>
             {
-                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, handshakeTimeout, loggerFactory, clientCertificateMode);
+                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, handshakeTimeout, loggerFactory);
                 return middleware.OnConnectionAsync;
             });
 

@@ -74,22 +74,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var wwwSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
+            Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.Item1.ServerCertificate]);
 
             var baSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "b.a.example.org");
-            Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.ServerCertificate]);
+            Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.Item1.ServerCertificate]);
 
             var aSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "a.example.org");
-            Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
+            Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.Item1.ServerCertificate]);
 
             // "*.example.org" is preferred over "*", but "*.example.org" doesn't match "example.org".
             // REVIEW: Are we OK with "example.org" matching "*" instead of "*.example.org"? It feels annoying to me to have to configure example.org twice.
             // Unfortunately, the alternative would have "a.example.org" match "*.a.example.org" before "*.example.org", and that just seems wrong.
             var noSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "example.org");
-            Assert.Equal("WildcardOnly", pathDictionary[noSubdomainOptions.ServerCertificate]);
+            Assert.Equal("WildcardOnly", pathDictionary[noSubdomainOptions.Item1.ServerCertificate]);
 
             var anotherTldOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "dot.net");
-            Assert.Equal("WildcardOnly", pathDictionary[anotherTldOptions.ServerCertificate]);
+            Assert.Equal("WildcardOnly", pathDictionary[anotherTldOptions.Item1.ServerCertificate]);
         }
 
         [Fact]
@@ -131,11 +131,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var baSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "b.a.example.org");
-            Assert.Equal("Long", pathDictionary[baSubdomainOptions.ServerCertificate]);
+            Assert.Equal("Long", pathDictionary[baSubdomainOptions.Item1.ServerCertificate]);
 
             // "*.a.example.org" is preferred over "*.example.org", but "a.example.org" doesn't match "*.a.example.org".
             var aSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "a.example.org");
-            Assert.Equal("Short", pathDictionary[aSubdomainOptions.ServerCertificate]);
+            Assert.Equal("Short", pathDictionary[aSubdomainOptions.Item1.ServerCertificate]);
         }
 
         [Fact]
@@ -177,13 +177,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var wwwSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "wWw.eXample.oRg");
-            Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
+            Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.Item1.ServerCertificate]);
 
             var baSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "B.a.eXample.oRg");
-            Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.ServerCertificate]);
+            Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.Item1.ServerCertificate]);
 
             var aSubdomainOptions = sniOptionsSelector.GetOptions(new MockConnectionContext(), "A.eXample.oRg");
-            Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
+            Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.Item1.ServerCertificate]);
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), null);
-            Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
+            Assert.Equal("WildcardOnly", pathDictionary[options.Item1.ServerCertificate]);
         }
 
         [Fact]
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var options1 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
             var options2 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(options1, options2);
+            Assert.Same(options1.Item1, options2.Item1);
         }
 
         [Fact]
@@ -296,12 +296,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options1 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(lastSeenSslOptions, options1);
+            Assert.Same(lastSeenSslOptions, options1.Item1);
 
             var options2 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(lastSeenSslOptions, options2);
+            Assert.Same(lastSeenSslOptions, options2.Item1);
 
-            Assert.NotSame(options1, options2);
+            Assert.NotSame(options1.Item1, options2.Item1);
         }
 
         [Fact]
@@ -339,22 +339,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var selectorOptions1 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "selector.example.org");
-            Assert.Same(selectorCertificate, selectorOptions1.ServerCertificate);
+            Assert.Same(selectorCertificate, selectorOptions1.Item1.ServerCertificate);
 
             var selectorOptions2 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "selector.example.org");
-            Assert.Same(selectorCertificate, selectorOptions2.ServerCertificate);
+            Assert.Same(selectorCertificate, selectorOptions2.Item1.ServerCertificate);
 
             // The SslServerAuthenticationOptions were cloned because the cert came from the ServerCertificateSelector fallback.
-            Assert.NotSame(selectorOptions1, selectorOptions2);
+            Assert.NotSame(selectorOptions1.Item1, selectorOptions2.Item1);
 
             var configOptions1 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "config.example.org");
-            Assert.NotSame(selectorCertificate, configOptions1.ServerCertificate);
+            Assert.NotSame(selectorCertificate, configOptions1.Item1.ServerCertificate);
 
             var configOptions2 = sniOptionsSelector.GetOptions(new MockConnectionContext(), "config.example.org");
-            Assert.NotSame(selectorCertificate, configOptions2.ServerCertificate);
+            Assert.NotSame(selectorCertificate, configOptions2.Item1.ServerCertificate);
 
             // The SslServerAuthenticationOptions don't need to be cloned if a static cert is defined in config for the given server name.
-            Assert.Same(configOptions1, configOptions2);
+            Assert.Same(configOptions1.Item1, configOptions2.Item1);
         }
 
         [Fact]
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(fallbackOptions.ServerCertificate, options.ServerCertificate);
+            Assert.Same(fallbackOptions.ServerCertificate, options.Item1.ServerCertificate);
         }
 
         [Fact]
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(selectorCertificate, options.ServerCertificate);
+            Assert.Same(selectorCertificate, options.Item1.ServerCertificate);
         }
 
         [Fact]
@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            var alpnList = options.ApplicationProtocols;
+            var alpnList = options.Item1.ApplicationProtocols;
 
             Assert.NotNull(alpnList);
             var protocol = Assert.Single(alpnList);
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.EnabledSslProtocols);
+            Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.Item1.EnabledSslProtocols);
         }
 
         [Fact]
@@ -579,7 +579,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Equal(SslProtocols.Tls13, options.EnabledSslProtocols);
+            Assert.Equal(SslProtocols.Tls13, options.Item1.EnabledSslProtocols);
         }
 
 
@@ -611,11 +611,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 
-            Assert.True(options.ClientCertificateRequired);
+            Assert.True(options.Item1.ClientCertificateRequired);
 
-            Assert.NotNull(options.RemoteCertificateValidationCallback);
+            Assert.NotNull(options.Item1.RemoteCertificateValidationCallback);
             // The RemoteCertificateValidationCallback should first check if the certificate is null and return false since it's required.
-            Assert.False(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
+            Assert.False(options.Item1.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
         }
 
         [Fact]
@@ -646,11 +646,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 
             // Despite the confusing name, ClientCertificateRequired being true simply requests a certificate from the client, but doesn't require it.
-            Assert.True(options.ClientCertificateRequired);
+            Assert.True(options.Item1.ClientCertificateRequired);
 
-            Assert.NotNull(options.RemoteCertificateValidationCallback);
+            Assert.NotNull(options.Item1.RemoteCertificateValidationCallback);
             // The RemoteCertificateValidationCallback should see we're in the AllowCertificate mode and return true.
-            Assert.True(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
+            Assert.True(options.Item1.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
         }
 
         [Fact]

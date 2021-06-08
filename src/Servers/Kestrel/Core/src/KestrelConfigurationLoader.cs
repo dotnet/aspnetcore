@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     else
                     {
                         var sniOptionsSelector = new SniOptionsSelector(endpoint.Name, endpoint.Sni, CertificateConfigLoader, httpsOptions, listenOptions.Protocols, HttpsLogger);
-                        listenOptions.UseHttps(SniOptionsSelector.OptionsCallback, sniOptionsSelector, httpsOptions.HandshakeTimeout, ClientCertificateMode.NoCertificate);
+                        listenOptions.UseHttps(SniOptionsSelector.OptionsCallback, sniOptionsSelector, httpsOptions.HandshakeTimeout);
                     }
                 }
 
