@@ -6,6 +6,8 @@ namespace Microsoft.Net.Http.Headers
     /// <summary>
     /// Defines constants for well-known HTTP headers.
     /// </summary>
+    // MODIFICATION POLICY: This list is not intended to be exhaustive, it primarily contains values used by the framework itself.
+    // Please do not open PRs without first opening an issue to discuss a specific item.
     public static class HeaderNames
     {
         // Use readonly statics rather than constants so ReferenceEquals works
@@ -222,6 +224,9 @@ namespace Microsoft.Net.Http.Headers
 
         /// <summary>Gets the <c>Sec-WebSocket-Version</c> HTTP header name.</summary>
         public static readonly string SecWebSocketVersion = "Sec-WebSocket-Version";
+
+        /// <summary>Gets the <c>Sec-WebSocket-Extensions</c> HTTP header name.</summary>
+        public static readonly string SecWebSocketExtensions = "Sec-WebSocket-Extensions";
 
         /// <summary>Gets the <c>Server</c> HTTP header name.</summary>
         public static readonly string Server = "Server";

@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             {
                 return;
             }
-            
+
             var walker = new PreallocatedTagHelperWalker();
             walker.VisitDocument(documentNode);
         }
 
-        internal class PreallocatedTagHelperWalker : 
+        internal class PreallocatedTagHelperWalker :
             IntermediateNodeWalker,
             IExtensionIntermediateNodeVisitor<DefaultTagHelperHtmlAttributeIntermediateNode>,
             IExtensionIntermediateNodeVisitor<DefaultTagHelperPropertyIntermediateNode>
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             private ClassDeclarationIntermediateNode _classDeclaration;
             private int _variableCountOffset;
-            private int _preallocatedDeclarationCount = 0;
+            private int _preallocatedDeclarationCount;
 
             public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {

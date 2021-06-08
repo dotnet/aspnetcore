@@ -2,6 +2,6 @@
   <PropertyGroup>
     <_BlazorDevServerDll>$(MSBuildThisFileDirectory)../tools/blazor-devserver.dll</_BlazorDevServerDll>
     <RunCommand>dotnet</RunCommand>
-    <RunArguments>&quot;$(_BlazorDevServerDll)&quot; serve --applicationpath &quot;$(TargetPath)&quot;</RunArguments>
+    <RunArguments>&quot;$(_BlazorDevServerDll)&quot; --applicationpath &quot;$(TargetPath)&quot;</RunArguments>
   </PropertyGroup>
 </Project>

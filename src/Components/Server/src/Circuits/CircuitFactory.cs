@@ -16,7 +16,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class CircuitFactory
+    internal class CircuitFactory : ICircuitFactory
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILoggerFactory _loggerFactory;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             ClaimsPrincipal user,
             IComponentApplicationStateStore store)
         {
-            var scope = _scopeFactory.CreateScope();
+            var scope = _scopeFactory.CreateAsyncScope();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
             jsRuntime.Initialize(client);
 

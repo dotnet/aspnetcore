@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         private const char Separator = '/';
         private const char OpenBrace = '{';
         private const char CloseBrace = '}';
-        private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
         private const string PeriodString = ".";
@@ -359,7 +358,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
 
             // if a segment has multiple parts, then only the last one parameter can be optional
-            // if it is following a optional seperator.
+            // if it is following a optional separator.
             for (var i = 0; i < parts.Count; i++)
             {
                 var part = parts[i];

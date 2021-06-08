@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        // test is permanently quarantined due to inherent flakiness with port binding
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28993")]
         public void UseDefaultAddress_WhenNoServerAddressAndNoDirectConfiguration()
         {

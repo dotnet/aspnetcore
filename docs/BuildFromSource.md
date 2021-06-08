@@ -1,6 +1,6 @@
 # Build ASP.NET Core from Source
 
-This document outlines how to build the source in the aspnetcore repo locally for development purposes.
+This document outlines how to build the source in the `aspnetcore` repo locally for development purposes.
 
 For more info on issues related to build infrastructure and ongoing work, see <https://github.com/dotnet/aspnetcore/labels/area-infrastructure>.
 
@@ -9,17 +9,24 @@ For more info on issues related to build infrastructure and ongoing work, see <h
 This tutorial assumes that you are familiar with:
 
 - Git
+- The basics of [forking and contributing to GitHub projects](https://guides.github.com/activities/forking/)
 - Command line fundamentals in your operating system of choice
 
-## Step 1: Clone the source code
+## Step 1: Getting the source code
+
+Development is done in your own repo, not directly against the official `dotnet/aspnetcore` repo. To create your own fork, click the __Fork__ button from our GitHub repo as a signed-in user and your own fork will be created.
+
+> :bulb: All other steps below will be against your fork of the aspnetcore repo (e.g. `YOUR_USERNAME/aspnetcore`), not the official `dotnet/aspnetcore` repo.
+
+### Cloning your repo locally
 
 ASP.NET Core uses git submodules to include the source from a few other projects. In order to pull the sources of the these submodules when cloning the repo, be sure to pass the `--recursive` flag to the `git clone` command.
 
 ```powershell
-git clone --recursive https://github.com/dotnet/aspnetcore
+git clone --recursive https://github.com/YOUR_USERNAME/aspnetcore
 ```
 
-If you've already cloned the aspnetcore repo without fetching submodule sources, you can fetch them after cloning by running the following command.
+If you've already cloned the `aspnetcore` repo without fetching submodule sources, you can fetch them after cloning by running the following command.
 
 ```powershell
 git submodule update --init --recursive
@@ -27,9 +34,37 @@ git submodule update --init --recursive
 
 > :bulb: Some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>.
 
+### Tracking remote changes
+
+The first time you clone your repo locally, you'll want to set an additional Git remote back to the official repo so that you can periodically refresh your repo with the latest official changes.
+
+```powershell
+git remote add upstream https://github.com/dotnet/aspnetcore.git
+```
+
+You can verify the `upstream` remote has been set correctly.
+
+```powershell
+git remote -v
+> origin    https://github.com/YOUR_USERNAME/aspnetcore (fetch)
+> origin    https://github.com/YOUR_USERNAME/aspnetcore (push)
+> upstream  https://github.com/dotnet/aspnetcore.git (fetch)
+> upstream  https://github.com/dotnet/aspnetcore.git (push)
+```
+
+Once configured, the easiest way to keep your repository current with the upstream repository is using GitHub's feature to [fetch upstream changes](https://github.blog/changelog/2021-05-06-sync-an-out-of-date-branch-of-a-fork-from-the-web/).
+
+### Branching
+
+If you ultimately want to be able to submit a PR back to the project or be able to periodically refresh your `main` branch with the latest code changes, you'll want to do all your work on a new branch.
+
+```powershell
+git checkout -b NEW_BRANCH
+```
+
 ## Step 2: Install pre-requisites
 
-Developing in the aspnetcore repo requires some additional tools to build the source code and run integration tests.
+Developing in the `aspnetcore` repo requires some additional tools to build the source code and run integration tests.
 
 ### On Windows
 
@@ -39,7 +74,7 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 
 #### [Visual Studio 2019](https://visualstudio.com)
 
-Visual Studio 2019 (16.8) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
+Visual Studio 2019 (16.10 Preview 3) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 > :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).
@@ -183,8 +218,6 @@ cd src\Components
 
 After opening the solution in Visual Studio, you can build/rebuild using the controls in Visual Studio.
 
-> :exclamation: VS for Mac does not currently support opening .slnf files. So, you must use VS Code when developing on macOS.
-
 #### A brief interlude on solution files
 
 We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio
@@ -234,7 +267,7 @@ code .
 
 ### Building on command-line
 
-When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
+When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](#using-dotnet-on-command-line-in-this-repo).
 
 > :warning: Most of the time, you will want to build a particular project instead of the entire repository. It's faster and will allow you to focus on a particular area of concern. If you need to build all code in the repo for any reason, you can use the top-level build script located under `eng\build.cmd` or `eng\build.sh`.
 

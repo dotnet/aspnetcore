@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         private readonly List<IntermediateToken> _currentAttributeValues = new List<IntermediateToken>();
         private readonly ScopeStack _scopeStack = new ScopeStack();
-        private int _sourceSequence = 0;
+        private int _sourceSequence;
 
         public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
         {
@@ -580,8 +580,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     if (canTypeCheck)
                     {
-                        context.CodeWriter.Write("new ");
+                        context.CodeWriter.Write("(");
                         context.CodeWriter.Write(node.TypeName);
+                        context.CodeWriter.Write(")");
                         context.CodeWriter.Write("(");
                     }
 
@@ -613,7 +614,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     context.CodeWriter.Write(".");
                     context.CodeWriter.Write(ComponentsApi.EventCallbackFactory.CreateMethod);
 
-                    if (node.TryParseEventCallbackTypeArgument(out var argument))
+                    if (node.TryParseEventCallbackTypeArgument(out StringSegment argument))
                     {
                         context.CodeWriter.Write("<");
                         context.CodeWriter.Write(argument);
@@ -967,7 +968,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             if (hasHtml && hasCSharp)
             {
-                // If it's a C# expression, we have to wrap it in parens, otherwise things like ternary 
+                // If it's a C# expression, we have to wrap it in parens, otherwise things like ternary
                 // expressions don't compose with concatenation. However, this is a little complicated
                 // because C# tokens themselves aren't guaranteed to be distinct expressions. We want
                 // to treat all contiguous C# tokens as a single expression.

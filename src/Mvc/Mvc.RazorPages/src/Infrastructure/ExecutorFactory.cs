@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,12 +76,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             public HandlerParameterDescriptor[] Parameters { get; }
 
-            public abstract Task<IActionResult> Execute(object receiver, object[] arguments);
+            public abstract Task<IActionResult?> Execute(object receiver, object?[]? arguments);
         }
 
-        private class NonGenericTaskHandlerMethod : HandlerMethod
+        private sealed class NonGenericTaskHandlerMethod : HandlerMethod
         {
-            private readonly Func<object, object[], Task> _thunk;
+            private readonly Func<object, object?[]?, Task> _thunk;
 
             public NonGenericTaskHandlerMethod(HandlerParameterDescriptor[] parameters, MethodInfo method)
                 : base(parameters)
@@ -89,29 +89,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var receiver = Expression.Parameter(typeof(object), "receiver");
                 var arguments = Expression.Parameter(typeof(object[]), "arguments");
 
-                _thunk = Expression.Lambda<Func<object, object[], Task>>(
+                _thunk = Expression.Lambda<Func<object, object?[]?, Task>>(
                     Expression.Call(
-                        Expression.Convert(receiver, method.DeclaringType),
+                        Expression.Convert(receiver, method.DeclaringType!),
                         method,
                         Unpack(arguments, parameters)),
                     receiver,
                     arguments).Compile();
             }
 
-            public override async Task<IActionResult> Execute(object receiver, object[] arguments)
+            public override async Task<IActionResult?> Execute(object receiver, object?[]? arguments)
             {
                 await _thunk(receiver, arguments);
                 return null;
             }
         }
 
-        private class GenericTaskHandlerMethod : HandlerMethod
+        private sealed class GenericTaskHandlerMethod : HandlerMethod
         {
             private static readonly MethodInfo ConvertMethod = typeof(GenericTaskHandlerMethod).GetMethod(
                 nameof(Convert),
-                BindingFlags.NonPublic | BindingFlags.Static);
+                BindingFlags.NonPublic | BindingFlags.Static)!;
 
-            private readonly Func<object, object[], Task<object>> _thunk;
+            private readonly Func<object, object?[]?, Task<object>> _thunk;
 
             public GenericTaskHandlerMethod(HandlerParameterDescriptor[] parameters, MethodInfo method)
                 : base(parameters)
@@ -119,12 +119,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var receiver = Expression.Parameter(typeof(object), "receiver");
                 var arguments = Expression.Parameter(typeof(object[]), "arguments");
 
-                _thunk = Expression.Lambda<Func<object, object[], Task<object>>>(
+                _thunk = Expression.Lambda<Func<object, object?[]?, Task<object>>>(
                     Expression.Call(
                         ConvertMethod.MakeGenericMethod(method.ReturnType.GenericTypeArguments),
                         Expression.Convert(
                             Expression.Call(
-                                Expression.Convert(receiver, method.DeclaringType),
+                                Expression.Convert(receiver, method.DeclaringType!),
                                 method,
                                 Unpack(arguments, parameters)),
                             typeof(object))),
@@ -132,13 +132,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     arguments).Compile();
             }
 
-            public override async Task<IActionResult> Execute(object receiver, object[] arguments)
+            public override async Task<IActionResult?> Execute(object receiver, object?[]? arguments)
             {
                 var result = await _thunk(receiver, arguments);
                 return (IActionResult)result;
             }
 
-            private static async Task<object> Convert<T>(object taskAsObject)
+            private static async Task<object?> Convert<T>(object taskAsObject)
             {
                 var task = (Task<T>)taskAsObject;
                 return await task;
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private class VoidHandlerMethod : HandlerMethod
         {
-            private readonly Action<object, object[]> _thunk;
+            private readonly Action<object, object?[]?> _thunk;
 
             public VoidHandlerMethod(HandlerParameterDescriptor[] parameters, MethodInfo method)
                 : base(parameters)
@@ -155,25 +155,25 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var receiver = Expression.Parameter(typeof(object), "receiver");
                 var arguments = Expression.Parameter(typeof(object[]), "arguments");
 
-                _thunk = Expression.Lambda<Action<object, object[]>>(
+                _thunk = Expression.Lambda<Action<object, object?[]?>>(
                     Expression.Call(
-                        Expression.Convert(receiver, method.DeclaringType),
+                        Expression.Convert(receiver, method.DeclaringType!),
                         method,
                         Unpack(arguments, parameters)),
                     receiver,
                     arguments).Compile();
             }
 
-            public override Task<IActionResult> Execute(object receiver, object[] arguments)
+            public override Task<IActionResult?> Execute(object receiver, object?[]? arguments)
             {
                 _thunk(receiver, arguments);
-                return Task.FromResult<IActionResult>(null);
+                return Task.FromResult<IActionResult?>(null);
             }
         }
 
         private class ActionResultHandlerMethod : HandlerMethod
         {
-            private readonly Func<object, object[], IActionResult> _thunk;
+            private readonly Func<object, object?[]?, IActionResult?> _thunk;
 
             public ActionResultHandlerMethod(HandlerParameterDescriptor[] parameters, MethodInfo method)
                 : base(parameters)
@@ -181,10 +181,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var receiver = Expression.Parameter(typeof(object), "receiver");
                 var arguments = Expression.Parameter(typeof(object[]), "arguments");
 
-                _thunk = Expression.Lambda<Func<object, object[], IActionResult>>(
+                _thunk = Expression.Lambda<Func<object, object?[]?, IActionResult?>>(
                     Expression.Convert(
                         Expression.Call(
-                            Expression.Convert(receiver, method.DeclaringType),
+                            Expression.Convert(receiver, method.DeclaringType!),
                             method,
                             Unpack(arguments, parameters)),
                         typeof(IActionResult)),
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     arguments).Compile();
             }
 
-            public override Task<IActionResult> Execute(object receiver, object[] arguments)
+            public override Task<IActionResult?> Execute(object receiver, object?[]? arguments)
             {
                 return Task.FromResult(_thunk(receiver, arguments));
             }

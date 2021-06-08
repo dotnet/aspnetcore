@@ -61,6 +61,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             PagedByteBuffer = new PagedByteBuffer(ArrayPool<byte>.Shared);
         }
 
+        /// <summary>
+        /// The maximum amount of memory in bytes to allocate before switching to a file on disk.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 32kb.
+        /// </remarks>
+        public int MemoryThreshold => _memoryThreshold;
+
         /// <inheritdoc />
         public override bool CanRead => false;
 
@@ -134,31 +142,38 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             ThrowArgumentException(buffer, offset, count);
+            await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads", Justification = "This is a method overload.")]
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
             ThrowIfDisposed();
 
-            if (_bufferLimit.HasValue && _bufferLimit - Length < count)
+            if (_bufferLimit.HasValue && _bufferLimit - Length < buffer.Length)
             {
                 Dispose();
                 throw new IOException("Buffer limit exceeded.");
             }
 
             // Allow buffering in memory if we're below the memory threshold once the current buffer is written.
-            var allowMemoryBuffer = (_memoryThreshold - count) >= PagedByteBuffer.Length;
+            var allowMemoryBuffer = (_memoryThreshold - buffer.Length) >= PagedByteBuffer.Length;
             if (allowMemoryBuffer)
             {
                 // Buffer content in the MemoryStream if it has capacity.
-                PagedByteBuffer.Add(buffer, offset, count);
+                PagedByteBuffer.Add(buffer);
                 Debug.Assert(PagedByteBuffer.Length <= _memoryThreshold);
             }
             else
             {
-                // If the MemoryStream is incapable of accomodating the content to be written
+                // If the MemoryStream is incapable of accommodating the content to be written
                 // spool to disk.
                 EnsureFileStream();
 
                 // Spool memory content to disk.
                 await PagedByteBuffer.MoveToAsync(FileStream, cancellationToken);
-                await FileStream.WriteAsync(buffer, offset, count, cancellationToken);
+                await FileStream.WriteAsync(buffer, cancellationToken);
             }
         }
 
@@ -180,7 +195,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="destination">The <see cref="Stream" /> to drain buffered contents to.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken" />.</param>
         /// <returns>A <see cref="Task" /> that represents the asynchronous drain operation.</returns>
-        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public async Task DrainBufferAsync(Stream destination, CancellationToken cancellationToken = default)
         {
             // When not null, FileStream always has "older" spooled content. The PagedByteBuffer always has "newer"

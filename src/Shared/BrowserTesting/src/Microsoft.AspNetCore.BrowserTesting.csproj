@@ -5,6 +5,7 @@
     <PackageTags>aspnetcore;testing</PackageTags>
     <IsShippingPackage>false</IsShippingPackage>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>

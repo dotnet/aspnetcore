@@ -164,6 +164,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <summary>
+        /// The maximum amount of memory in bytes to allocate before switching to a file on disk.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 32kb.
+        /// </remarks>
+        public int MemoryThreshold => _memoryThreshold;
+
+        /// <summary>
         /// Gets a value that determines if the contents are buffered entirely in memory.
         /// </summary>
         public bool InMemory
@@ -197,7 +205,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             get { return false; }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The total bytes read from and buffered by the stream so far, it will not represent the full
+        /// data length until the stream is fully buffered. e.g. using <c>stream.DrainAsync()</c>.
+        /// </summary>
         public override long Length
         {
             get { return _buffer.Length; }

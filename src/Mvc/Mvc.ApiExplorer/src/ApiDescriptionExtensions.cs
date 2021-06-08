@@ -17,15 +17,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="apiDescription">The <see cref="ApiDescription"/>.</param>
         /// <returns>The property or the default value of <typeparamref name="T"/>.</returns>
-        public static T GetProperty<T>(this ApiDescription apiDescription)
+        public static T? GetProperty<T>(this ApiDescription apiDescription)
         {
             if (apiDescription == null)
             {
                 throw new ArgumentNullException(nameof(apiDescription));
             }
 
-            object value;
-            if (apiDescription.Properties.TryGetValue(typeof(T), out value))
+            if (apiDescription.Properties.TryGetValue(typeof(T), out var value))
             {
                 return (T)value;
             }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [Fact]
         public async Task Connect_Success()
         {
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [Fact]
         public async Task NegotiateSubProtocol_Success()
         {
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 Assert.Equal("alpha, bravo, charlie", context.Request.Headers["Sec-WebSocket-Protocol"]);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [Fact]
         public async Task SendEmptyData_Success()
         {
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task SendShortData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task SendMediumData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         {
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task ReceiveShortData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task ReceiveMediumData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task ReceiveLongData()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task ReceiveFragmentedData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task SendClose_Success()
         {
             string closeDescription = "Test Closed";
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task ReceiveClose_Success()
         {
             string closeDescription = "Test Closed";
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task CloseFromOpen_Success()
         {
             string closeDescription = "Test Closed";
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task CloseFromCloseSent_Success()
         {
             string closeDescription = "Test Closed";
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task CloseFromCloseReceived_Success()
         {
             string closeDescription = "Test Closed";
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [InlineData(HttpStatusCode.OK, "http://ExAmPLE.cOm")]
         public async Task OriginIsValidatedForWebSocketRequests(HttpStatusCode expectedCode, params string[] origins)
         {
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 return Task.CompletedTask;
@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [Fact]
         public async Task OriginIsNotValidatedForNonWebSocketRequests()
         {
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, context =>
             {
                 Assert.False(context.WebSockets.IsWebSocketRequest);
                 return Task.CompletedTask;
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [Fact]
         public async Task CommonHeadersAreSetToInternedStrings()
         {
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         [Fact]
         public async Task MultipleValueHeadersNotOverridden()
         {
-            using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly HttpConnectionManager _manager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
-        private static readonly int _protocolVersion = 1;
+        private const int _protocolVersion = 1;
 
         public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
         {
@@ -115,6 +115,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
         {
+            // set a tag to allow Application Performance Management tools to differentiate long running requests for reporting purposes
+            context.Features.Get<IHttpActivityFeature>()?.Activity.AddTag("http.long_running", "true");
+
             var supportedTransports = options.Transports;
 
             // Server sent events transport
@@ -660,8 +663,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             CloneUser(newHttpContext, context);
 
-            connection.ServiceScope = context.RequestServices.CreateScope();
-            newHttpContext.RequestServices = connection.ServiceScope.ServiceProvider;
+            connection.ServiceScope = context.RequestServices.CreateAsyncScope();
+            newHttpContext.RequestServices = connection.ServiceScope.Value.ServiceProvider;
 
             // REVIEW: This extends the lifetime of anything that got put into HttpContext.Items
             newHttpContext.Items = new Dictionary<object, object?>(context.Items);
@@ -718,10 +721,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0)
         {
-            var transportPipeOptions = options.TransportPipeOptions;
-            var appPipeOptions = options.AppPipeOptions;
-
-            return _manager.CreateConnection(transportPipeOptions, appPipeOptions, clientProtocolVersion);
+            return _manager.CreateConnection(options, clientProtocolVersion);
         }
 
         private class EmptyServiceProvider : IServiceProvider

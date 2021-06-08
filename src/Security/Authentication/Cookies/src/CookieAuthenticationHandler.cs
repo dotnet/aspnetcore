@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return _readCookieTask;
         }
 
-        private void CheckForRefresh(AuthenticationTicket ticket)
+        private async Task CheckForRefreshAsync(AuthenticationTicket ticket)
         {
             var currentUtc = Clock.UtcNow;
             var issuedUtc = ticket.Properties.IssuedUtc;
@@ -91,7 +91,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
                 var timeRemaining = expiresUtc.Value.Subtract(currentUtc);
 
-                if (timeRemaining < timeElapsed)
+                var eventContext = new CookieSlidingExpirationContext(Context, Scheme, Options, ticket, timeElapsed, timeRemaining)
+                {
+                    ShouldRenew = timeRemaining < timeElapsed,
+                };
+                await Options.Events.OnCheckSlidingExpiration(eventContext);
+
+                if (eventContext.ShouldRenew)
                 {
                     RequestRefresh(ticket);
                 }
@@ -154,7 +160,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     return AuthenticateResult.Fail("SessionId missing");
                 }
                 // Only store _sessionKey if it matches an existing session. Otherwise we'll create a new one.
-                ticket = await Options.SessionStore.RetrieveAsync(claim.Value);
+                ticket = await Options.SessionStore.RetrieveAsync(claim.Value, Context.RequestAborted);
                 if (ticket == null)
                 {
                     return AuthenticateResult.Fail("Identity missing in session store");
@@ -169,12 +175,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 if (Options.SessionStore != null)
                 {
-                    await Options.SessionStore.RemoveAsync(_sessionKey!);
+                    await Options.SessionStore.RemoveAsync(_sessionKey!, Context.RequestAborted);
                 }
                 return AuthenticateResult.Fail("Ticket expired");
             }
-
-            CheckForRefresh(ticket);
 
             // Finally we have a valid ticket
             return AuthenticateResult.Success(ticket);
@@ -188,6 +192,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 return result;
             }
+
+            // We check this before the ValidatePrincipal event because we want to make sure we capture a clean clone
+            // without picking up any per-request modifications to the principal.
+            await CheckForRefreshAsync(result.Ticket);
 
             Debug.Assert(result.Ticket != null);
             var context = new CookieValidatePrincipalContext(Context, Scheme, Options, result.Ticket);
@@ -241,7 +249,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
                 if (Options.SessionStore != null && _sessionKey != null)
                 {
-                    await Options.SessionStore.RenewAsync(_sessionKey, ticket);
+                    await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
                     var principal = new ClaimsPrincipal(
                         new ClaimsIdentity(
                             new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
@@ -322,11 +330,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 if (_sessionKey != null)
                 {
                     // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
-                    await Options.SessionStore.RenewAsync(_sessionKey, ticket);
+                    await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
                 }
                 else
                 {
-                    _sessionKey = await Options.SessionStore.StoreAsync(ticket);
+                    _sessionKey = await Options.SessionStore.StoreAsync(ticket, Context.RequestAborted);
                 }
 
                 var principal = new ClaimsPrincipal(
@@ -372,7 +380,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var cookieOptions = BuildCookieOptions();
             if (Options.SessionStore != null && _sessionKey != null)
             {
-                await Options.SessionStore.RemoveAsync(_sessionKey);
+                await Options.SessionStore.RemoveAsync(_sessionKey, Context.RequestAborted);
             }
 
             var context = new CookieSigningOutContext(

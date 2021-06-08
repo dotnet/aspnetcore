@@ -936,6 +936,58 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
+        public async Task CookieIsRenewedWithSlidingExpirationEvent()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.SlidingExpiration = true;
+                o.Events = new CookieAuthenticationEvents()
+                {
+                    OnCheckSlidingExpiration = context =>
+                    {
+                        var expectRenew = string.Equals("1", context.Request.Query["expectrenew"]);
+                        var renew = string.Equals("1", context.Request.Query["renew"]);
+                        Assert.Equal(expectRenew, context.ShouldRenew);
+                        context.ShouldRenew = renew;
+                        return Task.CompletedTask;
+                    }
+                };
+            },
+            SignInAsAlice);
+
+            using var server = host.GetTestServer();
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=0&renew=0", transaction1.CookieNameValue);
+            Assert.Null(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+
+            _clock.Add(TimeSpan.FromMinutes(4));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=0&renew=0", transaction1.CookieNameValue);
+            Assert.Null(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
+
+            _clock.Add(TimeSpan.FromMinutes(4));
+
+            // A renewal is now expected, but we've suppressed it
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=1&renew=0", transaction1.CookieNameValue);
+            Assert.Null(transaction4.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
+
+            // Allow the default renewal to happen
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=1&renew=1", transaction1.CookieNameValue);
+            Assert.NotNull(transaction5.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction5, ClaimTypes.Name));
+
+            // Force a renewal on an un-expired new cookie
+            var transaction6 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=0&renew=1", transaction5.CookieNameValue);
+            Assert.NotNull(transaction5.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction6, ClaimTypes.Name));
+        }
+
+        [Fact]
         public async Task CookieUsesPathBaseByDefault()
         {
             using var host = await CreateHost(o => { },

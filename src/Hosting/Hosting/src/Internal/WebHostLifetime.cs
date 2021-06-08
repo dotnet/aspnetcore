@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly ManualResetEventSlim _resetEvent;
         private readonly string _shutdownMessage;
 
-        private bool _disposed = false;
-        private bool _exitedGracefully = false;
+        private bool _disposed;
+        private bool _exitedGracefully;
 
         public WebHostLifetime(CancellationTokenSource cts, ManualResetEventSlim resetEvent, string shutdownMessage)
         {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
             // When hosting with IIS in-process, we detach the Console handle on main thread exit.
             // Console.WriteLine may throw here as we are logging to console on ProcessExit.
-            // We catch and ignore all exceptions here. Do not log to Console in thie exception handler.
+            // We catch and ignore all exceptions here. Do not log to Console in this exception handler.
             catch (Exception) {}
             // Wait on the given reset event
             _resetEvent.Wait();

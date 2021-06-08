@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Localization
     /// </summary>
     public class RequestLocalizationMiddleware
     {
-        private static readonly int MaxCultureFallbackDepth = 5;
+        private const int MaxCultureFallbackDepth = 5;
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
@@ -126,7 +126,8 @@ namespace Microsoft.AspNetCore.Localization
 
             if (_options.ApplyCurrentCultureToResponseHeaders)
             {
-                context.Response.Headers.Add(HeaderNames.ContentLanguage, requestCulture.UICulture.Name);
+                var headers = context.Response.Headers;
+                headers.ContentLanguage = requestCulture.UICulture.Name;
             }
 
             await _next(context);

@@ -67,9 +67,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             await _onStart();
-            await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+            await _innerStream.WriteAsync(buffer, cancellationToken);
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)

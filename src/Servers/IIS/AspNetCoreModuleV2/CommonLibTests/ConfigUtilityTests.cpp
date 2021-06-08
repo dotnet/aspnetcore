@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "gmock/gmock.h"
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::NiceMock;
 
 namespace ConfigUtilityTests

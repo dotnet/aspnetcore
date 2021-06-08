@@ -3,6 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Net;
+using System.Net.Sockets;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
@@ -64,6 +67,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// Test to make sure this setting helps performance.
         /// </remarks>
         public bool UnsafePreferInlineScheduling { get; set; }
+
+        /// <summary>
+        /// A function used to create a new <see cref="Socket"/> to listen with. If
+        /// not set, <see cref="CreateDefaultBoundListenSocket" /> is used.
+        /// </summary>
+        /// <remarks>
+        /// Implementors are expected to call <see cref="Socket.Bind"/> on the
+        /// <see cref="Socket"/>. Please note that <see cref="CreateDefaultBoundListenSocket"/>
+        /// calls <see cref="Socket.Bind"/> as part of its implementation, so implementors
+        /// using this method do not need to call it again.
+        /// </remarks>
+        public Func<EndPoint, Socket> CreateBoundListenSocket { get; set; } = CreateDefaultBoundListenSocket;
+
+        /// <summary>
+        /// Creates a default instance of <see cref="Socket"/> for the given <see cref="EndPoint"/>
+        /// that can be used by a connection listener to listen for inbound requests. <see cref="Socket.Bind"/>
+        /// is called by this method.
+        /// </summary>
+        /// <param name="endpoint">
+        /// An <see cref="EndPoint"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Socket"/> instance.
+        /// </returns>
+        public static Socket CreateDefaultBoundListenSocket(EndPoint endpoint)
+        {
+            Socket listenSocket;
+            switch (endpoint)
+            {
+                case FileHandleEndPoint fileHandle:
+                    // We're passing "ownsHandle: true" here even though we don't necessarily
+                    // own the handle because Socket.Dispose will clean-up everything safely.
+                    // If the handle was already closed or disposed then the socket will
+                    // be torn down gracefully, and if the caller never cleans up their handle
+                    // then we'll do it for them.
+                    //
+                    // If we don't do this then we run the risk of Kestrel hanging because the
+                    // the underlying socket is never closed and the transport manager can hang
+                    // when it attempts to stop.
+                    listenSocket = new Socket(
+                        new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true)
+                    );
+                    break;
+                case UnixDomainSocketEndPoint unix:
+                    listenSocket = new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                    break;
+                case IPEndPoint ip:
+                    listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                    // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
+                    if (ip.Address == IPAddress.IPv6Any)
+                    {
+                        listenSocket.DualMode = true;
+                    }
+
+                    break;
+                default:
+                    listenSocket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    break;
+            }
+
+            // we only call Bind on sockets that were _not_ created
+            // using a file handle; the handle is already bound
+            // to an underlying socket so doing it again causes the
+            // underlying PAL call to throw
+            if (!(endpoint is FileHandleEndPoint))
+            {
+                listenSocket.Bind(endpoint);
+            }
+
+            return listenSocket;
+        }
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
     }

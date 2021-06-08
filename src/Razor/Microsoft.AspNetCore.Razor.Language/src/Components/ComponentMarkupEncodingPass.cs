@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                         // `entity` is guaranteed to be of the format &#****;
                         var entityValue = entity.Substring(2, entity.Length - 3);
-                        var codePoint = -1;
+                        int codePoint;
                         if (!int.TryParse(entityValue, out codePoint))
                         {
                             // If it is not an integer, check if it is hexadecimal like 0x00CD

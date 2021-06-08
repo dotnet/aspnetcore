@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
         // Used in tests
-        internal static readonly string OriginHeader = "Origin";
-        internal static readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
         internal static readonly string PreflightHttpMethod = HttpMethods.Options;
 
         // Used in tests
@@ -100,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             // Returning a 405 here requires us to return keep track of all 'seen' HTTP methods. We allocate to
-            // keep track of this beause we either need to keep track of the HTTP methods or keep track of the
+            // keep track of this because we either need to keep track of the HTTP methods or keep track of the
             // endpoints - both allocate.
             //
             // Those code only runs in the presence of dynamic endpoints anyway.

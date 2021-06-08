@@ -8,23 +8,23 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal sealed class HttpRequestLog : IReadOnlyList<KeyValuePair<string, string?>>
+    internal sealed class HttpRequestLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
-        private readonly List<KeyValuePair<string, string?>> _keyValues;
+        private readonly List<KeyValuePair<string, object?>> _keyValues;
         private string? _cachedToString;
 
         internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HttpRequestLog)state).ToString();
 
-        public HttpRequestLog(List<KeyValuePair<string, string?>> keyValues)
+        public HttpRequestLog(List<KeyValuePair<string, object?>> keyValues)
         {
             _keyValues = keyValues;
         }
 
-        public KeyValuePair<string, string?> this[int index] => _keyValues[index];
+        public KeyValuePair<string, object?> this[int index] => _keyValues[index];
 
         public int Count => _keyValues.Count;
 
-        public IEnumerator<KeyValuePair<string, string?>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
             var count = _keyValues.Count;
             for (var i = 0; i < count; i++)

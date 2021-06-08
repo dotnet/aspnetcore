@@ -47,13 +47,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         public (PageActionInvokerCacheEntry cacheEntry, IFilterMetadata[] filters) GetCachedResult(ActionContext actionContext)
         {
-            var actionDescriptor = actionContext.ActionDescriptor as PageActionDescriptor;
+            var actionDescriptor = (PageActionDescriptor)actionContext.ActionDescriptor;
 
             var compiledPageActionDescriptor = actionDescriptor.CompiledPageDescriptor;
 
             Debug.Assert(compiledPageActionDescriptor != null, "PageLoader didn't run!");
 
-            var cacheEntry = actionDescriptor.CompiledPageDescriptor.CacheEntry;
+            var cacheEntry = compiledPageActionDescriptor.CacheEntry;
 
             IFilterMetadata[] filters;
             if (cacheEntry is null)
@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _modelBinderFactory,
                 compiledActionDescriptor);
 
-            Func<PageContext, object> modelFactory = null;
-            Func<PageContext, object, ValueTask> modelReleaser = null;
+            Func<PageContext, object>? modelFactory = null;
+            Func<PageContext, object, ValueTask>? modelReleaser = null;
             if (compiledActionDescriptor.ModelTypeInfo != compiledActionDescriptor.PageTypeInfo)
             {
                 modelFactory = _modelFactoryProvider.CreateModelFactory(compiledActionDescriptor);

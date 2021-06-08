@@ -19,6 +19,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
+        /// Invoked to check if the cookie should be renewed.
+        /// </summary>
+        public Func<CookieSlidingExpirationContext, Task> OnCheckSlidingExpiration { get; set; } = context => Task.CompletedTask;
+
+        /// <summary>
         /// Invoked on signing in.
         /// </summary>
         public Func<CookieSigningInContext, Task> OnSigningIn { get; set; } = context => Task.CompletedTask;

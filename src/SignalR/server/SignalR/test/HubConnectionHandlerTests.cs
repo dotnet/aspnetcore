@@ -4147,6 +4147,53 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(nameof(LongRunningHub.CountingCancelableStreamGeneratedAsyncEnumerable), 2)]
+        [InlineData(nameof(LongRunningHub.CountingCancelableStreamGeneratedChannel), 2)]
+        public async Task CancellationAfterGivenMessagesEndsStreaming(string methodName, int count)
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+                var invocationBinder = new Mock<IInvocationBinder>();
+                invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
+
+                using (var client = new TestClient(invocationBinder: invocationBinder.Object))
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                    // Start streaming count number of messages.
+                    var invocationId = await client.SendStreamInvocationAsync(methodName, count).DefaultTimeout();
+
+                    // Listening on incoming messages
+                    var listeningMessages = client.ListenAsync(invocationId);
+
+                    // Wait for the number of messages expected to be received. This point the sender just waits forever or until cancellation.
+                    await listeningMessages.ReadAsync(count).DefaultTimeout();
+
+                    // Send cancellation.
+                    await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).DefaultTimeout();
+
+                    // Wait for the completion message.
+                    var messages = await listeningMessages.ReadAllAsync().DefaultTimeout();
+                    Assert.Single(messages);
+
+                    // CancellationToken passed to hub method will allow EndMethod to be triggered if it is canceled.
+                    await tcsService.EndMethod.Task.DefaultTimeout();
+
+                    // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.DefaultTimeout();
+                }
+            }
+        }
+
         [Fact]
         public async Task StreamHubMethodCanAcceptCancellationTokenAsArgumentAndBeTriggeredOnConnectionAborted()
         {
@@ -4291,8 +4338,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var messages = await messagePromise;
 
                     // add one because this includes the completion
-                    Assert.Equal(phrases.Count() + 1, messages.Count);
-                    for (var i = 0; i < phrases.Count(); i++)
+                    Assert.Equal(phrases.Length + 1, messages.Count);
+                    for (var i = 0; i < phrases.Length; i++)
                     {
                         Assert.Equal("echo:" + phrases[i], ((StreamItemMessage)messages[i]).Item);
                     }
@@ -4520,6 +4567,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private class HttpContextFeatureImpl : IHttpContextFeature
         {
             public HttpContext HttpContext { get; set; }
+        }
+    }
+
+    public static class IAsyncEnumerableExtension
+    {
+        public static async Task<IEnumerable<T>> ReadAsync<T>(this IAsyncEnumerable<T> enumerable, int count)
+        {
+            if (count <= 0)
+            {
+                throw new ArgumentException("Input must be greater than zero.", nameof(count));
+            }
+
+            var result = new List<T>();
+            await foreach (var item in enumerable)
+            {
+                result.Add(item);
+                if (result.Count == count)
+                {
+                    break;
+                }
+            }
+            return result;
+        }
+
+        public static async Task<IEnumerable<T>> ReadAllAsync<T>(this IAsyncEnumerable<T> enumerable)
+        {
+            var result = new List<T>();
+            await foreach (var item in enumerable)
+            {
+                result.Add(item);
+            }
+
+            return result;
         }
     }
 }

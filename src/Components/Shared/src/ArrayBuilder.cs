@@ -14,6 +14,8 @@ namespace Ignitor
 namespace Microsoft.AspNetCore.Components.WebView
 #elif COMPONENTS_SERVER
 namespace Microsoft.AspNetCore.Components.Server.Circuits
+#elif JS_INTEROP
+namespace Microsoft.JSInterop.Infrastructure
 #else
 namespace Microsoft.AspNetCore.Components.RenderTree
 #endif

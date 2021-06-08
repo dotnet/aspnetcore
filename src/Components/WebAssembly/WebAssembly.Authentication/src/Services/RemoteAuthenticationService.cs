@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         where TAccount : RemoteUserAccount
     {
         private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
-        private bool _initialized = false;
+        private bool _initialized;
 
         // This defaults to 1/1/1970
         private DateTimeOffset _userLastCheck = DateTimeOffset.FromUnixTimeSeconds(0);

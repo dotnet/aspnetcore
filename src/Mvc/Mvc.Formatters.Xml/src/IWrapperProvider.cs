@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// </summary>
         /// <param name="original">The original non-wrapped object.</param>
         /// <returns>Returns a wrapped object.</returns>
-        object Wrap(object original);
+        object? Wrap(object? original);
     }
 }

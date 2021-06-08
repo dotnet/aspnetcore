@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -144,6 +144,22 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract IReadOnlyList<IRazorEnginePhase> Phases { get; }
 
         public abstract void Process(RazorCodeDocument document);
+
+#nullable enable
+        internal TFeature? GetFeature<TFeature>()
+        {
+            var count = Features.Count;
+            for (var i = 0; i < count; i++)
+            {
+                if (Features[i] is TFeature feature)
+                {
+                    return feature;
+                }
+            }
+
+            return default;
+        }
+#nullable disable
 
         #region Obsolete
         [Obsolete("This method is obsolete and will be removed in a future version.")]

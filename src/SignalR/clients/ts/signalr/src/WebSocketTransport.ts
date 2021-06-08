@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
@@ -59,7 +60,7 @@ export class WebSocketTransport implements ITransport {
                 headers[name] = value;
 
                 if (cookies) {
-                    headers[`Cookie`] = `${cookies}`;
+                    headers[HeaderNames.Cookie] = `${cookies}`;
                 }
 
                 // Only pass headers when in non-browser environments
@@ -77,7 +78,6 @@ export class WebSocketTransport implements ITransport {
                 webSocket.binaryType = "arraybuffer";
             }
 
-            // tslint:disable-next-line:variable-name
             webSocket.onopen = (_event: Event) => {
                 this._logger.log(LogLevel.Information, `WebSocket connected to ${url}.`);
                 this._webSocket = webSocket;

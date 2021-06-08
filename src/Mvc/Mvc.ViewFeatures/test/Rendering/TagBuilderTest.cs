@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Rendering
             tagBuilder.Attributes.Add("ClaSs", "btn");
 
             // Act
-            tagBuilder.AddCssClass("success");
+            tagBuilder.AddCssClass("btn-success");
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes);
-            Assert.Equal(new KeyValuePair<string, string>("class", "success btn"), attribute);
+            Assert.Equal(new KeyValuePair<string, string>("class", "btn btn-success"), attribute);
         }
 
         [Fact]

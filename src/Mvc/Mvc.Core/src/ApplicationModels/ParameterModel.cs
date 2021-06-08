@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The properties.
         /// </summary>
-        public new IDictionary<object, object> Properties => base.Properties;
+        public new IDictionary<object, object?> Properties => base.Properties;
 
         /// <summary>
         /// The attributes.

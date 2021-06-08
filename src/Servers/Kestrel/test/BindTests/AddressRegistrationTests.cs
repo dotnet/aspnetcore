@@ -29,6 +29,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33204")]
     public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
     {
         private const int MaxRetries = 10;
@@ -742,6 +743,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33185")]
         public void ThrowsWhenBindingLocalhostToIPv4AddressInUse()
         {
             ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetwork);

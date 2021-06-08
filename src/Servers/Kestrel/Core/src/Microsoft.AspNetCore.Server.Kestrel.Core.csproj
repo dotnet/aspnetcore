@@ -35,7 +35,6 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 
   <ItemGroup>

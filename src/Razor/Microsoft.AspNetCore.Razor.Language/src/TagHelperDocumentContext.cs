@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,6 +23,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             return new DefaultTagHelperDocumentContext(prefix, tagHelpers.ToArray());
         }
 
+        internal static TagHelperDocumentContext Create(string prefix, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            if (tagHelpers == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelpers));
+            }
+
+            return new DefaultTagHelperDocumentContext(prefix, tagHelpers);
+        }
+
         public abstract string Prefix { get; }
 
         public abstract IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
@@ -30,9 +40,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         private class DefaultTagHelperDocumentContext : TagHelperDocumentContext
         {
             private readonly string _prefix;
-            private readonly TagHelperDescriptor[] _tagHelpers;
+            private readonly IReadOnlyList<TagHelperDescriptor> _tagHelpers;
 
-            public DefaultTagHelperDocumentContext(string prefix, TagHelperDescriptor[] tagHelpers)
+            public DefaultTagHelperDocumentContext(string prefix, IReadOnlyList<TagHelperDescriptor> tagHelpers)
             {
                 _prefix = prefix;
                 _tagHelpers = tagHelpers;

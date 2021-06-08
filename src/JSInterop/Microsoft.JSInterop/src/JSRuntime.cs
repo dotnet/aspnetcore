@@ -16,14 +16,15 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Abstract base class for a JavaScript runtime.
     /// </summary>
-    public abstract partial class JSRuntime : IJSRuntime
+    public abstract partial class JSRuntime : IJSRuntime, IDisposable
     {
-        private long _nextObjectReferenceId = 0; // 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
+        private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
-        private readonly ConcurrentDictionary<long, object> _pendingTasks = new ConcurrentDictionary<long, object>();
-        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectReference>();
-        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations =
-            new ConcurrentDictionary<long, CancellationTokenRegistration>();
+        private readonly ConcurrentDictionary<long, object> _pendingTasks = new();
+        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
+        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
+
+        internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
         /// <summary>
         /// Initializes a new instance of <see cref="JSRuntime"/>.
@@ -39,6 +40,7 @@ namespace Microsoft.JSInterop
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
                     new JSObjectReferenceJsonConverter(this),
+                    new ByteArrayJsonConverter(this)
                 }
             };
         }
@@ -174,6 +176,38 @@ namespace Microsoft.JSInterop
             DotNetInvocationInfo invocationInfo,
             in DotNetInvocationResult invocationResult);
 
+        /// <summary>
+        /// Transfers a byte array from .NET to JS.
+        /// </summary>
+        /// <param name="id">Atomically incrementing identifier for the byte array being transfered.</param>
+        /// <param name="data">Byte array to be transfered to JS.</param>
+        protected internal virtual void SendByteArray(int id, byte[] data)
+        {
+            throw new NotSupportedException("JSRuntime subclasses are responsible for implementing byte array transfer to JS.");
+        }
+
+        /// <summary>
+        /// Accepts the byte array data being transferred from JS to DotNet.
+        /// </summary>
+        /// <param name="id">Identifier for the byte array being transfered.</param>
+        /// <param name="data">Byte array to be transfered from JS.</param>
+        protected internal virtual void ReceiveByteArray(int id, byte[] data)
+        {
+            if (id == 0)
+            {
+                // Starting a new transfer, clear out previously stored byte arrays
+                // in case they haven't been cleared already.
+                ByteArraysToBeRevived.Clear();
+            }
+
+            if (id != ByteArraysToBeRevived.Count)
+            {
+                throw new ArgumentOutOfRangeException($"Element id '{id}' cannot be added to the byte arrays to be revived with length '{ByteArraysToBeRevived.Count}'.", innerException: null);
+            }
+
+            ByteArraysToBeRevived.Append(data);
+        }
+
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
         internal void EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
         {
@@ -193,6 +227,7 @@ namespace Microsoft.JSInterop
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
                     var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
+                    ByteArraysToBeRevived.Clear();
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }
                 else
@@ -250,5 +285,10 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
         internal void ReleaseObjectReference(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
+
+        /// <summary>
+        /// Dispose the JSRuntime.
+        /// </summary>
+        public void Dispose() => ByteArraysToBeRevived.Dispose();
     }
 }

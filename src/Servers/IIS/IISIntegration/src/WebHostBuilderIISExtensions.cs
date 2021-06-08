@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Hosting
     public static class WebHostBuilderIISExtensions
     {
         // These are defined as ASPNETCORE_ environment variables by IIS's AspNetCoreModule.
-        private static readonly string ServerPort = "PORT";
-        private static readonly string ServerPath = "APPL_PATH";
-        private static readonly string PairingToken = "TOKEN";
-        private static readonly string IISAuth = "IIS_HTTPAUTH";
-        private static readonly string IISWebSockets = "IIS_WEBSOCKETS_SUPPORTED";
+        private const string ServerPort = "PORT";
+        private const string ServerPath = "APPL_PATH";
+        private const string PairingToken = "TOKEN";
+        private const string IISAuth = "IIS_HTTPAUTH";
+        private const string IISWebSockets = "IIS_WEBSOCKETS_SUPPORTED";
 
         /// <summary>
         /// Configures the port and base path the server should listen on when running behind AspNetCoreModule.

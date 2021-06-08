@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             , -1, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, 
-            Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue)), -1, () => ParentValue);
+            global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue)), -1, () => ParentValue);
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent<>);

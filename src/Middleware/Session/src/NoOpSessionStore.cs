@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Session
 
         public ICollection<EncodedKey> Keys { get; } = Array.Empty<EncodedKey>();
 
-        public ICollection<byte[]> Values { get; } = new byte[0][];
+        public ICollection<byte[]> Values { get; } = Array.Empty<byte[]>();
 
         public void Clear() { }
 

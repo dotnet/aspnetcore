@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
         /// The default is `false`.
         /// </summary>
-        public bool AllowSynchronousIO { get; set; } = false;
+        public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
         /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request

@@ -37,19 +37,21 @@ namespace Microsoft.AspNetCore.Components.Server
     internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
-        private readonly ServerComponentDeserializer _serverComponentSerializer;
+        private readonly IServerComponentDeserializer _serverComponentSerializer;
         private readonly IDataProtectionProvider _dataProtectionProvider;
-        private readonly CircuitFactory _circuitFactory;
+        private readonly ICircuitFactory _circuitFactory;
         private readonly CircuitIdFactory _circuitIdFactory;
         private readonly CircuitRegistry _circuitRegistry;
+        private readonly ICircuitHandleRegistry _circuitHandleRegistry;
         private readonly ILogger _logger;
 
         public ComponentHub(
-            ServerComponentDeserializer serializer,
+            IServerComponentDeserializer serializer,
             IDataProtectionProvider dataProtectionProvider,
-            CircuitFactory circuitFactory,
+            ICircuitFactory circuitFactory,
             CircuitIdFactory circuitIdFactory,
             CircuitRegistry circuitRegistry,
+            ICircuitHandleRegistry circuitHandleRegistry,
             ILogger<ComponentHub> logger)
         {
             _serverComponentSerializer = serializer;
@@ -57,6 +59,7 @@ namespace Microsoft.AspNetCore.Components.Server
             _circuitFactory = circuitFactory;
             _circuitIdFactory = circuitIdFactory;
             _circuitRegistry = circuitRegistry;
+            _circuitHandleRegistry = circuitHandleRegistry;
             _logger = logger;
         }
 
@@ -69,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             // If the CircuitHost is gone now this isn't an error. This could happen if the disconnect
             // if the result of well behaving client hanging up after an unhandled exception.
-            var circuitHost = GetCircuit();
+            var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
             if (circuitHost == null)
             {
                 return Task.CompletedTask;
@@ -80,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
         {
-            var circuitHost = GetCircuit();
+            var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
             if (circuitHost != null)
             {
                 // This is an error condition and an attempt to bind multiple circuits to a single connection.
@@ -139,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 // It's safe to *publish* the circuit now because nothing will be able
                 // to run inside it until after InitializeAsync completes.
                 _circuitRegistry.Register(circuitHost);
-                SetCircuit(circuitHost);
+                _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 
                 // Returning the secret here so the client can reconnect.
                 //
@@ -176,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 Context.ConnectionAborted);
             if (circuitHost != null)
             {
-                SetCircuit(circuitHost);
+                _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
                 circuitHost.SetCircuitUser(Context.User);
                 circuitHost.SendPendingBatches();
                 return true;
@@ -207,6 +210,17 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
+        }
+
+        public async ValueTask ReceiveByteArray(int id, byte[] data)
+        {
+            var circuitHost = await GetActiveCircuitAsync();
+            if (circuitHost == null)
+            {
+                return;
+            }
+
+            await circuitHost.ReceiveByteArray(id, data);
         }
 
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)
@@ -251,7 +265,7 @@ namespace Microsoft.AspNetCore.Components.Server
         // See comment on error handling on the class definition.
         private async ValueTask<CircuitHost> GetActiveCircuitAsync([CallerMemberName] string callSite = "")
         {
-            var handle = (CircuitHandle)Context.Items[CircuitKey];
+            var handle = _circuitHandleRegistry.GetCircuitHandle(Context.Items, CircuitKey);
             var circuitHost = handle?.CircuitHost;
             if (handle != null && circuitHost == null)
             {
@@ -273,16 +287,6 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             return circuitHost;
-        }
-
-        private CircuitHost GetCircuit()
-        {
-            return ((CircuitHandle)Context.Items[CircuitKey])?.CircuitHost;
-        }
-
-        private void SetCircuit(CircuitHost circuitHost)
-        {
-            Context.Items[CircuitKey] = circuitHost?.Handle;
         }
 
         private static Task NotifyClientError(IClientProxy client, string error) => client.SendAsync("JS.Error", error);

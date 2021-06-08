@@ -202,6 +202,9 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>Gets or sets the <c>Sec-WebSocket-Version</c> HTTP header.</summary>
         StringValues SecWebSocketVersion { get => this[HeaderNames.SecWebSocketVersion]; set => this[HeaderNames.SecWebSocketVersion] = value; }
 
+        /// <summary>Gets or sets the <c>Sec-WebSocket-Extensions</c> HTTP header.</summary>
+        StringValues SecWebSocketExtensions { get => this[HeaderNames.SecWebSocketExtensions]; set => this[HeaderNames.SecWebSocketExtensions] = value; }
+
         /// <summary>Gets or sets the <c>Server</c> HTTP header.</summary>
         StringValues Server { get => this[HeaderNames.Server]; set => this[HeaderNames.Server] = value; }
 

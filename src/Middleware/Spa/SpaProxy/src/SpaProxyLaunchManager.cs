@@ -1,56 +1,105 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SpaProxy
 {
-    internal class SpaProxyLaunchManager : IHostedService, IDisposable
+    internal class SpaProxyLaunchManager : IDisposable
     {
         private readonly SpaDevelopmentServerOptions _options;
         private readonly ILogger<SpaProxyLaunchManager> _logger;
+        private readonly object _lock = new object();
 
         private Process? _spaProcess;
         private bool _disposedValue;
+        private Task? _launchTask;
 
-        public SpaProxyLaunchManager(ILogger<SpaProxyLaunchManager> logger)
+        public SpaProxyLaunchManager(
+            ILogger<SpaProxyLaunchManager> logger,
+            IOptions<SpaDevelopmentServerOptions> options)
         {
-            _options = new SpaDevelopmentServerOptions();
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "spa.proxy.json"))
-                .Build();
-            configuration.GetSection("SpaProxyServer").Bind(_options);
+            _options = options.Value;
             _logger = logger;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public void StartInBackground(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
+
+            // We are not waiting for the SPA proxy to launch, instead we are going to rely on a piece of
+            // middleware to display an HTML document while the SPA proxy is not ready, refresh every three
+            // seconds and redirect to the SPA proxy url once it is ready.
+            // Being ready in this context means that we were able to receive a 200 from the proxy or that
+            // we gave up waiting.
+            // We do this to ensure Visual Studio can work correctly with IIS and when running without debugging.
+            lock (_lock)
+            {
+                if (_launchTask == null)
+                {
+                    _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(cancellationToken));
+                }
+            }
+
+            async Task UpdateStatus(Task launchTask)
+            {
+                try
+                {
+                    await launchTask;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "There was an error trying to launch the SPA proxy.");
+                }
+                finally
+                {
+                    lock (_lock)
+                    {
+                        _launchTask = null;
+                    }
+                }
+            }
+        }
+
+        public async Task<bool> IsSpaProxyRunning(CancellationToken cancellationToken)
+        {
+            var httpClient = CreateHttpClient();
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+            try
+            {
+                var response = await httpClient.GetAsync(_options.ServerUrl, cancellationTokenSource.Token);
+                var running = response.IsSuccessStatusCode;
+                return running;
+            }
+            catch (Exception exception) when (exception is HttpRequestException ||
+                  exception is TaskCanceledException ||
+                  exception is OperationCanceledException)
+            {
+                _logger.LogDebug(exception, "Failed to connect to the SPA Development proxy.");
+                return false;
+            }
+        }
+
+        private static HttpClient CreateHttpClient()
         {
             var httpClient = new HttpClient(new HttpClientHandler()
             {
                 // It's ok for us to do this here since this service is only plugged in during development.
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
-
-            _logger.LogInformation("Starting SPA development server");
-            var running = await ProbeSpaDevelopmentServerUrl(httpClient, cancellationToken);
-            if (running)
-            {
-                _logger.LogInformation($"Found SPA development server running at {_options.ServerUrl}");
-            }
-            else
-            {
-                _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
-                await StartSpaProcessAndProbeForLiveness(httpClient, cancellationToken);
-            }
+            // We don't care about the returned content type as long as the server is able to answer with 2XX
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*", 0.1));
+            return httpClient;
         }
 
         private async Task<bool> ProbeSpaDevelopmentServerUrl(HttpClient httpClient, CancellationToken cancellationToken)
@@ -72,12 +121,13 @@ namespace Microsoft.AspNetCore.SpaProxy
             }
         }
 
-        private async Task StartSpaProcessAndProbeForLiveness(HttpClient httpClient, CancellationToken cancellationToken)
+        private async Task StartSpaProcessAndProbeForLiveness(CancellationToken cancellationToken)
         {
             LaunchDevelopmentProxy();
             var sw = Stopwatch.StartNew();
             var livenessProbeSucceeded = false;
             var maxTimeoutReached = false;
+            var httpClient = CreateHttpClient();
             while (_spaProcess != null && !_spaProcess.HasExited && !maxTimeoutReached)
             {
                 livenessProbeSucceeded = await ProbeSpaDevelopmentServerUrl(httpClient, cancellationToken);
@@ -206,19 +256,6 @@ namespace Microsoft.AspNetCore.SpaProxy
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        private class SpaDevelopmentServerOptions
-        {
-            public string ServerUrl { get; set; } = "";
-
-            public string LaunchCommand { get; set; } = "";
-
-            public int MaxTimeoutInSeconds { get; set; }
-
-            public TimeSpan MaxTimeout => TimeSpan.FromSeconds(MaxTimeoutInSeconds);
-
-            public string WorkingDirectory { get; set; } = "";
         }
     }
 }

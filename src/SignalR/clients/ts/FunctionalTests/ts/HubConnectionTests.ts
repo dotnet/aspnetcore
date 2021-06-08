@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
-// tslint:disable:no-floating-promises
-
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { getUserAgentHeader, Platform } from "@microsoft/signalr/dist/esm/Utils";
@@ -109,10 +106,10 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.on("CustomObject", (customObject) => {
+                hubConnection.on("CustomObject", async (customObject) => {
                     expect(customObject.Name).toBe("test");
                     expect(customObject.Value).toBe(42);
-                    hubConnection.stop();
+                    await hubConnection.stop();
                 });
 
                 hubConnection.onclose((error) => {
@@ -1056,6 +1053,7 @@ describe("hubConnection", () => {
     function getJwtToken(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const httpClient = new DefaultHttpClient(NullLogger.instance);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             httpClient.get(url).then((response) => {
                 if (response.statusCode >= 200 && response.statusCode < 300) {
                     resolve(response.content as string);

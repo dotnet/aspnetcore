@@ -32,19 +32,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
         {
-            if (!invocationResult.Success)
-            {
-                EndInvokeDotNetCore(invocationInfo.CallId, success: false, invocationResult.Exception.ToString());
-            }
-            else
-            {
-                EndInvokeDotNetCore(invocationInfo.CallId, success: true, invocationResult.Result);
-            }
+            var resultJsonOrErrorMessage = invocationResult.Success
+                ? invocationResult.ResultJson
+                : invocationResult.Exception.ToString();
+            _ipcSender.EndInvokeDotNet(invocationInfo.CallId, invocationResult.Success, resultJsonOrErrorMessage);
+        }
 
-            void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
-            {
-                _ipcSender.EndInvokeDotNet(callId, success, JsonSerializer.Serialize(resultOrError, JsonSerializerOptions));
-            }
+        protected override void SendByteArray(int id, byte[] data)
+        {
+           _ipcSender.SendByteArray(id, data);
         }
     }
 }

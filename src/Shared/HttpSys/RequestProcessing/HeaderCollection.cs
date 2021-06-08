@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 {
                     if (value.Value < 0)
                     {
-                        throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
+                        throw new ArgumentOutOfRangeException(nameof(value), value.Value, "Cannot be negative.");
                     }
                     _contentLengthText = HeaderUtilities.FormatNonNegativeInt64(value.Value);
                     this[HeaderNames.ContentLength] = _contentLengthText;

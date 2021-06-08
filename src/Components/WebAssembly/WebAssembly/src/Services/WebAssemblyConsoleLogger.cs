@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
     internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
     {
-        private static readonly string _loglevelPadding = ": ";
+        private const string _loglevelPadding = ": ";
         private static readonly string _messagePadding;
         private static readonly string _newLineWithMessagePadding;
         private static readonly StringBuilder _logBuilder = new StringBuilder();
@@ -119,9 +119,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             logBuilder.Append(GetLogLevelString(logLevel));
             logBuilder.Append(_loglevelPadding);
             logBuilder.Append(logName);
-            logBuilder.Append("[");
+            logBuilder.Append('[');
             logBuilder.Append(eventId);
-            logBuilder.Append("]");
+            logBuilder.Append(']');
 
             if (!string.IsNullOrEmpty(message))
             {

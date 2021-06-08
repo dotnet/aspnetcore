@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
-    internal class RouteAttributeExtensionNode : ExtensionIntermediateNode
+    internal sealed class RouteAttributeExtensionNode : ExtensionIntermediateNode
     {
-        public RouteAttributeExtensionNode(string template)
+        public RouteAttributeExtensionNode(StringSegment template)
         {
             Template = template;
         }
 
-        public string Template { get; }
+        public StringSegment Template { get; }
 
         public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 

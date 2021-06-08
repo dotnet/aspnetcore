@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal abstract partial class HttpHeaders : IHeaderDictionary
     {
-        protected long _bits = 0;
+        protected long _bits;
         protected long? _contentLength;
         protected bool _isReadOnly;
         protected Dictionary<string, StringValues>? MaybeUnknown;
@@ -291,7 +291,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private readonly static string KeepAlive = "keep-alive";
+#pragma warning disable CA1802 //  Use literals where appropriate. Using a static field for reference equality
+        private static readonly string KeepAlive = "keep-alive";
+#pragma warning restore CA1802
         private readonly static StringValues ConnectionValueKeepAlive = KeepAlive;
         private readonly static StringValues ConnectionValueClose = "close";
         private readonly static StringValues ConnectionValueUpgrade = HeaderNames.Upgrade;

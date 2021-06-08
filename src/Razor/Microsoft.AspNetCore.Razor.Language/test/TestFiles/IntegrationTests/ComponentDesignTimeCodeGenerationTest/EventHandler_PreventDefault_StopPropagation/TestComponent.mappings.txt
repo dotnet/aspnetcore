@@ -10,24 +10,24 @@ Generated Location: (1173:32,18 [17] )
 
 Source Location: (106:1,62 [4] x:\dir\subdir\Test\TestComponent.cshtml)
 |true|
-Generated Location: (1500:41,62 [4] )
+Generated Location: (1508:41,62 [4] )
 |true|
 
 Source Location: (138:1,94 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 |Foo|
-Generated Location: (1846:50,94 [3] )
+Generated Location: (1862:50,94 [3] )
 |Foo|
 
 Source Location: (169:1,125 [5] x:\dir\subdir\Test\TestComponent.cshtml)
 |false|
-Generated Location: (2222:59,125 [5] )
+Generated Location: (2246:59,125 [5] )
 |false|
 
 Source Location: (202:2,7 [30] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     bool Foo { get; set; }
 |
-Generated Location: (2421:69,7 [30] )
+Generated Location: (2445:69,7 [30] )
 |
     bool Foo { get; set; }
 |

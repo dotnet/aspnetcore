@@ -12,11 +12,11 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.Net.Http.Headers
 {
     /// <summary>
-    /// Provides utilities to parse and modify HTTP header valeus.
+    /// Provides utilities to parse and modify HTTP header values.
     /// </summary>
     public static class HeaderUtilities
     {
-        private static readonly int _qualityValueMaxCharCount = 10; // Little bit more permissive than RFC7231 5.3.1
+        private const int _qualityValueMaxCharCount = 10; // Little bit more permissive than RFC7231 5.3.1
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
 

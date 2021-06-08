@@ -101,8 +101,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task<IList<HubMessage>> StreamAsync(string methodName, string[] streamIds, params object[] args)
         {
             var invocationId = await SendStreamInvocationAsync(methodName, streamIds, args);
+            return await ListenAllAsync(invocationId);
+        }
 
-            var messages = new List<HubMessage>();
+        public async Task<IList<HubMessage>> ListenAllAsync(string invocationId)
+        {
+            var result = new List<HubMessage>();
+            await foreach(var item in ListenAsync(invocationId))
+            {
+                result.Add(item);
+            }
+            return result;
+        }
+
+        public async IAsyncEnumerable<HubMessage> ListenAsync(string invocationId)
+        {
             while (true)
             {
                 var message = await ReadAsync();
@@ -120,11 +133,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 switch (message)
                 {
                     case StreamItemMessage _:
-                        messages.Add(message);
+                        yield return message;
                         break;
                     case CompletionMessage _:
-                        messages.Add(message);
-                        return messages;
+                        yield return message;
+                        yield break;
                     default:
                         // Message implement ToString so this should be helpful.
                         throw new NotSupportedException($"TestClient recieved an unexpected message: {message}.");

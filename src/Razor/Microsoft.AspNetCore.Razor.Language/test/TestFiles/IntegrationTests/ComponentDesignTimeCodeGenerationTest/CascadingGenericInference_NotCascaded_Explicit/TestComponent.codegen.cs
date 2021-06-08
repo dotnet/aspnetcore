@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Collections.Generic.IEnumerable<DateTime>>(
+            __o = global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Collections.Generic.IEnumerable<DateTime>>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                 Array.Empty<DateTime>()

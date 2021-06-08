@@ -13,14 +13,9 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal class RoutePatternMatcher
     {
-        private const string SeparatorString = "/";
-        private const char SeparatorChar = '/';
-
         // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
         private readonly bool[] _hasDefaultValue;
         private readonly object[] _defaultValues;
-
-        private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
         public RoutePatternMatcher(
             RoutePattern pattern,
@@ -83,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing
             // The most common case would be a literal segment that doesn't match.
             //
             // On the second pass, we're almost certainly going to match the URL, so go ahead and allocate the 'values'
-            // and start capturing strings. 
+            // and start capturing strings.
             foreach (var stringSegment in pathTokenizer)
             {
                 if (stringSegment.Length == 0)
@@ -246,7 +241,7 @@ namespace Microsoft.AspNetCore.Routing
             else
             {
                 Debug.Assert(!pathSegment.IsSimple);
-                // Don't attempt to validate a complex segment at this point other than being non-emtpy,
+                // Don't attempt to validate a complex segment at this point other than being non-empty,
                 // do it in the second pass.
             }
             return true;
@@ -299,7 +294,7 @@ namespace Microsoft.AspNetCore.Routing
             var indexOfLastSegment = routeSegment.Parts.Count - 1;
 
             // We match the request to the template starting at the rightmost parameter
-            // If the last segment of template is optional, then request can match the 
+            // If the last segment of template is optional, then request can match the
             // template with or without the last parameter. So we start with regular matching,
             // but if it doesn't match, we start with next to last parameter. Example:
             // Template: {p1}/{p2}.{p3?}. If the request is one/two.three it will match right away
@@ -470,7 +465,7 @@ namespace Microsoft.AspNetCore.Routing
                     {
                         // If we're here that means we have a segment that contains multiple sub-segments.
                         // For these segments all parameters must have non-empty values. If the parameter
-                        // has an empty value it's not a match.                        
+                        // has an empty value it's not a match.
                         return false;
 
                     }

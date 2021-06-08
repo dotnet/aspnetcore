@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
     {
         public OpenApiRemoveTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
         public async Task OpenApi_Remove_File()
         {
             var nswagJsonFile = "openapi.json";
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             Assert.False(File.Exists(Path.Combine(_tempDir.Root, nswagJsonFile)));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
         public async Task OpenApi_Remove_ViaUrl()
         {
             _tempDir
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
         public async Task OpenApi_Remove_Multiple()
         {
             var nswagJsonFile = "openapi.json";

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         internal const int LargeObjectHeapLimitInChars = 40 * 1024; // 40K Unicode chars is 80KB which is less than the large object heap limit.
 
-        internal static readonly RazorSourceDocument[] EmptyArray = new RazorSourceDocument[0];
+        internal static readonly RazorSourceDocument[] EmptyArray = Array.Empty<RazorSourceDocument>();
 
         /// <summary>
         /// Gets the encoding of the text in the original source document.

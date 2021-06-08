@@ -40,6 +40,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IReadOnlyDictionary<string, string> Metadata { get; protected set; }
 
+        // Hoisted / cached metadata
+        private int? _hashCode;
+        internal bool? IsComponentFullyQualifiedNameMatchCache { get; set; }
+        internal bool? IsChildContentTagHelperCache { get; set; }
+        internal ParsedTypeInformation? ParsedTypeInfo { get; set; }
+
         public bool HasErrors
         {
             get
@@ -85,7 +91,23 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            return TagHelperDescriptorComparer.Default.GetHashCode(this);
+            // TagHelperDescriptors are immutable instances and it should be safe to cache it's hashes once.
+            _hashCode ??= TagHelperDescriptorComparer.Default.GetHashCode(this);
+            return _hashCode.Value;
+        }
+
+        internal readonly struct ParsedTypeInformation
+        {
+            public ParsedTypeInformation(bool success, StringSegment @namespace, StringSegment typeName)
+            {
+                Success = success;
+                Namespace = @namespace;
+                TypeName = typeName;
+            }
+
+            public bool Success { get; }
+            public StringSegment Namespace { get; }
+            public StringSegment TypeName { get; }
         }
     }
 }

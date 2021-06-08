@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -58,6 +59,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["result9Async"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
                 ["roundTripJSObjectReferenceAsync"] = @"""successful""",
                 ["invokeDisposedJSObjectReferenceExceptionAsync"] = @"""JS object instance with ID",
+                ["roundTripByteArrayAsyncFromJS"] = @"{""0"":1,""1"":5,""2"":7,""3"":17,""4"":200,""5"":138}",
+                ["roundTripByteArrayWrapperObjectAsyncFromJS"] = @"{""strVal"":""Some string"",""byteArrayVal"":{""0"":1,""1"":5,""2"":7,""3"":17,""4"":200,""5"":138},""intVal"":42}",
+                ["roundTripByteArrayAsyncFromDotNet"] = @"1,5,7,15,35,200",
+                ["roundTripByteArrayWrapperObjectAsyncFromDotNet"] = @"StrVal: Some String, IntVal: 100000, ByteArrayVal: 1,5,7,15,35,200",
                 ["AsyncThrowSyncException"] = @"""System.InvalidOperationException: Threw a sync exception!",
                 ["AsyncThrowAsyncException"] = @"""System.InvalidOperationException: Threw an async exception!",
                 ["SyncExceptionFromAsyncMethod"] = "Function threw a sync exception!",
@@ -105,6 +110,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["invokeDisposedJSObjectReferenceException"] = @"""JS object instance with ID",
                 ["ThrowException"] = @"""System.InvalidOperationException: Threw an exception!",
                 ["ExceptionFromSyncMethod"] = "Function threw an exception!",
+                ["roundTripByteArrayFromJS"] = @"{""0"":1,""1"":5,""2"":7,""3"":17,""4"":200,""5"":138}",
+                ["roundTripByteArrayWrapperObjectFromJS"] = @"{""strVal"":""Some string"",""byteArrayVal"":{""0"":1,""1"":5,""2"":7,""3"":17,""4"":200,""5"":138},""intVal"":42}",
+                ["roundTripByteArrayFromDotNet"] = @"1,5,7,15,35,200",
+                ["roundTripByteArrayWrapperObjectFromDotNet"] = @"StrVal: Some String, IntVal: 100000, ByteArrayVal: 1,5,7,15,35,200",
                 ["resultReturnDotNetObjectByRefSync"] = "1000",
                 ["instanceMethodThisTypeName"] = @"""JavaScriptInterop""",
                 ["instanceMethodStringValueUpper"] = @"""MY STRING""",

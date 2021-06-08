@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     internal class RuntimeCompilationFileProvider
     {
         private readonly MvcRazorRuntimeCompilationOptions _options;
-        private IFileProvider _compositeFileProvider;
+        private IFileProvider? _compositeFileProvider;
 
         public RuntimeCompilationFileProvider(IOptions<MvcRazorRuntimeCompilationOptions> options)
         {

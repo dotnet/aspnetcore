@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             [DllImport("user32.dll")]
             internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
             [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-            internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName,int nMaxCount);
+            internal static extern int GetClassName(IntPtr hWnd, char[] lpClassName,int nMaxCount);
         }
 
         private void SendStopMessageToProcess(int pid)
@@ -480,14 +480,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     if (pid == windowProcessId)
                     {
                         // 256 is the max length
-                        var className = new StringBuilder(256);
+                        char[] buffer = new char[256];
+                        var length = WindowsNativeMethods.GetClassName(ptr, buffer, buffer.Length);
 
-                        if (WindowsNativeMethods.GetClassName(ptr, className, className.Capacity) == 0)
+                        if (length == 0)
                         {
                             throw new InvalidOperationException($"Unable to get window class name: {Marshal.GetLastWin32Error()}");
                         }
 
-                        if (!string.Equals(className.ToString(), "IISEXPRESS", StringComparison.OrdinalIgnoreCase))
+                        var className = new string(buffer, 0, length);
+                        if (!string.Equals(className, "IISEXPRESS", StringComparison.OrdinalIgnoreCase))
                         {
                             Logger.LogDebug($"Skipping window {ptr} with class name {className}");
                             // skip windows without IISEXPRESS class

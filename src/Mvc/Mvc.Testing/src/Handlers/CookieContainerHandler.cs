@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         /// <inheritdoc />
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var cookieHeader = Container.GetCookieHeader(request.RequestUri);
+            var cookieHeader = Container.GetCookieHeader(request.RequestUri!);
 
             if (!string.IsNullOrEmpty(cookieHeader))
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             {
                 foreach (var header in setCookieHeaders)
                 {
-                    Container.SetCookies(response.RequestMessage.RequestUri, header);
+                    Container.SetCookies(response.RequestMessage!.RequestUri!, header);
                 }
             }
 

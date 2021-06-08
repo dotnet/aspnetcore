@@ -20,7 +20,11 @@ namespace Microsoft.Extensions.Tools.Internal
             {
                 args = args.Skip(1).ToArray();
                 Console.WriteLine("Waiting for debugger to attach. Press ENTER to continue");
+#if NET6_0_OR_GREATER
+                Console.WriteLine($"Process ID: {Environment.ProcessId}");
+#else
                 Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+#endif
                 Console.ReadLine();
             }
         }

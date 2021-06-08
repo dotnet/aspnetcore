@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -182,14 +182,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             object outputValue,
             Type outputType,
             string contentType = "application/xml; charset=utf-8",
-            Stream responseStream = null)
+            Stream responseStream = null,
+            Func<Stream, Encoding, TextWriter> writerFactory = null)
         {
             var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
 
             var actionContext = GetActionContext(mediaTypeHeaderValue, responseStream);
             return new OutputFormatterWriteContext(
                 actionContext.HttpContext,
-                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                writerFactory ?? new TestHttpResponseStreamWriterFactory().CreateWriter,
                 outputType,
                 outputValue)
             {

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing
         Task RouteAsync(RouteContext context);
 
         /// <summary>
-        /// Returns the URL that is assicated with the route details provided in <paramref name="context"/>
+        /// Returns the URL that is associated with the route details provided in <paramref name="context"/>
         /// </summary>
         /// <param name="context">A <see cref="VirtualPathContext"/> instance.</param>
         /// <returns>A <see cref="VirtualPathData"/> object. Can be null.</returns>

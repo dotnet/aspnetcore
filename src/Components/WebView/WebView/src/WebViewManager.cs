@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             // change this if any important reason emerges.
             _currentPageContext?.Dispose();
 
-            var serviceScope = _provider.CreateScope();
+            var serviceScope = _provider.CreateAsyncScope();
             _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
 
             // Add any root components that were registered before the page attached

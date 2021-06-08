@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // il.Emit(OpCodes.Ldc_I8, ~0x007F007F007F007FUL);
             //
             // The IL Emit apis don't have overloads that accept ulong or ushort, and will resolve
-            // an overload that does an undesirable conversion (for instance convering ulong to float).
+            // an overload that does an undesirable conversion (for instance converting ulong to float).
             //
             // IMPORTANT
 

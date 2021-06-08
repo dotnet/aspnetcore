@@ -5,6 +5,7 @@ Param(
   [bool] $nodeReuse = $true,
   [switch] $ci,
   [switch] $prepareMachine,
+  [switch] $excludePrereleaseVS,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$extraArgs
 )
 

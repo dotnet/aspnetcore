@@ -93,13 +93,13 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             builder.Append(AllowedOrigin);
             builder.Append(", AllowExposedHeaders: {");
             builder.AppendJoin(",", AllowedExposedHeaders);
-            builder.Append("}");
+            builder.Append('}');
             builder.Append(", AllowHeaders: {");
             builder.AppendJoin(",", AllowedHeaders);
-            builder.Append("}");
+            builder.Append('}');
             builder.Append(", AllowMethods: {");
             builder.AppendJoin(",", AllowedMethods);
-            builder.Append("}");
+            builder.Append('}');
             return builder.ToString();
         }
     }

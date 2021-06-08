@@ -5,28 +5,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal static class SyntaxConstants
     {
-        public static readonly string TextTagName = "text";
-        public static readonly char TransitionCharacter = '@';
-        public static readonly string TransitionString = "@";
-        public static readonly string StartCommentSequence = "@*";
-        public static readonly string EndCommentSequence = "*@";
-        public static readonly string SpanContextKind = "SpanData";
+        public const string TextTagName = "text";
+        public const char TransitionCharacter = '@';
+        public const string TransitionString = "@";
+        public const string StartCommentSequence = "@*";
+        public const string EndCommentSequence = "*@";
+        public const string SpanContextKind = "SpanData";
 
         public static class CSharp
         {
-            public static readonly int UsingKeywordLength = 5;
-            public static readonly string TagHelperPrefixKeyword = "tagHelperPrefix";
-            public static readonly string AddTagHelperKeyword = "addTagHelper";
-            public static readonly string RemoveTagHelperKeyword = "removeTagHelper";
-            public static readonly string InheritsKeyword = "inherits";
-            public static readonly string FunctionsKeyword = "functions";
-            public static readonly string SectionKeyword = "section";
-            public static readonly string ElseIfKeyword = "else if";
-            public static readonly string NamespaceKeyword = "namespace";
-            public static readonly string ClassKeyword = "class";
+            public const int UsingKeywordLength = 5;
+            public const string TagHelperPrefixKeyword = "tagHelperPrefix";
+            public const string AddTagHelperKeyword = "addTagHelper";
+            public const string RemoveTagHelperKeyword = "removeTagHelper";
+            public const string InheritsKeyword = "inherits";
+            public const string FunctionsKeyword = "functions";
+            public const string SectionKeyword = "section";
+            public const string ElseIfKeyword = "else if";
+            public const string NamespaceKeyword = "namespace";
+            public const string ClassKeyword = "class";
 
             // Not supported. Only used for error cases.
-            public static readonly string HelperKeyword = "helper";
+            public const string HelperKeyword = "helper";
         }
     }
 }

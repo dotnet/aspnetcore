@@ -48,7 +48,7 @@ namespace Microsoft.Authentication.WebAssembly.Msal
         /// <summary>
         /// Gets or sets whether or not to navigate to the login request url after a successful login.
         /// </summary>
-        public bool NavigateToLoginRequestUrl { get; set; } = false;
+        public bool NavigateToLoginRequestUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the set of known authority host names for the application.

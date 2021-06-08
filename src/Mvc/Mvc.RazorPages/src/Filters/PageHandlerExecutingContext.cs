@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         public PageHandlerExecutingContext(
             PageContext pageContext,
             IList<IFilterMetadata> filters,
-            HandlerMethodDescriptor handlerMethod,
-            IDictionary<string, object> handlerArguments,
+            HandlerMethodDescriptor? handlerMethod,
+            IDictionary<string, object?> handlerArguments,
             object handlerInstance)
             : base(pageContext, filters)
         {
@@ -56,17 +56,17 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or sets the <see cref="IActionResult"/> to execute. Setting <see cref="Result"/> to a non-<c>null</c>
         /// value inside a page filter will short-circuit the page and any remaining page filters.
         /// </summary>
-        public virtual IActionResult Result { get; set; }
+        public virtual IActionResult? Result { get; set; }
 
         /// <summary>
         /// Gets the arguments to pass when invoking the handler method. Keys are parameter names.
         /// </summary>
-        public virtual IDictionary<string, object> HandlerArguments { get; }
+        public virtual IDictionary<string, object?> HandlerArguments { get; }
 
         /// <summary>
         /// Gets the descriptor for the handler method about to be invoked.
         /// </summary>
-        public virtual HandlerMethodDescriptor HandlerMethod { get; }
+        public virtual HandlerMethodDescriptor? HandlerMethod { get; }
 
         /// <summary>
         /// Gets the object instance containing the handler method.

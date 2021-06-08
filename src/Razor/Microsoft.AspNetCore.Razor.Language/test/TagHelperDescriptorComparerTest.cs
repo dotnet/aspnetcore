@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var hashes = new HashSet<int>(tagHelpers.Select(t => t.GetHashCode()));
 
             // Assert
-            Assert.Equal(hashes.Count(), tagHelpers.Count);
+            Assert.Equal(hashes.Count, tagHelpers.Count);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             // Only 1 batch of taghelpers should remain after we filter by hash
-            Assert.Equal(hashes.Count(), tagHelpersPerBatch);
+            Assert.Equal(hashes.Count, tagHelpersPerBatch);
         }
 
         private static TagHelperDescriptor CreateTagHelperDescriptor(

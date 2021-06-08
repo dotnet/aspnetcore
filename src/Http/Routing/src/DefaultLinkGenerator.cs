@@ -480,14 +480,14 @@ namespace Microsoft.AspNetCore.Routing
 
                 foreach (var kvp in values.OrderBy(kvp => kvp.Key))
                 {
-                    builder.Append("\"");
+                    builder.Append('"');
                     builder.Append(kvp.Key);
-                    builder.Append("\"");
-                    builder.Append(":");
-                    builder.Append(" ");
-                    builder.Append("\"");
+                    builder.Append('"');
+                    builder.Append(':');
+                    builder.Append(' ');
+                    builder.Append('"');
                     builder.Append(kvp.Value);
-                    builder.Append("\"");
+                    builder.Append('"');
                     builder.Append(", ");
                 }
 

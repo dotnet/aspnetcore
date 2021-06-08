@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// A flag indicating whether requirement evaluation has succeeded or failed.
         /// This value is <value>true</value> when the user fulfills the policy, otherwise <value>false</value>.
         /// </returns>
-        public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object resource, IAuthorizationRequirement requirement)
+        public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, IAuthorizationRequirement requirement)
         {
             if (service == null)
             {

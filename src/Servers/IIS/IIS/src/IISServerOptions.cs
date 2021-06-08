@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = false;
+        public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
         /// If true the server should set HttpContext.User. If false the server will only provide an
@@ -34,6 +34,14 @@ namespace Microsoft.AspNetCore.Builder
         public string? AuthenticationDisplayName { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum unconsumed incoming bytes the server will buffer for incoming request body.
+        /// </summary>
+        /// <value>
+        /// Defaults to 1 MB.
+        /// </value>
+        public int MaxRequestBodyBufferSize { get; set; } = 1024 * 1024; // Matches kestrel (sorta)
+
+        /// <summary>
         /// Used to indicate if the authentication handler should be registered. This is only done if ANCM indicates
         /// IIS has a non-anonymous authentication enabled, or for back compat with ANCMs that did not provide this information.
         /// </summary>
@@ -45,7 +53,7 @@ namespace Microsoft.AspNetCore.Builder
         // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
         private long? _maxRequestBodySize = 30000000;
 
-        internal long IisMaxRequestSizeLimit; // Used for verifying if limit set in managed exceeds native 
+        internal long IisMaxRequestSizeLimit; // Used for verifying if limit set in managed exceeds native
 
         /// <summary>
         /// Gets or sets the maximum allowed size of any request body in bytes.

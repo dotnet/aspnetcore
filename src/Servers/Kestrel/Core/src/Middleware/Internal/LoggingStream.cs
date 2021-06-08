@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            int read = await _inner.ReadAsync(buffer, offset, count, cancellationToken);
+            int read = await _inner.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
             Log("ReadAsync", new ReadOnlySpan<byte>(buffer, offset, read));
             return read;
         }
@@ -148,9 +148,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             var builder = new StringBuilder();
             builder.Append(method);
-            builder.Append("[");
+            builder.Append('[');
             builder.Append(buffer.Length);
-            builder.Append("]");
+            builder.Append(']');
 
             if (buffer.Length > 0)
             {
@@ -163,12 +163,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             for (int i = 0; i < buffer.Length; i++)
             {
                 builder.Append(buffer[i].ToString("X2", CultureInfo.InvariantCulture));
-                builder.Append(" ");
+                builder.Append(' ');
 
                 var bufferChar = (char)buffer[i];
                 if (char.IsControl(bufferChar))
                 {
-                    charBuilder.Append(".");
+                    charBuilder.Append('.');
                 }
                 else
                 {
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 if ((i + 1) % 16 == 0)
                 {
                     builder.Append("  ");
-                    builder.Append(charBuilder.ToString());
+                    builder.Append(charBuilder);
                     if (i != buffer.Length - 1)
                     {
                         builder.AppendLine();
@@ -187,8 +187,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
                 else if ((i + 1) % 8 == 0)
                 {
-                    builder.Append(" ");
-                    charBuilder.Append(" ");
+                    builder.Append(' ');
+                    charBuilder.Append(' ');
                 }
             }
 
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
 
                 builder.Append(new string(' ', padLength));
-                builder.Append(charBuilder.ToString());
+                builder.Append(charBuilder);
             }
 
             _logger.LogDebug(builder.ToString());

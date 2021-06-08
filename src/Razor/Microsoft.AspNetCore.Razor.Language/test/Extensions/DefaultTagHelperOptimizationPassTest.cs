@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     public class DefaultTagHelperOptimizationPassTest
     {
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27154")]
         public void DefaultTagHelperOptimizationPass_Execute_ReplacesChildren()
         {
             // Arrange

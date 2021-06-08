@@ -5,6 +5,7 @@ Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(M
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Baggage -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Link -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyConnection -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketExtensions -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XContentTypeOptions -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XPoweredBy -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XUACompatible -> string!

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
-        private long _previousBits = 0;
+        private long _previousBits;
 
         public bool ReuseHeaderValues { get; set; }
         public Func<string, Encoding?> EncodingSelector { get; set; }
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Mark no headers as currently in use
             _bits = 0;
-            // Clear ContentLength and any unknown headers as we will never reuse them 
+            // Clear ContentLength and any unknown headers as we will never reuse them
             _contentLength = null;
             MaybeUnknown?.Clear();
         }
@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [SkipLocalsInit]
         private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding? customEncoding)
         {
             if (_contentLength.HasValue)
