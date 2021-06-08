@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private int? _hashStrength;
         private ExchangeAlgorithmType? _keyExchangeAlgorithm;
         private int? _keyExchangeStrength;
-        private bool _renegotiated;
+        private Task<X509Certificate2?>? _clientCertTask;
 
         public TlsConnectionFeature(SslStream sslStream, ClientCertificateMode clientCertificateMode)
         {
@@ -101,20 +101,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             set => _keyExchangeStrength = value;
         }
 
-        public async Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
+        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
+            // Only try once per connection
+            if (_clientCertTask != null)
+            {
+                return _clientCertTask;
+            }
+
             if (ClientCertificate != null
                 || _clientCertificateMode != ClientCertificateMode.DelayCertificate
-                || _renegotiated
                 // Delayed client cert negotiation is not allowed on HTTP/2.
                 || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
             {
-                return ClientCertificate;
+                return _clientCertTask = Task.FromResult(ClientCertificate);
             }
 
-            _renegotiated = true; // Only try once
-            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
-            return ClientCertificate;
+            return _clientCertTask = GetClientCertificateAsyncCore(cancellationToken);
+
+            async Task<X509Certificate2?> GetClientCertificateAsyncCore(CancellationToken cancellationToken)
+            {
+                await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+                return ClientCertificate;
+            }
         }
 
         private static X509Certificate2? ConvertToX509Certificate2(X509Certificate? certificate)
