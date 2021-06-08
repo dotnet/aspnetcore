@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Abstractions;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -172,8 +173,10 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The resulting PathString</returns>
         public static PathString FromUriComponent(string uriComponent)
         {
-            // REVIEW: what is the exactly correct thing to do?
-            return new PathString(Uri.UnescapeDataString(uriComponent));
+            Span<byte> pathBuffer = Encoding.UTF8.GetBytes(uriComponent);
+            var length = UrlDecoder.DecodeInPlace(pathBuffer, isFormEncoding: false);
+            pathBuffer = pathBuffer.Slice(0, length);
+            return new PathString(Encoding.UTF8.GetString(pathBuffer));
         }
 
         /// <summary>
@@ -187,9 +190,17 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(uri));
             }
+            var uriComponent = uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
+            Memory<byte> pathBuffer = Encoding.UTF8.GetBytes(uriComponent);
+            var length = UrlDecoder.DecodeInPlace(pathBuffer.Span, isFormEncoding: false);
+            pathBuffer = pathBuffer.Slice(0, length);
 
-            // REVIEW: what is the exactly correct thing to do?
-            return new PathString("/" + uri.GetComponents(UriComponents.Path, UriFormat.Unescaped));
+            var unescapedPath = string.Create(Encoding.UTF8.GetCharCount(pathBuffer.Span) + 1, pathBuffer, (destination, state) =>
+            {
+                destination[0] = '/';
+                Encoding.UTF8.GetChars(state.Span, destination.Slice(1));
+            });
+            return new PathString(unescapedPath);
         }
 
         /// <summary>
