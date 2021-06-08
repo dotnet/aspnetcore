@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
     /// </summary>
     public class BlazorWindow
     {
-        private const string AppOrigin = "https://0.0.0.0/";
-
         private readonly PhotinoWindow _window;
         private readonly PhotinoWebViewManager _manager;
 
@@ -33,6 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
         {
             _window = new PhotinoWindow(title, options =>
             {
+                options.CustomSchemeHandlers.Add(PhotinoWebViewManager.BlazorAppScheme, HandleWebRequest);
                 configureWindow?.Invoke(options);
             });
 
@@ -43,8 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
             var dispatcher = Dispatcher.CreateDefault();
-            _manager = new PhotinoWebViewManager(_window, services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath);
-            _window.Load(hostPage);
+            _manager = new PhotinoWebViewManager(_window, services, dispatcher, new Uri(PhotinoWebViewManager.AppBaseUri), fileProvider, hostPageRelativePath);
         }
 
         /// <summary>
@@ -53,9 +51,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
         public PhotinoWindow Photino => _window;
 
         /// <summary>
-        /// Waits for the window to be closed.
+        /// Shows the window and waits for it to be closed.
         /// </summary>
-        public void WaitForClose()
-            => _window.WaitForClose();
+        public void Run()
+        {
+            _manager.Navigate("/");
+            _window.WaitForClose();
+        }
+
+        private Stream HandleWebRequest(string url, out string contentType)
+            => _manager.HandleWebRequest(url, out contentType!)!;
     }
 }

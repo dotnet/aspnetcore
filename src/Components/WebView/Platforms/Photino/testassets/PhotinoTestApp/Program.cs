@@ -20,7 +20,7 @@ namespace PhotinoTestApp
                 hostPage: "wwwroot/index.html",
                 services: serviceCollection.BuildServiceProvider());
 
-            mainWindow.WaitForClose();
+            mainWindow.Run();
         }
     }
 }
