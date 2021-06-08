@@ -27,13 +27,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public string? LogFileFullName { get; }
 
-        public void Dispose()
-        {
-            if (!(_messageQueue is null))
-            {
-                _messageQueue.Dispose();
-            }
-        }
+        public void Dispose() => _messageQueue?.Dispose();
 
         public void Log(IReadOnlyCollection<KeyValuePair<string, object?>> state)
         {

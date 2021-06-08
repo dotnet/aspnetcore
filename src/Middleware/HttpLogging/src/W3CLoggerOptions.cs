@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum log size in bytes or null for no limit.
         /// Once the log is full, no more messages will be appended.
-        /// Defaults to <c>10MB</c>.
+        /// Defaults to <c>10MiB</c>.
         /// </summary>
         public int? FileSizeLimit
         {
