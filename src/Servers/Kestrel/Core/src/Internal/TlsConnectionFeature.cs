@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             if (ClientCertificate != null
                 || _clientCertificateMode != ClientCertificateMode.DelayCertificate
-                // Delayed client cert negotiation is not allowed on HTTP/2.
+                // Delayed client cert negotiation is not allowed on HTTP/2 (or HTTP/3, but that's implemented elsewhere).
                 || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
             {
                 return _clientCertTask = Task.FromResult(ClientCertificate);

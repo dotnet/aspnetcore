@@ -481,6 +481,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
                     // of the certificate authorities sent by the server in the SSL handshake.
+                    // Use a random host name to avoid the TLS session resumption cache.
                     var stream = OpenSslStreamWithCert(connection.Stream);
                     await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
                     await AssertConnectionResult(stream, true);
@@ -521,6 +522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
+            // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
             await AssertConnectionResult(stream, true);
@@ -562,6 +564,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
+            // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
             await AssertConnectionResult(stream, true);
@@ -603,6 +606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
+            // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
             await AssertConnectionResult(stream, true);
@@ -642,6 +646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
+            // Use a random host name to avoid the TLS session resumption cache.
             var stream = new SslStream(connection.Stream);
             var clientOptions = new SslClientAuthenticationOptions()
             {
@@ -689,6 +694,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
+            // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
             await AssertConnectionResult(stream, false, expectedBody);
@@ -733,6 +739,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // SslStream is used to ensure the certificate is actually passed to the server
             // HttpClient might not send the certificate because it is invalid or it doesn't match any
             // of the certificate authorities sent by the server in the SSL handshake.
+            // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
             await AssertConnectionResult(stream, true, expectedBody);
