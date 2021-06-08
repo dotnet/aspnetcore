@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components
 
         private static string CreateUniqueId()
         {
-            if (PlatformInfo.IsWebAssembly)
+            if (OperatingSystem.IsBrowser)
             {
                 // On WebAssembly there's only one user, so it's fine to expose the number
                 // of IDs that have been assigned, and this is cheaper than creating a GUID.
