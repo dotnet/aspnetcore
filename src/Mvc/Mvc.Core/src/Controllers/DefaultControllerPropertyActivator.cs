@@ -5,27 +5,19 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
-    internal class DefaultControllerPropertyActivator : IControllerPropertyActivator
+    internal sealed class DefaultControllerPropertyActivator : IControllerPropertyActivator
     {
         private static readonly Func<Type, PropertyActivator<ControllerContext>[]> _getPropertiesToActivate =
             GetPropertiesToActivate;
-        private object _initializeLock = new object();
-        private bool _initialized;
-        private ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]>? _activateActions;
+        private readonly ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]> _activateActions = new();
 
         public void Activate(ControllerContext context, object controller)
         {
-            LazyInitializer.EnsureInitialized(
-                ref _activateActions,
-                ref _initialized,
-                ref _initializeLock);
-
             var controllerType = controller.GetType();
             var propertiesToActivate = _activateActions!.GetOrAdd(
                 controllerType,
@@ -37,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 activateInfo.Activate(controller, context);
             }
         }
+
+        public void ClearCache() => _activateActions.Clear();
 
         public Action<ControllerContext, object> GetActivatorDelegate(ControllerActionDescriptor actionDescriptor)
         {
