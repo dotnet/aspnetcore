@@ -26,14 +26,14 @@ namespace Microsoft.AspNetCore.HttpLogging
         public void ThrowsOnEmptyFileName()
         {
             var options = new W3CLoggerOptions();
-            Assert.Throws<ArgumentException>(() => options.FileName = "");
+            Assert.Throws<ArgumentNullException>(() => options.FileName = "");
         }
 
         [Fact]
         public void ThrowsOnEmptyLogDirectory()
         {
             var options = new W3CLoggerOptions();
-            Assert.Throws<ArgumentException>(() => options.LogDirectory = "");
+            Assert.Throws<ArgumentNullException>(() => options.LogDirectory = "");
         }
     }
 }

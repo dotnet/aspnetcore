@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(nameof(value));
+                    throw new ArgumentNullException(nameof(value));
                 }
                 _fileName = value;
             }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(nameof(value));
+                    throw new ArgumentNullException(nameof(value));
                 }
                 _logDirectory = value;
             }

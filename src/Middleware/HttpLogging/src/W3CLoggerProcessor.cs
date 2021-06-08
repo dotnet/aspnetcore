@@ -110,86 +110,84 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             EnqueueMessage("#Version: 1.0");
 
-            var startTimeBuilder = new StringBuilder("#Start-Date: ");
-            startTimeBuilder.Append(DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
-            EnqueueMessage(startTimeBuilder.ToString());
+            EnqueueMessage("#Start-Date: " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
 
             EnqueueMessage(GetFieldsDirective());
         }
 
         private string GetFieldsDirective()
         {
-            StringBuilder sb = new StringBuilder("#Fields: ");
+            StringBuilder sb = new StringBuilder("#Fields:");
             if (_loggingFields.HasFlag(W3CLoggingFields.Date))
             {
-                sb.Append("date ");
+                sb.Append(" date");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.Time))
             {
-                sb.Append("time ");
+                sb.Append(" time");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.ClientIpAddress))
             {
-                sb.Append("c-ip ");
+                sb.Append(" c-ip");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.UserName))
             {
-                sb.Append("cs-username ");
+                sb.Append(" cs-username");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.ServerName))
             {
-                sb.Append("s-computername ");
+                sb.Append(" s-computername");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.ServerIpAddress))
             {
-                sb.Append("s-ip ");
+                sb.Append(" s-ip");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.ServerPort))
             {
-                sb.Append("s-port ");
+                sb.Append(" s-port");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.Method))
             {
-                sb.Append("cs-method ");
+                sb.Append(" cs-method");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.UriStem))
             {
-                sb.Append("cs-uri-stem ");
+                sb.Append(" cs-uri-stem");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.UriQuery))
             {
-                sb.Append("cs-uri-query ");
+                sb.Append(" cs-uri-query");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
             {
-                sb.Append("sc-status ");
+                sb.Append(" sc-status");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
             {
-                sb.Append("time-taken ");
+                sb.Append(" time-taken");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
             {
-                sb.Append("cs-version ");
+                sb.Append(" cs-version");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.Host))
             {
-                sb.Append("cs-host ");
+                sb.Append(" cs-host");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.UserAgent))
             {
-                sb.Append("cs(User-Agent) ");
+                sb.Append(" cs(User-Agent)");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.Cookie))
             {
-                sb.Append("cs(Cookie) ");
+                sb.Append(" cs(Cookie)");
             }
             if (_loggingFields.HasFlag(W3CLoggingFields.Referer))
             {
-                sb.Append("cs(Referer) ");
+                sb.Append(" cs(Referer)");
             }
 
-            return sb.ToString().Trim();
+            return sb.ToString();
         }
     }
 }
