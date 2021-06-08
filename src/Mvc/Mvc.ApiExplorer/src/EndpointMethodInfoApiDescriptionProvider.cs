@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = new ApiDescription
             {
                 HttpMethod = httpMethod,
-                RelativePath = pattern.ToString(),
+                RelativePath = pattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {
                     RouteValues =
