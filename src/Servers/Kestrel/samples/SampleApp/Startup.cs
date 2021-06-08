@@ -28,22 +28,8 @@ namespace SampleApp
         {
             var logger = loggerFactory.CreateLogger("Default");
 
-            app.Use((context, next) =>
-            {
-                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
-                var bodyFeature = context.Features.Get<IHttpRequestBodyDetectionFeature>();
-                var connectionItems = context.Features.Get<IConnectionItemsFeature>();
+            app.UseClientCertBuffering();
 
-                // Look for TLS connections that don't already have a client cert, and requests that could have a body.
-                if (tlsFeature != null && tlsFeature.ClientCertificate == null && bodyFeature.CanHaveBody
-                    && !connectionItems.Items.TryGetValue("tls.clientcert.negotiated", out var _))
-                {
-                    context.Features.Set<ITlsConnectionFeature>(new BufferingTlsFeature(tlsFeature, context));
-                }
-
-                return next(context);
-            });
-            /*
             // Add an exception handler that prevents throwing due to large request body size
             app.Use(async (context, next) =>
             {
@@ -56,7 +42,7 @@ namespace SampleApp
                 }
                 catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
             });
-            */
+
             app.Run(async context =>
             {
                 // Drain the request body
