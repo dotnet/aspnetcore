@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -573,8 +573,5 @@
   </data>
   <data name="Component_EditorRequiredParameterNotSpecified" xml:space="preserve">
     <value>Component '{0}' expects a value for the parameter '{1}', but a value may not have been provided.</value>
-  </data>
-  <data name="Component_EditorRequiredGroupNotSpecified" xml:space="preserve">
-    <value>Component '{0}' expects a value for the following parameters '{1}' that may not have been provided.</value>
   </data>
 </root>

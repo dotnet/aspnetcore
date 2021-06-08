@@ -600,17 +600,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Component_EditorRequiredParameterNotSpecified, location, tagName, parameterName);
         }
 
-        internal static readonly RazorDiagnosticDescriptor Component_EditorRequiredGroupNotSpecified =
-            new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}2013",
-                () => Resources.Component_EditorRequiredGroupNotSpecified,
-                RazorDiagnosticSeverity.Warning);
-
-        public static RazorDiagnostic CreateComponent_EditorRequiredGroupNotSpecified(SourceSpan location, string tagName, IEnumerable<string> parameterNames)
-        {
-            return RazorDiagnostic.Create(Component_EditorRequiredParameterNotSpecified, location, tagName, string.Join(", ", parameterNames));
-        }
-
         #endregion
 
         #region TagHelper Errors
