@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {

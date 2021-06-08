@@ -1,15 +1,17 @@
 using System;
+using System.IO;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
     /// <summary>
     /// Options for the <see cref="W3CLogger"/>.
     /// </summary>
-    public class W3CLoggerOptions
+    public sealed class W3CLoggerOptions
     {
         private int? _fileSizeLimit = 10 * 1024 * 1024;
         private string _fileName = "serverlog-";
-        private string _logDirectory = "C:\\code\\scratch\\W3CLogs";
+        private string _logDirectory = "";
 
         /// <summary>
         /// Fields to log. Defaults to logging request and response properties and headers.

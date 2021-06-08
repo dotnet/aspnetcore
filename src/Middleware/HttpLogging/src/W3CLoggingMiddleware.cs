@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
@@ -27,7 +29,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options)
+        /// <param name="environment"></param>
+        public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -35,7 +38,17 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 throw new ArgumentNullException(nameof(options));
             }
+
+            if (environment == null)
+            {
+                throw new ArgumentNullException(nameof(environment));
+            }
+
             _options = options;
+            if (String.IsNullOrEmpty(_options.CurrentValue.LogDirectory))
+            {
+                _options.CurrentValue.LogDirectory = Path.Join(environment.ContentRootPath, "logs");
+            }
             _w3cLogger = new W3CLogger(_options);
         }
 
@@ -134,6 +147,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                     if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
                     {
+                        Debugger.Launch();
                         if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
                         {
                             AddToList(w3cList, HeaderNames.Cookie, cookie.ToString());

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(new W3CLoggerOptions()
             {
                 LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken,
-                FileName = TempPath
+                LogDirectory = TempPath
             })))
             {
                 var state = new List<KeyValuePair<string, object>>();
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(new W3CLoggerOptions()
             {
                 LoggingFields = W3CLoggingFields.UriQuery | W3CLoggingFields.Host | W3CLoggingFields.ProtocolStatus,
-                FileName = TempPath
+                LogDirectory = TempPath
             })))
             {
                 var state = new List<KeyValuePair<string, object>>();
