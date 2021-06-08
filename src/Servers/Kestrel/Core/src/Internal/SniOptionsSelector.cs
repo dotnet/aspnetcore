@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 if (clientCertificateMode != ClientCertificateMode.NoCertificate)
                 {
-                    sslOptions.ClientCertificateRequired = true;
+                    sslOptions.ClientCertificateRequired = clientCertificateMode == ClientCertificateMode.AllowCertificate
+                        || clientCertificateMode == ClientCertificateMode.RequireCertificate;
                     sslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         HttpsConnectionMiddleware.RemoteCertificateValidationCallback(
                             clientCertificateMode, fallbackHttpsOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
