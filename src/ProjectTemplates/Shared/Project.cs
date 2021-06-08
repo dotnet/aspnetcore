@@ -102,6 +102,13 @@ namespace Templates.Test.Helpers
             try
             {
                 Output.WriteLine("Acquired DotNetNewLock");
+                
+                if (Directory.Exists(TemplateOutputDir))
+                {
+                    Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
+                    Directory.Delete(TemplateOutputDir, recursive: true);
+                }
+                
                 // Temporary while investigating why this process occasionally never runs or exits on Debian 9
                 environmentVariables.Add("COREHOST_TRACE", "1");
                 using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
