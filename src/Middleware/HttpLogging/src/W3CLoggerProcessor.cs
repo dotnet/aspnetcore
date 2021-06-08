@@ -39,11 +39,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public void EnqueueMessage(string message)
         {
-            // Write log directives the first time we log a message
-            if (!_hasWritten)
-            {
-                WriteDirectives();
-            }
             if (!_messageQueue.IsAddingCompleted)
             {
                 try
@@ -71,6 +66,11 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     foreach (string message in _messageQueue.GetConsumingEnumerable())
                     {
+                        // Write log directives the first time we log a message
+                        if (!_hasWritten)
+                        {
+                            await WriteDirectives(streamWriter);
+                        }
                         // Only write until we've reached _maxFileSize
                         if (fileInfo.Exists && fileInfo.Length < _maxFileSize)
                         {
@@ -100,19 +100,15 @@ namespace Microsoft.AspNetCore.HttpLogging
             _outputTask.Wait();
         }
 
-        private void WriteDirectives()
+        private async Task WriteDirectives(StreamWriter streamWriter)
         {
-            if (_hasWritten)
-            {
-                return;
-            }
             _hasWritten = true;
 
-            EnqueueMessage("#Version: 1.0");
+            await WriteMessageAsync("#Version: 1.0", streamWriter);
 
-            EnqueueMessage("#Start-Date: " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+            await WriteMessageAsync("#Start-Date: " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter);
 
-            EnqueueMessage(GetFieldsDirective());
+            await WriteMessageAsync(GetFieldsDirective(), streamWriter);
         }
 
         private string GetFieldsDirective()
