@@ -526,13 +526,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await AssertConnectionResult(stream, true);
         }
 
-        [ConditionalFact]
+        [ConditionalTheory]
+        [InlineData(HttpProtocols.Http1)]
+        [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure turning on Http/2 doesn't regress HTTP/1
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
-        public async Task CanRenegotiateForClientCertificateOnHttp1()
+        public async Task CanRenegotiateForClientCertificate(HttpProtocols httpProtocols)
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                listenOptions.Protocols = HttpProtocols.Http1;
+                listenOptions.Protocols = httpProtocols;
                 listenOptions.UseHttps(options =>
                 {
                     options.ServerCertificate = _x509Certificate2;
@@ -649,49 +651,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 
             await stream.AuthenticateAsClientAsync(clientOptions);
-            await AssertConnectionResult(stream, true);
-        }
-
-        [ConditionalFact(Skip = "Depends on https://github.com/dotnet/runtime/pull/53719")]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
-        // Turning on HTTP/2 disables renegotiation.
-        // TODO: Tomas is changing it so AllowRenegotiation only applies to the remote,
-        // NegotiateClientCertificateAsync call be called locally and it's up to us to prevent that
-        // on HTTP/2.
-        public async Task CanRenegotiateForClientCertificateOnHttp1WithHttp2()
-        {
-            void ConfigureListenOptions(ListenOptions listenOptions)
-            {
-                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                listenOptions.UseHttps(options =>
-                {
-                    options.ServerCertificate = _x509Certificate2;
-                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
-                    options.AllowAnyClientCertificate();
-                });
-            }
-
-            await using var server = new TestServer(async context =>
-            {
-                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
-                Assert.NotNull(tlsFeature);
-                Assert.Null(tlsFeature.ClientCertificate);
-                Assert.Null(context.Connection.ClientCertificate);
-
-                var cert = await context.Connection.GetClientCertificateAsync();
-                Assert.NotNull(cert);
-                Assert.NotNull(tlsFeature.ClientCertificate);
-                Assert.NotNull(context.Connection.ClientCertificate);
-
-                await context.Response.WriteAsync("hello world");
-            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
-
-            using var connection = server.CreateConnection();
-            // SslStream is used to ensure the certificate is actually passed to the server
-            // HttpClient might not send the certificate because it is invalid or it doesn't match any
-            // of the certificate authorities sent by the server in the SSL handshake.
-            var stream = OpenSslStreamWithCert(connection.Stream);
-            await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
             await AssertConnectionResult(stream, true);
         }
 
