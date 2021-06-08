@@ -6,7 +6,6 @@ import { of } from 'rxjs';
 import { LoginActions } from '../api-authorization.constants';
 import { HttpParams } from '@angular/common/http';
 import { AuthorizeService } from '../authorize.service';
-import { log } from 'util';
 import { HomeComponent } from 'src/app/home/home.component';
 
 class RouterStub {
@@ -20,8 +19,6 @@ describe('LoginComponent', () => {
   let router: Router;
 
   beforeEach(async(() => {
-    log('login.component.spec.ts before each started...');
-
     let tempParams: Params = { id: '1234' };
 
     let segment0: UrlSegment = new UrlSegment('segment0', {});
@@ -48,8 +45,6 @@ describe('LoginComponent', () => {
 
     router = TestBed.get(Router);
     spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
-
-    log('login.component.spec.ts before each after compileComponents()...');
   }));
 
   beforeEach(() => {
