@@ -1187,6 +1187,7 @@
         "ClientApp/karma.conf.js",
         "ClientApp/package-lock.json",
         "ClientApp/package.json",
+        "ClientApp/proxy.conf.js",
         "ClientApp/README.md",
         "ClientApp/tsconfig.json",
         "ClientApp/tsconfig.app.json",
