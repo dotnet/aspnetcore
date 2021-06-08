@@ -11,6 +11,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
@@ -538,6 +539,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
                 });
+            }
+
+            await using var server = new TestServer(async context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+
+                var clientCert = await context.Connection.GetClientCertificateAsync();
+                Assert.NotNull(clientCert);
+                Assert.NotNull(tlsFeature.ClientCertificate);
+                Assert.NotNull(context.Connection.ClientCertificate);
+
+                await context.Response.WriteAsync("hello world");
+            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            // SslStream is used to ensure the certificate is actually passed to the server
+            // HttpClient might not send the certificate because it is invalid or it doesn't match any
+            // of the certificate authorities sent by the server in the SSL handshake.
+            var stream = OpenSslStreamWithCert(connection.Stream);
+            await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
+            await AssertConnectionResult(stream, true);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        public async Task CanRenegotiateForServerOptionsSelectionCallback()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps((SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
+                {
+                    return ValueTask.FromResult(new SslServerAuthenticationOptions()
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateRequired = false,
+                        RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                    });
+                }, state: null);
             }
 
             await using var server = new TestServer(async context =>
