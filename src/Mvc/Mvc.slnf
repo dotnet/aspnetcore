@@ -32,6 +32,7 @@
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "src\\Http\\samples\\MinimalSample\\MinimalSample.csproj",
       "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Localization\\Localization\\src\\Microsoft.Extensions.Localization.csproj",
