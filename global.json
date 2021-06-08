@@ -3,7 +3,7 @@
     "version": "6.0.100-preview.6.21308.9"
   },
   "tools": {
-    "dotnet": "6.0.100-preview.6.21301.1",
+    "dotnet": "6.0.100-preview.6.21308.9",
     "runtimes": {
       "dotnet/x64": [
         "2.1.27",
