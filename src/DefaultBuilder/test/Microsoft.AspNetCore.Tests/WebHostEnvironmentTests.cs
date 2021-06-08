@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Tests
@@ -37,34 +39,49 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void ApplyEnvironmentSettingsUsesTheCorrectKeys()
+        public void ApplyEnvironmentSettingsUsesTheCorrectKeysAndProperties()
         {
-            var env = new WebHostEnvironment
+            var originalEnvironment = new WebHostEnvironment
             {
                 ApplicationName = WebHostDefaults.ApplicationKey,
                 EnvironmentName = WebHostDefaults.EnvironmentKey,
                 ContentRootPath = WebHostDefaults.ContentRootKey,
                 WebRootPath = WebHostDefaults.WebRootKey,
+                ContentRootFileProvider = Mock.Of<IFileProvider>(),
+                WebRootFileProvider = Mock.Of<IFileProvider>(),
             };
 
             var settings = new Dictionary<string, string>();
+            var webHostBuilderEnvironment = new WebHostEnvironment();
 
-            env.ApplyEnvironmentSettings(new TestWebHostBuilder(settings));
+            originalEnvironment.ApplyEnvironmentSettings(new TestWebHostBuilder(settings, webHostBuilderEnvironment));
 
             Assert.Equal(WebHostDefaults.ApplicationKey, settings[WebHostDefaults.ApplicationKey]);
             Assert.Equal(WebHostDefaults.EnvironmentKey, settings[WebHostDefaults.EnvironmentKey]);
             Assert.Equal(WebHostDefaults.ContentRootKey, settings[WebHostDefaults.ContentRootKey]);
             Assert.Equal(WebHostDefaults.WebRootKey, settings[WebHostDefaults.WebRootKey]);
+
+            Assert.Equal(WebHostDefaults.ApplicationKey, webHostBuilderEnvironment.ApplicationName);
+            Assert.Equal(WebHostDefaults.EnvironmentKey, webHostBuilderEnvironment.EnvironmentName);
+            Assert.Equal(WebHostDefaults.ContentRootKey, webHostBuilderEnvironment.ContentRootPath);
+            Assert.Equal(WebHostDefaults.WebRootKey, webHostBuilderEnvironment.WebRootPath);
+
+            Assert.Same(originalEnvironment.ContentRootFileProvider, webHostBuilderEnvironment.ContentRootFileProvider);
+            Assert.Same(originalEnvironment.WebRootFileProvider, webHostBuilderEnvironment.WebRootFileProvider);
         }
 
         private class TestWebHostBuilder : IWebHostBuilder
         {
             private readonly Dictionary<string, string> _settings;
+            private readonly IWebHostEnvironment _environment;
 
-            public TestWebHostBuilder(Dictionary<string, string> settingsDictionary)
+            public TestWebHostBuilder(Dictionary<string, string> settingsDictionary, IWebHostEnvironment environment)
             {
                 _settings = settingsDictionary;
+                _environment = environment;
             }
+
+            public IWebHostEnvironment Environment { get; }
 
             public IWebHost Build()
             {
@@ -73,7 +90,14 @@ namespace Microsoft.AspNetCore.Tests
 
             public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
             {
-                throw new NotImplementedException();
+                var context = new WebHostBuilderContext
+                {
+                    HostingEnvironment = _environment,
+                };
+
+                configureDelegate(context, null!);
+
+                return this;
             }
 
             public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)

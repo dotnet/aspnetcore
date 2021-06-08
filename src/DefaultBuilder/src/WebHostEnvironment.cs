@@ -69,6 +69,23 @@ namespace Microsoft.AspNetCore.Builder
             genericWebHostBuilder.UseSetting(WebHostDefaults.EnvironmentKey, EnvironmentName);
             genericWebHostBuilder.UseSetting(WebHostDefaults.ContentRootKey, ContentRootPath);
             genericWebHostBuilder.UseSetting(WebHostDefaults.WebRootKey, WebRootPath);
+
+            genericWebHostBuilder.ConfigureAppConfiguration((context, builder) =>
+            {
+                CopyProperitesTo(context.HostingEnvironment);
+            });
+        }
+
+        internal void CopyProperitesTo(IWebHostEnvironment destination)
+        {
+            destination.ApplicationName = ApplicationName;
+            destination.EnvironmentName = EnvironmentName;
+
+            destination.ContentRootPath = ContentRootPath;
+            destination.ContentRootFileProvider = ContentRootFileProvider;
+
+            destination.WebRootPath = WebRootPath;
+            destination.WebRootFileProvider = WebRootFileProvider;
         }
 
         public void ResolveFileProviders(IConfiguration configuration)
