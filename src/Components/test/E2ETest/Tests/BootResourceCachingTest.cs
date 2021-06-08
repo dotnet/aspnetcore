@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33371")]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
