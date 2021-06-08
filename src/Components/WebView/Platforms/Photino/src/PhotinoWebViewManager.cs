@@ -32,8 +32,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
 
         public Stream? HandleWebRequest(string url, out string? contentType)
         {
+            // It would be better if we were told whether or not this is a navigation request, but
+            // since we're not, guess.
+            var hasFileExtension = url.LastIndexOf('.') > url.LastIndexOf('/');
+
             if (url.StartsWith(AppBaseUri, StringComparison.Ordinal)
-                && TryGetResponseContent(url, true, out var statusCode, out var statusMessage, out var content, out var headers))
+                && TryGetResponseContent(url, !hasFileExtension, out var statusCode, out var statusMessage, out var content, out var headers))
             {
                 headers.TryGetValue("Content-Type", out contentType);
                 return content;
