@@ -6,6 +6,7 @@
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>link</TrimMode>
     <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
 
   <ItemGroup>
