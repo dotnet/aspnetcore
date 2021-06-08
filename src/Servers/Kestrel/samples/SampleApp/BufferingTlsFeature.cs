@@ -30,8 +30,8 @@ namespace SampleApp
 
         public async Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
-            // TODO: The buffering and draining don't have a size limit by default, they rely on the server's 30mb default request
-            // size limit.
+            // TODO: This doesn't set a size limit for the buffering or draining by default, it relies on the server's
+            // 30mb default request size limit.
             if (!_context.Request.Body.CanSeek)
             {
                 _context.Request.EnableBuffering();

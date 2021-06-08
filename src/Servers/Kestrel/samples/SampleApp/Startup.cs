@@ -149,7 +149,7 @@ namespace SampleApp
                                     {
                                         ServerCertificate = localhostCert
                                     });
-                                }, state: null, TimeSpan.FromSeconds(5), ClientCertificateMode.DelayCertificate);
+                                }, state: null);
                             });
 
                             options
