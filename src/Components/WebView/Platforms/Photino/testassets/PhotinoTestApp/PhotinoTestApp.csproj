@@ -7,9 +7,11 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
+  <!--
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\test\testassets\BasicTestApp\BasicTestApp.csproj" />
   </ItemGroup>
+  -->
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebView.Photino" />
