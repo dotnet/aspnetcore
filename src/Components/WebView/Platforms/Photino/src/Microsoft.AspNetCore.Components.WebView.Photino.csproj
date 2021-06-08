@@ -4,6 +4,7 @@
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <Description>Intended for internal testing use only.</Description>
     <IsShippingPackage>false</IsShippingPackage>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

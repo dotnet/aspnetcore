@@ -1,0 +1,4 @@
+﻿Microsoft.AspNetCore.Components.WebView.Photino.BlazorWindow
+Microsoft.AspNetCore.Components.WebView.Photino.BlazorWindow.BlazorWindow(string! title, string! hostPage, System.IServiceProvider! services, System.Action<PhotinoNET.PhotinoWindowOptions!>? configureWindow = null) -> void
+Microsoft.AspNetCore.Components.WebView.Photino.BlazorWindow.Photino.get -> PhotinoNET.PhotinoWindow!
+Microsoft.AspNetCore.Components.WebView.Photino.BlazorWindow.WaitForClose() -> void
