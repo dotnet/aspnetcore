@@ -1116,6 +1116,54 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Contains(message, exception.Message);
         }
 
+        public static IEnumerable<object[]> NullContentResult
+        {
+            get
+            {
+                bool? TestBoolAction() => null;
+                Task<bool?> TaskTestBoolAction() => Task.FromResult<bool?>(null);
+                ValueTask<bool?> ValueTaskTestBoolAction() => ValueTask.FromResult<bool?>(null);
+
+                int? TestIntAction() => null;
+                Task<int?> TaskTestIntAction() => Task.FromResult<int?>(null);
+                ValueTask<int?> ValueTaskTestIntAction() => ValueTask.FromResult<int?>(null);
+
+                Todo? TestTodoAction() => null;
+                Task<Todo?> TaskTestTodoAction() => Task.FromResult<Todo?>(null);
+                ValueTask<Todo?> ValueTaskTestTodoAction() => ValueTask.FromResult<Todo?>(null);
+
+                return new List<object[]>
+                {
+                    new object[] { (Func<bool?>)TestBoolAction },
+                    new object[] { (Func<Task<bool?>>)TaskTestBoolAction },
+                    new object[] { (Func<ValueTask<bool?>>)ValueTaskTestBoolAction },
+                    new object[] { (Func<int?>)TestIntAction },
+                    new object[] { (Func<Task<int?>>)TaskTestIntAction },
+                    new object[] { (Func<ValueTask<int?>>)ValueTaskTestIntAction },
+                    new object[] { (Func<Todo?>)TestTodoAction },
+                    new object[] { (Func<Task<Todo?>>)TaskTestTodoAction },
+                    new object[] { (Func<ValueTask<Todo?>>)ValueTaskTestTodoAction },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NullContentResult))]
+        public async Task RequestDelegateWritesNullReturnNullValue(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+
+            await requestDelegate(httpContext);
+
+            var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+            Assert.Equal("null", responseBody);
+        }
+
         private class Todo
         {
             public int Id { get; set; }
