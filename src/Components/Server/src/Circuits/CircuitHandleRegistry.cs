@@ -16,9 +16,9 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class CircuitHandleRegistry : ICircuitHandleRegistry
+    internal sealed class CircuitHandleRegistry : ICircuitHandleRegistry
     {
-        public CircuitHandle GetCircuitHandle(IDictionary<object, object?>   circuitHandles, object circuitKey)
+        public CircuitHandle GetCircuitHandle(IDictionary<object, object?>circuitHandles, object circuitKey)
         {
             if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
             {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return null;;
         }
 
-        public CircuitHost GetCircuit(IDictionary<object, object?>   circuitHandles, object circuitKey)
+        public CircuitHost GetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey)
         {
             if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
             {

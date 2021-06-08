@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Components.Server
 
             var errorMessage = "The circuit host '.*?' has already been initialized.";
             mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", It.Is<object[]>(s => Regex.Match((string)s[0], errorMessage).Success), It.IsAny<CancellationToken>()), Times.Once());
-
         }
 
         [Fact]
