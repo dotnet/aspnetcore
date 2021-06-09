@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
             else
             {
-                result = first.Substring(0, index + 1) + second;
+                result = string.Concat(first.AsSpan(0, index + 1), second);
             }
 
             return ResolvePath(result);
