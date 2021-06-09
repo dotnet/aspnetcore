@@ -147,7 +147,7 @@ dotnet_diagnostic.CA1840.severity = warning
 dotnet_diagnostic.CA1841.severity = warning
 
 # CA1845: Use span-based 'string.Concat'
-dotnet_diagnostic.CA1845.severity = warning
+dotnet_diagnostic.CA1845.severity = suggestion
 
 # CA1846: Prefer AsSpan over Substring
 dotnet_diagnostic.CA1846.severity = warning
@@ -188,6 +188,8 @@ dotnet_diagnostic.CA1838.severity = suggestion
 dotnet_diagnostic.CA1841.severity = suggestion
 # CA1845: Use span-based 'string.Concat'
 dotnet_diagnostic.CA1845.severity = suggestion
+# CA1846: Prefer AsSpan over Substring
+dotnet_diagnostic.CA1846.severity = suggestion
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = suggestion
 
