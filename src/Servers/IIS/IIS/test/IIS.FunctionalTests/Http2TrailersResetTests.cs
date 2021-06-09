@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalFact]
         [RequiresNewHandler]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
-        public async Task Reset_ConnectionRequestClose()
+        public async Task RequestClose_SendsGoAway()
         {
             await new HostBuilder()
               .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
