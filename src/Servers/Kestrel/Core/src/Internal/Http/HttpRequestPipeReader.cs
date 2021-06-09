@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // If the request is aborted, we throw a TaskCanceledException instead,
             // unless error is not null, in which case we throw it.
 
-            if (error is object)
+            if (error is not null)
             {
                 _error ??= ExceptionDispatchInfo.Capture(error);
             }
