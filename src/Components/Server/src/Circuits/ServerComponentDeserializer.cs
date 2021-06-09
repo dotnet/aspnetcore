@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server
     //  * If a marker has the right sequence but the invocation ID is different we will fail at that point. We know for sure that the
     //    component wasn't render as part of the same response.
     //  * If a marker can't be unprotected we will fail early. We know that the marker was tampered with and can't be trusted.
-    internal class ServerComponentDeserializer
+    internal class ServerComponentDeserializer : IServerComponentDeserializer
     {
         private readonly IDataProtector _dataProtector;
         private readonly ILogger<ServerComponentDeserializer> _logger;

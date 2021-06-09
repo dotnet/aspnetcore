@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     offset += actualCount;
                     count -= actualCount;
                 }
-                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
+                while (count > 0 && (_topBuffer.Count > 0 || !_bufferedData.IsEmpty));
                 // Keep reading while there is more data available and we have more space to put it in.
                 return totalRead;
             }
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     offset += actualCount;
                     count -= actualCount;
                 }
-                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
+                while (count > 0 && (_topBuffer.Count > 0 || !_bufferedData.IsEmpty));
                 // Keep reading while there is more data available and we have more space to put it in.
                 return totalRead;
             }

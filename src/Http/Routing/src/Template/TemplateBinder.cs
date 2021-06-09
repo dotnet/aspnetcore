@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="defaults">The default values for <paramref name="pattern"/>. Optional.</param>
         /// <param name="requiredKeys">Keys used to determine if the ambient values apply. Optional.</param>
         /// <param name="parameterPolicies">
-        /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evalute when producing a URI.
+        /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evaluate when producing a URI.
         /// </param>
         internal TemplateBinder(
             UrlEncoder urlEncoder,

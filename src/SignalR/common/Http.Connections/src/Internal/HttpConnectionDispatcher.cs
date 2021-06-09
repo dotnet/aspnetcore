@@ -115,6 +115,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
         {
+            // set a tag to allow Application Performance Management tools to differentiate long running requests for reporting purposes
+            context.Features.Get<IHttpActivityFeature>()?.Activity.AddTag("http.long_running", "true");
+
             var supportedTransports = options.Transports;
 
             // Server sent events transport
@@ -660,8 +663,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             CloneUser(newHttpContext, context);
 
-            connection.ServiceScope = context.RequestServices.CreateScope();
-            newHttpContext.RequestServices = connection.ServiceScope.ServiceProvider;
+            connection.ServiceScope = context.RequestServices.CreateAsyncScope();
+            newHttpContext.RequestServices = connection.ServiceScope.Value.ServiceProvider;
 
             // REVIEW: This extends the lifetime of anything that got put into HttpContext.Items
             newHttpContext.Items = new Dictionary<object, object?>(context.Items);

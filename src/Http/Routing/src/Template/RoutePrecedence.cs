@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         ///     /api/{id:int} == 1.2
         ///     /api/template/{id:int} == 1.12
         /// </example>
-        /// <param name="template">The <see cref="RouteTemplate"/> to compute precendence for.</param>
-        /// <returns>A <see cref="decimal"/> representing the route's precendence.</returns>
+        /// <param name="template">The <see cref="RouteTemplate"/> to compute precedence for.</param>
+        /// <returns>A <see cref="decimal"/> representing the route's precedence.</returns>
         public static decimal ComputeInbound(RouteTemplate template)
         {
             ValidateSegementLength(template.Segments.Count);
@@ -76,8 +76,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         ///     /api/{id:int}          == 5.4
         ///     /api/template/{id:int} == 5.54
         /// </example>
-        /// <param name="template">The <see cref="RouteTemplate"/> to compute precendence for.</param>
-        /// <returns>A <see cref="decimal"/> representing the route's precendence.</returns>
+        /// <param name="template">The <see cref="RouteTemplate"/> to compute precedence for.</param>
+        /// <returns>A <see cref="decimal"/> representing the route's precedence.</returns>
         public static decimal ComputeOutbound(RouteTemplate template)
         {
             ValidateSegementLength(template.Segments.Count);

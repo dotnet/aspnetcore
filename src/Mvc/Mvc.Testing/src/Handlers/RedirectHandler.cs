@@ -173,6 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         private bool IsRedirect(HttpResponseMessage response) =>
             response.StatusCode == HttpStatusCode.MovedPermanently ||
                 response.StatusCode == HttpStatusCode.Redirect ||
+                response.StatusCode == HttpStatusCode.RedirectMethod ||
                 response.StatusCode == HttpStatusCode.RedirectKeepVerb ||
                 (int)response.StatusCode == 308;
     }

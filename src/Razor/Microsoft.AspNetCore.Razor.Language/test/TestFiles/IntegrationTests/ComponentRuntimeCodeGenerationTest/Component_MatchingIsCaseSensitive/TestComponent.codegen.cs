@@ -18,7 +18,7 @@ namespace Test
             __builder.AddMarkupContent(1, "\r\n<mycomponent></mycomponent>\r\n");
             __builder.OpenComponent<Test.MyComponent>(2);
             __builder.AddAttribute(3, "intproperty", "1");
-            __builder.AddAttribute(4, "BoolProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
+            __builder.AddAttribute(4, "BoolProperty", global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                                            true

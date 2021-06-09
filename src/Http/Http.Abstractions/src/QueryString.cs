@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Http
         /// Evalutes if the current query string is equal to <paramref name="other"/>.
         /// </summary>
         /// <param name="other">The <see cref="QueryString"/> to compare.</param>
-        /// <returns><see langword="true"/> if the ssquery strings are equal.</returns>
+        /// <returns><see langword="true"/> if the query strings are equal.</returns>
         public bool Equals(QueryString other)
         {
             if (!HasValue && !other.HasValue)

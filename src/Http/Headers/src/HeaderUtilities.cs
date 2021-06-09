@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.Net.Http.Headers
 {
     /// <summary>
-    /// Provides utilities to parse and modify HTTP header valeus.
+    /// Provides utilities to parse and modify HTTP header values.
     /// </summary>
     public static class HeaderUtilities
     {

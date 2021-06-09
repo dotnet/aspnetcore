@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     public class DelegatingEnumerable<TWrapped, TDeclared> : IEnumerable<TWrapped>
     {
         private readonly IEnumerable<TDeclared> _source;
-        private readonly IWrapperProvider _wrapperProvider;
+        private readonly IWrapperProvider? _wrapperProvider;
 
         /// <summary>
         /// Initializes a <see cref="DelegatingEnumerable{TWrapped, TDeclared}"/>.

@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string>(
+            __o = global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                      Value

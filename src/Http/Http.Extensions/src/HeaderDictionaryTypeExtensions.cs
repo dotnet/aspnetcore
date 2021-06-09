@@ -222,6 +222,11 @@ namespace Microsoft.AspNetCore.Http
 
             var values = headers[name];
 
+            return GetList<T>(values);
+        }
+
+        internal static IList<T> GetList<T>(this StringValues values)
+        {
             if (StringValues.IsNullOrEmpty(values))
             {
                 return Array.Empty<T>();

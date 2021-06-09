@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
-    /// A marker interface which can be used to identify CORS metdata.
+    /// A marker interface which can be used to identify CORS metadata.
     /// </summary>
     public interface ICorsMetadata
     {

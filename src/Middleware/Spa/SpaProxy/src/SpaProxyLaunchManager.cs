@@ -33,14 +33,6 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         public void StartInBackground(CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient(new HttpClientHandler()
-            {
-                // It's ok for us to do this here since this service is only plugged in during development.
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
-            // Certain frontend build tools rely on the the ACCEPT Header being set, otherwise these tools
-            // might be unable to perform their client-side fallback logic.
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
             _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
 
             // We are not waiting for the SPA proxy to launch, instead we are going to rely on a piece of
@@ -53,7 +45,7 @@ namespace Microsoft.AspNetCore.SpaProxy
             {
                 if (_launchTask == null)
                 {
-                    _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(httpClient, cancellationToken));
+                    _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(cancellationToken));
                 }
             }
 
@@ -79,11 +71,7 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         public async Task<bool> IsSpaProxyRunning(CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient(new HttpClientHandler()
-            {
-                // It's ok for us to do this here since this service is only plugged in during development.
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
+            var httpClient = CreateHttpClient();
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
@@ -100,6 +88,18 @@ namespace Microsoft.AspNetCore.SpaProxy
                 _logger.LogDebug(exception, "Failed to connect to the SPA Development proxy.");
                 return false;
             }
+        }
+
+        private static HttpClient CreateHttpClient()
+        {
+            var httpClient = new HttpClient(new HttpClientHandler()
+            {
+                // It's ok for us to do this here since this service is only plugged in during development.
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
+            // We don't care about the returned content type as long as the server is able to answer with 2XX
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*", 0.1));
+            return httpClient;
         }
 
         private async Task<bool> ProbeSpaDevelopmentServerUrl(HttpClient httpClient, CancellationToken cancellationToken)
@@ -121,12 +121,13 @@ namespace Microsoft.AspNetCore.SpaProxy
             }
         }
 
-        private async Task StartSpaProcessAndProbeForLiveness(HttpClient httpClient, CancellationToken cancellationToken)
+        private async Task StartSpaProcessAndProbeForLiveness(CancellationToken cancellationToken)
         {
             LaunchDevelopmentProxy();
             var sw = Stopwatch.StartNew();
             var livenessProbeSucceeded = false;
             var maxTimeoutReached = false;
+            var httpClient = CreateHttpClient();
             while (_spaProcess != null && !_spaProcess.HasExited && !maxTimeoutReached)
             {
                 livenessProbeSucceeded = await ProbeSpaDevelopmentServerUrl(httpClient, cancellationToken);

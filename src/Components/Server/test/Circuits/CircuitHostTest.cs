@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             // Act
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             // Act
@@ -76,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 .Throws<InvalidTimeZoneException>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer,
                 handlers: new[] { handler.Object });
 
@@ -99,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             var component = new DispatcherComponent(circuitHost.Renderer.Dispatcher);
@@ -129,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             var component = new PerformJSInteropOnDisposeComponent(circuitHost.JSRuntime);

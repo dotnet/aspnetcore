@@ -3,7 +3,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { LogoutComponent } from './logout.component';
 import { HomeComponent } from 'src/app/home/home.component';
 import { ActivatedRoute, convertToParamMap, Params, UrlSegment } from '@angular/router';
-import { log } from 'util';
 import { LogoutActions } from '../api-authorization.constants';
 
 describe('LogoutComponent', () => {
@@ -11,8 +10,6 @@ describe('LogoutComponent', () => {
   let fixture: ComponentFixture<LogoutComponent>;
 
   beforeEach(async(() => {
-    log('logout.component.spec.ts before each started...');
-
     let tempParams: Params = { id: '1234' };
 
     let segment0: UrlSegment = new UrlSegment('segment0', {});

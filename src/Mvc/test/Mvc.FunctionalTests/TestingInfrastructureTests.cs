@@ -115,6 +115,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task TestingInfrastructure_RedirectHandlerFollowsStatusCode303()
+        {
+            // Act
+            var request = new HttpRequestMessage(HttpMethod.Get, "Testing/RedirectHandler/Redirect303");
+            var client = Factory.CreateDefaultClient(
+                new RedirectHandler());
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Test", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task TestingInfrastructure_PostRedirectGetWorksWithCookies()
         {
             // Act

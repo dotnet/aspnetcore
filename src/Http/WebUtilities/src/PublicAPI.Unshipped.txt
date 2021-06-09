@@ -2,6 +2,8 @@
 *REMOVED*static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseNullableQuery(string! queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>?
 Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.MemoryThreshold.get -> int
 Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.MemoryThreshold.get -> int
+override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>
+override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseNullableQuery(string? queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>?
 *REMOVED*static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(string! queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(string? queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>!

@@ -21,7 +21,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 2, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue)), 3, () => ParentValue);
+            , 2, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue)), 3, () => ParentValue);
         }
         #pragma warning restore 1998
 #nullable restore

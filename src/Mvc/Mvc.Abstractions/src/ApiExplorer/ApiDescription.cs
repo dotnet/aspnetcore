@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets or sets relative url path template (relative to application root) for this api.
         /// </summary>
-        public string RelativePath { get; set; } = default!;
+        public string? RelativePath { get; set; }
 
         /// <summary>
         /// Gets the list of possible formats for a request.

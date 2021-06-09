@@ -33,6 +33,8 @@ export function startIpcReceiver() {
 
     'EndInvokeDotNet': DotNet.jsCallDispatcher.endInvokeDotNetFromJS,
 
+    'SendByteArrayToJS': receiveBase64ByteArray,
+
     'Navigate': navigationManagerFunctions.navigateTo,
   };
 
@@ -48,15 +50,20 @@ export function startIpcReceiver() {
   });
 }
 
+function receiveBase64ByteArray(id: number, base64Data: string) {
+  const data = base64ToArrayBuffer(base64Data);
+  DotNet.jsCallDispatcher.receiveByteArray(id, data);
+}
+
 // https://stackoverflow.com/a/21797381
 // TODO: If the data is large, consider switching over to the native decoder as in https://stackoverflow.com/a/54123275
 // But don't force it to be async all the time. Yielding execution leads to perceptible lag.
-function base64ToArrayBuffer(base64: string) {
+function base64ToArrayBuffer(base64: string): Uint8Array {
   const binaryString = atob(base64);
   const length = binaryString.length;
   const result = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
-      result[i] = binaryString.charCodeAt(i);
+    result[i] = binaryString.charCodeAt(i);
   }
   return result;
 }

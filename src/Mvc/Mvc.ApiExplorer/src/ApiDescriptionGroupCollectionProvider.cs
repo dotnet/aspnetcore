@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
         private readonly IApiDescriptionProvider[] _apiDescriptionProviders;
 
-        private ApiDescriptionGroupCollection _apiDescriptionGroups;
+        private ApiDescriptionGroupCollection? _apiDescriptionGroups;
 
         /// <summary>
         /// Creates a new instance of <see cref="ApiDescriptionGroupCollectionProvider"/>.

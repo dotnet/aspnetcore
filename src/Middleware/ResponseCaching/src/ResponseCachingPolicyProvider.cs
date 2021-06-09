@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool AllowCacheLookup(ResponseCachingContext context)
         {
             var requestHeaders = context.HttpContext.Request.Headers;
-            var cacheControl = requestHeaders[HeaderNames.CacheControl];
+            var cacheControl = requestHeaders.CacheControl;
 
             // Verify request cache-control parameters
             if (!StringValues.IsNullOrEmpty(cacheControl))
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             else
             {
                 // Support for legacy HTTP 1.0 cache directive
-                if (HeaderUtilities.ContainsCacheDirective(requestHeaders[HeaderNames.Pragma], CacheControlHeaderValue.NoCacheString))
+                if (HeaderUtilities.ContainsCacheDirective(requestHeaders.Pragma, CacheControlHeaderValue.NoCacheString))
                 {
                     context.Logger.RequestWithPragmaNoCacheNotCacheable();
                     return false;

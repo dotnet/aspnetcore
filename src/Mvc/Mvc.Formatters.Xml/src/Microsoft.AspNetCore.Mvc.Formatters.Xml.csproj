@@ -7,7 +7,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;xml</PackageTags>
     <IsPackable>false</IsPackable>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

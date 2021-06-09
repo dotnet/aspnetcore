@@ -205,7 +205,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             get { return false; }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The total bytes read from and buffered by the stream so far, it will not represent the full
+        /// data length until the stream is fully buffered. e.g. using <c>stream.DrainAsync()</c>.
+        /// </summary>
         public override long Length
         {
             get { return _buffer.Length; }

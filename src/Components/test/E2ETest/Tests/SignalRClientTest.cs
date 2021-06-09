@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -39,6 +40,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<SignalRClientComponent>();
             Browser.Exists(By.Id("signalr-client"));
         }
+
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27156")]

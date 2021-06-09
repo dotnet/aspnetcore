@@ -6,7 +6,6 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
     // By inheriting from ComponentRenderingTest, this test class also copies
     // all the test cases shared with client-side rendering
 
-    public class ServerComponentRenderingTest : ComponentRenderingTest
+    public class ServerComponentRenderingTest : ComponentRenderingTestBase
     {
         public ServerComponentRenderingTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
             : base(browserFixture, serverFixture.WithServerExecution(), output)
@@ -35,10 +34,5 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the Dispatcher. Use InvokeAsync() to switch execution to the Dispatcher when triggering rendering or component state.",
                 () => result.Text);
         }
-
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19413")]
-        public override void CanDispatchAsyncWorkToSyncContext()
-            => base.CanDispatchAsyncWorkToSyncContext();
     }
 }
