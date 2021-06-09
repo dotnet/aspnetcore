@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.WebView.Photino;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Net.Http;
 
 namespace PhotinoTestApp
 {
@@ -14,13 +13,13 @@ namespace PhotinoTestApp
         [STAThread]
         static void Main(string[] args)
         {
-
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddBlazorWebView();
+            serviceCollection.AddSingleton<HttpClient>();
 
             var mainWindow = new BlazorWindow(
                 title: "Hello, world!",
-                hostPage: "wwwroot/index.html",
+                hostPage: "wwwroot/webviewhost.html",
                 services: serviceCollection.BuildServiceProvider());
 
             AppDomain.CurrentDomain.UnhandledException += (sender, error) =>
@@ -28,23 +27,9 @@ namespace PhotinoTestApp
                 mainWindow.Photino.OpenAlertWindow("Fatal exception", error.ExceptionObject.ToString());
             };
 
-            mainWindow.AddRootComponent<MyComponent>("#app");
+            mainWindow.AddRootComponent<BasicTestApp.Index>("root");
 
             mainWindow.Run();
-        }
-
-        class MyComponent : ComponentBase
-        {
-            private int count;
-
-            protected override void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.AddContent(0, $"This is from Blazor [{count}]");
-                builder.OpenElement(1, "button");
-                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => { count++; }));
-                builder.AddContent(3, "Increment");
-                builder.CloseElement();
-            }
         }
     }
 }

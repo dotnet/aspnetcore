@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
             {
                 options.CustomSchemeHandlers.Add(PhotinoWebViewManager.BlazorAppScheme, HandleWebRequest);
                 configureWindow?.Invoke(options);
-            });
+            }, width: 1600, height: 1200, left: 300, top: 300);
 
             // We assume the host page is always in the root of the content directory, because it's
             // unclear there's any other use case. We can add more options later if so.
