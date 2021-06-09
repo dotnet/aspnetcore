@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else if (path1.EndsWith("/", StringComparison.Ordinal) && path2.StartsWith("/", StringComparison.Ordinal))
             {
-                return path1 + path2.Substring(1);
+                return string.Concat(path1, path2.AsSpan(1));
             }
 
             return path1 + "/" + path2;
