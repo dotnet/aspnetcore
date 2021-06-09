@@ -40,7 +40,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpSysRequestInfoFeature,
         IHttpResponseTrailersFeature,
         IHttpResetFeature,
-        IHttpSysRequestDelegationFeature
+        IHttpSysRequestDelegationFeature,
+        IConnectionLifetimeNotificationFeature
     {
         private IFeatureCollection? _features;
         private bool _enableResponseCaching;
@@ -387,6 +388,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return null;
         }
 
+        internal IConnectionLifetimeNotificationFeature? GetConnectionLifetimeNotificationFeature()
+        {
+            return this;
+        }
+
         /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId() => Request.GetProvidedTokenBindingId();
 
@@ -602,6 +608,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public bool CanDelegate => Request.CanDelegate;
 
+        CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested { get; set; }
+
         internal async Task OnResponseStart()
         {
             if (_responseStarted)
@@ -727,6 +735,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             Delegate(destination);
             _responseStarted = true;
+        }
+
+        void IConnectionLifetimeNotificationFeature.RequestClose()
+        {
+            // Set the connection close feature if the response hasn't sent headers as yet
+            if (!Response.HasStarted)
+            {
+                Response.Headers[HeaderNames.Connection] = "close";
+            }
         }
     }
 }

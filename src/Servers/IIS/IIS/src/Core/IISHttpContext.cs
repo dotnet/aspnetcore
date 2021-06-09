@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
+        private const string ConnectionClose = "close";
 
         internal unsafe IISHttpContext(
             MemoryPool<byte> memoryPool,
@@ -405,6 +406,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             // This copies data into the underlying buffer
             NativeMethods.HttpSetResponseStatusCode(_requestNativeHandle, (ushort)StatusCode, reasonPhrase);
+
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
+            {
+                // Check if connection close is set, if so setting goaway
+                if (string.Equals(ConnectionClose, HttpResponseHeaders[HeaderNames.Connection], StringComparison.OrdinalIgnoreCase))
+                {
+                    NativeMethods.HttpSetNeedGoAway(_requestNativeHandle);
+                }
+            }
 
             HttpResponseHeaders.IsReadOnly = true;
             foreach (var headerPair in HttpResponseHeaders)
