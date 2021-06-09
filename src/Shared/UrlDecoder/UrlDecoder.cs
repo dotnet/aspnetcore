@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Internal
 
             // This requires the destination span to be larger or equal to source span
             source.CopyTo(destination);
-            return DecodeInPlace(destination, isFormEncoding);
+            return DecodeInPlace(destination.Slice(0, source.Length), isFormEncoding);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Internal
             return true;
         }
 
-        private static void Copy(int begin, int end, ref int writer, Span<byte> buffer)
+        private static void Copy<T>(int begin, int end, ref int writer, Span<T> buffer)
         {
             while (begin != end)
             {
@@ -289,7 +289,6 @@ namespace Microsoft.AspNetCore.Internal
             return (value1 << 4) + value2;
         }
 
-
         /// <summary>
         /// Read the next char and convert it into hexadecimal value.
         ///
@@ -344,6 +343,290 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Unescape a URL path
+        /// </summary>
+        /// <param name="source">The char span represents a UTF8 encoded, escaped url path.</param>
+        /// <param name="destination">The char span where unescaped url path is copied to.</param>
+        /// <param name="isFormEncoding">Whether we are doing form encoding or not.</param>
+        /// <returns>The length of the char sequence of the unescaped url path.</returns>
+        public static int DecodeRequestLine(ReadOnlySpan<char> source, Span<char> destination, bool isFormEncoding)
+        {
+            if (destination.Length < source.Length)
+            {
+                throw new ArgumentException(
+                    "Length of the destination char span is less then the source.",
+                    nameof(destination));
+            }
+
+            // This requires the destination span to be larger or equal to source span
+            source.CopyTo(destination);
+            return DecodeInPlace(destination.Slice(0, source.Length), isFormEncoding);
+        }
+
+        /// <summary>
+        /// Unescape a URL path in place.
+        /// </summary>
+        /// <param name="buffer">The char span represents a UTF8 encoded, escaped url path.</param>
+        /// <param name="isFormEncoding">Whether we are doing form encoding or not.</param>
+        /// <returns>The number of the chars representing the result.</returns>
+        /// <remarks>
+        /// The unescape is done in place, which means after decoding the result is the subset of
+        /// the input span.
+        /// </remarks>
+        public static int DecodeInPlace(Span<char> buffer, bool isFormEncoding)
+        {
+            // the slot to read the input
+            var sourceIndex = 0;
+
+            // the slot to write the unescaped char
+            var destinationIndex = 0;
+
+            while (true)
+            {
+                if (sourceIndex == buffer.Length)
+                {
+                    break;
+                }
+
+                if (buffer[sourceIndex] == '+' && isFormEncoding)
+                {
+                    // Set it to ' ' when we are doing form encoding.
+                    buffer[sourceIndex] = ' ';
+                }
+                else if (buffer[sourceIndex] == '%')
+                {
+                    var decodeIndex = sourceIndex;
+
+                    // If decoding process succeeds, the writer iterator will be moved
+                    // to the next write-ready location. On the other hand if the scanned
+                    // percent-encodings cannot be interpreted as sequence of UTF-8 octets,
+                    // these chars should be copied to output as is.
+                    // The decodeReader iterator is always moved to the first char not yet
+                    // be scanned after the process. A failed decoding means the chars
+                    // between the reader and decodeReader can be copied to output untouched.
+                    if (!DecodeCore(ref decodeIndex, ref destinationIndex, buffer, isFormEncoding))
+                    {
+                        Copy(sourceIndex, decodeIndex, ref destinationIndex, buffer);
+                    }
+
+                    sourceIndex = decodeIndex;
+                }
+                else
+                {
+                    buffer[destinationIndex++] = buffer[sourceIndex++];
+                }
+            }
+
+            return destinationIndex;
+        }
+
+        /// <summary>
+        /// Unescape the percent-encodings
+        /// </summary>
+        /// <param name="sourceIndex">The iterator point to the first % char</param>
+        /// <param name="destinationIndex">The place to write to</param>
+        /// <param name="buffer">The char array</param>
+        /// <param name="isFormEncoding">Whether we are doing form encodoing</param>
+        private static bool DecodeCore(ref int sourceIndex, ref int destinationIndex, Span<char> buffer, bool isFormEncoding)
+        {
+            // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
+            // chars from this till the last scanned one will be copied to the memory pointed by writer.
+            var char1 = UnescapePercentEncoding(ref sourceIndex, buffer, isFormEncoding);
+            if (char1 == -1)
+            {
+                return false;
+            }
+
+            if (char1 == 0)
+            {
+                throw new InvalidOperationException("The path contains null characters.");
+            }
+
+            if (char1 <= 0x7F)
+            {
+                // first char < U+007f, it is a single char ASCII
+                buffer[destinationIndex++] = (char)char1;
+                return true;
+            }
+
+            // anticipate more chars
+            var currentDecodeBits = 0;
+            var charCount = 1;
+            var expectValueMin = 0;
+            if ((char1 & 0xE0) == 0xC0)
+            {
+                // 110x xxxx, expect one more char
+                currentDecodeBits = char1 & 0x1F;
+                charCount = 2;
+                expectValueMin = 0x80;
+            }
+            else if ((char1 & 0xF0) == 0xE0)
+            {
+                // 1110 xxxx, expect two more chars
+                currentDecodeBits = char1 & 0x0F;
+                charCount = 3;
+                expectValueMin = 0x800;
+            }
+            else if ((char1 & 0xF8) == 0xF0)
+            {
+                // 1111 0xxx, expect three more chars
+                currentDecodeBits = char1 & 0x07;
+                charCount = 4;
+                expectValueMin = 0x10000;
+            }
+            else
+            {
+                // invalid first char
+                return false;
+            }
+
+            var remainingChars = charCount - 1;
+            while (remainingChars > 0)
+            {
+                // read following three chars
+                if (sourceIndex == buffer.Length)
+                {
+                    return false;
+                }
+
+                var nextSourceIndex = sourceIndex;
+                var nextChar = UnescapePercentEncoding(ref nextSourceIndex, buffer, isFormEncoding);
+                if (nextChar == -1)
+                {
+                    return false;
+                }
+
+                if ((nextChar & 0xC0) != 0x80)
+                {
+                    // the follow up char is not in form of 10xx xxxx
+                    return false;
+                }
+
+                currentDecodeBits = (currentDecodeBits << 6) | (nextChar & 0x3F);
+                remainingChars--;
+
+                if (remainingChars == 1 && currentDecodeBits >= 0x360 && currentDecodeBits <= 0x37F)
+                {
+                    // this is going to end up in the range of 0xD800-0xDFFF UTF-16 surrogates that
+                    // are not allowed in UTF-8;
+                    return false;
+                }
+
+                if (remainingChars == 2 && currentDecodeBits >= 0x110)
+                {
+                    // this is going to be out of the upper Unicode bound 0x10FFFF.
+                    return false;
+                }
+
+                sourceIndex = nextSourceIndex;
+            }
+
+            if (currentDecodeBits < expectValueMin)
+            {
+                // overlong encoding
+                return false;
+            }
+
+            var rune = new System.Text.Rune(currentDecodeBits);
+            if (!rune.TryEncodeToUtf16(buffer.Slice(destinationIndex), out var charsWritten))
+            {
+                return false;
+            }
+            destinationIndex += charsWritten;
+            return true;
+        }
+
+        /// <summary>
+        /// Read the percent-encoding and try unescape it.
+        ///
+        /// The operation first peek at the character the <paramref name="scan"/>
+        /// iterator points at. If it is % the <paramref name="scan"/> is then
+        /// moved on to scan the following to characters. If the two following
+        /// characters are hexadecimal literals they will be unescaped and the
+        /// value will be returned.
+        ///
+        /// If the first character is not % the <paramref name="scan"/> iterator
+        /// will be removed beyond the location of % and -1 will be returned.
+        ///
+        /// If the following two characters can't be successfully unescaped the
+        /// <paramref name="scan"/> iterator will be move behind the % and -1
+        /// will be returned.
+        /// </summary>
+        /// <param name="scan">The value to read</param>
+        /// <param name="buffer">The char array</param>
+        /// <param name="isFormEncoding">Whether we are decoding a form or not. Will escape '/' if we are doing form encoding</param>
+        /// <returns>The unescaped char if success. Otherwise return -1.</returns>
+        private static int UnescapePercentEncoding(ref int scan, ReadOnlySpan<char> buffer, bool isFormEncoding)
+        {
+            if (buffer[scan++] != '%')
+            {
+                return -1;
+            }
+
+            var probe = scan;
+
+            var value1 = ReadHex(ref probe, buffer);
+            if (value1 == -1)
+            {
+                return -1;
+            }
+
+            var value2 = ReadHex(ref probe, buffer);
+            if (value2 == -1)
+            {
+                return -1;
+            }
+
+            if (SkipUnescape(value1, value2, isFormEncoding))
+            {
+                return -1;
+            }
+
+            scan = probe;
+            return (value1 << 4) + value2;
+        }
+
+        /// <summary>
+        /// Read the next char and convert it into hexadecimal value.
+        ///
+        /// The <paramref name="scan"/> index will be moved to the next
+        /// char no matter whether the operation successes.
+        /// </summary>
+        /// <param name="scan">The index of the char in the buffer to read</param>
+        /// <param name="buffer">The char span from which the hex to be read</param>
+        /// <returns>The hexadecimal value if successes, otherwise -1.</returns>
+        private static int ReadHex(ref int scan, ReadOnlySpan<char> buffer)
+        {
+            if (scan == buffer.Length)
+            {
+                return -1;
+            }
+
+            var value = buffer[scan++];
+            var isHead = ((value >= '0') && (value <= '9')) ||
+                         ((value >= 'A') && (value <= 'F')) ||
+                         ((value >= 'a') && (value <= 'f'));
+
+            if (!isHead)
+            {
+                return -1;
+            }
+
+            if (value <= '9')
+            {
+                return value - '0';
+            }
+            else if (value <= 'F')
+            {
+                return (value - 'A') + 10;
+            }
+            else // a - f
+            {
+                return (value - 'a') + 10;
+            }
         }
     }
 }

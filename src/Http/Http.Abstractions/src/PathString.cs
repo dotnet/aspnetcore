@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Http
     [TypeConverter(typeof(PathStringConverter))]
     public readonly struct PathString : IEquatable<PathString>
     {
+        private const int StackAllocThreshold = 128;
+
         /// <summary>
         /// Represents the empty path. This field is read-only.
         /// </summary>
@@ -173,10 +175,10 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The resulting PathString</returns>
         public static PathString FromUriComponent(string uriComponent)
         {
-            Span<byte> pathBuffer = Encoding.UTF8.GetBytes(uriComponent);
-            var length = UrlDecoder.DecodeInPlace(pathBuffer, isFormEncoding: false);
+            Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[uriComponent.Length] : new char[uriComponent.Length];
+            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer, isFormEncoding: false);
             pathBuffer = pathBuffer.Slice(0, length);
-            return new PathString(Encoding.UTF8.GetString(pathBuffer));
+            return new PathString(pathBuffer.ToString());
         }
 
         /// <summary>
@@ -191,16 +193,11 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(uri));
             }
             var uriComponent = uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
-            Memory<byte> pathBuffer = Encoding.UTF8.GetBytes(uriComponent);
-            var length = UrlDecoder.DecodeInPlace(pathBuffer.Span, isFormEncoding: false);
-            pathBuffer = pathBuffer.Slice(0, length);
-
-            var unescapedPath = string.Create(Encoding.UTF8.GetCharCount(pathBuffer.Span) + 1, pathBuffer, (destination, state) =>
-            {
-                destination[0] = '/';
-                Encoding.UTF8.GetChars(state.Span, destination.Slice(1));
-            });
-            return new PathString(unescapedPath);
+            Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[uriComponent.Length + 1] : new char[uriComponent.Length + 1];
+            pathBuffer[0] = '/';
+            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer.Slice(1), isFormEncoding: false);
+            pathBuffer = pathBuffer.Slice(0, length + 1);
+            return new PathString(pathBuffer.ToString());
         }
 
         /// <summary>
