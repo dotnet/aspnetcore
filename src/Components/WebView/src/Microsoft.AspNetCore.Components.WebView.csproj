@@ -39,7 +39,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <ProjectReference
-      Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework"
@@ -57,15 +57,15 @@
   <PropertyGroup>
     <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
     <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
-    <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-    <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+    <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+    <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
   </PropertyGroup>
 
   <!-- blazor.webview.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. Fall back if not. -->
   <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') ">
     <Warning Text="'$(BlazorWebViewJSFile)' does not exist. Falling back to checked-in copy." />
     <PropertyGroup>
-      <BlazorWebViewJSFile>..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+      <BlazorWebViewJSFile>..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
     </PropertyGroup>
   </Target>
 
