@@ -147,7 +147,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                     if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
                     {
-                        Debugger.Launch();
                         if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
                         {
                             AddToList(w3cList, HeaderNames.Cookie, cookie.ToString());
