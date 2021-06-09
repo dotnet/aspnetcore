@@ -41,8 +41,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     StatusMessagesEnabled = false
                 };
 
-                deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
-
                 using var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory);
 
                 var result = await deployer.DeployAsync();
