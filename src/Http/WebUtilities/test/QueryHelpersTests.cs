@@ -55,6 +55,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(new[] { "value1", "" }, collection[""]);
         }
 
+        [Fact]
+        public void ParseQueryWithEncodedKeyWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields%5BtodoItems%5D");
+            Assert.Single(collection);
+            Assert.Equal("", collection["fields[todoItems]"].FirstOrDefault());
+        }
+
         [Theory]
         [InlineData("?")]
         [InlineData("")]
