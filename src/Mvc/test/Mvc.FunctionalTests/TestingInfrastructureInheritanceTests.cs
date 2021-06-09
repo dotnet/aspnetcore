@@ -1,14 +1,17 @@
 // Copyright (c) .NET  Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -80,6 +83,48 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.True(callbackCalled);
         }
 
+        [Fact]
+        public async Task TestingInfrastructure_GenericHost_HostDisposeAsync()
+        {
+            // Arrange
+            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
+            var sink = factory.Services.GetRequiredService<DisposableService>();
+
+            // Act
+            await factory.DisposeAsync();
+
+            // Assert
+            Assert.True(sink._asyncDisposed);
+        }
+
+        [Fact]
+        public void TestingInfrastructure_GenericHost_HostDispose()
+        {
+            // Arrange
+            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
+            var sink = factory.Services.GetRequiredService<DisposableService>();
+
+            // Act
+            factory.Dispose();
+
+            // Assert
+            Assert.True(sink._asyncDisposed);
+        }
+
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<GenericHostWebSite.Startup>()
+            .ConfigureServices(s => s.AddScoped<DisposableService>());
+
+        private class DisposableService : IAsyncDisposable
+        {
+            public bool _asyncDisposed = false;
+            public ValueTask DisposeAsync()
+            {
+                _asyncDisposed = true;
+                return ValueTask.CompletedTask;
+            }
+        }
+
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
         {
             public bool GetTestAssembliesCalled { get; private set; }
@@ -88,7 +133,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public bool CreateServerCalled { get; private set; }
             public bool CreateHostCalled { get; private set; }
             public IList<string> ConfigureWebHostCalled { get; private set; } = new List<string>();
-            public bool DisposeHostCalled { get; private set; }
 
             protected override void ConfigureWebHost(IWebHostBuilder builder)
             {
