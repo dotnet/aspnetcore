@@ -1,109 +1,31 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal class W3CLoggerProcessor : IDisposable
+    internal sealed class W3CLoggerProcessor : FileLoggerProcessor
     {
-        private const int _maxQueuedMessages = 1024;
-
-        private readonly string _path;
-        private readonly string _fileName;
-        private readonly int? _maxFileSize;
         private readonly W3CLoggingFields _loggingFields;
-        private bool _hasWritten;
 
-        private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
-        private Task _outputTask;
-
-        public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options)
+        public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options) : base(options)
         {
-            var loggerOptions = options.CurrentValue;
-            _path = loggerOptions.LogDirectory;
-            _fileName = loggerOptions.FileName;
-            _maxFileSize = loggerOptions.FileSizeLimit;
-            _loggingFields = loggerOptions.LoggingFields;
-
-            FullName = Path.Combine(_path, $"{_fileName}{Guid.NewGuid().ToString()}.log");
-
-            // Start W3C message queue processor
-            _outputTask = Task.Run(ProcessLogQueue);
+            _loggingFields = options.CurrentValue.LoggingFields;
         }
 
-        public string FullName { get; }
-
-        public void EnqueueMessage(string message)
+        public override async Task OnFirstWrite(StreamWriter streamWriter)
         {
-            if (!_messageQueue.IsAddingCompleted)
-            {
-                try
-                {
-                    _messageQueue.Add(message);
-                    return;
-                }
-                catch (InvalidOperationException) { }
-            }
-        }
-
-        internal async Task WriteMessageAsync(string entry, StreamWriter streamWriter)
-        {
-            await streamWriter.WriteLineAsync(entry);
-            await streamWriter.FlushAsync();
-        }
-
-        private async Task ProcessLogQueue()
-        {
-            try
-            {
-                Directory.CreateDirectory(_path);
-                var fileInfo = new FileInfo(FullName);
-                using (var streamWriter = File.AppendText(FullName))
-                {
-                    foreach (string message in _messageQueue.GetConsumingEnumerable())
-                    {
-                        // Write log directives the first time we log a message
-                        if (!_hasWritten)
-                        {
-                            await WriteDirectives(streamWriter);
-                        }
-                        // Only write until we've reached _maxFileSize
-                        if (fileInfo.Exists && fileInfo.Length < _maxFileSize)
-                        {
-                            await WriteMessageAsync(message, streamWriter);
-                        }
-                        else
-                        {
-                            _messageQueue.CompleteAdding();
-                            return;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                try
-                {
-                    _messageQueue.CompleteAdding();
-                }
-                catch { }
-            }
-        }
-
-        public void Dispose()
-        {
-            _messageQueue.CompleteAdding();
-            _outputTask.Wait();
-        }
-
-        private async Task WriteDirectives(StreamWriter streamWriter)
-        {
-            _hasWritten = true;
-
             await WriteMessageAsync("#Version: 1.0", streamWriter);
 
             await WriteMessageAsync("#Start-Date: " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter);

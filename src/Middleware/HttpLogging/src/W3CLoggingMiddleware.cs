@@ -45,9 +45,10 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             _options = options;
-            if (String.IsNullOrEmpty(_options.CurrentValue.LogDirectory))
+            if (string.IsNullOrEmpty(_options.CurrentValue.LogDirectory))
             {
-                _options.CurrentValue.LogDirectory = Path.Join(environment.ContentRootPath, "logs");
+                // Logs are written in the app directory in a folder named 'logs/{UTC Timestamp}'
+                _options.CurrentValue.LogDirectory = Path.Join(environment.ContentRootPath, "logs", DateTimeOffset.Now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
             }
             _w3cLogger = new W3CLogger(_options);
         }

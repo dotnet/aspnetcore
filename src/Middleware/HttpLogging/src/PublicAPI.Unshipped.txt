@@ -1,5 +1,13 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileLoggerOptions() -> void
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileSizeLimit.get -> int?
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileSizeLimit.set -> void
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.LogDirectory.get -> string!
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.LogDirectory.set -> void
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.RetainedFileCountLimit.get -> int?
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.RetainedFileCountLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Request | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.None = 0 -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
@@ -38,12 +46,6 @@ Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType) -
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType, System.Text.Encoding! encoding) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.Clear() -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.get -> string!
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.set -> void
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileSizeLimit.get -> int?
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileSizeLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.LogDirectory.get -> string!
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.LogDirectory.set -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.W3CLoggingFields
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.LoggingFields.set -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.W3CLoggerOptions() -> void
@@ -74,7 +76,11 @@ Microsoft.AspNetCore.HttpLogging.W3CLoggingFields.UriStem = 256 -> Microsoft.Asp
 Microsoft.AspNetCore.HttpLogging.W3CLoggingFields.UserAgent = 16384 -> Microsoft.AspNetCore.HttpLogging.W3CLoggingFields
 Microsoft.AspNetCore.HttpLogging.W3CLoggingFields.UserName = 8 -> Microsoft.AspNetCore.HttpLogging.W3CLoggingFields
 Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions
+override Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.get -> string!
+override Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.set -> void
 static Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions.UseHttpLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions.UseW3CLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddW3CLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileName.get -> string!
+virtual Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileName.set -> void

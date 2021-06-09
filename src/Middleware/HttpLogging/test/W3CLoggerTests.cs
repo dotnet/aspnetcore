@@ -43,17 +43,26 @@ namespace Microsoft.AspNetCore.HttpLogging
         public void WritesToTextFile()
         {
             string fileName;
-            using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(new W3CLoggerOptions()
+            var now = DateTime.Now;
+            var options = new W3CLoggerOptions()
             {
                 LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken,
                 LogDirectory = TempPath
-            })))
+            };
+            using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
             {
                 var state = new List<KeyValuePair<string, object>>();
                 state.Add(new KeyValuePair<string, object>(nameof(DateTime), _timestampOne));
 
                 logger.Log(state);
-                fileName = logger.LogFileFullName;
+                fileName = Path.Combine(TempPath, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
+            }
+            // Midnight could have struck between when we took the DateTime & when the log message was written
+            if (!File.Exists(fileName))
+            {
+                var tomorrow = now.AddDays(1);
+                fileName = Path.Combine(TempPath, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
+                Assert.True(File.Exists(fileName));
             }
 
             var lines = File.ReadAllLines(fileName);
@@ -61,7 +70,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.StartsWith("#Start-Date: ", lines[1]);
             var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
             // Assert that the log was written in the last 10 seconds
-            var now = DateTime.Now;
             Assert.True(now.Subtract(startDate).TotalSeconds < 10);
 
             Assert.Equal("#Fields: date time time-taken", lines[2]);
@@ -74,11 +82,13 @@ namespace Microsoft.AspNetCore.HttpLogging
         public void HandlesNullValues()
         {
             string fileName;
-            using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(new W3CLoggerOptions()
+            var now = DateTime.Now;
+            var options = new W3CLoggerOptions()
             {
                 LoggingFields = W3CLoggingFields.UriQuery | W3CLoggingFields.Host | W3CLoggingFields.ProtocolStatus,
                 LogDirectory = TempPath
-            })))
+            };
+            using (var logger = new W3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
             {
                 var state = new List<KeyValuePair<string, object>>();
                 state.Add(new KeyValuePair<string, object>(nameof(HttpRequest.QueryString), null));
@@ -86,7 +96,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                 state.Add(new KeyValuePair<string, object>(nameof(HttpResponse.StatusCode), null));
 
                 logger.Log(state);
-                fileName = logger.LogFileFullName;
+                fileName = Path.Combine(TempPath, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
+            }
+            // Midnight could have struck between when we took the DateTime & when the log message was written
+            if (!File.Exists(fileName))
+            {
+                var tomorrow = now.AddDays(1);
+                fileName = Path.Combine(TempPath, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
+                Assert.True(File.Exists(fileName));
             }
 
             var lines = File.ReadAllLines(fileName);
@@ -94,7 +111,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.StartsWith("#Start-Date: ", lines[1]);
             var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
             // Assert that the log was written in the last 10 seconds
-            var now = DateTime.Now;
             Assert.True(now.Subtract(startDate).TotalSeconds < 10);
 
             Assert.Equal("#Fields: cs-uri-query sc-status cs-host", lines[2]);

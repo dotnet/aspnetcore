@@ -18,37 +18,29 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
         private readonly W3CLoggerProcessor _messageQueue;
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
-        private readonly W3CLoggingFields _loggingFields;
+        // Subtract 8 to account for flags that represent groups (e.g. "RequestHeaders", "All", "None")
+        private readonly int _fieldsLength = Enum.GetValues(typeof(W3CLoggingFields)).Length - 8;
 
         internal W3CLogger(IOptionsMonitor<W3CLoggerOptions> options)
         {
             _options = options;
 
             _messageQueue = new W3CLoggerProcessor(_options);
-            _loggingFields = _options.CurrentValue.LoggingFields;
-            LogFileFullName = _messageQueue.FullName;
         }
 
-        public string? LogFileFullName { get; }
-
-        public void Dispose() => _messageQueue?.Dispose();
+        public void Dispose() => _messageQueue.Dispose();
 
         public void Log(IReadOnlyCollection<KeyValuePair<string, object?>> state)
         {
             _messageQueue.EnqueueMessage(Format(state));
         }
 
-        private string Format(IEnumerable<KeyValuePair<string, object?>> state)
+        private LogMessage Format(IEnumerable<KeyValuePair<string, object?>> state)
         {
-            // Subtract 1 to account for the "All" flag
-            string[] elements = new string[Enum.GetValues(typeof(W3CLoggingFields)).Length - 1];
-            foreach(KeyValuePair<string, object?> kvp in state)
+            var elements = new string[_fieldsLength];
+            foreach(var kvp in state)
             {
-                var val = kvp.Value is null ? "" : kvp.Value.ToString();
-                if (val is null)
-                {
-                    val = "";
-                }
+                var val = kvp.Value?.ToString() ?? string.Empty;
                 switch (kvp.Key)
                 {
                     case nameof(HttpRequest.Method):
@@ -108,23 +100,32 @@ namespace Microsoft.AspNetCore.HttpLogging
                         break;
                 }
             }
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < elements.Length; i++)
+            var sb = new StringBuilder();
+            var firstElement = true;
+            for (var i = 0; i < elements.Length; i++)
             {
-                if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)))
+                if (_options.CurrentValue.LoggingFields.HasFlag((W3CLoggingFields)(1 << i)))
                 {
-                    // If the element was not logged, or was the empty string, we log it as a dash
-                    if (String.IsNullOrEmpty(elements[i]))
+                    if (!firstElement)
                     {
-                        sb.Append("- ");
+                        sb.Append(' ');
                     }
                     else
                     {
-                        sb.Append(elements[i] + " ");
+                        firstElement = false;
+                    }
+                    // If the element was not logged, or was the empty string, we log it as a dash
+                    if (string.IsNullOrEmpty(elements[i]))
+                    {
+                        sb.Append('-');
+                    }
+                    else
+                    {
+                        sb.Append(elements[i]);
                     }
                 }
             }
-            return sb.ToString().Trim();
+            return new LogMessage(DateTimeOffset.Now, sb.ToString());
         }
     }
 }
