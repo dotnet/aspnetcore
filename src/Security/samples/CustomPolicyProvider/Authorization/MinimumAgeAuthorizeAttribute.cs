@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CustomPolicyProvider
@@ -20,7 +21,7 @@ namespace CustomPolicyProvider
         {
             get
             {
-                if (int.TryParse(Policy.Substring(POLICY_PREFIX.Length), out var age))
+                if (int.TryParse(Policy.AsSpan(POLICY_PREFIX.Length), out var age))
                 {
                     return age;
                 }

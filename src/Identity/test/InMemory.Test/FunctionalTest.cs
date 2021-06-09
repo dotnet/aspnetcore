@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                             }
                             else if (req.Path.StartsWithSegments(new PathString("/pwdLogin"), out remainder))
                             {
-                                var isPersistent = bool.Parse(remainder.Value.Substring(1));
+                                var isPersistent = bool.Parse(remainder.Value.AsSpan(1));
                                 var result = await signInManager.PasswordSignInAsync("hao", TestPassword, isPersistent, false);
                                 res.StatusCode = result.Succeeded ? 200 : 500;
                             }

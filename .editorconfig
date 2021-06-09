@@ -153,3 +153,5 @@ dotnet_diagnostic.CA1829.severity = suggestion
 dotnet_diagnostic.CA1834.severity = suggestion
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = suggestion
+# CA1845: Use span-based 'string.Concat'
+dotnet_diagnostic.CA1845.severity = suggestion
