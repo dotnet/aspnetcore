@@ -35,9 +35,15 @@ namespace PhotinoTestApp
 
         class MyComponent : ComponentBase
         {
+            private int count;
+
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.AddContent(0, "This is from Blazor");
+                builder.AddContent(0, $"This is from Blazor [{count}]");
+                builder.OpenElement(1, "button");
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => { count++; }));
+                builder.AddContent(3, "Increment");
+                builder.CloseElement();
             }
         }
     }

@@ -17,6 +17,6 @@
     top: 0.5rem;
 }
 
-* {
-    color: red;
+html {
+    font-family: Arial, Helvetica, sans-serif;
 }
