@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     "www.example.org",
                     new SniConfig
                     {
-                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                        ClientCertificateMode = ClientCertificateMode.DelayCertificate,
                         Certificate = new CertificateConfig()
                     }
                 }
@@ -611,11 +611,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 
-            Assert.True(options.Item1.ClientCertificateRequired);
+            Assert.Equal(ClientCertificateMode.DelayCertificate, options.Item2);
+            Assert.False(options.Item1.ClientCertificateRequired);
 
             Assert.NotNull(options.Item1.RemoteCertificateValidationCallback);
-            // The RemoteCertificateValidationCallback should first check if the certificate is null and return false since it's required.
-            Assert.False(options.Item1.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
+            // The RemoteCertificateValidationCallback should first check if the certificate is null and return true since it's optional.
+            Assert.True(options.Item1.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
         }
 
         [Fact]
@@ -645,6 +646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 
+            Assert.Equal(ClientCertificateMode.AllowCertificate, options.Item2);
             // Despite the confusing name, ClientCertificateRequired being true simply requests a certificate from the client, but doesn't require it.
             Assert.True(options.Item1.ClientCertificateRequired);
 
