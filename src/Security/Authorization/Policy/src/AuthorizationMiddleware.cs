@@ -3,8 +3,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.AspNetCore.Authorization.Policy.Internal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authorization
@@ -29,7 +32,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         /// <param name="next">The next middleware in the application middleware pipeline.</param>
         /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
-        public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider) 
+        public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
@@ -64,12 +67,19 @@ namespace Microsoft.AspNetCore.Authorization
                 return;
             }
 
-            // Policy evaluator has transient lifetime so it fetched from request services instead of injecting in constructor
+            // Policy evaluator has transient lifetime so it's fetched from request services instead of injecting in constructor
             var policyEvaluator = context.RequestServices.GetRequiredService<IPolicyEvaluator>();
 
             var authenticateResult = await policyEvaluator.AuthenticateAsync(policy, context);
 
-            // Allow Anonymous skips all authorization
+            if (authenticateResult.Succeeded)
+            {
+                var authFeatures = new AuthenticationFeatures(authenticateResult);
+                context.Features.Set<IHttpAuthenticationFeature>(authFeatures);
+                context.Features.Set<IAuthenticateResultFeature>(authFeatures);
+            }
+
+            // Allow Anonymous still wants to run authorization to populate the User but skips any failure/challenge handling
             if (endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null)
             {
                 await _next(context);
@@ -85,7 +95,7 @@ namespace Microsoft.AspNetCore.Authorization
             {
                 resource = context;
             }
-            
+
             var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource);
             var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
             await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
