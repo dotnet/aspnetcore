@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             if (slashPos >= 0)
             {
-                var partialMimeType = mimeType!.Substring(0, slashPos.Value) + "/*";
+                var partialMimeType = string.Concat(mimeType!.AsSpan(0, slashPos.Value), "/*");
                 return ShouldCompressExact(partialMimeType);
             }
 

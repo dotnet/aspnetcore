@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             var hasLeadingSlash = path2.StartsWith("/", StringComparison.Ordinal);
             if (hasLeadingSlash && hasTrailingSlash)
             {
-                return path1 + path2.Substring(1);
+                return string.Concat(path1, path2.AsSpan(1));
             }
             else if (hasLeadingSlash || hasTrailingSlash)
             {

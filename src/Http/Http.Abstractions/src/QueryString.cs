@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // ?name1=value1 Add ?name2=value2 returns ?name1=value1&name2=value2
-            return new QueryString(Value + "&" + other.Value.Substring(1));
+            return new QueryString(string.Concat(Value, "&", other.Value.AsSpan(1)));
         }
 
         /// <summary>
