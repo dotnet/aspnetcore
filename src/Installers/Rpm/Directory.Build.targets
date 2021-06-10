@@ -9,6 +9,10 @@
     <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
   <Target Name="GetTargetPath" Returns="$(TargetPath)" />
 
   <Target Name="PrepareForBuild">

@@ -12,6 +12,10 @@
     </GeneratedContentProperties>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
   <!--
     Generates content using MSBuild variables.
   -->
