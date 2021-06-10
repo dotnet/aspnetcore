@@ -15,8 +15,8 @@
              Targets="GetReferencesProvided"
              BuildInParallel="true"
              SkipNonexistentTargets="true"
-             SkipNonexistentProjects="true" >
-      <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider"/>
+             SkipNonexistentProjects="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider" />
     </MSBuild>
 
     <ItemGroup>

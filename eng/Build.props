@@ -35,7 +35,6 @@
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Components\WebAssembly\Build\testassets\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\ComponentsWebAssembly.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;

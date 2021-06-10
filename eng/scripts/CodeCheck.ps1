@@ -66,9 +66,9 @@ try {
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
     Get-ChildItem -Recurse "$repoRoot/src/*.*proj" `
-        | ? { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } `
-        | ? { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
-        | % {
+        | Where-Object { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } `
+        | Where-Object { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
+        | ForEach-Object {
             $fileName = [io.path]::GetFileNameWithoutExtension($_)
             if (-not ($projectFileNames.Add($fileName))) {
                 LogError -code 'BUILD003' -filepath $_ `
@@ -136,17 +136,17 @@ try {
     Write-Host "Checking that solutions are up to date"
 
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
-        | ? {
+        | Where-Object {
             # These .sln files are used by the templating engine.
             (($_.Name -ne "BlazorServerWeb_CSharp.sln") -and ($_.Name -ne 'ComponentsWebAssembly-CSharp.sln'))
         } `
-        | % {
+        | ForEach-Object {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
         $slnDir = Split-Path -Parent $_
         $sln = $_
         & dotnet sln $_ list `
-            | ? { $_ -like '*proj' } `
-            | % {
+            | Where-Object { $_ -like '*proj' } `
+            | ForEach-Object {
                 $proj = Join-Path $slnDir $_
                 if (-not (Test-Path $proj)) {
                     LogError "Missing project. Solution references a project which does not exist: $proj. [$sln] "
