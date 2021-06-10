@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var options = _options.CurrentValue;
 
-            var w3cList = new List<KeyValuePair<string, object?>>();
+            var w3cList = new List<KeyValuePair<string, string?>>();
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.Date) || options.LoggingFields.HasFlag(W3CLoggingFields.Time))
             {
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
             {
-                w3cList.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode),
+                w3cList.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode),
                     response.StatusCode.ToString(CultureInfo.InvariantCulture)));
             }
 
@@ -186,9 +186,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private static void AddToList(List<KeyValuePair<string, object?>> list, string key, string? value)
+        private static void AddToList(List<KeyValuePair<string, string?>> list, string key, string? value)
         {
-            list.Add(new KeyValuePair<string, object?>(key, value));
+            list.Add(new KeyValuePair<string, string?>(key, value));
         }
     }
 }

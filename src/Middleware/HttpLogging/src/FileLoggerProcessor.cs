@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private async Task ProcessLogQueue()
         {
+            Directory.CreateDirectory(_path);
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
                 while (_messageQueue.TryTake(out var message))
@@ -80,10 +81,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        internal async Task WriteMessagesAsync(IEnumerable<LogMessage> messages)
+        private async Task WriteMessagesAsync(List<LogMessage> messages)
         {
-            Directory.CreateDirectory(_path);
-
             // Files are grouped by day, and written up to _maxFileSize before rolling to a new file
             foreach (var group in messages.GroupBy(GetGrouping))
             {

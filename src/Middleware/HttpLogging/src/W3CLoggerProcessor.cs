@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string GetFieldsDirective()
         {
-            StringBuilder sb = new StringBuilder("#Fields:");
+            var sb = new ValueStringBuilder();
+            sb.Append("#Fields:");
             if (_loggingFields.HasFlag(W3CLoggingFields.Date))
             {
                 sb.Append(" date");

@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Gets or sets a string representing the prefix of the file name used to store the logging information.
-        /// A GUID will be added after the given value.
+        /// The current date plus a 2-digit file number (in the format {YYYYMMDDXX} will be appended to the given value.
         /// Defaults to <c>log-</c>.
         /// </summary>
         public virtual string FileName
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Gets or sets a string representing the directory where the log file will be written to
-        /// Defaults to <c>something</c>.
+        /// Defaults to <c>logs\</c> relative to the app directory.
         /// </summary>
         public string LogDirectory
         {
