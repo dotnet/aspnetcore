@@ -46,25 +46,23 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         public void Add(byte[] buffer, int offset, int count)
+            => Add(buffer.AsMemory(offset, count));
+
+        public void Add(ReadOnlyMemory<byte> memory)
         {
             ThrowIfDisposed();
 
-            while (count > 0)
+            while (!memory.IsEmpty)
             {
                 var currentPage = CurrentPage;
-                var copyLength = Math.Min(count, currentPage.Length - _currentPageIndex);
+                var copyLength = Math.Min(memory.Length, currentPage.Length - _currentPageIndex);
 
-                Buffer.BlockCopy(
-                    buffer,
-                    offset,
-                    currentPage,
-                    _currentPageIndex,
-                    copyLength);
+                memory.Slice(0, copyLength).CopyTo(currentPage.AsMemory(_currentPageIndex, copyLength));
 
                 Length += copyLength;
                 _currentPageIndex += copyLength;
-                offset += copyLength;
-                count -= copyLength;
+
+                memory = memory.Slice(copyLength);
             }
         }
 
@@ -113,7 +111,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     _currentPageIndex :
                     page.Length;
 
-                await stream.WriteAsync(page, 0, length, cancellationToken);
+                await stream.WriteAsync(page.AsMemory(0, length), cancellationToken);
             }
 
             ClearBuffers();

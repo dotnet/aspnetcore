@@ -179,7 +179,6 @@ namespace Microsoft.AspNetCore.Tests
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             builder.WebHost.UseSetting("applicationname", nameof(WebApplicationTests));
-
             builder.WebHost.UseSetting("ENVIRONMENT", envName);
             builder.WebHost.UseSetting("CONTENTROOT", contentRoot);
             builder.WebHost.UseSetting("WEBROOT", webRoot);

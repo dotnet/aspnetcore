@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 var count = 0;
                 do
                 {
-                    count = await readAsStreamAsync.ReadAsync(buffer, offset, buffer.Length - offset);
+                    count = await readAsStreamAsync.ReadAsync(buffer.AsMemory(offset));
                     offset += count;
                 } while (count != 0 && offset != buffer.Length);
 

@@ -1040,7 +1040,7 @@ namespace TestSite
 
         private async Task ProcessId(HttpContext context)
         {
-            await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
+            await context.Response.WriteAsync(Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
         }
 
         public async Task ANCM_HTTPS_PORT(HttpContext context)
@@ -1360,6 +1360,12 @@ namespace TestSite
         public Task Goaway(HttpContext httpContext)
         {
             httpContext.Response.Headers["Connection"] = "close";
+            return Task.CompletedTask;
+        }
+
+        public Task ConnectionRequestClose(HttpContext httpContext)
+        {
+            httpContext.Connection.RequestClose();
             return Task.CompletedTask;
         }
 

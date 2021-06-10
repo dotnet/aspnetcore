@@ -530,7 +530,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (count > 0)
             {
-                await _stream.WriteAsync(_byteBuffer, 0, count);
+                await _stream.WriteAsync(_byteBuffer.AsMemory(0, count));
             }
         }
 

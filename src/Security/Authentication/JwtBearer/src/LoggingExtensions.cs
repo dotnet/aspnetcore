@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Failed to validate the token.");
             _tokenValidationSucceeded = LoggerMessage.Define(
                 eventId: new EventId(2, "TokenValidationSucceeded"),
-                logLevel: LogLevel.Information,
+                logLevel: LogLevel.Debug,
                 formatString: "Successfully validated the token.");
             _errorProcessingMessage = LoggerMessage.Define(
                 eventId: new EventId(3, "ProcessingMessageFailed"),

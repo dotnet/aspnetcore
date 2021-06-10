@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var res = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+            var res = await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
 
             WriteToBuffer(buffer.AsSpan(offset, res));
 

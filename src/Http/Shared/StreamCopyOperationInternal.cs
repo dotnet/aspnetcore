@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http
                     {
                         readLength = (int)Math.Min(bytesRemaining.GetValueOrDefault(), (long)readLength);
                     }
-                    int read = await source.ReadAsync(buffer, 0, readLength, cancel);
+                    int read = await source.ReadAsync(buffer.AsMemory(0, readLength), cancel);
 
                     if (bytesRemaining.HasValue)
                     {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http
 
                     cancel.ThrowIfCancellationRequested();
 
-                    await destination.WriteAsync(buffer, 0, read, cancel);
+                    await destination.WriteAsync(buffer.AsMemory(0, read), cancel);
                 }
             }
             finally

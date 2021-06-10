@@ -89,7 +89,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             // and set the property with the combined string.
             var queryToAppend = "comp=appendblock";
             if (uriBuilder.Query != null && uriBuilder.Query.Length > 1)
+#if NETFRAMEWORK || NETSTANDARD
                 uriBuilder.Query = uriBuilder.Query.Substring(1) + "&" + queryToAppend;
+#else
+                uriBuilder.Query = string.Concat(uriBuilder.Query.AsSpan(1), "&", queryToAppend);
+#endif
             else
                 uriBuilder.Query = queryToAppend;
         }

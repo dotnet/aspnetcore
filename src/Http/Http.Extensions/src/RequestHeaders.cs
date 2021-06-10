@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
+                return Headers.Accept.GetList<MediaTypeHeaderValue>();
             }
             set
             {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<StringWithQualityHeaderValue>(HeaderNames.AcceptCharset);
+                return Headers.AcceptCharset.GetList<StringWithQualityHeaderValue>();
             }
             set
             {
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<StringWithQualityHeaderValue>(HeaderNames.AcceptEncoding);
+                return Headers.AcceptEncoding.GetList<StringWithQualityHeaderValue>();
             }
             set
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<StringWithQualityHeaderValue>(HeaderNames.AcceptLanguage);
+                return Headers.AcceptLanguage.GetList<StringWithQualityHeaderValue>();
             }
             set
             {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<CookieHeaderValue>(HeaderNames.Cookie);
+                return Headers.Cookie.GetList<CookieHeaderValue>();
             }
             set
             {
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<EntityTagHeaderValue>(HeaderNames.IfMatch);
+                return Headers.IfMatch.GetList<EntityTagHeaderValue>();
             }
             set
             {
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<EntityTagHeaderValue>(HeaderNames.IfNoneMatch);
+                return Headers.IfNoneMatch.GetList<EntityTagHeaderValue>();
             }
             set
             {

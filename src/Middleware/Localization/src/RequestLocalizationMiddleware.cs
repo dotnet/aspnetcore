@@ -126,7 +126,8 @@ namespace Microsoft.AspNetCore.Localization
 
             if (_options.ApplyCurrentCultureToResponseHeaders)
             {
-                context.Response.Headers.Add(HeaderNames.ContentLanguage, requestCulture.UICulture.Name);
+                var headers = context.Response.Headers;
+                headers.ContentLanguage = requestCulture.UICulture.Name;
             }
 
             await _next(context);

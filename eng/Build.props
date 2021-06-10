@@ -43,15 +43,6 @@
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
 
-    <!-- Exclude WinForms and WPF-related projects on non-Windows -->
-    <ProjectToExclude Condition="'$(TargetOsName)' != 'win'"
-                      Include="
-                      $(RepoRoot)src\Components\WebView\Platforms\WindowsForms\**\*.csproj;
-                      $(RepoRoot)src\Components\WebView\Platforms\Wpf\**\*.csproj;
-                      $(RepoRoot)src\Components\WebView\Samples\BlazorWinFormsApp\**\*.csproj;
-                      $(RepoRoot)src\Components\WebView\Samples\BlazorWpfApp\**\*.csproj;
-                      " />
-
     <!-- Skipping due to build unreliability with current SDK et cetera. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src/Components/test/E2ETestMigration/Microsoft.AspNetCore.Components.Migration.E2ETests.csproj" />

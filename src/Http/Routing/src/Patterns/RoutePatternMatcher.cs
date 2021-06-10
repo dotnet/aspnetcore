@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Routing
             else
             {
                 Debug.Assert(!pathSegment.IsSimple);
-                // Don't attempt to validate a complex segment at this point other than being non-emtpy,
+                // Don't attempt to validate a complex segment at this point other than being non-empty,
                 // do it in the second pass.
             }
             return true;

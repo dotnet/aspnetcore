@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IHttpMaxRequestBodySizeFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature);
         private static readonly Type IHttpResponseTrailersFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature);
         private static readonly Type IHttpResetFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
+        private static readonly Type IConnectionLifetimeNotificationFeature = typeof(global::Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature);
+        private static readonly Type IHttpActivityFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpActivityFeature);
 
         private object? _currentIHttpRequestFeature;
         private object? _currentIHttpRequestBodyDetectionFeature;
@@ -54,6 +56,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private object? _currentIHttpMaxRequestBodySizeFeature;
         private object? _currentIHttpResponseTrailersFeature;
         private object? _currentIHttpResetFeature;
+        private object? _currentIConnectionLifetimeNotificationFeature;
+        private object? _currentIHttpActivityFeature;
 
         private void Initialize()
         {
@@ -72,6 +76,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _currentITlsConnectionFeature = this;
             _currentIHttpResponseTrailersFeature = GetResponseTrailersFeature();
             _currentIHttpResetFeature = GetResetFeature();
+            _currentIConnectionLifetimeNotificationFeature = this;
+
+            _currentIHttpActivityFeature = null;
         }
 
         internal object? FastFeatureGet(Type key)
@@ -167,6 +174,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpResetFeature)
             {
                 return _currentIHttpResetFeature;
+            }
+            if (key == IConnectionLifetimeNotificationFeature)
+            {
+                return _currentIConnectionLifetimeNotificationFeature;
+            }
+            if (key == IHttpActivityFeature)
+            {
+                return _currentIHttpActivityFeature;
             }
 
             return ExtraFeatureGet(key);
@@ -274,19 +289,31 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpMaxRequestBodySizeFeature)
             {
                 _currentIHttpMaxRequestBodySizeFeature = feature;
+                return;
             }
             if (key == IHttpResponseTrailersFeature)
             {
                 _currentIHttpResponseTrailersFeature = feature;
+                return;
             }
             if (key == IHttpResetFeature)
             {
                 _currentIHttpResetFeature = feature;
+                return;
+            }
+            if (key == IHttpActivityFeature)
+            {
+                _currentIHttpActivityFeature = feature;
             }
             if (key == IISHttpContextType)
             {
                 throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
-            };
+            }
+            if (key == IConnectionLifetimeNotificationFeature)
+            {
+                _currentIConnectionLifetimeNotificationFeature = feature;
+                return;
+            }
             ExtraFeatureSet(key, feature);
         }
 
@@ -379,6 +406,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIHttpResetFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResetFeature);
+            }
+            if (_currentIHttpActivityFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpActivityFeature, _currentIHttpActivityFeature);
             }
 
             if (MaybeExtra != null)

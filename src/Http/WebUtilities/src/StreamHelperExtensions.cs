@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.IO;
 using System.Threading;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             long total = 0;
             try
             {
-                var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                var read = await stream.ReadAsync(buffer.AsMemory(), cancellationToken);
                 while (read > 0)
                 {
                     // Not all streams support cancellation directly.
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                         throw new InvalidDataException($"The stream exceeded the data limit {limit.GetValueOrDefault()}.");
                     }
                     total += read;
-                    read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                    read = await stream.ReadAsync(buffer.AsMemory(), cancellationToken);
                 }
             }
             finally

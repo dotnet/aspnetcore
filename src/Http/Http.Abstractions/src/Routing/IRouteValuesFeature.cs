@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IRouteValuesFeature
     {
         /// <summary>
-        /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the currrent
+        /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the current
         /// request.
         /// </summary>
         RouteValueDictionary RouteValues { get; set; }

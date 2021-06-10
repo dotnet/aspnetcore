@@ -45,7 +45,16 @@ namespace Microsoft.AspNetCore.Testing
                 }
             });
 
-            var time = await base.InvokeTestMethodAsync(testClassInstance);
+            var retryAttribute = GetRetryAttribute(TestMethod);
+            var time = 0.0M;
+            if (retryAttribute == null)
+            {
+                time = await base.InvokeTestMethodAsync(testClassInstance);
+            }
+            else
+            {
+                time = await RetryAsync(retryAttribute, testClassInstance);
+            }
 
             await Aggregator.RunAsync(async () =>
             {
@@ -57,6 +66,45 @@ namespace Microsoft.AspNetCore.Testing
             });
 
             return time;
+        }
+
+        protected async Task<decimal> RetryAsync(RetryAttribute retryAttribute, object testClassInstance)
+        {
+            var attempts = 0;
+            var timeTaken = 0.0M;
+            for (attempts = 0; attempts < retryAttribute.MaxRetries; attempts++)
+            {
+                timeTaken = await base.InvokeTestMethodAsync(testClassInstance);
+                if (!Aggregator.HasExceptions)
+                {
+                    return timeTaken;
+                }
+                else if (attempts < retryAttribute.MaxRetries - 1)
+                {
+                    _testOutputHelper.WriteLine($"Retrying test, attempt {attempts} of {retryAttribute.MaxRetries} failed.");
+                    await Task.Delay(5000);
+                    Aggregator.Clear();
+                }
+            }
+
+            return timeTaken;
+        }
+
+        private RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
+        {
+            var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
+            if (attributeCandidate != null)
+            {
+                return attributeCandidate;
+            }
+
+            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RetryAttribute>();
+            if (attributeCandidate != null)
+            {
+                return attributeCandidate;
+            }
+
+            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RetryAttribute>();
         }
 
         private static IEnumerable<ITestMethodLifecycle> GetLifecycleHooks(object testClassInstance, Type testClass, MethodInfo testMethod)

@@ -12,6 +12,8 @@
 
 <a href="test">Click here for some fireworks.</a>
 
+<button @onclick="NavigateToPage" id="navigate-to-page">Navigate to page</button>
+
 @code {
 
     protected override void OnInitialized()
@@ -22,6 +24,11 @@
     private void NavigationManager_LocationChanged(object sender, LocationChangedEventArgs e)
     {
         throw new InvalidTimeZoneException();
+    }
+
+    public void NavigateToPage()
+    {
+        Navigation.NavigateTo("/subdir/foo");
     }
 
     void IDisposable.Dispose() => Navigation.LocationChanged -= NavigationManager_LocationChanged;

@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side single-page applications (SPAs) with Blazor running under WebAssembly.</Description>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
+    <!-- Workaround for https://github.com/dotnet/runtime/issues/52227 -->
+    <NoWarn>$(NoWarn);CS8603</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>

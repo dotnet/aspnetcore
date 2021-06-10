@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // that point.
         //
         // Score is not part of the Endpoint itself, because it's contextual based on where
-        // the endpoint appears. An Endpoint is often be a member of multiple candiate sets.
+        // the endpoint appears. An Endpoint is often be a member of multiple candidate sets.
         public readonly int Score;
 
         // Used in tests.

@@ -274,7 +274,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 // Create the cache entry now
                 var response = context.HttpContext.Response;
-                var varyHeaders = new StringValues(response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
+                var headers = response.Headers;
+                var varyHeaders = new StringValues(headers.GetCommaSeparatedValues(HeaderNames.Vary));
                 var varyQueryKeys = new StringValues(context.HttpContext.Features.Get<IResponseCachingFeature>()?.VaryByQueryKeys);
                 context.CachedResponseValidFor = context.ResponseSharedMaxAge ??
                     context.ResponseMaxAge ??
@@ -319,18 +320,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     context.ResponseDate = context.ResponseTime!.Value;
                     // Setting the date on the raw response headers.
-                    context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(context.ResponseDate.Value);
+                    headers.Date = HeaderUtilities.FormatDate(context.ResponseDate.Value);
                 }
 
                 // Store the response on the state
                 context.CachedResponse = new CachedResponse
                 {
                     Created = context.ResponseDate.Value,
-                    StatusCode = context.HttpContext.Response.StatusCode,
+                    StatusCode = response.StatusCode,
                     Headers = new HeaderDictionary()
                 };
 
-                foreach (var header in context.HttpContext.Response.Headers)
+                foreach (var header in headers)
                 {
                     if (!string.Equals(header.Key, HeaderNames.Age, StringComparison.OrdinalIgnoreCase))
                     {

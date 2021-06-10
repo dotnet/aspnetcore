@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
@@ -23,9 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     /// </summary>
     /// <typeparam name="TEntryPoint">A type in the entry point assembly of the application.
     /// Typically the Startup or Program classes can be used.</typeparam>
-    public class WebApplicationFactory<TEntryPoint> : IDisposable where TEntryPoint : class
+    public class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
     {
         private bool _disposed;
+        private bool _disposedAsync;
         private TestServer? _server;
         private IHost? _host;
         private Action<IWebHostBuilder> _configuration;
@@ -493,7 +495,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -512,22 +513,53 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             if (disposing)
             {
-                foreach (var client in _clients)
+                if (!_disposedAsync)
                 {
-                    client.Dispose();
+                    DisposeAsync()
+                        .AsTask()
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
                 }
-
-                foreach (var factory in _derivedFactories)
-                {
-                    factory.Dispose();
-                }
-
-                _server?.Dispose();
-                _host?.StopAsync().Wait();
-                _host?.Dispose();
             }
 
             _disposed = true;
+        }
+
+        /// <inheritdoc />
+        public virtual async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (_disposedAsync)
+            {
+                return;
+            }
+
+            foreach (var client in _clients)
+            {
+                client.Dispose();
+            }
+
+            foreach (var factory in _derivedFactories)
+            {
+                await ((IAsyncDisposable)factory).DisposeAsync().ConfigureAwait(false);
+            }
+
+            _server?.Dispose();
+
+            if (_host != null)
+            {
+                await _host.StopAsync().ConfigureAwait(false);
+                _host?.Dispose();
+            }
+
+            _disposedAsync = true;
+
+            Dispose(disposing: true);
         }
 
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
