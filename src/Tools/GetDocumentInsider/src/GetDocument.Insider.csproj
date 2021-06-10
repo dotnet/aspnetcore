@@ -14,7 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
