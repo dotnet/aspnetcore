@@ -57,6 +57,11 @@ namespace Microsoft.AspNetCore.HttpLogging
                 logger.Log(state);
                 fileName = Path.Combine(TempPath, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
             }
+            var files = Directory.GetFiles(TempPath);
+            foreach (var file in files)
+            {
+                Debug.WriteLine(file);
+            }
             // Midnight could have struck between when we took the DateTime & when the log message was written
             if (!File.Exists(fileName))
             {
