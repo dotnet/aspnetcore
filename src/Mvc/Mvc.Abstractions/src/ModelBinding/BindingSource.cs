@@ -79,6 +79,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             isFromRequest: true);
 
         /// <summary>
+        /// A <see cref="BindingSource"/> for the request url path or query string.
+        /// </summary>
+        public static readonly BindingSource PathOrQuery = new BindingSource(
+            "PathOrQuery",
+            "PathOrQuery",
+            isGreedy: false,
+            isFromRequest: true);
+
+        /// <summary>
         /// A <see cref="BindingSource"/> for request services.
         /// </summary>
         public static readonly BindingSource Services = new BindingSource(

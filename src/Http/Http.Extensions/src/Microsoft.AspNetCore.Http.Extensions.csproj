@@ -12,7 +12,8 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
-    <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="StreamCopyOperationInternal.cs" />
+    <Compile Include="$(SharedSourceRoot)RequestDelegateFactoryUtilities.cs" />
+    <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" />
   </ItemGroup>
 
   <ItemGroup>
