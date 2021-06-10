@@ -147,7 +147,7 @@ dotnet_diagnostic.CA1840.severity = warning
 dotnet_diagnostic.CA1841.severity = warning
 
 # CA1845: Use span-based 'string.Concat'
-dotnet_diagnostic.CA1845.severity = suggestion
+dotnet_diagnostic.CA1845.severity = warning
 
 # CA1846: Prefer AsSpan over Substring
 dotnet_diagnostic.CA1846.severity = warning
