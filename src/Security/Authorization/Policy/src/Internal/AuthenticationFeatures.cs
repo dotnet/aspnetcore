@@ -13,28 +13,31 @@ namespace Microsoft.AspNetCore.Authorization.Policy.Internal
     /// </summary>
     internal class AuthenticationFeatures : IAuthenticateResultFeature, IHttpAuthenticationFeature
     {
+        private ClaimsPrincipal? _user;
+        private AuthenticateResult? _result;
+
         public AuthenticationFeatures(AuthenticateResult result)
         {
             Result = result;
         }
 
-        public AuthenticateResult Result { get; set; }
+        public AuthenticateResult? Result
+        {
+            get => _result;
+            set
+            {
+                _result = value;
+                _user = _result?.Principal;
+            }
+        }
 
         public ClaimsPrincipal? User
         {
-            get => Result.Principal;
+            get => _user;
             set
             {
-                if (value is not null)
-                {
-                    Result = AuthenticateResult.Success(
-                        new AuthenticationTicket(value, Result.Ticket!.Properties, Result.Ticket.AuthenticationScheme));
-                }
-                else
-                {
-                    // REVIEW: Make Result nullable and null it out here?
-                    throw new ArgumentNullException(nameof(User));
-                }
+                _user = value;
+                Result = null;
             }
         }
     }

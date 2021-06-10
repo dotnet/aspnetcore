@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// TODO
         /// </summary>
-        AuthenticateResult Result { get; set; }
+        AuthenticateResult? Result { get; set; }
     }
 }
