@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
         }
 
-        private static ApiDescription CreateApiDescription(RoutePattern pattern, string httpMethod, MethodInfo actionMethodInfo)
+        private static ApiDescription CreateApiDescription(RoutePattern pattern, string httpMethod, MethodInfo methodInfo)
         {
             var apiDescription = new ApiDescription
             {
@@ -65,17 +65,34 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         // Swagger uses this to group endpoints together.
                         // For now, put all endpoints configured with Map(Delegate) together.
                         // TODO: Use some other metadata for this.
-                        ["controller"] = "Map"
+                        ["controller"] = "Map",
                     },
                 },
             };
 
-            foreach (var parameter in actionMethodInfo.GetParameters())
+            var hasJsonBody = false;
+
+            foreach (var parameter in methodInfo.GetParameters())
             {
+                var parameterDescription = CreateApiParameterDescription(parameter, pattern);
+
+                if (parameterDescription.Source == BindingSource.Body)
+                {
+                    hasJsonBody = true;
+                }
+
                 apiDescription.ParameterDescriptions.Add(CreateApiParameterDescription(parameter, pattern));
             }
 
-            var responseType = actionMethodInfo.ReturnType;
+            if (hasJsonBody)
+            {
+                apiDescription.SupportedRequestFormats.Add(new ApiRequestFormat
+                {
+                    MediaType = "application/json",
+                });
+            }
+
+            var responseType = methodInfo.ReturnType;
 
             if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
             {
@@ -134,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                      parameter.ParameterType == typeof(CancellationToken) ||
                      parameter.ParameterType.IsInterface)
             {
-                return (BindingSource.Body, parameter.Name ?? string.Empty);
+                return (BindingSource.Services, parameter.Name ?? string.Empty);
             }
             else if (parameter.ParameterType == typeof(string) || RequestDelegateFactoryUtilities.HasTryParseMethod(parameter))
             {
