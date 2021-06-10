@@ -57,6 +57,8 @@ namespace Microsoft.AspNetCore.Authorization.Policy
                 {
                     context.User = newPrincipal;
                     var ticket = new AuthenticationTicket(newPrincipal, string.Join(";", policy.AuthenticationSchemes));
+                    // ExpiresUtc is the easiest property to reason about when dealing with multiple schemese
+                    // SignalR will use this property to evaluate auth expiration for long running connections
                     ticket.Properties.ExpiresUtc = minExpiresUtc;
                     return AuthenticateResult.Success(ticket);
                 }

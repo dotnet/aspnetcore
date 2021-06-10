@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
-using Microsoft.AspNetCore.Authorization.Policy.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Authorization
 
             var authenticateResult = await policyEvaluator.AuthenticateAsync(policy, context);
 
-            if (authenticateResult.Succeeded)
+            if (authenticateResult?.Succeeded ?? false)
             {
                 var authFeatures = new AuthenticationFeatures(authenticateResult);
                 context.Features.Set<IHttpAuthenticationFeature>(authFeatures);

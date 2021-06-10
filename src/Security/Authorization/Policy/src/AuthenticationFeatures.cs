@@ -1,12 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 
-namespace Microsoft.AspNetCore.Authorization.Policy.Internal
+namespace Microsoft.AspNetCore.Authorization.Policy
 {
     /// <summary>
     /// Keeps the User and AuthenticationResult consistent with each other
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy.Internal
             set
             {
                 _user = value;
-                Result = null;
+                _result = null;
             }
         }
     }
