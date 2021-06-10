@@ -49,6 +49,7 @@ export module DotNet {
   }
 
   const jsObjectIdKey = "__jsObjectId";
+  const jsDataReferenceLengthKey = "__jsDataReferenceLength";
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
   const windowJSObjectId = 0;
@@ -126,9 +127,15 @@ export module DotNet {
     if (jsObject && typeof jsObject === 'object') {
       cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
-      const result = {
+      let result: any = {
         [jsObjectIdKey]: nextJsObjectId
       };
+
+      // Check if this is an ArrayBufferView, and if so also provide the length of
+      // the buffer to be used for the JSDataReference.
+      if (jsObject.buffer instanceof ArrayBuffer && jsObject.byteLength !== undefined) {
+        result[jsDataReferenceLengthKey] = jsObject.byteLength;
+      }
 
       nextJsObjectId++;
 

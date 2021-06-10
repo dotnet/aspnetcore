@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -139,6 +142,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _permanentlyDisconnected = true;
             _clientProxy = null;
         }
+
+        protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSDataReference jsDataReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
+            => await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(this, jsDataReference, totalLength, maxBufferSize, cancellationToken);
 
         public static class Log
         {

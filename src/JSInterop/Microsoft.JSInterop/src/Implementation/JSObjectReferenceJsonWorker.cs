@@ -6,32 +6,39 @@ using System.Text.Json;
 namespace Microsoft.JSInterop.Implementation
 {
     /// <summary>
-    /// Used by JsonConverters to read or write a IJSObjectReference instance.
+    /// Used by JsonConverters to read or write a <see cref="IJSObjectReference"/> or <see cref="IJSDataReference"/> instance.
     /// <para>
     /// This type is part of ASP.NET Core's internal infrastructure and is not recommended for use by external code.
     /// </para>
     /// </summary>
     public static class JSObjectReferenceJsonWorker
     {
-        private static readonly JsonEncodedText _idKey = JsonEncodedText.Encode("__jsObjectId");
+        private static readonly JsonEncodedText _jsObjectIdKey = JsonEncodedText.Encode("__jsObjectId");
+        private static readonly JsonEncodedText _jsDataReferenceLengthKey = JsonEncodedText.Encode("__jsDataReferenceLength");
 
         /// <summary>
         /// Reads the id for a <see cref="JSObjectReference"/> instance.
         /// </summary>
         /// <param name="reader">The <see cref="Utf8JsonReader"/></param>
         /// <returns></returns>
-        public static long ReadJSObjectReferenceIdentifier(ref Utf8JsonReader reader)
+        public static (long, long) ReadJSObjectReferenceIdentifier(ref Utf8JsonReader reader)
         {
             long id = -1;
+            long length = -1;
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (id == -1 && reader.ValueTextEquals(_idKey.EncodedUtf8Bytes))
+                    if (id == -1 && reader.ValueTextEquals(_jsObjectIdKey.EncodedUtf8Bytes))
                     {
                         reader.Read();
                         id = reader.GetInt64();
+                    }
+                    else if (length == -1 && reader.ValueTextEquals(_jsDataReferenceLengthKey.EncodedUtf8Bytes))
+                    {
+                        reader.Read();
+                        length = reader.GetInt64();
                     }
                     else
                     {
@@ -46,10 +53,10 @@ namespace Microsoft.JSInterop.Implementation
 
             if (id == -1)
             {
-                throw new JsonException($"Required property {_idKey} not found.");
+                throw new JsonException($"Required property {_jsObjectIdKey} not found.");
             }
 
-            return id;
+            return (id, length);
         }
 
         /// <summary>
@@ -60,7 +67,7 @@ namespace Microsoft.JSInterop.Implementation
         public static void WriteJSObjectReference(Utf8JsonWriter writer, JSObjectReference objectReference)
         {
             writer.WriteStartObject();
-            writer.WriteNumber(_idKey, objectReference.Id);
+            writer.WriteNumber(_jsObjectIdKey, objectReference.Id);
             writer.WriteEndObject();
         }
     }

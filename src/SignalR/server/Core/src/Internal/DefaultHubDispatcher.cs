@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
     {
-        private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, HubMethodDescriptor> _methods = new(StringComparer.OrdinalIgnoreCase);
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IHubContext<THub> _hubContext;
         private readonly ILogger<HubDispatcher<THub>> _logger;
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             else
             {
-                bool isStreamCall = descriptor.StreamingParameters != null;
+                var isStreamCall = descriptor.StreamingParameters != null;
                 if (connection.ActiveInvocationLimit != null && !isStreamCall && !isStreamResponse)
                 {
                     return connection.ActiveInvocationLimit.RunAsync(state =>

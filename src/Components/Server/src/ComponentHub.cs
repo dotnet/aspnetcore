@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server
     // in error cases.
     internal sealed class ComponentHub : Hub
     {
-        private static readonly object CircuitKey = new object();
+        private static readonly object CircuitKey = new();
         private readonly IServerComponentDeserializer _serverComponentSerializer;
         private readonly IDataProtectionProvider _dataProtectionProvider;
         private readonly ICircuitFactory _circuitFactory;
@@ -245,6 +246,10 @@ namespace Microsoft.AspNetCore.Components.Server
             Log.ReceivedConfirmationForBatch(_logger, renderId);
             _ = circuitHost.OnRenderCompletedAsync(renderId, errorMessageOrNull);
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "HubReflectionHelper.GetHubMethods is configured to only pickup Instance methods.")]
+        public Task SupplyJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
+            => RemoteJSDataStream.SupplyData(streamId, chunk, error);
 
         public async ValueTask OnLocationChanged(string uri, bool intercepted)
         {

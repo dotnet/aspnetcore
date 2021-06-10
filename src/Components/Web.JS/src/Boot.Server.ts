@@ -122,6 +122,66 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
+  Blazor._internal.sendJSDataStream = async (data: ArrayBufferView, streamId: string) => {
+    // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
+    // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
+    // because nobody's reading the pipe)
+    setTimeout(async () => {
+      const maxMillisecondsBetweenAcks = 500;
+      let numChunksUntilNextAck = 5;
+      let lastAckTime = new Date().valueOf();
+      try {
+        const chunkSize = 31*1024; // TODO: Should this somehow auto-match the SignalR max message size, minus some overhead?
+        let position = 0;
+        while (position < data.byteLength) {
+          // TODO: Doesn't the JS side receive any backpressure indication? We're just pushing it all here.
+          // TODO: What about cancellation? If the .NET-side JSDataStream gets disposed, then ideally we'd
+          //       receive a message telling us to stop processing the stream with that streamId, and would
+          //       stop sending the data.
+          const nextChunkSize = Math.min(chunkSize, data.byteLength - position);
+          console.log(`Sending a chunk of length ${nextChunkSize}`);
+          const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
+
+
+          numChunksUntilNextAck--;
+          if (numChunksUntilNextAck > 1) {
+            // Most of the time just send and buffer within the network layer
+            await connection.send('SupplyJSDataChunk', streamId, nextChunkData, null);
+          } else {
+            // But regularly, wait for an ACK, so other events can be interleaved
+            // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
+            // faster than the .NET side can receive them. It means that if there are other user interactions
+            // while the transfer is in progress, they would get inserted in the middle, so it would be
+            // possible to navigate away or cancel without first waiting for all the remaining chunks.
+            await connection.invoke('SupplyJSDataChunk', streamId, nextChunkData, null);
+
+            // Estimate the number of chunks we should send before the next ack to achieve the desired
+            // interactivity rate
+            const timeNow = new Date().valueOf();
+            const msSinceAck = timeNow - lastAckTime;
+            lastAckTime = timeNow;
+            numChunksUntilNextAck = Math.max(1, Math.round(maxMillisecondsBetweenAcks / msSinceAck));
+          }
+
+          position += nextChunkSize;
+
+          // Somehow we need to delay sending the next item until the actual network transfer for the preceding
+          // one completed. Otherwise we'll just queue them all up instantly, which is too problematic because
+          // it prevents all other user interactions while the transfer is in progress. For example, this makes
+          // it impossible to have a "cancel" button. We need to give priority to all other events, which would
+          // be achievable if we didn't dispatch the next chunk until the previous one finished, because then
+          // any other events would already be queued.
+          //
+          // One way to do this would be *not* using SignalR streaming at all, but rather having a "pull"
+          // model like the existing <InputFile>. It would be slower, but the .NET side could request each
+          // chunk in turn once it's received the last one. That would also give cancellation for free.
+        }
+      } catch (error) {
+        await connection.send('SupplyJSDataChunk', streamId, null, error.toString());
+      }
+    }, 0);
+  };
+
   try {
     await connection.start();
   } catch (ex) {
