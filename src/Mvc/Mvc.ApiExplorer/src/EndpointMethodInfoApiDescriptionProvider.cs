@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -32,6 +33,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     && routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo
                     && routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata)
                 {
+                    // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
+                    // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
+                    // In practice, the Delegate will be called for any HTTP method if there is no IHttpMethodMetadata.
                     foreach (var httpMethod in httpMethodMetadata.HttpMethods)
                     {
                         context.Results.Add(CreateApiDescription(routeEndpoint.RoutePattern, httpMethod, methodInfo));
@@ -62,6 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 },
             };
 
+            foreach (var parameter in actionMethodInfo.GetParameters())
+            {
+                apiDescription.ParameterDescriptions.Add(CreateApiParameterDescription(parameter));
+            }
+
             var responseType = actionMethodInfo.ReturnType;
 
             if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
@@ -75,6 +84,19 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             return apiDescription;
+        }
+
+        private static ApiParameterDescription CreateApiParameterDescription(ParameterInfo parameterInfo)
+        {
+            var parameterType = parameterInfo.ParameterType;
+
+            return new ApiParameterDescription
+            {
+                Name = parameterInfo.Name ?? parameterType.Name,
+                ModelMetadata = new EndpointMethodInfoModelMetadata(ModelMetadataIdentity.ForType(parameterType)),
+                Source = BindingSource.Path,
+                DefaultValue = parameterInfo.DefaultValue,
+            };
         }
 
         private static ApiResponseType? CreateApiResponseType(Type responseType)
