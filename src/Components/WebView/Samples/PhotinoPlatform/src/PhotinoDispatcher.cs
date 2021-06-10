@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using PhotinoNET;
@@ -11,26 +10,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
 {
     internal class PhotinoDispatcher : Dispatcher
     {
-        private readonly PhotinoWindow _window;
-        private readonly int _uiThreadId;
-        private readonly MethodInfo _invokeMethodInfo;
+        private readonly PhotinoSynchronizationContext _context;
 
         public PhotinoDispatcher(PhotinoWindow window)
         {
-            _window = window ?? throw new ArgumentNullException(nameof(window));
-
-            _uiThreadId = (int)_window.GetType()
-                .GetField("_managedThreadId", BindingFlags.NonPublic | BindingFlags.Instance)!
-                .GetValue(_window)!;
-
-            _invokeMethodInfo = _window.GetType()
-                .GetMethod("Invoke", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            _context = new PhotinoSynchronizationContext(window);
+            _context.UnhandledException += (sender, e) =>
+            {
+                OnUnhandledException(e);
+            };
         }
 
-        public override bool CheckAccess()
-        {
-            return Environment.CurrentManagedThreadId == _uiThreadId;
-        }
+        public override bool CheckAccess() => SynchronizationContext.Current == _context;
 
         public override Task InvokeAsync(Action workItem)
         {
@@ -39,22 +30,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
                 workItem();
                 return Task.CompletedTask;
             }
-            else
-            {
-                var tcs = new TaskCompletionSource();
-                _invokeMethodInfo.Invoke(_window, new Action[] {() => {
-                    try
-                    {
-                        workItem();
-                        tcs.SetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                }});
-                return tcs.Task;
-            }
+
+            return _context.InvokeAsync(workItem);
         }
 
         public override Task InvokeAsync(Func<Task> workItem)
@@ -63,52 +40,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
             {
                 return workItem();
             }
-            else
-            {
-                var tcs = new TaskCompletionSource();
-                _invokeMethodInfo.Invoke(_window, new Action[]
-                {
-                    () => { _ = RunWorkItemAsync(); }
-                });
-                return tcs.Task;
 
-                async Task RunWorkItemAsync()
-                {
-                    try
-                    {
-                        await workItem();
-                        tcs.SetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                }
-            }
+            return _context.InvokeAsync(workItem);
         }
-        
+
         public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
         {
             if (CheckAccess())
             {
                 return Task.FromResult(workItem());
             }
-            else
-            {
-                var tcs = new TaskCompletionSource<TResult>();
-                _invokeMethodInfo.Invoke(_window, new Action[] {() => {
-                    try
-                    {
-                        var result = workItem();
-                        tcs.SetResult(result);
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                }});
-                return tcs.Task;
-            }
+
+            return _context.InvokeAsync<TResult>(workItem);
         }
 
         public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
@@ -117,28 +60,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
             {
                 return workItem();
             }
-            else
-            {
-                var tcs = new TaskCompletionSource<TResult>();
-                _invokeMethodInfo.Invoke(_window, new Action[]
-                {
-                    () => { _ = RunWorkItemAsync(); }
-                });
-                return tcs.Task;
 
-                async Task RunWorkItemAsync()
-                {
-                    try
-                    {
-                        var result = await workItem();
-                        tcs.SetResult(result);
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                }
-            }
+            return _context.InvokeAsync<TResult>(workItem);
         }
     }
 }
