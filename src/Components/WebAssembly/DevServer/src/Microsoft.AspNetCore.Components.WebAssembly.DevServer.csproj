@@ -22,7 +22,7 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
 
-    <Reference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" IsImplicitlyDefined="true" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" AllowExplicitReference="true" PrivateAssets="All" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <!--  We include this here to ensure that the shared framework is built before we leverage it when running
