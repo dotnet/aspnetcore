@@ -154,9 +154,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             return (message.Timestamp.Year, message.Timestamp.Month, message.Timestamp.Day);
         }
 
-        public virtual async Task OnFirstWrite(StreamWriter streamWriter)
+        public virtual Task OnFirstWrite(StreamWriter streamWriter)
         {
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
