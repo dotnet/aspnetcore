@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http
     {
         private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
 
-        // Since this is shared source the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
+        // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
         private static readonly ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
 
         public static bool HasTryParseMethod(ParameterInfo parameter)

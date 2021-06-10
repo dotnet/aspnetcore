@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
         }
 
-        private static ApiDescription CreateApiDescription(RoutePattern pattern, string httpMethod, MethodInfo methodInfo)
+        internal static ApiDescription CreateApiDescription(RoutePattern pattern, string httpMethod, MethodInfo methodInfo)
         {
             var apiDescription = new ApiDescription
             {
