@@ -8,11 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
     <ProjectReference Include="..\..\..\..\..\test\testassets\BasicTestApp\BasicTestApp.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.WebView.Photino" />
   </ItemGroup>
 
   <ItemGroup>
