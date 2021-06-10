@@ -102,6 +102,7 @@ abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.TemplateHint.get ->
 static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.GetProperty<T>(this Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! actionDescriptor) -> T?
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object? model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
+static readonly Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.PathOrQuery -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult?
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object?[]!, object!>?
