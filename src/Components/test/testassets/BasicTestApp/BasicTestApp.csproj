@@ -11,7 +11,7 @@
 
     <!-- Project supports more than one language -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-    <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
+    <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
