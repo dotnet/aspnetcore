@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly EndpointDataSource _endpointDataSource;
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider
+        // REVIEW: Does order matter here? Should this run after MVC?
         public int Order => -1100;
 
         public EndpointMethodInfoApiDescriptionProvider(EndpointDataSource endpointDataSource)
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             foreach (var parameter in actionMethodInfo.GetParameters())
             {
-                apiDescription.ParameterDescriptions.Add(CreateApiParameterDescription(parameter));
+                apiDescription.ParameterDescriptions.Add(CreateApiParameterDescription(parameter, pattern));
             }
 
             var responseType = actionMethodInfo.ReturnType;
@@ -91,11 +92,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return apiDescription;
         }
 
-        private static ApiParameterDescription CreateApiParameterDescription(ParameterInfo parameter)
+        private static ApiParameterDescription CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
         {
             var parameterType = parameter.ParameterType;
 
-            var (source, name) = GetBindingSourceAndName(parameter);
+            var (source, name) = GetBindingSourceAndName(parameter, pattern);
 
             return new ApiParameterDescription
             {
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
         // which is shared source.
-        private static (BindingSource, string) GetBindingSourceAndName(ParameterInfo parameter)
+        private static (BindingSource, string) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
         {
             var attributes = parameter.GetCustomAttributes();
 
@@ -137,9 +138,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
             else if (parameter.ParameterType == typeof(string) || RequestDelegateFactoryUtilities.HasTryParseMethod(parameter))
             {
-                // TODO: Look at the pattern and infer whether it's really the path or query.
-                // This cannot be done by RequestDelegateFactory currently because of the layering, but could be done here.
-                return (BindingSource.PathOrQuery, parameter.Name ?? string.Empty);
+                // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
+                if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
+                {
+                    return (BindingSource.Path, name);
+                }
+                else
+                {
+                    return (BindingSource.Query, parameter.Name ?? string.Empty);
+                }
             }
             else
             {
