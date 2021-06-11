@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -14,8 +12,6 @@ namespace Microsoft.JSInterop.Implementation
     /// <summary>
     /// Implements functionality for <see cref="IJSObjectReference"/>.
     /// </summary>
-    // Note that the same concrete implementation can represent either an object or a data reference. Developers
-    // work in terms of the interfaces which indicate the set of method it's useful to call.
     public class JSObjectReference : IJSObjectReference
     {
         private readonly JSRuntime _jsRuntime;
