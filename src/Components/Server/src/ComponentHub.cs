@@ -224,6 +224,17 @@ namespace Microsoft.AspNetCore.Components.Server
             await circuitHost.ReceiveByteArray(id, data);
         }
 
+        public async Task SupplyJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
+        {
+            var circuitHost = await GetActiveCircuitAsync();
+            if (circuitHost == null)
+            {
+                return;
+            }
+
+            await circuitHost.SupplyJSDataChunk(streamId, chunk, error);
+        }
+
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)
         {
             var circuitHost = await GetActiveCircuitAsync();
@@ -246,10 +257,6 @@ namespace Microsoft.AspNetCore.Components.Server
             Log.ReceivedConfirmationForBatch(_logger, renderId);
             _ = circuitHost.OnRenderCompletedAsync(renderId, errorMessageOrNull);
         }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "HubReflectionHelper.GetHubMethods is configured to only pickup Instance methods.")]
-        public Task SupplyJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
-            => RemoteJSDataStream.SupplyData(streamId, chunk, error);
 
         public async ValueTask OnLocationChanged(string uri, bool intercepted)
         {

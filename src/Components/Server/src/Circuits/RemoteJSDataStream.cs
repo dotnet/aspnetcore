@@ -14,12 +14,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class RemoteJSDataStream : Stream
     {
-        // Concerns with static `Instances`? Malicious actor could hijack another user's
-        // stream by (improbably) guessing the GUID.
-        // Maybe we put this in the JSRuntime for curcuit isolation? Would increate overhead as
-        // we'd have to go through CircuitHost, DotNetDispatcher and so on.
-        private readonly static Dictionary<Guid, RemoteJSDataStream> Instances = new();
-        private readonly JSRuntime _runtime;
+        private readonly RemoteJSRuntime _runtime;
         private readonly Guid _streamId;
         private readonly long _totalLength;
         private readonly CancellationToken _cancellationToken;
@@ -27,9 +22,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly Pipe _pipe;
         private long _bytesRead;
 
-        public static Task SupplyData(string streamId, ReadOnlySequence<byte> chunk, string error)
+        public static Task SupplyData(RemoteJSRuntime runtime, string streamId, ReadOnlySequence<byte> chunk, string error)
         {
-            if (!Instances.TryGetValue(Guid.Parse(streamId), out var instance))
+            if (!runtime.RemoteJSDataStreamInstances.TryGetValue(Guid.Parse(streamId), out var instance))
             {
                 // There is no data stream with the given identifier. It may have already been disposed.
                 // We return silently as we still expect a couple of SupplyData calls after disposal IFF the RemoteJSDataStream was cancelled.
@@ -40,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         public static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(
-            JSRuntime runtime,
+            RemoteJSRuntime runtime,
             IJSDataReference jsDataReference,
             long totalLength,
             long maxBufferSize,
@@ -54,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         private RemoteJSDataStream(
-            JSRuntime runtime,
+            RemoteJSRuntime runtime,
             Guid streamId,
             long totalLength,
             long maxBufferSize,
@@ -65,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _totalLength = totalLength;
             _cancellationToken = cancellationToken;
 
-            Instances.Add(_streamId, this);
+            _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
             _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize));
             _pipeReaderStream = _pipe.Reader.AsStream();
@@ -181,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             if (disposing)
             {
-                Instances.Remove(_streamId);
+                _runtime.RemoteJSDataStreamInstances.Remove(_streamId);
             }
         }
     }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -22,6 +23,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private bool _permanentlyDisconnected;
         private readonly long _maximumIncomingBytes;
         private int _byteArraysToBeRevivedTotalBytes;
+
+        internal readonly Dictionary<Guid, RemoteJSDataStream> RemoteJSDataStreamInstances = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
