@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, null);
             var endpointDataSource = new DefaultEndpointDataSource(endpoint);
 
-            var provider = new EndpointMethodInfoApiDescriptionProvider(endpointDataSource);
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             provider.OnProvidersExecuting(context);
             provider.OnProvidersExecuted(context);

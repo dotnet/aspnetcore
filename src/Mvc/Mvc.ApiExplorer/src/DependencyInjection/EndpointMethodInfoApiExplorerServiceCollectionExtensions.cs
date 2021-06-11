@@ -10,20 +10,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer.DependencyInjection
     /// <summary>
     /// 
     /// </summary>
-    public static class EndpointMethodInfoApiExplorerServiceCollectionExtensions
+    public static class EndpointMetadataApiExplorerServiceCollectionExtensions
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="services"></param>
-        public static void AddMethodInfoApiExplorerServices(this IServiceCollection services)
+        public static void AddEndpointMetadataApiExplorer(this IServiceCollection services)
         {
             // Try to add default services in case MVC services aren't added.
             services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
             services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
 
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IApiDescriptionProvider, EndpointMethodInfoApiDescriptionProvider>());
+                ServiceDescriptor.Transient<IApiDescriptionProvider, EndpointMetadataApiDescriptionProvider>());
         }
     }
 }

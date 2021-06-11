@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
-    internal class EndpointMethodInfoModelMetadata : ModelMetadata
+    internal class EndpointModelMetadata : ModelMetadata
     {
-        public EndpointMethodInfoModelMetadata(ModelMetadataIdentity identity) : base(identity)
+        public EndpointModelMetadata(ModelMetadataIdentity identity) : base(identity)
         {
             IsBindingAllowed = true;
         }
