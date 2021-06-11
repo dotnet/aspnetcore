@@ -340,11 +340,22 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <returns>A <see cref="IHostBuilder"/> instance.</returns>
         protected virtual IHostBuilder? CreateHostBuilder()
         {
-            var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
-            if (hostBuilder != null)
+            var assembly = typeof(TEntryPoint).Assembly;
+            var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(assembly)?.Invoke(Array.Empty<string>());
+
+            if (hostBuilder is null)
             {
-                hostBuilder.UseEnvironment(Environments.Development);
+                var deferredHostBuilder = new DeferredHostBuilder();
+                var factory = HostFactoryResolver.ResolveHostFactory(assembly, stopApplication: false, configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder);
+
+                if (factory is not null)
+                {
+                    deferredHostBuilder.SetHostFactory(factory);
+                    hostBuilder = deferredHostBuilder;
+                }
             }
+
+            hostBuilder?.UseEnvironment(Environments.Development);
             return hostBuilder;
         }
 
