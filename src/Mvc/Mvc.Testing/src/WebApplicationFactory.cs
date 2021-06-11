@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
 
             var builder = CreateWebHostBuilder();
-            if (builder is NullWebHostBuilder)
+            if (builder is null)
             {
                 var deferredHostBuilder = new DeferredHostBuilder();
                 // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
@@ -389,16 +389,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// array as arguments.
         /// </remarks>
         /// <returns>A <see cref="IWebHostBuilder"/> instance.</returns>
-        protected virtual IWebHostBuilder CreateWebHostBuilder()
+        protected virtual IWebHostBuilder? CreateWebHostBuilder()
         {
             var builder = WebHostBuilderFactory.CreateFromTypesAssemblyEntryPoint<TEntryPoint>(Array.Empty<string>());
 
-            if (builder is null)
+            if (builder is not null)
             {
-                return new NullWebHostBuilder();
+                return builder.UseEnvironment(Environments.Development);
             }
 
-            return builder.UseEnvironment(Environments.Development);
+            return null;
         }
 
         /// <summary>
@@ -587,44 +587,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             Dispose(disposing: true);
         }
 
-        private class NullWebHostBuilder : IWebHostBuilder
-        {
-            public IWebHost Build()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IWebHostBuilder ConfigureServices(Action<WebHostBuilderContext, IServiceCollection> configureServices)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string? GetSetting(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IWebHostBuilder UseSetting(string key, string? value)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
         {
             private readonly Func<IWebHostBuilder, TestServer> _createServer;
             private readonly Func<IHostBuilder, IHost> _createHost;
-            private readonly Func<IWebHostBuilder> _createWebHostBuilder;
+            private readonly Func<IWebHostBuilder?> _createWebHostBuilder;
             private readonly Func<IHostBuilder?> _createHostBuilder;
             private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
             private readonly Action<HttpClient> _configureClient;
@@ -633,7 +600,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 WebApplicationFactoryClientOptions options,
                 Func<IWebHostBuilder, TestServer> createServer,
                 Func<IHostBuilder, IHost> createHost,
-                Func<IWebHostBuilder> createWebHostBuilder,
+                Func<IWebHostBuilder?> createWebHostBuilder,
                 Func<IHostBuilder?> createHostBuilder,
                 Func<IEnumerable<Assembly>> getTestAssemblies,
                 Action<HttpClient> configureClient,
@@ -653,7 +620,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
 
-            protected override IWebHostBuilder CreateWebHostBuilder() => _createWebHostBuilder();
+            protected override IWebHostBuilder? CreateWebHostBuilder() => _createWebHostBuilder();
 
             protected override IHostBuilder? CreateHostBuilder() => _createHostBuilder();
 
