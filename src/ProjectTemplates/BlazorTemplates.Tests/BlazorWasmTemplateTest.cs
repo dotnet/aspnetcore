@@ -449,7 +449,7 @@ namespace Templates.Test
 
         private async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
         {
-            await page.WaitForSelectorAsync("ul");
+            await page.WaitForSelectorAsync("nav");
 
             // <title> element gets project ID injected into it during template execution
             Assert.Equal(appName.Trim(), (await page.GetTitleAsync()).Trim());
