@@ -100,7 +100,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
 
-                var typeParamReferences = documentNode.FindDirectiveReferences(ComponentTypeParamDirective.Directive);
+                // Constrained type parameters are only supported in Razor language versions v6.0
+                var razorLanguageVersion = codeDocument.GetParserOptions()?.Version ?? RazorLanguageVersion.Latest;
+                var directiveType = razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0
+                    ? ComponentConstrainedTypeParamDirective.Directive
+                    : ComponentTypeParamDirective.Directive;
+                var typeParamReferences = documentNode.FindDirectiveReferences(directiveType);
                 for (var i = 0; i < typeParamReferences.Count; i++)
                 {
                     var typeParamNode = (DirectiveIntermediateNode)typeParamReferences[i].Node;

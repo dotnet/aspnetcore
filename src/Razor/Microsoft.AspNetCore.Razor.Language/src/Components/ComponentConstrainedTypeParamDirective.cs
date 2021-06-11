@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
-    internal class ComponentTypeParamDirective
+    internal class ComponentConstrainedTypeParamDirective
     {
         public static DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "typeparam",
@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             builder =>
             {
                 builder.AddMemberToken(ComponentResources.TypeParamDirective_Token_Name, ComponentResources.TypeParamDirective_Token_Description);
+                builder.AddOptionalGenericTypeConstraintToken(ComponentResources.TypeParamDirective_Constraint_Name, ComponentResources.TypeParamDirective_Constraint_Description);
                 builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
                 builder.Description = ComponentResources.TypeParamDirective_Description;
             });
