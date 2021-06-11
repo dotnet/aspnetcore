@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSDataReference jsDataReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
-            => await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(this, jsDataReference, totalLength, maxBufferSize, cancellationToken);
+            => await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(this, jsDataReference, totalLength, maxBufferSize, _maximumIncomingBytes, cancellationToken);
 
         public static class Log
         {

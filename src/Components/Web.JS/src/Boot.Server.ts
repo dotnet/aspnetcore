@@ -123,7 +123,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
   const activeJSDataStreams = new Set<string>();
-  Blazor._internal.sendJSDataStream = async (data: ArrayBufferView, streamId: string) => {
+  Blazor._internal.sendJSDataStream = async (data: ArrayBufferView, streamId: string, maximumIncomingBytes: number) => {
     // First, add the current stream to the active streams. This ensures
     // we'll be able to handle any (immediate) stream cancellation requests.
     activeJSDataStreams.add(streamId);
@@ -136,10 +136,17 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
       let numChunksUntilNextAck = 5;
       let lastAckTime = new Date().valueOf();
       try {
-        const chunkSize = 31*1024; // TODO: Should this somehow auto-match the SignalR max message size, minus some overhead?
+        // Chunk Size is the max SignalR message size less 512 bytes assumed overhead.
+        const chunkSize = maximumIncomingBytes - 512;
+        if (chunkSize <= 0) {
+          throw new Error('The chunk size must be greater than 0.')
+        }
+
         let position = 0;
+
+        // Note: The server-side `StreamBufferCapacity` option (defaults to 10) can be configured to limit how many
+        // stream items from the client (per stream) will be stored before reading any more stream items (thus applying backpressure).
         while (position < data.byteLength) {
-          // TODO: Doesn't the JS side receive any backpressure indication? We're just pushing it all here.
           const nextChunkSize = Math.min(chunkSize, data.byteLength - position);
           console.log(`Sending a chunk of length ${nextChunkSize}`);
           const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
@@ -174,17 +181,6 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
           }
 
           position += nextChunkSize;
-
-          // TODO: Somehow we need to delay sending the next item until the actual network transfer for the preceding
-          // one completed. Otherwise we'll just queue them all up instantly, which is too problematic because
-          // it prevents all other user interactions while the transfer is in progress. For example, this makes
-          // it impossible to have a "cancel" button. We need to give priority to all other events, which would
-          // be achievable if we didn't dispatch the next chunk until the previous one finished, because then
-          // any other events would already be queued.
-          //
-          // One way to do this would be *not* using SignalR streaming at all, but rather having a "pull"
-          // model like the existing <InputFile>. It would be slower, but the .NET side could request each
-          // chunk in turn once it's received the last one. That would also give cancellation for free.
         }
       } catch (error) {
         await connection.send('SupplyJSDataChunk', streamId, null, error.toString());

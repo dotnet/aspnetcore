@@ -15,10 +15,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     internal class RemoteJSDataStream : Stream
     {
         // Concerns with static `Instances`? Malicious actor could hijack another user's
-        // stream by (improbably) guessing the GUID. Maybe we put this in the JSRuntime for curcuit isolation?
+        // stream by (improbably) guessing the GUID.
+        // Maybe we put this in the JSRuntime for curcuit isolation? Would increate overhead as
+        // we'd have to go through CircuitHost, DotNetDispatcher and so on.
         private readonly static Dictionary<Guid, RemoteJSDataStream> Instances = new();
         private readonly JSRuntime _runtime;
-        private readonly IJSDataReference _jsDataReference;
         private readonly Guid _streamId;
         private readonly long _totalLength;
         private readonly CancellationToken _cancellationToken;
@@ -43,24 +44,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             IJSDataReference jsDataReference,
             long totalLength,
             long maxBufferSize,
+            long maximumIncomingBytes,
             CancellationToken cancellationToken = default)
         {
             var streamId = Guid.NewGuid();
-            var remoteJSDataStream = new RemoteJSDataStream(runtime, jsDataReference, streamId, totalLength, maxBufferSize, cancellationToken);
-            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsDataReference, streamId);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, cancellationToken);
+            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsDataReference, streamId, maximumIncomingBytes);
             return remoteJSDataStream;
         }
 
         private RemoteJSDataStream(
             JSRuntime runtime,
-            IJSDataReference jsDataReference,
             Guid streamId,
             long totalLength,
             long maxBufferSize,
             CancellationToken cancellationToken)
         {
             _runtime = runtime;
-            _jsDataReference = jsDataReference;
             _streamId = streamId;
             _totalLength = totalLength;
             _cancellationToken = cancellationToken;
