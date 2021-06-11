@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
@@ -16,15 +18,16 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
-    internal class EndpointMethodInfoApiDescriptionProvider : IApiDescriptionProvider
+    internal class EndpointMetadataApiDescriptionProvider :
+        IApiDescriptionProvider, IApiResponseTypeMetadataProvider, IApiRequestFormatMetadataProvider
     {
+        // IApiResponseMetadataProvider, 
         private readonly EndpointDataSource _endpointDataSource;
 
-        // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider
-        // REVIEW: Does order matter here? Should this run after MVC?
+        // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason :D
         public int Order => -1100;
 
-        public EndpointMethodInfoApiDescriptionProvider(EndpointDataSource endpointDataSource)
+        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource)
         {
             _endpointDataSource = endpointDataSource;
         }
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
         }
 
-        internal static ApiDescription CreateApiDescription(RoutePattern pattern, string httpMethod, MethodInfo methodInfo)
+        private static ApiDescription CreateApiDescription(RoutePattern pattern, string httpMethod, MethodInfo methodInfo)
         {
             var apiDescription = new ApiDescription
             {
@@ -81,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     hasJsonBody = true;
                 }
 
-                apiDescription.ParameterDescriptions.Add(CreateApiParameterDescription(parameter, pattern));
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
             if (hasJsonBody)
@@ -111,14 +114,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private static ApiParameterDescription CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
         {
-            var parameterType = parameter.ParameterType;
-
             var (source, name) = GetBindingSourceAndName(parameter, pattern);
 
             return new ApiParameterDescription
             {
                 Name = name,
-                ModelMetadata = new EndpointMethodInfoModelMetadata(ModelMetadataIdentity.ForType(parameterType)),
+                ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(parameter.ParameterType)),
                 Source = source,
                 DefaultValue = parameter.DefaultValue,
             };
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 return new ApiResponseType
                 {
-                    ModelMetadata = new EndpointMethodInfoModelMetadata(ModelMetadataIdentity.ForType(typeof(void))),
+                    ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(typeof(void))),
                     StatusCode = 200,
                 };
             }
@@ -194,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 return new ApiResponseType
                 {
                     ApiResponseFormats = { new ApiResponseFormat { MediaType = "text/plain" } },
-                    ModelMetadata = new EndpointMethodInfoModelMetadata(ModelMetadataIdentity.ForType(typeof(string))),
+                    ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(typeof(string))),
                     StatusCode = 200,
                 };
             }
@@ -204,10 +205,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 return new ApiResponseType
                 {
                     ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
-                    ModelMetadata = new EndpointMethodInfoModelMetadata(ModelMetadataIdentity.ForType(responseType)),
+                    ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(responseType)),
                     StatusCode = 200,
                 };
             }
+        }
+
+        public IReadOnlyList<string>? GetSupportedContentTypes(string contentType, Type objectType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetContentTypes(MediaTypeCollection contentTypes)
+        {
+            throw new NotImplementedException();
         }
     }
 }
