@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity provider that uses Entity Framework Core.</Description>
-    <TargetFrameworks>net5.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;entityframeworkcore;identity;membership</PackageTags>
     <Nullable>disable</Nullable>
