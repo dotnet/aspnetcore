@@ -50,7 +50,6 @@ interface IBlazor {
     getSatelliteAssemblies?: any,
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
     sendJSDataStream?: (data: any, streamId: string, maximumIncomingBytes: number) => void,
-    cancelJSDataStream?: (streamId: string) => void,
   }
 }
 

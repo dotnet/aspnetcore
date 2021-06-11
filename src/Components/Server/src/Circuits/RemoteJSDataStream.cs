@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
@@ -22,16 +21,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly Pipe _pipe;
         private long _bytesRead;
 
-        public static Task SupplyData(RemoteJSRuntime runtime, string streamId, ReadOnlySequence<byte> chunk, string error)
+        public static async Task<bool> SupplyData(RemoteJSRuntime runtime, string streamId, ReadOnlySequence<byte> chunk, string error)
         {
             if (!runtime.RemoteJSDataStreamInstances.TryGetValue(Guid.Parse(streamId), out var instance))
             {
                 // There is no data stream with the given identifier. It may have already been disposed.
-                // We return silently as we still expect a couple of SupplyData calls after disposal IFF the RemoteJSDataStream was cancelled.
-                return Task.CompletedTask;
+                // We notify JS that the stream has been cancelled/disposed.
+                return false;
             }
 
-            return instance.SupplyData(chunk, error);
+            await instance.SupplyData(chunk, error);
+            return true;
         }
 
         public static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(
@@ -168,12 +168,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         protected override void Dispose(bool disposing)
         {
-            // Fire & forget a notification to the JSRuntime to stop sending additional chunks.
-            if (_cancellationToken.IsCancellationRequested)
-            {
-                _ = Task.Run(() => _runtime.InvokeVoidAsync("Blazor._internal.cancelJSDataStream", _streamId));
-            }
-
             if (disposing)
             {
                 _runtime.RemoteJSDataStreamInstances.Remove(_streamId);

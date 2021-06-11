@@ -418,14 +418,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // SupplyJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        internal async Task SupplyJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
+        internal async Task<bool> SupplyJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
         {
             AssertInitialized();
             AssertNotDisposed();
 
             try
             {
-                await RemoteJSDataStream.SupplyData(JSRuntime, streamId, chunk, error);
+                return await RemoteJSDataStream.SupplyData(JSRuntime, streamId, chunk, error);
             }
             catch (Exception ex)
             {
@@ -434,6 +434,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Log.SupplyJSDataChunkException(_logger, streamId, ex);
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid chunk supplied to stream."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                return false;
             }
         }
 

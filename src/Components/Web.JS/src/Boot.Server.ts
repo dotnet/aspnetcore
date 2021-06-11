@@ -122,12 +122,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
-  const activeJSDataStreams = new Set<string>();
   Blazor._internal.sendJSDataStream = async (data: ArrayBufferView, streamId: string, maximumIncomingBytes: number) => {
-    // First, add the current stream to the active streams. This ensures
-    // we'll be able to handle any (immediate) stream cancellation requests.
-    activeJSDataStreams.add(streamId);
-
     // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
     // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
     // because nobody's reading the pipe)
@@ -156,21 +151,17 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
             // Most of the time just send and buffer within the network layer
             await connection.send('SupplyJSDataChunk', streamId, nextChunkData, null);
           } else {
-            // Check to see if the stream has been cancelled from .NET
-            // We do this check everytime we wait for an ACK to avoid this additional
-            // overhead on every single chunk. This means we'll still send a couple
-            // of SupplyJSDataChunk requests after cancellation (which will be ignored by .NET).
-            // If preferred, this check can be done on every chunk to avoid the lingering SupplyJSDataChunk calls.
-            if (!activeJSDataStreams.has(streamId)) {
-              break;
-            }
-
             // But regularly, wait for an ACK, so other events can be interleaved
             // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
             // faster than the .NET side can receive them. It means that if there are other user interactions
             // while the transfer is in progress, they would get inserted in the middle, so it would be
             // possible to navigate away or cancel without first waiting for all the remaining chunks.
-            await connection.invoke('SupplyJSDataChunk', streamId, nextChunkData, null);
+            const streamIsAlive = await connection.invoke<boolean>('SupplyJSDataChunk', streamId, nextChunkData, null);
+
+            // Checks to see if we should continue streaming or if the stream has been cancelled/disposed.
+            if (!streamIsAlive) {
+              break;
+            }
 
             // Estimate the number of chunks we should send before the next ack to achieve the desired
             // interactivity rate
@@ -184,15 +175,9 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
         }
       } catch (error) {
         await connection.send('SupplyJSDataChunk', streamId, null, error.toString());
-      } finally {
-        activeJSDataStreams.delete(streamId);
       }
     }, 0);
   };
-
-  Blazor._internal.cancelJSDataStream = async (streamId: string) => {
-    activeJSDataStreams.delete(streamId);
-  }
 
   try {
     await connection.start();
