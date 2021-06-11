@@ -148,7 +148,7 @@ namespace Templates.Test
             await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
             await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
 
-            await page.WaitForSelectorAsync("ul");
+            await page.WaitForSelectorAsync("nav");
             // <title> element gets project ID injected into it during template execution
             Assert.Equal(project.ProjectName.Trim(), (await page.GetTitleAsync()).Trim());
 

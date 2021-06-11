@@ -125,7 +125,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 CaseSensitive,
                 parameters,
                 new Dictionary<string, string>(Metadata),
-                diagnostics.ToArray());
+                diagnostics.ToArray())
+            {
+                IsEditorRequired = IsEditorRequired,
+            };
 
             return descriptor;
         }

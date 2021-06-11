@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -570,5 +570,8 @@
   </data>
   <data name="ParseError_Unexpected_Identifier_At_Position" xml:space="preserve">
     <value>'{0}' is not valid in this position. Valid options are '{1}'</value>
+  </data>
+  <data name="Component_EditorRequiredParameterNotSpecified" xml:space="preserve">
+    <value>Component '{0}' expects a value for the parameter '{1}', but a value may not have been provided.</value>
   </data>
 </root>

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     // but this one outputs properties annotated for Components's property injector, plus it doesn't need to
     // support multiple CodeTargets.
 
-    internal class ComponentInjectDirective
+    internal static class ComponentInjectDirective
     {
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "inject",
