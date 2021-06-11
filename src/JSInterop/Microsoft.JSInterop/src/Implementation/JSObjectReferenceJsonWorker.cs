@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.Json;
 
 namespace Microsoft.JSInterop.Implementation
@@ -20,22 +21,22 @@ namespace Microsoft.JSInterop.Implementation
         /// Reads the id for a <see cref="JSObjectReference"/> instance.
         /// </summary>
         /// <param name="reader">The <see cref="Utf8JsonReader"/></param>
-        /// <returns></returns>
-        public static (long, long) ReadJSObjectReferenceIdentifier(ref Utf8JsonReader reader)
+        /// <returns>The deserialized id and length for the <see cref="JSObjectReference"/>.</returns>
+        public static DeserializedJSObjectReferenceValues ReadJSObjectReference(ref Utf8JsonReader reader)
         {
-            long id = -1;
-            long length = -1;
+            long? id = null;
+            long? length = null;
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (id == -1 && reader.ValueTextEquals(_jsObjectIdKey.EncodedUtf8Bytes))
+                    if (id is null && reader.ValueTextEquals(_jsObjectIdKey.EncodedUtf8Bytes))
                     {
                         reader.Read();
                         id = reader.GetInt64();
                     }
-                    else if (length == -1 && reader.ValueTextEquals(_jsDataReferenceLengthKey.EncodedUtf8Bytes))
+                    else if (length is null && reader.ValueTextEquals(_jsDataReferenceLengthKey.EncodedUtf8Bytes))
                     {
                         reader.Read();
                         length = reader.GetInt64();
@@ -51,12 +52,12 @@ namespace Microsoft.JSInterop.Implementation
                 }
             }
 
-            if (id == -1)
+            if (!id.HasValue)
             {
                 throw new JsonException($"Required property {_jsObjectIdKey} not found.");
             }
 
-            return (id, length);
+            return new DeserializedJSObjectReferenceValues() { Id = id.Value, Length = length };
         }
 
         /// <summary>
@@ -70,5 +71,21 @@ namespace Microsoft.JSInterop.Implementation
             writer.WriteNumber(_jsObjectIdKey, objectReference.Id);
             writer.WriteEndObject();
         }
+    }
+
+    /// <summary>
+    /// Contains the JSObjectReference.Id and Length that was deserialized
+    /// </summary>
+    public struct DeserializedJSObjectReferenceValues
+    {
+        /// <summary>
+        /// Can be used for the <see cref="JSObjectReference.Id"/>
+        /// </summary>
+        public long Id;
+
+        /// <summary>
+        /// Can be used for the <see cref="JSDataReference.Length"/>
+        /// </summary>
+        public long? Length;
     }
 }

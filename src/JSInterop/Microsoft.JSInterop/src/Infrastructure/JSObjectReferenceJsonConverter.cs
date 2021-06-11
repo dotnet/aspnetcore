@@ -22,8 +22,8 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override IJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var (id, _) = JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref reader);
-            return new JSObjectReference(_jsRuntime, id);
+            var deserializedValues = JSObjectReferenceJsonWorker.ReadJSObjectReference(ref reader);
+            return new JSObjectReference(_jsRuntime, deserializedValues.Id);
         }
 
         public override void Write(Utf8JsonWriter writer, IJSObjectReference value, JsonSerializerOptions options)

@@ -22,14 +22,14 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override IJSDataReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var (id, length) = JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref reader);
+            var deserializedValues = JSObjectReferenceJsonWorker.ReadJSObjectReference(ref reader);
 
-            if (length == -1)
+            if (!deserializedValues.Length.HasValue)
             {
                 throw new JsonException($"Required property __jsDataReferenceLength not found.");
             }
 
-            return new JSDataReference(_jsRuntime, id, length);
+            return new JSDataReference(_jsRuntime, deserializedValues.Id, deserializedValues.Length.Value);
         }
 
         public override void Write(Utf8JsonWriter writer, IJSDataReference value, JsonSerializerOptions options)

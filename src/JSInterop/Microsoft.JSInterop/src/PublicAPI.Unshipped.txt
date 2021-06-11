@@ -2,13 +2,17 @@
 Microsoft.JSInterop.IJSDataReference
 Microsoft.JSInterop.IJSDataReference.Length.get -> long
 Microsoft.JSInterop.IJSDataReference.OpenReadStreamAsync(long maxAllowedSize = 512000, long maxBufferSize = 102400, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.IO.Stream!>!
+Microsoft.JSInterop.Implementation.DeserializedJSObjectReferenceValues
+Microsoft.JSInterop.Implementation.DeserializedJSObjectReferenceValues.DeserializedJSObjectReferenceValues() -> void
+Microsoft.JSInterop.Implementation.DeserializedJSObjectReferenceValues.Id -> long
+Microsoft.JSInterop.Implementation.DeserializedJSObjectReferenceValues.Length -> long?
 Microsoft.JSInterop.Implementation.JSDataReference
 Microsoft.JSInterop.Implementation.JSDataReference.JSDataReference(Microsoft.JSInterop.JSRuntime! jsRuntime, long id, long totalLength) -> void
 Microsoft.JSInterop.Implementation.JSDataReference.Length.get -> long
 Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ResultJson.get -> string?
 Microsoft.JSInterop.JSRuntime.Dispose() -> void
-static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref System.Text.Json.Utf8JsonReader reader) -> (long, long)
+static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.ReadJSObjectReference(ref System.Text.Json.Utf8JsonReader reader) -> Microsoft.JSInterop.Implementation.DeserializedJSObjectReferenceValues
 static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.WriteJSObjectReference(System.Text.Json.Utf8JsonWriter! writer, Microsoft.JSInterop.Implementation.JSObjectReference! objectReference) -> void
 *REMOVED*Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.DotNetInvocationResult(System.Exception! exception, string? errorKind) -> void
 *REMOVED*Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.DotNetInvocationResult(object? result) -> void
