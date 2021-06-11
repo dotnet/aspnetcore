@@ -100,8 +100,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
 
-                var razorLanguageVersion = codeDocument.GetParserOptions().Version;
-                // Constrained type parameters are support in Razor language versions v6.0
+                // Constrained type parameters are only supported in Razor language versions v6.0
+                var razorLanguageVersion = codeDocument.GetParserOptions()?.Version ?? RazorLanguageVersion.Latest;
                 var directiveType = razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0
                     ? ComponentConstrainedTypeParamDirective.Directive
                     : ComponentTypeParamDirective.Directive;
