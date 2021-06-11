@@ -2,7 +2,7 @@
 Microsoft.AspNetCore.Components.WebView.WebViewManager
 Microsoft.AspNetCore.Components.WebView.WebViewManager.AddRootComponentAsync(System.Type! componentType, string! selector, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
-Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispose() -> void
+Microsoft.AspNetCore.Components.WebView.WebViewManager.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.WebView.WebViewManager.MessageReceived(System.Uri! sourceUri, string! message) -> void
 Microsoft.AspNetCore.Components.WebView.WebViewManager.Navigate(string! url) -> void
 Microsoft.AspNetCore.Components.WebView.WebViewManager.RemoveRootComponentAsync(string! selector) -> System.Threading.Tasks.Task!
@@ -12,4 +12,4 @@ Microsoft.Extensions.DependencyInjection.ComponentsWebViewServiceCollectionExten
 abstract Microsoft.AspNetCore.Components.WebView.WebViewManager.NavigateCore(System.Uri! absoluteUri) -> void
 abstract Microsoft.AspNetCore.Components.WebView.WebViewManager.SendMessage(string! message) -> void
 static Microsoft.Extensions.DependencyInjection.ComponentsWebViewServiceCollectionExtensions.AddBlazorWebView(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-virtual Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispose(bool disposing) -> void
+virtual Microsoft.AspNetCore.Components.WebView.WebViewManager.DisposeAsync(bool disposing) -> System.Threading.Tasks.ValueTask
