@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.HotReload;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -51,12 +53,19 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            var partManager = GetApplicationPartManager(services);
+            var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
+            var partManager = GetApplicationPartManager(services, environment);
             services.TryAddSingleton(partManager);
 
             ConfigureDefaultFeatureProviders(partManager);
             ConfigureDefaultServices(services);
             AddMvcCoreServices(services);
+
+            if (environment?.IsDevelopment() ?? false)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IActionDescriptorChangeProvider, HotReloadService>());
+            }
 
             var builder = new MvcCoreBuilder(services, partManager);
 
@@ -71,14 +80,13 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
-        private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services)
+        private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services, IWebHostEnvironment? environment)
         {
             var manager = GetServiceFromCollection<ApplicationPartManager>(services);
             if (manager == null)
             {
                 manager = new ApplicationPartManager();
 
-                var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
                 var entryAssemblyName = environment?.ApplicationName;
                 if (string.IsNullOrEmpty(entryAssemblyName))
                 {

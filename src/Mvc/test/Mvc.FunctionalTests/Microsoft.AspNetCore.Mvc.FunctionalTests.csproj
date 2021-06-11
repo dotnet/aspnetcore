@@ -44,6 +44,7 @@
 
     <Reference Include="AngleSharp" />
     <Reference Include="Microsoft.AspNet.WebApi.Client" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// </summary>
     public class DefaultModelMetadataProvider : ModelMetadataProvider
     {
-        private readonly ModelMetadataCache _modelMetadataCache = new ModelMetadataCache();
+        private readonly ConcurrentDictionary<ModelMetadataIdentity, ModelMetadataCacheEntry> _modelMetadataCache = new();
         private readonly Func<ModelMetadataIdentity, ModelMetadataCacheEntry> _cacheEntryFactory;
         private readonly ModelMetadataCacheEntry _metadataCacheEntryForObjectType;
 
@@ -70,6 +70,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <value>Same as <see cref="MvcOptions.ModelBindingMessageProvider"/> in all production scenarios.</value>
         protected DefaultModelBindingMessageProvider ModelBindingMessageProvider { get; }
+
+        internal void ClearCache() => _modelMetadataCache.Clear();
 
         /// <inheritdoc />
         public override IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
@@ -440,10 +442,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             return new DefaultMetadataDetails(
                 key,
                 ModelAttributes.GetAttributesForParameter(key.ParameterInfo!, key.ModelType));
-        }
-
-        private class ModelMetadataCache : ConcurrentDictionary<ModelMetadataIdentity, ModelMetadataCacheEntry>
-        {
         }
 
         private readonly struct ModelMetadataCacheEntry
