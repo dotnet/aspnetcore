@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components
         /// displayed and the parameter values that will be supplied to the page.
         /// </summary>
         [Parameter]
+        [EditorRequired]
         public RouteData RouteData { get; set; }
 
         /// <summary>

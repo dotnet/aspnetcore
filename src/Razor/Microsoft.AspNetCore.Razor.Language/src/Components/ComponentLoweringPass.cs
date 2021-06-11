@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private ComponentIntermediateNode RewriteAsComponent(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
+        private static ComponentIntermediateNode RewriteAsComponent(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
         {
             var component = new ComponentIntermediateNode()
             {
@@ -89,13 +89,54 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // because we see the nodes in the wrong order.
             foreach (var childContent in component.ChildContents)
             {
-                childContent.ParameterName = childContent.ParameterName ?? component.ChildContentParameterName ?? ComponentMetadata.ChildContent.DefaultParameterName;
+                childContent.ParameterName ??= component.ChildContentParameterName ?? ComponentMetadata.ChildContent.DefaultParameterName;
             }
+
+            ValidateRequiredAttributes(node, tagHelper, component);
 
             return component;
         }
 
-        private MarkupElementIntermediateNode RewriteAsElement(TagHelperIntermediateNode node)
+        private static void ValidateRequiredAttributes(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper, ComponentIntermediateNode intermediateNode)
+        {
+            if (intermediateNode.Children.Any(c => c is TagHelperDirectiveAttributeIntermediateNode node && (node.TagHelper?.IsSplatTagHelper() ?? false)))
+            {
+                // If there are any splat attributes, assume the user may have provided all values.
+                // This pass runs earlier than ComponentSplatLoweringPass, so we cannot rely on the presence of SplatIntermediateNode to make this check.
+                return;
+            }
+
+            foreach (var requiredAttribute in tagHelper.EditorRequiredAttributes)
+            {
+                if (!IsPresentAsAttribute(requiredAttribute.Name, intermediateNode))
+                {
+                    intermediateNode.Diagnostics.Add(
+                      RazorDiagnosticFactory.CreateComponent_EditorRequiredParameterNotSpecified(
+                          node.Source ?? SourceSpan.Undefined,
+                          intermediateNode.TagName,
+                          requiredAttribute.Name));
+                }
+            }
+
+            static bool IsPresentAsAttribute(string attributeName, ComponentIntermediateNode intermediateNode)
+            {
+                foreach (var child in intermediateNode.Children)
+                {
+                    if (child is ComponentAttributeIntermediateNode attributeNode && attributeName == attributeNode.AttributeName)
+                    {
+                        return true;
+                    }
+                    else if (child is ComponentChildContentIntermediateNode childContent && attributeName == childContent.AttributeName)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        private static MarkupElementIntermediateNode RewriteAsElement(TagHelperIntermediateNode node)
         {
             var result = new MarkupElementIntermediateNode()
             {
