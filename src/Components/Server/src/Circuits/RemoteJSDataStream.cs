@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         // Concerns with static `Instances`? Malicious actor could hijack another user's
         // stream by (improbably) guessing the GUID. Maybe we put this in the JSRuntime for curcuit isolation?
         private readonly static Dictionary<Guid, RemoteJSDataStream> Instances = new();
-
+        private readonly JSRuntime _runtime;
+        private readonly IJSDataReference _jsDataReference;
         private readonly Guid _streamId;
         private readonly long _totalLength;
         private readonly CancellationToken _cancellationToken;
@@ -29,7 +30,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (!Instances.TryGetValue(Guid.Parse(streamId), out var instance))
             {
-                throw new InvalidOperationException("There is no data stream with the given identifier. It may have already been disposed.");
+                // There is no data stream with the given identifier. It may have already been disposed.
+                // We return silently as we still expect a couple of SupplyData calls after disposal IFF the RemoteJSDataStream was cancelled.
+                return Task.CompletedTask;
             }
 
             return instance.SupplyData(chunk, error);
@@ -43,13 +46,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CancellationToken cancellationToken = default)
         {
             var streamId = Guid.NewGuid();
-            var remoteJSDataStream = new RemoteJSDataStream(streamId, totalLength, maxBufferSize, cancellationToken);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, jsDataReference, streamId, totalLength, maxBufferSize, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsDataReference, streamId);
             return remoteJSDataStream;
         }
 
-        private RemoteJSDataStream(Guid streamId, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
+        private RemoteJSDataStream(
+            JSRuntime runtime,
+            IJSDataReference jsDataReference,
+            Guid streamId,
+            long totalLength,
+            long maxBufferSize,
+            CancellationToken cancellationToken)
         {
+            _runtime = runtime;
+            _jsDataReference = jsDataReference;
             _streamId = streamId;
             _totalLength = totalLength;
             _cancellationToken = cancellationToken;
@@ -150,16 +161,24 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, cancellationToken);
+            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCts.Token);
         }
 
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            return await _pipeReaderStream.ReadAsync(buffer, cancellationToken);
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, cancellationToken);
+            return await _pipeReaderStream.ReadAsync(buffer, linkedCts.Token);
         }
 
         protected override void Dispose(bool disposing)
         {
+            // Fire & forget a notification to the JSRuntime to stop sending additional chunks.
+            if (_cancellationToken.IsCancellationRequested)
+            {
+                _ = Task.Run(() => _runtime.InvokeVoidAsync("Blazor._internal.cancelJSDataStream", _streamId));
+            }
+
             if (disposing)
             {
                 Instances.Remove(_streamId);

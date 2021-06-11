@@ -122,11 +122,12 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
+  const activeJSDataStreams = new Map<string, number>();
   Blazor._internal.sendJSDataStream = async (data: ArrayBufferView, streamId: string) => {
     // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
     // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
     // because nobody's reading the pipe)
-    setTimeout(async () => {
+    const handle = setTimeout(async () => {
       const maxMillisecondsBetweenAcks = 500;
       let numChunksUntilNextAck = 5;
       let lastAckTime = new Date().valueOf();
@@ -135,19 +136,22 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
         let position = 0;
         while (position < data.byteLength) {
           // TODO: Doesn't the JS side receive any backpressure indication? We're just pushing it all here.
-          // TODO: What about cancellation? If the .NET-side JSDataStream gets disposed, then ideally we'd
-          //       receive a message telling us to stop processing the stream with that streamId, and would
-          //       stop sending the data.
           const nextChunkSize = Math.min(chunkSize, data.byteLength - position);
           console.log(`Sending a chunk of length ${nextChunkSize}`);
           const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
-
 
           numChunksUntilNextAck--;
           if (numChunksUntilNextAck > 1) {
             // Most of the time just send and buffer within the network layer
             await connection.send('SupplyJSDataChunk', streamId, nextChunkData, null);
           } else {
+            // Check to see if the stream has been cancelled from .NET
+            // We do this check everytime we wait for an ACK to avoid this additional
+            // overhead on every single chunk.
+            if (activeJSDataStreams.get(streamId) === undefined) {
+              break;
+            }
+
             // But regularly, wait for an ACK, so other events can be interleaved
             // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
             // faster than the .NET side can receive them. It means that if there are other user interactions
@@ -165,7 +169,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
           position += nextChunkSize;
 
-          // Somehow we need to delay sending the next item until the actual network transfer for the preceding
+          // TODO: Somehow we need to delay sending the next item until the actual network transfer for the preceding
           // one completed. Otherwise we'll just queue them all up instantly, which is too problematic because
           // it prevents all other user interactions while the transfer is in progress. For example, this makes
           // it impossible to have a "cancel" button. We need to give priority to all other events, which would
@@ -178,9 +182,27 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
         }
       } catch (error) {
         await connection.send('SupplyJSDataChunk', streamId, null, error.toString());
+      } finally {
+        activeJSDataStreams.delete(streamId);
       }
     }, 0);
+
+    // Note: need to convert to generic/number to avoid automatic type cast to NodeJS.Timeout
+    activeJSDataStreams.set(streamId, handle as any as number);
   };
+
+  Blazor._internal.cancelJSDataStream = async (streamId: string) => {
+    const handle = activeJSDataStreams.get(streamId);
+
+    if (handle === undefined) {
+      return;
+    }
+
+    // Note clearing the timeout only cancels the function from running IF it hasn't started yet.
+    clearTimeout(handle);
+
+    activeJSDataStreams.delete(streamId);
+  }
 
   try {
     await connection.start();
