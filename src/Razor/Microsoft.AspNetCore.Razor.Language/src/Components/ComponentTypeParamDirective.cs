@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
-    internal class ComponentTypeParamDirective
+    internal static class ComponentTypeParamDirective
     {
         public static DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "typeparam",
