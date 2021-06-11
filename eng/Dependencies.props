@@ -130,7 +130,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" />
     <LatestPackageReference Include="Microsoft.Owin.Testing" />
     <LatestPackageReference Include="Microsoft.Web.Administration" />
-    <LatestPackageReference Include="Microsoft.Web.WebView2" />
     <LatestPackageReference Include="Microsoft.Web.Xdt" />
     <LatestPackageReference Include="NETStandard.Library" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
@@ -176,6 +175,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
     <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="Photino.NET" />
     <LatestPackageReference Include="PlaywrightSharp" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />

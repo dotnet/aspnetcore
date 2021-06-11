@@ -66,3 +66,5 @@ virtual Microsoft.AspNetCore.Mvc.Formatters.NewtonsoftJsonInputFormatter.Release
 virtual Microsoft.AspNetCore.Mvc.Formatters.NewtonsoftJsonOutputFormatter.CreateJsonSerializer() -> Newtonsoft.Json.JsonSerializer!
 virtual Microsoft.AspNetCore.Mvc.Formatters.NewtonsoftJsonOutputFormatter.CreateJsonSerializer(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext! context) -> Newtonsoft.Json.JsonSerializer!
 virtual Microsoft.AspNetCore.Mvc.Formatters.NewtonsoftJsonOutputFormatter.CreateJsonWriter(System.IO.TextWriter! writer) -> Newtonsoft.Json.JsonWriter!
+Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions.ReadJsonWithRequestCulture.get -> bool
+Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions.ReadJsonWithRequestCulture.set -> void

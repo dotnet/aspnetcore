@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     public abstract class TagHelperDescriptor : IEquatable<TagHelperDescriptor>
     {
         private IEnumerable<RazorDiagnostic> _allDiagnostics;
+        private BoundAttributeDescriptor[] _editorRequiredAttributes;
 
         protected TagHelperDescriptor(string kind)
         {
@@ -45,6 +46,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal bool? IsComponentFullyQualifiedNameMatchCache { get; set; }
         internal bool? IsChildContentTagHelperCache { get; set; }
         internal ParsedTypeInformation? ParsedTypeInfo { get; set; }
+        internal BoundAttributeDescriptor[] EditorRequiredAttributes
+        {
+            get
+            {
+                _editorRequiredAttributes ??= GetEditorRequiredAttributes(BoundAttributes);
+                return _editorRequiredAttributes;
+            }
+        }
 
         public bool HasErrors
         {
@@ -94,6 +103,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             // TagHelperDescriptors are immutable instances and it should be safe to cache it's hashes once.
             _hashCode ??= TagHelperDescriptorComparer.Default.GetHashCode(this);
             return _hashCode.Value;
+        }
+
+        private static BoundAttributeDescriptor[] GetEditorRequiredAttributes(IReadOnlyList<BoundAttributeDescriptor> boundAttributeDescriptors)
+        {
+            List<BoundAttributeDescriptor> editorRequiredAttributes = null;
+            var count = boundAttributeDescriptors.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var attribute = boundAttributeDescriptors[i];
+                if (attribute.IsEditorRequired)
+                {
+                    editorRequiredAttributes ??= new();
+                    editorRequiredAttributes.Add(attribute);
+                }
+            }
+
+            return editorRequiredAttributes?.ToArray() ?? Array.Empty<BoundAttributeDescriptor>();
         }
 
         internal readonly struct ParsedTypeInformation

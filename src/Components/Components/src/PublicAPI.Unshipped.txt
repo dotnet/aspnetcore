@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Components.ComponentApplicationState.PersistAsJson<TValue>(
 Microsoft.AspNetCore.Components.ComponentApplicationState.PersistState(string! key, byte[]! value) -> void
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakeAsJson<TValue>(string! key, out TValue? instance) -> bool
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakePersistedState(string! key, out byte[]? value) -> bool
+Microsoft.AspNetCore.Components.EditorRequiredAttribute
+Microsoft.AspNetCore.Components.EditorRequiredAttribute.EditorRequiredAttribute() -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ChildContent.set -> void

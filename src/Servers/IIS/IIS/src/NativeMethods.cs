@@ -132,6 +132,9 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern int http_close_connection(NativeSafeHandle pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll)]
+        private static extern int http_response_set_need_goaway(NativeSafeHandle pInProcessHandler);
+
+        [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_response_set_unknown_header(NativeSafeHandle pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool fReplace);
 
         [DllImport(AspNetCoreModuleDll)]
@@ -296,6 +299,11 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_response_set_known_header(pInProcessHandler, headerId, pHeaderValue, length, fReplace));
         }
 
+        internal static void HttpSetNeedGoAway(NativeSafeHandle pInProcessHandler)
+        {
+            Validate(http_response_set_need_goaway(pInProcessHandler));
+        }
+
         public static void HttpGetAuthenticationInformation(NativeSafeHandle pInProcessHandler, out string authType, out IntPtr token)
         {
             Validate(http_get_authentication_information(pInProcessHandler, out authType, out token));
@@ -319,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_reset_stream(pInProcessHandler, errorCode));
         }
 
-        internal static unsafe bool HttpSupportTrailer(NativeSafeHandle pInProcessHandler)
+        internal static unsafe bool HttpHasResponse4(NativeSafeHandle pInProcessHandler)
         {
             bool supportsTrailers;
             Validate(http_has_response4(pInProcessHandler, out supportsTrailers));

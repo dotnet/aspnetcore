@@ -76,7 +76,11 @@ namespace Microsoft.Extensions.WebEncoders.Testing
             }
 
             output.Write("JavaScriptEncode[[");
+#if NETFRAMEWORK || NETSTANDARD
             output.Write(value.Substring(startIndex, characterCount));
+#else
+            output.Write(value.AsSpan(startIndex, characterCount));
+#endif
             output.Write("]]");
         }
 

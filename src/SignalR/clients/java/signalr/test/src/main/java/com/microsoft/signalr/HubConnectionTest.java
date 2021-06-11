@@ -2704,8 +2704,9 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        Exception exception = assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+        HttpRequestException exception = assertThrows(HttpRequestException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Unexpected status code returned from negotiate: 404 .", exception.getMessage());
+        assertEquals(404, exception.getStatusCode());
 
         List<HttpRequest> sentRequests = client.getSentRequests();
         assertEquals(1, sentRequests.size());
@@ -3859,9 +3860,10 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+                HttpRequestException exception = assertThrows(HttpRequestException.class,
             () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Unexpected status code returned from negotiate: 500 Internal server error.", exception.getMessage());
+        assertEquals(500, exception.getStatusCode());
     }
 
     @Test

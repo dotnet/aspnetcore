@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
                 else
                 {
-                    return _template.Substring(0, _index) + "|" + _template.Substring(_index);
+                    return string.Concat(_template.Substring(0, _index), "|", _template.Substring(_index));
                 }
             }
         }

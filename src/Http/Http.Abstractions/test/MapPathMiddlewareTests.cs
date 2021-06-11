@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal(basePath + requestPath.Substring(0, matchPath.Length), (string)context.Items["test.PathBase"]!);
+            Assert.Equal(string.Concat(basePath, requestPath.AsSpan(0, matchPath.Length)), (string)context.Items["test.PathBase"]!);
             Assert.Equal(requestPath.Substring(matchPath.Length), context.Items["test.Path"]);
         }
 

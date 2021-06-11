@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Components
 {
     public static partial class BindConverter
@@ -374,6 +376,11 @@ namespace Microsoft.AspNetCore.Components
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         protected virtual void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
+    }
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public partial class EditorRequiredAttribute : Attribute
+    {
+        public EditorRequiredAttribute() { }
     }
 }
 namespace Microsoft.AspNetCore.Components.CompilerServices
