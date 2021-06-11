@@ -12,6 +12,7 @@
     </Navigating>
     <Found Context="routeData">
         <RouteView RouteData="@routeData" />
+        <FocusOnNavigate RouteData="@routeData" Selector="#lazy-page" />
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(RouterTestLayout)">

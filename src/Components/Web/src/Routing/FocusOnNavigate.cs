@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     /// </summary>
     public class FocusOnNavigate : ComponentBase
     {
-        private Type? _lastNavigatedPageType;
+        private Type? _lastNavigatedPageType = typeof(NonMatchingType);
         private bool _focusAfterRender;
 
         [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
@@ -61,5 +61,9 @@ namespace Microsoft.AspNetCore.Components.Routing
                 await JSRuntime.InvokeVoidAsync(DomWrapperInterop.FocusBySelector, Selector);
             }
         }
+
+        // On the first render, we always want to consider the page type changed, even if it's null.
+        // So we need some other non-null type to compare with it.
+        private class NonMatchingType {}
     }
 }
