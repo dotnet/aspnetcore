@@ -33,8 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         public IHost Build()
         {
-            // This will never be bull if the case where Build is being called
-            return new DeferredHost((IHost)_hostFactory!(Array.Empty<string>()));
+            // This will never be null if the case where Build is being called
+            var host = (IHost)_hostFactory!(Array.Empty<string>());
+
+            // We can't return the host directly since we need to defer the call to StartAsync
+            return new DeferredHost(host);
         }
 
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
@@ -83,9 +86,10 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             _hostFactory = hostFactory;
         }
 
-        private class DeferredHost : IHost
+        private class DeferredHost : IHost, IAsyncDisposable
         {
-            private IHost _host;
+            private readonly IHost _host;
+
             public DeferredHost(IHost host)
             {
                 _host = host;
@@ -95,6 +99,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             public void Dispose() => _host.Dispose();
 
+            public ValueTask DisposeAsync()
+            {
+                if (_host is IAsyncDisposable disposable)
+                {
+                    return disposable.DisposeAsync();
+                }
+                Dispose();
+                return default;
+            }
+
             public Task StartAsync(CancellationToken cancellationToken = default)
             {
                 var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -102,13 +116,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 // Wait on the existing host to start running and have this call wait on that. This avoids starting the actual host too early and
                 // leaves the application in charge of calling start.
 
-                // REVIEW: This will deadlock if the application creates the host but never calls start.
-                _host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.Register(() => tcs.TrySetResult());
+                using var reg = cancellationToken.UnsafeRegister(_ => tcs.TrySetCanceled(), null);
+
+                // REVIEW: This will deadlock if the application creates the host but never calls start. This is mitigated by the cancellationToken
+                // but it's rarely a valid token for Start
+                _host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.UnsafeRegister(_ => tcs.TrySetResult(), null);
 
                 return tcs.Task;
             }
 
-            public Task StopAsync(CancellationToken cancellationToken = default) => _host.StopAsync();
+            public Task StopAsync(CancellationToken cancellationToken = default) => _host.StopAsync(cancellationToken);
         }
     }
 }
