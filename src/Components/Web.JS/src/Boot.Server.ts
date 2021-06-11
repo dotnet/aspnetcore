@@ -122,12 +122,16 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
-  const activeJSDataStreams = new Map<string, number>();
+  const activeJSDataStreams = new Set<string>();
   Blazor._internal.sendJSDataStream = async (data: ArrayBufferView, streamId: string) => {
+    // First, add the current stream to the active streams. This ensures
+    // we'll be able to handle any (immediate) stream cancellation requests.
+    activeJSDataStreams.add(streamId);
+
     // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
     // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
     // because nobody's reading the pipe)
-    const handle = setTimeout(async () => {
+    setTimeout(async () => {
       const maxMillisecondsBetweenAcks = 500;
       let numChunksUntilNextAck = 5;
       let lastAckTime = new Date().valueOf();
@@ -147,8 +151,10 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
           } else {
             // Check to see if the stream has been cancelled from .NET
             // We do this check everytime we wait for an ACK to avoid this additional
-            // overhead on every single chunk.
-            if (activeJSDataStreams.get(streamId) === undefined) {
+            // overhead on every single chunk. This means we'll still send a couple
+            // of SupplyJSDataChunk requests after cancellation (which will be ignored by .NET).
+            // If preferred, this check can be done on every chunk to avoid the lingering SupplyJSDataChunk calls.
+            if (!activeJSDataStreams.has(streamId)) {
               break;
             }
 
@@ -186,21 +192,9 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
         activeJSDataStreams.delete(streamId);
       }
     }, 0);
-
-    // Note: need to convert to generic/number to avoid automatic type cast to NodeJS.Timeout
-    activeJSDataStreams.set(streamId, handle as any as number);
   };
 
   Blazor._internal.cancelJSDataStream = async (streamId: string) => {
-    const handle = activeJSDataStreams.get(streamId);
-
-    if (handle === undefined) {
-      return;
-    }
-
-    // Note clearing the timeout only cancels the function from running IF it hasn't started yet.
-    clearTimeout(handle);
-
     activeJSDataStreams.delete(streamId);
   }
 
