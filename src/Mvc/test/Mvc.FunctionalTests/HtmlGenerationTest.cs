@@ -135,10 +135,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData("Link", null)]
         [InlineData("Script", null)]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
         public Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
             => HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
 
