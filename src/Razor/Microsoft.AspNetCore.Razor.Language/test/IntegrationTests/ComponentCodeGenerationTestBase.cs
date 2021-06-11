@@ -655,6 +655,33 @@ namespace Test
         }
 
         [Fact]
+        public void Component_WithEditorRequiredChildContent_ValueSpecifiedAsText_WithoutName()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredChildContent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredChildContent>This is some text</ComponentWithEditorRequiredChildContent>
+
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            Assert.Empty(generated.Diagnostics);
+        }
+
+        [Fact]
         public void Component_WithEditorRequiredChildContent_ValueSpecified()
         {
             AdditionalSyntaxTrees.Add(Parse(@"
