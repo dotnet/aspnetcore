@@ -187,13 +187,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var exNullMethodInfo1 = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(methodInfo: null!, serviceProvider));
             var exNullMethodInfo2 = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(methodInfo: null!, serviceProvider, _ => 0));
             var exNullTargetFactory = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(methodInfo!, serviceProvider, targetFactory: null!));
-            var exNullServiceProvider = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(methodInfo!, serviceProvider: null!));
 
             Assert.Equal("action", exNullAction.ParamName);
             Assert.Equal("methodInfo", exNullMethodInfo1.ParamName);
             Assert.Equal("methodInfo", exNullMethodInfo2.ParamName);
             Assert.Equal("targetFactory", exNullTargetFactory.ParamName);
-            Assert.Equal("serviceProvider", exNullServiceProvider.ParamName);
         }
 
         [Fact]
