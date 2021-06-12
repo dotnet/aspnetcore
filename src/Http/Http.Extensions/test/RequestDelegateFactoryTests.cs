@@ -1125,7 +1125,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create(@delegate, serviceProvider: null);
 
             var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestDelegate(httpContext));
             Assert.Contains(message, exception.Message);
@@ -1170,7 +1170,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create(@delegate, serviceProvider: null);
 
             await requestDelegate(httpContext);
 
