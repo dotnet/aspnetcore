@@ -8,4 +8,4 @@ var app = WebApplication.Create(args);
 
 app.MapGet("/", (Func<string>)(() => "Hello World"));
 
-app.Run();
+app.Start();
