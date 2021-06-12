@@ -138,11 +138,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             static void CancelReader(object? state) => ((PipeReader)state!).CancelPendingRead();
 
             using (response)
-#if NETCOREAPP
-            using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
-#else
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
             using (var stream = await response.Content.ReadAsStreamAsync())
-#endif
+#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
             {
                 var reader = PipeReader.Create(stream);
 
@@ -152,9 +150,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 {
                     while (true)
                     {
-#pragma warning disable CA2016 // We rely on the CancelReader callback to cancel pending reads. Do not pass the token to ReadAsync since that would result in an exception on cancelation.
-                        var result = await reader.ReadAsync();
-#pragma warning restore CA2016
+                        // We rely on the CancelReader callback to cancel pending reads. Do not pass the token to ReadAsync since that would result in an exception on cancelation.
+                        var result = await reader.ReadAsync(default);
                         var buffer = result.Buffer;
                         var consumed = buffer.Start;
                         var examined = buffer.End;
@@ -179,7 +176,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                                     case ServerSentEventsMessageParser.ParseResult.Completed:
                                         Log.MessageToApplication(_logger, message!.Length);
 
-                                        flushResult = await _application.Output.WriteAsync(message, cancellationToken);
+                                        // When cancellationToken is canceled the next line will cancel pending flushes on the pipe unblocking the await.
+                                        // Avoid passing the passed in context.
+                                        flushResult = await _application.Output.WriteAsync(message, default);
 
                                         _parser.Reset();
                                         break;
