@@ -161,7 +161,8 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             context.Response.StatusCode = (int)responseMessage.StatusCode;
             foreach (var header in responseMessage.Headers)
             {
-				if (context.Request.Protocol != "HTTP/1.1" && Http2NotForwardedResponseHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
+				if ((HttpProtocol.IsHttp2(context.Request.Protocol) || HttpProtocol.IsHttp3(context.Request.Protocol))
+					&& Http2NotForwardedResponseHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
 				{
 					continue;
 				}
