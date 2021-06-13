@@ -38,6 +38,7 @@
     <ProjectReference Include="..\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
     <ProjectReference Include="..\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
     <ProjectReference Include="..\WebSites\SimpleWebSiteWithWebApplicationBuilder\SimpleWebSiteWithWebApplicationBuilder.csproj" />
+    <ProjectReference Include="..\WebSites\SimpleWebSiteWithWebApplicationBuilderException\SimpleWebSiteWithWebApplicationBuilderException.csproj" />
     <ProjectReference Include="..\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />
     <ProjectReference Include="..\WebSites\VersioningWebSite\VersioningWebSite.csproj" />
     <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
