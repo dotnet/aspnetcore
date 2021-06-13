@@ -29,6 +29,9 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         // Others just aren't applicable in proxy scenarios
         private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol", "Sec-WebSocket-Version" };
 
+		// In case the connection to the client is HTTP/2 and to the server HTTP/1.1, let's get rid of the HTTP/1.1 only headers
+		private static readonly string[] Http2NotForwardedResponseHeaders = new[] { "Connection", "Transfer-Encoding", "Keep-Alive", "Upgrade", "Proxy-Connection" };
+
         public static HttpClient CreateHttpClientForProxy(TimeSpan requestTimeout)
         {
             var handler = new HttpClientHandler
@@ -158,6 +161,10 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             context.Response.StatusCode = (int)responseMessage.StatusCode;
             foreach (var header in responseMessage.Headers)
             {
+				if (context.Request.Protocol != "HTTP/1.1" && Http2NotForwardedResponseHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
+				{
+					continue;
+				}
                 context.Response.Headers[header.Key] = header.Value.ToArray();
             }
 
