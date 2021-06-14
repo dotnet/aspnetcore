@@ -1,9 +1,8 @@
 #nullable enable
 Microsoft.JSInterop.IJSDataReference
 Microsoft.JSInterop.IJSDataReference.Length.get -> long
-Microsoft.JSInterop.IJSDataReference.OpenReadStreamAsync(long maxAllowedSize = 512000, long maxBufferSize = 102400, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.IO.Stream!>!
+Microsoft.JSInterop.IJSDataReference.OpenReadStreamAsync(long maxAllowedSize = 512000, long maxBufferSize = 102400, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
 Microsoft.JSInterop.Implementation.JSDataReference
-Microsoft.JSInterop.Implementation.JSDataReference.JSDataReference(Microsoft.JSInterop.JSRuntime! jsRuntime, long id, long totalLength) -> void
 Microsoft.JSInterop.Implementation.JSDataReference.Length.get -> long
 Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ResultJson.get -> string?

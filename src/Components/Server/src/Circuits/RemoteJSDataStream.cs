@@ -11,12 +11,12 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteJSDataStream : Stream
+    internal sealed class RemoteJSDataStream : Stream
     {
         private readonly RemoteJSRuntime _runtime;
         private readonly Guid _streamId;
         private readonly long _totalLength;
-        private readonly CancellationToken _cancellationToken;
+        private readonly CancellationToken _streamCancellationToken;
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
         private long _bytesRead;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return await instance.ReceiveData(chunk, error);
         }
 
-        public static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(
+        public static async ValueTask<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(
             RemoteJSRuntime runtime,
             IJSDataReference jsDataReference,
             long totalLength,
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _runtime = runtime;
             _streamId = streamId;
             _totalLength = totalLength;
-            _cancellationToken = cancellationToken;
+            _streamCancellationToken = cancellationToken;
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 CopyToPipeWriter(chunk, _pipe.Writer);
                 _pipe.Writer.Advance((int)chunk.Length);
-                await _pipe.Writer.FlushAsync(_cancellationToken);
+                await _pipe.Writer.FlushAsync(_streamCancellationToken);
 
                 if (_bytesRead == _totalLength)
                 {
@@ -109,6 +109,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             catch (Exception e)
             {
                 await _pipe.Writer.CompleteAsync(e);
+                Dispose(true);
                 return false;
             }
         }
@@ -150,13 +151,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, cancellationToken);
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken);
             return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCts.Token);
         }
 
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, cancellationToken);
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken);
             return await _pipeReaderStream.ReadAsync(buffer, linkedCts.Token);
         }
 

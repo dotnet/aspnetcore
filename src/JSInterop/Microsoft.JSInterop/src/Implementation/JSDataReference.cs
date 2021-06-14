@@ -11,12 +11,12 @@ namespace Microsoft.JSInterop.Implementation
     /// <summary>
     /// Implements functionality for <see cref="IJSDataReference"/>.
     /// </summary>
-    public class JSDataReference : JSObjectReference, IJSDataReference
+    public sealed class JSDataReference : JSObjectReference, IJSDataReference
     {
         private readonly JSRuntime _jsRuntime;
 
         /// <inheritdoc />
-        public long Length { get; private set; }
+        public long Length { get; }
 
         /// <summary>
         /// Inititializes a new <see cref="JSDataReference"/> instance.
@@ -24,11 +24,11 @@ namespace Microsoft.JSInterop.Implementation
         /// <param name="jsRuntime">The <see cref="JSRuntime"/> used for invoking JS interop calls.</param>
         /// <param name="id">The unique identifier.</param>
         /// <param name="totalLength">The length of the data stream coming from JS represented by this data reference.</param>
-        protected internal JSDataReference(JSRuntime jsRuntime, long id, long totalLength) : base(jsRuntime, id)
+        internal JSDataReference(JSRuntime jsRuntime, long id, long totalLength) : base(jsRuntime, id)
         {
             if (totalLength <= 0)
             {
-                throw new InvalidOperationException($"The incoming data stream of length {totalLength} cannot be empty.");
+                throw new ArgumentOutOfRangeException(nameof(totalLength), totalLength, "Length must be a positive value.");
             }
 
             _jsRuntime = jsRuntime;
@@ -36,11 +36,11 @@ namespace Microsoft.JSInterop.Implementation
         }
 
         /// <inheritdoc />
-        async Task<Stream> IJSDataReference.OpenReadStreamAsync(long maxLength, long maxBufferSize, CancellationToken cancellationToken)
+        async ValueTask<Stream> IJSDataReference.OpenReadStreamAsync(long maxLength, long maxBufferSize, CancellationToken cancellationToken)
         {
             if (Length > maxLength)
             {
-                throw new InvalidOperationException($"The incoming data stream of length {Length} exceeds the maximum length {maxLength}.");
+                throw new ArgumentOutOfRangeException(nameof(maxLength), $"The incoming data stream of length {Length} exceeds the maximum length {maxLength}.");
             }
 
             return await _jsRuntime.ReadJSDataAsStreamAsync(this, Length, maxBufferSize, cancellationToken);
