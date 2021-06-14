@@ -471,11 +471,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
-#if NETCOREAPP
-                        var responseBuffer = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-#else
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
-#endif
+#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
                         var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
                         {

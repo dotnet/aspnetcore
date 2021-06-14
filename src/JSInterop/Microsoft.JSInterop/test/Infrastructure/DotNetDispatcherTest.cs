@@ -22,8 +22,8 @@ namespace Microsoft.JSInterop.Infrastructure
                 DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(" ", "SomeMethod", default, default), "[]");
             });
 
-            Assert.StartsWith("Cannot be null, empty, or whitespace.", ex.Message);
-            Assert.Equal("AssemblyName", ex.ParamName);
+            Assert.StartsWith("Property 'AssemblyName' cannot be null, empty, or whitespace.", ex.Message);
+            Assert.Equal("assemblyKey", ex.ParamName);
         }
 
         [Fact]
