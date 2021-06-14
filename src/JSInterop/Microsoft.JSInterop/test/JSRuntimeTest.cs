@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 using Xunit;
 
@@ -393,6 +394,20 @@ namespace Microsoft.JSInterop
             // Assert
             Assert.Equal(2, runtime.ByteArraysToBeRevived.Count);
             Assert.Equal("Element id '7' cannot be added to the byte arrays to be revived with length '2'.", ex.Message);
+        }
+
+        [Fact]
+        public async void ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            var dataReference = new JSDataReference(runtime, 10, 10);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await runtime.ReadJSDataAsStreamAsync(dataReference, 10, 10, CancellationToken.None));
+
+            // Assert
+            Assert.Equal("The current JavaScript runtime does not support reading data streams.", exception.Message);
         }
 
         private class JSError

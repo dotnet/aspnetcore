@@ -23,15 +23,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, string streamId, byte[] chunk, string error)
         {
-            if (!runtime.RemoteJSDataStreamInstances.TryGetValue(Guid.Parse(streamId), out var instance))
+            if (!Guid.TryParse(streamId, out var guid))
+            {
+                throw new ArgumentException("The streamId is not recognized.");
+            }
+
+            if (!runtime.RemoteJSDataStreamInstances.TryGetValue(guid, out var instance))
             {
                 // There is no data stream with the given identifier. It may have already been disposed.
                 // We notify JS that the stream has been cancelled/disposed.
                 return false;
             }
 
-            await instance.ReceiveData(chunk, error);
-            return true;
+            return await instance.ReceiveData(chunk, error);
         }
 
         public static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(
@@ -70,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         // data without having to copy it into a temporary buffer in BlazorPackHubProtocolWorker. But trying
         // this gives strange errors; sometimes the "chunk" variable below has a negative length, even though
         // the logic never returns a corrupted item as far as I can tell.
-        private async Task ReceiveData(byte[] chunk, string error)
+        private async Task<bool> ReceiveData(byte[] chunk, string error)
         {
             try
             {
@@ -99,11 +103,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     await _pipe.Writer.CompleteAsync();
                 }
+
+                return true;
             }
             catch (Exception e)
             {
                 await _pipe.Writer.CompleteAsync(e);
-                return;
+                return false;
             }
         }
 
