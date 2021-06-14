@@ -207,7 +207,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     _invokeInstanceDotNetMethodSuccess(logger, invocationInfo.MethodIdentifier, invocationInfo.DotNetObjectId, invocationInfo.CallId, null);
                 }
-
             }
         }
     }

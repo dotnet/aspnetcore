@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly Pipe _pipe;
         private long _bytesRead;
 
-        public static async Task<bool> SupplyData(RemoteJSRuntime runtime, string streamId, ReadOnlySequence<byte> chunk, string error)
+        public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, string streamId, byte[] chunk, string error)
         {
             if (!runtime.RemoteJSDataStreamInstances.TryGetValue(Guid.Parse(streamId), out var instance))
             {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 return false;
             }
 
-            await instance.SupplyData(chunk, error);
+            await instance.ReceiveData(chunk, error);
             return true;
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         // data without having to copy it into a temporary buffer in BlazorPackHubProtocolWorker. But trying
         // this gives strange errors; sometimes the "chunk" variable below has a negative length, even though
         // the logic never returns a corrupted item as far as I can tell.
-        private async Task SupplyData(ReadOnlySequence<byte> chunk, string error)
+        private async Task ReceiveData(byte[] chunk, string error)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private static void CopyToPipeWriter(ReadOnlySequence<byte> chunk, PipeWriter writer)
+        private static void CopyToPipeWriter(byte[] chunk, PipeWriter writer)
         {
             var pipeBuffer = writer.GetSpan((int)chunk.Length);
             chunk.CopyTo(pipeBuffer);

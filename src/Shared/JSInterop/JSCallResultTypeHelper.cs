@@ -15,10 +15,14 @@ namespace Microsoft.JSInterop
             if (typeof(TResult).Assembly == _currentAssembly
                 && (typeof(TResult) == typeof(IJSObjectReference)
                 || typeof(TResult) == typeof(IJSInProcessObjectReference)
-                || typeof(TResult) == typeof(IJSUnmarshalledObjectReference)
-                || typeof(TResult) == typeof(IJSDataReference)))
+                || typeof(TResult) == typeof(IJSUnmarshalledObjectReference)))
             {
                 return JSCallResultType.JSObjectReference;
+            }
+            else if (typeof(TResult).Assembly == _currentAssembly
+                && typeof(TResult) == typeof(IJSDataReference))
+            {
+                return JSCallResultType.JSDataReference;
             }
             else
             {
