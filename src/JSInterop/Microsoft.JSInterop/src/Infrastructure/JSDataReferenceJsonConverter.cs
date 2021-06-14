@@ -10,6 +10,8 @@ namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class JSDataReferenceJsonConverter : JsonConverter<IJSDataReference>
     {
+        private static readonly JsonEncodedText _jsDataReferenceLengthKey = JsonEncodedText.Encode("__jsDataReferenceLength");
+
         private readonly JSRuntime _jsRuntime;
 
         public JSDataReferenceJsonConverter(JSRuntime jsRuntime)
@@ -22,14 +24,45 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override IJSDataReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var deserializedValues = JSObjectReferenceJsonWorker.ReadJSObjectReference(ref reader);
+            long? id = null;
+            long? length = null;
 
-            if (!deserializedValues.Length.HasValue)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                throw new JsonException($"Required property __jsDataReferenceLength not found.");
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    if (id is null && reader.ValueTextEquals(JSObjectReferenceJsonWorker.JSObjectIdKey.EncodedUtf8Bytes))
+                    {
+                        reader.Read();
+                        id = reader.GetInt64();
+                    }
+                    else if (length is null && reader.ValueTextEquals(_jsDataReferenceLengthKey.EncodedUtf8Bytes))
+                    {
+                        reader.Read();
+                        length = reader.GetInt64();
+                    }
+                    else
+                    {
+                        throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
+                    }
+                }
+                else
+                {
+                    throw new JsonException($"Unexcepted JSON token {reader.TokenType}");
+                }
             }
 
-            return new JSDataReference(_jsRuntime, deserializedValues.Id, deserializedValues.Length.Value);
+            if (!id.HasValue)
+            {
+                throw new JsonException($"Required property {JSObjectReferenceJsonWorker.JSObjectIdKey} not found.");
+            }
+
+            if (!length.HasValue)
+            {
+                throw new JsonException($"Required property {_jsDataReferenceLengthKey} not found.");
+            }
+
+            return new JSDataReference(_jsRuntime, id.Value, length.Value);
         }
 
         public override void Write(Utf8JsonWriter writer, IJSDataReference value, JsonSerializerOptions options)

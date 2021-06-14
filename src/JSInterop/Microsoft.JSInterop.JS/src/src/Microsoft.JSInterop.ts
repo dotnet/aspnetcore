@@ -127,15 +127,9 @@ export module DotNet {
     if (jsObject && typeof jsObject === 'object') {
       cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
-      let result: any = {
+      const result = {
         [jsObjectIdKey]: nextJsObjectId
       };
-
-      // Check if this is an ArrayBufferView, and if so also provide the length of
-      // the buffer to be used for the JSDataReference.
-      if (jsObject.buffer instanceof ArrayBuffer && jsObject.byteLength !== undefined) {
-        result[jsDataReferenceLengthKey] = jsObject.byteLength;
-      }
 
       nextJsObjectId++;
 
@@ -143,6 +137,36 @@ export module DotNet {
     } else {
       throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
     }
+  }
+
+  /**
+   * Creates a JavaScript data reference that can be passed to .NET via interop calls.
+   *
+   * @param jsObject The JavaScript Object used to create the JavaScript data reference.
+   * @returns The JavaScript data reference (this will be the same instance as the given object).
+   * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
+   */
+  export function createJSDataReference(jsObject: any): any {
+    // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
+    // using a JSDataReference.
+    if (!(jsObject.buffer instanceof ArrayBuffer)) {
+      throw new Error(`Cannot create a JSDataReference from the value '${jsObject}' as it is not a valid ArrayBuffer.`);
+    } else if (jsObject.byteLength === undefined) {
+      throw new Error(`Cannot create a JSDataReference from the value '${jsObject}' as it doesn't have a byteLength.`);
+    }
+
+    const result: any = {
+      [jsDataReferenceLengthKey]: jsObject.byteLength,
+    }
+
+    try {
+      const jsObjectReference = createJSObjectReference(jsObject);
+      result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
+    } catch {
+      throw new Error(`Cannot create a JSDataReference from the value '${jsObject}'.`);
+    }
+
+    return result;
   }
 
   /**
@@ -238,7 +262,8 @@ export module DotNet {
    */
   export enum JSCallResultType {
     Default = 0,
-    JSObjectReference = 1
+    JSObjectReference = 1,
+    JSDataReference = 2,
   }
 
   /**
@@ -453,6 +478,8 @@ export module DotNet {
         return returnValue;
       case JSCallResultType.JSObjectReference:
         return createJSObjectReference(returnValue);
+      case JSCallResultType.JSDataReference:
+        return createJSDataReference(returnValue);
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

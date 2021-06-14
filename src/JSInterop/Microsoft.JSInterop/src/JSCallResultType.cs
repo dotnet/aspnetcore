@@ -17,5 +17,10 @@ namespace Microsoft.JSInterop
         /// Indicates that the returned value is to be treated as a JS object reference.
         /// </summary>
         JSObjectReference = 1,
+
+        /// <summary>
+        /// Indicates that the returned value is to be treated as a JS data reference.
+        /// </summary>
+        JSDataReference = 2,
     }
 }
