@@ -14,14 +14,14 @@ namespace Microsoft.JSInterop
     public interface IJSDataReference : IAsyncDisposable
     {
         /// <summary>
-        /// Length of the stream provided by JS.
+        /// Length of the stream provided by JavaScript.
         /// </summary>
         public long Length { get; }
 
         /// <summary>
         /// Initiatializes a <see cref="Stream"/> with the <see cref="JSRuntime"/> for the current data reference.
         /// </summary>
-        /// <param name="maxAllowedSize">Maximum number of bytes permitted to be read from JS.</param>
+        /// <param name="maxAllowedSize">Maximum number of bytes permitted to be read from JavaScript.</param>
         /// <param name="maxBufferSize">Amount of bytes to buffer before flushing.</param>
         /// <param name="cancellationToken"><see cref="CancellationToken" /> for cancelling read.</param>
         /// <returns>Stream which can provide data associated with the current data reference.</returns>

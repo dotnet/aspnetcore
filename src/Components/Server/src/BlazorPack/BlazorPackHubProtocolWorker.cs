@@ -35,13 +35,6 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                 {
                     return reader.ReadSingle();
                 }
-                else if (type == typeof(ReadOnlySequence<byte>))
-                {
-                    // This is how I think it should work, but sometimes the memory seems to get corrupted.
-                    // The "await foreach (var chunk in subject)" code in RemoteJSDataStream sometimes gets
-                    // chunks with negative lengths. So, this is not actually used in this proof-of-concept
-                    return reader.ReadBytes() ?? null;
-                }
                 else if (type == typeof(byte[]))
                 {
                     var bytes = reader.ReadBytes();

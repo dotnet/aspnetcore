@@ -66,17 +66,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _pipeReaderStream = _pipe.Reader.AsStream();
         }
 
-        // TODO: Surely this should be IAsyncEnumerable<ReadOnlySequence<byte>> so we can pass through the
-        // data without having to copy it into a temporary buffer. But trying this gives strange errors -
-        // sometimes the "chunk" variable below has a negative length, even though the logic in BlazorPackHubProtocolWorker
-        // never returns a corrupted item as far as I can tell.
+        // Ideally we'd have IAsyncEnumerable<ReadOnlySequence<byte>> here so we can pass through the
+        // data without having to copy it into a temporary buffer in BlazorPackHubProtocolWorker. But trying
+        // this gives strange errors; sometimes the "chunk" variable below has a negative length, even though
+        // the logic never returns a corrupted item as far as I can tell.
         private async Task SupplyData(ReadOnlySequence<byte> chunk, string error)
         {
-            if (chunk.Length < 0)
-            {
-                throw new InvalidOperationException($"The incoming data chunk cannot be negative.");
-            }
-
             try
             {
                 if (!string.IsNullOrEmpty(error))
@@ -94,13 +89,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 if (_bytesRead > _totalLength)
                 {
                     throw new InvalidOperationException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were read.");
-                }
-
-                // Enforce 1 MB max chunk size.
-                const int maxChunkLength = 1024 * 1024;
-                if (chunk.Length > maxChunkLength)
-                {
-                    throw new InvalidOperationException($"The incoming stream chunk of length {chunk.Length} exceeds the limit of {maxChunkLength}.");
                 }
 
                 CopyToPipeWriter(chunk, _pipe.Writer);

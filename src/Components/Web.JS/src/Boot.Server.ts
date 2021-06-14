@@ -149,14 +149,14 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
           numChunksUntilNextAck--;
           if (numChunksUntilNextAck > 1) {
             // Most of the time just send and buffer within the network layer
-            await connection.send('SupplyJSDataChunk', streamId, nextChunkData, null);
+            await connection.send('ReceiveJSDataChunk', streamId, nextChunkData, null);
           } else {
             // But regularly, wait for an ACK, so other events can be interleaved
             // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
             // faster than the .NET side can receive them. It means that if there are other user interactions
             // while the transfer is in progress, they would get inserted in the middle, so it would be
             // possible to navigate away or cancel without first waiting for all the remaining chunks.
-            const streamIsAlive = await connection.invoke<boolean>('SupplyJSDataChunk', streamId, nextChunkData, null);
+            const streamIsAlive = await connection.invoke<boolean>('ReceiveJSDataChunk', streamId, nextChunkData, null);
 
             // Checks to see if we should continue streaming or if the stream has been cancelled/disposed.
             if (!streamIsAlive) {
@@ -174,7 +174,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
           position += nextChunkSize;
         }
       } catch (error) {
-        await connection.send('SupplyJSDataChunk', streamId, null, error.toString());
+        await connection.send('ReceiveJSDataChunk', streamId, null, error.toString());
       }
     }, 0);
   };

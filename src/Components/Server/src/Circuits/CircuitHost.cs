@@ -416,9 +416,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        // SupplyJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
+        // ReceiveJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        internal async Task<bool> SupplyJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
+        internal async Task<bool> ReceiveJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
         {
             AssertInitialized();
             AssertNotDisposed();
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // An error completing JS interop means that the user sent invalid data, a well-behaved
                 // client won't do this.
-                Log.SupplyJSDataChunkException(_logger, streamId, ex);
+                Log.ReceiveJSDataChunkException(_logger, streamId, ex);
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid chunk supplied to stream."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 return false;
@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
             private static readonly Action<ILogger, long, Exception> _receiveByteArraySuccess;
             private static readonly Action<ILogger, long, Exception> _receiveByteArrayException;
-            private static readonly Action<ILogger, string, Exception> _supplyJSDataChunkException; 
+            private static readonly Action<ILogger, string, Exception> _receiveJSDataChunkException;
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
             private static readonly Action<ILogger, string, CircuitId, Exception> _locationChange;
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId OnRenderCompletedFailed = new EventId(212, "OnRenderCompletedFailed");
                 public static readonly EventId ReceiveByteArraySucceeded = new EventId(213, "ReceiveByteArraySucceeded");
                 public static readonly EventId ReceiveByteArrayException = new EventId(214, "ReceiveByteArrayException");
-                public static readonly EventId SupplyJSDataChunkException = new EventId(215, "SupplyJSDataChunkException");
+                public static readonly EventId ReceiveJSDataChunkException = new EventId(215, "ReceiveJSDataChunkException");
             }
 
             static Log()
@@ -836,10 +836,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.ReceiveByteArrayException,
                     "The ReceiveByteArray call with id '{id}' failed.");
 
-                _supplyJSDataChunkException = LoggerMessage.Define<string>(
+                _receiveJSDataChunkException = LoggerMessage.Define<string>(
                     LogLevel.Debug,
-                    EventIds.SupplyJSDataChunkException,
-                    "The SupplyJSDataChunk call with stream id '{streamId}' failed.");
+                    EventIds.ReceiveJSDataChunkException,
+                    "The ReceiveJSDataChunk call with stream id '{streamId}' failed.");
 
                 _dispatchEventFailedToParseEventData = LoggerMessage.Define(
                     LogLevel.Debug,
@@ -905,7 +905,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
             internal static void ReceiveByteArraySuccess(ILogger logger, long id) => _receiveByteArraySuccess(logger, id, null);
             internal static void ReceiveByteArrayException(ILogger logger, long id, Exception ex) => _receiveByteArrayException(logger, id, ex);
-            internal static void SupplyJSDataChunkException(ILogger logger, string streamId, Exception ex) => _supplyJSDataChunkException(logger, streamId, ex);
+            internal static void ReceiveJSDataChunkException(ILogger logger, string streamId, Exception ex) => _receiveJSDataChunkException(logger, streamId, ex);
             public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 

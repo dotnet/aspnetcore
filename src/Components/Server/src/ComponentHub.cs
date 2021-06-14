@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Components.Server
             await circuitHost.ReceiveByteArray(id, data);
         }
 
-        public async Task<bool> SupplyJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
+        public async Task<bool> ReceiveJSDataChunk(string streamId, ReadOnlySequence<byte> chunk, string error)
         {
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return false;
             }
 
-            return await circuitHost.SupplyJSDataChunk(streamId, chunk, error);
+            return await circuitHost.ReceiveJSDataChunk(streamId, chunk, error);
         }
 
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)
