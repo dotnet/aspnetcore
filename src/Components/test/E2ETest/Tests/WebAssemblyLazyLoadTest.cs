@@ -104,6 +104,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Navigating the lazy-loaded route should show its content
             var renderedElement = Browser.Exists(By.Id("lazy-page"));
             Assert.True(renderedElement.Displayed);
+
+            // FocusOnNavigate runs after the lazily-loaded page and focuses the correct element
+            Browser.Equal("lazy-page", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
         }
 
         [Fact]

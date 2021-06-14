@@ -639,6 +639,31 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("none", () => errorUi.GetCssValue("display"));
         }
 
+        [Fact]
+        public void FocusOnNavigation_SetsFocusToMatchingElement()
+        {
+            // Applies focus on initial load
+            SetUrlViaPushState("/");
+            var app = Browser.MountTestComponent<TestRouter>();
+            Browser.True(() => GetFocusedElement().Text == "This is the default page.");
+
+            // Updates focus after navigation to regular page
+            app.FindElement(By.LinkText("Other")).Click();
+            Browser.True(() => GetFocusedElement().Text == "This is another page.");
+
+            // If there's no matching element, we leave the focus unchanged
+            app.FindElement(By.Id("with-lazy-assembly")).Click();
+            Browser.Exists(By.Id("use-package-button"));
+            Browser.Equal("a", () => GetFocusedElement().TagName);
+
+            // No errors from lack of matching element - app still functions
+            app.FindElement(By.LinkText("Other")).Click();
+            Browser.True(() => GetFocusedElement().Text == "This is another page.");
+
+            IWebElement GetFocusedElement()
+                => Browser.SwitchTo().ActiveElement();
+        }
+
         private long BrowserScrollY
         {
             get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");

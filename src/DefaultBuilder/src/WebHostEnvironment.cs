@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.Builder
 
             genericWebHostBuilder.ConfigureAppConfiguration((context, builder) =>
             {
-                CopyProperitesTo(context.HostingEnvironment);
+                CopyPropertiesTo(context.HostingEnvironment);
             });
         }
 
-        internal void CopyProperitesTo(IWebHostEnvironment destination)
+        internal void CopyPropertiesTo(IWebHostEnvironment destination)
         {
             destination.ApplicationName = ApplicationName;
             destination.EnvironmentName = EnvironmentName;

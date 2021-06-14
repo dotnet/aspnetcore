@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.Components
         private const string Prefix = "Blazor._internal.domWrapper.";
 
         public const string Focus = Prefix + "focus";
+
+        public const string FocusBySelector = Prefix + "focusBySelector";
     }
 }

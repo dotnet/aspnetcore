@@ -54,10 +54,6 @@
           Condition=" '$(IsServicingBuild)' != 'true' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
     </KnownFrameworkReference>
 
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-      Version="${MicrosoftNetCompilersToolsetVersion}"
-      PrivateAssets="all"
-      IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <!-- Warn if the "just-built" ASP.NET Core shared framework does not exist. -->
