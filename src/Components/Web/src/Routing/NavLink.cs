@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
             _isActive = ShouldMatch(NavigationManager.Uri);
 
-            _class = (string?)null;
+            _class = string.Empty;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
             {
                 _class = Convert.ToString(obj, CultureInfo.InvariantCulture);
