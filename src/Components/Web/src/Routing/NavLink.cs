@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         protected override void OnParametersSet()
         {
             // Update computed state
-            var href = (string?)null;
+            var href = string.Empty;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
             {
                 href = Convert.ToString(obj, CultureInfo.InvariantCulture);
