@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,14 +24,14 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int StreamCopyBufferSize = 81920;
 
         // https://github.com/dotnet/aspnetcore/issues/16797
-        private static readonly string[] NotForwardedHttpHeaders = new[] { "Connection" };
+        private static readonly HashSet<string> NotForwardedHttpHeaders = new HashSet<string> { "Connection" };
 
         // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469
         // Others just aren't applicable in proxy scenarios
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol", "Sec-WebSocket-Version" };
+        private static readonly HashSet<string> NotForwardedWebSocketHeaders = new HashSet<string> { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol", "Sec-WebSocket-Version" };
 
 		// In case the connection to the client is HTTP/2 or HTTP/3 and to the server HTTP/1.1 or less, let's get rid of the HTTP/1.1 only headers
-		private static readonly string[] InvalidH2H3Headers = new[] { "Connection", "Transfer-Encoding", "Keep-Alive", "Upgrade", "Proxy-Connection" };
+		private static readonly HashSet<string> InvalidH2H3Headers = new HashSet<string> { "Connection", "Transfer-Encoding", "Keep-Alive", "Upgrade", "Proxy-Connection" };
 
         public static HttpClient CreateHttpClientForProxy(TimeSpan requestTimeout)
         {
