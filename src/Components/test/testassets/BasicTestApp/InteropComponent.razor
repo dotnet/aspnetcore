@@ -175,6 +175,12 @@
             ReturnValues["roundTripByteArrayWrapperObjectFromDotNet"] = ((IJSInProcessRuntime)JSRuntime).Invoke<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObject", byteArrayWrapperObject).ToString();
         }
 
+        var dataReference = await JSRuntime.InvokeAsync<IJSDataReference>("jsToDotNetStreamAsync");
+        using var stream = await dataReference.OpenReadStreamAsync();
+        var jsToDotNetStreamAsyncResult = new byte[6];
+        stream.CopyTo(jsToDotNetStreamAsyncResult, 0, jsToDotNetStreamAsyncResult.Length);
+        ReturnValues["jsToDotNetStreamAsync"] = string.Join(",", (jsToDotNetStreamAsyncResult.ToArray());
+
         Invocations = invocations;
         DoneWithInterop = true;
     }

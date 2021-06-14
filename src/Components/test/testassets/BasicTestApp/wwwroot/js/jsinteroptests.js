@@ -260,6 +260,14 @@ function roundTripByteArrayWrapperObject(byteArrayWrapperObject) {
   return byteArrayWrapperObject;
 }
 
+function jsToDotNetStreamAsync() {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      resolve(new Uint8Array([1, 5, 7, 15, 35, 200]));
+    }, 100);
+  });
+}
+
 function roundTripByteArrayWrapperObjectAsync(byteArrayWrapperObject) {
   return new Promise((resolve, reject) => {
     setTimeout(function () {
