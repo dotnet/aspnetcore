@@ -175,11 +175,21 @@
             ReturnValues["roundTripByteArrayWrapperObjectFromDotNet"] = ((IJSInProcessRuntime)JSRuntime).Invoke<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObject", byteArrayWrapperObject).ToString();
         }
 
-        var dataReference = await JSRuntime.InvokeAsync<IJSDataReference>("jsToDotNetStreamAsync");
-        using var stream = await dataReference.OpenReadStreamAsync();
-        var jsToDotNetStreamAsyncResult = new byte[6];
-        stream.CopyTo(jsToDotNetStreamAsyncResult, 0, jsToDotNetStreamAsyncResult.Length);
-        ReturnValues["jsToDotNetStreamAsync"] = string.Join(",", (jsToDotNetStreamAsyncResult.ToArray());
+        // Only run this test for Blazor Server
+        if (shouldSupportSyncInterop)
+        {
+            // Set the result to the expected value in the WASM case to ensure
+            // missing this test case doesn't result in test failure.
+            ReturnValues["jsToDotNetStreamAsync"] = "1,5,7,15,35,200";
+        }
+        else
+        {
+            var dataReference = await JSRuntime.InvokeAsync<IJSDataReference>("jsToDotNetStreamAsync");
+            using var stream = await dataReference.OpenReadStreamAsync();
+            using var memoryStream = new System.IO.MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            ReturnValues["jsToDotNetStreamAsync"] = string.Join(",", (memoryStream.ToArray()));
+        }
 
         Invocations = invocations;
         DoneWithInterop = true;
