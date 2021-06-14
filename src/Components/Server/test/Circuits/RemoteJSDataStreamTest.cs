@@ -31,27 +31,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_InvalidGuid()
-        {
-            // Arrange
-            var chunk = new byte[] { 3, 5, 6, 7 };
-
-            // Act
-            var exception = await Assert.ThrowsAsync<ArgumentException>(async() => await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: "invalid-guid", chunk, error: null));
-
-            // Assert
-            Assert.Equal("The streamId is not recognized.", exception.Message);
-        }
-
-        [Fact]
         public async void ReceiveData_DoesNotFindStream()
         {
             // Arrange
             var chunk = new byte[] { 3, 5, 6, 7 };
-            var unrecognizedGuid = Guid.NewGuid();
+            var unrecognizedGuid = 10;
 
             // Act
-            var success = await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: unrecognizedGuid.ToString(), chunk, error: null);
+            var success = await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: unrecognizedGuid, chunk, error: null);
 
             // Assert
             Assert.False(success);
@@ -128,8 +115,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return remoteJSDataStream;
         }
 
-        private static string GetStreamId(RemoteJSDataStream stream, RemoteJSRuntime runtime) =>
-            runtime.RemoteJSDataStreamInstances.FirstOrDefault(kvp => kvp.Value == stream).Key.ToString();
+        private static long GetStreamId(RemoteJSDataStream stream, RemoteJSRuntime runtime) =>
+            runtime.RemoteJSDataStreamInstances.FirstOrDefault(kvp => kvp.Value == stream).Key;
 
         class TestRemoteJSRuntime : RemoteJSRuntime, IJSRuntime
         {

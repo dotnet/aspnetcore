@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly long _maximumIncomingBytes;
         private int _byteArraysToBeRevivedTotalBytes;
 
-        internal readonly Dictionary<Guid, RemoteJSDataStream> RemoteJSDataStreamInstances = new();
+        internal int RemoteJSDataStreamNextInstanceId;
+        internal readonly Dictionary<long, RemoteJSDataStream> RemoteJSDataStreamInstances = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
 

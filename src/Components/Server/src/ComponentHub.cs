@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Components.Server
             await circuitHost.ReceiveByteArray(id, data);
         }
 
-        public async ValueTask<bool> ReceiveJSDataChunk(string streamId, byte[] chunk, string error)
+        public async ValueTask<bool> ReceiveJSDataChunk(long streamId, byte[] chunk, string error)
         {
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)

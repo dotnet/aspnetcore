@@ -14,21 +14,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     internal sealed class RemoteJSDataStream : Stream
     {
         private readonly RemoteJSRuntime _runtime;
-        private readonly Guid _streamId;
+        private readonly long _streamId;
         private readonly long _totalLength;
         private readonly CancellationToken _streamCancellationToken;
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
         private long _bytesRead;
 
-        public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, string streamId, byte[] chunk, string error)
+        public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, byte[] chunk, string error)
         {
-            if (!Guid.TryParse(streamId, out var guid))
-            {
-                throw new ArgumentException("The streamId is not recognized.");
-            }
-
-            if (!runtime.RemoteJSDataStreamInstances.TryGetValue(guid, out var instance))
+            if (!runtime.RemoteJSDataStreamInstances.TryGetValue(streamId, out var instance))
             {
                 // There is no data stream with the given identifier. It may have already been disposed.
                 // We notify JS that the stream has been cancelled/disposed.
@@ -46,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             long maximumIncomingBytes,
             CancellationToken cancellationToken = default)
         {
-            var streamId = Guid.NewGuid();
+            var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
             var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsDataReference, streamId, maximumIncomingBytes);
             return remoteJSDataStream;
@@ -54,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private RemoteJSDataStream(
             RemoteJSRuntime runtime,
-            Guid streamId,
+            long streamId,
             long totalLength,
             long maxBufferSize,
             CancellationToken cancellationToken)
@@ -66,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
-            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize));
+            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize / 2));
             _pipeReaderStream = _pipe.Reader.AsStream();
         }
 
@@ -95,9 +90,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     throw new InvalidOperationException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were read.");
                 }
 
-                CopyToPipeWriter(chunk, _pipe.Writer);
-                _pipe.Writer.Advance((int)chunk.Length);
-                await _pipe.Writer.FlushAsync(_streamCancellationToken);
+                await _pipe.Writer.WriteAsync(chunk, _streamCancellationToken);
 
                 if (_bytesRead == _totalLength)
                 {
@@ -112,12 +105,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Dispose(true);
                 return false;
             }
-        }
-
-        private static void CopyToPipeWriter(byte[] chunk, PipeWriter writer)
-        {
-            var pipeBuffer = writer.GetSpan((int)chunk.Length);
-            chunk.CopyTo(pipeBuffer);
         }
 
         public override bool CanRead => true;
