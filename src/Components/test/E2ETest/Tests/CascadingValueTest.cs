@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33530")]
         public void CanUpdateValuesMatchedByName()
         {
             var currentFlag1Value = Browser.Exists(By.Id("flag-1"));
