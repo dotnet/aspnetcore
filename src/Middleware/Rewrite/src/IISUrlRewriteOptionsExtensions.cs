@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Rewrite
 
             if (reader == null)
             {
-                throw new ArgumentException(nameof(reader));
+                throw new ArgumentNullException(nameof(reader));
             }
 
             var rules = new UrlRewriteFileParser().Parse(reader, alwaysUseManagedServerVariables);

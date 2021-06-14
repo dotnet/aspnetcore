@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
-            _endPoint = endPoint ?? throw new ArgumentException(nameof(endPoint));
+            _endPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -864,8 +864,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             Log.SendingMessage(_logger, hubMessage);
 
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
             // REVIEW: If a token is passed in and is canceled during FlushAsync it seems to break .Complete()...
             await connectionState.Connection.Transport.Output.FlushAsync();
+#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
             Log.MessageSent(_logger, hubMessage);
 
             // We've sent a message, so don't ping for a while

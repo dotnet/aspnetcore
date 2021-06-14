@@ -3,31 +3,28 @@
 
 // Copied from https://github.com/dotnet/corefx/blob/b0751dcd4a419ba6731dcaa7d240a8a1946c934c/src/System.Text.Json/src/System/Text/Json/Serialization/ArrayBufferWriter.cs
 
-using System;
-using System.Buffers;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Components.Server.BlazorPack
+namespace System.Buffers
 {
-    // Note: this is currently an internal class that will be replaced with a shared version.
-    internal sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
+    internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         private T[] _rentedBuffer;
         private int _index;
 
         private const int MinimumBufferSize = 256;
 
-        public ArrayBufferWriter()
+        public PooledArrayBufferWriter()
         {
             _rentedBuffer = ArrayPool<T>.Shared.Rent(MinimumBufferSize);
             _index = 0;
         }
 
-        public ArrayBufferWriter(int initialCapacity)
+        public PooledArrayBufferWriter(int initialCapacity)
         {
             if (initialCapacity <= 0)
             {
-                throw new ArgumentException(nameof(initialCapacity));
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity));
             }
 
             _rentedBuffer = ArrayPool<T>.Shared.Rent(initialCapacity);
@@ -120,7 +117,9 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
             CheckIfDisposed();
 
             if (count < 0)
-                throw new ArgumentException(nameof(count));
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
 
             if (_index > _rentedBuffer.Length - count)
             {
@@ -152,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
 
             if (sizeHint < 0)
             {
-                throw new ArgumentException(nameof(sizeHint));
+                throw new ArgumentOutOfRangeException(nameof(sizeHint));
             }
 
             if (sizeHint == 0)

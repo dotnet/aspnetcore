@@ -140,10 +140,10 @@ namespace Microsoft.AspNetCore.Internal
             if (_completedSegments == null && _currentSegment is not null)
             {
                 // There is only one segment so write without awaiting.
-                return destination.WriteAsync(_currentSegment, 0, _position);
+                return destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
             }
 
-            return CopyToSlowAsync(destination);
+            return CopyToSlowAsync(destination, cancellationToken);
         }
 
         [MemberNotNull(nameof(_currentSegment))]
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Internal
             _position = 0;
         }
 
-        private async Task CopyToSlowAsync(Stream destination)
+        private async Task CopyToSlowAsync(Stream destination, CancellationToken cancellationToken)
         {
             if (_completedSegments != null)
             {
@@ -198,9 +198,9 @@ namespace Microsoft.AspNetCore.Internal
                 {
                     var segment = _completedSegments[i];
 #if NETCOREAPP
-                    await destination.WriteAsync(segment.Buffer.AsMemory(0, segment.Length));
+                    await destination.WriteAsync(segment.Buffer.AsMemory(0, segment.Length), cancellationToken);
 #else
-                    await destination.WriteAsync(segment.Buffer, 0, segment.Length);
+                    await destination.WriteAsync(segment.Buffer, 0, segment.Length, cancellationToken);
 #endif
                 }
             }
@@ -208,9 +208,9 @@ namespace Microsoft.AspNetCore.Internal
             if (_currentSegment is not null)
             {
 #if NETCOREAPP
-                await destination.WriteAsync(_currentSegment.AsMemory(0, _position));
+                await destination.WriteAsync(_currentSegment.AsMemory(0, _position), cancellationToken);
 #else
-                await destination.WriteAsync(_currentSegment, 0, _position);
+                await destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
 #endif
             }
         }

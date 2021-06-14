@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 
             if (buffer.Length - index < count)
             {
-                throw new ArgumentOutOfRangeException(nameof(buffer.Length));
+                throw new ArgumentOutOfRangeException(nameof(buffer));
             }
 
             Buffer.AppendHtml(new string(buffer, index, count));

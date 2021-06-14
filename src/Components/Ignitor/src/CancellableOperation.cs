@@ -22,8 +22,9 @@ namespace Ignitor
                     operation.Dispose();
                 },
                 this,
-                TaskContinuationOptions.ExecuteSynchronously); // We need to execute synchronously to clean-up before anything else continues
-
+                cancellationToken,
+                TaskContinuationOptions.ExecuteSynchronously, // We need to execute synchronously to clean-up before anything else continues
+                TaskScheduler.Default);
 
             Cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 

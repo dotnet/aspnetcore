@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(nameof(value));
+                    throw new ArgumentNullException(nameof(value));
                 }
                 _fileName = value;
             }

@@ -60,11 +60,6 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 var rootNode = await _document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
                 var editor = await DocumentEditor.CreateAsync(_document, cancellationToken).ConfigureAwait(false);
 
-                if (rootNode == null)
-                {
-                    throw new ArgumentNullException(nameof(rootNode));
-                }
-
                 var ifBlockSyntax = rootNode!.FindNode(_ifBlockSpan);
                 editor.RemoveNode(ifBlockSyntax);
 

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 Copy(segment, destination);
 
-                await destination.FlushAsync();
+                await destination.FlushAsync(cancellationToken);
             }
         }
 

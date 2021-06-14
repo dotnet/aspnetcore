@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             if (!_connectionReferences.TryAdd(id, connectionReference))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("Unable to add specified id.", nameof(id));
             }
 
             _connectionManager.AddConnection(id, connectionReference);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryRemove(id, out _))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("No value found for the specified id.", nameof(id));
             }
 
             _connectionManager.RemoveConnection(id);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryRemove(id, out _))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("No value found for the specified id.", nameof(id));
             }
         }
 
