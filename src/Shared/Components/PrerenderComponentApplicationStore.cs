@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components
             }
 
             ExistingState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(Convert.FromBase64String(existingState)) ??
-                throw new ArgumentException(nameof(existingState));
+                throw new ArgumentNullException(nameof(existingState));
         }
 
 #nullable enable

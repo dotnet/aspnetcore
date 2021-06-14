@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (item.Key == null)
             {
-                throw new ArgumentNullException("The key is null");
+                throw new ArgumentException("The key is null");
             }
             ThrowIfReadOnly();
             EnsureStore(1);

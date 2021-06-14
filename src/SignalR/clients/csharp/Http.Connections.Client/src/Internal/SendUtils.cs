@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-                    var result = await application.Input.ReadAsync();
+                    var result = await application.Input.ReadAsync(cancellationToken);
                     var buffer = result.Buffer;
 
                     try

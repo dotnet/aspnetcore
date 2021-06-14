@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(nameof(name));
+                throw new ArgumentNullException(nameof(name));
             }
             Name = name;
         }
@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
             {
                 if (string.IsNullOrEmpty(key))
                 {
-                    throw new ArgumentException(nameof(key));
+                    throw new ArgumentNullException(nameof(key));
                 }
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(nameof(value));
+                    throw new ArgumentNullException(nameof(value));
                 }
                 _map[key] = value;
             }

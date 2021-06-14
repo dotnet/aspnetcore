@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             try
             {
                 _startResponseCallback();
-                await _innerStream.FlushAsync();
+                await _innerStream.FlushAsync(cancellationToken);
             }
             catch
             {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-            await WriteAsync(buffer.AsMemory(offset, count));
+            await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {

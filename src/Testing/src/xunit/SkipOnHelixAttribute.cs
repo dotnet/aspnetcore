@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             if (string.IsNullOrEmpty(issueUrl))
             {
-                throw new ArgumentException();
+                throw new ArgumentNullException(nameof(issueUrl));
             }
             IssueUrl = issueUrl;
         }

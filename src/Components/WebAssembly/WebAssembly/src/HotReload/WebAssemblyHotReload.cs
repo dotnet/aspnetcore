@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.HotReload;
@@ -53,6 +54,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
             _updateDeltas[0].ILDelta = ilDeta;
 
             _hotReloadAgent!.ApplyDeltas(_updateDeltas);
+        }
+
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        [JSInvokable(nameof(GetApplyUpdateCapabilities))]
+        public static string GetApplyUpdateCapabilities()
+        {
+            var method = typeof(System.Reflection.Metadata.AssemblyExtensions).GetMethod("GetApplyUpdateCapabilities", BindingFlags.NonPublic | BindingFlags.Static);
+            if (method is null)
+            {
+                return string.Empty;
+            }
+            return (string)method.Invoke(obj: null, parameters: null)!;
         }
     }
 }

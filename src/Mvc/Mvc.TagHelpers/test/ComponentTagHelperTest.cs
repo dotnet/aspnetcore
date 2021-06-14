@@ -55,10 +55,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var output = GetTagHelperOutput();
 
             // Act & Assert
-            await ExceptionAssert.ThrowsArgumentAsync(
-                () => tagHelper.ProcessAsync(context, output),
-                nameof(RenderMode),
-                "A value for the 'render-mode' attribute must be supplied to the 'component' tag helper.");
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => tagHelper.ProcessAsync(context, output));
+            Assert.Equal("A value for the 'render-mode' attribute must be supplied to the 'component' tag helper.", ex.Message);
         }
 
         private static TagHelperContext GetTagHelperContext()

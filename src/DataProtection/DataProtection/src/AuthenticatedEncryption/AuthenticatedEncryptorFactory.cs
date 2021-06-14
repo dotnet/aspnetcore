@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     return 256;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(EncryptionAlgorithm));
+                    throw new ArgumentOutOfRangeException(nameof(algorithm));
             }
         }
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     return Constants.BCRYPT_AES_ALGORITHM;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(EncryptionAlgorithm));
+                    throw new ArgumentOutOfRangeException(nameof(algorithm));
             }
         }
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     return Constants.BCRYPT_SHA512_ALGORITHM;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(ValidationAlgorithm));
+                    throw new ArgumentOutOfRangeException(nameof(algorithm));
             }
         }
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     return typeof(Aes);
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(EncryptionAlgorithm));
+                    throw new ArgumentOutOfRangeException(nameof(algorithm));
             }
         }
 
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     return typeof(HMACSHA512);
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(ValidationAlgorithm));
+                    throw new ArgumentOutOfRangeException(nameof(algorithm));
             }
         }
     }

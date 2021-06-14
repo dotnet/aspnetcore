@@ -101,10 +101,6 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
                 case ObjectCreationExpressionSyntax creation:
                     {
-                        if (creation.ArgumentList == null)
-                        {
-                            throw new ArgumentNullException(nameof(creation.ArgumentList));
-                        }
                         // Read values from 'return new StatusCodeResult(200) case.
                         var result = InspectMethodArguments(semanticModel, creation, creation.ArgumentList, cancellationToken);
                         statusCode = result.statusCode ?? statusCode;
@@ -205,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private static ITypeSymbol? GetExpressionObjectType(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
         {
             var typeInfo = semanticModel.GetTypeInfo(expression, cancellationToken);
-            
+
             return typeInfo.Type;
         }
 

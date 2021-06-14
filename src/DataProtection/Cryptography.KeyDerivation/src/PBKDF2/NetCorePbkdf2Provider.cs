@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
                     algorithmName = HashAlgorithmName.SHA512;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(prf));
             }
 
             return Rfc2898DeriveBytes.Pbkdf2(password, salt, iterationCount, algorithmName, numBytesRequested);

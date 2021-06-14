@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using PhotinoNET;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
                     var messageOriginUrl = new Uri(AppBaseUri);
 
                     MessageReceived(messageOriginUrl, (string)message!);
-                }, message);
+                }, message, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
             };
         }
 

@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
             context.Response.Headers.Remove("transfer-encoding");
 
-            using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
+            using (var responseStream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken))
             {
                 await responseStream.CopyToAsync(context.Response.Body, StreamCopyBufferSize, cancellationToken);
             }
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                         break;
                     }
 
-                    await Task.Delay(100);
+                    await Task.Delay(100, cancellationToken);
                 }
 
                 var result = resultTask.Result; // We know it's completed already

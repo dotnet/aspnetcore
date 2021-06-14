@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             if (errorCode < 0)
             {
-                throw new ArgumentOutOfRangeException("'errorCode' cannot be negative");
+                throw new ArgumentOutOfRangeException(nameof(errorCode), "'errorCode' cannot be negative");
             }
 
             SetResetCode(errorCode);
