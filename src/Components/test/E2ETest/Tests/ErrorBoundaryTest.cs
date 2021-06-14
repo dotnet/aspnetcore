@@ -145,6 +145,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33528")]
         public void CanHandleMultipleAsyncErrorsFromDescendants()
         {
             var container = Browser.Exists(By.Id("multiple-child-errors-test"));
