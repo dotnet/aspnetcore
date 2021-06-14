@@ -50,6 +50,11 @@ namespace Microsoft.AspNetCore.Components
         [Parameter]
         public IDictionary<string, object>? Parameters { get; set; }
 
+        /// <summary>
+        /// Gets rendered component instance.
+        /// </summary>
+        public object? Instance { get; private set; }
+
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
         {
@@ -98,6 +103,8 @@ namespace Microsoft.AspNetCore.Components
                     builder.AddAttribute(1, entry.Key, entry.Value);
                 }
             }
+
+            builder.AddComponentReferenceCapture(2, component => Instance = component);
 
             builder.CloseComponent();
         }
