@@ -13,7 +13,7 @@ Param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 $disableConfigureToolsetImport = $true
-$LASTEXITCODE = 0
+$global:LASTEXITCODE = 0
 
 try {
   # `tools.ps1` checks $ci to perform some actions. Since the SDL

@@ -39,7 +39,7 @@ function SetupCredProvider {
   # Then, we set the 'VSS_NUGET_EXTERNAL_FEED_ENDPOINTS' environment variable to restore from the stable 
   # feeds successfully
 
-  local nugetConfigPath="$repo_root/NuGet.config"
+  local nugetConfigPath="{$repo_root}NuGet.config"
 
   if [ ! "$nugetConfigPath" ]; then
     Write-PipelineTelemetryError -category 'Build' "NuGet.config file not found in repo's root!"
