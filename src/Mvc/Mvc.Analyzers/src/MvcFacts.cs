@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             {
                 if (method.OverriddenMethod == null)
                 {
-                    throw new ArgumentNullException(nameof(method));
+                    throw new InvalidOperationException($"{nameof(method.OverriddenMethod)} cannot be null.");
                 }
 
                 method = method.OverriddenMethod;

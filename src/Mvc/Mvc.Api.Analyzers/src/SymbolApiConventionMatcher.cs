@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             if (argEnum == null)
             {
-                throw new ArgumentNullException(nameof(symbol));
+                throw new InvalidOperationException($"{nameof(symbolCache.ApiConventionNameMatchAttribute)} does not appear well formed.");
             }
 
             var intValue = (int)argEnum;

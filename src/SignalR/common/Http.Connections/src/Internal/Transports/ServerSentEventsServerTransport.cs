@@ -43,13 +43,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
             context.Response.Headers.ContentEncoding = "identity";
 
-            // Workaround for a Firefox bug where EventSource won't fire the open event
-            // until it receives some data
-            await context.Response.WriteAsync(":\r\n", cancellationToken);
-            await context.Response.Body.FlushAsync(cancellationToken);
-
             try
             {
+                // Workaround for a Firefox bug where EventSource won't fire the open event
+                // until it receives some data
+                await context.Response.WriteAsync(":\r\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
                 while (true)
                 {
                     var result = await _application.ReadAsync(cancellationToken);
