@@ -168,6 +168,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 responseType = awaitableInfo.ResultType;
             }
 
+            // Can't determine anything about IResults yet that's not from extra metadata. IResult<T> could help here.
+            if (typeof(IResult).IsAssignableFrom(responseType))
+            {
+                responseType = typeof(void);
+            }
+
             var responseMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
             var errorMetadata = endpointMetadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
             var defaultErrorType = errorMetadata?.Type ?? typeof(void);
@@ -179,7 +185,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 foreach (var apiResponseType in responseMetadataTypes)
                 {
-                    AddApiResponseFormats(apiResponseType.ApiResponseFormats, contentTypes);
+                    if (apiResponseType.ApiResponseFormats.Count == 0 &&
+                        CreateDefaultApiResponseFormat(responseType) is { } defaultResponseFormat)
+                    {
+                        apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
+                    }
+
                     supportedResponseTypes.Add(apiResponseType);
                 }
             }
@@ -190,9 +201,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 if (contentTypes.Count > 0)
                 {
-                    // If metadata provided us with response formats, use that instead of the defaults.
+                    // If metadata provided us with response formats, use that instead of the default.
                     defaultApiResponseType.ApiResponseFormats.Clear();
-                    AddApiResponseFormats(defaultApiResponseType.ApiResponseFormats, contentTypes);
+                    ApiResponseTypeProvider.AddApiResponseFormats(defaultApiResponseType.ApiResponseFormats, contentTypes);
                 }
 
                 supportedResponseTypes.Add(defaultApiResponseType);
@@ -201,46 +212,36 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private static ApiResponseType CreateDefaultApiResponseType(Type responseType)
         {
+            var apiResponseType = new ApiResponseType
+            {
+                ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(responseType)),
+                StatusCode = 200,
+            };
+
+            if (CreateDefaultApiResponseFormat(responseType) is { } responseFormat)
+            {
+                apiResponseType.ApiResponseFormats.Add(responseFormat);
+            }
+
+            return apiResponseType;
+        }
+
+        private static ApiResponseFormat? CreateDefaultApiResponseFormat(Type responseType)
+        {
             if (responseType == typeof(void) || typeof(IResult).IsAssignableFrom(responseType))
             {
-                // Can't determine anything about IResults yet that's not from extra metadata. IResult<T> could help here.
-                return new ApiResponseType
-                {
-                    ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(typeof(void))),
-                    StatusCode = 200,
-                };
+                return null;
             }
             else if (responseType == typeof(string))
             {
                 // This uses HttpResponse.WriteAsync(string) method which doesn't set a content type. It could be anything,
                 // but I think "text/plain" is a reasonable assumption if nothing else is specified with metadata.
-                return new ApiResponseType
-                {
-                    ApiResponseFormats = { new ApiResponseFormat { MediaType = "text/plain" } },
-                    ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(typeof(string))),
-                    StatusCode = 200,
-                };
+                return new ApiResponseFormat { MediaType = "text/plain" };
             }
             else
             {
                 // Everything else is written using HttpResponse.WriteAsJsonAsync<TValue>(T).
-                return new ApiResponseType
-                {
-                    ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
-                    ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(responseType)),
-                    StatusCode = 200,
-                };
-            }
-        }
-
-        private static void AddApiResponseFormats(IList<ApiResponseFormat> apiResponseFormats, MediaTypeCollection contentTypes)
-        {
-            foreach (var contentType in contentTypes)
-            {
-                apiResponseFormats.Add(new ApiResponseFormat
-                {
-                    MediaType = contentType,
-                });
+                return new ApiResponseFormat { MediaType = "application/json" };
             }
         }
     }
