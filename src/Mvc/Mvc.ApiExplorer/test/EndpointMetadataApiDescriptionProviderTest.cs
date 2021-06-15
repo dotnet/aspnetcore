@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
-    public class EndpointMethodInfoApiDescriptionProviderTest
+    public class EndpointMetadataApiDescriptionProviderTest
     {
         [Fact]
         public void ApiDescription_MultipleCreatedForMultipleHttpMethods()

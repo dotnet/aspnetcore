@@ -159,24 +159,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                     if (apiResponseType.Type != null)
                     {
-                        AddApiResponseFormats(apiResponseType.ApiResponseFormats, contentTypes);
                         results[apiResponseType.StatusCode] = apiResponseType;
                     }
                 }
             }
 
             return results.Values.ToList();
-        }
-
-        internal static void AddApiResponseFormats(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
-        {
-            foreach (var contentType in contentTypes)
-            {
-                apiResponseFormats.Add(new ApiResponseFormat
-                {
-                    MediaType = contentType,
-                });
-            }
         }
 
         private void CalculateResponseFormats(ICollection<ApiResponseType> responseTypes, MediaTypeCollection declaredContentTypes)
@@ -194,9 +182,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             foreach (var apiResponse in responseTypes)
             {
-                // ApiResponseFormats has been preset for EndpointMetadataApiDescriptionProvider's use but MVC has more inputs to consider.
-                apiResponse.ApiResponseFormats.Clear();
-
                 var responseType = apiResponse.Type;
                 if (responseType == null || responseType == typeof(void))
                 {
