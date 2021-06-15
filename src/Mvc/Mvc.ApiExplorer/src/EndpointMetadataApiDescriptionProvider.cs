@@ -18,8 +18,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
-    internal class EndpointMetadataApiDescriptionProvider :
-        IApiDescriptionProvider, IApiResponseTypeMetadataProvider, IApiRequestFormatMetadataProvider
+    internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
     {
         // IApiResponseMetadataProvider, 
         private readonly EndpointDataSource _endpointDataSource;
@@ -45,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     // In practice, the Delegate will be called for any HTTP method if there is no IHttpMethodMetadata.
                     foreach (var httpMethod in httpMethodMetadata.HttpMethods)
                     {
-                        context.Results.Add(CreateApiDescription(routeEndpoint.RoutePattern, httpMethod, methodInfo));
+                        context.Results.Add(CreateApiDescription(routeEndpoint, httpMethod, methodInfo));
                     }
                 }
             }
@@ -55,12 +54,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
         }
 
-        private static ApiDescription CreateApiDescription(RoutePattern pattern, string httpMethod, MethodInfo methodInfo)
+        private static ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
         {
             var apiDescription = new ApiDescription
             {
                 HttpMethod = httpMethod,
-                RelativePath = pattern.RawText?.TrimStart('/'),
+                RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {
                     RouteValues =
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             foreach (var parameter in methodInfo.GetParameters())
             {
-                var parameterDescription = CreateApiParameterDescription(parameter, pattern);
+                var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
 
                 if (parameterDescription.Source == BindingSource.Body)
                 {
@@ -95,19 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 });
             }
 
-            var responseType = methodInfo.ReturnType;
-
-            if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
-            {
-                responseType = awaitableInfo.ResultType;
-            }
-
-            responseType = Nullable.GetUnderlyingType(responseType) ?? responseType;
-
-            if (CreateApiResponseType(responseType) is { } apiResponseType)
-            {
-                apiDescription.SupportedResponseTypes.Add(apiResponseType);
-            }
+            AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
             return apiDescription;
         }
@@ -172,16 +159,51 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private static ApiResponseType? CreateApiResponseType(Type responseType)
+        private static void AddSupportedResponseTypes(IList<ApiResponseType> supportedResponseTypes, Type returnType, EndpointMetadataCollection endpointMetadata)
         {
-            if (typeof(IResult).IsAssignableFrom(responseType))
+            var responseType = returnType;
+
+            if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
             {
-                // Can't determine anything about IResults yet. IResult<T> could help here.
-                // REVIEW: Is there any value in returning an ApiResponseType with StatusCode = 200 and that's it?
-                return null;
+                responseType = awaitableInfo.ResultType;
             }
-            else if (responseType == typeof(void))
+
+            var responseMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
+            var errorMetadata = endpointMetadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
+            var defaultErrorType = errorMetadata?.Type ?? typeof(void);
+            var contentTypes = new MediaTypeCollection();
+
+            var responseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(responseMetadata, responseType, defaultErrorType, contentTypes);
+
+            if (responseMetadataTypes.Count > 0)
             {
+                foreach (var apiResponseType in responseMetadataTypes)
+                {
+                    AddApiResponseFormats(apiResponseType.ApiResponseFormats, contentTypes);
+                    supportedResponseTypes.Add(apiResponseType);
+                }
+            }
+            else
+            {
+                // Set the default response type only when none has already been set explicitly with metadata.
+                var defaultApiResponseType = CreateDefaultApiResponseType(responseType);
+
+                if (contentTypes.Count > 0)
+                {
+                    // If metadata provided us with response formats, use that instead of the defaults.
+                    defaultApiResponseType.ApiResponseFormats.Clear();
+                    AddApiResponseFormats(defaultApiResponseType.ApiResponseFormats, contentTypes);
+                }
+
+                supportedResponseTypes.Add(defaultApiResponseType);
+            }
+        }
+
+        private static ApiResponseType CreateDefaultApiResponseType(Type responseType)
+        {
+            if (responseType == typeof(void) || typeof(IResult).IsAssignableFrom(responseType))
+            {
+                // Can't determine anything about IResults yet that's not from extra metadata. IResult<T> could help here.
                 return new ApiResponseType
                 {
                     ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(typeof(void))),
@@ -191,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             else if (responseType == typeof(string))
             {
                 // This uses HttpResponse.WriteAsync(string) method which doesn't set a content type. It could be anything,
-                // but I think "text/plain" is a reasonable assumption.
+                // but I think "text/plain" is a reasonable assumption if nothing else is specified with metadata.
                 return new ApiResponseType
                 {
                     ApiResponseFormats = { new ApiResponseFormat { MediaType = "text/plain" } },
@@ -211,14 +233,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        public IReadOnlyList<string>? GetSupportedContentTypes(string contentType, Type objectType)
+        private static void AddApiResponseFormats(IList<ApiResponseFormat> apiResponseFormats, MediaTypeCollection contentTypes)
         {
-            throw new NotImplementedException();
-        }
-
-        public void SetContentTypes(MediaTypeCollection contentTypes)
-        {
-            throw new NotImplementedException();
+            foreach (var contentType in contentTypes)
+            {
+                apiResponseFormats.Add(new ApiResponseFormat
+                {
+                    MediaType = contentType,
+                });
+            }
         }
     }
 }
