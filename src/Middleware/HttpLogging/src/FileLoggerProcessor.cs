@@ -92,6 +92,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 foreach (var item in group)
                 {
+                    fileInfo.Refresh();
                     // Roll to new file if _maxFileSize is reached
                     // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling
                     if (fileInfo.Length > _maxFileSize)
@@ -144,14 +145,14 @@ namespace Microsoft.AspNetCore.HttpLogging
             _outputTask.Wait();
         }
 
-        private string GetFullName((int Year, int Month, int Day) group)
+        private string GetFullName(DateOnly group)
         {
             return Path.Combine(_path, $"{_fileName}{group.Year:0000}{group.Month:00}{group.Day:00}{_fileNumber:00}.txt");
         }
 
-        private (int Year, int Month, int Day) GetGrouping(LogMessage message)
+        private static DateOnly GetGrouping(LogMessage message)
         {
-            return (message.Timestamp.Year, message.Timestamp.Month, message.Timestamp.Day);
+            return new DateOnly(message.Timestamp.Year, message.Timestamp.Month, message.Timestamp.Day);
         }
 
         public virtual Task OnFirstWrite(StreamWriter streamWriter)

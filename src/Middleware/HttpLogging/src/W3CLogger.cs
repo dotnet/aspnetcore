@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         break;
                     case "User-Agent":
                         // User-Agent can have whitespace - we replace whitespace characters with the '+' character
-                        elements[BitOperations.Log2((int)W3CLoggingFields.UserAgent)] = replaceWhitespace(val.Trim());
+                        elements[BitOperations.Log2((int)W3CLoggingFields.UserAgent)] = ReplaceWhitespace(val.Trim());
                         break;
                     case nameof(HeaderNames.Referer):
                         elements[BitOperations.Log2((int)W3CLoggingFields.Referer)] = val.Trim();
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         break;
                     case nameof(HeaderNames.Cookie):
                         // Cookie can have whitespace - we replace whitespace characters with the '+' character
-                        elements[BitOperations.Log2((int)W3CLoggingFields.Cookie)] = replaceWhitespace(val.Trim());
+                        elements[BitOperations.Log2((int)W3CLoggingFields.Cookie)] = ReplaceWhitespace(val.Trim());
                         break;
                     default:
                         break;
@@ -129,11 +129,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         // Modified from https://www.codeproject.com/Articles/1014073/Fastest-method-to-remove-all-whitespace-from-Strin
-        private string replaceWhitespace(string entry)
+        private static string ReplaceWhitespace(string entry)
         {
             var len = entry.Length;
             var src = entry.ToCharArray();
-            var dstIndex = 0;
             for (var i = 0; i < len; i++)
             {
                 var ch = src[i];
@@ -164,14 +163,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                     case '\u000C':
                     case '\u000D':
                     case '\u0085':
-                        src[dstIndex++] = '+';
+                        src[i] = '+';
                         break;
                     default:
-                        src[dstIndex++] = ch;
+                        // Character doesn't need to change.
                         break;
                 }
             }
-            return new string(src, 0, dstIndex);
+            return new string(src, 0, len);
         }
     }
 }

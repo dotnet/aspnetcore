@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
 
         DateTime _timestampOne = new DateTime(2021, 01, 02, 03, 04, 05);
-        int _pauseTime = 500;
+        int _pauseTime = 5000;
 
         public W3CLoggerTests()
         {

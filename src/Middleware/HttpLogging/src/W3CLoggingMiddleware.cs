@@ -69,11 +69,6 @@ namespace Microsoft.AspNetCore.HttpLogging
                 AddToList(w3cList, nameof(DateTime), DateTime.Now.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (options.LoggingFields.HasFlag(W3CLoggingFields.UserName))
-            {
-                AddToList(w3cList, nameof(HttpContext.User), context.User is null ? "" : (context.User.Identity is null ? "" : (context.User.Identity.Name is null ? "" : context.User.Identity.Name)));
-            }
-
             if ((W3CLoggingFields.ConnectionInfoFields & options.LoggingFields) != W3CLoggingFields.None)
             {
                 var connectionInfo = context.Connection;
@@ -159,6 +154,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             var response = context.Response;
 
             await _next(context);
+
+            if (options.LoggingFields.HasFlag(W3CLoggingFields.UserName))
+            {
+                AddToList(w3cList, nameof(HttpContext.User), context.User is null ? "" : (context.User.Identity is null ? "" : (context.User.Identity.Name is null ? "" : context.User.Identity.Name)));
+            }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
             {
