@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The resulting PathString</returns>
         public static PathString FromUriComponent(string uriComponent)
         {
-            Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[uriComponent.Length] : new char[uriComponent.Length];
+            Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length];
             var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer, isFormEncoding: false);
             pathBuffer = pathBuffer.Slice(0, length);
             return new PathString(pathBuffer.ToString());
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(uri));
             }
             var uriComponent = uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
-            Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[uriComponent.Length + 1] : new char[uriComponent.Length + 1];
+            Span<char> pathBuffer = uriComponent.Length < StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length + 1];
             pathBuffer[0] = '/';
             var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer.Slice(1), isFormEncoding: false);
             pathBuffer = pathBuffer.Slice(0, length + 1);
