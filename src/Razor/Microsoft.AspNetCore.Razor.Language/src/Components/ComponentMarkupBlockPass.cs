@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 // We examine the node.Prefix (e.g. " onfocus='" or " on focus=\"")
                 // to preserve the quote type that is used in the original markup.
-                var quoteType = node.Prefix.Contains("'") ? "'" : "\"";
+                var quoteType = node.Prefix.EndsWith("'") ? "'" : "\"";
 
                 Builder.Append('=');
                 Builder.Append(quoteType);
