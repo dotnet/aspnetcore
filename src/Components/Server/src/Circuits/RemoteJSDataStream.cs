@@ -138,26 +138,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), GetLinkedCancellationToken(cancellationToken));
+            var linkedCancellationToken = GetLinkedCancellationToken(_streamCancellationToken, cancellationToken);
+            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCancellationToken);
         }
 
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            return await _pipeReaderStream.ReadAsync(buffer, GetLinkedCancellationToken(cancellationToken));
+            var linkedCancellationToken = GetLinkedCancellationToken(_streamCancellationToken, cancellationToken);
+            return await _pipeReaderStream.ReadAsync(buffer, linkedCancellationToken);
         }
 
-        private CancellationToken GetLinkedCancellationToken(CancellationToken readCancellationToken)
+        private static CancellationToken GetLinkedCancellationToken(CancellationToken a, CancellationToken b)
         {
-            if (readCancellationToken.CanBeCanceled && _streamCancellationToken.CanBeCanceled)
+            if (a.CanBeCanceled && b.CanBeCanceled)
             {
-                return CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, readCancellationToken).Token;
+                return CancellationTokenSource.CreateLinkedTokenSource(a, b).Token;
             }
-            else if (readCancellationToken.CanBeCanceled)
+            else if (a.CanBeCanceled)
             {
-                return readCancellationToken;
+                return a;
             }
 
-            return _streamCancellationToken;
+            return b;
         }
 
         protected override void Dispose(bool disposing)
