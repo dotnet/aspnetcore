@@ -32,7 +32,6 @@
         Condition=" '$(PublishInstallerBaseVersion)' == 'true' " />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" />
-    <_ChecksumsToPublish Include="$(ArtifactsDir)packages\**\*.sha512" />
     <_ChecksumsToPublish Include="$(ArtifactsDir)installers\**\*.sha512" />
   </ItemGroup>
 
