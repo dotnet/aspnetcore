@@ -78,12 +78,47 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
            Type? type,
            Type defaultErrorType)
         {
+            var contentTypes = new MediaTypeCollection();
+
+            var responseTypes = ReadResponseMetadata(responseMetadataAttributes, type, defaultErrorType, contentTypes);
+
+            // Set the default status only when no status has already been set explicitly
+            if (responseTypes.Count == 0 && type != null)
+            {
+                responseTypes.Add(new ApiResponseType
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Type = type,
+                });
+            }
+
+            if (contentTypes.Count == 0)
+            {
+                // None of the IApiResponseMetadataProvider specified a content type. This is common for actions that
+                // specify one or more ProducesResponseType but no ProducesAttribute. In this case, formatters will participate in conneg
+                // and respond to the incoming request.
+                // Querying IApiResponseTypeMetadataProvider.GetSupportedContentTypes with "null" should retrieve all supported
+                // content types that each formatter may respond in.
+                contentTypes.Add((string)null!);
+            }
+
+            CalculateResponseFormats(responseTypes, contentTypes);
+
+            return responseTypes;
+        }
+
+        // Shared with EndpointMetadataApiDescriptionProvider
+        internal static List<ApiResponseType> ReadResponseMetadata(
+            IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
+            Type? type,
+            Type defaultErrorType,
+            MediaTypeCollection contentTypes)
+        {
             var results = new Dictionary<int, ApiResponseType>();
 
             // Get the content type that the action explicitly set to support.
             // Walk through all 'filter' attributes in order, and allow each one to see or override
             // the results of the previous ones. This is similar to the execution path for content-negotiation.
-            var contentTypes = new MediaTypeCollection();
             if (responseMetadataAttributes != null)
             {
                 foreach (var metadataAttribute in responseMetadataAttributes)
@@ -129,29 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 }
             }
 
-            // Set the default status only when no status has already been set explicitly
-            if (results.Count == 0 && type != null)
-            {
-                results[StatusCodes.Status200OK] = new ApiResponseType
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Type = type,
-                };
-            }
-
-            if (contentTypes.Count == 0)
-            {
-                // None of the IApiResponseMetadataProvider specified a content type. This is common for actions that
-                // specify one or more ProducesResponseType but no ProducesAttribute. In this case, formatters will participate in conneg
-                // and respond to the incoming request.
-                // Querying IApiResponseTypeMetadataProvider.GetSupportedContentTypes with "null" should retrieve all supported
-                // content types that each formatter may respond in.
-                contentTypes.Add((string)null!);
-            }
-
-            var responseTypes = results.Values;
-            CalculateResponseFormats(responseTypes, contentTypes);
-            return responseTypes;
+            return results.Values.ToList();
         }
 
         private void CalculateResponseFormats(ICollection<ApiResponseType> responseTypes, MediaTypeCollection declaredContentTypes)
