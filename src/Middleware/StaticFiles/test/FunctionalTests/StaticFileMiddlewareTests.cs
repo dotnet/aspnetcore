@@ -191,6 +191,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                     webHostBuilder
                     .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                     .UseKestrel()
+                    .UseUrls(TestUrlHelper.GetTestUrl(ServerType.Kestrel))
                     .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
                     .Configure(app => app.UseStaticFiles(new StaticFileOptions
                     {
