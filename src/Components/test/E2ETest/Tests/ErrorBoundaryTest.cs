@@ -8,6 +8,7 @@ using BasicTestApp.ErrorBoundaryTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -145,6 +146,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33528")]
         public void CanHandleMultipleAsyncErrorsFromDescendants()
         {
             var container = Browser.Exists(By.Id("multiple-child-errors-test"));
