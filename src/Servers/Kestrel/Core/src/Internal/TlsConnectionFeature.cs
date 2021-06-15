@@ -118,12 +118,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             return _clientCertTask = GetClientCertificateAsyncCore(cancellationToken);
+        }
 
-            async Task<X509Certificate2?> GetClientCertificateAsyncCore(CancellationToken cancellationToken)
-            {
-                await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
-                return ClientCertificate;
-            }
+        private async Task<X509Certificate2?> GetClientCertificateAsyncCore(CancellationToken cancellationToken)
+        {
+            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+            return ClientCertificate;
         }
 
         private static X509Certificate2? ConvertToX509Certificate2(X509Certificate? certificate)
