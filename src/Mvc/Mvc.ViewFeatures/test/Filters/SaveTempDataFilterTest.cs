@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             {
                 if (_hasStarted)
                 {
-                    throw new ArgumentException();
+                    throw new TimeZoneNotFoundException();
                 }
 
                 var prior = _responseStartingAsync;

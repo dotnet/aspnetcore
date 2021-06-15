@@ -49,7 +49,7 @@ namespace Wasm.Performance.Driver
                     }
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(1000, cancellationToken);
             }
 
             throw new Exception($"Unable to connect to selenium-server at {uri}");

@@ -4,6 +4,10 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
   <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
   <Target Name="GenerateDirectoryBuildFiles">
     <PropertyGroup>
@@ -13,7 +17,6 @@
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
         MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-        MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
       </_TemplateProperties>
     </PropertyGroup>

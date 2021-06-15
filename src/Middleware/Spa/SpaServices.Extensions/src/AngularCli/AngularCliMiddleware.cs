@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var devServerPort = spaBuilder.Options.DevServerPort;
             if (string.IsNullOrEmpty(sourcePath))
             {
-                throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
+                throw new ArgumentException("Property 'SourcePath' cannot be null or empty", nameof(spaBuilder));
             }
 
             if (string.IsNullOrEmpty(scriptName))

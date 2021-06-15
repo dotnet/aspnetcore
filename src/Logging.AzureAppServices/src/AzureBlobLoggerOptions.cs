@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(nameof(value), $"{nameof(BlobName)} must be non-empty string.");
+                    throw new ArgumentException($"{nameof(BlobName)} must be non-empty string.", nameof(value));
                 }
                 _blobName = value;
             }
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             var timestamp = context.Timestamp;
             return $"{context.AppName}/{timestamp.Year}/{timestamp.Month:00}/{timestamp.Day:00}/{timestamp.Hour:00}/{context.Identifier}";
         };
-       
+
         internal string ContainerUrl { get; set; }
 
         internal string ApplicationName { get; set; }

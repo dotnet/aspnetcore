@@ -93,43 +93,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Abort(Exception? error = null)
         {
-            // We don't want to throw an ODE until the app func actually completes.
             // If the request is aborted, we throw a TaskCanceledException instead,
             // unless error is not null, in which case we throw it.
-            if (_state != HttpStreamState.Closed)
-            {
-                _state = HttpStreamState.Aborted;
 
-                if (error is object && _error is null)
-                {
-                    _error = ExceptionDispatchInfo.Capture(error);
-                }
+            if (error is not null)
+            {
+                _error ??= ExceptionDispatchInfo.Capture(error);
+            }
+            else
+            {
+                // Do not change state if there is an error because we don't want to throw a TaskCanceledException
+                // and we do not want to introduce any memory barriers at this layer. This is just for reporting errors
+                // early when we know the transport will fail.
+                _state = HttpStreamState.Aborted;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ValidateState(CancellationToken cancellationToken = default)
         {
-            var state = _state;
-            if (state == HttpStreamState.Open)
+            switch (_state)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-            }
-            else if (state == HttpStreamState.Closed)
-            {
-                ThrowObjectDisposedException();
-            }
-            else
-            {
-                if (_error is object)
-                {
-                    _error.Throw();
-                }
-                else
-                {
+                case HttpStreamState.Open:
+                    cancellationToken.ThrowIfCancellationRequested();
+                    break;
+                case HttpStreamState.Closed:
+                    ThrowObjectDisposedException();
+                    break;
+                case HttpStreamState.Aborted:
                     ThrowTaskCanceledException();
-                }
+                    break;
             }
+
+            // Abort errors are always terminal. We don't use _state to see if there is an error
+            // because we don't want to be forced to synchronize. This is best effort. The transport should
+            // report the same error we aborted it with if the read gets that far.
+            _error?.Throw();
 
             static void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
             static void ThrowTaskCanceledException() => throw new TaskCanceledException();

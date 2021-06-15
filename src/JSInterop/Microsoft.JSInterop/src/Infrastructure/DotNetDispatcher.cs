@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -188,62 +190,73 @@ namespace Microsoft.JSInterop.Infrastructure
                 return Array.Empty<object>();
             }
 
-            var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
-            var reader = new Utf8JsonReader(utf8JsonBytes);
-            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
+            var count = Encoding.UTF8.GetByteCount(arguments);
+            var buffer = ArrayPool<byte>.Shared.Rent(count);
+            try
             {
-                throw new JsonException("Invalid JSON");
-            }
+                var receivedBytes = Encoding.UTF8.GetBytes(arguments, buffer);
+                Debug.Assert(count == receivedBytes);
 
-            var suppliedArgs = new object?[parameterTypes.Length];
-
-            var index = 0;
-            while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-            {
-                var parameterType = parameterTypes[index];
-                if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
+                var reader = new Utf8JsonReader(buffer.AsSpan(0, count));
+                if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
                 {
-                    throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
+                    throw new JsonException("Invalid JSON");
                 }
 
-                suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, jsRuntime.JsonSerializerOptions);
-                index++;
-            }
+                var suppliedArgs = new object?[parameterTypes.Length];
 
-            // Note it's possible not all ByteArraysToBeRevived were actually revived
-            // due to potential differences between the JS & .NET data models for a
-            // particular type.
-            jsRuntime.ByteArraysToBeRevived.Clear();
-
-            if (index < parameterTypes.Length)
-            {
-                // If we parsed fewer parameters, we can always make a definitive claim about how many parameters were received.
-                throw new ArgumentException($"The call to '{methodIdentifier}' expects '{parameterTypes.Length}' parameters, but received '{index}'.");
-            }
-
-            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
-            {
-                // Either we received more parameters than we expected or the JSON is malformed.
-                throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
-            }
-
-            return suppliedArgs;
-
-            // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
-            static bool IsIncorrectDotNetObjectRefUse(Type parameterType, Utf8JsonReader jsonReader)
-            {
-                // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
-                // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
-                // but we aren't assigning to DotNetObjectRef{T}.
-                if (jsonReader.Read() &&
-                    jsonReader.TokenType == JsonTokenType.PropertyName &&
-                    jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
+                var index = 0;
+                while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    // The JSON payload has the shape we expect from a DotNetObjectRef instance.
-                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
+                    var parameterType = parameterTypes[index];
+                    if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
+                    {
+                        throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
+                    }
+
+                    suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, jsRuntime.JsonSerializerOptions);
+                    index++;
                 }
 
-                return false;
+                // Note it's possible not all ByteArraysToBeRevived were actually revived
+                // due to potential differences between the JS & .NET data models for a
+                // particular type.
+                jsRuntime.ByteArraysToBeRevived.Clear();
+
+                if (index < parameterTypes.Length)
+                {
+                    // If we parsed fewer parameters, we can always make a definitive claim about how many parameters were received.
+                    throw new ArgumentException($"The call to '{methodIdentifier}' expects '{parameterTypes.Length}' parameters, but received '{index}'.");
+                }
+
+                if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+                {
+                    // Either we received more parameters than we expected or the JSON is malformed.
+                    throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
+                }
+
+                return suppliedArgs;
+
+                // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
+                static bool IsIncorrectDotNetObjectRefUse(Type parameterType, Utf8JsonReader jsonReader)
+                {
+                    // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
+                    // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
+                    // but we aren't assigning to DotNetObjectRef{T}.
+                    if (jsonReader.Read() &&
+                        jsonReader.TokenType == JsonTokenType.PropertyName &&
+                        jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
+                    {
+                        // The JSON payload has the shape we expect from a DotNetObjectRef instance.
+                        return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
+                    }
+
+                    return false;
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
 
@@ -312,7 +325,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
             {
-                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyKey.AssemblyName));
+                throw new ArgumentException($"Property '{nameof(AssemblyKey.AssemblyName)}' cannot be null, empty, or whitespace.", nameof(assemblyKey));
             }
 
             if (string.IsNullOrWhiteSpace(methodIdentifier))

@@ -3,10 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -35,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryAdd(id, connectionReference))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("Unable to add connection.", nameof(id));
             }
         }
 
@@ -43,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryRemove(id, out var reference))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("Unable to remove connection.", nameof(id));
             }
 
             if (reference.TryGetConnection(out var connection))

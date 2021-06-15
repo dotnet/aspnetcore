@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                  => _connectionListener.AcceptAsync(cancellationToken);
 
             public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-                => _connectionListener.UnbindAsync();
+                => _connectionListener.UnbindAsync(cancellationToken);
 
             public ValueTask DisposeAsync()
                 => _connectionListener.DisposeAsync();
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                  => _multiplexedConnectionListener.AcceptAsync(features: null, cancellationToken);
 
             public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-                => _multiplexedConnectionListener.UnbindAsync();
+                => _multiplexedConnectionListener.UnbindAsync(cancellationToken);
 
             public ValueTask DisposeAsync()
                 => _multiplexedConnectionListener.DisposeAsync();

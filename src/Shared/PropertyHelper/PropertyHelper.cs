@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
+
+[assembly: MetadataUpdateHandler(typeof(Microsoft.Extensions.Internal.PropertyHelper))]
 
 namespace Microsoft.Extensions.Internal
 {
@@ -35,11 +38,9 @@ namespace Microsoft.Extensions.Internal
             typeof(PropertyHelper).GetMethod(nameof(CallPropertySetter), DeclaredOnlyLookup)!;
 
         // Using an array rather than IEnumerable, as target will be called on the hot path numerous times.
-        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> PropertiesCache =
-            new ConcurrentDictionary<Type, PropertyHelper[]>();
+        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> PropertiesCache = new();
 
-        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache =
-            new ConcurrentDictionary<Type, PropertyHelper[]>();
+        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache = new();
 
         // We need to be able to check if a type is a 'ref struct' - but we need to be able to compile
         // for platforms where the attribute is not defined, like net46. So we can fetch the attribute
@@ -69,6 +70,12 @@ namespace Microsoft.Extensions.Internal
         /// Gets (or sets in derived types) the property name.
         /// </summary>
         public virtual string Name { get; protected set; }
+
+        public static void ClearCache(Type[]? _)
+        {
+            PropertiesCache.Clear();
+            VisiblePropertiesCache.Clear();
+        }
 
         /// <summary>
         /// Gets the property value getter.

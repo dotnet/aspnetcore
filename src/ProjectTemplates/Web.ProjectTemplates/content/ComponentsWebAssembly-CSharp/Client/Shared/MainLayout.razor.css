@@ -4,7 +4,7 @@
     flex-direction: column;
 }
 
-.main {
+main {
     flex: 1;
 }
 
@@ -63,7 +63,7 @@
         z-index: 1;
     }
 
-    .main > div {
+    .top-row, article {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }

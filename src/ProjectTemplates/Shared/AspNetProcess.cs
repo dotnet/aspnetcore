@@ -181,9 +181,9 @@ namespace Templates.Test.Helpers
                     ListeningMessagePrefix, StringComparison.Ordinal) + ListeningMessagePrefix.Length);
 
                 output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");
-                listeningUrlString = listeningUrlString.Substring(0, listeningUrlString.IndexOf(':')) +
-                    "://localhost" +
-                    listeningUrlString.Substring(listeningUrlString.LastIndexOf(':'));
+                listeningUrlString = string.Concat(listeningUrlString.AsSpan(0, listeningUrlString.IndexOf(':')),
+                    "://localhost",
+                    listeningUrlString.AsSpan(listeningUrlString.LastIndexOf(':')));
 
                 output.WriteLine("Sending requests to " + listeningUrlString);
                 return new Uri(listeningUrlString, UriKind.Absolute);

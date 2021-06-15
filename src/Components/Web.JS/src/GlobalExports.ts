@@ -48,7 +48,9 @@ interface IBlazor {
     getLazyAssemblies?: any
     dotNetCriticalError?: any
     getSatelliteAssemblies?: any,
-    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void
+    // APIs invoked by hot reload
+    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
+    getApplyUpdateCapabilities?: () => string
   }
 }
 

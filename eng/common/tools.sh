@@ -485,13 +485,14 @@ _script_dir=`dirname "$_ResolvePath"`
 
 eng_root=`cd -P "$_script_dir/.." && pwd`
 repo_root=`cd -P "$_script_dir/../.." && pwd`
-artifacts_dir="$repo_root/artifacts"
+repo_root="${repo_root}/"
+artifacts_dir="${repo_root}artifacts"
 toolset_dir="$artifacts_dir/toolset"
-tools_dir="$repo_root/.tools"
+tools_dir="${repo_root}.tools"
 log_dir="$artifacts_dir/log/$configuration"
 temp_dir="$artifacts_dir/tmp/$configuration"
 
-global_json_file="$repo_root/global.json"
+global_json_file="${repo_root}global.json"
 # determine if global.json contains a "runtimes" entry
 global_json_has_runtimes=false
 if command -v jq &> /dev/null; then
@@ -504,7 +505,7 @@ fi
 
 # HOME may not be defined in some scenarios, but it is required by NuGet
 if [[ -z $HOME ]]; then
-  export HOME="$repo_root/artifacts/.home/"
+  export HOME="${repo_root}artifacts/.home/"
   mkdir -p "$HOME"
 fi
 

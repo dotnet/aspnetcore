@@ -43,6 +43,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
   };
 
+  Blazor._internal.getApplyUpdateCapabilities = () => DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
+
   // Configure JS interop
   Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;

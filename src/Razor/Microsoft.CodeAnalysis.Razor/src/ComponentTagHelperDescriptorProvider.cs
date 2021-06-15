@@ -172,6 +172,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 pb.Name = property.Name;
                 pb.TypeName = property.Type.ToDisplayString(FullNameTypeDisplayFormat);
                 pb.SetPropertyName(property.Name);
+                pb.IsEditorRequired = property.GetAttributes().Any(a => a.AttributeClass.ToDisplayString() == "Microsoft.AspNetCore.Components.EditorRequiredAttribute");
 
                 if (kind == PropertyKind.Enum)
                 {

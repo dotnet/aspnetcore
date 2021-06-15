@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -175,6 +176,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 var type = context.ModelType;
                 var jsonSerializer = CreateJsonSerializer(context);
                 jsonSerializer.Error += ErrorHandler;
+
+                if (_jsonOptions.ReadJsonWithRequestCulture)
+                {
+                    jsonSerializer.Culture = CultureInfo.CurrentCulture;
+                }
+
                 try
                 {
                     model = jsonSerializer.Deserialize(jsonReader, type);
