@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public class EndpointMetadataApiDescriptionProviderTest
     {
         [Fact]
-        public void ApiDescription_MultipleCreatedForMultipleHttpMethods()
+        public void MultipleApiDescriptionsCreatedForMultipleHttpMethods()
         {
             var apiDescriptions = GetApiDescriptions(() => { }, "/", new string[] { "FOO", "BAR" });
 
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void ApiDescription_NotCreatedIfNoHttpMethods()
+        public void ApiDescriptionNotCreatedIfNoHttpMethods()
         {
             var apiDescriptions = GetApiDescriptions(() => { }, "/", Array.Empty<string>());
 
@@ -32,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void ApiDescription_UsesDeclaringTypeAsControllerName()
+        public void UsesDeclaringTypeAsControllerName()
         {
             var apiDescription = GetApiDescription(TestAction);
 
@@ -41,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void ApiDescription_UsesMapAsControllerNameIfNoDeclaringType()
+        public void UsesMapAsControllerNameIfNoDeclaringType()
         {
             var apiDescription = GetApiDescription(() => { });
 
@@ -49,43 +51,43 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void ApiDescription_AddsJsonRequestFormatWhenFromBodyInferred()
+        public void AddsJsonRequestFormatWhenFromBodyInferred()
         {
-            static void AssertApiDescriptionHasJsonRequestFormat(ApiDescription apiDescription)
+            static void AssertJsonRequestFormat(ApiDescription apiDescription)
             {
                 var requestFormat = Assert.Single(apiDescription.SupportedRequestFormats);
                 Assert.Equal("application/json", requestFormat.MediaType);
                 Assert.Null(requestFormat.Formatter);
             }
 
-            AssertApiDescriptionHasJsonRequestFormat(GetApiDescription(
+            AssertJsonRequestFormat(GetApiDescription(
                 (InferredJsonType fromBody) => { }));
 
-            AssertApiDescriptionHasJsonRequestFormat(GetApiDescription((
-                [FromBody] int fromBody) => { }));
+            AssertJsonRequestFormat(GetApiDescription(
+                ([FromBody] int fromBody) => { }));
         }
 
         [Fact]
-        public void ApiDescription_UsesMetadadataInsteadOfDefaultJsonRequestFormat()
+        public void UsesMetadadataInsteadOfDefaultJsonRequestFormat()
         {
-            static void AssertApiDescriptionHasCustomRequestFormat(ApiDescription apiDescription)
+            static void AssertustomRequestFormat(ApiDescription apiDescription)
             {
                 var requestFormat = Assert.Single(apiDescription.SupportedRequestFormats);
                 Assert.Equal("application/custom", requestFormat.MediaType);
                 Assert.Null(requestFormat.Formatter);
             }
 
-            AssertApiDescriptionHasCustomRequestFormat(GetApiDescription(
+            AssertustomRequestFormat(GetApiDescription(
                 [Consumes("application/custom")]
                 (InferredJsonType fromBody) => { }));
 
-            AssertApiDescriptionHasCustomRequestFormat(GetApiDescription(
+            AssertustomRequestFormat(GetApiDescription(
                 [Consumes("application/custom")]
                 ([FromBody] int fromBody) => { }));
         }
 
         [Fact]
-        public void ApiDescription_AddsJsonResponseFormatWhenFromBodyInferred()
+        public void AddsJsonResponseFormatWhenFromBodyInferred()
         {
             var apiDescription = GetApiDescription(() => new InferredJsonType());
 
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void ApiDescription_AddsTextResponseFormatWhenFromBodyInferred()
+        public void AddsTextResponseFormatWhenFromBodyInferred()
         {
             var apiDescription = GetApiDescription(() => "foo");
 
@@ -113,9 +115,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void ApiDescription_AddsNoResponseFormatWhenItCannotBeInferredAndTheresNoMetadata()
+        public void AddsNoResponseFormatWhenItCannotBeInferredAndTheresNoMetadata()
         {
-            static void AssertApiDescriptionIsVoid(ApiDescription apiDescription)
+            static void AssertVoid(ApiDescription apiDescription)
             {
                 var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
                 Assert.Equal(typeof(void), responseType.Type);
@@ -124,9 +126,113 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 Assert.Empty(responseType.ApiResponseFormats);
             }
 
-            AssertApiDescriptionIsVoid(GetApiDescription(() => { }));
-            AssertApiDescriptionIsVoid(GetApiDescription(() => Task.CompletedTask));
-            AssertApiDescriptionIsVoid(GetApiDescription(() => new ValueTask()));
+            AssertVoid(GetApiDescription(() => { }));
+            AssertVoid(GetApiDescription(() => Task.CompletedTask));
+            AssertVoid(GetApiDescription(() => new ValueTask()));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPath()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(int), param.Type);
+                Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((int foo) => { }, "/{foo}"));
+            AssertPathParameter(GetApiDescription(([FromRoute] int foo) => { }));
+        }
+
+        [Fact]
+        public void AddsFromQueryParameterAsQuery()
+        {
+            static void AssertQueryParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(int), param.Type);
+                Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Query, param.Source);
+            }
+
+            AssertQueryParameter(GetApiDescription((int foo) => { }, "/"));
+            AssertQueryParameter(GetApiDescription(([FromQuery] int foo) => { }));
+        }
+
+        [Fact]
+        public void AddsFromHeaderParameterAsHeader()
+        {
+            var apiDescription = GetApiDescription(([FromHeader] int foo) => { });
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+
+            Assert.Equal(typeof(int), param.Type);
+            Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Header, param.Source);
+        }
+
+        [Fact]
+        public void AddsFromServiceParameterAsService()
+        {
+            static void AssertServiceParameter(ApiDescription apiDescription, Type expectedType)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(expectedType, param.Type);
+                Assert.Equal(expectedType, param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Services, param.Source);
+            }
+
+            AssertServiceParameter(GetApiDescription((IInferredServiceType foo) => { }), typeof(IInferredServiceType));
+            AssertServiceParameter(GetApiDescription(([FromServices] int foo) => { }), typeof(int));
+            AssertServiceParameter(GetApiDescription((HttpContext context) => { }), typeof(HttpContext));
+            AssertServiceParameter(GetApiDescription((CancellationToken token) => { }), typeof(CancellationToken));
+        }
+
+        [Fact]
+        public void AddsFromBodyParameterAsBody()
+        {
+            static void AssertBodyParameter(ApiDescription apiDescription, Type expectedType)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(expectedType, param.Type);
+                Assert.Equal(expectedType, param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Body, param.Source);
+            }
+
+            AssertBodyParameter(GetApiDescription((InferredJsonType foo) => { }), typeof(InferredJsonType));
+            AssertBodyParameter(GetApiDescription(([FromBody] int foo) => { }), typeof(int));
+        }
+
+        [Fact]
+        public void AddsDefaultValueFromParameters()
+        {
+            var apiDescription = GetApiDescription(TestActionWithDefaultValue);
+
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(42, param.DefaultValue);
+        }
+
+        [Fact]
+        public void AddsMultipleParameters()
+        {
+            var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonType fromBody) => { });
+            Assert.Equal(3, apiDescription.ParameterDescriptions.Count);
+
+            var fooParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(int), fooParam.Type);
+            Assert.Equal(typeof(int), fooParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, fooParam.Source);
+
+            var barParam = apiDescription.ParameterDescriptions[1];
+            Assert.Equal(typeof(int), barParam.Type);
+            Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, barParam.Source);
+
+            var fromBodyParam = apiDescription.ParameterDescriptions[2];
+            Assert.Equal(typeof(InferredJsonType), fromBodyParam.Type);
+            Assert.Equal(typeof(InferredJsonType), fromBodyParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Body, fromBodyParam.Source);
         }
 
         private IList<ApiDescription> GetApiDescriptions(
@@ -141,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var httpMethodMetadata = new HttpMethodMetadata(httpMethods ?? new[] { "GET" });
             var metadataItems = new List<object>(attributes) { methodInfo, httpMethodMetadata };
             var endpointMetadata = new EndpointMetadataCollection(metadataItems.ToArray());
-            var routePattern = RoutePatternFactory.Pattern(pattern ?? "/");
+            var routePattern = RoutePatternFactory.Parse(pattern ?? "/");
 
             var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, null);
             var endpointDataSource = new DefaultEndpointDataSource(endpoint);
@@ -158,6 +264,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Single(GetApiDescriptions(action, pattern));
 
         private static void TestAction()
+        {
+        }
+
+        private static void TestActionWithDefaultValue(int foo = 42)
         {
         }
 

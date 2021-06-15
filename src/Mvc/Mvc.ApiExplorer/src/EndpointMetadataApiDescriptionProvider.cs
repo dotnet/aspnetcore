@@ -115,6 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 ModelMetadata = CreateModelMetadata(parameter.ParameterType),
                 Source = source,
                 DefaultValue = parameter.DefaultValue,
+                Type = parameter.ParameterType,
             };
         }
 
