@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         {
                             // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
                             // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
-                            // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
+                            // [ProducesResponseType(201)] instead of [ProducesResponseType(typeof(Person), 201] when typeof(Person) can be inferred
                             // from the return type.
                             apiResponseType.Type = type;
                         }
@@ -159,12 +159,24 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                     if (apiResponseType.Type != null)
                     {
+                        AddApiResponseFormats(apiResponseType.ApiResponseFormats, contentTypes);
                         results[apiResponseType.StatusCode] = apiResponseType;
                     }
                 }
             }
 
             return results.Values.ToList();
+        }
+
+        internal static void AddApiResponseFormats(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
+        {
+            foreach (var contentType in contentTypes)
+            {
+                apiResponseFormats.Add(new ApiResponseFormat
+                {
+                    MediaType = contentType,
+                });
+            }
         }
 
         private void CalculateResponseFormats(ICollection<ApiResponseType> responseTypes, MediaTypeCollection declaredContentTypes)
@@ -182,6 +194,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             foreach (var apiResponse in responseTypes)
             {
+                // ApiResponseFormats has been preset for EndpointMetadataApiDescriptionProvider's use but MVC has more inputs to consider.
+                apiResponse.ApiResponseFormats.Clear();
+
                 var responseType = apiResponse.Type;
                 if (responseType == null || responseType == typeof(void))
                 {
