@@ -485,8 +485,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 fallbackHttpProtocols: HttpProtocols.None,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            var alpnList = options.Item1.ApplicationProtocols;
+            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+            var alpnList = options.ApplicationProtocols;
 
             Assert.NotNull(alpnList);
             var protocol = Assert.Single(alpnList);
@@ -549,8 +549,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.Item1.EnabledSslProtocols);
+            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+            Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.EnabledSslProtocols);
         }
 
         [Fact]
