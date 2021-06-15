@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private int? _hashStrength;
         private ExchangeAlgorithmType? _keyExchangeAlgorithm;
         private int? _keyExchangeStrength;
+        private Task<X509Certificate2?>? _clientCertTask;
 
         public TlsConnectionFeature(SslStream sslStream)
         {
@@ -35,6 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             _sslStream = sslStream;
         }
+
+        internal ClientCertificateMode ClientCertificateMode { get; set; }
 
         public X509Certificate2? ClientCertificate
         {
@@ -99,7 +103,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(ClientCertificate);
+            // Only try once per connection
+            if (_clientCertTask != null)
+            {
+                return _clientCertTask;
+            }
+
+            if (ClientCertificate != null
+                || ClientCertificateMode != ClientCertificateMode.DelayCertificate
+                // Delayed client cert negotiation is not allowed on HTTP/2 (or HTTP/3, but that's implemented elsewhere).
+                || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
+            {
+                return _clientCertTask = Task.FromResult(ClientCertificate);
+            }
+
+            return _clientCertTask = GetClientCertificateAsyncCore(cancellationToken);
+        }
+
+        private async Task<X509Certificate2?> GetClientCertificateAsyncCore(CancellationToken cancellationToken)
+        {
+            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+            return ClientCertificate;
         }
 
         private static X509Certificate2? ConvertToX509Certificate2(X509Certificate? certificate)

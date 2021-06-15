@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
@@ -1588,6 +1589,94 @@ namespace Interop.FunctionalTests
             var response = await client.GetAsync(url + " !\"$%&'()*++,-./0123456789:;<>=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`{|}~點看").DefaultTimeout();
             response.EnsureSuccessStatusCode();
             Assert.Equal("/ !\"$%&'()*++,-./0123456789:;<>=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[/]^_`{|}~點看", await response.Content.ReadAsStringAsync());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        public async Task ClientCertificate_Required()
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder.UseKestrel(options =>
+                    {
+                        options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http2;
+                            listenOptions.UseHttps(httpsOptions =>
+                            {
+                                httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                                httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                                httpsOptions.AllowAnyClientCertificate();
+                            });
+                        });
+                    });
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        Assert.NotNull(context.Connection.ClientCertificate);
+                        Assert.NotNull(await context.Connection.GetClientCertificateAsync());
+                        await context.Response.WriteAsync("Hello World");
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var handler = new SocketsHttpHandler();
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            handler.SslOptions.LocalCertificateSelectionCallback = (_, _, _, _, _) => TestResources.GetTestCertificate();
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var url = host.MakeUrl(Uri.UriSchemeHttps);
+            var response = await client.GetAsync(url).DefaultTimeout();
+
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        public async Task ClientCertificate_DelayedNotSupported()
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder.UseKestrel(options =>
+                    {
+                        options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http2;
+                            listenOptions.UseHttps(httpsOptions =>
+                            {
+                                httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                                httpsOptions.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                                httpsOptions.AllowAnyClientCertificate();
+                            });
+                        });
+                    });
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        Assert.Null(context.Connection.ClientCertificate);
+                        Assert.Null(await context.Connection.GetClientCertificateAsync());
+                        await context.Response.WriteAsync("Hello World");
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var handler = new SocketsHttpHandler();
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            handler.SslOptions.LocalCertificateSelectionCallback = (_, _, _, _, _) => TestResources.GetTestCertificate();
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var url = host.MakeUrl(Uri.UriSchemeHttps);
+            var response = await client.GetAsync(url).DefaultTimeout();
+
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
             await host.StopAsync().DefaultTimeout();
         }
 
