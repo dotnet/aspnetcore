@@ -87,14 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
-            if (hasJsonBody)
-            {
-                apiDescription.SupportedRequestFormats.Add(new ApiRequestFormat
-                {
-                    MediaType = "application/json",
-                });
-            }
-
+            AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
             return apiDescription;
@@ -160,7 +153,35 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private static void AddSupportedResponseTypes(IList<ApiResponseType> supportedResponseTypes, Type returnType, EndpointMetadataCollection endpointMetadata)
+        private static void AddSupportedRequestFormats(
+            IList<ApiRequestFormat> supportedRequestFormats,
+            bool hasJsonBody,
+            EndpointMetadataCollection endpointMetadata)
+        {
+            // If RequestDelegateFactory thinks the API supports a JSON body, it does.
+            if (hasJsonBody)
+            {
+                supportedRequestFormats.Add(new ApiRequestFormat
+                {
+                    MediaType = "application/json",
+                });
+            }
+
+            var requestMetadata = endpointMetadata.GetOrderedMetadata<IApiRequestMetadataProvider>();
+
+            foreach (var contentType in DefaultApiDescriptionProvider.GetDeclaredContentTypes(requestMetadata))
+            {
+                supportedRequestFormats.Add(new ApiRequestFormat
+                {
+                    MediaType = contentType,
+                });
+            }
+        }
+
+        private static void AddSupportedResponseTypes(
+            IList<ApiResponseType> supportedResponseTypes,
+            Type returnType,
+            EndpointMetadataCollection endpointMetadata)
         {
             var responseType = returnType;
 
@@ -180,7 +201,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var defaultErrorType = errorMetadata?.Type ?? typeof(void);
             var contentTypes = new MediaTypeCollection();
 
-            var responseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(responseMetadata, responseType, defaultErrorType, contentTypes);
+            var responseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
+                responseMetadata, responseType, defaultErrorType, contentTypes);
 
             if (responseMetadataTypes.Count > 0)
             {
@@ -236,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private static ApiResponseFormat? CreateDefaultApiResponseFormat(Type responseType)
         {
-            if (responseType == typeof(void) || typeof(IResult).IsAssignableFrom(responseType))
+            if (responseType == typeof(void))
             {
                 return null;
             }
