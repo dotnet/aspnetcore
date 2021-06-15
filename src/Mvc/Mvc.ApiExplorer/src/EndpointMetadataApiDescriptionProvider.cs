@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return new ApiParameterDescription
             {
                 Name = name,
-                ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(parameter.ParameterType)),
+                ModelMetadata = CreateModelMetadata(parameter.ParameterType),
                 Source = source,
                 DefaultValue = parameter.DefaultValue,
             };
@@ -185,8 +186,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 foreach (var apiResponseType in responseMetadataTypes)
                 {
-                    if (apiResponseType.ApiResponseFormats.Count == 0 &&
-                        CreateDefaultApiResponseFormat(responseType) is { } defaultResponseFormat)
+                    Debug.Assert(apiResponseType.Type is not null, "ApiResponseTypeProvider gave us a null Type!?");
+
+                    apiResponseType.ModelMetadata = CreateModelMetadata(apiResponseType.Type);
+
+                    if (contentTypes.Count > 0)
+                    {
+                        AddResponseContentTypes(apiResponseType.ApiResponseFormats, contentTypes);
+                    }
+                    else if (CreateDefaultApiResponseFormat(responseType) is { } defaultResponseFormat)
                     {
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }
@@ -203,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     // If metadata provided us with response formats, use that instead of the default.
                     defaultApiResponseType.ApiResponseFormats.Clear();
-                    ApiResponseTypeProvider.AddApiResponseFormats(defaultApiResponseType.ApiResponseFormats, contentTypes);
+                    AddResponseContentTypes(defaultApiResponseType.ApiResponseFormats, contentTypes);
                 }
 
                 supportedResponseTypes.Add(defaultApiResponseType);
@@ -214,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiResponseType = new ApiResponseType
             {
-                ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForType(responseType)),
+                ModelMetadata = CreateModelMetadata(responseType),
                 StatusCode = 200,
             };
 
@@ -242,6 +250,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 // Everything else is written using HttpResponse.WriteAsJsonAsync<TValue>(T).
                 return new ApiResponseFormat { MediaType = "application/json" };
+            }
+        }
+
+        private static EndpointModelMetadata CreateModelMetadata(Type type) =>
+            new EndpointModelMetadata(ModelMetadataIdentity.ForType(type));
+
+        private static void AddResponseContentTypes(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
+        {
+            foreach (var contentType in contentTypes)
+            {
+                apiResponseFormats.Add(new ApiResponseFormat
+                {
+                    MediaType = contentType,
+                });
             }
         }
     }
