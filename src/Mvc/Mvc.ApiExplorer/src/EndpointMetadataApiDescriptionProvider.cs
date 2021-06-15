@@ -170,22 +170,24 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             bool hasJsonBody,
             EndpointMetadataCollection endpointMetadata)
         {
-            // If RequestDelegateFactory thinks the API supports a JSON body, it does.
-            if (hasJsonBody)
+            var requestMetadata = endpointMetadata.GetOrderedMetadata<IApiRequestMetadataProvider>();
+            var declaredContentTypes = DefaultApiDescriptionProvider.GetDeclaredContentTypes(requestMetadata);
+
+            if (declaredContentTypes.Count > 0)
+            {
+                foreach (var contentType in declaredContentTypes)
+                {
+                    supportedRequestFormats.Add(new ApiRequestFormat
+                    {
+                        MediaType = contentType,
+                    });
+                }
+            }
+            else if (hasJsonBody)
             {
                 supportedRequestFormats.Add(new ApiRequestFormat
                 {
                     MediaType = "application/json",
-                });
-            }
-
-            var requestMetadata = endpointMetadata.GetOrderedMetadata<IApiRequestMetadataProvider>();
-
-            foreach (var contentType in DefaultApiDescriptionProvider.GetDeclaredContentTypes(requestMetadata))
-            {
-                supportedRequestFormats.Add(new ApiRequestFormat
-                {
-                    MediaType = contentType,
                 });
             }
         }
@@ -258,6 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ModelMetadata = CreateModelMetadata(responseType),
                 StatusCode = 200,
+                Type = responseType,
             };
 
             if (CreateDefaultApiResponseFormat(responseType) is { } responseFormat)
