@@ -138,14 +138,26 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken);
-            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCts.Token);
+            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), GetLinkedCancellationToken(cancellationToken));
         }
 
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken);
-            return await _pipeReaderStream.ReadAsync(buffer, linkedCts.Token);
+            return await _pipeReaderStream.ReadAsync(buffer, GetLinkedCancellationToken(cancellationToken));
+        }
+
+        private CancellationToken GetLinkedCancellationToken(CancellationToken readCancellationToken)
+        {
+            if (readCancellationToken.CanBeCanceled && _streamCancellationToken.CanBeCanceled)
+            {
+                return CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, readCancellationToken).Token;
+            }
+            else if (readCancellationToken.CanBeCanceled)
+            {
+                return readCancellationToken;
+            }
+
+            return _streamCancellationToken;
         }
 
         protected override void Dispose(bool disposing)
