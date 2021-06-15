@@ -327,12 +327,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     return;
                 }
 
-                Builder.Append("=\"");
+                // We examine the node.Prefix (e.g. " onfocus='" or " on focus=\"")
+                // to preserve the quote type that is used in the original markup.
+                var quoteType = node.Prefix.Contains("'") ? "'" : "\"";
+
+                Builder.Append('=');
+                Builder.Append(quoteType);
 
                 // Visit Children
                 base.VisitDefault(node);
 
-                Builder.Append('"');
+                Builder.Append(quoteType);
             }
 
             public override void VisitHtmlAttributeValue(HtmlAttributeValueIntermediateNode node)
