@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -21,7 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
     internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
     {
-        // IApiResponseMetadataProvider, 
         private readonly EndpointDataSource _endpointDataSource;
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason :D
@@ -57,6 +57,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private static ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
         {
+            // Swagger uses the "controller" name to group endpoints together.
+            // For now, put all methods defined the same declaring type together.
+            string controllerName;
+
+            if (methodInfo.DeclaringType is not null && !IsCompilerGenerated(methodInfo.DeclaringType))
+            {
+                controllerName = methodInfo.DeclaringType.Name;
+            }
+            else
+            {
+                // If the declaring type is null or compiler-generated (e.g. lambdas),
+                // group the methods under a "Map" controller.
+                controllerName = "Map";
+            }
+
             var apiDescription = new ApiDescription
             {
                 HttpMethod = httpMethod,
@@ -65,10 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     RouteValues =
                     {
-                        // Swagger uses this to group endpoints together.
-                        // For now, put all endpoints configured with Map(Delegate) together.
-                        // TODO: Use some other metadata for this.
-                        ["controller"] = "Map",
+                        ["controller"] = controllerName,
                     },
                 },
             };
@@ -288,5 +300,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 });
             }
         }
+
+        // The CompilerGeneratedAttribute doesn't always get added so we also check if the type name starts with "<"
+        // For example,w "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
+        // REVIEW: Is there a better way to do this?
+        private static bool IsCompilerGenerated(Type type) =>
+            Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || type.Name.StartsWith('<');
     }
 }

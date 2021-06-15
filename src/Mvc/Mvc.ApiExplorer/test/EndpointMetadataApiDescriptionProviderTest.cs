@@ -37,6 +37,28 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(apiDescriptions);
         }
 
+
+        [Fact]
+        public void ApiDescription_UsesDeclaringTypeAsControllerName()
+        {
+            var apiDescriptions = GetApiDescriptions(((Action)TestAction).Method);
+
+            var apiDescription = Assert.Single(apiDescriptions);
+            var declaringTypeName = typeof(EndpointMetadataApiDescriptionProviderTest).Name;
+            Assert.Equal(declaringTypeName, apiDescription.ActionDescriptor.RouteValues["controller"]);
+        }
+
+        [Fact]
+        public void ApiDescription_UsesMapAsControllerNameIfNoDeclaringType()
+        {
+            Action action = () => { };
+
+            var apiDescriptions = GetApiDescriptions(action.Method);
+
+            var apiDescription = Assert.Single(apiDescriptions);
+            Assert.Equal("Map", apiDescription.ActionDescriptor.RouteValues["controller"]);
+        }
+
         private IList<ApiDescription> GetApiDescriptions(
             MethodInfo methodInfo,
             IEnumerable<string> httpMethods = null,
@@ -57,6 +79,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             provider.OnProvidersExecuted(context);
 
             return context.Results;
+        }
+
+        private static void TestAction()
+        {
         }
     }
 }
