@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy
     /// <summary>
     /// Keeps the User and AuthenticationResult consistent with each other
     /// </summary>
-    internal class AuthenticationFeatures : IAuthenticateResultFeature, IHttpAuthenticationFeature
+    internal sealed class AuthenticationFeatures : IAuthenticateResultFeature, IHttpAuthenticationFeature
     {
         private ClaimsPrincipal? _user;
         private AuthenticateResult? _result;
