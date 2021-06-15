@@ -8,7 +8,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class BoundAttributeDescriptorComparer : IEqualityComparer<BoundAttributeDescriptor>
+    internal sealed class BoundAttributeDescriptorComparer : IEqualityComparer<BoundAttributeDescriptor>
     {
         /// <summary>
         /// A default instance of the <see cref="BoundAttributeDescriptorComparer"/>.
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
         }
 
-        public virtual bool Equals(BoundAttributeDescriptor descriptorX, BoundAttributeDescriptor descriptorY)
+        public bool Equals(BoundAttributeDescriptor descriptorX, BoundAttributeDescriptor descriptorY)
         {
             if (object.ReferenceEquals(descriptorX, descriptorY))
             {
@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 descriptorX.IsEnum == descriptorY.IsEnum &&
                 descriptorX.HasIndexer == descriptorY.HasIndexer &&
                 descriptorX.CaseSensitive == descriptorY.CaseSensitive &&
+                descriptorX.IsEditorRequired == descriptorY.IsEditorRequired &&
                 string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.IndexerNamePrefix, descriptorY.IndexerNamePrefix, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     descriptorY.Metadata.OrderBy(propertyY => propertyY.Key, StringComparer.Ordinal));
         }
 
-        public virtual int GetHashCode(BoundAttributeDescriptor descriptor)
+        public int GetHashCode(BoundAttributeDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -58,6 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var hash = HashCodeCombiner.Start();
             hash.Add(descriptor.Kind, StringComparer.Ordinal);
             hash.Add(descriptor.Name, StringComparer.Ordinal);
+            hash.Add(descriptor.IsEditorRequired);
 
             if (descriptor.BoundAttributeParameters != null)
             {

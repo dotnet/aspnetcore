@@ -8,7 +8,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class TagHelperDescriptorComparer : IEqualityComparer<TagHelperDescriptor>
+    internal sealed class TagHelperDescriptorComparer : IEqualityComparer<TagHelperDescriptor>
     {
         /// <summary>
         /// A default instance of the <see cref="TagHelperDescriptorComparer"/>.
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
         }
 
-        public virtual bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
+        public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
         {
             if (object.ReferenceEquals(descriptorX, descriptorY))
             {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         /// <inheritdoc />
-        public virtual int GetHashCode(TagHelperDescriptor descriptor)
+        public int GetHashCode(TagHelperDescriptor descriptor)
         {
             if (descriptor == null)
             {
