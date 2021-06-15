@@ -95,7 +95,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>bff097881d0f3ed9243023da2bfc4e858e08b753</Sha>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -296,15 +296,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>bff097881d0f3ed9243023da2bfc4e858e08b753</Sha>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.8-servicing.21314.8">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.8-servicing.21315.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>bff097881d0f3ed9243023da2bfc4e858e08b753</Sha>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.8-servicing.21314.8">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.8-servicing.21315.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>bff097881d0f3ed9243023da2bfc4e858e08b753</Sha>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
