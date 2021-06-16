@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             foreach (var endpoint in _endpointDataSource.Endpoints)
             {
-                if (endpoint is RouteEndpoint routeEndpoint
-                    && routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo
-                    && routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata)
+                if (endpoint is RouteEndpoint routeEndpoint &&
+                    routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo &&
+                    routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata)
                 {
                     // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
                     // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
         {
-            // Swagger uses the "controller" name to group endpoints together.
+            // Swashbuckle uses the "controller" name to group endpoints together.
             // For now, put all methods defined the same declaring type together.
             string controllerName;
 
