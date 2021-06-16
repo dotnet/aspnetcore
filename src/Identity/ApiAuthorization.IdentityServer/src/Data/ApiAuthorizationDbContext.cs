@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.EntityFramework.Extensions;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Options;
+using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Extensions;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +44,14 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// Gets or sets the <see cref="DbSet{DeviceFlowCodes}"/>.
         /// </summary>
         public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the keys.
+        /// </summary>
+        /// <value>
+        /// The keys.
+        /// </value>
+        public DbSet<Key> Keys { get; set; }
 
         Task<int> IPersistedGrantDbContext.SaveChangesAsync() => base.SaveChangesAsync();
 

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using IdentityServer4;
-using IdentityServer4.Models;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// <summary>
         /// Builds the API resource.
         /// </summary>
-        /// <returns>The built <see cref="IdentityServer4.Models.IdentityResource"/>.</returns>
+        /// <returns>The built <see cref="Duende.IdentityServer.Models.IdentityResource"/>.</returns>
         public IdentityResource Build()
         {
             if (_built)

@@ -8,19 +8,29 @@
     <!-- We are a package that depends on the shared framework, this allows us to
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+    <!-- IdentityServer packages are not signed -->
+    <NoWarn>CS8002</NoWarn>
     <Nullable>disable</Nullable>
+    <!-- REMOVE THIS -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Remove the reference to Microsoft.AspNetCore.App from IdentityServer4 -->
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
-    <Reference Include="IdentityServer4.AspNetIdentity" />
-    <Reference Include="IdentityServer4.EntityFramework" />
-    <Reference Include="IdentityServer4.EntityFramework.Storage" />
-    <Reference Include="IdentityServer4" />
-    <Reference Include="IdentityServer4.Storage" />
+    <Reference Include="Duende.IdentityServer.AspNetIdentity" />
+    <Reference Include="Duende.IdentityServer.EntityFramework" />
+    <Reference Include="Duende.IdentityServer.EntityFramework.Storage" />
+    <Reference Include="Duende.IdentityServer" />
+    <Reference Include="Duende.IdentityServer.Storage" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
+    <Reference Include="Newtonsoft.Json" />
+    <SuppressBaselineReference Include="IdentityServer4.AspNetIdentity" />
+    <SuppressBaselineReference Include="IdentityServer4.EntityFramework" />
+    <SuppressBaselineReference Include="IdentityServer4.EntityFramework.Storage" />
+    <SuppressBaselineReference Include="IdentityServer4" />
+    <SuppressBaselineReference Include="IdentityServer4.Storage" />
 
     <!-- These references don't matter as they'll be replaced by the shared framework reference -->
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
