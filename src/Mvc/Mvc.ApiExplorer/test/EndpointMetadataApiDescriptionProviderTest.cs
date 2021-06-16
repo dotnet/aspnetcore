@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void UsesMetadadataInsteadOfDefaultJsonRequestFormat()
+        public void AddsRequestFormatFromMetadata()
         {
             static void AssertustomRequestFormat(ApiDescription apiDescription)
             {
@@ -87,11 +87,30 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
+        public void AddsMultipleRequestFormatsFromMetadata()
+        {
+            var apiDescription = GetApiDescription(
+                [Consumes("application/custom0", "application/custom1")]
+                (InferredJsonType fromBody) => { });
+
+            Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
+
+            var requestFormat0 = apiDescription.SupportedRequestFormats[0];
+            Assert.Equal("application/custom0", requestFormat0.MediaType);
+            Assert.Null(requestFormat0.Formatter);
+
+            var requestFormat1 = apiDescription.SupportedRequestFormats[1];
+            Assert.Equal("application/custom1", requestFormat1.MediaType);
+            Assert.Null(requestFormat1.Formatter);
+        }
+
+        [Fact]
         public void AddsJsonResponseFormatWhenFromBodyInferred()
         {
             var apiDescription = GetApiDescription(() => new InferredJsonType());
 
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
+            Assert.Equal(200, responseType.StatusCode);
             Assert.Equal(typeof(InferredJsonType), responseType.Type);
             Assert.Equal(typeof(InferredJsonType), responseType.ModelMetadata.ModelType);
 
@@ -106,6 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = GetApiDescription(() => "foo");
 
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
+            Assert.Equal(200, responseType.StatusCode);
             Assert.Equal(typeof(string), responseType.Type);
             Assert.Equal(typeof(string), responseType.ModelMetadata.ModelType);
 
@@ -120,6 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             static void AssertVoid(ApiDescription apiDescription)
             {
                 var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
+                Assert.Equal(200, responseType.StatusCode);
                 Assert.Equal(typeof(void), responseType.Type);
                 Assert.Equal(typeof(void), responseType.ModelMetadata.ModelType);
 
@@ -129,6 +150,53 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             AssertVoid(GetApiDescription(() => { }));
             AssertVoid(GetApiDescription(() => Task.CompletedTask));
             AssertVoid(GetApiDescription(() => new ValueTask()));
+        }
+
+        [Fact]
+        public void AddsResponseFormatFromMetadata()
+        {
+            var apiDescription = GetApiDescription(
+                [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
+                [Produces("application/custom")]
+                () => new InferredJsonType());
+
+            var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+            Assert.Equal(201, responseType.StatusCode);
+            Assert.Equal(typeof(TimeSpan), responseType.Type);
+            Assert.Equal(typeof(TimeSpan), responseType.ModelMetadata.ModelType);
+
+            var responseFormat = Assert.Single(responseType.ApiResponseFormats);
+            Assert.Equal("application/custom", responseFormat.MediaType);
+        }
+
+        [Fact]
+        public void AddsMultipleResponseFormatsFromMetadata()
+        {
+            var apiDescription = GetApiDescription(
+                [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
+                [ProducesResponseType(StatusCodes.Status400BadRequest)]
+                () => new InferredJsonType());
+
+            Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+            var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+            Assert.Equal(201, createdResponseType.StatusCode);
+            Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
+            Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata.ModelType);
+
+            var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+            Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+            var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+            Assert.Equal(400, badRequestResponseType.StatusCode);
+            Assert.Equal(typeof(InferredJsonType), badRequestResponseType.Type);
+            Assert.Equal(typeof(InferredJsonType), badRequestResponseType.ModelMetadata.ModelType);
+
+            var badRequestResponseFormat = Assert.Single(badRequestResponseType.ApiResponseFormats);
+            Assert.Equal("application/json", badRequestResponseFormat.MediaType);
         }
 
         [Fact]

@@ -225,6 +225,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     Debug.Assert(apiResponseType.Type is not null, "ApiResponseTypeProvider gave us a null Type!?");
 
+                    // void means no response type was specified by the metadata, so use whatever we inferred.
+                    if (apiResponseType.Type == typeof(void))
+                    {
+                        apiResponseType.Type = responseType;
+                    }
+
                     apiResponseType.ModelMetadata = CreateModelMetadata(apiResponseType.Type);
 
                     if (contentTypes.Count > 0)
