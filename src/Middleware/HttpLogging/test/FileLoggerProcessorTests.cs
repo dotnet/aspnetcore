@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.HttpLogging.Tests
+namespace Microsoft.AspNetCore.HttpLogging
 {
     public class FileLoggerProcessorTests
     {

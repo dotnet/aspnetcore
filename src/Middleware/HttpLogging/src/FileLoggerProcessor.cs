@@ -88,22 +88,22 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 var fullName = GetFullName(group.Key);
                 var fileInfo = new FileInfo(fullName);
-                var streamWriter = File.AppendText(fullName);
+                var streamWriter = GetStreamWriter(fullName);
 
                 foreach (var item in group)
                 {
                     fileInfo.Refresh();
                     // Roll to new file if _maxFileSize is reached
                     // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling
-                    if (fileInfo.Length > _maxFileSize)
+                    if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
                     {
                         _fileNumber++;
                         fullName = GetFullName(group.Key);
                         fileInfo = new FileInfo(fullName);
                         streamWriter.Dispose();
-                        streamWriter = File.AppendText(fullName);
+                        streamWriter = GetStreamWriter(fullName);
                     }
-                    if (fileInfo.Length == 0)
+                    if (!fileInfo.Exists || fileInfo.Length == 0)
                     {
                         await OnFirstWrite(streamWriter);
                     }
@@ -116,10 +116,17 @@ namespace Microsoft.AspNetCore.HttpLogging
             RollFiles();
         }
 
-        internal async Task WriteMessageAsync(string message, StreamWriter streamWriter)
+        // Virtual for testing
+        internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter)
         {
             await streamWriter.WriteLineAsync(message);
             await streamWriter.FlushAsync();
+        }
+
+        // Virtual for testing
+        internal virtual StreamWriter GetStreamWriter(string fileName)
+        {
+            return File.AppendText(fileName);
         }
 
         private void RollFiles()

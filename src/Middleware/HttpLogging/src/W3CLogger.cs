@@ -14,7 +14,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal sealed class W3CLogger : IDisposable
+    internal class W3CLogger : IDisposable
     {
         private readonly W3CLoggerProcessor _messageQueue;
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
@@ -24,8 +24,13 @@ namespace Microsoft.AspNetCore.HttpLogging
         internal W3CLogger(IOptionsMonitor<W3CLoggerOptions> options)
         {
             _options = options;
+            _messageQueue = InitializeMessageQueue(_options);
+        }
 
-            _messageQueue = new W3CLoggerProcessor(_options);
+        // Virtual for testing
+        internal virtual W3CLoggerProcessor InitializeMessageQueue(IOptionsMonitor<W3CLoggerOptions> options)
+        {
+            return new W3CLoggerProcessor(options);
         }
 
         public void Dispose() => _messageQueue.Dispose();

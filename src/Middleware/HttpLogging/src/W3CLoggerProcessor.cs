@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal sealed class W3CLoggerProcessor : FileLoggerProcessor
+    internal class W3CLoggerProcessor : FileLoggerProcessor
     {
         private readonly W3CLoggingFields _loggingFields;
 
@@ -108,5 +108,15 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             return sb.ToString();
         }
+
+        // For testing
+        internal override async Task WriteMessageAsync(string message, StreamWriter streamWriter)
+        {
+            OnWrite(message);
+            await base.WriteMessageAsync(message, streamWriter);
+        }
+
+        // Extensibility point for tests
+        internal virtual void OnWrite(string message) { }
     }
 }
