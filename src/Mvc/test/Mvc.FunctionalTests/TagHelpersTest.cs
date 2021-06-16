@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Theory]
         [InlineData("Index")]
         [InlineData("About")]
-        [InlineData("Help")]
         [InlineData("GlobbingTagHelpers")]
+        [InlineData("Help")]
         [InlineData("UnboundDynamicAttributes")]
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
