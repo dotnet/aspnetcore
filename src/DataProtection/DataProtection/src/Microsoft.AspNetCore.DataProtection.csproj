@@ -43,4 +43,7 @@
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Http.Features" />
+  </ItemGroup>
 </Project>
