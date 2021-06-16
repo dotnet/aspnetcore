@@ -13,6 +13,7 @@
     <Nullable>disable</Nullable>
     <!-- REMOVE THIS -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>    
   </PropertyGroup>
 
   <ItemGroup>
