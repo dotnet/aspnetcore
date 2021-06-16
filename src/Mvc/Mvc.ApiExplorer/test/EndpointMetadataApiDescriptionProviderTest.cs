@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private class ServiceProviderIsService : IServiceProviderIsService
         {
-            public bool IsService(Type serviceType) => serviceType is IInferredServiceInterface;
+            public bool IsService(Type serviceType) => serviceType == typeof(IInferredServiceInterface);
         }
     }
 }
