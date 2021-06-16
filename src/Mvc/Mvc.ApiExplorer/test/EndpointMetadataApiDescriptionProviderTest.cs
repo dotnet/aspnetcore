@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -44,11 +46,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void UsesMapAsControllerNameIfNoDeclaringType()
+        public void UsesApplicationNameAsControllerNameIfNoDeclaringType()
         {
             var apiDescription = GetApiDescription(() => { });
 
-            Assert.Equal("Map", apiDescription.ActionDescriptor.RouteValues["controller"]);
+            Assert.Equal(nameof(EndpointMetadataApiDescriptionProviderTest), apiDescription.ActionDescriptor.RouteValues["controller"]);
         }
 
         [Fact]
@@ -324,8 +326,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, null);
             var endpointDataSource = new DefaultEndpointDataSource(endpoint);
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
 
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, new ServiceProviderIsService());
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
 
             provider.OnProvidersExecuting(context);
             provider.OnProvidersExecuted(context);
@@ -359,6 +365,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private class ServiceProviderIsService : IServiceProviderIsService
         {
             public bool IsService(Type serviceType) => serviceType == typeof(IInferredServiceInterface);
+        }
+ 
+        private class HostEnvironment : IHostEnvironment
+        {
+            public string EnvironmentName { get; set; }
+            public string ApplicationName { get; set; }
+            public string ContentRootPath { get; set; }
+            public IFileProvider ContentRootFileProvider { get; set; }
         }
     }
 }
