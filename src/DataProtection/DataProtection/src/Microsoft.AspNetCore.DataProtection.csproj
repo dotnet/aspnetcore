@@ -44,6 +44,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">
-    <SuppressBaselineReference Include="Microsoft.AspNetCore.Http.Features" />
+    <SuppressBaselineReference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
 </Project>
