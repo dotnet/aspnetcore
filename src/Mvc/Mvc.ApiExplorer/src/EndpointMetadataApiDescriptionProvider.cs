@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -23,13 +23,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
     {
         private readonly EndpointDataSource _endpointDataSource;
+        private readonly IServiceProviderIsService? _serviceProviderIsService;
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason :D
         public int Order => -1100;
 
         public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource)
+            : this(endpointDataSource, null)
+        {
+        }
+
+        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource, IServiceProviderIsService? serviceProviderIsService)
         {
             _endpointDataSource = endpointDataSource;
+            _serviceProviderIsService = serviceProviderIsService;
         }
 
         public void OnProvidersExecuting(ApiDescriptionProviderContext context)
@@ -55,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
         }
 
-        private static ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
+        private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
         {
             // Swagger uses the "controller" name to group endpoints together.
             // For now, put all methods defined the same declaring type together.
@@ -105,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return apiDescription;
         }
 
-        private static ApiParameterDescription CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
+        private ApiParameterDescription CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
         {
             var (source, name) = GetBindingSourceAndName(parameter, pattern);
 
@@ -121,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
         // which is shared source.
-        private static (BindingSource, string) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
+        private (BindingSource, string) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
         {
             var attributes = parameter.GetCustomAttributes();
 
@@ -144,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                      parameter.ParameterType == typeof(HttpContext) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
-                     parameter.ParameterType.IsInterface)
+                     _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
                 return (BindingSource.Services, parameter.Name ?? string.Empty);
             }
@@ -223,10 +230,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 foreach (var apiResponseType in responseMetadataTypes)
                 {
-                    Debug.Assert(apiResponseType.Type is not null, "ApiResponseTypeProvider gave us a null Type!?");
-
                     // void means no response type was specified by the metadata, so use whatever we inferred.
-                    if (apiResponseType.Type == typeof(void))
+                    // ApiResponseTypeProvider should never return ApiResponseTypes with null Type, but it doesn't hurt to check.
+                    if (apiResponseType.Type is null || apiResponseType.Type == typeof(void))
                     {
                         apiResponseType.Type = responseType;
                     }

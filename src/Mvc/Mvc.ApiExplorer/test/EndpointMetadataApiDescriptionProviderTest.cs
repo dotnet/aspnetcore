@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             AssertJsonRequestFormat(GetApiDescription(
-                (InferredJsonType fromBody) => { }));
+                (InferredJsonClass fromBody) => { }));
 
             AssertJsonRequestFormat(GetApiDescription(
                 ([FromBody] int fromBody) => { }));
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             AssertustomRequestFormat(GetApiDescription(
                 [Consumes("application/custom")]
-                (InferredJsonType fromBody) => { }));
+                (InferredJsonClass fromBody) => { }));
 
             AssertustomRequestFormat(GetApiDescription(
                 [Consumes("application/custom")]
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiDescription = GetApiDescription(
                 [Consumes("application/custom0", "application/custom1")]
-                (InferredJsonType fromBody) => { });
+                (InferredJsonClass fromBody) => { });
 
             Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
@@ -107,16 +108,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         [Fact]
         public void AddsJsonResponseFormatWhenFromBodyInferred()
         {
-            var apiDescription = GetApiDescription(() => new InferredJsonType());
+            static void AssertJsonResponse(ApiDescription apiDescription, Type expectedType)
+            {
+                var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(expectedType, responseType.Type);
+                Assert.Equal(expectedType, responseType.ModelMetadata.ModelType);
 
-            var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
-            Assert.Equal(200, responseType.StatusCode);
-            Assert.Equal(typeof(InferredJsonType), responseType.Type);
-            Assert.Equal(typeof(InferredJsonType), responseType.ModelMetadata.ModelType);
+                var responseFormat = Assert.Single(responseType.ApiResponseFormats);
+                Assert.Equal("application/json", responseFormat.MediaType);
+                Assert.Null(responseFormat.Formatter);
+            }
 
-            var responseFormat = Assert.Single(responseType.ApiResponseFormats);
-            Assert.Equal("application/json", responseFormat.MediaType);
-            Assert.Null(responseFormat.Formatter);
+            AssertJsonResponse(GetApiDescription(() => new InferredJsonClass()), typeof(InferredJsonClass));
+            AssertJsonResponse(GetApiDescription(() => (IInferredJsonInterface)null), typeof(IInferredJsonInterface));
         }
 
         [Fact]
@@ -158,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = GetApiDescription(
                 [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
                 [Produces("application/custom")]
-                () => new InferredJsonType());
+                () => new InferredJsonClass());
 
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
 
@@ -176,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = GetApiDescription(
                 [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
                 [ProducesResponseType(StatusCodes.Status400BadRequest)]
-                () => new InferredJsonType());
+                () => new InferredJsonClass());
 
             Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
 
@@ -192,8 +197,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
 
             Assert.Equal(400, badRequestResponseType.StatusCode);
-            Assert.Equal(typeof(InferredJsonType), badRequestResponseType.Type);
-            Assert.Equal(typeof(InferredJsonType), badRequestResponseType.ModelMetadata.ModelType);
+            Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.Type);
+            Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.ModelMetadata.ModelType);
 
             var badRequestResponseFormat = Assert.Single(badRequestResponseType.ApiResponseFormats);
             Assert.Equal("application/json", badRequestResponseFormat.MediaType);
@@ -251,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 Assert.Equal(BindingSource.Services, param.Source);
             }
 
-            AssertServiceParameter(GetApiDescription((IInferredServiceType foo) => { }), typeof(IInferredServiceType));
+            AssertServiceParameter(GetApiDescription((IInferredServiceInterface foo) => { }), typeof(IInferredServiceInterface));
             AssertServiceParameter(GetApiDescription(([FromServices] int foo) => { }), typeof(int));
             AssertServiceParameter(GetApiDescription((HttpContext context) => { }), typeof(HttpContext));
             AssertServiceParameter(GetApiDescription((CancellationToken token) => { }), typeof(CancellationToken));
@@ -268,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 Assert.Equal(BindingSource.Body, param.Source);
             }
 
-            AssertBodyParameter(GetApiDescription((InferredJsonType foo) => { }), typeof(InferredJsonType));
+            AssertBodyParameter(GetApiDescription((InferredJsonClass foo) => { }), typeof(InferredJsonClass));
             AssertBodyParameter(GetApiDescription(([FromBody] int foo) => { }), typeof(int));
         }
 
@@ -284,7 +289,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         [Fact]
         public void AddsMultipleParameters()
         {
-            var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonType fromBody) => { });
+            var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { });
             Assert.Equal(3, apiDescription.ParameterDescriptions.Count);
 
             var fooParam = apiDescription.ParameterDescriptions[0];
@@ -298,8 +303,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(BindingSource.Query, barParam.Source);
 
             var fromBodyParam = apiDescription.ParameterDescriptions[2];
-            Assert.Equal(typeof(InferredJsonType), fromBodyParam.Type);
-            Assert.Equal(typeof(InferredJsonType), fromBodyParam.ModelMetadata.ModelType);
+            Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
+            Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Body, fromBodyParam.Source);
         }
 
@@ -320,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, null);
             var endpointDataSource = new DefaultEndpointDataSource(endpoint);
 
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource);
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, new ServiceProviderIsService());
 
             provider.OnProvidersExecuting(context);
             provider.OnProvidersExecuted(context);
@@ -339,12 +344,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
         }
 
-        private class InferredJsonType
+        private class InferredJsonClass
         {
         }
 
-        private interface IInferredServiceType
+        private interface IInferredServiceInterface
         {
+        }
+
+        private interface IInferredJsonInterface
+        {
+        }
+
+        private class ServiceProviderIsService : IServiceProviderIsService
+        {
+            public bool IsService(Type serviceType) => serviceType is IInferredServiceInterface;
         }
     }
 }
