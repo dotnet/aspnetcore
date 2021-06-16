@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Shared.Tests
         public void StringDecodeRequestLine(string input, string expected)
         {
             var destination = new char[input.Length];
-            int length = UrlDecoder.DecodeRequestLine(input.AsSpan(), destination.AsSpan(), false);
+            int length = UrlDecoder.DecodeRequestLine(input.AsSpan(), destination.AsSpan());
             Assert.True(destination.AsSpan(0, length).SequenceEqual(expected.AsSpan()));
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Shared.Tests
         {
             var destination = new char[input.Length];
             input.CopyTo(destination);
-            int length = UrlDecoder.DecodeInPlace(destination.AsSpan(), false);
+            int length = UrlDecoder.DecodeInPlace(destination.AsSpan());
             Assert.True(destination.AsSpan(0, length).SequenceEqual(expected.AsSpan()));
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Shared.Tests
         public void StringDestinationShorterThanSourceDecodeRequestLineThrows()
         {
             var source = new char[2];
-            Assert.Throws<ArgumentException>(() => UrlDecoder.DecodeRequestLine(source.AsSpan(), source.AsSpan(0, 1), false));
+            Assert.Throws<ArgumentException>(() => UrlDecoder.DecodeRequestLine(source.AsSpan(), source.AsSpan(0, 1)));
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Shared.Tests
         public void StringDestinationLargerThanSourceDecodeRequestLineReturnsCorrenctLenght()
         {
             var source = "/a%20b".ToCharArray();
-            var length = UrlDecoder.DecodeRequestLine(source.AsSpan(), new char[source.Length + 10], false);
+            var length = UrlDecoder.DecodeRequestLine(source.AsSpan(), new char[source.Length + 10]);
             Assert.Equal(4, length);
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Shared.Tests
         public void StringInputNullCharDecodeInPlaceThrows()
         {
             var source = "%00".ToCharArray();
-            Assert.Throws<InvalidOperationException>(() => UrlDecoder.DecodeInPlace(source.AsSpan(), false));
+            Assert.Throws<InvalidOperationException>(() => UrlDecoder.DecodeInPlace(source.AsSpan()));
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Shared.Tests
         public void StringInputNonHexDecodeInPlaceLeavesUnencoded(string input)
         {
             var source = input.ToCharArray();
-            var length = UrlDecoder.DecodeInPlace(source.AsSpan(), false);
+            var length = UrlDecoder.DecodeInPlace(source.AsSpan());
             Assert.Equal(input.Length, length);
             Assert.True(source.AsSpan(0, length).SequenceEqual(input.AsSpan()));
         }
@@ -117,16 +117,6 @@ namespace Microsoft.AspNetCore.Shared.Tests
             var length = UrlDecoder.DecodeInPlace(source.AsSpan(), false);
             Assert.Equal(source.Length, length);
             Assert.True(source.AsSpan(0, length).SequenceEqual(Encoding.UTF8.GetBytes(input).AsSpan()));
-        }
-
-        [Theory]
-        [InlineData("%2F")]
-        public void StringFormsEncodingDecodeInPlaceDecodesPercent2F(string input)
-        {
-            var source = input.ToCharArray();
-            var length = UrlDecoder.DecodeInPlace(source.AsSpan(), true);
-            Assert.Equal(1, length);
-            Assert.True(source.AsSpan(0, length).SequenceEqual("/".AsSpan()));
         }
 
         [Theory]
@@ -148,7 +138,7 @@ namespace Microsoft.AspNetCore.Shared.Tests
         public void StringOutOfUtf8RangeDecodeInPlaceLeavesUnencoded(string input)
         {
             var source = input.ToCharArray();
-            var length = UrlDecoder.DecodeInPlace(source.AsSpan(), true);
+            var length = UrlDecoder.DecodeInPlace(source.AsSpan());
             Assert.Equal(input.Length, length);
             Assert.True(source.AsSpan(0, length).SequenceEqual(input.AsSpan()));
         }

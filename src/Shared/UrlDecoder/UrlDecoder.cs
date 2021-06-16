@@ -350,9 +350,12 @@ namespace Microsoft.AspNetCore.Internal
         /// </summary>
         /// <param name="source">The char span represents a UTF8 encoded, escaped url path.</param>
         /// <param name="destination">The char span where unescaped url path is copied to.</param>
-        /// <param name="isFormEncoding">Whether we are doing form encoding or not.</param>
         /// <returns>The length of the char sequence of the unescaped url path.</returns>
-        public static int DecodeRequestLine(ReadOnlySpan<char> source, Span<char> destination, bool isFormEncoding)
+        /// <remarks>
+        /// Form Encoding is not supported compared to the <see cref="DecodeRequestLine(ReadOnlySpan{byte}, Span{byte}, bool)" />
+        /// for performance gains, as current use-cases does not require it.
+        /// </remarks>
+        public static int DecodeRequestLine(ReadOnlySpan<char> source, Span<char> destination)
         {
             if (destination.Length < source.Length)
             {
@@ -363,26 +366,33 @@ namespace Microsoft.AspNetCore.Internal
 
             // This requires the destination span to be larger or equal to source span
             source.CopyTo(destination);
-            return DecodeInPlace(destination.Slice(0, source.Length), isFormEncoding);
+            return DecodeInPlace(destination.Slice(0, source.Length));
         }
 
         /// <summary>
         /// Unescape a URL path in place.
         /// </summary>
         /// <param name="buffer">The char span represents a UTF8 encoded, escaped url path.</param>
-        /// <param name="isFormEncoding">Whether we are doing form encoding or not.</param>
         /// <returns>The number of the chars representing the result.</returns>
         /// <remarks>
         /// The unescape is done in place, which means after decoding the result is the subset of
         /// the input span.
+        /// Form Encoding is not supported compared to the <see cref="DecodeInPlace(Span{byte}, bool)" />
+        /// for performance gains, as current use-cases does not require it.
         /// </remarks>
-        public static int DecodeInPlace(Span<char> buffer, bool isFormEncoding)
+        public static int DecodeInPlace(Span<char> buffer)
         {
+            int position = buffer.IndexOf('%');
+            if (position == -1)
+            {
+                return buffer.Length;
+            }
+
             // the slot to read the input
-            var sourceIndex = 0;
+            var sourceIndex = position;
 
             // the slot to write the unescaped char
-            var destinationIndex = 0;
+            var destinationIndex = position;
 
             while (true)
             {
@@ -391,12 +401,7 @@ namespace Microsoft.AspNetCore.Internal
                     break;
                 }
 
-                if (buffer[sourceIndex] == '+' && isFormEncoding)
-                {
-                    // Set it to ' ' when we are doing form encoding.
-                    buffer[sourceIndex] = ' ';
-                }
-                else if (buffer[sourceIndex] == '%')
+                if (buffer[sourceIndex] == '%')
                 {
                     var decodeIndex = sourceIndex;
 
@@ -407,7 +412,7 @@ namespace Microsoft.AspNetCore.Internal
                     // The decodeReader iterator is always moved to the first char not yet
                     // be scanned after the process. A failed decoding means the chars
                     // between the reader and decodeReader can be copied to output untouched.
-                    if (!DecodeCore(ref decodeIndex, ref destinationIndex, buffer, isFormEncoding))
+                    if (!DecodeCore(ref decodeIndex, ref destinationIndex, buffer))
                     {
                         Copy(sourceIndex, decodeIndex, ref destinationIndex, buffer);
                     }
@@ -429,12 +434,11 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="sourceIndex">The iterator point to the first % char</param>
         /// <param name="destinationIndex">The place to write to</param>
         /// <param name="buffer">The char array</param>
-        /// <param name="isFormEncoding">Whether we are doing form encodoing</param>
-        private static bool DecodeCore(ref int sourceIndex, ref int destinationIndex, Span<char> buffer, bool isFormEncoding)
+        private static bool DecodeCore(ref int sourceIndex, ref int destinationIndex, Span<char> buffer)
         {
             // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
             // chars from this till the last scanned one will be copied to the memory pointed by writer.
-            var char1 = UnescapePercentEncoding(ref sourceIndex, buffer, isFormEncoding);
+            var char1 = UnescapePercentEncoding(ref sourceIndex, buffer);
             if (char1 == -1)
             {
                 return false;
@@ -493,7 +497,7 @@ namespace Microsoft.AspNetCore.Internal
                 }
 
                 var nextSourceIndex = sourceIndex;
-                var nextChar = UnescapePercentEncoding(ref nextSourceIndex, buffer, isFormEncoding);
+                var nextChar = UnescapePercentEncoding(ref nextSourceIndex, buffer);
                 if (nextChar == -1)
                 {
                     return false;
@@ -557,9 +561,8 @@ namespace Microsoft.AspNetCore.Internal
         /// </summary>
         /// <param name="scan">The value to read</param>
         /// <param name="buffer">The char array</param>
-        /// <param name="isFormEncoding">Whether we are decoding a form or not. Will escape '/' if we are doing form encoding</param>
         /// <returns>The unescaped char if success. Otherwise return -1.</returns>
-        private static int UnescapePercentEncoding(ref int scan, ReadOnlySpan<char> buffer, bool isFormEncoding)
+        private static int UnescapePercentEncoding(ref int scan, ReadOnlySpan<char> buffer)
         {
             if (buffer[scan++] != '%')
             {
@@ -580,7 +583,8 @@ namespace Microsoft.AspNetCore.Internal
                 return -1;
             }
 
-            if (SkipUnescape(value1, value2, isFormEncoding))
+            // skip %2F - '/'
+            if (value1 == 2 && value2 == 15)
             {
                 return -1;
             }

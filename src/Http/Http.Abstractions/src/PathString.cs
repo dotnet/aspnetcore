@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http
     [TypeConverter(typeof(PathStringConverter))]
     public readonly struct PathString : IEquatable<PathString>
     {
-        private const int StackAllocThreshold = 128;
+        internal const int StackAllocThreshold = 128;
 
         /// <summary>
         /// Represents the empty path. This field is read-only.
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Http
         public static PathString FromUriComponent(string uriComponent)
         {
             Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length];
-            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer, isFormEncoding: false);
+            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer);
             pathBuffer = pathBuffer.Slice(0, length);
             return new PathString(pathBuffer.ToString());
         }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Http
             var uriComponent = uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
             Span<char> pathBuffer = uriComponent.Length < StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length + 1];
             pathBuffer[0] = '/';
-            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer.Slice(1), isFormEncoding: false);
+            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer.Slice(1));
             pathBuffer = pathBuffer.Slice(0, length + 1);
             return new PathString(pathBuffer.ToString());
         }

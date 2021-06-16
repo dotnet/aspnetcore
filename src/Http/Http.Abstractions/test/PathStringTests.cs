@@ -308,6 +308,30 @@ namespace Microsoft.AspNetCore.Http
             Assert.Equal(expected, sut.Value);
         }
 
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void ExercisingStringFromUriComponentOnStackAllocLimit(int offset)
+        {
+            var path = "/";
+            var testString = new string('a', PathString.StackAllocThreshold + offset - path.Length);
+            var sut = PathString.FromUriComponent(path + testString);
+            Assert.Equal(PathString.StackAllocThreshold + offset, sut.Value!.Length);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void ExercisingUriFromUriComponentOnStackAllocLimit(int offset)
+        {
+            var localhost = "https://localhost:5001/";
+            var testString = new string('a', PathString.StackAllocThreshold + offset);
+            var sut = PathString.FromUriComponent(new Uri(localhost + testString));
+            Assert.Equal(PathString.StackAllocThreshold + offset + 1, sut.Value!.Length);
+        }
+
         public static IEnumerable<object[]> CharsToUnescape
         {
             get
