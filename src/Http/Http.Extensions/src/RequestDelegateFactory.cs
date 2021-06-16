@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -34,7 +32,6 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
         private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
-        private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
         private static readonly MethodInfo LogParameterBindingFailureMethod = GetMethodInfo<Action<HttpContext, string, string, string>>((httpContext, parameterType, parameterName, sourceValue) =>
             Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue));
 
@@ -55,8 +52,6 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
-
-        private static readonly ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -197,7 +192,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (parameter.Name is null)
             {
-                throw new InvalidOperationException("A parameter does not have a name! Was it genererated? All parameters must be named.");
+                throw new InvalidOperationException("A parameter does not have a name! Was it generated? All parameters must be named.");
             }
 
             var parameterCustomAttributes = parameter.GetCustomAttributes();
@@ -230,7 +225,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return RequestAbortedExpr;
             }
-            else if (parameter.ParameterType == typeof(string) || HasTryParseMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || RequestDelegateFactoryUtilities.HasTryParseMethod(parameter))
             {
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
@@ -477,72 +472,6 @@ namespace Microsoft.AspNetCore.Http
             };
         }
 
-        private static MethodInfo GetEnumTryParseMethod()
-        {
-            var staticEnumMethods = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static);
-
-            foreach (var method in staticEnumMethods)
-            {
-                if (!method.IsGenericMethod || method.Name != "TryParse" || method.ReturnType != typeof(bool))
-                {
-                    continue;
-                }
-
-                var tryParseParameters = method.GetParameters();
-
-                if (tryParseParameters.Length == 2 &&
-                    tryParseParameters[0].ParameterType == typeof(string) &&
-                    tryParseParameters[1].IsOut)
-                {
-                    return method;
-                }
-            }
-
-            throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) does not exist!!?!?");
-        }
-
-        // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
-        private static MethodInfo? FindTryParseMethod(Type type)
-        {
-            static MethodInfo? Finder(Type type)
-            {
-                if (type.IsEnum)
-                {
-                    return EnumTryParseMethod.MakeGenericMethod(type);
-                }
-
-                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
-
-                foreach (var method in staticMethods)
-                {
-                    if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
-                    {
-                        continue;
-                    }
-
-                    var tryParseParameters = method.GetParameters();
-
-                    if (tryParseParameters.Length == 2 &&
-                        tryParseParameters[0].ParameterType == typeof(string) &&
-                        tryParseParameters[1].IsOut &&
-                        tryParseParameters[1].ParameterType == type.MakeByRefType())
-                    {
-                        return method;
-                    }
-                }
-
-                return null;
-            }
-
-            return TryParseMethodCache.GetOrAdd(type, Finder);
-        }
-
-        private static bool HasTryParseMethod(ParameterInfo parameter)
-        {
-            var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            return FindTryParseMethod(nonNullableParameterType) is not null;
-        }
-
         private static Expression GetValueFromProperty(Expression sourceExpression, string key)
         {
             var itemProperty = sourceExpression.Type.GetProperty("Item");
@@ -574,7 +503,7 @@ namespace Microsoft.AspNetCore.Http
             var isNotNullable = underlyingNullableType is null;
 
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
-            var tryParseMethod = FindTryParseMethod(nonNullableParameterType);
+            var tryParseMethod = RequestDelegateFactoryUtilities.FindTryParseMethod(nonNullableParameterType);
 
             if (tryParseMethod is null)
             {
