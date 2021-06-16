@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -23,19 +24,24 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
     {
         private readonly EndpointDataSource _endpointDataSource;
+        private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason :D
         public int Order => -1100;
 
-        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource)
-            : this(endpointDataSource, null)
+        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource, IHostEnvironment environment)
+            : this(endpointDataSource, environment, null)
         {
         }
 
-        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource, IServiceProviderIsService? serviceProviderIsService)
+        public EndpointMetadataApiDescriptionProvider(
+            EndpointDataSource endpointDataSource,
+            IHostEnvironment environment,
+            IServiceProviderIsService? serviceProviderIsService)
         {
             _endpointDataSource = endpointDataSource;
+            _environment = environment;
             _serviceProviderIsService = serviceProviderIsService;
         }
 
@@ -76,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 // If the declaring type is null or compiler-generated (e.g. lambdas),
                 // group the methods under a "Map" controller.
-                controllerName = "Map";
+                controllerName = _environment.ApplicationName;
             }
 
             var apiDescription = new ApiDescription
