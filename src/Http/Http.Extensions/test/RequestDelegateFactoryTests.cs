@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var unnamedParameter = Expression.Parameter(typeof(int));
             var lambda = Expression.Lambda(Expression.Block(), unnamedParameter);
             var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int>)lambda.Compile(), new EmptyServiceProvdier()));
-            Assert.Equal("A parameter does not have a name! Was it genererated? All parameters must be named.", ex.Message);
+            Assert.Equal("A parameter does not have a name! Was it generated? All parameters must be named.", ex.Message);
         }
 
         [Fact]
