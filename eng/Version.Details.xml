@@ -225,9 +225,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="6.0.0-preview.6.21316.6">
+    <Dependency Name="System.Security.Permissions" Version="6.0.0-preview.6.21317.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>3ef9d071b8a668a26d8746fb8c7b827d13e8273c</Sha>
+      <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
     </Dependency>
     <Dependency Name="System.ServiceProcess.ServiceController" Version="6.0.0-preview.6.21317.4">
       <Uri>https://github.com/dotnet/runtime</Uri>

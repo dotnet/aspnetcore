@@ -118,7 +118,7 @@
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.6.21317.4</SystemRuntimeCompilerServicesUnsafeVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.6.21317.4</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-preview.6.21317.4</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>6.0.0-preview.6.21316.6</SystemSecurityPermissionsVersion>
+    <SystemSecurityPermissionsVersion>6.0.0-preview.6.21317.4</SystemSecurityPermissionsVersion>
     <SystemServiceProcessServiceControllerVersion>6.0.0-preview.6.21317.4</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>6.0.0-preview.6.21317.4</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>6.0.0-preview.6.21317.4</SystemTextJsonVersion>
