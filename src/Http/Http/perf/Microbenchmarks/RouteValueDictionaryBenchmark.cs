@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Benchmark]
-        public void Ctor_Values_RouteValueDictionary_Array()
+        public RouteValueDictionary Ctor_Values_RouteValueDictionary_Array()
         {
-            new RouteValueDictionary(_arrayValues);
+            return new RouteValueDictionary(_arrayValues);
         }
 
         [Benchmark]
