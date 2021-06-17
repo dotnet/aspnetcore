@@ -78,6 +78,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                     _currentBatch.Clear();
                 }
+                else
+                {
+                    await Task.Delay(100);
+                }
             }
         }
 
