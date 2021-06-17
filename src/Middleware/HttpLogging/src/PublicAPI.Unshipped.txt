@@ -4,6 +4,8 @@ Microsoft.AspNetCore.HttpLogging.FileLoggerOptions
 Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileLoggerOptions() -> void
 Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileSizeLimit.get -> int?
 Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FileSizeLimit.set -> void
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FlushPeriod.get -> System.TimeSpan
+Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.FlushPeriod.set -> void
 Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.LogDirectory.get -> string!
 Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.LogDirectory.set -> void
 Microsoft.AspNetCore.HttpLogging.FileLoggerOptions.RetainedFileCountLimit.get -> int?

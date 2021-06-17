@@ -38,5 +38,13 @@ namespace Microsoft.AspNetCore.HttpLogging
             var options = new W3CLoggerOptions();
             Assert.Throws<ArgumentNullException>(() => options.LogDirectory = "");
         }
+
+        [Fact]
+        public void ThrowsOnNegativeFlushPeriod()
+        {
+            var options = new W3CLoggerOptions();
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.FlushPeriod = TimeSpan.FromSeconds(-1));
+            Assert.Contains("FlushPeriod must be positive", ex.Message);
+        }
     }
 }

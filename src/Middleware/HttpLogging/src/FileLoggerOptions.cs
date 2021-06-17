@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private int? _retainedFileCountLimit = 4;
         private string _fileName = "log-";
         private string _logDirectory = "";
+        private TimeSpan _flushPeriod = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum log size in bytes or null for no limit.
@@ -84,6 +85,23 @@ namespace Microsoft.AspNetCore.HttpLogging
                     throw new ArgumentNullException(nameof(value));
                 }
                 _logDirectory = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the period after which logs will be flushed to the store.
+        /// Defaults to 1 second.
+        /// </summary>
+        public TimeSpan FlushPeriod
+        {
+            get { return _flushPeriod; }
+            set
+            {
+                if (value <= TimeSpan.Zero)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(FlushPeriod)} must be positive.");
+                }
+                _flushPeriod = value;
             }
         }
     }

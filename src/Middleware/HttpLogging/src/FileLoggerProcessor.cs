@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly int? _maxFileSize;
         private readonly int? _maxRetainedFiles;
         private int _fileNumber = 1;
-        private TimeSpan _flushPeriod = TimeSpan.FromSeconds(1);
+        private TimeSpan _flushPeriod;
 
         private readonly BlockingCollection<LogMessage> _messageQueue = new BlockingCollection<LogMessage>(_maxQueuedMessages);
         private readonly List<LogMessage> _currentBatch = new List<LogMessage>();
@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             _fileName = loggerOptions.FileName;
             _maxFileSize = loggerOptions.FileSizeLimit;
             _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
+            _flushPeriod = loggerOptions.FlushPeriod;
 
             // Start message queue processor
             _cancellationTokenSource = new CancellationTokenSource();
