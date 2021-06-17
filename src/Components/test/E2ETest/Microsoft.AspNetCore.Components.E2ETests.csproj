@@ -38,37 +38,38 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
+    <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestTrimmedApps)' != 'true'">
+    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
-    <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
+  </ItemGroup>
 
+  <ItemGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
+      Targets="Build;Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
 
     <ProjectReference
       Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
+      Targets="Build;Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\" />
 
     <ProjectReference
       Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
+      Targets="Build;Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
 
     <ProjectReference
       Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
-      Targets="Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;"
-      Condition="'$(TestTrimmedApps)' == 'true'" />
+      Targets="Build;Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private int _stringIndex;
         private readonly DynamicTable _dynamicTable = new DynamicTable(1000); // TODO figure out architecture.
 
-        private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
+        private IntegerDecoder _integerDecoder;
         private State _state = State.Ready;
         private bool _huffman;
 

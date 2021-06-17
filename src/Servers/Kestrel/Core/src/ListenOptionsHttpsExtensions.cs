@@ -5,6 +5,9 @@ using System;
 using System.IO;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -256,12 +259,16 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
         {
-            // HttpsOptionsCallback is an internal delegate that is just the ServerOptionsSelectionCallback + a ConnectionContext parameter.
+            // HttpsOptionsCallback is an internal delegate that is the ServerOptionsSelectionCallback, a ConnectionContext, and the ClientCertificateMode.
             // Given that ConnectionContext will eventually be replaced by System.Net.Connections, it doesn't make much sense to make the HttpsOptionsCallback delegate public.
-            HttpsOptionsCallback adaptedCallback = (connection, stream, clientHelloInfo, state, cancellationToken) =>
-                serverOptionsSelectionCallback(stream, clientHelloInfo, state, cancellationToken);
+            return listenOptions.UseHttps(GetTlsOptionsAsync, state, handshakeTimeout);
 
-            return listenOptions.UseHttps(adaptedCallback, state, handshakeTimeout);
+            async ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> GetTlsOptionsAsync(
+                ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+            {
+                var tlsOptions = await serverOptionsSelectionCallback(stream, clientHelloInfo, state, cancellationToken);
+                return new (tlsOptions, ClientCertificateMode.DelayCertificate);
+            }
         }
 
         /// <summary>
