@@ -18,6 +18,11 @@
 		"ms-dotnettools.csharp"
 	],
 
+	"settings": {
+		// Loading projects on demand is better for larger codebases
+		"omnisharp.enableMsBuildLoadProjectsOnDemand": true
+	},
+
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"onCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/container-creation.sh",
 
