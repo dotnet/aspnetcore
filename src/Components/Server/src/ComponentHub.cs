@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            await circuitHost.ReceiveByteArray(id, data);
+            _ = circuitHost.ReceiveByteArray(id, data);
         }
 
         public async ValueTask<bool> ReceiveJSDataChunk(long streamId, byte[] chunk, string error)

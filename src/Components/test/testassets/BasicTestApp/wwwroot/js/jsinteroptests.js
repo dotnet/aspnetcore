@@ -263,7 +263,8 @@ function roundTripByteArrayWrapperObject(byteArrayWrapperObject) {
 function jsToDotNetStreamAsync() {
   return new Promise((resolve, reject) => {
     setTimeout(function () {
-      resolve(new Uint8Array([1, 5, 7, 15, 35, 200]));
+      const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+      resolve(new Uint8Array(largeArray));
     }, 100);
   });
 }

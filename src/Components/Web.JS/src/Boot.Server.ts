@@ -122,7 +122,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
-  Blazor._internal.sendJSDataStream = async (data: ArrayBufferView, streamId: string, maximumIncomingBytes: number) => {
+  Blazor._internal.sendJSDataStream = (data: ArrayBufferView, streamId: string, maximumIncomingBytes: number) => {
     // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
     // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
     // because nobody's reading the pipe)
@@ -143,7 +143,6 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
         // stream items from the client (per stream) will be stored before reading any more stream items (thus applying backpressure).
         while (position < data.byteLength) {
           const nextChunkSize = Math.min(chunkSize, data.byteLength - position);
-          console.log(`Sending a chunk of length ${nextChunkSize}`);
           const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
 
           numChunksUntilNextAck--;

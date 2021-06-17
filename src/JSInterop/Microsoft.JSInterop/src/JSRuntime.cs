@@ -217,7 +217,7 @@ namespace Microsoft.JSInterop
         /// <param name="totalLength">Expected length of the incoming data stream.</param>
         /// <param name="maxBufferSize">Amount of bytes to buffer before flushing.</param>
         /// <param name="cancellationToken"><see cref="CancellationToken" /> for cancelling read.</param>
-        /// <returns></returns>
+        /// <returns><see cref="Stream"/> for the data reference represented by <paramref name="jsDataReference"/>.</returns>
         protected internal virtual Task<Stream> ReadJSDataAsStreamAsync(IJSDataReference jsDataReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
         {
             // The reason it's virtual and not abstract is just for back-compat

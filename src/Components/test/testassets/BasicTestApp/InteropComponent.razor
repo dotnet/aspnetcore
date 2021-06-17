@@ -2,6 +2,7 @@
 @using BasicTestApp.InteropTest
 @using System.Runtime.InteropServices
 @using System.Text.Json
+@using System.IO
 @inject IJSRuntime JSRuntime
 
 <button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
@@ -175,20 +176,39 @@
             ReturnValues["roundTripByteArrayWrapperObjectFromDotNet"] = ((IJSInProcessRuntime)JSRuntime).Invoke<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObject", byteArrayWrapperObject).ToString();
         }
 
-        // Only run this test for Blazor Server
+        // Streaming interop tests need to be run only for Blazor server
+        // As such, we set the result of `jsToDotNetStreamAsync` to the expected result for WASM
         if (shouldSupportSyncInterop)
         {
-            // Set the result to the expected value in the WASM case to ensure
-            // missing this test case doesn't result in test failure.
-            ReturnValues["jsToDotNetStreamAsync"] = "1,5,7,15,35,200";
+            // In the WASM case, setting the result to the expected result ensures the missing test case doesn't result in test failure.
+            ReturnValues["jsToDotNetStreamAsync"] = "Success";
         }
         else
         {
+            // Proceed to run the actual blazor server streaming interop tests
             var dataReference = await JSRuntime.InvokeAsync<IJSDataReference>("jsToDotNetStreamAsync");
             using var stream = await dataReference.OpenReadStreamAsync();
             using var memoryStream = new System.IO.MemoryStream();
             await stream.CopyToAsync(memoryStream);
-            ReturnValues["jsToDotNetStreamAsync"] = string.Join(",", (memoryStream.ToArray()));
+            var buffer = memoryStream.ToArray();
+
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                var expectedValue = i % 256;
+                if (buffer[i] != expectedValue)
+                {
+                    ReturnValues["jsToDotNetStreamAsync"] = $"Failure at index {i}.";
+                    break;
+                }
+            }
+
+            if (buffer.Length != 100_000)
+            {
+                ReturnValues["jsToDotNetStreamAsync"] = $"Failure, got a stream of length {buffer.Length}, expected a length of 50,000.";
+            }
+
+            // Mark the test as successful if we haven't already set a failure above
+            ReturnValues.TryAdd("jsToDotNetStreamAsync", "Success");
         }
 
         Invocations = invocations;

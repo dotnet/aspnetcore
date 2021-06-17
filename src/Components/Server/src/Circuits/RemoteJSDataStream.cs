@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override bool CanWrite => false;
 
-        public override long Length => _pipeReaderStream.Length;
+        public override long Length => _totalLength;
 
         public override long Position
         {
