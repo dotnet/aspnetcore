@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// <summary>
     /// Options for the <see cref="W3CLogger"/>.
     /// </summary>
-    public sealed class W3CLoggerOptions : FileLoggerOptions
+    public class W3CLoggerOptions : FileLoggerOptions
     {
         private string _fileName = "serverlog-";
 

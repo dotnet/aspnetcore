@@ -11,16 +11,12 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
 
         public TestW3CLogger Logger;
-        private readonly int _numWrites;
 
-        public TestW3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, int numWrites) : base(next, options, environment)
-        {
-            _numWrites = numWrites;
-        }
+        public TestW3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<TestW3CLoggerOptions> options, IHostEnvironment environment) : base(next, options, environment) { }
 
         internal override W3CLogger InitializeLogger(IOptionsMonitor<W3CLoggerOptions> options)
         {
-            Logger = new TestW3CLogger(options, _numWrites);
+            Logger = new TestW3CLogger(options, ((TestW3CLoggerOptions)options.CurrentValue).NumWrites);
             return Logger;
         }
     }

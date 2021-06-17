@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     state.Add(new KeyValuePair<string, string>(nameof(DateTime), _timestampOne.ToString(CultureInfo.InvariantCulture)));
 
                     logger.Log(state);
-                    await logger.WaitForWrites().DefaultTimeout();
+                    var ex = await Record.ExceptionAsync(async () => await logger.WaitForWrites().DefaultTimeout());
+                    Assert.Null(ex);
 
                     var lines = logger.Processor.Lines;
                     Assert.Equal("#Version: 1.0", lines[0]);
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         [Fact]
-        public async Task HandlesNullValues()
+        public async Task HandlesNullValuesAsync()
         {
             var path = Path.GetTempFileName() + "_";
             var now = DateTime.Now;
@@ -80,7 +81,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     state.Add(new KeyValuePair<string, string>(nameof(HttpResponse.StatusCode), null));
 
                     logger.Log(state);
-                    await logger.WaitForWrites().DefaultTimeout();
+                    var ex = await Record.ExceptionAsync(async () => await logger.WaitForWrites().DefaultTimeout());
+                    Assert.Null(ex);
 
                     var lines = logger.Processor.Lines;
                     Assert.Equal("#Version: 1.0", lines[0]);
