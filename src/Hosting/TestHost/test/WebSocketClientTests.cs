@@ -62,11 +62,6 @@ namespace Microsoft.AspNetCore.TestHost.Tests
             using (var testServer = new TestServer(new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.Use((c, n) =>
-                    {
-                        Assert.NotNull(c.Features.Get<IHttpUpgradeFeature>());
-                        return n(c);
-                    });
                     app.UseWebSockets();
                     app.Run(async ctx =>
                     {
@@ -96,6 +91,40 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 Assert.True(res.EndOfMessage);
 
                 await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, null, default);
+            }
+        }
+
+        [Fact]
+        public async Task VerifyWebSocketAndUpgradeFeatures()
+        {
+            using (var testServer = new TestServer(new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(async c =>
+                    {
+                        var upgradeFeature = c.Features.Get<IHttpUpgradeFeature>();
+                        Assert.NotNull(upgradeFeature);
+                        Assert.False(upgradeFeature.IsUpgradableRequest);
+                        await Assert.ThrowsAsync<NotSupportedException>(() => upgradeFeature.UpgradeAsync());
+
+                        var webSocketFeature = c.Features.Get<IHttpWebSocketFeature>();
+                        Assert.NotNull(webSocketFeature);
+                        Assert.True(webSocketFeature.IsWebSocketRequest);
+                    });
+                })))
+            {
+                var client = testServer.CreateWebSocketClient();
+
+                try
+                {
+                    using var socket = await client.ConnectAsync(
+                        uri: new Uri("http://localhost/connect"),
+                        cancellationToken: default);
+                }
+                catch
+                {
+                    // An exception will be thrown because our endpoint does not accept the websocket
+                }
             }
         }
     }

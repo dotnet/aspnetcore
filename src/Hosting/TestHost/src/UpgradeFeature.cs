@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.TestHost
 {
     internal class UpgradeFeature : IHttpUpgradeFeature
     {
-        public bool IsUpgradableRequest => true;
+        public bool IsUpgradableRequest => false;
 
         // TestHost provides an IHttpWebSocketFeature so it wont call UpgradeAsync()
         public Task<Stream> UpgradeAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }
