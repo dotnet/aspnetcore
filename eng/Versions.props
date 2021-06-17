@@ -119,6 +119,7 @@
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.6.21316.6</SystemRuntimeCompilerServicesUnsafeVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.6.21316.6</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-preview.6.21316.6</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityPermissionsVersion>6.0.0-preview.6.21314.2</SystemSecurityPermissionsVersion>
     <SystemSecurityPrincipalWindowsVersion>6.0.0-preview.6.21314.2</SystemSecurityPrincipalWindowsVersion>
     <SystemServiceProcessServiceControllerVersion>6.0.0-preview.6.21316.6</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>6.0.0-preview.6.21316.6</SystemTextEncodingsWebVersion>
