@@ -18,6 +18,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- There is a ref directory next to this project but it's not auto generated, disable the guardrails -->
     <SkipRefDirectoryCheck>true</SkipRefDirectoryCheck>
     <PackageType>DotnetPlatform</PackageType>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
 
     <!-- This file is used by the dotnet/core-sdk repo to determine if the version of AspNetCore.App is coherent with Microsoft.NETCore.App. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
