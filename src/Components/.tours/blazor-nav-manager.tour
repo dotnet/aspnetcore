@@ -1,0 +1,57 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "blazor-nav-manager",
+  "steps": [
+    {
+      "file": "test/testassets/BasicTestApp/RouterTest/NavigationManagerComponent.razor",
+      "description": "The NavigationManager is injected as a dependency into a Blazor application. Developers can use the APIs in this injected service to navigate to a particular location or view the current URI.",
+      "line": 5
+    },
+    {
+      "file": "WebAssembly/WebAssembly/src/Hosting/WebAssemblyHostBuilder.cs",
+      "description": "There is an implementation for the NavigationManager for each host type. Here, in the WebAssemblyHostBuilder, we inject the WebAssembly-specific navigation manager. This implementation of the navgiation manager interacts with the browser over JavaScript to modify browser history.",
+      "line": 245
+    },
+    {
+      "file": "Server/src/DependencyInjection/ComponentServiceCollectionExtensions.cs",
+      "description": "For Blazor Server applications, we inject an implementation of the `RemoteNavigationManager` which handles navigation operations by communicating with the browser over a SignalR connection.",
+      "line": 80,
+      "selection": {
+        "start": {
+          "line": 80,
+          "character": 32
+        },
+        "end": {
+          "line": 80,
+          "character": 42
+        }
+      }
+    },
+    {
+      "file": "test/testassets/BasicTestApp/RouterTest/NavigationManagerComponent.razor",
+      "description": "When the button in this component is clicked, we invoke the JavaScript method `navigationManagerNavigate`...",
+      "line": 34
+    },
+    {
+      "file": "test/testassets/TestServer/Pages/_ServerHost.cshtml",
+      "description": "Which calls the `navigateTo` JavaScript API in the global Blazor JavaScript namespace.",
+      "line": 39,
+      "selection": {
+        "start": {
+          "line": 38,
+          "character": 18
+        },
+        "end": {
+          "line": 38,
+          "character": 43
+        }
+      }
+    },
+    {
+      "file": "Web.JS/src/Services/NavigationManager.ts",
+      "description": "Behind the scenes, this calls into JavaScript APIs to to trigger the navigation. ",
+      "line": 69
+    }
+  ],
+  "ref": "963242a12c8b149caee5a9fa3215a8452a4be999"
+}
