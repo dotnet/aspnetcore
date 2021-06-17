@@ -1572,6 +1572,35 @@ public static class BindConverter
         return false;
     }
 
+    internal static readonly BindParser<Guid> ConvertToGuid = ConvertToGuidCore;
+    internal static readonly BindParser<Guid?> ConvertToNullableGuid = ConvertToNullableGuidCore;
+
+    private static bool ConvertToGuidCore(object? obj, CultureInfo? culture, out Guid value)
+    {
+        ConvertToNullableGuidCore(obj, culture, out var converted);
+        value = converted.GetValueOrDefault();
+        return converted.HasValue;
+    }
+
+    private static bool ConvertToNullableGuidCore(object? obj, CultureInfo? culture, out Guid? value)
+    {
+        var text = (string?)obj;
+        if (string.IsNullOrEmpty(text))
+        {
+            value = default;
+            return true;
+        }
+
+        if (!Guid.TryParse(text, out var converted))
+        {
+            value = default;
+            return false;
+        }
+
+        value = converted;
+        return true;
+    }
+
     private static bool ConvertToEnum<T>(object? obj, CultureInfo? culture, out T value) where T : struct, Enum
     {
         var text = (string?)obj;
@@ -1932,6 +1961,14 @@ public static class BindConverter
                 else if (typeof(T) == typeof(TimeOnly?))
                 {
                     parser = ConvertToNullableTimeOnly;
+                }
+                else if (typeof(T) == typeof(Guid))
+                {
+                    parser = ConvertToGuid;
+                }
+                else if (typeof(T) == typeof(Guid?))
+                {
+                    parser = ConvertToNullableGuid;
                 }
                 else if (typeof(T).IsEnum)
                 {
