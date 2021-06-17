@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
             }
 
-            [LoggerMessage(EventId = 103, EventName = "TemplateFailedConstraint", Level = LogLevel.Debug,
+            [LoggerMessage(EventId = 107, EventName = "TemplateFailedConstraint", Level = LogLevel.Debug,
                 Message = "Failed to process the template {Template} for {Endpoint}. " +
                 "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}")]
             public static partial void TemplateFailedConstraint(ILogger logger, string template, string endpoint, string parameterName, IRouteConstraint constraint, string values);
@@ -394,7 +394,6 @@ namespace Microsoft.AspNetCore.Routing
                 "The failure occurred while expanding the template with values {Values} " +
                 "This is usually due to a missing or empty value in a complex segment")]
             public static partial void TemplateFailedExpansion(ILogger logger, string template, string endpoint, string values);
-
 
             public static void LinkGenerationSucceeded(ILogger logger, IEnumerable<Endpoint> endpoints, string uri)
             {

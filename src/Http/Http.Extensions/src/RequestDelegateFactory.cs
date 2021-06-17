@@ -809,7 +809,7 @@ namespace Microsoft.AspNetCore.Http
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();
         }
 
-        internal static partial class Log
+        private static partial class Log
         {
             public static void RequestBodyIOException(HttpContext httpContext, Exception exception)
                 => RequestBodyIOException(GetLogger(httpContext), exception);

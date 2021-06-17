@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Hosting
             return logger.BeginScope(new HostingLogScope(httpContext));
         }
 
-        [LoggerMessage(EventId = LoggerEventIds.HostingStartupAssemblyLoaded, EventName = "HostingStartupAssemblyLoaded", Level = LogLevel.Debug, Message = "Loaded hosting startup assembly {assemblyName}")]
+        [LoggerMessage(EventId = LoggerEventIds.ServerListeningOnAddresses, EventName = "ServerListeningOnAddresses", Level = LogLevel.Information, Message = "Now listening on: {address}")]
         public static partial void ListeningOnAddress(this ILogger logger, string address);
 
-        [LoggerMessage(EventId = LoggerEventIds.ServerListeningOnAddresses, EventName = "ServerListeningOnAddresses", Level = LogLevel.Information, Message = "Now listening on: {address}")]
+        [LoggerMessage(EventId = LoggerEventIds.HostingStartupAssemblyLoaded, EventName = "HostingStartupAssemblyLoaded", Level = LogLevel.Debug, Message = "Loaded hosting startup assembly {assemblyName}")]
         public static partial void StartupAssemblyLoaded(this ILogger logger, string assemblyName);
 
         public static void ApplicationError(this ILogger logger, Exception exception)

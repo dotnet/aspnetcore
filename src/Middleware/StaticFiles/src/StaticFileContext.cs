@@ -313,7 +313,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                         }
 
                         await SendAsync();
-                        _logger.FileServed(SubPath, PhysicalPath);
+                        var loggedPath = string.IsNullOrEmpty(PhysicalPath) ? "N/A" : PhysicalPath;
+                        _logger.FileServed(SubPath, loggedPath);
                         return;
                     }
                     catch (FileNotFoundException)
