@@ -45,7 +45,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
-      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
       '$(MSBuildRestoreSessionId)' == '' ">
     <Reference Include="Microsoft.Win32.Registry" />
   </ItemGroup>

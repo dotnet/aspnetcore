@@ -30,7 +30,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
-      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
       '$(MSBuildRestoreSessionId)' == '' ">
     <Reference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
@@ -41,9 +40,5 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">
-    <SuppressBaselineReference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
 </Project>

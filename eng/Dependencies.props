@@ -55,7 +55,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
-    <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
@@ -73,7 +72,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
-    <LatestPackageReference Include="System.Security.Principal.Windows" />
     <LatestPackageReference Include="System.Text.Encodings.Web" />
     <LatestPackageReference Include="System.Text.Json" />
     <LatestPackageReference Include="System.Threading.Channels" />
