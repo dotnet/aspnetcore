@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost.Tests
@@ -53,6 +54,49 @@ namespace Microsoft.AspNetCore.TestHost.Tests
             Assert.Equal("http", capturedScheme);
             Assert.Equal(expectedHost, capturedHost);
             Assert.Equal("/connect", capturedPath);
+        }
+
+        [Fact]
+        public async Task CanAcceptWebSocket()
+        {
+            using (var testServer = new TestServer(new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Use((c, n) =>
+                    {
+                        Assert.NotNull(c.Features.Get<IHttpUpgradeFeature>());
+                        return n(c);
+                    });
+                    app.UseWebSockets();
+                    app.Run(async ctx =>
+                    {
+                        if (ctx.Request.Path.StartsWithSegments("/connect"))
+                        {
+                            if (ctx.WebSockets.IsWebSocketRequest)
+                            {
+                                using var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
+                                var buffer = new byte[1000];
+                                var res = await websocket.ReceiveAsync(buffer, default);
+                                await websocket.SendAsync(buffer.AsMemory(0, res.Count), System.Net.WebSockets.WebSocketMessageType.Binary, true, default);
+                                await websocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, null, default);
+                            }
+                        }
+                    });
+                })))
+            {
+                var client = testServer.CreateWebSocketClient();
+
+                using var socket = await client.ConnectAsync(
+                    uri: new Uri("http://localhost/connect"),
+                    cancellationToken: default);
+
+                await socket.SendAsync(new byte[10], System.Net.WebSockets.WebSocketMessageType.Binary, true, default);
+                var res = await socket.ReceiveAsync(new byte[100], default);
+                Assert.Equal(10, res.Count);
+                Assert.True(res.EndOfMessage);
+
+                await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, null, default);
+            }
         }
     }
 }
