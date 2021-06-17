@@ -181,10 +181,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>3ef9d071b8a668a26d8746fb8c7b827d13e8273c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Win32.Registry" Version="6.0.0-preview.6.21314.2">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>bc16a7bd2dcca7f1f8ce70e75dc86a3fac3ffcd2</Sha>
-    </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="6.0.0-preview.6.21316.6">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>3ef9d071b8a668a26d8746fb8c7b827d13e8273c</Sha>
@@ -229,13 +225,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>3ef9d071b8a668a26d8746fb8c7b827d13e8273c</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="6.0.0-preview.6.21314.2">
+    <Dependency Name="System.Security.Permissions" Version="6.0.0-preview.6.21316.6">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>bc16a7bd2dcca7f1f8ce70e75dc86a3fac3ffcd2</Sha>
-    </Dependency>
-    <Dependency Name="System.Security.Principal.Windows" Version="6.0.0-preview.6.21314.2">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>bc16a7bd2dcca7f1f8ce70e75dc86a3fac3ffcd2</Sha>
+      <Sha>3ef9d071b8a668a26d8746fb8c7b827d13e8273c</Sha>
     </Dependency>
     <Dependency Name="System.ServiceProcess.ServiceController" Version="6.0.0-preview.6.21316.6">
       <Uri>https://github.com/dotnet/runtime</Uri>

@@ -72,7 +72,6 @@
     <MicrosoftNETRuntimeWebAssemblySdkVersion>6.0.0-preview.6.21316.6</MicrosoftNETRuntimeWebAssemblySdkVersion>
     <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>6.0.0-preview.6.21316.6</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
     <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-preview.6.21316.6</MicrosoftNETCoreBrowserDebugHostTransportVersion>
-    <MicrosoftWin32RegistryVersion>6.0.0-preview.6.21314.2</MicrosoftWin32RegistryVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-preview.6.21316.6</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>6.0.0-preview.6.21316.6</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-preview.6.21316.6</MicrosoftExtensionsConfigurationAbstractionsVersion>
@@ -119,8 +118,7 @@
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.6.21316.6</SystemRuntimeCompilerServicesUnsafeVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.6.21316.6</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-preview.6.21316.6</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>6.0.0-preview.6.21314.2</SystemSecurityPermissionsVersion>
-    <SystemSecurityPrincipalWindowsVersion>6.0.0-preview.6.21314.2</SystemSecurityPrincipalWindowsVersion>
+    <SystemSecurityPermissionsVersion>6.0.0-preview.6.21316.6</SystemSecurityPermissionsVersion>
     <SystemServiceProcessServiceControllerVersion>6.0.0-preview.6.21316.6</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>6.0.0-preview.6.21316.6</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>6.0.0-preview.6.21316.6</SystemTextJsonVersion>
