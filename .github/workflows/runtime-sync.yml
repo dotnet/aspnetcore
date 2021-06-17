@@ -59,7 +59,7 @@ jobs:
     - name: Send PR
       if: steps.check.outputs.changed == 'true'
       # https://github.com/marketplace/actions/create-pull-request
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@9825ae65b1cb54b543b938503728b432a0176d29
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         path: .\aspnetcore
