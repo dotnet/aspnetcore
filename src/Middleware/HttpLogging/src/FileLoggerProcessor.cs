@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly int? _maxFileSize;
         private readonly int? _maxRetainedFiles;
         private int _fileNumber = 1;
+        private TimeSpan _flushPeriod = TimeSpan.FromSeconds(1);
 
         private readonly BlockingCollection<LogMessage> _messageQueue = new BlockingCollection<LogMessage>(_maxQueuedMessages);
         private readonly List<LogMessage> _currentBatch = new List<LogMessage>();
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 }
                 else
                 {
-                    await Task.Delay(100);
+                    await Task.Delay(_flushPeriod);
                 }
             }
         }
