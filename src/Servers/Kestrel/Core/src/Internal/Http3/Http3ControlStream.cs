@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
             _context = context;
-            _serverPeerSettings = context.ServerSettings;
+            _serverPeerSettings = context.ServerPeerSettings;
             _streamIdFeature = context.ConnectionFeatures.Get<IStreamIdFeature>()!;
             _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
             _headerType = -1;
@@ -55,7 +55,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log,
-                _streamIdFeature);
+                _streamIdFeature,
+                context.ClientPeerSettings,
+                this);
         }
 
         private void OnStreamClosed()
@@ -295,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             while (true)
             {
-                var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out var examinded);
+                var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out _);
                 if (id == -1)
                 {
                     break;
@@ -303,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 payload = payload.Slice(consumed);
 
-                var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out examinded);
+                var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out _);
                 if (id == -1)
                 {
                     break;

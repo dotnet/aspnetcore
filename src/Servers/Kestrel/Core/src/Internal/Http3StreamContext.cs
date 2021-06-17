@@ -24,15 +24,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             IDuplexPipe transport,
             IHttp3StreamLifetimeHandler streamLifetimeHandler,
             ConnectionContext streamContext,
-            Http3PeerSettings settings) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint, transport)
+            Http3PeerSettings clientPeerSettings,
+            Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint, transport)
         {
             StreamLifetimeHandler = streamLifetimeHandler;
             StreamContext = streamContext;
-            ServerSettings = settings;
+            ClientPeerSettings = clientPeerSettings;
+            ServerPeerSettings = serverPeerSettings;
         }
 
         public IHttp3StreamLifetimeHandler StreamLifetimeHandler { get; }
         public ConnectionContext StreamContext { get; }
-        public Http3PeerSettings ServerSettings { get; }
+        public Http3PeerSettings ClientPeerSettings { get; }
+        public Http3PeerSettings ServerPeerSettings { get; }
     }
 }
