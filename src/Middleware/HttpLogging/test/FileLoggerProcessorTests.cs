@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -41,17 +42,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     logger.EnqueueMessage(new LogMessage(now, "Message one"));
                     fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    for (int i = 0; i < 50; i++)
-                    {
-                        if (File.Exists(fileName))
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
+                    await WaitForFile(fileName).DefaultTimeout();
                 }
                 Assert.True(File.Exists(fileName));
 
@@ -85,17 +76,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     fileName1 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
                     fileName2 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}02.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    for (int i = 0; i < 50; i++)
-                    {
-                        if (File.Exists(fileName2))
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
+                    await WaitForFile(fileName2).DefaultTimeout();
                 }
                 Assert.True(File.Exists(fileName1));
                 Assert.True(File.Exists(fileName2));
@@ -134,17 +115,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                     fileName = Path.Combine(path, $"{options.FileName}{timestamp.Year:0000}{timestamp.Month:00}{timestamp.Day:00}01.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    for (int i = 0; i < 50; i++)
-                    {
-                        if (File.Exists(fileName))
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
+                    await WaitForFile(fileName).DefaultTimeout();
                 }
                 Assert.True(File.Exists(fileName));
 
@@ -165,6 +136,14 @@ namespace Microsoft.AspNetCore.HttpLogging
             finally
             {
                 Helpers.DisposeDirectory(path);
+            }
+        }
+
+        private async Task WaitForFile(string fileName)
+        {
+            while (!File.Exists(fileName))
+            {
+                await Task.Delay(100);
             }
         }
     }

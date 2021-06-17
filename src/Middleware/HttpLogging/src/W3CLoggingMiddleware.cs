@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// <summary>
     /// Middleware that logs HTTP requests and HTTP responses.
     /// </summary>
-    internal sealed class W3CLoggingMiddleware
+    internal class W3CLoggingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly W3CLogger _w3cLogger;
@@ -50,7 +50,13 @@ namespace Microsoft.AspNetCore.HttpLogging
                 // Logs are written in the app directory in a folder named 'logs/{UTC Timestamp}'
                 _options.CurrentValue.LogDirectory = Path.Join(environment.ContentRootPath, "logs", DateTimeOffset.Now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
             }
-            _w3cLogger = new W3CLogger(_options);
+            _w3cLogger = InitializeLogger(_options);
+        }
+
+        // Virtual for testing
+        internal virtual W3CLogger InitializeLogger(IOptionsMonitor<W3CLoggerOptions> options)
+        {
+            return new W3CLogger(options);
         }
 
         /// <summary>
