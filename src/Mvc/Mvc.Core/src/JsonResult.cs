@@ -5,6 +5,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -89,7 +90,22 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>A task that represents the asynchronous execute operation.</returns>
         Task IResult.ExecuteAsync(HttpContext httpContext)
         {
-            return httpContext.Response.WriteAsJsonAsync(Value);
+            if (StatusCode is { } status)
+            {
+                httpContext.Response.StatusCode = status;
+            }
+
+            var options = SerializerSettings as JsonSerializerOptions;
+
+            if (SerializerSettings is not null && options is null)
+            {
+                    throw new InvalidOperationException(Resources.FormatProperty_MustBeInstanceOfType(
+                        nameof(JsonResult),
+                        nameof(SerializerSettings),
+                        typeof(JsonSerializerOptions)));
+            }
+
+            return httpContext.Response.WriteAsJsonAsync(Value, options, ContentType ?? httpContext.Response.ContentType);
         }
     }
 }

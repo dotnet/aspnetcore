@@ -68,6 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         [Fact]
         public async Task ExecuteAsync_UsesEncodingSpecifiedInContentType()
         {
+            if (!SerializesWithContentTypeEncoding)
+            {
+                return;
+            }
+
             // Arrange
             var expected = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
@@ -92,6 +97,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         [Fact]
         public async Task ExecuteAsync_UsesEncodingSpecifiedInResponseContentType()
         {
+            if (!SerializesWithContentTypeEncoding)
+            {
+                return;
+            }
+
             // Arrange
             var expected = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
@@ -204,8 +214,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Equal("application/json; charset=utf-8", context.HttpContext.Response.ContentType);
         }
 
-        protected abstract object GetIndentedSettings();
-
         [Fact]
         public async Task ExecuteAsync_ErrorDuringSerialization_DoesNotWriteContent()
         {
@@ -237,6 +245,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         [Fact]
         public async Task ExecuteAsync_NonNullResult_LogsResultType()
         {
+            if (!LogsSuccess)
+            {
+                return;
+            }
+
             // Arrange
             var expected = "Executing JsonResult, writing value of type 'System.String'.";
             var context = GetActionContext();
@@ -255,6 +268,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         [Fact]
         public async Task ExecuteAsync_NullResult_LogsNull()
         {
+            if (!LogsSuccess)
+            {
+                return;
+            }
+
             // Arrange
             var expected = "Executing JsonResult, writing value of type 'null'.";
             var context = GetActionContext();
@@ -365,9 +383,34 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Equal(expected, written);
         }
 
+        [Fact]
+        public async Task ExecuteAsync_UsesStatusCode()
+        {
+            // Arrange
+            var context = GetActionContext();
+
+            var result = new JsonResult(null)
+            {
+                StatusCode = 404,
+            };
+
+            var executor = CreateExecutor();
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            Assert.Equal(404, context.HttpContext.Response.StatusCode);
+        }
+
         protected IActionResultExecutor<JsonResult> CreateExecutor() => CreateExecutor(NullLoggerFactory.Instance);
 
         protected abstract IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory);
+
+        protected abstract object GetIndentedSettings();
+
+        protected virtual bool LogsSuccess => true;
+        protected virtual bool SerializesWithContentTypeEncoding => true;
 
         private static HttpContext GetHttpContext()
         {
@@ -425,3 +468,4 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
     }
 }
+
