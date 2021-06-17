@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.CompletableSubject;
 
@@ -78,7 +79,7 @@ class LongPollingTransport implements Transport {
                 this.threadPool = Executors.newCachedThreadPool();
                 threadPool.execute(() -> {
                     this.onReceiveThread = Executors.newSingleThreadExecutor();
-                    receiveLoopSubject.subscribe(u -> {
+                    receiveLoopSubject.observeOn(Schedulers.io()).subscribe(u -> {
                         poll(u);
                     }, e -> {
                         this.stop().onErrorComplete().subscribe();
