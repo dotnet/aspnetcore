@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
-        private static MethodInfo? FindTryParseMethod(Type type)
+        internal static MethodInfo? FindTryParseMethod(Type type)
         {
             static MethodInfo? Finder(Type type)
             {
@@ -495,6 +495,20 @@ namespace Microsoft.AspNetCore.Http
                 {
                     return EnumTryParseMethod.MakeGenericMethod(type);
                 }
+
+                bool useNumberStyle =
+                    type == typeof(int) ||
+                    type == typeof(double) ||
+                    type == typeof(double) ||
+                    type == typeof(float) ||
+                    type == typeof(DateTime) ||
+                    type == typeof(short) ||
+                    type == typeof(long) ||
+                    type == typeof(IntPtr) ||
+                    type == typeof(sbyte) ||
+                    type == typeof(ushort) ||
+                    type == typeof(uint) ||
+                    type == typeof(ulong);
 
                 var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
@@ -507,7 +521,24 @@ namespace Microsoft.AspNetCore.Http
 
                     var tryParseParameters = method.GetParameters();
 
-                    if (tryParseParameters.Length == 2 &&
+                    if (useNumberStyle && tryParseParameters.Length == 4 &&
+                        tryParseParameters[0].ParameterType == typeof(string) &&
+                        tryParseParameters[1].ParameterType == typeof(NumberStyles) &&
+                        tryParseParameters[2].ParameterType == typeof(IFormatProvider) &&
+                        tryParseParameters[3].IsOut &&
+                        tryParseParameters[3].ParameterType == type.MakeByRefType())
+                    {
+                        return method;
+                    }
+                    else if (tryParseParameters.Length == 3 &&
+                        tryParseParameters[0].ParameterType == typeof(string) &&
+                        tryParseParameters[1].ParameterType == typeof(IFormatProvider) &&
+                        tryParseParameters[2].IsOut &&
+                        tryParseParameters[2].ParameterType == type.MakeByRefType())
+                    {
+                        return method;
+                    }
+                    else if (tryParseParameters.Length == 2 &&
                         tryParseParameters[0].ParameterType == typeof(string) &&
                         tryParseParameters[1].IsOut &&
                         tryParseParameters[1].ParameterType == type.MakeByRefType())
