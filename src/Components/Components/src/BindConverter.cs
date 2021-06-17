@@ -1273,7 +1273,16 @@ namespace Microsoft.AspNetCore.Components
         public static bool TryConvertTo<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value)
         {
             var converter = ParserDelegateCache.Get<T>();
-            return converter(obj, culture, out value);
+
+            var didConvert = false;
+            try {
+                didConvert = converter(obj, culture, out value);
+            } catch (Exception) {
+                didConvert = false;
+                value = default(T);
+            }
+
+            return didConvert;
         }
 
         private static class FormatterDelegateCache
