@@ -29,7 +29,8 @@
     <Reference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)' OR
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
+      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
       '$(MSBuildRestoreSessionId)' == '' ">
     <Reference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
