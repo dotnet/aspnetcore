@@ -118,14 +118,14 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             public void Dispose() => _host.Dispose();
 
-            public ValueTask DisposeAsync()
+            public async ValueTask DisposeAsync()
             {
                 if (_host is IAsyncDisposable disposable)
                 {
-                    return disposable.DisposeAsync();
+                    await disposable.DisposeAsync().ConfigureAwait(false);
+                    return;
                 }
                 Dispose();
-                return default;
             }
 
             public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 // but it's rarely a valid token for Start
                 using var reg2 = _host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.UnsafeRegister(_ => _hostStartedTcs.TrySetResult(), null);
 
-                await _hostStartedTcs.Task;
+                await _hostStartedTcs.Task.ConfigureAwait(false);
             }
 
             public Task StopAsync(CancellationToken cancellationToken = default) => _host.StopAsync(cancellationToken);
