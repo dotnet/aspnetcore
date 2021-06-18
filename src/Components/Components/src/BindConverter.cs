@@ -1213,6 +1213,27 @@ namespace Microsoft.AspNetCore.Components
             return false;
         }
 
+        internal readonly static BindParser<Guid> ConvertToGuid = ConvertToGuidCore;
+
+        private static bool ConvertToGuidCore(object? obj, CultureInfo? culture, out Guid value)
+        {
+            var text = (string?)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!Guid.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
         private static bool ConvertToEnum<T>(object? obj, CultureInfo? culture, out T value) where T : struct, Enum
         {
             var text = (string?)obj;
@@ -1273,16 +1294,7 @@ namespace Microsoft.AspNetCore.Components
         public static bool TryConvertTo<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value)
         {
             var converter = ParserDelegateCache.Get<T>();
-
-            var didConvert = false;
-            try {
-                didConvert = converter(obj, culture, out value);
-            } catch (Exception) {
-                didConvert = false;
-                value = default(T);
-            }
-
-            return didConvert;
+            return converter(obj, culture, out value);
         }
 
         private static class FormatterDelegateCache
@@ -1499,6 +1511,10 @@ namespace Microsoft.AspNetCore.Components
                     else if (typeof(T) == typeof(DateTimeOffset?))
                     {
                         parser = ConvertToNullableDateTime;
+                    }
+                    else if (typeof(T) == typeof(Guid))
+                    {
+                        parser = ConvertToGuid;
                     }
                     else if (typeof(T).IsEnum)
                     {
