@@ -10,6 +10,7 @@
                         Vital="yes"
                         InstallCondition="VersionNT64 AND (NOT OPT_NO_RUNTIME)"
                         InstallCommand="/quiet /norestart"
+                        RepairCommand="/quiet /repair"
                         Permanent="yes"
                         DetectCondition="DotNetRedistLtsProductVersion_x64 = v$(var.DotNetRedistLtsInstallerProductVersionx64)">
             </ExePackage>
@@ -20,6 +21,7 @@
                         Vital="yes"
                         InstallCondition="(NOT OPT_NO_RUNTIME) AND (NOT OPT_NO_X86)"
                         InstallCommand="/quiet /norestart"
+                        RepairCommand="/quiet /repair"
                         Permanent="yes"
                         DetectCondition="DotNetRedistLtsProductVersion_x86 = v$(var.DotNetRedistLtsInstallerProductVersionx86)">
             </ExePackage>
