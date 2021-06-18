@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.TestHost
             _httpContext.Features.Set<IHttpResponseBodyFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
             _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
+            _httpContext.Features.Set<IHttpUpgradeFeature>(new UpgradeFeature());
         }
 
         public bool AllowSynchronousIO { get; set; }
