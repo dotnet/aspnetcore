@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -27,31 +28,21 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(
                 null,
                 options,
-                new HostingEnvironment(),
-                new TestW3CLogger(options)));
+                new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance)));
 
             Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
                 {
                     return Task.CompletedTask;
                 },
                 null,
-                new HostingEnvironment(),
-                new TestW3CLogger(options)));
+                new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance)));
+
 
             Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
                 {
                     return Task.CompletedTask;
                 },
                 options,
-                null,
-                new TestW3CLogger(options)));
-
-            Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
-                {
-                    return Task.CompletedTask;
-                },
-                options,
-                new HostingEnvironment(),
                 null));
         }
 
@@ -68,8 +59,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                new HostingEnvironment(),
-                new TestW3CLogger(options));
+                new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance));
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -95,8 +85,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                new HostingEnvironment(),
-                new TestW3CLogger(options));
+                new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance));
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";

@@ -30,20 +30,14 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        /// <param name="environment"></param>
         /// <param name="w3cLogger"></param>
-        public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, W3CLogger w3cLogger)
+        public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, W3CLogger w3cLogger)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
-            }
-
-            if (environment == null)
-            {
-                throw new ArgumentNullException(nameof(environment));
             }
 
             if (w3cLogger == null)
@@ -53,13 +47,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             _options = options;
             _w3cLogger = w3cLogger;
-
-            if (string.IsNullOrEmpty(_options.CurrentValue.LogDirectory))
-            {
-                // Logs are written in the app directory in a folder named 'logs/{UTC Timestamp}'
-                _options.CurrentValue.LogDirectory = Path.Join(environment.ContentRootPath, "logs", DateTimeOffset.Now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
-                _w3cLogger.OnOptionsChange();
-            }
         }
 
         /// <summary>
@@ -162,7 +149,19 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             var response = context.Response;
 
-            await _next(context);
+            try
+            {
+                await _next(context);
+            }
+            catch
+            {
+                // Write the log
+                if (w3cList.Count > 0)
+                {
+                    _w3cLogger.Log(w3cList);
+                }
+                throw;
+            }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.UserName))
             {

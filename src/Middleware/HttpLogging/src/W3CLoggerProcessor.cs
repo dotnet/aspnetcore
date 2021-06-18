@@ -2,15 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging
@@ -19,7 +17,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
         private readonly W3CLoggingFields _loggingFields;
 
-        public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options) : base(options)
+        public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
         {
             _loggingFields = options.CurrentValue.LoggingFields;
         }

@@ -10,6 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -37,10 +39,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     LogDirectory = path
                 };
-                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message one");
-                    fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
+                    fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.1.txt");
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         if (!File.Exists(fileName))
                         {
                             var tomorrow = now.AddDays(1);
-                            fileName = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
+                            fileName = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt");
                         }
                     }
                 }
@@ -81,12 +83,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                     LogDirectory = path,
                     FileSizeLimit = 5
                 };
-                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message one");
                     logger.EnqueueMessage("Message two");
-                    fileName1 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
-                    fileName2 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}02.txt");
+                    fileName1 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.1.txt");
+                    fileName2 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.2.txt");
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
@@ -99,12 +101,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                         var tomorrow = now.AddDays(1);
                         if (!File.Exists(fileName1))
                         {
-                            fileName1 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
-                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}02.txt");
+                            fileName1 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt");
+                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.2.txt");
                         }
                         else if (!File.Exists(fileName2))
                         {
-                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
+                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt");
                         }
                     }
                 }
@@ -138,13 +140,13 @@ namespace Microsoft.AspNetCore.HttpLogging
                     RetainedFileCountLimit = 3,
                     FileSizeLimit = 5
                 };
-                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     for (int i = 0; i <= 10; i++)
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}10.txt");
+                    fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.10.txt");
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {

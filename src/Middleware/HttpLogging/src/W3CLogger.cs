@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Http;
 using System.Numerics;
 using System.Text;
 using Microsoft.Net.Http.Headers;
-using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
@@ -22,21 +23,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         // Subtract 8 to account for flags that represent groups (e.g. "RequestHeaders", "None")
         private readonly int _fieldsLength = Enum.GetValues(typeof(W3CLoggingFields)).Length - 6;
 
-        public W3CLogger(IOptionsMonitor<W3CLoggerOptions> options)
+        public W3CLogger(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
             _options = options;
-            _messageQueue = InitializeMessageQueue(_options);
+            _messageQueue = InitializeMessageQueue(_options, environment, factory);
         }
 
         // Virtual for testing
-        internal virtual W3CLoggerProcessor InitializeMessageQueue(IOptionsMonitor<W3CLoggerOptions> options)
+        internal virtual W3CLoggerProcessor InitializeMessageQueue(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
-            return new W3CLoggerProcessor(options);
-        }
-
-        internal void OnOptionsChange()
-        {
-            _messageQueue.OnOptionsChange();
+            return new W3CLoggerProcessor(options, environment, factory);
         }
 
         public async ValueTask DisposeAsync() => await _messageQueue.DisposeAsync();

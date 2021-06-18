@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public TestW3CLogger Logger;
 
-        public TestW3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, TestW3CLogger w3cLogger) : base(next, options, environment, w3cLogger)
+        public TestW3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, TestW3CLogger w3cLogger) : base(next, options, w3cLogger)
         {
             Logger = w3cLogger;
         }

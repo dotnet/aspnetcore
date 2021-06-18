@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging
@@ -15,7 +17,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public List<string> Lines;
         private bool _hasWritten;
 
-        public TestW3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options) : base(options)
+        public TestW3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
         {
             Lines = new List<string>();
         }

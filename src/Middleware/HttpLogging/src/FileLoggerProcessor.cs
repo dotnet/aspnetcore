@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -35,36 +36,25 @@ namespace Microsoft.AspNetCore.HttpLogging
         private Task _outputTask;
         private CancellationTokenSource _cancellationTokenSource;
 
-        internal FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options)
-            : this(options, NullLoggerFactory.Instance)
-        {
-        }
-
-        public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, ILoggerFactory loggerFactory)
+        public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
             _options = options;
             var loggerOptions = _options.CurrentValue;
             _path = loggerOptions.LogDirectory;
+            if (string.IsNullOrEmpty(_path))
+            {
+                _path = Path.Join(environment.ContentRootPath, "logs", DateTimeOffset.Now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
+            }
             _fileName = loggerOptions.FileName;
             _maxFileSize = loggerOptions.FileSizeLimit;
             _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
             _flushPeriod = loggerOptions.FlushPeriod;
 
-            _logger = loggerFactory.CreateLogger(typeof(FileLoggerProcessor));
+            _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
 
             // Start message queue processor
             _cancellationTokenSource = new CancellationTokenSource();
             _outputTask = Task.Run(ProcessLogQueue);
-        }
-
-        internal void OnOptionsChange()
-        {
-            var loggerOptions = _options.CurrentValue;
-            _path = loggerOptions.LogDirectory;
-            _fileName = loggerOptions.FileName;
-            _maxFileSize = loggerOptions.FileSizeLimit;
-            _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
-            _flushPeriod = loggerOptions.FlushPeriod;
         }
 
         public void EnqueueMessage(string message)
@@ -220,7 +210,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string GetFullName(DateTime date)
         {
-            return Path.Combine(_path, $"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}{_fileNumber:00}.txt");
+            return Path.Combine(_path, $"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber}.txt");
         }
 
         public virtual Task OnFirstWrite(StreamWriter streamWriter)

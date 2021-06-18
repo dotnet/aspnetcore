@@ -9,6 +9,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -31,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             };
             try
             {
-                await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
+                await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     var state = new List<KeyValuePair<string, string>>();
                     state.Add(new KeyValuePair<string, string>(nameof(DateTime), _timestampOne.ToString(CultureInfo.InvariantCulture)));
@@ -72,7 +75,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             };
             try
             {
-                await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
+                await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     var state = new List<KeyValuePair<string, string>>();
                     state.Add(new KeyValuePair<string, string>(nameof(HttpRequest.QueryString), null));
