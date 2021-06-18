@@ -143,7 +143,9 @@ namespace Microsoft.AspNetCore.Http.Features
                 {
                     if (!querySegment.IsEmpty)
                     {
-                        accumulator.Append(querySegment);
+                        var name = SpanHelper.ReplacePlusWithSpace(querySegment);
+
+                        accumulator.Append(Uri.UnescapeDataString(name));
                     }
                 }
 
