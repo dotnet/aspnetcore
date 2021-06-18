@@ -177,6 +177,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Win32.SystemEvents" Version="6.0.0-preview.6.21317.4">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Internal.Transport" Version="6.0.0-preview.6.21317.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
@@ -190,6 +194,10 @@
       <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="6.0.0-preview.6.21317.4">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
+    </Dependency>
+    <Dependency Name="System.Drawing.Common" Version="6.0.0-preview.6.21317.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
     </Dependency>
@@ -242,6 +250,10 @@
       <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="6.0.0-preview.6.21317.4">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
+    </Dependency>
+    <Dependency Name="System.Windows.Extensions" Version="6.0.0-preview.6.21317.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>01188c75f06412dc86508e7b653deaeace9623ba</Sha>
     </Dependency>
