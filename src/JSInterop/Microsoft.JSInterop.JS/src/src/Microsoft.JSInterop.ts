@@ -142,28 +142,28 @@ export module DotNet {
   /**
    * Creates a JavaScript data reference that can be passed to .NET via interop calls.
    *
-   * @param jsObject The JavaScript Object used to create the JavaScript data reference.
+   * @param arrayBufferView The ArrayBufferView used to create the JavaScript stream reference.
    * @returns The JavaScript data reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
    */
-  export function createJSDataReference(jsObject: any): any {
+  export function createJSDataReference(arrayBufferView: ArrayBufferView | any): any {
     // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
     // using a JSDataReference.
-    if (!(jsObject.buffer instanceof ArrayBuffer)) {
-      throw new Error(`Cannot create a JSDataReference from the value '${jsObject}' as it is not a valid ArrayBuffer.`);
-    } else if (jsObject.byteLength === undefined) {
-      throw new Error(`Cannot create a JSDataReference from the value '${jsObject}' as it doesn't have a byteLength.`);
+    if (!(arrayBufferView.buffer instanceof ArrayBuffer)) {
+      throw new Error(`Cannot create a JSDataReference from the value '${arrayBufferView}' as it is not a valid ArrayBuffer.`);
+    } else if (arrayBufferView.byteLength === undefined) {
+      throw new Error(`Cannot create a JSDataReference from the value '${arrayBufferView}' as it doesn't have a byteLength.`);
     }
 
     const result: any = {
-      [jsDataReferenceLengthKey]: jsObject.byteLength,
+      [jsDataReferenceLengthKey]: arrayBufferView.byteLength,
     }
 
     try {
-      const jsObjectReference = createJSObjectReference(jsObject);
+      const jsObjectReference = createJSObjectReference(arrayBufferView);
       result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
     } catch {
-      throw new Error(`Cannot create a JSDataReference from the value '${jsObject}'.`);
+      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}'.`);
     }
 
     return result;
