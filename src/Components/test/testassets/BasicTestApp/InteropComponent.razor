@@ -3,7 +3,7 @@
 @using System.Runtime.InteropServices
 @using System.Text.Json
 @using System.IO
-@using static BasicTestApp.InteropTest.JSDataReferenceInterop
+@using static BasicTestApp.InteropTest.JSStreamReferenceInterop
 @inject IJSRuntime JSRuntime
 
 <button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
@@ -190,12 +190,12 @@
             // Proceed to run the actual blazor server streaming interop tests
 
             // Test: jsToDotNetStreamReturnValueAsync
-            var dataReference = await JSRuntime.InvokeAsync<IJSDataReference>("jsToDotNetStreamReturnValueAsync");
+            var dataReference = await JSRuntime.InvokeAsync<IJSStreamReference>("jsToDotNetStreamReturnValueAsync");
             using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
             await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueAsync", dataReferenceStream);
 
             // Test: jsToDotNetStreamWrapperObjectReturnValueAsync
-            var dataWrapperReference = await JSRuntime.InvokeAsync<JSDataReferenceWrapper>("jsToDotNetStreamWrapperObjectReturnValueAsync");
+            var dataWrapperReference = await JSRuntime.InvokeAsync<JSStreamReferenceWrapper>("jsToDotNetStreamWrapperObjectReturnValueAsync");
             if (dataWrapperReference.StrVal != "SomeStr")
             {
                 ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = $"StrVal did not match expected 'SomeStr', received {dataWrapperReference.StrVal}.";
@@ -206,7 +206,7 @@
             }
             else
             {
-                using var dataWrapperReferenceStream = await dataWrapperReference.JSDataReferenceVal.OpenReadStreamAsync();
+                using var dataWrapperReferenceStream = await dataWrapperReference.JSStreamReferenceVal.OpenReadStreamAsync();
                 await ValidateStreamValuesAsync("jsToDotNetStreamWrapperObjectReturnValueAsync", dataWrapperReferenceStream);
             }
         }

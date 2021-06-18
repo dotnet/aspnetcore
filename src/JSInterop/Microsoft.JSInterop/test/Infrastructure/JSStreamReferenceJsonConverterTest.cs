@@ -8,15 +8,15 @@ using Xunit;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
-    public class JSDataReferenceJsonConverterTest
+    public class JSStreamReferenceJsonConverterTest
     {
         private readonly JSRuntime JSRuntime = new TestJSRuntime();
         private readonly JsonSerializerOptions JsonSerializerOptions;
 
-        public JSDataReferenceJsonConverterTest()
+        public JSStreamReferenceJsonConverterTest()
         {
             JsonSerializerOptions = JSRuntime.JsonSerializerOptions;
-            JsonSerializerOptions.Converters.Add(new JSDataReferenceJsonConverter(JSRuntime));
+            JsonSerializerOptions.Converters.Add(new JSStreamReferenceJsonConverter(JSRuntime));
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = "{}";
 
             // Act & Assert
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSDataReference>(json, JsonSerializerOptions));
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions));
             Assert.Equal("Required property __jsObjectId not found.", ex.Message);
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = "{\"foo\":2}";
 
             // Act & Assert
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSDataReference>(json, JsonSerializerOptions));
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions));
             Assert.Equal("Unexcepted JSON property foo.", ex.Message);
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = $"{{\"__jsObjectId\":5";
 
             // Act & Assert
-            var ex = Record.Exception(() => JsonSerializer.Deserialize<IJSDataReference>(json, JsonSerializerOptions));
+            var ex = Record.Exception(() => JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions));
             Assert.IsAssignableFrom<JsonException>(ex);
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = $"{{\"__jsObjectId\":3,\"__jsObjectId\":7}}";
 
             // Act & Assert
-            var ex = Record.Exception(() => JsonSerializer.Deserialize<IJSDataReference>(json, JsonSerializerOptions));
+            var ex = Record.Exception(() => JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions));
             Assert.IsAssignableFrom<JsonException>(ex);
         }
 
@@ -71,20 +71,20 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = $"{{\"__jsObjectId\":{expectedId}}}";
 
             // Act & Assert
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSDataReference>(json, JsonSerializerOptions));
-            Assert.Equal("Required property __jsDataReferenceLength not found.", ex.Message);
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions));
+            Assert.Equal("Required property __jsStreamReferenceLength not found.", ex.Message);
         }
 
         [Fact]
-        public void Read_ReadsJson_IJSDataReference()
+        public void Read_ReadsJson_IJSStreamReference()
         {
             // Arrange
             var expectedId = 3;
             var expectedLength = 5;
-            var json = $"{{\"__jsObjectId\":{expectedId}, \"__jsDataReferenceLength\":{expectedLength}}}";
+            var json = $"{{\"__jsObjectId\":{expectedId}, \"__jsStreamReferenceLength\":{expectedLength}}}";
 
             // Act
-            var deserialized = (JSDataReference)JsonSerializer.Deserialize<IJSDataReference>(json, JsonSerializerOptions)!;
+            var deserialized = (JSStreamReference)JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions)!;
 
             // Assert
             Assert.Equal(expectedId, deserialized?.Id);
@@ -92,15 +92,15 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
-        public void Read_ReadsJson_IJSDataReferenceReverseOrder()
+        public void Read_ReadsJson_IJSStreamReferenceReverseOrder()
         {
             // Arrange
             var expectedId = 3;
             var expectedLength = 5;
-            var json = $"{{\"__jsDataReferenceLength\":{expectedLength}, \"__jsObjectId\":{expectedId}}}";
+            var json = $"{{\"__jsStreamReferenceLength\":{expectedLength}, \"__jsObjectId\":{expectedId}}}";
 
             // Act
-            var deserialized = (JSDataReference)JsonSerializer.Deserialize<IJSDataReference>(json, JsonSerializerOptions)!;
+            var deserialized = (JSStreamReference)JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions)!;
 
             // Assert
             Assert.Equal(expectedId, deserialized?.Id);
@@ -111,10 +111,10 @@ namespace Microsoft.JSInterop.Infrastructure
         public void Write_WritesValidJson()
         {
             // Arrange
-            var jsObjectRef = new JSDataReference(JSRuntime, 7, 10);
+            var jsObjectRef = new JSStreamReference(JSRuntime, 7, 10);
 
             // Act
-            var json = JsonSerializer.Serialize((IJSDataReference)jsObjectRef, JsonSerializerOptions);
+            var json = JsonSerializer.Serialize((IJSStreamReference)jsObjectRef, JsonSerializerOptions);
 
             // Assert
             Assert.Equal($"{{\"__jsObjectId\":{jsObjectRef.Id}}}", json);

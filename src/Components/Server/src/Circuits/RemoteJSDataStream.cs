@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public static async ValueTask<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(
             RemoteJSRuntime runtime,
-            IJSDataReference jsDataReference,
+            IJSStreamReference jsStreamReference,
             long totalLength,
             long maxBufferSize,
             long maximumIncomingBytes,

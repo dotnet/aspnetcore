@@ -401,7 +401,7 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var runtime = new TestJSRuntime();
-            var dataReference = new JSDataReference(runtime, 10, 10);
+            var dataReference = new JSStreamReference(runtime, 10, 10);
 
             // Act
             var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await runtime.ReadJSDataAsStreamAsync(dataReference, 10, 10, CancellationToken.None));

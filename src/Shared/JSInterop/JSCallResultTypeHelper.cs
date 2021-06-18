@@ -19,9 +19,9 @@ namespace Microsoft.JSInterop
             {
                 return JSCallResultType.JSObjectReference;
             }
-            else if (typeof(TResult).Assembly == _currentAssembly && typeof(TResult) == typeof(IJSDataReference))
+            else if (typeof(TResult).Assembly == _currentAssembly && typeof(TResult) == typeof(IJSStreamReference))
             {
-                return JSCallResultType.JSDataReference;
+                return JSCallResultType.JSStreamReference;
             }
             else
             {

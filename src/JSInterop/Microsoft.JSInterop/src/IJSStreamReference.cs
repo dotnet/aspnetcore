@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Represents a reference to JavaScript data to be consumed through a <see cref="Stream"/>.
     /// </summary>
-    public interface IJSDataReference : IAsyncDisposable
+    public interface IJSStreamReference : IAsyncDisposable
     {
         /// <summary>
         /// Length of the <see cref="Stream"/> provided by JavaScript.

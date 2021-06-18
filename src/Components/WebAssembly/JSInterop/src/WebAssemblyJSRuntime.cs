@@ -101,7 +101,7 @@ namespace Microsoft.JSInterop.WebAssembly
                     return exception != null
                         ? throw new JSException(exception)
                         : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
-                case JSCallResultType.JSDataReference:
+                case JSCallResultType.JSStreamReference:
                 default:
                     throw new InvalidOperationException($"Invalid result type '{resultType}'.");
             }

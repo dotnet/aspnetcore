@@ -21,10 +21,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async void CreateRemoteJSDataStreamAsync_CreatesStream()
         {
             // Arrange
-            var jsDataReference = Mock.Of<IJSDataReference>();
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
 
             // Act
-            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsDataReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000);
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000);
 
             // Assert
             Assert.NotNull(remoteJSDataStream);
@@ -96,10 +96,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
-            var jsDataReference = Mock.Of<IJSDataReference>();
-            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsDataReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000);
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000);
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
-            var chunk = new byte[110]; // 100 byte totalLength for stream 
+            var chunk = new byte[110]; // 100 byte totalLength for stream
 
             // Act
             var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
@@ -110,8 +110,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)
         {
-            var jsDataReference = Mock.Of<IJSDataReference>();
-            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime ?? _jsRuntime, jsDataReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000);
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime ?? _jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000);
             return remoteJSDataStream;
         }
 

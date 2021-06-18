@@ -110,10 +110,10 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
   } else {
     const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
     const largeByteArray = new Uint8Array(largeArray);
-    const jsStreamReference = DotNet.createJSDataReference(largeByteArray);
+    const jsStreamReference = DotNet.createJSStreamReference(largeByteArray);
     results['jsToDotNetStreamParameterAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'JSToDotNetStreamParameterAsync', jsStreamReference);
 
-    var streamWrapper = { 'strVal': "SomeStr", 'jsDataReferenceVal': jsStreamReference, 'intVal': 5 };
+    var streamWrapper = { 'strVal': "SomeStr", 'jsStreamReferenceVal': jsStreamReference, 'intVal': 5 };
     results['jsToDotNetStreamWrapperObjectParameterAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'JSToDotNetStreamWrapperObjectParameterAsync', streamWrapper);
   }
 
@@ -287,8 +287,8 @@ function jsToDotNetStreamWrapperObjectReturnValueAsync() {
     setTimeout(function () {
       const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
       const byteArray = new Uint8Array(largeArray);
-      const jsStreamReference = DotNet.createJSDataReference(byteArray);
-      const returnValue = { strVal: 'SomeStr', intVal: 5, jsDataReferenceVal: jsStreamReference }
+      const jsStreamReference = DotNet.createJSStreamReference(byteArray);
+      const returnValue = { strVal: 'SomeStr', intVal: 5, jsStreamReferenceVal: jsStreamReference }
       resolve(returnValue);
     }, 100);
   });

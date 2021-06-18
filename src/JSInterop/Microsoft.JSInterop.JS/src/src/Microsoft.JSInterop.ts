@@ -49,7 +49,7 @@ export module DotNet {
   }
 
   const jsObjectIdKey = "__jsObjectId";
-  const jsDataReferenceLengthKey = "__jsDataReferenceLength";
+  const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
   const windowJSObjectId = 0;
@@ -146,17 +146,17 @@ export module DotNet {
    * @returns The JavaScript data reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
    */
-  export function createJSDataReference(arrayBufferView: ArrayBufferView | any): any {
+  export function createJSStreamReference(arrayBufferView: ArrayBufferView | any): any {
     // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
-    // using a JSDataReference.
+    // using a JSStreamReference.
     if (!(arrayBufferView.buffer instanceof ArrayBuffer)) {
-      throw new Error(`Cannot create a JSDataReference from the value '${arrayBufferView}' as it is not a valid ArrayBuffer.`);
+      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it is not a valid ArrayBuffer.`);
     } else if (arrayBufferView.byteLength === undefined) {
-      throw new Error(`Cannot create a JSDataReference from the value '${arrayBufferView}' as it doesn't have a byteLength.`);
+      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it doesn't have a byteLength.`);
     }
 
     const result: any = {
-      [jsDataReferenceLengthKey]: arrayBufferView.byteLength,
+      [jsStreamReferenceLengthKey]: arrayBufferView.byteLength,
     }
 
     try {
@@ -263,7 +263,7 @@ export module DotNet {
   export enum JSCallResultType {
     Default = 0,
     JSObjectReference = 1,
-    JSDataReference = 2,
+    JSStreamReference = 2,
   }
 
   /**
@@ -478,8 +478,8 @@ export module DotNet {
         return returnValue;
       case JSCallResultType.JSObjectReference:
         return createJSObjectReference(returnValue);
-      case JSCallResultType.JSDataReference:
-        return createJSDataReference(returnValue);
+      case JSCallResultType.JSStreamReference:
+        return createJSStreamReference(returnValue);
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

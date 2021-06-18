@@ -8,29 +8,29 @@ using Microsoft.JSInterop;
 
 namespace BasicTestApp.InteropTest
 {
-    public class JSDataReferenceInterop
+    public class JSStreamReferenceInterop
     {
         [JSInvokable]
-        public static async Task<string> JSToDotNetStreamParameterAsync(IJSDataReference jsDataReference)
+        public static async Task<string> JSToDotNetStreamParameterAsync(IJSStreamReference jsStreamReference)
         {
-            using var dataReferenceStream = await jsDataReference.OpenReadStreamAsync();
+            using var dataReferenceStream = await jsStreamReference.OpenReadStreamAsync();
             return await ValidateStreamValuesAsync(dataReferenceStream);
         }
 
         [JSInvokable]
-        public static async Task<string> JSToDotNetStreamWrapperObjectParameterAsync(JSDataReferenceWrapper jsDataReferenceWrapper)
+        public static async Task<string> JSToDotNetStreamWrapperObjectParameterAsync(JSStreamReferenceWrapper jsStreamReferenceWrapper)
         {
-            if (jsDataReferenceWrapper.StrVal != "SomeStr")
+            if (jsStreamReferenceWrapper.StrVal != "SomeStr")
             {
-                return $"StrVal did not match expected 'SomeStr', received {jsDataReferenceWrapper.StrVal}.";
+                return $"StrVal did not match expected 'SomeStr', received {jsStreamReferenceWrapper.StrVal}.";
             }
-            else if (jsDataReferenceWrapper.IntVal != 5)
+            else if (jsStreamReferenceWrapper.IntVal != 5)
             {
-                return $"IntVal did not match expected '5', received {jsDataReferenceWrapper.IntVal}.";
+                return $"IntVal did not match expected '5', received {jsStreamReferenceWrapper.IntVal}.";
             }
             else
             {
-                using var dataWrapperReferenceStream = await jsDataReferenceWrapper.JSDataReferenceVal.OpenReadStreamAsync();
+                using var dataWrapperReferenceStream = await jsStreamReferenceWrapper.JSStreamReferenceVal.OpenReadStreamAsync();
                 return await ValidateStreamValuesAsync(dataWrapperReferenceStream);
             }
         }
@@ -58,12 +58,12 @@ namespace BasicTestApp.InteropTest
             return "Success";
         }
 
-        public class JSDataReferenceWrapper
+        public class JSStreamReferenceWrapper
         {
             public string StrVal { get; set; }
 
-            [JsonPropertyName("jsDataReferenceVal")]
-            public IJSDataReference JSDataReferenceVal { get; set; }
+            [JsonPropertyName("jsStreamReferenceVal")]
+            public IJSStreamReference JSStreamReferenceVal { get; set; }
 
             public int IntVal { get; set; }
         }

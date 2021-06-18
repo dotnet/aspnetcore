@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private async Task<Stream> OpenReadStreamAsync(RemoteBrowserFileStreamOptions options, CancellationToken cancellationToken)
         {
-            var dataReference = await _jsRuntime.InvokeAsync<IJSDataReference>(
+            var dataReference = await _jsRuntime.InvokeAsync<IJSStreamReference>(
                 InputFileInterop.ReadFileData,
                 cancellationToken,
                 _inputFileElement,

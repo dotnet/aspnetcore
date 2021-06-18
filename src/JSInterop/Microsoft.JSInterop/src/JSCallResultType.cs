@@ -21,6 +21,6 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Indicates that the returned value is to be treated as a JS data reference.
         /// </summary>
-        JSDataReference = 2,
+        JSStreamReference = 2,
     }
 }

@@ -153,7 +153,7 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
         return result;
       case DotNet.JSCallResultType.JSObjectReference:
         return DotNet.createJSObjectReference(result).__jsObjectId;
-      case DotNet.JSCallResultType.JSDataReference:
+      case DotNet.JSCallResultType.JSStreamReference:
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }
