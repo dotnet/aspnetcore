@@ -73,6 +73,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
+    <LatestPackageReference Include="System.Security.Permissions" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />
     <LatestPackageReference Include="System.Text.Encodings.Web" />
     <LatestPackageReference Include="System.Text.Json" />
