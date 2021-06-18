@@ -8,9 +8,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Numerics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -464,15 +466,11 @@ namespace Microsoft.AspNetCore.Http
 
         private static MethodInfo GetEnumTryParseMethod()
         {
-            var staticEnumMethods = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static);
+            var staticEnumMethods = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .Where(m => m.IsGenericMethod && m.Name == "TryParse" && m.ReturnType == typeof(bool));
 
             foreach (var method in staticEnumMethods)
             {
-                if (!method.IsGenericMethod || method.Name != "TryParse" || method.ReturnType != typeof(bool))
-                {
-                    continue;
-                }
-
                 var tryParseParameters = method.GetParameters();
 
                 if (tryParseParameters.Length == 2 &&
@@ -486,6 +484,36 @@ namespace Microsoft.AspNetCore.Http
             throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) does not exist!!?!?");
         }
 
+        private static MethodInfo GetDateTimeTryPareMethod(Type type)
+        {
+            if (type != typeof(DateTime) && type != typeof(DateOnly) &&
+                 type != typeof(DateTimeOffset) && type != typeof(TimeOnly))
+            {
+                throw new Exception("Parameter is not of type of DateTime, DateOnly, DateTimeOffset, TimeOnly !");
+            }
+
+            var staticDateMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                   .Where(m => m.Name == "TryParse" && m.ReturnType == typeof(bool))
+                   .OrderByDescending(m => m.GetParameters().Length);
+
+            foreach (var method in staticDateMethods)
+            {
+                var tryParseParameters = method.GetParameters();
+
+                if (tryParseParameters.Length == 4 &&
+                    tryParseParameters[0].ParameterType == typeof(string) &&
+                    tryParseParameters[1].ParameterType == typeof(IFormatProvider) &&
+                    tryParseParameters[2].ParameterType == typeof(DateTimeStyles) &&
+                    tryParseParameters[3].IsOut &&
+                    tryParseParameters[3].ParameterType == type.MakeByRefType())
+                {
+                    return method;
+                }
+            }
+
+            throw new Exception("static bool TryParse(string?, IFormatProvider, DateTimeStyles, out DateTime result) does not exit!!?!?");
+        }
+
         // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
         internal static MethodInfo? FindTryParseMethod(Type type)
         {
@@ -496,29 +524,19 @@ namespace Microsoft.AspNetCore.Http
                     return EnumTryParseMethod.MakeGenericMethod(type);
                 }
 
-                bool useNumberStyle =
-                    type == typeof(int) ||
-                    type == typeof(double) ||
-                    type == typeof(double) ||
-                    type == typeof(float) ||
-                    type == typeof(DateTime) ||
-                    type == typeof(short) ||
-                    type == typeof(long) ||
-                    type == typeof(IntPtr) ||
-                    type == typeof(sbyte) ||
-                    type == typeof(ushort) ||
-                    type == typeof(uint) ||
-                    type == typeof(ulong);
+                if (UseTryParseWithDateTimeStyleOptions(type))
+                {
+                    return GetDateTimeTryPareMethod(type);
+                }
 
-                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                bool useNumberStyle = UseTryParseWithNumberStyleOption(type);
+
+                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Where(m => m.Name == "TryParse" && m.ReturnType == typeof(bool))
+                    .OrderByDescending(m => m.GetParameters().Length);
 
                 foreach (var method in staticMethods)
                 {
-                    if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
-                    {
-                        continue;
-                    }
-
                     var tryParseParameters = method.GetParameters();
 
                     if (useNumberStyle && tryParseParameters.Length == 4 &&
@@ -544,6 +562,10 @@ namespace Microsoft.AspNetCore.Http
                         tryParseParameters[1].ParameterType == type.MakeByRefType())
                     {
                         return method;
+                    }
+                    else
+                    {
+                        continue;
                     }
                 }
 
@@ -647,7 +669,47 @@ namespace Microsoft.AspNetCore.Http
                 Expression.Call(LogParameterBindingFailureMethod,
                     HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, TempSourceStringExpr));
 
-            var tryParseCall = Expression.Call(tryParseMethod, TempSourceStringExpr, parsedValue);
+            // Before call the TryParse Method, we should know the exact param to inject
+            Type type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+            var useNumberStyles = UseTryParseWithNumberStyleOption(type);
+            var useDateTimeStyles = UseTryParseWithDateTimeStyleOptions(type);
+
+            MethodCallExpression? tryParseCall;
+
+            // Should we use CultureInvariant
+            if (tryParseMethod.GetParameters().Length > 2)
+            {
+                if (useNumberStyles)
+                {
+                    tryParseCall = Expression.Call(
+                        tryParseMethod,
+                        TempSourceStringExpr,
+                        Expression.Constant(SetRightNumberStyles(type)),
+                        Expression.Constant(CultureInfo.InvariantCulture),
+                        parsedValue);
+                }
+                else if (useDateTimeStyles)
+                {
+                    tryParseCall = Expression.Call(
+                        tryParseMethod,
+                        TempSourceStringExpr,
+                        Expression.Constant(CultureInfo.InvariantCulture),
+                        Expression.Constant(DateTimeStyles.None),
+                        parsedValue);
+                }
+                else
+                {
+                    tryParseCall = Expression.Call(
+                        tryParseMethod,
+                        TempSourceStringExpr,
+                        Expression.Constant(CultureInfo.InvariantCulture),
+                        parsedValue);
+                }
+            }
+            else
+            {
+                tryParseCall = Expression.Call(tryParseMethod, TempSourceStringExpr, parsedValue);
+            }
 
             // If the parameter is nullable, we need to assign the "parsedValue" local to the nullable parameter on success.
             Expression tryParseExpression = isNotNullable ?
@@ -695,6 +757,56 @@ namespace Microsoft.AspNetCore.Http
             factoryContext.AllowEmptyRequestBody = allowEmpty;
 
             return Expression.Convert(BodyValueExpr, parameterType);
+        }
+
+        private static bool UseTryParseWithNumberStyleOption(Type type)
+            => type == typeof(int) ||
+                type == typeof(double) ||
+                type == typeof(decimal) ||
+                type == typeof(float) ||
+                type == typeof(Half) ||
+                type == typeof(short) ||
+                type == typeof(long) ||
+                type == typeof(IntPtr) ||
+                type == typeof(byte) ||
+                type == typeof(sbyte) ||
+                type == typeof(ushort) ||
+                type == typeof(uint) ||
+                type == typeof(ulong) ||
+                type == typeof(BigInteger);
+
+        private static bool UseTryParseWithDateTimeStyleOptions(Type type)
+            => type == typeof(DateTime) ||
+               type == typeof(DateTimeOffset) ||
+               type == typeof(DateOnly) ||
+               type == typeof(TimeOnly);
+
+        private static NumberStyles SetRightNumberStyles(Type type)
+        {
+            if (!UseTryParseWithNumberStyleOption(type))
+            {
+                throw new InvalidOperationException("Incorrect type !");
+            }
+
+            if (type == typeof(int) || type == typeof(short) || type == typeof(IntPtr) ||
+                type == typeof(long) || type == typeof(byte) || type == typeof(sbyte) ||
+                type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong) ||
+                type == typeof(BigInteger))
+            {
+                return NumberStyles.Integer;
+            }
+
+            if (type == typeof(double) || type == typeof(float) || type == typeof(Half))
+            {
+                return NumberStyles.AllowThousands | NumberStyles.Float;
+            }
+
+            if (type == typeof(decimal))
+            {
+                return NumberStyles.Number;
+            }
+
+            return NumberStyles.None;
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
