@@ -218,7 +218,10 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (delimiterIndex > scanIndex)
                     {
-                        accumulator.Append(queryString.Substring(scanIndex, delimiterIndex - scanIndex), string.Empty);
+                        string name = queryString.Substring(scanIndex, delimiterIndex - scanIndex);
+                        accumulator.Append(
+                            Uri.UnescapeDataString(name.Replace('+', ' ')),
+                            string.Empty);
                     }
                 }
                 scanIndex = delimiterIndex + 1;

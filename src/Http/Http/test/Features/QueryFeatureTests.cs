@@ -150,5 +150,75 @@ namespace Microsoft.AspNetCore.Http.Features
 
             Assert.Empty(queryCollection);
         }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyWorks()
+        {
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?fields+%5BtodoItems%5D" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Single(queryCollection);
+            Assert.Equal("", queryCollection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedValueWorks()
+        {
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?=fields+%5BtodoItems%5D" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Single(queryCollection);
+            Assert.Equal("fields [todoItems]", queryCollection[""].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEmptyValueWorks()
+        {
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?fields+%5BtodoItems%5D=" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Single(queryCollection);
+            Assert.Equal("", queryCollection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEncodedValueWorks()
+        {
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?fields+%5BtodoItems%5D=%5B+1+%5D" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Single(queryCollection);
+            Assert.Equal("[ 1 ]", queryCollection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEncodedValuesWorks()
+        {
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?fields+%5BtodoItems%5D=%5B+1+%5D&fields+%5BtodoItems%5D=%5B+2+%5D" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Single(queryCollection);
+            Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, queryCollection["fields [todoItems]"]);
+        }
     }
 }
