@@ -33,16 +33,28 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 string fileName;
                 var now = DateTimeOffset.Now;
-                var options = new FileLoggerOptions()
+                var options = new W3CLoggerOptions()
                 {
                     LogDirectory = path
                 };
-                using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<FileLoggerOptions>(options)))
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
                 {
-                    logger.EnqueueMessage(new LogMessage(now, "Message one"));
+                    logger.EnqueueMessage("Message one");
                     fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName).DefaultTimeout();
+                    try
+                    {
+                        await WaitForFile(fileName).DefaultTimeout();
+                    }
+                    catch
+                    {
+                        // Midnight could have struck between taking the DateTime & writing the log
+                        if (!File.Exists(fileName))
+                        {
+                            var tomorrow = now.AddDays(1);
+                            fileName = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
+                        }
+                    }
                 }
                 Assert.True(File.Exists(fileName));
 
@@ -64,19 +76,37 @@ namespace Microsoft.AspNetCore.HttpLogging
                 string fileName1;
                 string fileName2;
                 var now = DateTimeOffset.Now;
-                var options = new FileLoggerOptions()
+                var options = new W3CLoggerOptions()
                 {
                     LogDirectory = path,
                     FileSizeLimit = 5
                 };
-                using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<FileLoggerOptions>(options)))
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
                 {
-                    logger.EnqueueMessage(new LogMessage(now, "Message one"));
-                    logger.EnqueueMessage(new LogMessage(now, "Message two"));
+                    logger.EnqueueMessage("Message one");
+                    logger.EnqueueMessage("Message two");
                     fileName1 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}01.txt");
                     fileName2 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}02.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName2).DefaultTimeout();
+                    try
+                    {
+                        await WaitForFile(fileName2).DefaultTimeout();
+                    }
+                    catch
+                    {
+                        // Midnight could have struck between taking the DateTime & writing the log
+                        // It also could have struck between writing file 1 & file 2
+                        var tomorrow = now.AddDays(1);
+                        if (!File.Exists(fileName1))
+                        {
+                            fileName1 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
+                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}02.txt");
+                        }
+                        else if (!File.Exists(fileName2))
+                        {
+                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}01.txt");
+                        }
+                    }
                 }
                 Assert.True(File.Exists(fileName1));
                 Assert.True(File.Exists(fileName2));
@@ -100,24 +130,33 @@ namespace Microsoft.AspNetCore.HttpLogging
             try
             {
                 string fileName;
-                var timestamp = new DateTimeOffset(2020, 01, 02, 03, 04, 05, TimeSpan.Zero);
-                var options = new FileLoggerOptions()
+                var now = DateTimeOffset.Now;
+                var tomorrow = now.AddDays(1);
+                var options = new W3CLoggerOptions()
                 {
                     LogDirectory = path,
-                    RetainedFileCountLimit = 3
+                    RetainedFileCountLimit = 3,
+                    FileSizeLimit = 5
                 };
-                using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<FileLoggerOptions>(options)))
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
                 {
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i <= 10; i++)
                     {
-                        timestamp = timestamp.AddDays(1);
-                        logger.EnqueueMessage(new LogMessage(timestamp, "Message"));
+                        logger.EnqueueMessage("Message");
                     }
-                    fileName = Path.Combine(path, $"{options.FileName}{timestamp.Year:0000}{timestamp.Month:00}{timestamp.Day:00}01.txt");
+                    fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}10.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName).DefaultTimeout();
+                    try
+                    {
+                        await WaitForFile(fileName).DefaultTimeout();
+                    }
+                    catch
+                    {
+                        // Midnight could have struck between taking the DateTime & writing the log.
+                        // It also could have struck any time after writing the first file.
+                        // So we keep going even if waiting timed out, in case we're wrong about the assumed file name
+                    }
                 }
-                Assert.True(File.Exists(fileName));
 
                 var actualFiles = new DirectoryInfo(path)
                     .GetFiles()
@@ -126,12 +165,13 @@ namespace Microsoft.AspNetCore.HttpLogging
                     .ToArray();
 
                 Assert.Equal(4, actualFiles.Length);
-                Assert.Equal(new[] {
-                "log-2020011001.txt",
-                "log-2020011101.txt",
-                "log-2020011201.txt",
-                "randomFile.txt"
-            }, actualFiles);
+                Assert.Equal("randomFile.txt", actualFiles[0]);
+                for (int i = 1; i < 4; i++)
+                {
+                    // File name will either start with today's date or tomorrow's date (if midnight struck during the execution of the test)
+                    Assert.True((actualFiles[i].StartsWith($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}", StringComparison.InvariantCulture)) ||
+                        (actualFiles[i].StartsWith($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}", StringComparison.InvariantCulture)));
+                }
             }
             finally
             {

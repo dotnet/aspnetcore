@@ -10,16 +10,12 @@ namespace Microsoft.AspNetCore.HttpLogging
     internal class TestW3CLogger : W3CLogger
     {
         public TestW3CLoggerProcessor Processor;
-        private readonly int _numWrites;
 
-        public TestW3CLogger(IOptionsMonitor<W3CLoggerOptions> options, int numWrites) : base(options)
-        {
-            _numWrites = numWrites;
-        }
+        public TestW3CLogger(IOptionsMonitor<W3CLoggerOptions> options) : base(options) { }
 
-        public async Task WaitForWrites()
+        public async Task WaitForWrites(int numWrites)
         {
-            while (Processor.WriteCount != _numWrites)
+            while (Processor.WriteCount != numWrites)
             {
                 await Task.Delay(100);
             }

@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string GetFieldsDirective()
         {
-            var sb = new ValueStringBuilder();
+            // 152 is the length of the default fields directive
+            var sb = new ValueStringBuilder(152);
             sb.Append("#Fields:");
             if (_loggingFields.HasFlag(W3CLoggingFields.Date))
             {

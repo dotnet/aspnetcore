@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly RequestDelegate _next;
         private readonly W3CLogger _w3cLogger;
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
+        private string? _serverName;
 
         /// <summary>
         /// Initializes <see cref="W3CLoggingMiddleware" />.
@@ -30,7 +31,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <param name="next"></param>
         /// <param name="options"></param>
         /// <param name="environment"></param>
-        public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment)
+        /// <param name="w3cLogger"></param>
+        public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, W3CLogger w3cLogger)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -44,19 +46,20 @@ namespace Microsoft.AspNetCore.HttpLogging
                 throw new ArgumentNullException(nameof(environment));
             }
 
+            if (w3cLogger == null)
+            {
+                throw new ArgumentNullException(nameof(w3cLogger));
+            }
+
             _options = options;
+            _w3cLogger = w3cLogger;
+
             if (string.IsNullOrEmpty(_options.CurrentValue.LogDirectory))
             {
                 // Logs are written in the app directory in a folder named 'logs/{UTC Timestamp}'
                 _options.CurrentValue.LogDirectory = Path.Join(environment.ContentRootPath, "logs", DateTimeOffset.Now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
+                _w3cLogger.OnOptionsChange();
             }
-            _w3cLogger = InitializeLogger(_options);
-        }
-
-        // Virtual for testing
-        internal virtual W3CLogger InitializeLogger(IOptionsMonitor<W3CLoggerOptions> options)
-        {
-            return new W3CLogger(options);
         }
 
         /// <summary>
@@ -163,7 +166,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.UserName))
             {
-                AddToList(w3cList, nameof(HttpContext.User), context.User is null ? "" : (context.User.Identity is null ? "" : (context.User.Identity.Name is null ? "" : context.User.Identity.Name)));
+                AddToList(w3cList, nameof(HttpContext.User), context?.User?.Identity?.Name ?? "");
             }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
@@ -180,7 +183,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     if (headers.TryGetValue(HeaderNames.Server, out var server))
                     {
-                        AddToList(w3cList, HeaderNames.Server, server.ToString());
+                        _serverName ??= Environment.MachineName;
+                        AddToList(w3cList, HeaderNames.Server, _serverName);
                     }
                 }
             }

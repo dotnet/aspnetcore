@@ -23,24 +23,36 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public void Ctor_ThrowsExceptionsWhenNullArgs()
         {
+            var options = CreateOptionsAccessor();
             Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(
                 null,
-                CreateOptionsAccessor(),
-                new HostingEnvironment()));
+                options,
+                new HostingEnvironment(),
+                new TestW3CLogger(options)));
 
             Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
-            {
-                return Task.CompletedTask;
-            },
-            null,
-            new HostingEnvironment()));
+                {
+                    return Task.CompletedTask;
+                },
+                null,
+                new HostingEnvironment(),
+                new TestW3CLogger(options)));
 
             Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
-            {
-                return Task.CompletedTask;
-            },
-            CreateOptionsAccessor(),
-            null));
+                {
+                    return Task.CompletedTask;
+                },
+                options,
+                null,
+                new TestW3CLogger(options)));
+
+            Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
+                {
+                    return Task.CompletedTask;
+                },
+                options,
+                new HostingEnvironment(),
+                null));
         }
 
         [Fact]
@@ -56,7 +68,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                new HostingEnvironment());
+                new HostingEnvironment(),
+                new TestW3CLogger(options));
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -74,7 +87,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task DefaultDoesNotLogOptionalFields()
         {
             var options = CreateOptionsAccessor();
-            options.CurrentValue.NumWrites = 4;
 
             var middleware = new TestW3CLoggingMiddleware(
                 c =>
@@ -83,7 +95,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 },
                 options,
-                new HostingEnvironment());
+                new HostingEnvironment(),
+                new TestW3CLogger(options));
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -92,8 +105,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             var now = DateTime.Now;
             await middleware.Invoke(httpContext);
-            var ex = await Record.ExceptionAsync(async () => await middleware.Logger.WaitForWrites().DefaultTimeout());
-            Assert.Null(ex);
+            await middleware.Logger.WaitForWrites(4).DefaultTimeout();
 
             var lines = middleware.Logger.Processor.Lines;
             Assert.Equal("#Version: 1.0", lines[0]);
@@ -107,10 +119,10 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.DoesNotContain(lines[2], "Snickerdoodle");
         }
 
-        private IOptionsMonitor<TestW3CLoggerOptions> CreateOptionsAccessor()
+        private IOptionsMonitor<W3CLoggerOptions> CreateOptionsAccessor()
         {
-            var options = new TestW3CLoggerOptions();
-            var optionsAccessor = Mock.Of<IOptionsMonitor<TestW3CLoggerOptions>>(o => o.CurrentValue == options);
+            var options = new W3CLoggerOptions();
+            var optionsAccessor = Mock.Of<IOptionsMonitor<W3CLoggerOptions>>(o => o.CurrentValue == options);
             return optionsAccessor;
         }
     }

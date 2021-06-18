@@ -146,28 +146,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         Request = UriStem | UriQuery | ProtocolVersion | Method | RequestHeaders,
 
         /// <summary>
-        /// Flag for logging all default fields.
+        /// Flag for logging all possible fields.
         /// Includes <see cref="Date"/>, <see cref="Time"/>, <see cref="ClientIpAddress"/>,
         /// <see cref="ServerName"/>, <see cref="ServerIpAddress"/>, <see cref="ServerPort"/>,
         /// <see cref="Method"/>, <see cref="UriStem"/>, <see cref="UriQuery"/>,
         /// <see cref="ProtocolStatus"/>, <see cref="TimeTaken"/>, <see cref="ProtocolVersion"/>,
-        /// <see cref="Host"/>, <see cref="UserAgent"/>, and <see cref="Referer"/>.
+        /// <see cref="Host"/>, <see cref="UserAgent"/>, <see cref="Referer"/>,
+        /// <see cref="UserName"/>, and <see cref="Cookie"/>.
         /// </summary>
-        Default = Date | Time | ServerName | Method | UriStem | UriQuery | ProtocolStatus |
-            TimeTaken | ProtocolVersion | Host | UserAgent | Referer | ConnectionInfoFields,
-
-        /// <summary>
-        /// Flag for logging all optional fields.
-        /// Includes <see cref="UserName"/> and <see cref="Cookie"/>.
-        /// These fields contain information which could expose
-        /// identifiable information about the client user.
-        /// </summary>
-        Optional = UserName | Cookie,
-
-        /// <summary>
-        /// Flag for logging all possible fields.
-        /// /// Includes <see cref="Default"/> and <see cref="Optional"/>.
-        /// </summary>
-        All = Default | Optional
+        All = Date | Time | ServerName | Method | UriStem | UriQuery | ProtocolStatus |
+            TimeTaken | ProtocolVersion | Host | UserAgent | Referer | ConnectionInfoFields |
+            UserName | Cookie
     }
 }

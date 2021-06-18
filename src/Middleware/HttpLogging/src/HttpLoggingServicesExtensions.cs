@@ -50,6 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.Configure(configureOptions);
+            services.AddSingleton<W3CLogger>();
             return services;
         }
     }

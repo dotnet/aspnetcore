@@ -31,14 +31,13 @@ namespace Microsoft.AspNetCore.HttpLogging
             };
             try
             {
-                using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), 4))
+                await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
                 {
                     var state = new List<KeyValuePair<string, string>>();
                     state.Add(new KeyValuePair<string, string>(nameof(DateTime), _timestampOne.ToString(CultureInfo.InvariantCulture)));
 
                     logger.Log(state);
-                    var ex = await Record.ExceptionAsync(async () => await logger.WaitForWrites().DefaultTimeout());
-                    Assert.Null(ex);
+                    await logger.WaitForWrites(4).DefaultTimeout();
 
                     var lines = logger.Processor.Lines;
                     Assert.Equal("#Version: 1.0", lines[0]);
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             };
             try
             {
-                using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), 4))
+                await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
                 {
                     var state = new List<KeyValuePair<string, string>>();
                     state.Add(new KeyValuePair<string, string>(nameof(HttpRequest.QueryString), null));
@@ -81,8 +80,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     state.Add(new KeyValuePair<string, string>(nameof(HttpResponse.StatusCode), null));
 
                     logger.Log(state);
-                    var ex = await Record.ExceptionAsync(async () => await logger.WaitForWrites().DefaultTimeout());
-                    Assert.Null(ex);
+                    await logger.WaitForWrites(4).DefaultTimeout();
 
                     var lines = logger.Processor.Lines;
                     Assert.Equal("#Version: 1.0", lines[0]);

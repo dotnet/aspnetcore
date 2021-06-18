@@ -11,17 +11,18 @@ using Microsoft.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal class W3CLogger : IDisposable
+    internal class W3CLogger : IAsyncDisposable
     {
         private readonly W3CLoggerProcessor _messageQueue;
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
-        // Subtract 8 to account for flags that represent groups (e.g. "RequestHeaders", "All", "None")
-        private readonly int _fieldsLength = Enum.GetValues(typeof(W3CLoggingFields)).Length - 8;
+        // Subtract 8 to account for flags that represent groups (e.g. "RequestHeaders", "None")
+        private readonly int _fieldsLength = Enum.GetValues(typeof(W3CLoggingFields)).Length - 6;
 
-        internal W3CLogger(IOptionsMonitor<W3CLoggerOptions> options)
+        public W3CLogger(IOptionsMonitor<W3CLoggerOptions> options)
         {
             _options = options;
             _messageQueue = InitializeMessageQueue(_options);
@@ -33,14 +34,19 @@ namespace Microsoft.AspNetCore.HttpLogging
             return new W3CLoggerProcessor(options);
         }
 
-        public void Dispose() => _messageQueue.Dispose();
+        internal void OnOptionsChange()
+        {
+            _messageQueue.OnOptionsChange();
+        }
+
+        public async ValueTask DisposeAsync() => await _messageQueue.DisposeAsync();
 
         public void Log(IReadOnlyCollection<KeyValuePair<string, string?>> state)
         {
             _messageQueue.EnqueueMessage(Format(state));
         }
 
-        private LogMessage Format(IEnumerable<KeyValuePair<string, string?>> state)
+        private string Format(IEnumerable<KeyValuePair<string, string?>> state)
         {
             var elements = new string[_fieldsLength];
             foreach(var kvp in state)
@@ -105,7 +111,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                         break;
                 }
             }
-            var sb = new ValueStringBuilder();
+            // 200 is around the length of an average cookie-less entry
+            var sb = new ValueStringBuilder(200);
             var firstElement = true;
             for (var i = 0; i < elements.Length; i++)
             {
@@ -130,7 +137,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 }
             }
-            return new LogMessage(DateTimeOffset.Now, sb.ToString());
+            return sb.ToString();
         }
 
         // Modified from https://www.codeproject.com/Articles/1014073/Fastest-method-to-remove-all-whitespace-from-Strin
