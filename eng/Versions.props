@@ -106,10 +106,12 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-preview.7.21317.1</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>6.0.0-preview.7.21317.1</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0-preview.7.21317.1</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftWin32SystemEventsVersion>6.0.0-preview.7.21317.1</MicrosoftWin32SystemEventsVersion>
     <MicrosoftAspNetCoreInternalTransportVersion>6.0.0-preview.7.21317.1</MicrosoftAspNetCoreInternalTransportVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-preview.7.21317.1</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0-preview.7.21317.1</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>6.0.0-preview.7.21317.1</SystemDirectoryServicesProtocolsVersion>
+    <SystemDrawingCommonVersion>6.0.0-preview.7.21317.1</SystemDrawingCommonVersion>
     <SystemIOPipelinesVersion>6.0.0-preview.7.21317.1</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>6.0.0-preview.7.21317.1</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>6.0.0-preview.7.21317.1</SystemNetHttpWinHttpHandlerVersion>
@@ -123,6 +125,7 @@
     <SystemTextEncodingsWebVersion>6.0.0-preview.7.21317.1</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>6.0.0-preview.7.21317.1</SystemTextJsonVersion>
     <SystemThreadingChannelsVersion>6.0.0-preview.7.21317.1</SystemThreadingChannelsVersion>
+    <SystemWindowsExtensionsVersion>6.0.0-preview.7.21317.1</SystemWindowsExtensionsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>6.0.0-preview.7.21317.1</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
