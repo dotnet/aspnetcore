@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)RequestDelegateFactoryUtilities.cs" />
+    <Compile Include="$(SharedSourceRoot)TryParseMethodCache.cs" />
   </ItemGroup>
 
   <ItemGroup>

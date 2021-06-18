@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)RequestDelegateFactoryUtilities.cs" />
+    <Compile Include="$(SharedSourceRoot)TryParseMethodCache.cs" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" />
   </ItemGroup>
 

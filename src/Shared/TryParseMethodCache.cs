@@ -3,17 +3,17 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http
 {
-    // REVIEW: Better name?
-    internal static class RequestDelegateFactoryUtilities
+    internal static class TryParseMethodCache
     {
         private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-        private static readonly ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
+        private static readonly ConcurrentDictionary<Type, MethodInfo?> Cache = new();
 
         public static bool HasTryParseMethod(ParameterInfo parameter)
         {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Http
                 return null;
             }
 
-            return TryParseMethodCache.GetOrAdd(type, Finder);
+            return Cache.GetOrAdd(type, Finder);
         }
 
         private static MethodInfo GetEnumTryParseMethod()
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Http
 
             foreach (var method in staticEnumMethods)
             {
-                if (!method.IsGenericMethod || method.Name != "TryParse" || method.ReturnType != typeof(bool))
+                if (!method.IsGenericMethod || method.Name != nameof(Enum.TryParse) || method.ReturnType != typeof(bool))
                 {
                     continue;
                 }
@@ -78,7 +78,8 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) does not exist!!?!?");
+            Debug.Fail("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) not found.");
+            throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) not found.");
         }
     }
 }

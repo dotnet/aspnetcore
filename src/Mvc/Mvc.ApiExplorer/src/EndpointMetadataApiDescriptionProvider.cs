@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
 
-        // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason :D
+        // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
 
         public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource, IHostEnvironment environment)
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             else
             {
                 // If the declaring type is null or compiler-generated (e.g. lambdas),
-                // group the methods under a "Map" controller.
+                // group the methods under the application name.
                 controllerName = _environment.ApplicationName;
             }
 
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 return (BindingSource.Services, parameter.Name ?? string.Empty);
             }
-            else if (parameter.ParameterType == typeof(string) || RequestDelegateFactoryUtilities.HasTryParseMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
                 // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
                 if (parameter.Name is { } name && pattern.GetParameter(name) is not null)

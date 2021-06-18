@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Configures ApiExplorer using <see cref="Endpoint.Metadata"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        public static void AddEndpointsApiExplorer(this IServiceCollection services)
+        public static IServiceCollection AddEndpointsApiExplorer(this IServiceCollection services)
         {
             // Try to add default services in case MVC services aren't added.
             services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
@@ -25,6 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApiDescriptionProvider, EndpointMetadataApiDescriptionProvider>());
+
+            return services;
         }
     }
 }

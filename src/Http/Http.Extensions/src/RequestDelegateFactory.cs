@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return RequestAbortedExpr;
             }
-            else if (parameter.ParameterType == typeof(string) || RequestDelegateFactoryUtilities.HasTryParseMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Http
             var isNotNullable = underlyingNullableType is null;
 
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
-            var tryParseMethod = RequestDelegateFactoryUtilities.FindTryParseMethod(nonNullableParameterType);
+            var tryParseMethod = TryParseMethodCache.FindTryParseMethod(nonNullableParameterType);
 
             if (tryParseMethod is null)
             {
