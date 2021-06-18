@@ -347,8 +347,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 </html>");
 
             var expected = NormalizeContent(@"
-<head cool=""beans""><option value=""1"">One</option>
-    <option selected value=""2"">Two</option></head>");
+<head cool=""beans""><option value='1'>One</option>
+    <option selected value='2'>Two</option></head>");
 
             var documentNode = Lower(document);
 

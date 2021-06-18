@@ -6674,6 +6674,9 @@ Welcome to your new app.
             // Act
             var generated = CompileToCSharp(@"
 <input onfocus='alert(""Test"");' />
+<input onfocus=""alert(""Test"");"" />
+<input onfocus=""alert('Test');"" />
+<p data-options='{direction: ""fromtop"", animation_duration: 25, direction: ""reverse""}'></p>
 ");
 
             // Assert

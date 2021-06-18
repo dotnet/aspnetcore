@@ -682,7 +682,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
+                throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
             }
 
             return ParameterPartCore(
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
+                throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
             }
 
             if (parameterPolicies == null)
@@ -761,7 +761,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
+                throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
             }
 
             if (parameterPolicies == null)

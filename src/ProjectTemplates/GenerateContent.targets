@@ -12,6 +12,10 @@
     </GeneratedContentProperties>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" AllowExplicitReference="true" PrivateAssets="All" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
   <!--
     Generates content using MSBuild variables.
   -->
@@ -47,8 +51,8 @@
       Properties="$(GeneratedContentProperties);%(GeneratedContent.AdditionalProperties)"
       OutputPath="%(GeneratedContent.OutputPath)">
 
-      <Output TaskParameter="OutputPath" ItemName="FileWrites" />
-      <Output TaskParameter="OutputPath" ItemName="Content" />
+      <Output TaskParameter="ResolvedOutputPath" ItemName="FileWrites" />
+      <Output TaskParameter="ResolvedOutputPath" ItemName="Content" />
     </GenerateFileFromTemplate>
   </Target>
 </Project>

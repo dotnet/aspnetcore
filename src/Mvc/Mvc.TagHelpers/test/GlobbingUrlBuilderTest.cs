@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             if (rootNode.Children == null || !rootNode.Children.Any())
             {
-                throw new ArgumentException(nameof(rootNode));
+                throw new ArgumentNullException(nameof(rootNode));
             }
 
             var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);

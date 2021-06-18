@@ -675,7 +675,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (dictionary == null)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException(nameof(dictionary));
                 }
 
                 _dictionary = dictionary;

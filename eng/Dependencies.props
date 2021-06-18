@@ -79,6 +79,12 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Threading.Channels" />
     <LatestPackageReference Include="System.ValueTuple" />
 
+    <!-- Runtime packages referenced only for exclusions -->
+    <LatestPackageReference Include="Microsoft.Win32.SystemEvents" />
+    <LatestPackageReference Include="System.Drawing.Common" />
+    <LatestPackageReference Include="System.Security.Permissions" />
+    <LatestPackageReference Include="System.Windows.Extensions" />
+
     <!-- Runtime packages required for crossgen -->
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" />
@@ -175,6 +181,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
     <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="Photino.NET" />
     <LatestPackageReference Include="PlaywrightSharp" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />

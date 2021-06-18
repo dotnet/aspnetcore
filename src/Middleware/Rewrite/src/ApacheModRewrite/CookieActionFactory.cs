@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
         {
             if (string.IsNullOrEmpty(flagValue))
             {
-                throw new ArgumentException(nameof(flagValue));
+                throw new ArgumentNullException(nameof(flagValue));
             }
 
             var i = 0;

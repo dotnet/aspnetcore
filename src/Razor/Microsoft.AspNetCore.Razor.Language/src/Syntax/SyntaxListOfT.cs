@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                         return (TNode)Node;
                     }
                 }
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
         }
 
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             }
             else
             {
-                throw new ArgumentException(nameof(nodeInList));
+                throw new ArgumentOutOfRangeException(nameof(nodeInList));
             }
         }
 

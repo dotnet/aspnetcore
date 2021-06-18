@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.Owin
                     {
                         adapter.UpstreamTask = next(environment);
                         adapter.UpstreamWentAsyncTcs.TrySetResult(0);
-                        adapter.UpstreamTask.ContinueWith(adapter.EnsureCompleted, TaskContinuationOptions.ExecuteSynchronously);
+                        adapter.UpstreamTask.ContinueWith(adapter.EnsureCompleted, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {

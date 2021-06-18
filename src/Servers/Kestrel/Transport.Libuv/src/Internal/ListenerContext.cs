@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public async ValueTask<LibuvConnection> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            while (await _acceptQueue.Reader.WaitToReadAsync())
+            while (await _acceptQueue.Reader.WaitToReadAsync(cancellationToken))
             {
                 while (_acceptQueue.Reader.TryRead(out var connection))
                 {

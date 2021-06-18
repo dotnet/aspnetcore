@@ -49,6 +49,6 @@ virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Conf
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHost(Microsoft.Extensions.Hosting.IHostBuilder! builder) -> Microsoft.Extensions.Hosting.IHost!
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHostBuilder() -> Microsoft.Extensions.Hosting.IHostBuilder?
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> Microsoft.AspNetCore.TestHost.TestServer!
-virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateWebHostBuilder() -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateWebHostBuilder() -> Microsoft.AspNetCore.Hosting.IWebHostBuilder?
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.GetTestAssemblies() -> System.Collections.Generic.IEnumerable<System.Reflection.Assembly!>!
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Services.get -> System.IServiceProvider!

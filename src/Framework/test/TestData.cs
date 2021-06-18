@@ -276,13 +276,10 @@ namespace Microsoft.AspNetCore
                 { "Microsoft.Extensions.WebEncoders", "6.0.0.0" },
                 { "Microsoft.JSInterop", "6.0.0.0" },
                 { "Microsoft.Net.Http.Headers", "6.0.0.0" },
-                { "Microsoft.Win32.Registry", "6.0.0.0" },
                 { "System.Diagnostics.EventLog", "6.0.0.0" },
                 { "System.IO.Pipelines", "6.0.0.0" },
-                { "System.Security.AccessControl", "6.0.0.0" },
                 { "System.Security.Cryptography.Cng", "6.0.0.0" },
                 { "System.Security.Cryptography.Xml", "6.0.0.0" },
-                { "System.Security.Principal.Windows", "6.0.0.0" },
             };
 
             if (!VerifyAncmBinary())

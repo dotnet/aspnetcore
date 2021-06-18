@@ -764,7 +764,7 @@ namespace Microsoft.Net.Http.Headers
                 || ((digit >= 'A') && (digit <= 'F'))
                 || ((digit >= 'a') && (digit <= 'f'))))
             {
-                throw new ArgumentException();
+                throw new ArgumentOutOfRangeException(nameof(digit));
             }
 
             var res = (digit <= '9')
@@ -778,7 +778,7 @@ namespace Microsoft.Net.Http.Headers
                 || ((next >= 'A') && (next <= 'F'))
                 || ((next >= 'a') && (next <= 'f'))))
             {
-                throw new ArgumentException();
+                throw new ArgumentOutOfRangeException(nameof(next));
             }
 
             return (byte)((res << 4) + ((next <= '9')

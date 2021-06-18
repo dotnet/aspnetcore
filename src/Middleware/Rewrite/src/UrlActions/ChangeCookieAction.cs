@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(nameof(name));
+                throw new ArgumentNullException(nameof(name));
             }
 
             Name = name;

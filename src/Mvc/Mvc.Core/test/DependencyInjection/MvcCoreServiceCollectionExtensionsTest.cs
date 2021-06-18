@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>();
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
             services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
@@ -173,10 +173,10 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>();
             services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
-            environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
+            environment = new Mock<IWebHostEnvironment>();
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
             services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>();
             var assemblyName = typeof(MvcCoreServiceCollectionExtensionsTest).Assembly.GetName();
             var applicationName = assemblyName.FullName;
             environment.SetupGet(e => e.ApplicationName).Returns(applicationName).Verifiable();

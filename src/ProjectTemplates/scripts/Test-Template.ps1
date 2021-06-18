@@ -33,9 +33,6 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
         $projContent = Get-Content -Path $proj -Raw
         $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <Import Project=""$PSScriptRoot/../test/bin/Debug/net6.0/TestTemplates/TemplateTests.props"" />
-  <ItemGroup>
-    <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorVersion)"" />
-  </ItemGroup>
   <PropertyGroup>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>")

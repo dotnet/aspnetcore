@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
 
             [HttpMethod("ATTRIBUTE")]
             void TestAction()
@@ -41,7 +42,9 @@ namespace Microsoft.AspNetCore.Builder
             var dataSource = Assert.Single(builder.DataSources);
             var endpoint = Assert.Single(dataSource.Endpoints);
 
-            var metadataArray = endpoint.Metadata.Where(m => m is not CompilerGeneratedAttribute).ToArray();
+            var metadataArray = endpoint.Metadata.OfType<IHttpMethodMetadata>().ToArray();
+
+            static string GetMethod(IHttpMethodMetadata metadata) => Assert.Single(metadata.HttpMethods);
 
             Assert.Equal(3, metadataArray.Length);
             Assert.Equal("ATTRIBUTE", GetMethod(metadataArray[0]));
@@ -49,18 +52,12 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("BUILDER", GetMethod(metadataArray[2]));
 
             Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()!.HttpMethods.Single());
-
-            string GetMethod(object metadata)
-            {
-                var httpMethodMetadata = Assert.IsAssignableFrom<IHttpMethodMetadata>(metadata);
-                return Assert.Single(httpMethodMetadata.HttpMethods);
-            }
         }
 
         [Fact]
         public void MapGet_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapGet("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -80,7 +77,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapPost_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapPost("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -100,7 +97,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapPut_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapPut("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -120,7 +117,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapDelete_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapDelete("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -146,6 +143,30 @@ namespace Microsoft.AspNetCore.Builder
             public HttpMethodAttribute(params string[] httpMethods)
             {
                 HttpMethods = httpMethods;
+            }
+        }
+
+        private class EmptyServiceProvdier : IServiceScope, IServiceProvider, IServiceScopeFactory
+        {
+            public IServiceProvider ServiceProvider => this;
+
+            public IServiceScope CreateScope()
+            {
+                return new EmptyServiceProvdier();
+            }
+
+            public void Dispose()
+            {
+
+            }
+
+            public object? GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IServiceScopeFactory))
+                {
+                    return this;
+                }
+                return null;
             }
         }
     }

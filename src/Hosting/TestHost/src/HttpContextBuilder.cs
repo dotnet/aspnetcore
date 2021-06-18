@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.TestHost
             _httpContext.Features.Set<IHttpResponseBodyFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
             _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
+            _httpContext.Features.Set<IHttpUpgradeFeature>(new UpgradeFeature());
         }
 
         public bool AllowSynchronousIO { get; set; }
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Async offload, don't let the test code block the caller.
             if (_preserveExecutionContext)
             {
-                _ = Task.Factory.StartNew(RunRequestAsync);
+                _ = Task.Factory.StartNew(RunRequestAsync, default, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
             }
             else
             {

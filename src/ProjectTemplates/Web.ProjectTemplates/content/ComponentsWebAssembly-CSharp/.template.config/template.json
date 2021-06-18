@@ -4,7 +4,8 @@
   "classifications": [
     "Web",
     "Blazor",
-    "WebAssembly"
+    "WebAssembly",
+    "PWA"
   ],
   "name": "Blazor WebAssembly App",
   "defaultName": "BlazorApp",

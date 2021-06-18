@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     do
                     {
                         Debug.Assert(charsRemaining == 0);
-                        _bytesRead = await _stream.ReadAsync(_byteBuffer.AsMemory(0, _byteBufferSize));
+                        _bytesRead = await _stream.ReadAsync(_byteBuffer.AsMemory(0, _byteBufferSize), cancellationToken);
                         if (_bytesRead == 0)  // EOF
                         {
                             _isBlocked = true;

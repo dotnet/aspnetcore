@@ -32,7 +32,7 @@ try {
   $ErrorActionPreference = 'Stop'
   Set-StrictMode -Version 2.0
   $disableConfigureToolsetImport = $true
-  $LASTEXITCODE = 0
+  $global:LASTEXITCODE = 0
 
   # `tools.ps1` checks $ci to perform some actions. Since the SDL
   # scripts don't necessarily execute in the same agent that run the

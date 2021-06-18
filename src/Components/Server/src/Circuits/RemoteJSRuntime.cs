@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             if (_maximumIncomingBytes - data.Length < _byteArraysToBeRevivedTotalBytes)
             {
-                throw new ArgumentOutOfRangeException("Exceeded the maximum byte array transfer limit for a call.");
+                throw new ArgumentOutOfRangeException(nameof(data), "Exceeded the maximum byte array transfer limit for a call.");
             }
 
             // We also store the total number of bytes seen so far to compare against

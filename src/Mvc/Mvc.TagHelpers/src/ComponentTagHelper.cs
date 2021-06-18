@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (_renderMode is null)
             {
-                throw new ArgumentException(Resources.FormatAttributeIsRequired(RenderModeName, TagHelperName), nameof(RenderMode));
+                throw new InvalidOperationException(Resources.FormatAttributeIsRequired(RenderModeName, TagHelperName));
             }
 
             var requestServices = ViewContext.HttpContext.RequestServices;

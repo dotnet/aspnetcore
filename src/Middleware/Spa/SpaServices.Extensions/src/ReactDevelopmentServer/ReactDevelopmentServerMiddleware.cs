@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             var devServerPort = spaBuilder.Options.DevServerPort;
             if (string.IsNullOrEmpty(sourcePath))
             {
-                throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
+                throw new ArgumentException("Property 'SourcePath' cannot be null or empty", nameof(spaBuilder));
             }
 
             if (string.IsNullOrEmpty(scriptName))
@@ -49,23 +49,21 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
             var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
 
-            // Everything we proxy is hardcoded to target http://localhost because:
-            // - the requests are always from the local machine (we're not accepting remote
-            //   requests that go directly to the create-react-app server)
-            // - given that, there's no reason to use https, and we couldn't even if we
-            //   wanted to, because in general the create-react-app server has no certificate
-            var targetUriTask = portTask.ContinueWith(
-                task => new UriBuilder("http", "localhost", task.Result).Uri);
-
-            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
+            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, async () =>
             {
                 // On each request, we create a separate startup task with its own timeout. That way, even if
                 // the first request times out, subsequent requests could still work.
                 var timeout = spaBuilder.Options.StartupTimeout;
-                return targetUriTask.WithTimeout(timeout,
-                    $"The create-react-app server did not start listening for requests " +
+                var port = await portTask.WithTimeout(timeout, $"The create-react-app server did not start listening for requests " +
                     $"within the timeout period of {timeout.Seconds} seconds. " +
                     $"Check the log output for error information.");
+
+                // Everything we proxy is hardcoded to target http://localhost because:
+                // - the requests are always from the local machine (we're not accepting remote
+                //   requests that go directly to the create-react-app server)
+                // - given that, there's no reason to use https, and we couldn't even if we
+                //   wanted to, because in general the create-react-app server has no certificate
+                return new UriBuilder("http", "localhost", port).Uri;
             });
         }
 

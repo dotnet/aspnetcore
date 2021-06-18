@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
 
             // Assert
             Assert.Null(targetObject.SimpleObject.StringProperty);
-        }     
+        }
 
         [Fact]
         public void CopyStringProperty_ToAnotherStringProperty()
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
                 {
                     if (value == null)
                     {
-                        throw new ArgumentNullException();
+                        throw new ArgumentNullException(nameof(value));
                     }
 
                     stringProperty = value;

@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -36,7 +34,6 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
         private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
-        private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
         private static readonly MethodInfo LogParameterBindingFailureMethod = GetMethodInfo<Action<HttpContext, string, string, string>>((httpContext, parameterType, parameterName, sourceValue) =>
             Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue));
 
@@ -58,14 +55,13 @@ namespace Microsoft.AspNetCore.Http
 
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
 
-        private static readonly ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
-
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
         /// </summary>
         /// <param name="action">A request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> instance used to detect which parameters are services.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
-        public static RequestDelegate Create(Delegate action)
+        public static RequestDelegate Create(Delegate action, IServiceProvider? serviceProvider)
         {
             if (action is null)
             {
@@ -78,7 +74,7 @@ namespace Microsoft.AspNetCore.Http
                 null => null,
             };
 
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, targetExpression);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, serviceProvider, targetExpression);
 
             return httpContext =>
             {
@@ -90,15 +86,16 @@ namespace Microsoft.AspNetCore.Http
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
         /// </summary>
         /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> instance used to detect which parameters are services.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
-        public static RequestDelegate Create(MethodInfo methodInfo)
+        public static RequestDelegate Create(MethodInfo methodInfo, IServiceProvider? serviceProvider)
         {
             if (methodInfo is null)
             {
                 throw new ArgumentNullException(nameof(methodInfo));
             }
 
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression: null);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, serviceProvider, targetExpression: null);
 
             return httpContext =>
             {
@@ -110,9 +107,10 @@ namespace Microsoft.AspNetCore.Http
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
         /// </summary>
         /// <param name="methodInfo">A request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> instance used to detect which parameters are services.</param>
         /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
-        public static RequestDelegate Create(MethodInfo methodInfo, Func<HttpContext, object> targetFactory)
+        public static RequestDelegate Create(MethodInfo methodInfo, IServiceProvider? serviceProvider, Func<HttpContext, object> targetFactory)
         {
             if (methodInfo is null)
             {
@@ -130,7 +128,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, serviceProvider, targetExpression);
 
             return httpContext =>
             {
@@ -138,7 +136,7 @@ namespace Microsoft.AspNetCore.Http
             };
         }
 
-        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, IServiceProvider? serviceProvider, Expression? targetExpression)
         {
             // Non void return type
 
@@ -156,7 +154,10 @@ namespace Microsoft.AspNetCore.Http
             //     return default;
             // }
 
-            var factoryContext = new FactoryContext();
+            var factoryContext = new FactoryContext()
+            {
+                ServiceProvider = serviceProvider
+            };
 
             var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (parameter.Name is null)
             {
-                throw new InvalidOperationException("A parameter does not have a name! Was it genererated? All parameters must be named.");
+                throw new InvalidOperationException("A parameter does not have a name! Was it generated? All parameters must be named.");
             }
 
             var parameterCustomAttributes = parameter.GetCustomAttributes();
@@ -226,7 +227,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return RequestAbortedExpr;
             }
-            else if (parameter.ParameterType == typeof(string) || HasTryParseMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
@@ -236,6 +237,15 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
+                if (factoryContext.ServiceProvider?.GetService<IServiceProviderIsService>() is IServiceProviderIsService serviceProviderIsService)
+                {
+                    // If the parameter resolves as a service then get it from services
+                    if (serviceProviderIsService.IsService(parameter.ParameterType))
+                    {
+                        return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+                    }
+                }
+
                 return BindParameterFromBody(parameter.ParameterType, allowEmpty: false, factoryContext);
             }
         }
@@ -612,7 +622,7 @@ namespace Microsoft.AspNetCore.Http
             var isNotNullable = underlyingNullableType is null;
 
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
-            var tryParseMethod = FindTryParseMethod(nonNullableParameterType);
+            var tryParseMethod = TryParseMethodCache.FindTryParseMethod(nonNullableParameterType);
 
             if (tryParseMethod is null)
             {
@@ -931,6 +941,7 @@ namespace Microsoft.AspNetCore.Http
         {
             public Type? JsonRequestBodyType { get; set; }
             public bool AllowEmptyRequestBody { get; set; }
+            public IServiceProvider? ServiceProvider { get; init; }
 
             public bool UsingTempSourceString { get; set; }
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();
