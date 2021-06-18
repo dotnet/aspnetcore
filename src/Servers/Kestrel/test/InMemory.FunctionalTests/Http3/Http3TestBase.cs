@@ -557,7 +557,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public bool Disposed => _testStreamContext.Disposed;
 
             private readonly byte[] _headerEncodingBuffer = new byte[64 * 1024];
-            private QPackEncoder _qpackEncoder = new QPackEncoder();
             private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -579,7 +578,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
-                var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
+                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, out var length);
                 Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
