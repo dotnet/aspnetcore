@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
-        private Func<string, Encoding?> _responseHeaderEncodingSelector = _ => Encoding.UTF8; // DefaultHeaderEncodingSelector;
+        private Func<string, Encoding?> _responseHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
