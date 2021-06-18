@@ -26,8 +26,6 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="Microsoft.Win32.Registry" />
-    <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
 </Project>
