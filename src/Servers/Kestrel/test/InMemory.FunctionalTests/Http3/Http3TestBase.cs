@@ -583,10 +583,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public async Task SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
             {
+                var headersTotalSize = 0;
+
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
-                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, out var length);
+                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, ref headersTotalSize, out var length);
                 Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
@@ -716,7 +718,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     payload = payload.Slice(consumed);
 
                     var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out _);
-                    if (id == -1)
+                    if (value == -1)
                     {
                         break;
                     }

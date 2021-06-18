@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 payload = payload.Slice(consumed);
 
                 var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out _);
-                if (id == -1)
+                if (value == -1)
                 {
                     break;
                 }
