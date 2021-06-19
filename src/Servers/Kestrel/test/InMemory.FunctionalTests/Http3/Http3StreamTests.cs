@@ -2442,19 +2442,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(Internal.Http3.Http3SettingType.MaxFieldSectionSize, maxFieldSetting.Key);
             Assert.Equal(100, maxFieldSetting.Value);
+
+            var requestStream = await CreateRequestStream().DefaultTimeout();
+            await requestStream.SendHeadersAsync(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            }, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, "The encoded HTTP headers length exceeds the limit specified by the peer of 100 bytes.");
         }
-        
+
         [Fact]
         public async Task PostRequest_ServerReadsPartialAndFinishes_SendsBodyWithEndStream()
         {
             var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            };
+
             var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
             {
                 var buffer = new byte[1024];
@@ -2468,7 +2475,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     }
 
                     await context.Response.Body.WriteAsync(buffer.AsMemory(0, 100));
-            var requestStream = await CreateRequestStream().DefaultTimeout();
                     await clientTcs.Task.DefaultTimeout();
                     appTcs.SetResult(0);
                 }
@@ -2477,19 +2483,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     appTcs.SetException(ex);
                 }
             });
-            await requestStream.SendHeadersAsync(new[]
+
             var sourceData = new byte[1024];
             for (var i = 0; i < sourceData.Length; i++)
             {
                 sourceData[i] = (byte)(i % byte.MaxValue);
             }
+
+            await requestStream.SendHeadersAsync(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            });
+
             await requestStream.SendDataAsync(sourceData);
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
             var decodedHeaders = await requestStream.ExpectHeadersAsync();
             Assert.Equal(2, decodedHeaders.Count);
             Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-            }, endStream: true);
+
             var data = await requestStream.ExpectDataAsync();
 
             Assert.Equal(sourceData.AsMemory(0, 100).ToArray(), data.ToArray());
@@ -2504,6 +2516,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await Task.Delay(1000);
 
             // Logged without an exception.
+            Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
         }
     }
 }
