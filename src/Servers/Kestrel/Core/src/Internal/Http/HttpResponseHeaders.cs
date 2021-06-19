@@ -45,13 +45,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (extraHeaders != null && extraHeaders.Count > 0)
             {
                 // Only reserve stack space for the enumartors if there are extra headers
-                CopyExtraHeaders(ref buffer, extraHeaders);
+                CopyExtraHeaders(ref buffer, extraHeaders, EncodingSelector);
             }
 
-            static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers)
+            static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers,
+                Func<string, Encoding?> encodingSelector)
             {
+                if (ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
+                {
+                    foreach (var kv in headers)
+                    {
+                        foreach (var value in kv.Value)
+                        {
+                            if (value != null)
+                            {
+                                buffer.Write(CrLf);
+                                buffer.WriteAscii(kv.Key);
+                                buffer.Write(ColonSpace);
+                                buffer.WriteAscii(value);
+                            }
+                        }
+                    }
+                    return;
+                }
+
                 foreach (var kv in headers)
                 {
+                    var encoding = encodingSelector(kv.Key);
                     foreach (var value in kv.Value)
                     {
                         if (value != null)
@@ -59,7 +79,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             buffer.Write(CrLf);
                             buffer.WriteAscii(kv.Key);
                             buffer.Write(ColonSpace);
-                            buffer.WriteAscii(value);
+
+                            if (encoding is null)
+                            {
+                                buffer.WriteAscii(value);
+                            }
+                            else
+                            {
+                                buffer.Write(encoding.GetBytes(value)); // TODO non-allocating
+                            }
                         }
                     }
                 }
