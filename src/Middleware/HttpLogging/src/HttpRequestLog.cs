@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             if (_cachedToString == null)
             {
-                var builder = new ValueStringBuilder();
+                var builder = new ValueStringBuilder(2 * 1024);
                 var count = _keyValues.Count;
                 builder.Append("Request:");
                 builder.Append(Environment.NewLine);
