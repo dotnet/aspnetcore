@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components
                     var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
                     if (parameterType == null)
                     {
-                        throw new InvalidOperationException($"The parameter '{definition.Name} with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
+                        throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
                     }
                     try
                     {

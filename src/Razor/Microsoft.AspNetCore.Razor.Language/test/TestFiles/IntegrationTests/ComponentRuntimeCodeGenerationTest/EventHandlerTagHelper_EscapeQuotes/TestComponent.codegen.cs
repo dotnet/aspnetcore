@@ -13,7 +13,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.AddMarkupContent(0, "<input onfocus=\"alert(\"Test\");\">");
+            __builder.AddMarkupContent(0, "<input onfocus=\'alert(\"Test\");\'>\r\n<input onfocus=\"alert(\" Test\");\">\r\n<input onfocus=\"alert(\'Test\');\">\r\n<p data-options=\'{direction: \"fromtop\", animation_duration: 25, direction: \"reverse\"}\'></p>");
         }
         #pragma warning restore 1998
     }

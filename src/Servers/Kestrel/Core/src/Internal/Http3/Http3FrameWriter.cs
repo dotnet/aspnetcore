@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     internal class Http3FrameWriter
     {
         private readonly object _writeLock = new object();
-        private readonly QPackEncoder _qpackEncoder = new QPackEncoder();
 
+        private IEnumerator<KeyValuePair<string, string>>? _headersEnumerator;
         private readonly PipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
@@ -268,9 +268,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
+                    _headersEnumerator = EnumerateHeaders(headers).GetEnumerator();
+
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _qpackEncoder.BeginEncode(EnumerateHeaders(headers), buffer, out var payloadLength);
+                    var done = QPackHeaderWriter.BeginEncode(_headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException)
@@ -318,9 +320,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
+                    _headersEnumerator = EnumerateHeaders(headers).GetEnumerator();
+
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
+                    var done = QPackHeaderWriter.BeginEncode(statusCode, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException hex)
@@ -342,7 +346,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             while (!done)
             {
-                done = _qpackEncoder.Encode(buffer, out payloadLength);
+                done = QPackHeaderWriter.Encode(_headersEnumerator!, buffer, out payloadLength);
                 _outgoingFrame.Length = payloadLength;
 
                 WriteHeaderUnsynchronized();

@@ -26,7 +26,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
-    internal delegate ValueTask<SslServerAuthenticationOptions> HttpsOptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken);
+    internal delegate ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> HttpsOptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken);
 
     internal class HttpsConnectionMiddleware
     {
@@ -148,6 +148,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var sslStream = sslDuplexPipe.Stream;
 
             var feature = new Core.Internal.TlsConnectionFeature(sslStream);
+            // Set the mode if options were used. If the callback is used it will set the mode later.
+            feature.ClientCertificateMode = _options?.ClientCertificateMode ?? ClientCertificateMode.NoCertificate;
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
@@ -321,7 +323,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 ServerCertificate = _serverCertificate,
                 ServerCertificateContext = _serverCertificateContext,
                 ServerCertificateSelectionCallback = selector,
-                ClientCertificateRequired = _options.ClientCertificateMode != ClientCertificateMode.NoCertificate,
+                ClientCertificateRequired = _options.ClientCertificateMode == ClientCertificateMode.AllowCertificate
+                    || _options.ClientCertificateMode == ClientCertificateMode.RequireCertificate,
                 EnabledSslProtocols = _options.SslProtocols,
                 CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
             };
@@ -424,7 +427,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             feature.HostName = clientHelloInfo.ServerName;
             context.Features.Set(sslStream);
 
-            var sslOptions = await middleware._httpsOptionsCallback!(context, sslStream, clientHelloInfo, middleware._httpsOptionsCallbackState!, cancellationToken);
+            var (sslOptions, clientCertificateMode) = await middleware._httpsOptionsCallback!(context, sslStream, clientHelloInfo, middleware._httpsOptionsCallbackState!, cancellationToken);
+            feature.ClientCertificateMode = clientCertificateMode;
 
             KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
 

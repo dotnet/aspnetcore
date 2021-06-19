@@ -26,8 +26,13 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Win32.Registry" />
     <Reference Include="System.Security.Cryptography.Xml" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
+      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
+      '$(MSBuildRestoreSessionId)' == '' ">
+    <Reference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(MSBuildRestoreSessionId)' == ''">
@@ -38,4 +43,7 @@
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">
+    <SuppressBaselineReference Include="Microsoft.Win32.Registry" />
+  </ItemGroup>
 </Project>
