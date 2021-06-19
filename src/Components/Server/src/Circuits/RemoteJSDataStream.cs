@@ -40,9 +40,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             long maximumIncomingBytes,
             CancellationToken cancellationToken = default)
         {
+            // Enforce minimum 1 kb SignalR message size as we budget 512 bytes
+            // overhead for the transfer, thus leaving at least 512 bytes for data
+            // transfer per chunk.
+            var chunkSize = maximumIncomingBytes > 1024 ?
+                maximumIncomingBytes - 512 :
+                throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
+
             var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
             var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, cancellationToken);
-            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsDataReference, streamId, maximumIncomingBytes);
+            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
         }
 
@@ -64,10 +71,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _pipeReaderStream = _pipe.Reader.AsStream();
         }
 
-        // Ideally we'd have IAsyncEnumerable<ReadOnlySequence<byte>> here so we can pass through the
-        // data without having to copy it into a temporary buffer in BlazorPackHubProtocolWorker. But trying
-        // this gives strange errors; sometimes the "chunk" variable below has a negative length, even though
-        // the logic never returns a corrupted item as far as I can tell.
         private async Task<bool> ReceiveData(byte[] chunk, string error)
         {
             try
@@ -94,6 +97,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 if (_bytesRead == _totalLength)
                 {
                     await _pipe.Writer.CompleteAsync();
+                    Dispose(true);
                 }
 
                 return true;

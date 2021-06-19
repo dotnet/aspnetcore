@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private readonly IJSRuntime _jsRuntime;
         private readonly ElementReference _inputFileElement;
         private readonly long _maxAllowedSize;
-        private readonly CancellationTokenSource _openRedStreamCts;
+        private readonly CancellationTokenSource _openReadStreamCts;
         private readonly Task<Stream> OpenReadStreamTask;
 
         private bool _isDisposed;
@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             _jsRuntime = jsRuntime;
             _inputFileElement = inputFileElement;
             _maxAllowedSize = maxAllowedSize;
-            _openRedStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _openReadStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            OpenReadStreamTask = OpenReadStreamAsync(options, _openRedStreamCts.Token);
+            OpenReadStreamTask = OpenReadStreamAsync(options, _openReadStreamCts.Token);
         }
 
         private async Task<Stream> OpenReadStreamAsync(RemoteBrowserFileStreamOptions options, CancellationToken cancellationToken)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 return;
             }
 
-            _openRedStreamCts.Cancel();
+            _openReadStreamCts.Cancel();
             _copyFileDataCts?.Cancel();
 
             _isDisposed = true;

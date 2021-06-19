@@ -102,6 +102,8 @@ namespace Microsoft.JSInterop.WebAssembly
                         ? throw new JSException(exception)
                         : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
                 case JSCallResultType.JSStreamReference:
+                    // WebAssembly streaming interop is not presently supported (TODO). Thus we shouldn't see
+                    // a JSCallResultType.JSStreamReference.
                 default:
                     throw new InvalidOperationException($"Invalid result type '{resultType}'.");
             }
