@@ -4,6 +4,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -66,5 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason) { }
         public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame) { }
         public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame) { }
+        public void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex) { }
+        public void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex) { }
     }
 }

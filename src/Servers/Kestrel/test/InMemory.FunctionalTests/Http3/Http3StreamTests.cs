@@ -111,16 +111,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-                new KeyValuePair<string, string>("test", new string('a', 10000))
+                new KeyValuePair<string, string>("test", new string('a', 20000))
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
 
             await requestStream.SendHeadersAsync(headers);
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"));
 
-            // TODO figure out how to test errors for request streams that would be set on the Quic Stream.
-            await requestStream.ExpectReceiveEndOfStream();
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.InternalError,
+                "The HTTP headers length exceeded the set limit of 16384 bytes.");
         }
 
         [Fact]
@@ -2413,6 +2413,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectHeadersAsync().DefaultTimeout();
             await requestStream.ExpectReceiveEndOfStream().DefaultTimeout();
+        }
+
+        [Fact]
+        public async Task HEADERS_ExceedsClientMaxFieldSectionSize_ErrorOnServer()
+        {
+            await InitializeConnectionAsync(context =>
+            {
+                context.Response.Headers["BigHeader"] = new string('!', 100);
+                return Task.CompletedTask;
+            });
+
+            var outboundcontrolStream = await CreateControlStream();
+            await outboundcontrolStream.SendSettingsAsync(new List<Http3PeerSetting>
+            {
+                new Http3PeerSetting(Internal.Http3.Http3SettingType.MaxFieldSectionSize, 100)
+            });
+
+            var maxFieldSetting = await ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+
+            Assert.Equal(Internal.Http3.Http3SettingType.MaxFieldSectionSize, maxFieldSetting.Key);
+            Assert.Equal(100, maxFieldSetting.Value);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+
+            var requestStream = await CreateRequestStream().DefaultTimeout();
+            await requestStream.SendHeadersAsync(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            }, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, "The encoded HTTP headers length exceeds the limit specified by the peer of 100 bytes.");
         }
     }
 }

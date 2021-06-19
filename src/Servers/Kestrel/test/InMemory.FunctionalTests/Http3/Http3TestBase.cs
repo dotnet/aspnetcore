@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         internal readonly ConcurrentDictionary<long, Http3StreamBase> _runningStreams = new ConcurrentDictionary<long, Http3StreamBase>();
+        internal readonly Channel<KeyValuePair<Internal.Http3.Http3SettingType, long>> _serverReceivedSettings;
         protected readonly RequestDelegate _noopApplication;
         protected readonly RequestDelegate _echoApplication;
         protected readonly RequestDelegate _readRateApplication;
@@ -95,6 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Setup(m => m.Http3ConnectionClosed(It.IsAny<string>(), It.IsAny<long>()))
                 .Callback(() => _closedStateReached.SetResult());
 
+            _serverReceivedSettings = Channel.CreateUnbounded<KeyValuePair<Internal.Http3.Http3SettingType, long>>();
 
             _noopApplication = context => Task.CompletedTask;
 
@@ -155,6 +157,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal Http3Connection Connection { get; private set; }
 
         internal Http3ControlStream OutboundControlStream { get; private set; }
+
+        internal ChannelReader<KeyValuePair<Internal.Http3.Http3SettingType, long>> ServerReceivedSettingsReader => _serverReceivedSettings.Reader;
 
         public TestMultiplexedConnectionContext MultiplexedConnectionContext { get; set; }
 
@@ -320,6 +324,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public void OnInboundControlStreamSetting(Internal.Http3.Http3SettingType type, long value)
             {
                 _inner.OnInboundControlStreamSetting(type, value);
+
+                var success = _http3TestBase._serverReceivedSettings.Writer.TryWrite(
+                    new KeyValuePair<Internal.Http3.Http3SettingType, long>(type, value));
+                Debug.Assert(success);
             }
 
             public bool OnInboundDecoderStream(Internal.Http3.Http3ControlStream stream)
@@ -575,10 +583,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public async Task SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
             {
+                var headersTotalSize = 0;
+
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
-                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, out var length);
+                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, ref headersTotalSize, out var length);
                 Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
@@ -689,10 +699,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 StreamContext = streamContext;
             }
 
-            internal async Task ExpectSettingsAsync()
+            internal async Task<Dictionary<long, long>> ExpectSettingsAsync()
             {
                 var http3WithPayload = await ReceiveFrameAsync();
                 Assert.Equal(Http3FrameType.Settings, http3WithPayload.Type);
+
+                var payload = http3WithPayload.PayloadSequence;
+
+                var settings = new Dictionary<long, long>();
+                while (true)
+                {
+                    var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out _);
+                    if (id == -1)
+                    {
+                        break;
+                    }
+
+                    payload = payload.Slice(consumed);
+
+                    var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out _);
+                    if (value == -1)
+                    {
+                        break;
+                    }
+
+                    payload = payload.Slice(consumed);
+                    settings.Add(id, value);
+                }
+
+                return settings;
             }
 
             public async Task WriteStreamIdAsync(int id)

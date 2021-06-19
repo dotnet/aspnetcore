@@ -71,7 +71,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log,
-                _streamIdFeature);
+                _streamIdFeature,
+                context.ClientPeerSettings,
+                this);
 
             // ResponseHeaders aren't set, kind of ugly that we need to reset.
             Reset();
@@ -485,8 +487,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
             }
 
-            QPackDecoder.Decode(payload, handler: this);
-            QPackDecoder.Reset();
+            try
+            {
+                QPackDecoder.Decode(payload, handler: this);
+                QPackDecoder.Reset();
+            }
+            catch (QPackDecodingException ex)
+            {
+                Log.QPackDecodingError(ConnectionId, StreamId, ex);
+                throw new Http3StreamErrorException(ex.Message, Http3ErrorCode.InternalError);
+            }
 
             switch (_requestHeaderParsingState)
             {

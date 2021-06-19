@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
 
                         _stream.ResponseTrailers.SetReadOnly();
-                        flushResult = await _frameWriter.WriteResponseTrailers(_stream.ResponseTrailers);
+                        flushResult = await _frameWriter.WriteResponseTrailersAsync(_stream.StreamId, _stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted)
                     {
