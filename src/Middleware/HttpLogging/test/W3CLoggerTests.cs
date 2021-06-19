@@ -36,10 +36,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    var state = new List<KeyValuePair<string, string>>();
-                    state.Add(new KeyValuePair<string, string>(nameof(DateTime), _timestampOne.ToString(CultureInfo.InvariantCulture)));
+                    var elements = new string[W3CLoggingMiddleware._fieldsLength];
+                    AddToList(elements, W3CLoggingFields.Date, _timestampOne.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    AddToList(elements, W3CLoggingFields.Time, _timestampOne.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
 
-                    logger.Log(state);
+                    logger.Log(elements);
                     await logger.WaitForWrites(4).DefaultTimeout();
 
                     var lines = logger.Processor.Lines;
@@ -77,12 +78,12 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    var state = new List<KeyValuePair<string, string>>();
-                    state.Add(new KeyValuePair<string, string>(nameof(HttpRequest.QueryString), null));
-                    state.Add(new KeyValuePair<string, string>(nameof(HeaderNames.Host), null));
-                    state.Add(new KeyValuePair<string, string>(nameof(HttpResponse.StatusCode), null));
+                    var elements = new string[W3CLoggingMiddleware._fieldsLength];
+                    AddToList(elements, W3CLoggingFields.UriQuery, null);
+                    AddToList(elements, W3CLoggingFields.Host, null);
+                    AddToList(elements, W3CLoggingFields.ProtocolStatus, null);
 
-                    logger.Log(state);
+                    logger.Log(elements);
                     await logger.WaitForWrites(4).DefaultTimeout();
 
                     var lines = logger.Processor.Lines;
@@ -101,6 +102,12 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 Helpers.DisposeDirectory(path);
             }
+        }
+
+        private void AddToList(string[] elements, W3CLoggingFields key, string value)
+        {
+            value ??= string.Empty;
+            elements[W3CLoggingMiddleware._fieldIndices[key]] = value;
         }
     }
 }

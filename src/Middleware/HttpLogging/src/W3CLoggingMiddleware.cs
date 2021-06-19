@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             { W3CLoggingFields.Referer, BitOperations.Log2((int)W3CLoggingFields.Referer) }
         };
 
-        private readonly int _fieldsLength = _fieldIndices.Count;
+        internal static readonly int _fieldsLength = _fieldIndices.Count;
 
         /// <summary>
         /// Initializes <see cref="W3CLoggingMiddleware" />.
