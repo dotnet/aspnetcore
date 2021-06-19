@@ -359,6 +359,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     RequestBodyPipe.Writer.Complete();
                 }
+
+                TryClose();
             }
         }
 
@@ -366,6 +368,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (Interlocked.Exchange(ref _isClosed, 1) == 0)
             {
+                // Wake ProcessRequestAsync loop so that it can exit.
+                Input.CancelPendingRead();
+
                 return true;
             }
 
