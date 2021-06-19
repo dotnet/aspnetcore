@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +25,30 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly W3CLogger _w3cLogger;
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
         private string? _serverName;
+        private bool _hasLogged;
+
+        internal static Dictionary<W3CLoggingFields, int> _fieldIndices = new Dictionary<W3CLoggingFields, int>()
+        {
+            { W3CLoggingFields.Date, BitOperations.Log2((int)W3CLoggingFields.Date) },
+            { W3CLoggingFields.Time, BitOperations.Log2((int)W3CLoggingFields.Time) },
+            { W3CLoggingFields.ClientIpAddress, BitOperations.Log2((int)W3CLoggingFields.ClientIpAddress) },
+            { W3CLoggingFields.UserName, BitOperations.Log2((int)W3CLoggingFields.UserName) },
+            { W3CLoggingFields.ServerName, BitOperations.Log2((int)W3CLoggingFields.ServerName) },
+            { W3CLoggingFields.ServerIpAddress, BitOperations.Log2((int)W3CLoggingFields.ServerIpAddress) },
+            { W3CLoggingFields.ServerPort, BitOperations.Log2((int)W3CLoggingFields.ServerPort) },
+            { W3CLoggingFields.Method, BitOperations.Log2((int)W3CLoggingFields.Method) },
+            { W3CLoggingFields.UriStem, BitOperations.Log2((int)W3CLoggingFields.UriStem) },
+            { W3CLoggingFields.UriQuery, BitOperations.Log2((int)W3CLoggingFields.UriQuery) },
+            { W3CLoggingFields.ProtocolStatus, BitOperations.Log2((int)W3CLoggingFields.ProtocolStatus) },
+            { W3CLoggingFields.TimeTaken, BitOperations.Log2((int)W3CLoggingFields.TimeTaken) },
+            { W3CLoggingFields.ProtocolVersion, BitOperations.Log2((int)W3CLoggingFields.ProtocolVersion) },
+            { W3CLoggingFields.Host, BitOperations.Log2((int)W3CLoggingFields.Host) },
+            { W3CLoggingFields.UserAgent, BitOperations.Log2((int)W3CLoggingFields.UserAgent) },
+            { W3CLoggingFields.Cookie, BitOperations.Log2((int)W3CLoggingFields.Cookie) },
+            { W3CLoggingFields.Referer, BitOperations.Log2((int)W3CLoggingFields.Referer) }
+        };
+
+        private readonly int _fieldsLength = _fieldIndices.Count;
 
         /// <summary>
         /// Initializes <see cref="W3CLoggingMiddleware" />.
@@ -58,11 +83,17 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var options = _options.CurrentValue;
 
-            var w3cList = new List<KeyValuePair<string, string?>>();
+            var elements = new string[_fieldsLength];
 
-            if (options.LoggingFields.HasFlag(W3CLoggingFields.Date) || options.LoggingFields.HasFlag(W3CLoggingFields.Time))
+            var now = DateTime.Now;
+            if (options.LoggingFields.HasFlag(W3CLoggingFields.Date))
             {
-                AddToList(w3cList, nameof(DateTime), DateTime.Now.ToString(CultureInfo.InvariantCulture));
+                AddToList(elements, W3CLoggingFields.Date, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            }
+
+            if (options.LoggingFields.HasFlag(W3CLoggingFields.Time))
+            {
+                AddToList(elements, W3CLoggingFields.Time, now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
             }
 
             if ((W3CLoggingFields.ConnectionInfoFields & options.LoggingFields) != W3CLoggingFields.None)
@@ -71,17 +102,17 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ClientIpAddress))
                 {
-                    AddToList(w3cList, nameof(ConnectionInfo.RemoteIpAddress), connectionInfo.RemoteIpAddress is null ? "" : connectionInfo.RemoteIpAddress.ToString());
+                    AddToList(elements, W3CLoggingFields.ClientIpAddress, connectionInfo.RemoteIpAddress is null ? "" : connectionInfo.RemoteIpAddress.ToString());
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerIpAddress))
                 {
-                    AddToList(w3cList, nameof(ConnectionInfo.LocalIpAddress), connectionInfo.LocalIpAddress is null ? "" : connectionInfo.LocalIpAddress.ToString());
+                    AddToList(elements, W3CLoggingFields.ServerIpAddress, connectionInfo.LocalIpAddress is null ? "" : connectionInfo.LocalIpAddress.ToString());
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerPort))
                 {
-                    AddToList(w3cList, nameof(ConnectionInfo.LocalPort), connectionInfo.LocalPort.ToString(CultureInfo.InvariantCulture));
+                    AddToList(elements, W3CLoggingFields.ServerPort, connectionInfo.LocalPort.ToString(CultureInfo.InvariantCulture));
                 }
             }
 
@@ -91,22 +122,22 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
                 {
-                    AddToList(w3cList, nameof(request.Protocol), request.Protocol);
+                    AddToList(elements, W3CLoggingFields.ProtocolVersion, request.Protocol);
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.Method))
                 {
-                    AddToList(w3cList, nameof(request.Method), request.Method);
+                    AddToList(elements, W3CLoggingFields.Method, request.Method);
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.UriStem))
                 {
-                    AddToList(w3cList, nameof(request.Path), request.Path.Value);
+                    AddToList(elements, W3CLoggingFields.UriStem, request.Path.Value);
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.UriQuery))
                 {
-                    AddToList(w3cList, nameof(request.QueryString), request.QueryString.Value);
+                    AddToList(elements, W3CLoggingFields.UriQuery, request.QueryString.Value);
                 }
 
                 if ((W3CLoggingFields.RequestHeaders & options.LoggingFields) != W3CLoggingFields.None)
@@ -117,7 +148,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Host, out var host))
                         {
-                            AddToList(w3cList, HeaderNames.Host, host.ToString());
+                            AddToList(elements, W3CLoggingFields.Host, host.ToString());
                         }
                     }
 
@@ -125,7 +156,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Referer, out var referer))
                         {
-                            AddToList(w3cList, HeaderNames.Referer, referer.ToString());
+                            AddToList(elements, W3CLoggingFields.Referer, referer.ToString());
                         }
                     }
 
@@ -133,7 +164,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.UserAgent, out var agent))
                         {
-                            AddToList(w3cList, HeaderNames.UserAgent, agent.ToString());
+                            AddToList(elements, W3CLoggingFields.UserAgent, agent.ToString());
                         }
                     }
 
@@ -141,7 +172,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
                         {
-                            AddToList(w3cList, HeaderNames.Cookie, cookie.ToString());
+                            AddToList(elements, W3CLoggingFields.Cookie, cookie.ToString());
                         }
                     }
                 }
@@ -156,22 +187,21 @@ namespace Microsoft.AspNetCore.HttpLogging
             catch
             {
                 // Write the log
-                if (w3cList.Count > 0)
+                if (_hasLogged)
                 {
-                    _w3cLogger.Log(w3cList);
+                    _w3cLogger.Log(elements);
                 }
                 throw;
             }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.UserName))
             {
-                AddToList(w3cList, nameof(HttpContext.User), context?.User?.Identity?.Name ?? "");
+                AddToList(elements, W3CLoggingFields.UserName, context?.User?.Identity?.Name ?? "");
             }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
             {
-                w3cList.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode),
-                    response.StatusCode.ToString(CultureInfo.InvariantCulture)));
+                AddToList(elements, W3CLoggingFields.ProtocolStatus, response.StatusCode.ToString(CultureInfo.InvariantCulture));
             }
 
             if ((W3CLoggingFields.ResponseHeaders & options.LoggingFields) != W3CLoggingFields.None)
@@ -183,21 +213,52 @@ namespace Microsoft.AspNetCore.HttpLogging
                     if (headers.TryGetValue(HeaderNames.Server, out var server))
                     {
                         _serverName ??= Environment.MachineName;
-                        AddToList(w3cList, HeaderNames.Server, _serverName);
+                        AddToList(elements, W3CLoggingFields.ServerName, _serverName);
                     }
                 }
             }
 
             // Write the log
-            if (w3cList.Count > 0)
+            if (_hasLogged)
             {
-                _w3cLogger.Log(w3cList);
+                _w3cLogger.Log(elements);
             }
         }
 
-        private static void AddToList(List<KeyValuePair<string, string?>> list, string key, string? value)
+        private void AddToList(string[] elements, W3CLoggingFields key, string? value)
         {
-            list.Add(new KeyValuePair<string, string?>(key, value));
+            _hasLogged = true;
+            value ??= string.Empty;
+            elements[_fieldIndices[key]] = ReplaceWhitespace(value.Trim());
+        }
+
+        // We replace whitespace with the '+' character
+        private static string ReplaceWhitespace(string entry)
+        {
+            var len = entry.Length;
+            if (len == 0)
+            {
+                return entry;
+            }
+            var src = Array.Empty<char>();
+            for (var i = 0; i < len; i++)
+            {
+                var ch = entry[i];
+                if (ch <= '\u0020')
+                {
+                    if (src.Length == 0)
+                    {
+                        src = entry.ToCharArray();
+                    }
+                    src[i] = '+';
+                }
+            }
+            // Return original string if we didn't need to modify it
+            if (src.Length == 0)
+            {
+                return entry;
+            }
+            return new string(src, 0, len);
         }
     }
 }
