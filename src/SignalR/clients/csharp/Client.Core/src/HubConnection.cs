@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
     /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
     /// </remarks>
-    public partial class HubConnection : IAsyncDisposable
+    public partial class HubConnection : IHubConnection, IAsyncDisposable
     {
         /// <summary>
         /// The default timeout which specifies how long to wait for a message before closing the connection. Default is 30 seconds.
