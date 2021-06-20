@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
 
@@ -17,11 +18,11 @@ namespace Microsoft.AspNetCore.Http
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
         private static readonly ConcurrentDictionary<Type, MethodInfo?> Cache = new();
+        private static readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, MethodCallExpression>?> MethodCallCache = new(); 
 
         public static bool HasTryParseMethod(ParameterInfo parameter)
         {
-            var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            return FindTryParseMethod(nonNullableParameterType) is not null;
+            return FindTryParseMethodCall(parameter) is not null;
         }
 
         // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
@@ -34,9 +35,9 @@ namespace Microsoft.AspNetCore.Http
                     return EnumTryParseMethod.MakeGenericMethod(type);
                 }
 
-                if (UseTryParseWithDateTimeStyleOptions(type))
+                if (TryGetDateTimeTryPareMethod(type, out var methodDateInfo))
                 {
-                    return GetDateTimeTryPareMethod(type);
+                    return methodDateInfo;
                 }
 
                 if (TryGetNumberStylesTryGetMethod(type, out var methodInfo))
@@ -79,6 +80,83 @@ namespace Microsoft.AspNetCore.Http
             return Cache.GetOrAdd(type, Finder);
         }
 
+        public static Func<ParameterExpression, Expression, MethodCallExpression>? FindTryParseMethodCall(ParameterInfo parameter)
+        {
+            static Func<ParameterExpression, Expression, MethodCallExpression>? Finder(Type type)
+            {
+                MethodInfo? methodInfo;
+
+                if (type.IsEnum)
+                {
+                    methodInfo = EnumTryParseMethod.MakeGenericMethod(type);
+                    if (methodInfo != null)
+                    {
+                        return (parameterExpression, expression) => Expression.Call(methodInfo!, parameterExpression, expression);
+                    }
+
+                    return null;
+                }
+
+                if (TryGetDateTimeTryPareMethod(type, out methodInfo))
+                {
+                    return (parameterExpression, expression) => Expression.Call(
+                        methodInfo!,
+                        parameterExpression,
+                        Expression.Constant(CultureInfo.InvariantCulture),
+                        Expression.Constant(DateTimeStyles.None),
+                        expression);
+                }
+
+                if (TryGetNumberStylesTryGetMethod(type, out methodInfo))
+                {
+                    return (parameterExpression, expression) => Expression.Call(
+                        methodInfo!,
+                        parameterExpression,
+                        Expression.Constant(SetRightNumberStyles(type)),
+                        Expression.Constant(CultureInfo.InvariantCulture),
+                        expression);
+                }
+
+                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .OrderByDescending(m => m.GetParameters().Length); ;
+
+                foreach (var method in staticMethods)
+                {
+                    if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
+                    {
+                        continue;
+                    }
+
+                    var tryParseParameters = method.GetParameters();
+
+                    if (tryParseParameters.Length == 3 &&
+                        tryParseParameters[0].ParameterType == typeof(string) &&
+                        tryParseParameters[1].ParameterType == typeof(IFormatProvider) &&
+                        tryParseParameters[2].IsOut &&
+                        tryParseParameters[2].ParameterType == type.MakeByRefType())
+                    {
+                        return (parameterExpression, expression) => Expression.Call(
+                            method,
+                            parameterExpression,
+                            Expression.Constant(CultureInfo.InvariantCulture),
+                            expression);
+                    }
+                    else if (tryParseParameters.Length == 2 &&
+                        tryParseParameters[0].ParameterType == typeof(string) &&
+                        tryParseParameters[1].IsOut &&
+                        tryParseParameters[1].ParameterType == type.MakeByRefType())
+                    {
+                        return (parameterExpression, expression) => Expression.Call(method, parameterExpression, expression);
+                    }
+                }
+
+                return null;
+            }
+
+            var underlyingType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+            return MethodCallCache.GetOrAdd(underlyingType, Finder);
+        }
+
         private static MethodInfo GetEnumTryParseMethod()
         {
             var staticEnumMethods = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -104,13 +182,13 @@ namespace Microsoft.AspNetCore.Http
             throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) not found.");
         }
 
-        private static MethodInfo GetDateTimeTryPareMethod(Type type)
+        private static bool TryGetDateTimeTryPareMethod(Type type, out MethodInfo? methodInfo)
         {
+            methodInfo = null;
             if (type != typeof(DateTime) && type != typeof(DateOnly) &&
                  type != typeof(DateTimeOffset) && type != typeof(TimeOnly))
             {
-                Debug.Fail("Parameter is not of type of DateTime, DateOnly, DateTimeOffset, TimeOnly!");
-                throw new Exception("Parameter is not of type of DateTime, DateOnly, DateTimeOffset, TimeOnly !");
+                return false;
             }
 
             var staticDateMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -128,12 +206,12 @@ namespace Microsoft.AspNetCore.Http
                     tryParseParameters[3].IsOut &&
                     tryParseParameters[3].ParameterType == type.MakeByRefType())
                 {
-                    return method;
+                    methodInfo = method;
+                    break;
                 }
             }
 
-            Debug.Fail("static bool TryParse(string?, IFormatProvider, DateTimeStyles, out DateTime result) does not exit!!?!?");
-            throw new Exception("static bool TryParse(string?, IFormatProvider, DateTimeStyles, out DateTime result) does not exit!!?!?");
+            return methodInfo != null;
         }
 
         private static bool TryGetNumberStylesTryGetMethod(Type type, out MethodInfo? method)

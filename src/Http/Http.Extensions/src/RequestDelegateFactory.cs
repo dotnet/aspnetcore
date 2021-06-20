@@ -505,9 +505,9 @@ namespace Microsoft.AspNetCore.Http
             var isNotNullable = underlyingNullableType is null;
 
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
-            var tryParseMethod = TryParseMethodCache.FindTryParseMethod(nonNullableParameterType);
+            var tryParseMethodCall = TryParseMethodCache.FindTryParseMethodCall(parameter);
 
-            if (tryParseMethod is null)
+            if (tryParseMethodCall is null)
             {
                 throw new InvalidOperationException($"No public static bool {parameter.ParameterType.Name}.TryParse(string, out {parameter.ParameterType.Name}) method found for {parameter.Name}.");
             }
@@ -562,7 +562,7 @@ namespace Microsoft.AspNetCore.Http
                 Expression.Call(LogParameterBindingFailureMethod,
                     HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, TempSourceStringExpr));
 
-            MethodCallExpression? tryParseCall = CreateTryParseCall(tryParseMethod, parameter, parsedValue);
+            MethodCallExpression? tryParseCall = tryParseMethodCall(TempSourceStringExpr, parsedValue);
 
             // If the parameter is nullable, we need to assign the "parsedValue" local to the nullable parameter on success.
             Expression tryParseExpression = isNotNullable ?
