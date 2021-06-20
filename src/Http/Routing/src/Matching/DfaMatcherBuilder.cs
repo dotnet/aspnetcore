@@ -265,11 +265,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 };
                             }
 
-                            // A parameter should traverse all literal nodes as well as the parameter node
                             if (parent.Literals != null)
                             {
                                 // If the parameter contains constraints, we can be smarter about it and evaluate them while we build the tree.
                                 // If the literal doesn't match any of the constraints, we can prune the branch.
+                                // For example, for a parameter in a route {lang:length(2)} and a parent literal "ABC", we can check that "ABC"
+                                // doesn't meet the parameter constraint (length(2)) when building the tree, and avoid the extra nodes.
                                 if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
                                 {
                                     // The list of parameters that fail to meet at least one ILiteralConstraint.
@@ -306,6 +307,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 }
                                 else
                                 {
+                                    // This means the current parameter we are evaluating doesn't contain any constraint, so we need to
+                                    // traverse all literal nodes as well as the parameter node
                                     nextParents.AddRange(parent.Literals.Values);
                                 }
                             }
@@ -328,7 +331,57 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                             if (parent.Literals != null)
                             {
-                                nextParents.AddRange(parent.Literals.Values);
+                                // For a complex segment like this, we can evaluate the literals and avoid adding extra nodes to
+                                // the tree on cases where the literal won't ever be able to match the complex parameter.
+                                // For example, if we have a complex parameter {a}-{b}.{c?} and a literal "Hello" we can guarantee
+                                // that it will never be a match.
+                                foreach (var literal in parent.Literals.Keys)
+                                {
+                                    var routeValues = new RouteValueDictionary();
+                                    if (RoutePatternMatcher.MatchComplexSegment(segment, literal, routeValues))
+                                    {
+                                        // If we got here (rare) it means that the literal matches the complex segment (for example the literal is something A-B)
+                                        // there is another thing we can try here, which is to evaluate the policies for the parts in case they have one (for example {a:length(4)}-{b:regex(\d+)})
+                                        // so that even if it maps closely to a complex parameter we have a chance to discard it and avoid adding the extra branches.
+                                        var passedAllPolicies = true;
+                                        for (var l = 0; l < segment.Parts.Count; l++)
+                                        {
+                                            var segmentPart = segment.Parts[l];
+                                            if (segmentPart is not RoutePatternParameterPart partParameter)
+                                            {
+                                                // We skip over the literals and the separator since we already checked against them
+                                                continue;
+                                            }
+
+                                            if (!routeValues.TryGetValue(partParameter.Name, out var parameterValue))
+                                            {
+                                                // We have a pattern like {a}-{b}.{part?} and a literal "a-b". Since we've matched the complex segment it means that the optional
+                                                // parameter was not specified, so we skip it.
+                                                Debug.Assert(l == segment.Parts.Count - 1 && partParameter.IsOptional);
+                                                continue;
+                                            }
+
+                                            if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(partParameter.Name, out var parameterPolicyReferences))
+                                            {
+                                                for (var k = 0; k < parameterPolicyReferences.Count; k++)
+                                                {
+                                                    var reference = parameterPolicyReferences[k];
+                                                    var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                                                    if (parameterPolicy is ILiteralConstraint constraint && !constraint.MatchLiteral((string)parameterValue))
+                                                    {
+                                                        passedAllPolicies = false;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+
+                                            if (passedAllPolicies)
+                                            {
+                                                nextParents.Add(parent.Literals[literal]);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             nextParents.Add(parent.Parameters);
                         }
