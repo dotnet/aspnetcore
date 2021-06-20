@@ -306,11 +306,11 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             var value = buffer[scan++];
-            var isHead = ((value >= '0') && (value <= '9')) ||
+            var isHex = ((value >= '0') && (value <= '9')) ||
                          ((value >= 'A') && (value <= 'F')) ||
                          ((value >= 'a') && (value <= 'f'));
 
-            if (!isHead)
+            if (!isHex)
             {
                 return -1;
             }
@@ -382,6 +382,9 @@ namespace Microsoft.AspNetCore.Internal
         /// </remarks>
         public static int DecodeInPlace(Span<char> buffer)
         {
+            // Compared to the byte overload implementation, this is a different
+            // by using the first occurrence of % as the starting position both
+            // for the source and the destination index.
             int position = buffer.IndexOf('%');
             if (position == -1)
             {
@@ -610,11 +613,11 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             var value = buffer[scan++];
-            var isHead = ((value >= '0') && (value <= '9')) ||
+            var isHex = ((value >= '0') && (value <= '9')) ||
                          ((value >= 'A') && (value <= 'F')) ||
                          ((value >= 'a') && (value <= 'f'));
 
-            if (!isHead)
+            if (!isHex)
             {
                 return -1;
             }

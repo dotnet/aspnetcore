@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Http
         [InlineData("/a%20b", "/a b")]
         [InlineData("/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a%20b",
             "/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a b")]
-        public void StringFromUriComponentEscapes(string input, string expected)
+        public void StringFromUriComponentUnescapes(string input, string expected)
         {
             var sut = PathString.FromUriComponent(input);
             Assert.Equal(expected, sut.Value);
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Http
         [InlineData("/a%20b", "/a b")]
         [InlineData("/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a%20b",
     "/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a b")]
-        public void UriFromUriComponentEscapes(string input, string expected)
+        public void UriFromUriComponentUnescapes(string input, string expected)
         {
             var uri = new Uri($"https://localhost:5001{input}");
             var sut = PathString.FromUriComponent(uri);
