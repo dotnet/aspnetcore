@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -89,8 +90,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
             // stage.
-            var work = new List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)>(_endpoints.Count);
-            List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)> previousWork = null;
+            var work = new List<WorkItem>(_endpoints.Count);
+            List<WorkItem> previousWork = null;
 
             var root = new DfaNode() { PathDepth = 0, Label = includeLabel ? "/" : null };
 
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 var endpoint = _endpoints[i];
                 var precedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth: 0);
-                work.Add((endpoint, precedenceDigit, new List<DfaNode>() { root, }));
+                work.Add(new WorkItem(endpoint, precedenceDigit, new List<DfaNode>() { root, }));
 
                 maxDepth = Math.Max(maxDepth, endpoint.RoutePattern.PathSegments.Count);
             }
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             //
             // We'll sort the matches again later using the *real* comparer once building the
             // precedence part of the DFA is over.
-            var precedenceDigitComparer = Comparer<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)>.Create((x, y) =>
+            var precedenceDigitComparer = Comparer<WorkItem>.Create((x, y) =>
             {
                 return x.precedenceDigit.CompareTo(y.precedenceDigit);
             });
@@ -126,11 +127,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var depth = 0; depth <= maxDepth; depth++)
             {
                 // As we process items, collect the next set of items.
-                List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)> nextWork;
+                List<WorkItem> nextWork;
                 var nextWorkCount = 0;
                 if (previousWork == null)
                 {
-                    nextWork = new List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)>();
+                    nextWork = new List<WorkItem>();
                 }
                 else
                 {
@@ -168,7 +169,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         nextParents.Clear();
 
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
-                        nextWork[nextWorkCount] = (endpoint, nextPrecedenceDigit, nextParents);
+                        nextWork[nextWorkCount] = new WorkItem(endpoint, nextPrecedenceDigit, nextParents);
                     }
                     else
                     {
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         // Add to the next set of work now so the list will be reused
                         // even if there are no parents
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
-                        nextWork.Add((endpoint, nextPrecedenceDigit, nextParents));
+                        nextWork.Add(new WorkItem(endpoint, nextPrecedenceDigit, nextParents));
                     }
 
                     var segment = GetCurrentSegment(endpoint, depth);
@@ -267,7 +268,46 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             // A parameter should traverse all literal nodes as well as the parameter node
                             if (parent.Literals != null)
                             {
-                                nextParents.AddRange(parent.Literals.Values);
+                                // If the parameter contains constraints, we can be smarter about it and evaluate them while we build the tree.
+                                // If the literal doesn't match any of the constraints, we can prune the branch.
+                                if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
+                                {
+                                    // The list of parameters that fail to meet at least one ILiteralConstraint.
+                                    var hasFailingPolicy = new bool[parent.Literals.Keys.Count];
+
+                                    // Whether or not all parameters have failed to meet at least one constraint.
+                                    for (var k = 0; k < parameterPolicyReferences.Count; k++)
+                                    {
+                                        var reference = parameterPolicyReferences[k];
+                                        var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                                        if (parameterPolicy is ILiteralConstraint constraint)
+                                        {
+                                            var m = 0;
+                                            foreach (var literal in parent.Literals.Keys)
+                                            {
+                                                if (!hasFailingPolicy[m] && !constraint.MatchLiteral(literal))
+                                                {
+                                                    hasFailingPolicy[m] = true;
+                                                }
+
+                                                m++;
+                                            }
+                                        }
+                                    }
+
+                                    var l = 0;
+                                    foreach (var literal in parent.Literals.Values)
+                                    {
+                                        if (!hasFailingPolicy[l])
+                                        {
+                                            nextParents.Add(literal);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    nextParents.AddRange(parent.Literals.Values);
+                                }
                             }
                             nextParents.Add(parent.Parameters);
                         }
@@ -807,6 +847,46 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
+        }
+    }
+
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+    internal struct WorkItem
+    {
+        public RouteEndpoint endpoint;
+        public int precedenceDigit;
+        public List<DfaNode> parents;
+
+        public WorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)
+        {
+            this.endpoint = endpoint;
+            this.precedenceDigit = precedenceDigit;
+            this.parents = parents;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is WorkItem other &&
+                   EqualityComparer<RouteEndpoint>.Default.Equals(endpoint, other.endpoint) &&
+                   precedenceDigit == other.precedenceDigit &&
+                   EqualityComparer<List<DfaNode>>.Default.Equals(parents, other.parents);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(endpoint, precedenceDigit, parents);
+        }
+
+        public void Deconstruct(out RouteEndpoint endpoint, out int precedenceDigit, out List<DfaNode> parents)
+        {
+            endpoint = this.endpoint;
+            precedenceDigit = this.precedenceDigit;
+            parents = this.parents;
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return endpoint.RoutePattern.RawText;
         }
     }
 }

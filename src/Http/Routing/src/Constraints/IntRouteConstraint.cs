@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to represent only 32-bit integer values.
     /// </summary>
-    public class IntRouteConstraint : IRouteConstraint
+    public class IntRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <inheritdoc />
         public bool Match(
@@ -38,10 +38,15 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 }
 
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return int.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+                return valueString is not null && ((ILiteralConstraint)this).MatchLiteral(valueString);
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string literal)
+        {
+            return int.TryParse(literal, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
         }
     }
 }

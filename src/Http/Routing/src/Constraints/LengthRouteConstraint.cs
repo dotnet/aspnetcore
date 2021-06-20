@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to be a string of a given length or within a given range of lengths.
     /// </summary>
-    public class LengthRouteConstraint : IRouteConstraint
+    public class LengthRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LengthRouteConstraint" /> class that constrains
@@ -90,11 +90,16 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture)!;
-                var length = valueString.Length;
-                return length >= MinLength && length <= MaxLength;
+                return ((ILiteralConstraint)this).MatchLiteral(valueString);
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string literal)
+        {
+            var length = literal.Length;
+            return length >= MinLength && length <= MaxLength;
         }
     }
 }

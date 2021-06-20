@@ -1563,6 +1563,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public void CreateCandidate_BuildDfa_BacktrackingImprovements()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+            builder.AddEndpoint(CreateEndpoint("a/c", metadata: new HttpMethodMetadata(new[] { "POST" })));
+            builder.AddEndpoint(CreateEndpoint("{language:length(2)}/b/c", metadata: new HttpMethodMetadata(new[] { "POST" })));
+            //builder.AddEndpoint(CreateEndpoint("{version:int}/{language:length(2)}/test1/method-2", metadata: new HttpMethodMetadata(new[] { "POST" })));
+            //builder.AddEndpoint(CreateEndpoint("test2/method-1", metadata: new HttpMethodMetadata(new[] { "GET" })));
+            //builder.AddEndpoint(CreateEndpoint("{language:length(2)}/test2/method-1", metadata: new HttpMethodMetadata(new[] { "GET" })));
+            //builder.AddEndpoint(CreateEndpoint("{version:int}/{language:length(2)}/test2/method-1", metadata: new HttpMethodMetadata(new[] { "GET" })));
+
+            // Act
+            var matcher = builder.Build();
+            Assert.NotNull(matcher);
+        }
+
+        [Fact]
         public void CreateCandidate_Parameters_ComplexSegments()
         {
             // Arrange
