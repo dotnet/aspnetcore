@@ -4,13 +4,13 @@
 using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipelines;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {

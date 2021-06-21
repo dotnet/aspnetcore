@@ -263,20 +263,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public static void ValidateHeaderValueCharacters(string headerName, StringValues headerValues, Func<string, Encoding?> encodingSelector)
         {
+            var encoding = ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                ? null : encodingSelector(headerName);
+
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
 
             {
-                ValidateHeaderValueCharacters(headerName, headerValues[i], encodingSelector);
+                ValidateHeaderValueCharacters(encoding, headerName, headerValues[i]);
             }
         }
 
-        public static void ValidateHeaderValueCharacters(string headerName, string headerCharacters, Func<string, Encoding?> encodingSelector)
+        public static void ValidateHeaderValueCharacters(Encoding? encoding, string headerName, string headerCharacters)
         {
             if (headerCharacters != null)
             {
-                var encoding = ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
-                    ? null : encodingSelector(headerName);
                 // Only validate here if we're using the default encoding (ASCII). Otherwise we'll validate later when encoding.
                 if (encoding == null)
                 {
