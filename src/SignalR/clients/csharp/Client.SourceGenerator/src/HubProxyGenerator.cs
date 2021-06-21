@@ -58,14 +58,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     !typeInfo.Type.AllInterfaces.Any(x => SymbolEqualityComparer.Default.Equals(x, iHubConnectionType))))
                 {
                     // Member access is not acting on IHubConnection or a type implementing it; as such we will skip
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        new DiagnosticDescriptor(
-                            "XX0001",
-                            "Non-void method return type",
-                            "Method {0}. All methods must return void.",
-                            "yeet",
-                            DiagnosticSeverity.Warning,
-                            true), memberAccess.GetLocation(), typeInfo.Type.Name));
                     continue;
                 }
 
