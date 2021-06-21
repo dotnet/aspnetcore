@@ -10,6 +10,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         let lastAckTime = new Date().valueOf();
         try {
             let position = 0;
+            let chunkId = 0;
 
             // Note: The server-side `StreamBufferCapacity` option (defaults to 10) can be configured to limit how many
             // stream items from the client (per stream) will be stored before reading any more stream items (thus applying backpressure).
@@ -20,14 +21,14 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
                 numChunksUntilNextAck--;
                 if (numChunksUntilNextAck > 1) {
                     // Most of the time just send and buffer within the network layer
-                    await connection.send('ReceiveJSDataChunk', streamId, nextChunkData, null);
+                    await connection.send('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
                 } else {
                     // But regularly, wait for an ACK, so other events can be interleaved
                     // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
                     // faster than the .NET side can receive them. It means that if there are other user interactions
                     // while the transfer is in progress, they would get inserted in the middle, so it would be
                     // possible to navigate away or cancel without first waiting for all the remaining chunks.
-                    const streamIsAlive = await connection.invoke<boolean>('ReceiveJSDataChunk', streamId, nextChunkData, null);
+                    const streamIsAlive = await connection.invoke<boolean>('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
 
                     // Checks to see if we should continue streaming or if the stream has been cancelled/disposed.
                     if (!streamIsAlive) {
@@ -43,9 +44,10 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
                 }
 
                 position += nextChunkSize;
+                chunkId++;
             }
         } catch (error) {
-            await connection.send('ReceiveJSDataChunk', streamId, null, error.toString());
+            await connection.send('ReceiveJSDataChunk', streamId, -1, null, error.toString());
         }
     }, 0);
 };

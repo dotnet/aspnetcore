@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var unrecognizedGuid = 10;
 
             // Act
-            var success = await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: unrecognizedGuid, chunk, error: null);
+            var success = await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: unrecognizedGuid, chunkId: 0, chunk, error: null);
 
             // Assert
             Assert.False(success);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var sendDataTask = Task.Run(async () =>
             {
                 // Act 1
-                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
                 return success;
             });
 
@@ -89,22 +89,27 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var sendDataTask = Task.Run(async () =>
             {
                 // Act & Assert 1
-                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
                 Assert.True(success);
 
                 await Task.Delay(TimeSpan.FromSeconds(10));
 
                 // Act & Assert 2
-                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null);
                 Assert.True(success);
 
                 await Task.Delay(TimeSpan.FromSeconds(20));
 
                 // Act & Assert 3
-                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
+                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 2, chunk, error: null);
                 Assert.False(success);
                 return true;
             });
+
+            // Wait past the initial 15 second timeout to ensure it gets reset after
+            // a new data chunk is received.
+            await Task.Delay(TimeSpan.FromSeconds(20));
 
             // Act & Assert 4
             using var mem = new MemoryStream();
@@ -125,7 +130,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
 
             // Act & Assert 1
-            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk: null, error: "some error");
+            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk: null, error: "some error");
             Assert.False(success);
 
             // Act & Assert 2
@@ -144,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var chunk = Array.Empty<byte>();
 
             // Act & Assert 1
-            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null));
+            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null));
             Assert.Equal("The incoming data chunk cannot be empty.", ex.Message);
 
             // Act & Assert 2
@@ -164,13 +169,37 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var chunk = new byte[110]; // 100 byte totalLength for stream
 
             // Act & Assert 1
-            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null));
+            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null));
             Assert.Equal("The incoming data stream declared a length 100, but 110 bytes were sent.", ex.Message);
 
             // Act & Assert 2
             using var mem = new MemoryStream();
             ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem));
             Assert.Equal("The incoming data stream declared a length 100, but 110 bytes were sent.", ex.Message);
+        }
+
+        [Fact]
+        public async void ReceiveData_ProvidedWithOutOfOrderChunk_SimulatesSignalRDisconnect()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000);
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[5];
+
+            // Act & Assert 1
+            for (var i = 0; i < 5; i++)
+            {
+                await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: i, chunk, error: null);
+            }
+            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 7, chunk, error: null));
+            Assert.Equal("Out of sequence chunk received, expected 5, but received 7.", ex.Message);
+
+            // Act & Assert 2
+            using var mem = new MemoryStream();
+            ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem));
+            Assert.Equal("Out of sequence chunk received, expected 5, but received 7.", ex.Message);
         }
 
         private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)

@@ -20,8 +20,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
         private long _bytesRead;
+        private long _expectedChunkId;
 
-        public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, byte[] chunk, string error)
+        public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
         {
             if (!runtime.RemoteJSDataStreamInstances.TryGetValue(streamId, out var instance))
             {
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 return false;
             }
 
-            return await instance.ReceiveData(chunk, error);
+            return await instance.ReceiveData(chunkId, chunk, error);
         }
 
         public static async ValueTask<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         // internal for testing
         internal TimeSpan ReceiveDataTimeout { private get; set; } = TimeSpan.FromMinutes(1);
 
-        private async Task<bool> ReceiveData(byte[] chunk, string error)
+        private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
         {
             try
             {
@@ -93,6 +94,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     throw new InvalidOperationException($"An error occurred while reading the remote stream: {error}");
                 }
+
+                if (chunkId != _expectedChunkId)
+                {
+                    throw new EndOfStreamException($"Out of sequence chunk received, expected {_expectedChunkId}, but received {chunkId}.");
+                }
+
+                ++_expectedChunkId;
 
                 if (chunk.Length == 0)
                 {

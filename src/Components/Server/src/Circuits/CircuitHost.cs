@@ -418,14 +418,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // ReceiveJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        internal async Task<bool> ReceiveJSDataChunk(long streamId, byte[] chunk, string error)
+        internal async Task<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
         {
             AssertInitialized();
             AssertNotDisposed();
 
             try
             {
-                return await RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunk, error);
+                return await RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
             }
             catch (Exception ex)
             {
