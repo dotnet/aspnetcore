@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
 
         bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
         {
-            return Guid.TryParse(valueString, out _);
+            return Guid.TryParse(literal, out _);
         }
     }
 }

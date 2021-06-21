@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                             var m = 0;
                                             foreach (var literal in parent.Literals.Keys)
                                             {
-                                                if (!hasFailingPolicy[m] && !constraint.MatchLiteral(literal))
+                                                if (!hasFailingPolicy[m] && !constraint.MatchLiteral(parameterPart.Name, literal))
                                                 {
                                                     hasFailingPolicy[m] = true;
                                                 }
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                                 {
                                                     var reference = parameterPolicyReferences[k];
                                                     var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
-                                                    if (parameterPolicy is ILiteralConstraint constraint && !constraint.MatchLiteral((string)parameterValue))
+                                                    if (parameterPolicy is ILiteralConstraint constraint && !constraint.MatchLiteral(partParameter.Name, (string)parameterValue))
                                                     {
                                                         passedAllPolicies = false;
                                                         break;

@@ -459,6 +459,51 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Same(catchAll, catchAll.CatchAll);
         }
 
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint1 = CreateEndpoint("a/c");
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("{a:length(2)}/b/c");
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.NotNull(root.Parameters);
+
+            var aNodeKvp = Assert.Single(root.Literals);
+            Assert.Equal("a", aNodeKvp.Key);
+
+            var aNodeValue = aNodeKvp.Value;
+            var cNodeKvp = Assert.Single(aNodeValue.Literals);
+            Assert.Equal("c", cNodeKvp.Key);
+            var cNode = cNodeKvp.Value;
+
+            Assert.Same(endpoint1, Assert.Single(cNode.Matches));
+            Assert.Null(cNode.Literals);
+            Assert.Null(cNode.Parameters);
+
+            var bNodeKvp = Assert.Single(root.Parameters.Literals);
+            Assert.Equal("b", bNodeKvp.Key);
+            var bNode = bNodeKvp.Value;
+            Assert.Null(bNode.Parameters);
+            Assert.Null(bNode.Matches);
+            var paramCNodeKvp = Assert.Single(bNode.Literals);
+
+            Assert.Equal("c", paramCNodeKvp.Key);
+            var paramCNode = paramCNodeKvp.Value;
+            Assert.Same(endpoint2, Assert.Single(paramCNode.Matches));
+            Assert.Null(paramCNode.Literals);
+            Assert.Null(paramCNode.Parameters);
+        }
+
         // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
         //
         // This case behaves the same for all combinations.
@@ -1560,23 +1605,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Equal(default, candidate.CatchAll);
             Assert.Empty(candidate.ComplexSegments);
             Assert.Empty(candidate.Constraints);
-        }
-
-        [Fact]
-        public void CreateCandidate_BuildDfa_BacktrackingImprovements()
-        {
-            // Arrange
-            var builder = CreateDfaMatcherBuilder();
-            builder.AddEndpoint(CreateEndpoint("a/c", metadata: new HttpMethodMetadata(new[] { "POST" })));
-            builder.AddEndpoint(CreateEndpoint("{language:length(2)}/b/c", metadata: new HttpMethodMetadata(new[] { "POST" })));
-            //builder.AddEndpoint(CreateEndpoint("{version:int}/{language:length(2)}/test1/method-2", metadata: new HttpMethodMetadata(new[] { "POST" })));
-            //builder.AddEndpoint(CreateEndpoint("test2/method-1", metadata: new HttpMethodMetadata(new[] { "GET" })));
-            //builder.AddEndpoint(CreateEndpoint("{language:length(2)}/test2/method-1", metadata: new HttpMethodMetadata(new[] { "GET" })));
-            //builder.AddEndpoint(CreateEndpoint("{version:int}/{language:length(2)}/test2/method-1", metadata: new HttpMethodMetadata(new[] { "GET" })));
-
-            // Act
-            var matcher = builder.Build();
-            Assert.NotNull(matcher);
         }
 
         [Fact]
