@@ -190,6 +190,7 @@
     <MicrosoftBuildUtilitiesCoreVersion>16.9.0</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftCodeAnalysisCommonVersion>4.0.0-2.21354.7</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisCSharpVersion>4.0.0-2.21354.7</MicrosoftCodeAnalysisCSharpVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>3.3.2</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.8.0</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCssParserVersion>1.0.0-20200708.1</MicrosoftCssParserVersion>

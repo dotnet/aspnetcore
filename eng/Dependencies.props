@@ -15,6 +15,7 @@ and are generated based on the last package release.
   <ItemGroup Label=".NET team dependencies">
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.Analyzers" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" />

@@ -1634,6 +1634,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logging.W3C.Sample", "src\Middleware\HttpLogging\samples\Logging.W3C.Sample\Logging.W3C.Sample.csproj", "{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client.SourceGenerator", "Client.SourceGenerator", "{4FC50620-4C8B-495F-859C-BFACAD158033}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client.SourceGenerator", "src\SignalR\clients\csharp\Client.SourceGenerator\src\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.csproj", "{E090F82D-8345-477E-92E8-F724F08ADC56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -7741,6 +7745,7 @@ Global
 		{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}.Release|x64.Build.0 = Release|Any CPU
 		{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}.Release|x86.ActiveCfg = Release|Any CPU
 		{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}.Release|x86.Build.0 = Release|Any CPU
+<<<<<<< HEAD
 		{5C641396-7E92-4F5C-A5A1-B4CDF480539B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5C641396-7E92-4F5C-A5A1-B4CDF480539B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C641396-7E92-4F5C-A5A1-B4CDF480539B}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -7789,6 +7794,20 @@ Global
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x64.Build.0 = Release|Any CPU
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x86.ActiveCfg = Release|Any CPU
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x86.Build.0 = Release|Any CPU
+=======
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|x64.Build.0 = Debug|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|x86.Build.0 = Debug|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|x64.ActiveCfg = Release|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|x64.Build.0 = Release|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|x86.ActiveCfg = Release|Any CPU
+		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|x86.Build.0 = Release|Any CPU
+>>>>>>> Introduce HubProxyGenerator and unit tests for it
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -8598,6 +8617,8 @@ Global
 		{092EA9F6-84D4-41EF-A618-BDA50A0E10A8} = {323C3EB6-1D15-4B3D-918D-699D7F64DED9}
 		{F599EAA6-399F-4A91-9B1F-D311305B43D9} = {323C3EB6-1D15-4B3D-918D-699D7F64DED9}
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85} = {022B4B80-E813-4256-8034-11A68146F4EF}
+		{4FC50620-4C8B-495F-859C-BFACAD158033} = {2637A22F-182F-4659-A394-C9BC1514B321}
+		{E090F82D-8345-477E-92E8-F724F08ADC56} = {4FC50620-4C8B-495F-859C-BFACAD158033}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
