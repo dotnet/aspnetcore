@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33715")]
         public void CanUpdateValuesMatchedByType()
         {
             var currentCount = Browser.Exists(By.Id("current-count"));
