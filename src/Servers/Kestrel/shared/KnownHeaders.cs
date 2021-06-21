@@ -775,6 +775,7 @@ using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
@@ -859,6 +860,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var flag = {header.FlagBit()};
                 if (value.Count > 0)
                 {{
+                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);
                     _bits |= flag;
                     _headers._{header.Identifier} = value;
                 }}
@@ -1171,6 +1173,7 @@ $@"        private void Clear(long bitsToClear)
             {{
                 int keyStart;
                 int keyLength;
+                var headerName = string.Empty;
                 switch (next)
                 {{{Each(loop.Headers.OrderBy(h => h.Index).Where(h => h.Identifier != "ContentLength"), header => $@"
                     case {header.Index}: // Header: ""{header.Name}""
@@ -1191,6 +1194,7 @@ $@"        private void Clear(long bitsToClear)
                             values = ref _headers._{header.Identifier};
                             keyStart = {header.BytesOffset};
                             keyLength = {header.BytesCount};
+                            headerName = HeaderNames.{header.Identifier};
                         }}")}
                         break; // OutputHeader
 ")}
@@ -1203,6 +1207,8 @@ $@"        private void Clear(long bitsToClear)
                 {{
                     // Clear bit
                     tempBits ^= (1UL << next);
+                    var encoder = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(headerName);
                     var valueCount = values.Count;
                     Debug.Assert(valueCount > 0);
 
@@ -1213,7 +1219,14 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            output.WriteAscii(value);
+                            if (encoder is null)
+                            {{
+                                output.WriteAscii(value);
+                            }}
+                            else
+                            {{
+                                output.Write(encoder.GetBytes(value)); // TODO non-allocating
+                            }}
                         }}
                     }}
                     // Set exact next
