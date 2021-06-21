@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// </list>
     /// </para>
     /// </remarks>
-    public class NonFileNameRouteConstraint : IRouteConstraint
+    public class NonFileNameRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <inheritdoc />
         public bool Match(
@@ -109,6 +109,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             // things that look like file names. There's nothing here that looks like a file name, so
             // let it through.
             return true;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return !FileNameRouteConstraint.IsFileName(literal);
         }
     }
 }

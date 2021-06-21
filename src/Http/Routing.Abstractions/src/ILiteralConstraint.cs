@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Routing
@@ -14,8 +14,9 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Determines whether the given <paramref name="literal"/> can match the constraint.
         /// </summary>
+        /// <param name="parameterName">The parameter name we are currently evaluating.</param>
         /// <param name="literal">The literal to test the constraint against.</param>
         /// <returns><c>true</c> if the literal contains a valid value; otherwise, <c>false</c>.</returns>
-        bool MatchLiteral(string literal);
+        bool MatchLiteral(string parameterName, string literal);
     }
 }

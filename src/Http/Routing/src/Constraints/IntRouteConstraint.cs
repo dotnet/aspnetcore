@@ -38,13 +38,13 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 }
 
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return valueString is not null && ((ILiteralConstraint)this).MatchLiteral(valueString);
+                return valueString is not null && int.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
             }
 
             return false;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string literal)
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
         {
             return int.TryParse(literal, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
         }

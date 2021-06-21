@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route by several child constraints.
     /// </summary>
-    public class CompositeRouteConstraint : IRouteConstraint
+    public class CompositeRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeRouteConstraint" /> class.
@@ -52,6 +52,19 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             foreach (var constraint in Constraints)
             {
                 if (!constraint.Match(httpContext, route, routeKey, values, routeDirection))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            foreach (var constraint in Constraints)
+            {
+                if (constraint is ILiteralConstraint literalConstraint && !literalConstraint.MatchLiteral(parameterName, literal))
                 {
                     return false;
                 }

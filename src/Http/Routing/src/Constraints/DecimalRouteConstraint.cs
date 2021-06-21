@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to represent only decimal values.
     /// </summary>
-    public class DecimalRouteConstraint : IRouteConstraint
+    public class DecimalRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <inheritdoc />
         public bool Match(
@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return decimal.TryParse(literal, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
         }
     }
 }

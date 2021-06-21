@@ -90,13 +90,14 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture)!;
-                return ((ILiteralConstraint)this).MatchLiteral(valueString);
+                var length = valueString.Length;
+                return length >= MinLength && length <= MaxLength;
             }
 
             return false;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string literal)
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
         {
             var length = literal.Length;
             return length >= MinLength && length <= MaxLength;

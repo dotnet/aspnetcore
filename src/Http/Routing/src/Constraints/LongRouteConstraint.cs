@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to represent only 64-bit integer values.
     /// </summary>
-    public class LongRouteConstraint : IRouteConstraint
+    public class LongRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <inheritdoc />
         public bool Match(
@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return long.TryParse(literal, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
         }
     }
 }

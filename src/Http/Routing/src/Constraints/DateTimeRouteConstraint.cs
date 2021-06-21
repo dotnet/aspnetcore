@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// For a sample on how to list all formats which are considered, please visit
     /// http://msdn.microsoft.com/en-us/library/aszyst2c(v=vs.110).aspx
     /// </remarks>
-    public class DateTimeRouteConstraint : IRouteConstraint
+    public class DateTimeRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <inheritdoc />
         public bool Match(
@@ -48,6 +48,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return DateTime.TryParse(literal, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to contain only a specified string.
     /// </summary>
-    public class StringRouteConstraint : IRouteConstraint
+    public class StringRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         private readonly string _value;
 
@@ -50,6 +50,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return literal.Equals(_value, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

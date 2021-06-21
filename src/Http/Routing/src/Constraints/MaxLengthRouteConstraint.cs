@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to be a string with a maximum length.
     /// </summary>
-    public class MaxLengthRouteConstraint : IRouteConstraint
+    public class MaxLengthRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MaxLengthRouteConstraint" /> class.
@@ -57,6 +57,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return literal.Length <= MaxLength;
         }
     }
 }

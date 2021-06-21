@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to be a string with a minimum length.
     /// </summary>
-    public class MinLengthRouteConstraint : IRouteConstraint
+    public class MinLengthRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MinLengthRouteConstraint" /> class.
@@ -57,6 +57,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return literal.Length >= MinLength;
         }
     }
 }

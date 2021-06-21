@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// </list>
     /// </para>
     /// </remarks>
-    public class FileNameRouteConstraint : IRouteConstraint
+    public class FileNameRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <inheritdoc />
         public bool Match(
@@ -143,6 +143,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return IsFileName(literal);
         }
     }
 }

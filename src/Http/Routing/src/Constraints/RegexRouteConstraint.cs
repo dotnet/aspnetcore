@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to match a regular expression.
     /// </summary>
-    public class RegexRouteConstraint : IRouteConstraint
+    public class RegexRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
 
@@ -78,6 +78,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return Constraint.IsMatch(literal);
         }
     }
 }

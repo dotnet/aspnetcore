@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// <summary>
     /// Constrains a route parameter to be an integer with a maximum value.
     /// </summary>
-    public class MaxRouteConstraint : IRouteConstraint
+    public class MaxRouteConstraint : IRouteConstraint, ILiteralConstraint
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MaxRouteConstraint" /> class.
@@ -55,5 +55,15 @@ namespace Microsoft.AspNetCore.Routing.Constraints
 
             return false;
         }
-    }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            if (long.TryParse(literal, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
+            {
+                return longValue <= Max;
+            }
+
+            return false;
+        }
+}
 }
