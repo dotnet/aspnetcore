@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming()
+        public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_DoesNotMeetConstraint()
         {
             // Arrange
             var builder = CreateDfaMatcherBuilder();
@@ -496,6 +496,129 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Null(bNode.Parameters);
             Assert.Null(bNode.Matches);
             var paramCNodeKvp = Assert.Single(bNode.Literals);
+
+            Assert.Equal("c", paramCNodeKvp.Key);
+            var paramCNode = paramCNodeKvp.Value;
+            Assert.Same(endpoint2, Assert.Single(paramCNode.Matches));
+            Assert.Null(paramCNode.Literals);
+            Assert.Null(paramCNode.Parameters);
+        }
+
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_MeetsConstraint()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint1 = CreateEndpoint("aa/c");
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("{a:length(2)}/b/c");
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.NotNull(root.Parameters);
+
+            // Branch aa -> c = (aa/c)
+
+            var aNodeKvp = Assert.Single(root.Literals);
+            Assert.Equal("aa", aNodeKvp.Key);
+
+            var aNodeValue = aNodeKvp.Value;
+            Assert.True(aNodeValue.Literals.TryGetValue("c", out var cNode));
+
+            Assert.Same(endpoint1, Assert.Single(cNode.Matches));
+            Assert.Null(cNode.Literals);
+            Assert.Null(cNode.Parameters);
+
+            // Branch (aa) -> b -> c = ({a:length(2)}/b/c)
+
+            Assert.True(aNodeValue.Literals.TryGetValue("b", out var bNode));
+            Assert.Null(bNode.Parameters);
+            Assert.Null(bNode.Matches);
+            var paramBCNodeKvp = Assert.Single(bNode.Literals);
+            Assert.Equal("c", paramBCNodeKvp.Key);
+            var paramBCNode = paramBCNodeKvp.Value;
+
+            Assert.Same(endpoint2, Assert.Single(paramBCNode.Matches));
+            Assert.Null(cNode.Literals);
+            Assert.Null(cNode.Parameters);
+
+            // Branch {param} -> b -> c = ({a:length(2)}/b/c)
+
+            var bParamNodeKvp = Assert.Single(root.Parameters.Literals);
+            Assert.Equal("b", bParamNodeKvp.Key);
+            var bParamNode = bParamNodeKvp.Value;
+            Assert.Null(bParamNode.Parameters);
+            Assert.Null(bParamNode.Matches);
+            var paramCNodeKvp = Assert.Single(bParamNode.Literals);
+
+            Assert.Equal("c", paramCNodeKvp.Key);
+            var paramCNode = paramCNodeKvp.Value;
+            Assert.Same(endpoint2, Assert.Single(paramCNode.Matches));
+            Assert.Null(paramCNode.Literals);
+            Assert.Null(paramCNode.Parameters);
+        }
+
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_BothCandidates_WhenLitteralPatternMeetsConstraintAndRoutePattern()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint1 = CreateEndpoint("aa/b/c");
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("{a:length(2)}/b/c");
+            builder.AddEndpoint(endpoint2);
+
+            var endpoint3 = CreateEndpoint("aa/c");
+            builder.AddEndpoint(endpoint3);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.NotNull(root.Parameters);
+
+            // Branch aa -> c = (aa/c)
+
+            var aNodeKvp = Assert.Single(root.Literals);
+            Assert.Equal("aa", aNodeKvp.Key);
+
+            var aNodeValue = aNodeKvp.Value;
+            Assert.True(aNodeValue.Literals.TryGetValue("c", out var cNode));
+
+            Assert.Same(endpoint3, Assert.Single(cNode.Matches));
+            Assert.Null(cNode.Literals);
+            Assert.Null(cNode.Parameters);
+
+            // Branch (aa) -> b -> c = (aa/b/c, {a:length(2)}/b/c)
+
+            Assert.True(aNodeValue.Literals.TryGetValue("b", out var bNode));
+            Assert.Null(bNode.Parameters);
+            Assert.Null(bNode.Matches);
+            var paramBCNodeKvp = Assert.Single(bNode.Literals);
+            Assert.Equal("c", paramBCNodeKvp.Key);
+            var paramBCNode = paramBCNodeKvp.Value;
+
+            Assert.Equal(new[] { endpoint1, endpoint2 }, paramBCNode.Matches.ToArray());
+            Assert.Null(cNode.Literals);
+            Assert.Null(cNode.Parameters);
+
+            // Branch {param} -> b -> c = ({a:length(2)}/b/c)
+
+            var bParamNodeKvp = Assert.Single(root.Parameters.Literals);
+            Assert.Equal("b", bParamNodeKvp.Key);
+            var bParamNode = bParamNodeKvp.Value;
+            Assert.Null(bParamNode.Parameters);
+            Assert.Null(bParamNode.Matches);
+            var paramCNodeKvp = Assert.Single(bParamNode.Literals);
 
             Assert.Equal("c", paramCNodeKvp.Key);
             var paramCNode = paramCNodeKvp.Value;
