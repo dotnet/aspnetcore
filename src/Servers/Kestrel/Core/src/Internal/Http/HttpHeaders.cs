@@ -275,14 +275,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (headerCharacters != null)
             {
+                var encoding = ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    ? null : encodingSelector(headerName);
                 // Only validate here if we're using the default encoding (ASCII). Otherwise we'll validate later when encoding.
-                if (ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
-                    || encodingSelector(headerName) == null)
+                if (encoding == null)
                 {
                     var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
                     if (invalid >= 0)
                     {
                         ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        encoding.GetByteCount(headerCharacters);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException($"The '{headerName}' header '{headerCharacters}' contains invalid values.", ex);
                     }
                 }
             }
