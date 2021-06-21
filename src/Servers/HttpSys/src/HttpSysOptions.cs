@@ -223,9 +223,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Inline request processing instead of dispatching to the threadpool.
         /// </summary>
         /// <remarks>
-        /// This will run application code on the IO thread which is why this is unsafe.
-        /// This setting can make performance worse if there is expensive work that will end up holding onto the IO thread for longer than needed.
-        /// Test to make sure this setting helps performance.
+        /// Enabling this setting will run application code on the IO thread to reduce request processing latency. 
+        /// However, this will limit parallel request processing to <see cref="MaxAccepts"/>. This setting can make 
+        /// overall throughput worse if requests take long to process.
         /// </remarks>
         public bool UnsafePreferInlineScheduling { get; set; }
 
