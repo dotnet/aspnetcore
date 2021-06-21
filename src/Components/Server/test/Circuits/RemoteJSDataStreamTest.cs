@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -51,13 +52,68 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
             var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[100];
+            var random = new Random();
+            random.NextBytes(chunk);
+
+            var sendDataTask = Task.Run(async () =>
+            {
+                // Act 1
+                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                return success;
+            });
+
+            // Act & Assert 2
+            using var memoryStream = new MemoryStream();
+            await remoteJSDataStream.CopyToAsync(memoryStream);
+            Assert.Equal(chunk, memoryStream.ToArray());
+
+            // Act & Assert 3
+            var sendDataCompleted = await sendDataTask;
+            Assert.True(sendDataCompleted);
+        }
+
+        [Fact]
+        public async void ReceiveData_ReceiveDataTimeout_StreamDisposed()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime ?? _jsRuntime, jsStreamReference, totalLength: 9, maxBufferSize: 50, maximumIncomingBytes: 10_000);
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[] { 3, 5, 7 };
 
-            // Act
-            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+            // Set a 15 second timeout for testing
+            remoteJSDataStream.ReceiveDataTimeout = TimeSpan.FromSeconds(15);
 
-            // Assert
-            Assert.True(success);
+            var sendDataTask = Task.Run(async () =>
+            {
+                // Act & Assert 1
+                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                Assert.True(success);
+
+                await Task.Delay(TimeSpan.FromSeconds(10));
+
+                // Act & Assert 2
+                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                Assert.True(success);
+
+                await Task.Delay(TimeSpan.FromSeconds(20));
+
+                // Act & Assert 3
+                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+                Assert.False(success);
+                return true;
+            });
+
+            // Act & Assert 4
+            using var mem = new MemoryStream();
+            var ex = await Assert.ThrowsAsync<TimeoutException>(async() => await remoteJSDataStream.CopyToAsync(mem));
+            Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+
+            // Act & Assert 5
+            var sendDataCompleted = await sendDataTask;
+            Assert.True(sendDataCompleted);
         }
 
         [Fact]
@@ -68,11 +124,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
 
-            // Act
+            // Act & Assert 1
             var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk: null, error: "some error");
-
-            // Assert
             Assert.False(success);
+
+            // Act & Assert 2
+            using var mem = new MemoryStream();
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await remoteJSDataStream.CopyToAsync(mem));
+            Assert.Equal("An error occurred while reading the remote stream: some error", ex.Message);
         }
 
         [Fact]
@@ -84,11 +143,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = Array.Empty<byte>();
 
-            // Act
-            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+            // Act & Assert 1
+            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null));
+            Assert.Equal("The incoming data chunk cannot be empty.", ex.Message);
 
-            // Assert
-            Assert.False(success);
+            // Act & Assert 2
+            using var mem = new MemoryStream();
+            ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem));
+            Assert.Equal("The incoming data chunk cannot be empty.", ex.Message);
         }
 
         [Fact]
@@ -101,11 +163,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[110]; // 100 byte totalLength for stream
 
-            // Act
-            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null);
+            // Act & Assert 1
+            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunk, error: null));
+            Assert.Equal("The incoming data stream declared a length 100, but 110 bytes were sent.", ex.Message);
 
-            // Assert
-            Assert.False(success);
+            // Act & Assert 2
+            using var mem = new MemoryStream();
+            ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem));
+            Assert.Equal("The incoming data stream declared a length 100, but 110 bytes were sent.", ex.Message);
         }
 
         private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)

@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly long _streamId;
         private readonly long _totalLength;
         private readonly CancellationToken _streamCancellationToken;
+        private readonly Timer _receiveDataTimer;
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
         private long _bytesRead;
@@ -65,16 +66,29 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _totalLength = totalLength;
             _streamCancellationToken = cancellationToken;
 
+            // Dispose of the stream if a chunk isn't received within 1 minute.
+            _receiveDataTimer = new Timer(new TimerCallback(async (state) => {
+                var stream = state as RemoteJSDataStream;
+                var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
+                await stream.CompletePipeAndDisposeStream(timeoutException);
+            }), this, dueTime: ReceiveDataTimeout, period: Timeout.InfiniteTimeSpan);
+
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
             _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize / 2));
             _pipeReaderStream = _pipe.Reader.AsStream();
         }
 
+        // internal for testing
+        internal TimeSpan ReceiveDataTimeout { private get; set; } = TimeSpan.FromMinutes(1);
+
         private async Task<bool> ReceiveData(byte[] chunk, string error)
         {
             try
             {
+                // Reset the timeout as a chunk has been received
+                _receiveDataTimer.Change(dueTime: ReceiveDataTimeout, period: Timeout.InfiniteTimeSpan);
+
                 if (!string.IsNullOrEmpty(error))
                 {
                     throw new InvalidOperationException($"An error occurred while reading the remote stream: {error}");
@@ -82,30 +96,36 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 if (chunk.Length == 0)
                 {
-                    throw new InvalidOperationException($"The incoming data chunk cannot be empty.");
+                    throw new EndOfStreamException($"The incoming data chunk cannot be empty.");
                 }
 
                 _bytesRead += chunk.Length;
 
                 if (_bytesRead > _totalLength)
                 {
-                    throw new InvalidOperationException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were read.");
+                    throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were sent.");
                 }
 
                 await _pipe.Writer.WriteAsync(chunk, _streamCancellationToken);
 
                 if (_bytesRead == _totalLength)
                 {
-                    await _pipe.Writer.CompleteAsync();
-                    Dispose(true);
+                    await CompletePipeAndDisposeStream();
                 }
 
                 return true;
             }
             catch (Exception e)
             {
-                await _pipe.Writer.CompleteAsync(e);
-                Dispose(true);
+                await CompletePipeAndDisposeStream(e);
+
+                // Fatal exception, crush the circuit. A well behaved client
+                // should not result in this type of exception.
+                if (e is EndOfStreamException)
+                {
+                    throw;
+                }
+
                 return false;
             }
         }
@@ -163,6 +183,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             return b;
+        }
+
+        internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
+        {
+            await _pipe.Writer.CompleteAsync(ex);
+            Dispose(true);
         }
 
         protected override void Dispose(bool disposing)
