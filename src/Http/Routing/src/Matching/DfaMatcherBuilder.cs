@@ -374,11 +374,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                                     }
                                                 }
                                             }
+                                        }
 
-                                            if (passedAllPolicies)
-                                            {
-                                                nextParents.Add(parent.Literals[literal]);
-                                            }
+                                        if (passedAllPolicies)
+                                        {
+                                            nextParents.Add(parent.Literals[literal]);
                                         }
                                     }
                                 }
