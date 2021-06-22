@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
@@ -65,11 +64,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _endpoints.Add(endpoint);
         }
 
-#if DEBUG
-        public DfaNode BuildDfaTree(bool includeLabel = true)
-#else
         public DfaNode BuildDfaTree(bool includeLabel = false)
-#endif
         {
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
@@ -85,11 +80,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 var endpoint = _endpoints[i];
                 var precedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth: 0);
-#if DEBUG
-                work.Add(new DfaBuilderWorkerWorkItem(endpoint, precedenceDigit, new List<DfaNode>() { root, }, 0));
-#else
                 work.Add(new DfaBuilderWorkerWorkItem(endpoint, precedenceDigit, new List<DfaNode>() { root, }));
-#endif
                 maxDepth = Math.Max(maxDepth, endpoint.RoutePattern.PathSegments.Count);
             }
 
@@ -180,11 +171,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         nextParents.Clear();
 
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
-#if DEBUG
-                        nextWork[nextWorkCount] = new DfaBuilderWorkerWorkItem(endpoint, nextPrecedenceDigit, nextParents, depth + 1);
-#else
                         nextWork[nextWorkCount] = new DfaBuilderWorkerWorkItem(endpoint, nextPrecedenceDigit, nextParents);
-#endif
                     }
                     else
                     {
@@ -193,11 +180,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         // Add to the next set of work now so the list will be reused
                         // even if there are no parents
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
-#if DEBUG
-                        nextWork.Add(new DfaBuilderWorkerWorkItem(endpoint, nextPrecedenceDigit, nextParents, depth + 1));
-#else
                         nextWork.Add(new DfaBuilderWorkerWorkItem(endpoint, nextPrecedenceDigit, nextParents));
-#endif
                     }
 
                     var segment = GetCurrentSegment(endpoint, depth);
@@ -963,22 +946,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public RouteEndpoint endpoint;
         public int precedenceDigit;
         public List<DfaNode> parents;
-#if DEBUG
-        public int level;
-#endif
 
-#if DEBUG
-        public DfaBuilderWorkerWorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents, int level)
-#else
         public DfaBuilderWorkerWorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)
-#endif
         {
             this.endpoint = endpoint;
             this.precedenceDigit = precedenceDigit;
             this.parents = parents;
-#if DEBUG
-            this.level = level;
-#endif
         }
 
     public override bool Equals(object obj)
@@ -1003,11 +976,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private string GetDebuggerDisplay()
         {
-#if DEBUG
-            return $"Endpoint: {endpoint.RoutePattern.RawText} - Current segment: {endpoint.RoutePattern.PathSegments[level].DebuggerToString()} - Parents: {string.Join(", ", parents.Select(p => p.Label))}";
-#else
             return $"Endpoint: {endpoint.RoutePattern.RawText} - Parents: {string.Join(", ", parents.Select(p => p.Label))}";
-#endif
         }
     }
 }
