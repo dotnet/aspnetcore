@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 totalLength: 9,
                 maxBufferSize: 50,
                 maximumIncomingBytes: 10_000,
-                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(15)); // Note we're using a 15 second timeout for this test
+                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(40)); // Note we're using a 40 second timeout for this test
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[] { 3, 5, 7 };
 
@@ -95,13 +95,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
                 Assert.True(success);
 
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromSeconds(20));
 
                 // Act & Assert 2
                 success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null);
                 Assert.True(success);
 
-                await Task.Delay(TimeSpan.FromSeconds(20));
+                // Wait 60 seconds (40 sec timeout + 20 sec buffer room)
+                await Task.Delay(TimeSpan.FromSeconds(60));
 
                 // Act & Assert 3
                 // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
@@ -110,9 +111,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 return true;
             });
 
-            // Wait past the initial 15 second timeout to ensure it gets reset after
-            // a new data chunk is received.
-            await Task.Delay(TimeSpan.FromSeconds(20));
+            // Wait 80 seconds (20 sec between first two calls + 40 sec timeout + 20 sec buffer room)
+            await Task.Delay(TimeSpan.FromSeconds(80));
 
             // Act & Assert 4
             using var mem = new MemoryStream();
