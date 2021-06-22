@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _messagePump = messagePump;
         }
 
-        protected override async Task ExecuteAsync()
+        public override async Task ExecuteAsync()
         {
             var messagePump = _messagePump;
             var application = _application;
