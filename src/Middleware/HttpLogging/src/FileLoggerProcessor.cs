@@ -204,8 +204,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             _cancellationTokenSource.Cancel();
             _messageQueue.CompleteAdding();
-            _outputTask.Wait();
-            await ValueTask.CompletedTask;
+            await _outputTask;
         }
 
         private string GetFullName(DateTime date)

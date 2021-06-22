@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     var elements = new string[W3CLoggingMiddleware._fieldsLength];
-                    AddToList(elements, W3CLoggingFields.Date, _timestampOne.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                    AddToList(elements, W3CLoggingFields.Time, _timestampOne.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+                    AddToList(elements, W3CLoggingMiddleware._dateIndex, _timestampOne.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    AddToList(elements, W3CLoggingMiddleware._timeIndex, _timestampOne.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
 
                     logger.Log(elements);
                     await logger.WaitForWrites(4).DefaultTimeout();
@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     var elements = new string[W3CLoggingMiddleware._fieldsLength];
-                    AddToList(elements, W3CLoggingFields.UriQuery, null);
-                    AddToList(elements, W3CLoggingFields.Host, null);
-                    AddToList(elements, W3CLoggingFields.ProtocolStatus, null);
+                    AddToList(elements, W3CLoggingMiddleware._uriQueryIndex, null);
+                    AddToList(elements, W3CLoggingMiddleware._hostIndex, null);
+                    AddToList(elements, W3CLoggingMiddleware._protocolStatusIndex, null);
 
                     logger.Log(elements);
                     await logger.WaitForWrites(4).DefaultTimeout();
@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private void AddToList(string[] elements, W3CLoggingFields key, string value)
+        private void AddToList(string[] elements, int index, string value)
         {
             value ??= string.Empty;
-            elements[W3CLoggingMiddleware._fieldIndices[key]] = value;
+            elements[index] = value;
         }
     }
 }
