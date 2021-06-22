@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Web;
 using Microsoft.AspNetCore.Http;
@@ -268,6 +269,7 @@ namespace Microsoft.AspNetCore.Hosting
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
         {
+            var propagator = TextMapPropagator.DefaultPropagator;
             var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
             if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
             {
@@ -279,38 +281,47 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 return null;
             }
-
             var headers = httpContext.Request.Headers;
-            var requestId = headers.TraceParent;
-            if (requestId.Count == 0)
-            {
-                requestId = headers.RequestId;
-            }
 
-            if (!StringValues.IsNullOrEmpty(requestId))
+            propagator.Extract(headers, (object carrier, string fieldName, out string? value) =>
+            {
+                value = default;
+                var headers = ((IHeaderDictionary)carrier);
+                var values = headers[fieldName];
+                if (values.Count == 0)
+                {
+                    return false;
+                }
+                value = values;
+                return true;
+            },
+
+            out string? requestId, out string? traceState);
+
+            if (requestId is not null)
             {
                 activity.SetParentId(requestId);
-                var traceState = headers.TraceState;
-                if (traceState.Count > 0)
+            }
+            if (traceState is not null)
+            {
+                activity.TraceStateString = traceState;
+            }
+            
+            if (!string.IsNullOrEmpty(requestId))
+            {
+                propagator.Extract(headers, (object carrier, string fieldName, out string? value) =>
                 {
-                    activity.TraceStateString = traceState;
-                }
-
-                // We expect baggage to be empty by default
-                // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
-                if (baggage.Length == 0)
-                {
-                    baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
-                }
+                    value = headers[fieldName];
+                    return true;
+                }, out IEnumerable<KeyValuePair<string, string?>>? baggage);
 
                 // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
                 // An order could be important if baggage has two items with the same key (that is allowed by the contract)
-                for (var i = baggage.Length - 1; i >= 0; i--)
+                if (baggage is not null)
                 {
-                    if (NameValueHeaderValue.TryParse(baggage[i], out var baggageItem))
+                    foreach (var baggageItem in baggage.Reverse())
                     {
-                        activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
+                        activity.AddBaggage(baggageItem.Key, baggageItem.Value);
                     }
                 }
             }

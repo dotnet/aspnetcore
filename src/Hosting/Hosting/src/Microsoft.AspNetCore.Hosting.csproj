@@ -8,6 +8,7 @@
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
