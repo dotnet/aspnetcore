@@ -589,49 +589,6 @@ namespace Microsoft.AspNetCore.Http
             return argument;
         }
 
-        private static MethodCallExpression CreateTryParseCall(MethodInfo tryParseMethod, ParameterInfo parameter, Expression parsedValue)
-        {
-            // Before call the TryParse Method, we should know the exact param to inject
-            Type type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            var useNumberStyles = TryParseMethodCache.UseTryParseWithNumberStyleOption(type);
-            var useDateTimeStyles = TryParseMethodCache.UseTryParseWithDateTimeStyleOptions(type);
-
-            // Should we use CultureInvariant
-            if (tryParseMethod.GetParameters().Length > 2)
-            {
-                if (useNumberStyles)
-                {
-                    return Expression.Call(
-                        tryParseMethod,
-                        TempSourceStringExpr,
-                        Expression.Constant(TryParseMethodCache.SetRightNumberStyles(type)),
-                        Expression.Constant(CultureInfo.InvariantCulture),
-                        parsedValue);
-                }
-                else if (useDateTimeStyles)
-                {
-                    return Expression.Call(
-                        tryParseMethod,
-                        TempSourceStringExpr,
-                        Expression.Constant(CultureInfo.InvariantCulture),
-                        Expression.Constant(DateTimeStyles.None),
-                        parsedValue);
-                }
-                else
-                {
-                    return Expression.Call(
-                        tryParseMethod,
-                        TempSourceStringExpr,
-                        Expression.Constant(CultureInfo.InvariantCulture),
-                        parsedValue);
-                }
-            }
-            else
-            {
-                return Expression.Call(tryParseMethod, TempSourceStringExpr, parsedValue);
-            }
-        }
-
         private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key, FactoryContext factoryContext) =>
             BindParameterFromValue(parameter, GetValueFromProperty(property, key), factoryContext);
 

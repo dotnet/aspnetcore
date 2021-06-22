@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-        private static readonly ConcurrentDictionary<Type, MethodInfo?> Cache = new();
         private static readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, MethodCallExpression>?> MethodCallCache = new(); 
 
         public static bool HasTryParseMethod(ParameterInfo parameter)
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Http
                     return methodDateInfo;
                 }
 
-                if (TryGetNumberStylesTryGetMethod(type, out var methodInfo))
+                if (TryGetNumberStylesTryGetMethod(type, out var methodInfo, out var _))
                 {
                     return methodInfo;
                 }
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Http
                 return null;
             }
 
-            return Cache.GetOrAdd(type, Finder);
+            return Finder(type);
         }
 
         public static Func<ParameterExpression, Expression, MethodCallExpression>? FindTryParseMethodCall(ParameterInfo parameter)
@@ -107,12 +106,12 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                if (TryGetNumberStylesTryGetMethod(type, out methodInfo))
+                if (TryGetNumberStylesTryGetMethod(type, out methodInfo, out var numberStyle))
                 {
                     return (parameterExpression, expression) => Expression.Call(
                         methodInfo!,
                         parameterExpression,
-                        Expression.Constant(SetRightNumberStyles(type)),
+                        Expression.Constant(numberStyle),
                         Expression.Constant(CultureInfo.InvariantCulture),
                         expression);
                 }
@@ -214,9 +213,10 @@ namespace Microsoft.AspNetCore.Http
             return methodInfo != null;
         }
 
-        private static bool TryGetNumberStylesTryGetMethod(Type type, out MethodInfo? method)
+        private static bool TryGetNumberStylesTryGetMethod(Type type, out MethodInfo? method, out NumberStyles? numberStyles)
         {
             method = null;
+            numberStyles = null;
 
             if (!UseTryParseWithNumberStyleOption(type))
             {
@@ -238,6 +238,24 @@ namespace Microsoft.AspNetCore.Http
                     tryParseParameters[3].IsOut &&
                     tryParseParameters[3].ParameterType == type.MakeByRefType())
                 {
+                    if (type == typeof(int) || type == typeof(short) || type == typeof(IntPtr) ||
+                        type == typeof(long) || type == typeof(byte) || type == typeof(sbyte) ||
+                        type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong) ||
+                        type == typeof(BigInteger))
+                    {
+                        numberStyles = NumberStyles.Integer;
+                    }
+
+                    if (type == typeof(double) || type == typeof(float) || type == typeof(Half))
+                    {
+                        numberStyles = NumberStyles.AllowThousands | NumberStyles.Float;
+                    }
+
+                    if (type == typeof(decimal))
+                    {
+                        numberStyles = NumberStyles.Number;
+                    }
+
                     method = methodInfo;
                     break;
                 }
@@ -267,33 +285,5 @@ namespace Microsoft.AspNetCore.Http
                type == typeof(DateTimeOffset) ||
                type == typeof(DateOnly) ||
                type == typeof(TimeOnly);
-
-        internal static NumberStyles SetRightNumberStyles(Type type)
-        {
-            if (!UseTryParseWithNumberStyleOption(type))
-            {
-                throw new InvalidOperationException("Incorrect type !");
-            }
-
-            if (type == typeof(int) || type == typeof(short) || type == typeof(IntPtr) ||
-                type == typeof(long) || type == typeof(byte) || type == typeof(sbyte) ||
-                type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong) ||
-                type == typeof(BigInteger))
-            {
-                return NumberStyles.Integer;
-            }
-
-            if (type == typeof(double) || type == typeof(float) || type == typeof(Half))
-            {
-                return NumberStyles.AllowThousands | NumberStyles.Float;
-            }
-
-            if (type == typeof(decimal))
-            {
-                return NumberStyles.Number;
-            }
-
-            return NumberStyles.None;
-        }
     }
 }
