@@ -47,22 +47,24 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                if (long.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
-                {
-                    return longValue >= Min;
-                }
+                return CheckConstraintCore(valueString);
             }
 
             return false;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        private bool CheckConstraintCore(string? valueString)
         {
-            if (long.TryParse(literal, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
+            if (long.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
             {
                 return longValue >= Min;
             }
             return false;
+        }
+
+        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        {
+            return CheckConstraintCore(literal);
         }
     }
 }

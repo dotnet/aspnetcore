@@ -38,15 +38,20 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 }
 
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return bool.TryParse(valueString, out _);
+                return CheckConstraintCore(valueString);
             }
 
             return false;
         }
 
+        private static bool CheckConstraintCore(string? valueString)
+        {
+            return bool.TryParse(valueString, out _);
+        }
+
         bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
         {
-            return bool.TryParse(literal, out _);
+            return CheckConstraintCore(literal);
         }
     }
 }

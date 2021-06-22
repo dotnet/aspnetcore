@@ -44,15 +44,20 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 }
 
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+                return CheckConstraintCore(valueString);
             }
 
             return false;
         }
 
+        private static bool CheckConstraintCore(string? valueString)
+        {
+            return DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+        }
+
         bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
         {
-            return DateTime.TryParse(literal, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+            return CheckConstraintCore(literal);
         }
     }
 }

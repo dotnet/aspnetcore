@@ -45,16 +45,20 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 && routeValue != null)
             {
                 var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture)!;
-
-                return parameterValueString.Equals(_value, StringComparison.OrdinalIgnoreCase);
+                return CheckConstraintCore(parameterValueString);
             }
 
             return false;
         }
 
+        private bool CheckConstraintCore(string parameterValueString)
+        {
+            return parameterValueString.Equals(_value, StringComparison.OrdinalIgnoreCase);
+        }
+
         bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
         {
-            return literal.Equals(_value, StringComparison.OrdinalIgnoreCase);
+            return CheckConstraintCore(literal);
         }
     }
 }
