@@ -903,6 +903,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
     }
 
+    // TODO: Convert to record struct when available
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     internal struct WorkItem
     {
