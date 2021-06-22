@@ -737,6 +737,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseHeaders_WithNonAscii_Throws()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            Assert.Equal(2, responseHeaders.Count);
+            Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task ResponseHeaders_WithNonAsciiAndCustomEncoder_Works()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            // TODO: How to correctly modify this per test?
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+                context.Response.ContentType = "Custom 你好 Type";
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            Assert.Equal(4, responseHeaders.Count);
+            Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+            Assert.Equal("Custom 你好 Type", responseHeaders[HeaderNames.ContentType]);
+            Assert.Equal("Custom 你好 Value", responseHeaders["CustomName"]);
+        }
+
+        [Fact]
         public async Task ResponseTrailers_WithData_Sent()
         {
             var headers = new[]
@@ -794,6 +866,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithNonAscii_Throws()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+                // ETag is one of the few special cased trailers. Accept is not.
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithNonAsciiAndCustomEncoder_Works()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            // TODO: How to correctly modify this per test?
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+                context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+                // ETag is one of the few special cased trailers. Accept is not.
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Accept";
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            var responseTrailers = await requestStream.ExpectHeadersAsync();
+            Assert.Equal(3, responseTrailers.Count);
+            Assert.Equal("Custom 你好 Value", responseTrailers["CustomName"]);
+            Assert.Equal("Custom 你好 Tag", responseTrailers[HeaderNames.ETag]);
+            Assert.Equal("Custom 你好 Accept", responseTrailers[HeaderNames.Accept]);
 
             await requestStream.ExpectReceiveEndOfStream();
         }

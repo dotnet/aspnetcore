@@ -611,7 +611,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
-                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, ref headersTotalSize, out var length);
+                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(),
+                    _testBase._serviceContext.ServerOptions.RequestHeaderEncodingSelector,
+                    buffer.Span, ref headersTotalSize, out var length);
                 Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
