@@ -386,18 +386,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
                     if (parameterPolicy is ILiteralConstraint constraint)
                     {
-                        var j = 0;
+                        var literalIndex = 0;
                         var allFailed = true;
                         foreach (var literal in parent.Literals.Keys)
                         {
-                            if (!hasFailingPolicy[j] && !constraint.MatchLiteral(parameterPart.Name, literal))
+                            if (!hasFailingPolicy[literalIndex] && !constraint.MatchLiteral(parameterPart.Name, literal))
                             {
-                                hasFailingPolicy[j] = true;
+                                hasFailingPolicy[literalIndex] = true;
                             }
 
-                            allFailed &= hasFailingPolicy[j];
+                            allFailed &= hasFailingPolicy[literalIndex];
 
-                            j++;
+                            literalIndex++;
                         }
 
                         if (allFailed)

@@ -504,6 +504,53 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Null(paramCNode.Parameters);
         }
 
+        [Theory]
+        [InlineData("aa/c", "aa", "c")]
+        [InlineData("1/c", "1", "c")]
+        public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_EvaluatesAllConstraints(string candidate, string firstSegment, string secondSegment)
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint1 = CreateEndpoint(candidate);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("{a:int:length(2)}/b/c");
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.NotNull(root.Parameters);
+
+            var aNodeKvp = Assert.Single(root.Literals);
+            Assert.Equal(firstSegment, aNodeKvp.Key);
+
+            var aNodeValue = aNodeKvp.Value;
+            var cNodeKvp = Assert.Single(aNodeValue.Literals);
+            Assert.Equal(secondSegment, cNodeKvp.Key);
+            var cNode = cNodeKvp.Value;
+
+            Assert.Same(endpoint1, Assert.Single(cNode.Matches));
+            Assert.Null(cNode.Literals);
+            Assert.Null(cNode.Parameters);
+
+            var bNodeKvp = Assert.Single(root.Parameters.Literals);
+            Assert.Equal("b", bNodeKvp.Key);
+            var bNode = bNodeKvp.Value;
+            Assert.Null(bNode.Parameters);
+            Assert.Null(bNode.Matches);
+            var paramCNodeKvp = Assert.Single(bNode.Literals);
+
+            Assert.Equal("c", paramCNodeKvp.Key);
+            var paramCNode = paramCNodeKvp.Value;
+            Assert.Same(endpoint2, Assert.Single(paramCNode.Matches));
+            Assert.Null(paramCNode.Literals);
+            Assert.Null(paramCNode.Parameters);
+        }
+
         [Fact]
         public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_MeetsConstraint()
         {
@@ -897,13 +944,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Null(paramCNode.Parameters);
         }
 
-        [Fact]
-        public void BuildDfaTree_MultipleEndpoint_ComplexParameter_Trims_When_OneConstraintFails()
+        [Theory]
+        [InlineData("a-11-b-true/c", "a-11-b-true", "c")]
+        [InlineData("a-ddd-b-true/c", "a-ddd-b-true", "c")]
+        [InlineData("a-111-b-0/c", "a-111-b-0", "c")]
+        public void BuildDfaTree_MultipleEndpoint_ComplexParameter_Trims_When_OneConstraintFails(string candidate, string firstSegment, string secondSegment)
         {
             // Arrange
             var builder = CreateDfaMatcherBuilder();
 
-            var endpoint1 = CreateEndpoint("a-11-b-true/c");
+            var endpoint1 = CreateEndpoint(candidate);
             builder.AddEndpoint(endpoint1);
 
             var endpoint2 = CreateEndpoint("a-{value:int:length(3)}-b-{other:bool}/b/c");
@@ -919,11 +969,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Branch a-11-b-true -> c = (a11-b-true/c)
 
             var aNodeKvp = Assert.Single(root.Literals);
-            Assert.Equal("a-11-b-true", aNodeKvp.Key);
+            Assert.Equal(firstSegment, aNodeKvp.Key);
 
             var aNodeValue = aNodeKvp.Value;
             var cNodeKvp = aNodeValue.Literals.Single();
-            Assert.Equal("c", cNodeKvp.Key);
+            Assert.Equal(secondSegment, cNodeKvp.Key);
             var cNode = cNodeKvp.Value;
 
             Assert.Same(endpoint1, Assert.Single(cNode.Matches));
