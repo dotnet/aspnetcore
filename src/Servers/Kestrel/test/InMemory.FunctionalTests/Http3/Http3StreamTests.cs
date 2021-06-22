@@ -2186,9 +2186,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectReceiveEndOfStream();
 
-            // TODO(JamesNK): Check for logging and error after https://github.com/dotnet/aspnetcore/issues/31970
-            // Logged without an exception.
-            // Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
+            await requestStream.OnStreamCompletedTask.DefaultTimeout();
+
+            // TODO(JamesNK): Check for abort of request side of stream after https://github.com/dotnet/aspnetcore/issues/31970
+            Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             Assert.Equal(3, receivedHeaders.Count);
             Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -2263,9 +2264,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectReceiveEndOfStream();
 
-            // TODO(JamesNK): Check for logging and error after https://github.com/dotnet/aspnetcore/issues/31970
-            // Logged without an exception.
-            // Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
+            await requestStream.OnStreamCompletedTask.DefaultTimeout();
+            Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             Assert.Equal(3, receivedHeaders.Count);
             Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -2321,9 +2321,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectReceiveEndOfStream();
 
-            // TODO(JamesNK): Check for logging and error after https://github.com/dotnet/aspnetcore/issues/31970
-            // Logged without an exception.
-            // Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
+            await requestStream.OnStreamCompletedTask.DefaultTimeout();
+            Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             Assert.Equal(3, receivedHeaders.Count);
             Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -2512,11 +2511,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectReceiveEndOfStream();
 
-            // TODO(JamesNK): Await the server aborting the sending half of the request stream.
-            // https://github.com/dotnet/aspnetcore/issues/33575
-            await Task.Delay(1000);
+            await requestStream.OnStreamCompletedTask.DefaultTimeout();
 
-            // Logged without an exception.
+            // TODO(JamesNK): Check for abort of request side of stream after https://github.com/dotnet/aspnetcore/issues/31970
             Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
         }
     }
