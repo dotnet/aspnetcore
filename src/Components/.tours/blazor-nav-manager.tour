@@ -49,8 +49,28 @@
     },
     {
       "file": "Web.JS/src/Services/NavigationManager.ts",
-      "description": "Behind the scenes, this calls into JavaScript APIs to to trigger the navigation. ",
+      "description": "Behind the scenes, this calls into JavaScript APIs to to trigger the navigation. But we don't always have to invoke this code path by leveraging JavaScript interop. In fact, most of the time...",
       "line": 69
+    },
+    {
+      "file": "test/testassets/BasicTestApp/RouterTest/Links.razor",
+      "description": "...we'll invoke the `NavigateTo` API on the NavigationManager directly as done here.",
+      "line": 31
+    },
+    {
+      "file": "Components/src/NavigationManager.cs",
+      "description": "Under the hood, `NavigateTo` invokes the abstract `NavigateToCore` method, which has different implementations for the Server and WebAssembly scenarios.",
+      "line": 95
+    },
+    {
+      "file": "WebAssembly/WebAssembly/src/Services/WebAssemblyNavigationManager.cs",
+      "description": "The WebAssembly implementation leverages JavaScript interop to call into the same `navigateTo` codepath that we tough on earlier.",
+      "line": 39
+    },
+    {
+      "file": "Server/src/Circuits/RemoteNavigationManager.cs",
+      "description": "And so does the implementation of the NavigationManager used in Blazor Server implementations. However, the implementation of IJSRuntime used here is the `RemoteJSRuntime` used here...",
+      "line": 78
     }
   ],
   "ref": "963242a12c8b149caee5a9fa3215a8452a4be999"
