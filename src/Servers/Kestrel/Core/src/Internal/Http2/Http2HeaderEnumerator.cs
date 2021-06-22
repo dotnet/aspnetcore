@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http.HPack;
+using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -25,6 +27,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool _hasMultipleValues;
         private KnownHeaderType _knownHeaderType;
 
+        public Func<string, Encoding?> EncodingSelector { get; set; } = KestrelServerOptions.DefaultHeaderEncodingSelector;
+
         public int HPackStaticTableId => GetResponseHeaderStaticTableId(_knownHeaderType);
         public KeyValuePair<string, string> Current { get; private set; }
         object IEnumerator.Current => Current;
@@ -35,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Initialize(HttpResponseHeaders headers)
         {
+            EncodingSelector = headers.EncodingSelector;
             _headersEnumerator = headers.GetEnumerator();
             _headersType = HeadersType.Headers;
             _hasMultipleValues = false;
@@ -42,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Initialize(HttpResponseTrailers headers)
         {
+            EncodingSelector = headers.EncodingSelector;
             _trailersEnumerator = headers.GetEnumerator();
             _headersType = HeadersType.Trailers;
             _hasMultipleValues = false;

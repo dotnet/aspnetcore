@@ -1959,6 +1959,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
                 await context.Response.WriteAsync("Hello World");
             });
@@ -1999,6 +2000,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                context.Response.ContentType = "Custom 你好 Type";
                 context.Response.Headers.Append("CustomName", "Custom 你好 Value");
                 await context.Response.WriteAsync("Hello World");
             });
@@ -2006,7 +2008,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 32,
+                withLength: 84,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
 
@@ -2024,9 +2026,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
 
-            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("Custom 你好 Type", _decodedHeaders[HeaderNames.ContentType]);
             Assert.Equal("Custom 你好 Value", _decodedHeaders["CustomName"]);
         }
 
