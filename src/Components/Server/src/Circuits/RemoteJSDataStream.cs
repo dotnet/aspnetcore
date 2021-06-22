@@ -15,12 +15,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly RemoteJSRuntime _runtime;
         private readonly long _streamId;
         private readonly long _totalLength;
+        private readonly TimeSpan _jsInteropDefaultCallTimeout;
         private readonly CancellationToken _streamCancellationToken;
-        private readonly Timer _receiveDataTimer;
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
         private long _bytesRead;
         private long _expectedChunkId;
+        private CancellationTokenSource _timeoutCancellationTokenSource;
 
         public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
         {
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             long totalLength,
             long maxBufferSize,
             long maximumIncomingBytes,
+            TimeSpan jsInteropDefaultCallTimeout,
             CancellationToken cancellationToken = default)
         {
             // Enforce minimum 1 kb SignalR message size as we budget 512 bytes
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
             var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
-            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, cancellationToken);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
         }
@@ -60,19 +62,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             long streamId,
             long totalLength,
             long maxBufferSize,
+            TimeSpan jsInteropDefaultCallTimeout,
             CancellationToken cancellationToken)
         {
             _runtime = runtime;
             _streamId = streamId;
             _totalLength = totalLength;
+            _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _streamCancellationToken = cancellationToken;
 
-            // Dispose of the stream if a chunk isn't received within 1 minute.
-            _receiveDataTimer = new Timer(new TimerCallback(async (state) => {
-                var stream = state as RemoteJSDataStream;
-                var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
-                await stream.CompletePipeAndDisposeStream(timeoutException);
-            }), this, dueTime: ReceiveDataTimeout, period: Timeout.InfiniteTimeSpan);
+            _timeoutCancellationTokenSource = new CancellationTokenSource();
+            _ = ThrowOnTimeout(_timeoutCancellationTokenSource.Token);
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
@@ -80,15 +80,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _pipeReaderStream = _pipe.Reader.AsStream();
         }
 
-        // internal for testing
-        internal TimeSpan ReceiveDataTimeout { private get; set; } = TimeSpan.FromMinutes(1);
-
         private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
         {
             try
             {
                 // Reset the timeout as a chunk has been received
-                _receiveDataTimer.Change(dueTime: ReceiveDataTimeout, period: Timeout.InfiniteTimeSpan);
+                _timeoutCancellationTokenSource.Cancel();
+                _timeoutCancellationTokenSource = new CancellationTokenSource();
+                _ = ThrowOnTimeout(_timeoutCancellationTokenSource.Token);
 
                 if (!string.IsNullOrEmpty(error))
                 {
@@ -191,6 +190,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             return b;
+        }
+
+        private async Task ThrowOnTimeout(CancellationToken cancellationToken)
+        {
+            await Task.Delay(_jsInteropDefaultCallTimeout, cancellationToken);
+
+            // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
+            var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
+            await CompletePipeAndDisposeStream(timeoutException);
+            throw timeoutException;
         }
 
         internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
