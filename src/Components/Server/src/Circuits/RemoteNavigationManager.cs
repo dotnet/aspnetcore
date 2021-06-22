@@ -65,12 +65,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
-        {
-            NavigateToCore(uri, forceLoad ? NavigationOptions.ForceLoad : NavigationOptions.None);
-        }
-
-        /// <inheritdoc />
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             Log.RequestingNavigation(_logger, uri, options);
@@ -81,9 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new NavigationException(absoluteUriString);
             }
 
-            _jsRuntime.InvokeVoid(Interop.NavigateTo, uri,
-                (options & NavigationOptions.ForceLoad) != 0,
-                (options & NavigationOptions.ReplaceHistoryEntry) != 0);
+            _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options).Preserve();
         }
 
         private static class Log

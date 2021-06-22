@@ -29,12 +29,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
-        {
-            NavigateToCore(uri, forceLoad ? NavigationOptions.ForceLoad : NavigationOptions.None);
-        }
-
-        /// <inheritdoc />
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             if (uri == null)
@@ -42,9 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri,
-                (options & NavigationOptions.ForceLoad) != 0,
-                (options & NavigationOptions.ReplaceHistoryEntry) != 0);
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
         }
     }
 }

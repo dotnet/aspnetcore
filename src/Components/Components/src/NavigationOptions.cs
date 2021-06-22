@@ -1,27 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Additional options for navigating to another URI
+    /// Additional options for navigating to another URI.
     /// </summary>
-    [Flags]
-    public enum NavigationOptions
+    public readonly struct NavigationOptions
     {
         /// <summary>
-        /// Use default options
+        /// If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.
         /// </summary>
-        None = 0,
+        public bool ForceLoad { get; init; }
+
         /// <summary>
-        /// Bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.
+        /// If true, replaces the currently entry in the history stack.
+        /// If false, appends the new entry to the history stack.
         /// </summary>
-        ForceLoad = 1,
-        /// <summary>
-        /// Indicates that the current history entry should be replaced, instead of pushing the new uri onto the browser history stack.
-        /// </summary>
-        ReplaceHistoryEntry = 2
+        public bool ReplaceHistoryEntry { get; init; }
     }
 }

@@ -89,8 +89,9 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
-        public void NavigateTo(string uri)
-            => NavigateTo(uri, forceLoad: false);
+        /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
+        public void NavigateTo(string uri, bool forceLoad) // This overload is for binary back-compat with < 6.0
+            => NavigateTo(uri, forceLoad, replace: false);
 
         /// <summary>
         /// Navigates to the specified URI.
@@ -98,13 +99,25 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        public void NavigateTo(string uri, bool forceLoad)
+        /// <param name="replace">If true, replaces the currently entry in the history stack. If false, appends the new entry to the history stack.</param>
+        public void NavigateTo(string uri, bool forceLoad = false, bool replace = false)
         {
             AssertInitialized();
 
-            // For back-compatibility, we must call the (string, bool) overload of NavigateToCore from here,
-            // because that's the only overload guaranteed to be implemented in subclasses.
-            NavigateToCore(uri, forceLoad);
+            if (replace)
+            {
+                NavigateToCore(uri, new NavigationOptions
+                {
+                    ForceLoad = forceLoad,
+                    ReplaceHistoryEntry = replace,
+                });
+            }
+            else
+            {
+                // For back-compatibility, we must call the (string, bool) overload of NavigateToCore from here,
+                // because that's the only overload guaranteed to be implemented in subclasses.
+                NavigateToCore(uri, forceLoad);
+            }
         }
 
         /// <summary>
@@ -125,7 +138,12 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        protected abstract void NavigateToCore(string uri, bool forceLoad);
+        // The reason this overload exists and is virtual is for back-compat with < 6.0. Existing NavigationManager subclasses may
+        // already override this, so the framework needs to keep using it for the cases when only pre-6.0 options are used.
+        // However, for anyone implementing a new NavigationManager post-6.0, we don't want them to have to override this
+        // overload any more, so there's now a default implementation that calls the updated overload.
+        protected virtual void NavigateToCore(string uri, bool forceLoad)
+            => NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
 
         /// <summary>
         /// Navigates to the specified URI.

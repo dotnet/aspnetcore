@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Components.WebView
             DispatchMessageWithErrorHandling(message);
         }
 
-        public void Navigate(string uri, bool forceLoad)
+        public void Navigate(string uri, NavigationOptions options)
         {
-            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, uri, forceLoad));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, uri, options));
         }
 
         public void AttachToDocument(int componentId, string selector)

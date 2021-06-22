@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             NotifyLocationChanged(intercepted);
         }
 
-        protected override void NavigateToCore(string uri, bool forceLoad)
+        protected override void NavigateToCore(string uri, NavigationOptions options)
         {
-            _ipcSender.Navigate(uri, forceLoad);
+            _ipcSender.Navigate(uri, options);
         }
     }
 }
