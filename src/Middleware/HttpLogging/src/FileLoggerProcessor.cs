@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string GetFullName(DateTime date)
         {
-            return Path.Combine(_path, $"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber}.txt");
+            return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber}.txt"));
         }
 
         public virtual Task OnFirstWrite(StreamWriter streamWriter)
