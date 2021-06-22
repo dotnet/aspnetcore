@@ -606,6 +606,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Assert.Empty(attachedServer.Listener.Options.UrlPrefixes);
         }
 
+        [ConditionalFact]
+        public async Task Server_UnsafePreferInlineScheduling()
+        {
+            using var server = Utilities.CreateHttpServer(
+                out var address,
+                httpContext =>
+                {
+                    return httpContext.Response.WriteAsync("Hello World");
+                },
+                options =>
+                {
+                    options.UnsafePreferInlineScheduling = true;
+                });
+
+            string response = await SendRequestAsync(address);
+            Assert.Equal("Hello World", response);
+        }
+
         private async Task<string> SendRequestAsync(string uri)
         {
             using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout })

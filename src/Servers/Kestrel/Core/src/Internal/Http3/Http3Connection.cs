@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _activeRequestCount;
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
+        private readonly Http3PeerSettings _clientSettings = new Http3PeerSettings();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
         private readonly IProtocolErrorCodeFeature _errorCodeFeature;
 
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
 
             _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
-            _serverSettings.MaxRequestHeaderFieldSize = (uint)httpLimits.Http3.MaxRequestHeaderFieldSize;
+            _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
         }
 
         private void UpdateHighestStreamId(long streamId)
@@ -260,6 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             streamContext.Transport,
                             _streamLifetimeHandler,
                             streamContext,
+                            _clientSettings,
                             _serverSettings);
                         httpConnectionContext.TimeoutControl = _context.TimeoutControl;
 
@@ -423,6 +425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 streamContext.Transport,
                 _streamLifetimeHandler,
                 streamContext,
+                _clientSettings,
                 _serverSettings);
             httpConnectionContext.TimeoutControl = _context.TimeoutControl;
 
@@ -522,6 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case Http3SettingType.QPackMaxTableCapacity:
                     break;
                 case Http3SettingType.MaxFieldSectionSize:
+                    _clientSettings.MaxRequestHeaderFieldSectionSize = (uint)value;
                     break;
                 case Http3SettingType.QPackBlockedStreams:
                     break;

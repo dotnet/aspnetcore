@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -959,6 +960,36 @@ namespace Microsoft.AspNetCore.TestHost
             // Assert
             Assert.Equal(expected, actual);
             Assert.Equal(new Version(2, 0), message.Version);
+        }
+
+        [Fact]
+        public async Task VerifyWebSocketAndUpgradeFeaturesForNonWebSocket()
+        {
+            using (var testServer = new TestServer(new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseWebSockets();
+                    app.Run(async c =>
+                    {
+                        var upgradeFeature = c.Features.Get<IHttpUpgradeFeature>();
+                        // Feature needs to exist for SignalR to verify that the server supports WebSockets
+                        Assert.NotNull(upgradeFeature);
+                        Assert.False(upgradeFeature.IsUpgradableRequest);
+                        await Assert.ThrowsAsync<NotSupportedException>(() => upgradeFeature.UpgradeAsync());
+
+                        var webSocketFeature = c.Features.Get<IHttpWebSocketFeature>();
+                        Assert.NotNull(webSocketFeature);
+                        Assert.False(webSocketFeature.IsWebSocketRequest);
+
+                        await c.Response.WriteAsync("test");
+                    });
+                })))
+            {
+                var client = testServer.CreateClient();
+
+                var actual = await client.GetStringAsync("http://localhost:12345/");
+                Assert.Equal("test", actual);
+            }
         }
     }
 }

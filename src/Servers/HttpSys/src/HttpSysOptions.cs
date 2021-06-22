@@ -219,6 +219,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <summary>
+        /// Inline request processing instead of dispatching to the threadpool.
+        /// </summary>
+        /// <remarks>
+        /// Enabling this setting will run application code on the IO thread to reduce request processing latency. 
+        /// However, this will limit parallel request processing to <see cref="MaxAccepts"/>. This setting can make 
+        /// overall throughput worse if requests take long to process.
+        /// </remarks>
+        public bool UnsafePreferInlineScheduling { get; set; }
+
         // Not called when attaching to an existing queue.
         internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
         {

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that canaction be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static MinimalActionEndpointConventionBuilder MapPut(
             this IEndpointRouteBuilder endpoints,
             string pattern,
@@ -165,6 +165,12 @@ namespace Microsoft.AspNetCore.Builder
             {
                 DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
             };
+
+            // REVIEW: Should we add an IActionMethodMetadata with just MethodInfo on it so we are
+            // explicit about the MethodInfo representing the "action" and not the RequestDelegate?
+
+            // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
+            builder.Metadata.Add(action.Method);
 
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();

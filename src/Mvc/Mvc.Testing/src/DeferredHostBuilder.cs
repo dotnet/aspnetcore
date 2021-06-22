@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         private Action<IHostBuilder> _configure;
         private Func<string[], object>? _hostFactory;
 
+        // This task represents a call to IHost.Start, we create it here preemptively in case the application
+        // exits due to an exception or because it didn't wait for the shutdown signal
+        private readonly TaskCompletionSource _hostStartTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public DeferredHostBuilder()
         {
             _configure = b =>
@@ -37,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var host = (IHost)_hostFactory!(Array.Empty<string>());
 
             // We can't return the host directly since we need to defer the call to StartAsync
-            return new DeferredHost(host);
+            return new DeferredHost(host, _hostStartTcs);
         }
 
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
@@ -81,6 +85,19 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             _configure(((IHostBuilder)hostBuilder));
         }
 
+        public void EntryPointCompleted(Exception? exception)
+        {
+            // If the entry point completed we'll set the tcs just in case the application doesn't call IHost.Start/StartAsync.
+            if (exception is not null)
+            {
+                _hostStartTcs.TrySetException(exception);
+            }
+            else
+            {
+                _hostStartTcs.TrySetResult();
+            }
+        }
+
         public void SetHostFactory(Func<string[], object> hostFactory)
         {
             _hostFactory = hostFactory;
@@ -89,40 +106,40 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         private class DeferredHost : IHost, IAsyncDisposable
         {
             private readonly IHost _host;
+            private readonly TaskCompletionSource _hostStartedTcs;
 
-            public DeferredHost(IHost host)
+            public DeferredHost(IHost host, TaskCompletionSource hostStartedTcs)
             {
                 _host = host;
+                _hostStartedTcs = hostStartedTcs;
             }
 
             public IServiceProvider Services => _host.Services;
 
             public void Dispose() => _host.Dispose();
 
-            public ValueTask DisposeAsync()
+            public async ValueTask DisposeAsync()
             {
                 if (_host is IAsyncDisposable disposable)
                 {
-                    return disposable.DisposeAsync();
+                    await disposable.DisposeAsync().ConfigureAwait(false);
+                    return;
                 }
                 Dispose();
-                return default;
             }
 
-            public Task StartAsync(CancellationToken cancellationToken = default)
+            public async Task StartAsync(CancellationToken cancellationToken = default)
             {
-                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
                 // Wait on the existing host to start running and have this call wait on that. This avoids starting the actual host too early and
                 // leaves the application in charge of calling start.
 
-                using var reg = cancellationToken.UnsafeRegister(_ => tcs.TrySetCanceled(), null);
+                using var reg = cancellationToken.UnsafeRegister(_ => _hostStartedTcs.TrySetCanceled(), null);
 
                 // REVIEW: This will deadlock if the application creates the host but never calls start. This is mitigated by the cancellationToken
                 // but it's rarely a valid token for Start
-                _host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.UnsafeRegister(_ => tcs.TrySetResult(), null);
+                using var reg2 = _host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.UnsafeRegister(_ => _hostStartedTcs.TrySetResult(), null);
 
-                return tcs.Task;
+                await _hostStartedTcs.Task.ConfigureAwait(false);
             }
 
             public Task StopAsync(CancellationToken cancellationToken = default) => _host.StopAsync(cancellationToken);

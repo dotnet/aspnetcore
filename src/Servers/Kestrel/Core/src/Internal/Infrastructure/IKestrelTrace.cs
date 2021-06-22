@@ -4,6 +4,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -92,5 +93,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame);
 
         void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame);
+
+        void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex);
+
+        void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex);
     }
 }

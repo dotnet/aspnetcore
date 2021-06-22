@@ -50,6 +50,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private TaskCompletionSource? _appCompleted;
 
+        private StreamCompletionFlags _completionState;
+        private readonly object _completionLock = new object();
+
+        public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
+        private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+        internal bool RstStreamReceived => (_completionState & StreamCompletionFlags.RstStreamReceived) == StreamCompletionFlags.RstStreamReceived;
+
         public Pipe RequestBodyPipe { get; }
 
         public Http3Stream(Http3StreamContext context)
@@ -71,7 +78,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log,
-                _streamIdFeature);
+                _streamIdFeature,
+                context.ClientPeerSettings,
+                this);
 
             // ResponseHeaders aren't set, kind of ugly that we need to reset.
             Reset();
@@ -103,8 +112,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
-            // TODO - Should there be a check here to track abort state to avoid
-            // running twice for a request?
+            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+
+            if (oldState == newState)
+            {
+                return;
+            }
 
             Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
 
@@ -317,8 +330,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override void OnRequestProcessingEnded()
         {
+            CompleteStream(errored: false);
+        }
+
+        private void CompleteStream(bool errored)
+        {
             Debug.Assert(_appCompleted != null);
             _appCompleted.SetResult();
+
+            if (!EndStreamReceived)
+            {
+                if (!errored)
+                {
+                    Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                }
+
+                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+                if (oldState != newState)
+                {
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1-15
+                    // When the server does not need to receive the remainder of the request, it MAY abort reading
+                    // the request stream, send a complete response, and cleanly close the sending part of the stream.
+                    // The error code H3_NO_ERROR SHOULD be used when requesting that the client stop sending on the
+                    // request stream.
+
+                    // TODO(JamesNK): Abort the read half of the stream with H3_NO_ERROR
+                    // https://github.com/dotnet/aspnetcore/issues/33575
+
+                    RequestBodyPipe.Writer.Complete();
+                }
+            }
         }
 
         private bool TryClose()
@@ -421,6 +462,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private ValueTask OnEndStreamReceived()
         {
+            ApplyCompletionFlag(StreamCompletionFlags.EndStreamReceived);
+
             if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
             {
                 // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1-14
@@ -485,8 +528,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
             }
 
-            QPackDecoder.Decode(payload, handler: this);
-            QPackDecoder.Reset();
+            try
+            {
+                QPackDecoder.Decode(payload, handler: this);
+                QPackDecoder.Reset();
+            }
+            catch (QPackDecodingException ex)
+            {
+                Log.QPackDecodingError(ConnectionId, StreamId, ex);
+                throw new Http3StreamErrorException(ex.Message, Http3ErrorCode.InternalError);
+            }
 
             switch (_requestHeaderParsingState)
             {
@@ -542,7 +593,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
-                var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data)));
+                var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data));
                 throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame);
             }
 
@@ -804,6 +855,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
 
+        private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)
+        {
+            lock (_completionLock)
+            {
+                var oldCompletionState = _completionState;
+                _completionState |= completionState;
+
+                return (oldCompletionState, _completionState);
+            }
+        }
+
         /// <summary>
         /// Used to kick off the request processing loop by derived classes.
         /// </summary>
@@ -827,6 +889,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Scheme = 0x8,
             Status = 0x10,
             Unknown = 0x40000000
+        }
+
+        [Flags]
+        private enum StreamCompletionFlags
+        {
+            None = 0,
+            RstStreamReceived = 1,
+            EndStreamReceived = 2,
+            Aborted = 4,
         }
 
         private static class GracefulCloseInitiator

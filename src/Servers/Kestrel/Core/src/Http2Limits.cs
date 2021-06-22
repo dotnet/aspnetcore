@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Limits the number of concurrent request streams per HTTP/2 connection. Excess streams will be refused.
         /// <para>
-        /// Value must be greater than 0, defaults to 100
+        /// Value must be greater than 0, defaults to 100.
         /// </para>
         /// </summary>
         public int MaxStreamsPerConnection
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Limits the size of the header compression tables, in octets, the HPACK encoder and decoder on the server can use.
         /// <para>
-        /// Value must be greater than or equal to 0, defaults to 4096
+        /// Value must be greater than or equal to 0, defaults to 4096.
         /// </para>
         /// </summary>
         public int HeaderTableSize
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Indicates the size of the largest frame payload that is allowed to be received, in octets. The size must be between 2^14 and 2^24-1.
         /// <para>
-        /// Value must be between 2^14 and 2^24, defaults to 2^14 (16,384)
+        /// Value must be between 2^14 and 2^24, defaults to 2^14 (16,384).
         /// </para>
         /// </summary>
         public int MaxFrameSize
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Indicates the size of the maximum allowed size of a request header field sequence. This limit applies to both name and value sequences in their compressed and uncompressed representations.
         /// <para>
-        /// Value must be greater than 0, defaults to 2^14 (16,384)
+        /// Value must be greater than 0, defaults to 2^14 (16,384).
         /// </para>
         /// </summary>
         public int MaxRequestHeaderFieldSize
