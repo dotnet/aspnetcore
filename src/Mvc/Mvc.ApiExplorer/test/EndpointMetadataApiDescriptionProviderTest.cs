@@ -248,20 +248,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromServiceParameterAsService()
+        public void DoesNotAddFromServiceParameterAsService()
         {
-            static void AssertServiceParameter(ApiDescription apiDescription, Type expectedType)
-            {
-                var param = Assert.Single(apiDescription.ParameterDescriptions);
-                Assert.Equal(expectedType, param.Type);
-                Assert.Equal(expectedType, param.ModelMetadata.ModelType);
-                Assert.Equal(BindingSource.Services, param.Source);
-            }
-
-            AssertServiceParameter(GetApiDescription((IInferredServiceInterface foo) => { }), typeof(IInferredServiceInterface));
-            AssertServiceParameter(GetApiDescription(([FromServices] int foo) => { }), typeof(int));
-            AssertServiceParameter(GetApiDescription((HttpContext context) => { }), typeof(HttpContext));
-            AssertServiceParameter(GetApiDescription((CancellationToken token) => { }), typeof(CancellationToken));
+            Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
         }
 
         [Fact]
