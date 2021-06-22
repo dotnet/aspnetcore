@@ -68,8 +68,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Circuit = new Circuit(this);
             Handle = new CircuitHandle() { CircuitHost = this, };
 
-            Renderer.UnhandledException += Renderer_UnhandledException;
+            // An unhandled exception from the renderer is always fatal because it came from user code.
+            Renderer.UnhandledException += ReportAndInvoke_UnhandledException;
             Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
+
+            JSRuntime.UnhandledException += ReportAndInvoke_UnhandledException;
         }
 
         public CircuitHandle Handle { get; }
@@ -571,9 +574,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        // An unhandled exception from the renderer is always fatal because it came from user code.
         // We want to notify the client if it's still connected, and then tear-down the circuit.
-        private async void Renderer_UnhandledException(object sender, Exception e)
+        private async void ReportAndInvoke_UnhandledException(object sender, Exception e)
         {
             await ReportUnhandledException(e);
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(e, isTerminating: false));

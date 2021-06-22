@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private long _bytesRead;
         private long _expectedChunkId;
         private DateTimeOffset _lastDataReceivedTime;
+        private bool _disposed;
 
         public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
         {
@@ -194,12 +195,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             await Task.Delay(_jsInteropDefaultCallTimeout);
 
-            if (DateTime.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout))
+            if (!_disposed && (DateTime.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
             {
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
                 var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
                 await CompletePipeAndDisposeStream(timeoutException);
-                throw timeoutException;
+                _runtime.RaiseUnhandledException(timeoutException);
             }
         }
 
@@ -215,6 +216,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 _runtime.RemoteJSDataStreamInstances.Remove(_streamId);
             }
+
+            _disposed = true;
         }
     }
 }

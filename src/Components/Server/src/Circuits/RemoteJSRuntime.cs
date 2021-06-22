@@ -31,6 +31,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public bool IsInitialized => _clientProxy is not null;
 
+        /// <summary>
+        /// Notifies when a runtime exception occurred.
+        /// </summary>
+        public event EventHandler<Exception>? UnhandledException;
+
         public RemoteJSRuntime(
             IOptions<CircuitOptions> circuitOptions,
             IOptions<HubOptions> hubOptions,
@@ -51,6 +56,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         internal void Initialize(CircuitClientProxy clientProxy)
         {
             _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
+        }
+
+        internal void RaiseUnhandledException(Exception ex)
+        {
+            UnhandledException?.Invoke(this, ex);
         }
 
         protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
