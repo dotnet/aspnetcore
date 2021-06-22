@@ -106,7 +106,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         /// <summary>
-        /// Fields to log. Defaults to logging request and response properties and headers.
+        /// Fields to log. Defaults to logging request and response properties and headers,
+        /// plus date/time info and server name.
         /// </summary>
         public W3CLoggingFields LoggingFields { get; set; } = W3CLoggingFields.Date | W3CLoggingFields.Time |
             W3CLoggingFields.ServerName | W3CLoggingFields.Method | W3CLoggingFields.UriStem | W3CLoggingFields.UriQuery |

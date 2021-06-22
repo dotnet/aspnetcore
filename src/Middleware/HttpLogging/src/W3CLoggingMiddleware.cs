@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly W3CLogger _w3cLogger;
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
         private string? _serverName;
-        private bool _hasLogged;
 
         internal static Dictionary<W3CLoggingFields, int> _fieldIndices = new Dictionary<W3CLoggingFields, int>()
         {
@@ -58,7 +57,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <param name="w3cLogger"></param>
         public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, W3CLogger w3cLogger)
         {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
 
             if (options == null)
             {
@@ -70,6 +72,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 throw new ArgumentNullException(nameof(w3cLogger));
             }
 
+            _next = next;
             _options = options;
             _w3cLogger = w3cLogger;
         }
@@ -85,15 +88,24 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             var elements = new string[_fieldsLength];
 
+            // Whether any of the requested fields actually had content
+            bool shouldLog = false;
+
             var now = DateTime.Now;
             if (options.LoggingFields.HasFlag(W3CLoggingFields.Date))
             {
-                AddToList(elements, W3CLoggingFields.Date, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                shouldLog |= AddToList(elements, W3CLoggingFields.Date, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.Time))
             {
-                AddToList(elements, W3CLoggingFields.Time, now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+                shouldLog |= AddToList(elements, W3CLoggingFields.Time, now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+            }
+
+            if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerName))
+            {
+                _serverName ??= Environment.MachineName;
+                shouldLog |= AddToList(elements, W3CLoggingFields.ServerName, _serverName);
             }
 
             if ((W3CLoggingFields.ConnectionInfoFields & options.LoggingFields) != W3CLoggingFields.None)
@@ -102,17 +114,17 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ClientIpAddress))
                 {
-                    AddToList(elements, W3CLoggingFields.ClientIpAddress, connectionInfo.RemoteIpAddress is null ? "" : connectionInfo.RemoteIpAddress.ToString());
+                    shouldLog |= AddToList(elements, W3CLoggingFields.ClientIpAddress, connectionInfo.RemoteIpAddress is null ? "" : connectionInfo.RemoteIpAddress.ToString());
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerIpAddress))
                 {
-                    AddToList(elements, W3CLoggingFields.ServerIpAddress, connectionInfo.LocalIpAddress is null ? "" : connectionInfo.LocalIpAddress.ToString());
+                    shouldLog |= AddToList(elements, W3CLoggingFields.ServerIpAddress, connectionInfo.LocalIpAddress is null ? "" : connectionInfo.LocalIpAddress.ToString());
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerPort))
                 {
-                    AddToList(elements, W3CLoggingFields.ServerPort, connectionInfo.LocalPort.ToString(CultureInfo.InvariantCulture));
+                    shouldLog |= AddToList(elements, W3CLoggingFields.ServerPort, connectionInfo.LocalPort.ToString(CultureInfo.InvariantCulture));
                 }
             }
 
@@ -122,22 +134,22 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
                 {
-                    AddToList(elements, W3CLoggingFields.ProtocolVersion, request.Protocol);
+                    shouldLog |= AddToList(elements, W3CLoggingFields.ProtocolVersion, request.Protocol);
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.Method))
                 {
-                    AddToList(elements, W3CLoggingFields.Method, request.Method);
+                    shouldLog |= AddToList(elements, W3CLoggingFields.Method, request.Method);
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.UriStem))
                 {
-                    AddToList(elements, W3CLoggingFields.UriStem, request.Path.Value);
+                    shouldLog |= AddToList(elements, W3CLoggingFields.UriStem, request.Path.ToUriComponent());
                 }
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.UriQuery))
                 {
-                    AddToList(elements, W3CLoggingFields.UriQuery, request.QueryString.Value);
+                    shouldLog |= AddToList(elements, W3CLoggingFields.UriQuery, request.QueryString.Value);
                 }
 
                 if ((W3CLoggingFields.RequestHeaders & options.LoggingFields) != W3CLoggingFields.None)
@@ -148,7 +160,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Host, out var host))
                         {
-                            AddToList(elements, W3CLoggingFields.Host, host.ToString());
+                            shouldLog |= AddToList(elements, W3CLoggingFields.Host, host.ToString());
                         }
                     }
 
@@ -156,7 +168,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Referer, out var referer))
                         {
-                            AddToList(elements, W3CLoggingFields.Referer, referer.ToString());
+                            shouldLog |= AddToList(elements, W3CLoggingFields.Referer, referer.ToString());
                         }
                     }
 
@@ -164,7 +176,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.UserAgent, out var agent))
                         {
-                            AddToList(elements, W3CLoggingFields.UserAgent, agent.ToString());
+                            shouldLog |= AddToList(elements, W3CLoggingFields.UserAgent, agent.ToString());
                         }
                     }
 
@@ -172,7 +184,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
                         {
-                            AddToList(elements, W3CLoggingFields.Cookie, cookie.ToString());
+                            shouldLog |= AddToList(elements, W3CLoggingFields.Cookie, cookie.ToString());
                         }
                     }
                 }
@@ -187,7 +199,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             catch
             {
                 // Write the log
-                if (_hasLogged)
+                if (shouldLog)
                 {
                     _w3cLogger.Log(elements);
                 }
@@ -196,40 +208,26 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.UserName))
             {
-                AddToList(elements, W3CLoggingFields.UserName, context?.User?.Identity?.Name ?? "");
+                shouldLog |= AddToList(elements, W3CLoggingFields.UserName, context?.User?.Identity?.Name ?? "");
             }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
             {
-                AddToList(elements, W3CLoggingFields.ProtocolStatus, response.StatusCode.ToString(CultureInfo.InvariantCulture));
-            }
-
-            if ((W3CLoggingFields.ResponseHeaders & options.LoggingFields) != W3CLoggingFields.None)
-            {
-                var headers = response.Headers;
-
-                if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerName))
-                {
-                    if (headers.TryGetValue(HeaderNames.Server, out var server))
-                    {
-                        _serverName ??= Environment.MachineName;
-                        AddToList(elements, W3CLoggingFields.ServerName, _serverName);
-                    }
-                }
+                shouldLog |= AddToList(elements, W3CLoggingFields.ProtocolStatus, response.StatusCode.ToString(CultureInfo.InvariantCulture));
             }
 
             // Write the log
-            if (_hasLogged)
+            if (shouldLog)
             {
                 _w3cLogger.Log(elements);
             }
         }
 
-        private void AddToList(string[] elements, W3CLoggingFields key, string? value)
+        private bool AddToList(string[] elements, W3CLoggingFields key, string? value)
         {
-            _hasLogged = true;
             value ??= string.Empty;
             elements[_fieldIndices[key]] = ReplaceWhitespace(value.Trim());
+            return !string.IsNullOrWhiteSpace(value);
         }
 
         // We replace whitespace with the '+' character

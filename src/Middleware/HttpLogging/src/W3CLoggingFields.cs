@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Flag for logging the name of the
         /// authenticated user that accessed the server.
+        /// UserName contents can contain private information
+        /// which may have regulatory concerns under GDPR
+        /// and other laws. UserName should not be logged
+        /// unless logs are secure and access controlled
+        /// and the privacy impact accessed."
         /// </summary>
         UserName = 0x8,
 
@@ -78,8 +83,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         UriQuery = 0x200,
 
         /// <summary>
-        /// Flag for logging the status of the
-        /// action, in HTTP or FTP terms.
+        /// Flag for logging the HTTP response status code.
         /// </summary>
         ProtocolStatus = 0x400,
 
@@ -109,12 +113,17 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Flag for logging the content of the cookie
         /// sent by the client, if any.
+        /// Cookie contents can contain authentication tokens,
+        /// or private information which may have regulatory concerns
+        /// under GDPR and other laws. Cookies should not be logged
+        /// unless logs are secure and access controlled
+        /// and the privacy impact accessed.
         /// </summary>
         Cookie = 0x8000,
 
         /// <summary>
-        /// Flag for logging the content of the cookie
-        /// sent by the client, if any.
+        /// Flag for logging the previous site visited by the user,
+        /// which provided a link to the current site, if any.
         /// </summary>
         Referer = 0x10000,
 
@@ -126,22 +135,15 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Flag for logging properties that are part of the <see cref="HttpRequest.Headers"/>
-        /// Includes <see cref="Host"/>, <see cref="Referer"/>, <see cref="Cookie"/>,
-        /// and <see cref="UserAgent"/>.
+        /// Includes <see cref="Host"/>, <see cref="Referer"/>, and <see cref="UserAgent"/>.
         /// </summary>
-        RequestHeaders = Host | Referer | UserAgent | Cookie,
-
-        /// <summary>
-        /// Flag for logging properties that are part of the <see cref="HttpResponse.Headers"/>
-        /// Includes <see cref="ServerName"/>.
-        /// </summary>
-        ResponseHeaders = ServerName,
+        RequestHeaders = Host | Referer | UserAgent,
 
         /// <summary>
         /// Flag for logging properties that are part of the <see cref="HttpRequest"/>
         /// Includes <see cref="UriStem"/>, <see cref="UriQuery"/>, <see cref="ProtocolVersion"/>,
-        /// <see cref="Method"/>, <see cref="Cookie"/>, <see cref="Host"/>,
-        /// <see cref="Referer"/>, and <see cref="UserAgent"/>.
+        /// <see cref="Method"/>, <see cref="Host"/>, <see cref="Referer"/>, 
+        /// and <see cref="UserAgent"/>.
         /// </summary>
         Request = UriStem | UriQuery | ProtocolVersion | Method | RequestHeaders,
 
