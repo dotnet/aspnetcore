@@ -281,6 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Only validate here if we're using the default encoding (ASCII). Otherwise we'll validate later when encoding.
                 if (encoding == null)
                 {
+                    // Check for control and non-ASCII characters.
                     var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
                     if (invalid >= 0)
                     {
@@ -289,6 +290,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 else
                 {
+                    // Still check for control characters, but allow for non-ASCII.
+                    var invalid = HttpCharacters.IndexOfInvalidFieldValueCharExtended(headerCharacters);
+                    if (invalid >= 0)
+                    {
+                        ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
+                    }
+
                     try
                     {
                         encoding.GetByteCount(headerCharacters);

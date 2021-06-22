@@ -1961,6 +1961,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
                 Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
                 await context.Response.WriteAsync("Hello World");
             });
 
@@ -2000,6 +2001,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
                 context.Response.ContentType = "Custom 你好 Type";
                 context.Response.Headers.Append("CustomName", "Custom 你好 Value");
                 await context.Response.WriteAsync("Hello World");
@@ -2265,6 +2267,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await context.Response.WriteAsync("Hello World");
                 Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
                 Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+                // ETag is one of the few special cased trailers. Accept is not.
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
             });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -2303,7 +2309,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 await context.Response.WriteAsync("Hello World");
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
                 context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+                // ETag is one of the few special cased trailers. Accept is not.
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Accept";
             });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -2318,9 +2329,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 80,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS),
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -2330,6 +2341,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(2, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Equal("Custom 你好 Value", _decodedHeaders["CustomName"]);
+            Assert.Equal("Custom 你好 Tag", _decodedHeaders[HeaderNames.ETag]);
+            Assert.Equal("Custom 你好 Accept", _decodedHeaders[HeaderNames.Accept]);
         }
 
         [Fact]

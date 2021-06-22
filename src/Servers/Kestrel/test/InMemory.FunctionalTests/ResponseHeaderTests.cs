@@ -20,8 +20,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await using var server = new TestServer(context =>
             {
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
-                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
+                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type"); // Special cased
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Accept = "Custom 你好 Accept"); // Not special cased
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
                 context.Response.ContentLength = 11;
                 return context.Response.WriteAsync("Hello World");
             }, new TestServiceContext(LoggerFactory));
@@ -49,7 +51,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await using var server = new TestServer(context =>
             {
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
                 context.Response.ContentType = "Custom 你好 Type";
+                context.Response.Headers.Accept = "Custom 你好 Accept";
                 context.Response.Headers.Append("CustomName", "Custom 你好 Value");
                 context.Response.ContentLength = 11;
                 return context.Response.WriteAsync("Hello World");
@@ -67,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 "Content-Type: Custom 你好 Type",
                 $"Date: {server.Context.DateHeaderValue}",
                 "Content-Length: 11",
+                "Accept: Custom 你好 Accept",
                 "CustomName: Custom 你好 Value",
                 "",
                 "Hello World");
@@ -84,7 +89,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
                 Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Accept = "Custom 你好 Accept");
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
                 context.Response.ContentLength = 11;
                 return context.Response.WriteAsync("Hello World");
             }, testContext);

@@ -888,6 +888,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {{
                 if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
 
+                ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);
                 SetValueUnknown(HeaderNames.{header}, value);
             }}
         }}")}
