@@ -42,7 +42,9 @@ namespace Microsoft.AspNetCore.Builder
             var dataSource = Assert.Single(builder.DataSources);
             var endpoint = Assert.Single(dataSource.Endpoints);
 
-            var metadataArray = endpoint.Metadata.Where(m => m is not CompilerGeneratedAttribute).ToArray();
+            var metadataArray = endpoint.Metadata.OfType<IHttpMethodMetadata>().ToArray();
+
+            static string GetMethod(IHttpMethodMetadata metadata) => Assert.Single(metadata.HttpMethods);
 
             Assert.Equal(3, metadataArray.Length);
             Assert.Equal("ATTRIBUTE", GetMethod(metadataArray[0]));
@@ -50,12 +52,6 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("BUILDER", GetMethod(metadataArray[2]));
 
             Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()!.HttpMethods.Single());
-
-            string GetMethod(object metadata)
-            {
-                var httpMethodMetadata = Assert.IsAssignableFrom<IHttpMethodMetadata>(metadata);
-                return Assert.Single(httpMethodMetadata.HttpMethods);
-            }
         }
 
         [Fact]

@@ -4,6 +4,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -150,6 +151,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, string, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.",
                 skipEnabledCheck: true);
+
+        private static readonly Action<ILogger, string, long, Exception> _qpackDecodingError =
+            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(48, "QPackDecodingError"),
+                @"Connection id ""{ConnectionId}"": QPACK decoding error while decoding headers for stream ID {StreamId}.");
+
+        private static readonly Action<ILogger, string, long, Exception> _qpackEncodingError =
+            LoggerMessage.Define<string, long>(LogLevel.Information, new EventId(49, "QPackEncodingError"),
+                @"Connection id ""{ConnectionId}"": QPACK encoding error while encoding headers for stream ID {StreamId}.");
 
         protected readonly ILogger _generalLogger;
         protected readonly ILogger _badRequestsLogger;
@@ -380,6 +389,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 _http3FrameSending(_http3Logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
             }
+        }
+
+        public virtual void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex)
+        {
+            _qpackDecodingError(_http3Logger, connectionId, streamId, ex);
+        }
+
+        public virtual void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex)
+        {
+            _qpackEncodingError(_http3Logger, connectionId, streamId, ex);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

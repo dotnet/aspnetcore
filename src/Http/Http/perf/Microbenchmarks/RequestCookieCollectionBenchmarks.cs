@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http
         [Benchmark]
         public void Parse_TypicalCookie()
         {
-            RequestCookieCollection.Parse(_cookie);
+            _ = RequestCookieCollection.Parse(_cookie);
         }
     }
 }

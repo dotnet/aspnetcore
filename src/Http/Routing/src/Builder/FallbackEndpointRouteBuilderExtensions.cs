@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Builder
         /// The order of the registered endpoint will be <c>int.MaxValue</c>.
         /// </para>
         /// <para>
-        /// This overload will use the provided <paramref name="pattern"/> verbatim. Use the <c>:nonfile</c> route contraint
+        /// This overload will use the provided <paramref name="pattern"/> verbatim. Use the <c>:nonfile</c> route constraint
         /// to exclude requests for static files.
         /// </para>
         /// </remarks>

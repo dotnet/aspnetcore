@@ -89,14 +89,4 @@
     <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />
     <_CompilationOnlyReference Include="System.Text.Json" />
   </ItemGroup>
-
-  <!--
-    These compilation references are necessary to workaround the mismatch of what is found in the ref pack for NETCore.App and what
-    is actually present at runtime. See https://github.com/dotnet/corefx/issues/34906
-  -->
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' or $(TargetFrameworks.Contains('$(DefaultNetCoreTargetFramework)'))">
-    <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
-    <_CompilationOnlyReference Include="System.Security.Principal.Windows" />
-  </ItemGroup>
-
 </Project>

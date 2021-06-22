@@ -55,6 +55,46 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(new[] { "value1", "" }, collection[""]);
         }
 
+        [Fact]
+        public void ParseQueryWithEncodedKeyWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D");
+            Assert.Single(collection);
+            Assert.Equal("", collection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedValueWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?=fields+%5BtodoItems%5D");
+            Assert.Single(collection);
+            Assert.Equal("fields [todoItems]", collection[""].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEmptyValueWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=");
+            Assert.Single(collection);
+            Assert.Equal("", collection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEncodedValueWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=%5B+1+%5D");
+            Assert.Single(collection);
+            Assert.Equal("[ 1 ]", collection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEncodedValuesWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=%5B+1+%5D&fields+%5BtodoItems%5D=%5B+2+%5D");
+            Assert.Single(collection);
+            Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, collection["fields [todoItems]"]);
+        }
+
         [Theory]
         [InlineData("?")]
         [InlineData("")]
