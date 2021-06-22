@@ -80,15 +80,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, NavigationOptions, Exception> _requestingNavigation =
-                LoggerMessage.Define<string, NavigationOptions>(LogLevel.Debug, new EventId(1, "RequestingNavigation"), "Requesting navigation to URI {Uri} with options={options}");
+            private static readonly Action<ILogger, string, bool, bool, Exception> _requestingNavigation =
+                LoggerMessage.Define<string, bool, bool>(LogLevel.Debug, new EventId(1, "RequestingNavigation"), "Requesting navigation to URI {Uri} with forceLoad={ForceLoad}, replace={Replace}");
 
             private static readonly Action<ILogger, string, bool, Exception> _receivedLocationChangedNotification =
                 LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(2, "ReceivedLocationChangedNotification"), "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}");
 
             public static void RequestingNavigation(ILogger logger, string uri, NavigationOptions options)
             {
-                _requestingNavigation(logger, uri, options, null);
+                _requestingNavigation(logger, uri, options.ForceLoad, options.ReplaceHistoryEntry, null);
             }
 
             public static void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted)
