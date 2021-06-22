@@ -179,6 +179,8 @@ namespace Microsoft.AspNetCore.Shared.Tests
                     new[] { "/%E4%BD%A0%E5%A5%BD", "/你好" },
                     new[] { "/a%%2Fb", "/a%%2Fb" },
                     new[] { "/a%2Fb+c", "/a%2Fb+c" },
+                    new[] { "/%C3%C3%A1", "/%C3á" },
+                    new[] { "/a%20%%b", "/a %%b" },
                 };
             }
         }

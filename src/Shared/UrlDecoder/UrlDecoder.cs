@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Internal
 {
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Internal
             if (destination.Length < source.Length)
             {
                 throw new ArgumentException(
-                    "Length of the destination byte span is less then the source.",
+                    "Length of the destination byte span is less than the source.",
                     nameof(destination));
             }
 
@@ -348,7 +349,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <summary>
         /// Unescape a URL path
         /// </summary>
-        /// <param name="source">The char span represents a UTF8 encoded, escaped url path.</param>
+        /// <param name="source">The escape sequences is expected to be well-formed UTF-8 code units.</param>
         /// <param name="destination">The char span where unescaped url path is copied to.</param>
         /// <returns>The length of the char sequence of the unescaped url path.</returns>
         /// <remarks>
@@ -357,14 +358,8 @@ namespace Microsoft.AspNetCore.Internal
         /// </remarks>
         public static int DecodeRequestLine(ReadOnlySpan<char> source, Span<char> destination)
         {
-            if (destination.Length < source.Length)
-            {
-                throw new ArgumentException(
-                    "Length of the destination char span is less then the source.",
-                    nameof(destination));
-            }
-
             // This requires the destination span to be larger or equal to source span
+            // which is validated by Span<T>.CopyTo.
             source.CopyTo(destination);
             return DecodeInPlace(destination.Slice(0, source.Length));
         }
@@ -372,7 +367,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <summary>
         /// Unescape a URL path in place.
         /// </summary>
-        /// <param name="buffer">The char span represents a UTF8 encoded, escaped url path.</param>
+        /// <param name="buffer">The escape sequences is expected to be well-formed UTF-8 code units.</param>
         /// <returns>The number of the chars representing the result.</returns>
         /// <remarks>
         /// The unescape is done in place, which means after decoding the result is the subset of
@@ -441,92 +436,82 @@ namespace Microsoft.AspNetCore.Internal
         {
             // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
             // chars from this till the last scanned one will be copied to the memory pointed by writer.
-            var char1 = UnescapePercentEncoding(ref sourceIndex, buffer);
-            if (char1 == -1)
+            var codeUnit1 = UnescapePercentEncoding(ref sourceIndex, buffer);
+            if (codeUnit1 == -1)
             {
                 return false;
             }
 
-            if (char1 == 0)
+            if (codeUnit1 == 0)
             {
                 throw new InvalidOperationException("The path contains null characters.");
             }
 
-            if (char1 <= 0x7F)
+            if (codeUnit1 <= 0x7F)
             {
-                // first char < U+007f, it is a single char ASCII
-                buffer[destinationIndex++] = (char)char1;
+                // first code unit < U+007f, it is a single char ASCII
+                buffer[destinationIndex++] = (char)codeUnit1;
                 return true;
             }
 
-            // anticipate more chars
+            // anticipate more code units
             var currentDecodeBits = 0;
-            var charCount = 1;
+            var codeUnitCount = 1;
             var expectValueMin = 0;
-            if ((char1 & 0xE0) == 0xC0)
+            if ((codeUnit1 & 0xE0) == 0xC0)
             {
-                // 110x xxxx, expect one more char
-                currentDecodeBits = char1 & 0x1F;
-                charCount = 2;
+                // 110x xxxx, expect one more code unit
+                currentDecodeBits = codeUnit1 & 0x1F;
+                codeUnitCount = 2;
                 expectValueMin = 0x80;
             }
-            else if ((char1 & 0xF0) == 0xE0)
+            else if ((codeUnit1 & 0xF0) == 0xE0)
             {
-                // 1110 xxxx, expect two more chars
-                currentDecodeBits = char1 & 0x0F;
-                charCount = 3;
+                // 1110 xxxx, expect two more code units
+                currentDecodeBits = codeUnit1 & 0x0F;
+                codeUnitCount = 3;
                 expectValueMin = 0x800;
             }
-            else if ((char1 & 0xF8) == 0xF0)
+            else if ((codeUnit1 & 0xF8) == 0xF0)
             {
-                // 1111 0xxx, expect three more chars
-                currentDecodeBits = char1 & 0x07;
-                charCount = 4;
+                // 1111 0xxx, expect three more code units
+                currentDecodeBits = codeUnit1 & 0x07;
+                codeUnitCount = 4;
                 expectValueMin = 0x10000;
             }
             else
             {
-                // invalid first char
+                // invalid first code unit
                 return false;
             }
 
-            var remainingChars = charCount - 1;
-            while (remainingChars > 0)
+            var remainingCodeUnits = codeUnitCount - 1;
+            while (remainingCodeUnits > 0)
             {
-                // read following three chars
+                // read following three code units
                 if (sourceIndex == buffer.Length)
                 {
                     return false;
                 }
 
                 var nextSourceIndex = sourceIndex;
-                var nextChar = UnescapePercentEncoding(ref nextSourceIndex, buffer);
-                if (nextChar == -1)
+                var nextCodeUnit = UnescapePercentEncoding(ref nextSourceIndex, buffer);
+                if (nextCodeUnit == -1)
                 {
                     return false;
                 }
 
-                if ((nextChar & 0xC0) != 0x80)
+                // When UnescapePercentEncoding returns -1 we shall return false.
+                // For performance reasons, there is no separate if statement for the above check
+                // as the condition below also returns -1 for that case.
+                if ((nextCodeUnit & 0xC0) != 0x80)
                 {
-                    // the follow up char is not in form of 10xx xxxx
+                    // the follow up code unit is not in form of 10xx xxxx
                     return false;
                 }
 
-                currentDecodeBits = (currentDecodeBits << 6) | (nextChar & 0x3F);
-                remainingChars--;
-
-                if (remainingChars == 1 && currentDecodeBits >= 0x360 && currentDecodeBits <= 0x37F)
-                {
-                    // this is going to end up in the range of 0xD800-0xDFFF UTF-16 surrogates that
-                    // are not allowed in UTF-8;
-                    return false;
-                }
-
-                if (remainingChars == 2 && currentDecodeBits >= 0x110)
-                {
-                    // this is going to be out of the upper Unicode bound 0x10FFFF.
-                    return false;
-                }
+                currentDecodeBits = (currentDecodeBits << 6) | (nextCodeUnit & 0x3F);
+                remainingCodeUnits--;
 
                 sourceIndex = nextSourceIndex;
             }
@@ -537,11 +522,14 @@ namespace Microsoft.AspNetCore.Internal
                 return false;
             }
 
-            var rune = new System.Text.Rune(currentDecodeBits);
-            if (!rune.TryEncodeToUtf16(buffer.Slice(destinationIndex), out var charsWritten))
+            if (!System.Text.Rune.TryCreate(currentDecodeBits, out var rune) || !rune.TryEncodeToUtf16(buffer.Slice(destinationIndex), out var charsWritten))
             {
+                // Reasons for this failure could be:
+                // Value is in the range of 0xD800-0xDFFF UTF-16 surrogates that are not allowed in UTF-8
+                // Value is above the upper Unicode bound of 0x10FFFF
                 return false;
             }
+
             destinationIndex += charsWritten;
             return true;
         }
@@ -567,33 +555,25 @@ namespace Microsoft.AspNetCore.Internal
         /// <returns>The unescaped char if success. Otherwise return -1.</returns>
         private static int UnescapePercentEncoding(ref int scan, ReadOnlySpan<char> buffer)
         {
-            if (buffer[scan++] != '%')
+            int tempIdx = scan++;
+            if (buffer[tempIdx] != '%')
             {
                 return -1;
             }
 
             var probe = scan;
 
-            var value1 = ReadHex(ref probe, buffer);
-            if (value1 == -1)
+            int firstNibble = ReadHex(ref probe, buffer);
+            int secondNibble = ReadHex(ref probe, buffer);
+            int value = firstNibble << 4 | secondNibble;
+
+            // Skip invalid hex values and %2F - '/'
+            if (value < 0 || value == '/')
             {
                 return -1;
             }
-
-            var value2 = ReadHex(ref probe, buffer);
-            if (value2 == -1)
-            {
-                return -1;
-            }
-
-            // skip %2F - '/'
-            if (value1 == 2 && value2 == 15)
-            {
-                return -1;
-            }
-
             scan = probe;
-            return (value1 << 4) + value2;
+            return value;
         }
 
         /// <summary>
@@ -607,33 +587,41 @@ namespace Microsoft.AspNetCore.Internal
         /// <returns>The hexadecimal value if successes, otherwise -1.</returns>
         private static int ReadHex(ref int scan, ReadOnlySpan<char> buffer)
         {
-            if (scan == buffer.Length)
+            // To eliminate boundary checks, using a temporary variable tempIdx.
+            int tempIdx = scan++;
+            if ((uint)tempIdx >= (uint)buffer.Length)
             {
                 return -1;
             }
+            int value = buffer[tempIdx];
 
-            var value = buffer[scan++];
-            var isHex = ((value >= '0') && (value <= '9')) ||
-                         ((value >= 'A') && (value <= 'F')) ||
-                         ((value >= 'a') && (value <= 'f'));
-
-            if (!isHex)
-            {
-                return -1;
-            }
-
-            if (value <= '9')
-            {
-                return value - '0';
-            }
-            else if (value <= 'F')
-            {
-                return (value - 'A') + 10;
-            }
-            else // a - f
-            {
-                return (value - 'a') + 10;
-            }
+            return FromChar(value);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int FromChar(int c)
+        {
+            return (uint)c >= (uint)CharToHexLookup.Length ? -1 : CharToHexLookup[c];
+        }
+
+        private static ReadOnlySpan<sbyte> CharToHexLookup => new sbyte[]
+        {
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 15
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 31
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 47
+            0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,  -1,  -1,  -1,  -1,  -1,  -1, // 63
+             -1, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 79
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 95
+             -1, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 111
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 127
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 143
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 159
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 175
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 191
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 207
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 223
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 239
+             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1  // 255
+        };
     }
 }

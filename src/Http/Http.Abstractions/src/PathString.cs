@@ -175,9 +175,15 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The resulting PathString</returns>
         public static PathString FromUriComponent(string uriComponent)
         {
+            int position = uriComponent.IndexOf('%');
+            if (position == -1)
+            {
+                return new PathString(uriComponent);
+            }
             Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length];
-            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer);
-            pathBuffer = pathBuffer.Slice(0, length);
+            uriComponent.CopyTo(pathBuffer);
+            var length = UrlDecoder.DecodeInPlace(pathBuffer.Slice(position, uriComponent.Length - position));
+            pathBuffer = pathBuffer.Slice(0, position + length);
             return new PathString(pathBuffer.ToString());
         }
 
