@@ -15,10 +15,10 @@
     Programmatic navigation with force-load
 </button>
 
-<button id="do-other-navigation-replacehistoryentry" @onclick=@(_ => NavigationManager.NavigateTo("Other", NavigationOptions.ReplaceHistoryEntry))>
+<button id="do-other-navigation-replacehistoryentry" @onclick=@(_ => NavigationManager.NavigateTo("Other", replace: true))>
     Programmatic navigation with history replace
 </button>
 
-<button id="do-other-navigation-forced-replacehistoryentry" @onclick=@(_ => NavigationManager.NavigateTo("Other", NavigationOptions.ReplaceHistoryEntry | NavigationOptions.ForceLoad))>
+<button id="do-other-navigation-forced-replacehistoryentry" @onclick=@(_ => NavigationManager.NavigateTo("Other", forceLoad: true, replace: true))>
     Programmatic navigation with force-load and history replace
 </button>
