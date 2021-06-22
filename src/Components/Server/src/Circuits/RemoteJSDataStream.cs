@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly Pipe _pipe;
         private long _bytesRead;
         private long _expectedChunkId;
-        private CancellationTokenSource _timeoutCancellationTokenSource;
+        private DateTimeOffset _lastDataReceivedTime;
 
         public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
         {
@@ -71,8 +71,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _streamCancellationToken = cancellationToken;
 
-            _timeoutCancellationTokenSource = new CancellationTokenSource();
-            _ = ThrowOnTimeout(_timeoutCancellationTokenSource.Token);
+            _lastDataReceivedTime = DateTime.UtcNow;
+            _ = ThrowOnTimeout();
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
@@ -84,10 +84,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             try
             {
-                // Reset the timeout as a chunk has been received
-                _timeoutCancellationTokenSource.Cancel();
-                _timeoutCancellationTokenSource = new CancellationTokenSource();
-                _ = ThrowOnTimeout(_timeoutCancellationTokenSource.Token);
+                _lastDataReceivedTime = DateTime.UtcNow;
+                _ = ThrowOnTimeout();
 
                 if (!string.IsNullOrEmpty(error))
                 {
@@ -192,14 +190,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return b;
         }
 
-        private async Task ThrowOnTimeout(CancellationToken cancellationToken)
+        private async Task ThrowOnTimeout()
         {
-            await Task.Delay(_jsInteropDefaultCallTimeout, cancellationToken);
+            await Task.Delay(_jsInteropDefaultCallTimeout);
 
-            // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
-            var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
-            await CompletePipeAndDisposeStream(timeoutException);
-            throw timeoutException;
+            if (DateTime.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout))
+            {
+                // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
+                var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
+                await CompletePipeAndDisposeStream(timeoutException);
+                throw timeoutException;
+            }
         }
 
         internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
