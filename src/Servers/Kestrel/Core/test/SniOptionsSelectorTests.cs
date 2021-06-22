@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var fallbackOptions = new HttpsConnectionAdapterOptions
             {
-                ServerCertificate = new X509Certificate2(),
+                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
                 ServerCertificateSelector = (context, serverName) => selectorCertificate
             };
 
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var fallbackOptions = new HttpsConnectionAdapterOptions
             {
-                ServerCertificate = new X509Certificate2(),
+                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
                 ServerCertificateSelector = (context, serverName) => selectorCertificate
             };
 
@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Defaults to null
                 RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
                 // Defaults to null
-                ServerCertificate = new X509Certificate2(),
+                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
                 // Defaults to null
                 ServerCertificateContext = SslStreamCertificateContext.Create(_x509Certificate2, additionalCertificates: null, offline: true),
                 // Defaults to null
