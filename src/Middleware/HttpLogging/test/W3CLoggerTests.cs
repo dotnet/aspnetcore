@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     AddToList(elements, W3CLoggingMiddleware._timeIndex, _timestampOne.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
 
                     logger.Log(elements);
-                    await logger.WaitForWrites(4).DefaultTimeout();
+                    await logger.Processor.WaitForWrites(4).DefaultTimeout();
 
                     var lines = logger.Processor.Lines;
                     Assert.Equal("#Version: 1.0", lines[0]);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     AddToList(elements, W3CLoggingMiddleware._protocolStatusIndex, null);
 
                     logger.Log(elements);
-                    await logger.WaitForWrites(4).DefaultTimeout();
+                    await logger.Processor.WaitForWrites(4).DefaultTimeout();
 
                     var lines = logger.Processor.Lines;
                     Assert.Equal("#Version: 1.0", lines[0]);

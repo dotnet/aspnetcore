@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.HttpLogging
     internal sealed class TestW3CLoggerProcessor : W3CLoggerProcessor
     {
         public int WriteCount = 0;
-        public int ExpectedWrites;
-        public TaskCompletionSource<bool> Tcs;
+        private int _expectedWrites;
+        private TaskCompletionSource _tcs;
         public List<string> Lines;
         private bool _hasWritten;
         private readonly object _lockObj = new object();
@@ -36,11 +36,21 @@ namespace Microsoft.AspNetCore.HttpLogging
             WriteCount++;
             lock (_lockObj)
             {
-                if (Tcs != null && WriteCount >= ExpectedWrites)
+                if (_tcs != null && WriteCount >= _expectedWrites)
                 {
-                    Tcs.SetResult(true);
+                    _tcs.SetResult();
                 }
             }
+        }
+
+        public Task WaitForWrites(int numWrites)
+        {
+            lock (_lockObj)
+            {
+                _expectedWrites = numWrites;
+                _tcs = new TaskCompletionSource();
+            }
+            return _tcs.Task;
         }
 
         public override async Task OnFirstWrite(StreamWriter streamWriter)

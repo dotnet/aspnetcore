@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             var now = DateTime.Now;
             await middleware.Invoke(httpContext);
-            await logger.WaitForWrites(4).DefaultTimeout();
+            await logger.Processor.WaitForWrites(4).DefaultTimeout();
 
             var lines = logger.Processor.Lines;
             Assert.Equal("#Version: 1.0", lines[0]);
