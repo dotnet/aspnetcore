@@ -51,15 +51,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = W3CLoggingFields.None;
+            var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
 
-            var middleware = new TestW3CLoggingMiddleware(
+            var middleware = new W3CLoggingMiddleware(
                 c =>
                 {
                     c.Response.StatusCode = 200;
                     return Task.CompletedTask;
                 },
                 options,
-                new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance));
+                logger);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -70,22 +71,23 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             await middleware.Invoke(httpContext);
 
-            Assert.Empty(middleware.Logger.Processor.Lines);
+            Assert.Empty(logger.Processor.Lines);
         }
 
         [Fact]
         public async Task DefaultDoesNotLogOptionalFields()
         {
             var options = CreateOptionsAccessor();
+            var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
 
-            var middleware = new TestW3CLoggingMiddleware(
+            var middleware = new W3CLoggingMiddleware(
                 c =>
                 {
                     c.Response.StatusCode = 200;
                     return Task.CompletedTask;
                 },
                 options,
-                new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance));
+                logger);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -94,9 +96,9 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             var now = DateTime.Now;
             await middleware.Invoke(httpContext);
-            await middleware.Logger.WaitForWrites(4).DefaultTimeout();
+            await logger.WaitForWrites(4).DefaultTimeout();
 
-            var lines = middleware.Logger.Processor.Lines;
+            var lines = logger.Processor.Lines;
             Assert.Equal("#Version: 1.0", lines[0]);
 
             Assert.StartsWith("#Start-Date: ", lines[1]);

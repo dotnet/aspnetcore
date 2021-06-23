@@ -49,6 +49,19 @@ namespace Microsoft.AspNetCore.HttpLogging
             _maxFileSize = loggerOptions.FileSizeLimit;
             _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
             _flushPeriod = loggerOptions.FlushPeriod;
+            _options.OnChange(options =>
+            {
+                // Clear the cached settings.
+                loggerOptions = options;
+                if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
+                {
+                    _path = loggerOptions.LogDirectory;
+                }
+                _fileName = loggerOptions.FileName;
+                _maxFileSize = loggerOptions.FileSizeLimit;
+                _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
+                _flushPeriod = loggerOptions.FlushPeriod;
+            });
 
             _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
 

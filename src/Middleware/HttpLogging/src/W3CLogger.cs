@@ -20,10 +20,16 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
         private readonly W3CLoggerProcessor _messageQueue;
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
+        private W3CLoggingFields _loggingFields;
 
         public W3CLogger(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
             _options = options;
+            _loggingFields = _options.CurrentValue.LoggingFields;
+            _options.OnChange(options =>
+            {
+                _loggingFields = options.LoggingFields;
+            });
             _messageQueue = InitializeMessageQueue(_options, environment, factory);
         }
 
@@ -45,7 +51,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             // Need to calculate TimeTaken now, if applicable
             var date = elements[W3CLoggingMiddleware._dateIndex];
             var time = elements[W3CLoggingMiddleware._timeIndex];
-            if (!string.IsNullOrEmpty(date) && !string.IsNullOrEmpty(time) && _options.CurrentValue.LoggingFields.HasFlag(W3CLoggingFields.TimeTaken))
+            if (!string.IsNullOrEmpty(date) && !string.IsNullOrEmpty(time) && _loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
             {
                 DateTime start = DateTime.ParseExact(date + time, "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture);
                 var elapsed = DateTime.Now.Subtract(start);
@@ -57,7 +63,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             var firstElement = true;
             for (var i = 0; i < elements.Length; i++)
             {
-                if (_options.CurrentValue.LoggingFields.HasFlag((W3CLoggingFields)(1 << i)))
+                if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)))
                 {
                     if (!firstElement)
                     {

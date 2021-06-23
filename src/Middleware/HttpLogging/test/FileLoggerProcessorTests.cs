@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message one");
-                    fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.1.txt");
+                    fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.1.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         if (!File.Exists(fileName))
                         {
                             var tomorrow = now.AddDays(1);
-                            fileName = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt");
+                            fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt"));
                         }
                     }
                 }
@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     logger.EnqueueMessage("Message one");
                     logger.EnqueueMessage("Message two");
-                    fileName1 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.1.txt");
-                    fileName2 = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.2.txt");
+                    fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.1.txt"));
+                    fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.2.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
@@ -101,12 +101,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                         var tomorrow = now.AddDays(1);
                         if (!File.Exists(fileName1))
                         {
-                            fileName1 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt");
-                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.2.txt");
+                            fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt"));
+                            fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.2.txt"));
                         }
                         else if (!File.Exists(fileName2))
                         {
-                            fileName2 = Path.Combine(path, $"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt");
+                            fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.1.txt"));
                         }
                     }
                 }
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    fileName = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.10.txt");
+                    fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.10.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {

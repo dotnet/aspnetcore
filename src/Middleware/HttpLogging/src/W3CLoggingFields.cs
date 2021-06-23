@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// which may have regulatory concerns under GDPR
         /// and other laws. UserName should not be logged
         /// unless logs are secure and access controlled
-        /// and the privacy impact accessed."
+        /// and the privacy impact accessed.
         /// </summary>
         UserName = 0x8,
 
