@@ -343,6 +343,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public void OnStreamCompleted(IHttp3Stream stream)
             {
                 _inner.OnStreamCompleted(stream);
+
+                if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+                {
+                    testStream._onStreamCompletedTcs.TrySetResult();
+                }
             }
 
             public void OnStreamConnectionError(Http3ConnectionErrorException ex)
@@ -448,6 +453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public class Http3StreamBase : IProtocolErrorCodeFeature
         {
             internal TaskCompletionSource _onStreamCreatedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            internal TaskCompletionSource _onStreamCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             internal TaskCompletionSource _onHeaderReceivedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             internal DuplexPipe.DuplexPipePair _pair;
@@ -457,6 +463,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public long Error { get; set; }
 
             public Task OnStreamCreatedTask => _onStreamCreatedTcs.Task;
+            public Task OnStreamCompletedTask => _onStreamCompletedTcs.Task;
             public Task OnHeaderReceivedTask => _onHeaderReceivedTcs.Task;
 
             protected Task SendAsync(ReadOnlySpan<byte> span)

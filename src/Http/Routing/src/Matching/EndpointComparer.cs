@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return compare == 0 ? ComparePattern(x, y) : compare;
         }
 
-        private int ComparePattern(Endpoint x, Endpoint y)
+        private static int ComparePattern(Endpoint x, Endpoint y)
         {
             // A RouteEndpoint always comes before a non-RouteEndpoint, regardless of its RawText value
             var routeEndpointX = x as RouteEndpoint;

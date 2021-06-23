@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ReadOnlySpan<byte> ConvertBufferToSpan(in ReadOnlySequence<byte> buffer)
+        private static ReadOnlySpan<byte> ConvertBufferToSpan(in ReadOnlySequence<byte> buffer)
         {
             if (buffer.IsSingleSegment)
             {
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _data.Clear();
         }
 
-        private void EnsureStartsWithDataPrefix(ReadOnlySpan<byte> line)
+        private static void EnsureStartsWithDataPrefix(ReadOnlySpan<byte> line)
         {
             if (!line.StartsWith(DataPrefix))
             {
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
         }
 
-        private bool IsMessageEnd(ReadOnlySpan<byte> line)
+        private static bool IsMessageEnd(ReadOnlySpan<byte> line)
         {
             return line.Length == SseLineEnding.Length && line.SequenceEqual(SseLineEnding);
         }

@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions, ILoggerFactory loggerFactory)
         {
-            _keyPropagationWindow = keyManagementOptions.Value.KeyPropagationWindow;
-            _maxServerToServerClockSkew = keyManagementOptions.Value.MaxServerClockSkew;
+            _keyPropagationWindow = KeyManagementOptions.KeyPropagationWindow;
+            _maxServerToServerClockSkew = KeyManagementOptions.MaxServerClockSkew;
             _logger = loggerFactory.CreateLogger<DefaultKeyResolver>();
         }
 

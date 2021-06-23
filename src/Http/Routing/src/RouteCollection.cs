@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        private VirtualPathData? GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
+        private static VirtualPathData? GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
         {
             for (var i = 0; i < routes.Count; i++)
             {

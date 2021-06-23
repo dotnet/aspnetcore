@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _allowedHosts = allowedHosts;
         }
 
-        private bool IsTopLevelWildcard(string host)
+        private static bool IsTopLevelWildcard(string host)
         {
             return (string.Equals("*", host, StringComparison.Ordinal) // HttpSys wildcard
                            || string.Equals("[::]", host, StringComparison.Ordinal) // Kestrel wildcard, IPv6 Any
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         // Empty was checked for by the caller
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryValidateScheme(string scheme)
+        private static bool TryValidateScheme(string scheme)
         {
             for (var i = 0; i < scheme.Length; i++)
             {
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsNumeric(char ch)
+        private static bool IsNumeric(char ch)
         {
             return '0' <= ch && ch <= '9';
         }

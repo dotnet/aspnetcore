@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return testHttpHandler;
             };
             httpOptions.Cookies.Add(new Cookie("Name", "Value", string.Empty, "fakeuri.org"));
-            var clientCertificate = new X509Certificate();
+            var clientCertificate = new X509Certificate(Array.Empty<byte>());
             httpOptions.ClientCertificates.Add(clientCertificate);
             httpOptions.UseDefaultCredentials = false;
             httpOptions.Credentials = Mock.Of<ICredentials>();

@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Hosting
                 _httpContextFactory!.Dispose(httpContext);
             }
 
-            _diagnostics.ContextDisposed(context);
+            HostingApplicationDiagnostics.ContextDisposed(context);
 
             // Reset the context as it may be pooled
             context.Reset();

@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             });
         }
 
-        private string RenderLogs(IList<LogRecord> logs)
+        private static string RenderLogs(IList<LogRecord> logs)
         {
             var builder = new StringBuilder();
             foreach (var log in logs)

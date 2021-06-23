@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private int CalculateChunkSize(int extraHexDigit, int currentParsedSize)
+        private static int CalculateChunkSize(int extraHexDigit, int currentParsedSize)
         {
             try
             {
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Complete
         };
 
-        private Pipe CreateRequestBodyPipe(Http1Connection context)
+        private static Pipe CreateRequestBodyPipe(Http1Connection context)
             => new Pipe(new PipeOptions
             (
                 pool: context.MemoryPool,

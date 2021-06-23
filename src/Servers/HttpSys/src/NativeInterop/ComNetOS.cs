@@ -9,13 +9,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         // Windows is assumed based on HttpApi.Supported which is checked in the HttpSysListener constructor.
         // Minimum support for Windows 7 is assumed.
-        internal static readonly bool IsWin8orLater;
-
-        static ComNetOS()
-        {
-            var win8Version = new Version(6, 2);
-
-            IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-        }
+        internal static readonly bool IsWin8orLater = OperatingSystem.IsWindowsVersionAtLeast(6, 2);
     }
 }
