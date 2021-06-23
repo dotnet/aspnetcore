@@ -78,7 +78,7 @@ export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | 
     ? forceLoadOrOptions
     : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
 
-  if (isWithinBaseUriSpace(absoluteUri) && !options.forceLoad) {
+  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
     performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry);
   } else {
     performExternalNavigation(absoluteUri, options.replaceHistoryEntry);
