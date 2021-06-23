@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             await _next(httpContext);
         }
 
-        private WindowsPrincipal? GetUser(HttpContext context)
+        private static WindowsPrincipal? GetUser(HttpContext context)
         {
             var tokenHeader = context.Request.Headers[MSAspNetCoreWinAuthToken];
 

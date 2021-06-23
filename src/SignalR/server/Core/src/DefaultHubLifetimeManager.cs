@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.SignalR
             return new SerializedHubMessage(CreateInvocationMessage(methodName, args));
         }
 
-        private HubMessage CreateInvocationMessage(string methodName, object?[] args)
+        private static HubMessage CreateInvocationMessage(string methodName, object?[] args)
         {
             return new InvocationMessage(methodName, args);
         }

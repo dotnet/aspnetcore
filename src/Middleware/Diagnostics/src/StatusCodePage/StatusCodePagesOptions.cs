@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Builder
             };
         }
 
-        private string BuildResponseBody(int httpStatusCode)
+        private static string BuildResponseBody(int httpStatusCode)
         {
             // Note the 500 spaces are to work around an IE 'feature'
             var internetExplorerWorkaround = new string(' ', 500);

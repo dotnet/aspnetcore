@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return invalidIndex;
         }
 
-        private bool IsTlsHandshake(ReadOnlySpan<byte> requestLine)
+        private static bool IsTlsHandshake(ReadOnlySpan<byte> requestLine)
         {
             const byte SslRecordTypeHandshake = (byte)0x16;
 

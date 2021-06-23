@@ -4,6 +4,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -279,6 +280,18 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.Http3FrameSending(connectionId, streamId, frame);
             _trace2.Http3FrameSending(connectionId, streamId, frame);
+        }
+
+        public void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex)
+        {
+            _trace1.QPackDecodingError(connectionId, streamId, ex);
+            _trace2.QPackDecodingError(connectionId, streamId, ex);
+        }
+
+        public void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex)
+        {
+            _trace1.QPackEncodingError(connectionId, streamId, ex);
+            _trace2.QPackEncodingError(connectionId, streamId, ex);
         }
     }
 }

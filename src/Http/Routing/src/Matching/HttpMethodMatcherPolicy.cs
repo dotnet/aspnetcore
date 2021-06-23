@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return ContainsDynamicEndpoints(endpoints);
         }
 
-        private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
+        private static bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
         {
             for (var i = 0; i < endpoints.Count; i++)
             {
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
+        private static Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
         {
             var allow = string.Join(", ", httpMethods);
             return new Endpoint(

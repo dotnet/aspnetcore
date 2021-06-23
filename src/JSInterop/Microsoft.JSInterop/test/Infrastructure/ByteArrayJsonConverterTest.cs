@@ -24,7 +24,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act & Assert
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
-            Assert.Equal("ByteArraysToBeRevived is empty.", ex.Message);
+            Assert.Equal("JSON serialization is attempting to deserialize an unexpected byte array.", ex.Message);
         }
 
         [Fact]
@@ -64,6 +64,33 @@ namespace Microsoft.JSInterop.Infrastructure
             // Act & Assert
             var ex = Record.Exception(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
             Assert.IsAssignableFrom<JsonException>(ex);
+        }
+
+        [Fact]
+        public void Read_ReadsBase64EncodedStrings()
+        {
+            // Arrange
+            var expected = new byte[] { 1, 5, 8 };
+            var json = JsonSerializer.Serialize(expected);
+
+            // Act
+            var deserialized = JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions)!;
+
+            // Assert
+            Assert.Equal(expected, deserialized);
+        }
+
+        [Fact]
+        public void Read_ThrowsIfTheInputIsNotAValidBase64String()
+        {
+            // Arrange
+            var json = "\"Hello world\"";
+
+            // Act
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
+
+            // Assert
+            Assert.Equal("JSON serialization is attempting to deserialize an unexpected byte array.", ex.Message);
         }
 
         [Fact]

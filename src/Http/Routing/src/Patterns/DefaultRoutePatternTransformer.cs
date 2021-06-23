@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return true;
         }
 
-        private void RemoveParameterDefault(List<RoutePatternPathSegment> segments, List<RoutePatternParameterPart> parameters, RoutePatternParameterPart parameter)
+        private static void RemoveParameterDefault(List<RoutePatternPathSegment> segments, List<RoutePatternParameterPart> parameters, RoutePatternParameterPart parameter)
         {
             // We know that a parameter can only appear once, so we only need to rewrite one segment and one parameter.
             for (var i = 0; i < segments.Count; i++)

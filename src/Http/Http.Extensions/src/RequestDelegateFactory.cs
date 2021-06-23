@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Http
 
             var factoryContext = new FactoryContext()
             {
-                ServiceProvider = serviceProvider
+                ServiceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>()
             };
 
             var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
@@ -231,13 +231,9 @@ namespace Microsoft.AspNetCore.Http
             {
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
-            else if (parameter.ParameterType.IsInterface)
-            {
-                return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
-            }
             else
             {
-                if (factoryContext.ServiceProvider?.GetService<IServiceProviderIsService>() is IServiceProviderIsService serviceProviderIsService)
+                if (factoryContext.ServiceProviderIsService is IServiceProviderIsService serviceProviderIsService)
                 {
                     // If the parameter resolves as a service then get it from services
                     if (serviceProviderIsService.IsService(parameter.ParameterType))
@@ -734,7 +730,7 @@ namespace Microsoft.AspNetCore.Http
         {
             public Type? JsonRequestBodyType { get; set; }
             public bool AllowEmptyRequestBody { get; set; }
-            public IServiceProvider? ServiceProvider { get; init; }
+            public IServiceProviderIsService? ServiceProviderIsService { get; init; }
 
             public bool UsingTempSourceString { get; set; }
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();

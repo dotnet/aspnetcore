@@ -305,26 +305,26 @@ namespace Microsoft.AspNetCore.Http.Features
             return encoding;
         }
 
-        private bool HasApplicationFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
+        private static bool HasApplicationFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
         {
             // Content-Type: application/x-www-form-urlencoded; charset=utf-8
             return contentType != null && contentType.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool HasMultipartFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
+        private static bool HasMultipartFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
         {
             // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
             return contentType != null && contentType.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool HasFormDataContentDisposition(ContentDispositionHeaderValue contentDisposition)
+        private static bool HasFormDataContentDisposition(ContentDispositionHeaderValue contentDisposition)
         {
             // Content-Disposition: form-data; name="key";
             return contentDisposition != null && contentDisposition.DispositionType.Equals("form-data")
                 && StringSegment.IsNullOrEmpty(contentDisposition.FileName) && StringSegment.IsNullOrEmpty(contentDisposition.FileNameStar);
         }
 
-        private bool HasFileContentDisposition(ContentDispositionHeaderValue contentDisposition)
+        private static bool HasFileContentDisposition(ContentDispositionHeaderValue contentDisposition)
         {
             // Content-Disposition: form-data; name="myfile1"; filename="Misc 002.jpg"
             return contentDisposition != null && contentDisposition.DispositionType.Equals("form-data")

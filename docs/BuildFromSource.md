@@ -108,6 +108,10 @@ NodeJS installs the Node package manager (npm) by default. This repo depends on 
 npm install -g yarn
 ```
 
+#### [tar](http://gnuwin32.sourceforge.net/packages/gtar.htm) on Windows
+
+Building the repo requires tar to be installed. First, check whether `tar.exe` is already in your path i.e. execute `tar -help` (Win10 comes with tar already installed). Then, assuming you have `git` installed, you might add `C:\Program Files\Git\usr\bin\` to your path to pick up the `tar.exe` that ships with `git`. Finally, you can find installation executables of tar at <http://gnuwin32.sourceforge.net/packages/gtar.htm>; download that and add the installation directory to your PATH variable.
+
 #### Java Development Kit on Windows
 
 This repo contains some Java source code that depends on an install of the JDK v11 or newer. The JDK can be installed from either:

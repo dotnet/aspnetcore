@@ -156,5 +156,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
                 expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
         }
+
+        [Fact]
+        public async Task SETTINGS_MaxFieldSectionSizeSent_ServerReceivesValue()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            var incomingSettings = await inboundControlStream.ExpectSettingsAsync();
+
+            var defaultLimits = new KestrelServerLimits();
+            Assert.Collection(incomingSettings,
+                kvp =>
+                {
+                    Assert.Equal((long)Internal.Http3.Http3SettingType.MaxFieldSectionSize, kvp.Key);
+                    Assert.Equal(defaultLimits.MaxRequestHeadersTotalSize, kvp.Value);
+                });
+
+            var outboundcontrolStream = await CreateControlStream();
+            await outboundcontrolStream.SendSettingsAsync(new List<Http3PeerSetting>
+            {
+                new Http3PeerSetting(Internal.Http3.Http3SettingType.MaxFieldSectionSize, 100)
+            });
+
+            var maxFieldSetting = await ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+
+            Assert.Equal(Internal.Http3.Http3SettingType.MaxFieldSectionSize, maxFieldSetting.Key);
+            Assert.Equal(100, maxFieldSetting.Value);
+        }
     }
 }

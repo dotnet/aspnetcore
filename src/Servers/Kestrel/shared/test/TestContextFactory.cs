@@ -188,7 +188,8 @@ namespace Microsoft.AspNetCore.Testing
                 transport: transport,
                 streamLifetimeHandler: streamLifetimeHandler,
                 streamContext: null,
-                settings: null
+                clientPeerSettings: new Http3PeerSettings(),
+                serverPeerSettings: null
             );
             context.TimeoutControl = timeoutControl;
 

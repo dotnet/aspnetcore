@@ -104,6 +104,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
 
+                if (parameterDescription is null)
+                {
+                    continue;
+                }
+
                 if (parameterDescription.Source == BindingSource.Body)
                 {
                     hasJsonBody = true;
@@ -118,9 +123,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return apiDescription;
         }
 
-        private ApiParameterDescription CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
+        private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
         {
             var (source, name) = GetBindingSourceAndName(parameter, pattern);
+
+            // Services are ignored because they are not request parameters.
+            if (source == BindingSource.Services)
+            {
+                return null;
+            }
 
             return new ApiParameterDescription
             {

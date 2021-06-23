@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             _logger.UsingKeyAsDefaultKey(defaultKey.KeyId);
 
-            var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(_keyManagementOptions.KeyRingRefreshPeriod);
+            var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(KeyManagementOptions.KeyRingRefreshPeriod);
 
             // The cached keyring should expire at the earliest of (default key expiration, next auto-refresh time).
             // Since the refresh period and safety window are not user-settable, we can guarantee that there's at

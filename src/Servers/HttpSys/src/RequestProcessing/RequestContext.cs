@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        protected virtual Task ExecuteAsync()
+        public virtual Task ExecuteAsync()
         {
             return Task.CompletedTask;
         }

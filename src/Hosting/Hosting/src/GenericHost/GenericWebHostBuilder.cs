@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        private WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
+        private static WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
         {
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {

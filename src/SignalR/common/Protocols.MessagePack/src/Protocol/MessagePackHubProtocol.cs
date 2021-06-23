@@ -94,18 +94,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             private static class Cache<T>
             {
-                public static readonly IMessagePackFormatter<T>? Formatter;
+                public static readonly IMessagePackFormatter<T>? Formatter = ResolveFormatter();
 
-                static Cache()
+                private static IMessagePackFormatter<T>? ResolveFormatter()
                 {
                     foreach (var resolver in Resolvers)
                     {
-                        Formatter = resolver.GetFormatter<T>();
-                        if (Formatter != null)
+                        var formatter = resolver.GetFormatter<T>();
+                        if (formatter != null)
                         {
-                            return;
+                            return formatter;
                         }
                     }
+
+                    return null;
                 }
             }
         }

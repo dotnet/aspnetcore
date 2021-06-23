@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Hosting
             await DisposeServiceProviderAsync(_hostingServiceProvider).ConfigureAwait(false);
         }
 
-        private async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
+        private static async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
         {
             switch (serviceProvider)
             {

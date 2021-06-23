@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 throw new ArgumentNullException(nameof(source));
             }
 
-            // Ads this source and its associated provider to the source
+            // Adds this source and its associated provider to the source
             // and provider references in this class. We make sure to load
             // the data from the provider so that values are properly initialized.
             _sources.Add(source);

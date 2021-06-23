@@ -16,17 +16,20 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
@@ -589,10 +592,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     httpContext.Items.Add("body", myService);
                 }
 
+                void TestImpliedFromBodyInterface(HttpContext httpContext, ITodo myService)
+                {
+                    httpContext.Items.Add("body", myService);
+                }
+
                 return new[]
                 {
                     new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
                     new[] { (Action<HttpContext, Todo>)TestImpliedFromBody },
+                    new[] { (Action<HttpContext, ITodo>)TestImpliedFromBodyInterface },
                 };
             }
         }
@@ -611,6 +620,20 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
             httpContext.Request.Body = new MemoryStream(requestBodyBytes);
+
+            var jsonOptions = new JsonOptions();
+            jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
+
+            var mock = new Mock<IServiceProvider>();
+            mock.Setup(m => m.GetService(It.IsAny<Type>())).Returns<Type>(t =>
+            {
+                if (t == typeof(IOptions<JsonOptions>))
+                {
+                    return Options.Create(jsonOptions);
+                }
+                return null;
+            });
+            httpContext.RequestServices = mock.Object;
 
             var requestDelegate = RequestDelegateFactory.Create(action, new EmptyServiceProvdier());
 
@@ -1179,11 +1202,58 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal("null", responseBody);
         }
 
-        private class Todo
+        private class Todo : ITodo
         {
             public int Id { get; set; }
             public string? Name { get; set; } = "Todo";
             public bool IsComplete { get; set; }
+        }
+
+        private interface ITodo
+        {
+            public int Id { get; }
+            public string? Name { get; }
+            public bool IsComplete { get; }
+        }
+
+        class TodoJsonConverter : JsonConverter<ITodo>
+        {
+            public override ITodo? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                var todo = new Todo();
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        break;
+                    }
+
+                    string property = reader.GetString()!;
+                    reader.Read();
+
+                    switch (property.ToLowerInvariant())
+                    {
+                        case "id":
+                            todo.Id = reader.GetInt32();
+                            break;
+                        case "name":
+                            todo.Name = reader.GetString();
+                            break;
+                        case "iscomplete":
+                            todo.IsComplete = reader.GetBoolean();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                return todo;
+            }
+
+            public override void Write(Utf8JsonWriter writer, ITodo value, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private struct BodyStruct
