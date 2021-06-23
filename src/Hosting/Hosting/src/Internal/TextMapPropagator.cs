@@ -29,7 +29,7 @@ namespace System.Diagnostics
         // Static APIs
         //
 
-        public static TextMapPropagator DefaultPropagator { get; set; } = CreateLegacyPropagator();
+        public static TextMapPropagator Default { get; set; } = CreateLegacyPropagator();
 
         // For Microsoft compatibility. e.g., it will propagate Baggage header name as "Correlation-Context" instead of "baggage".
         public static TextMapPropagator CreateLegacyPropagator() => new LegacyTextMapPropagator();
@@ -47,15 +47,22 @@ namespace System.Diagnostics
         // Internal
         //
 
+        internal const char Space = ' ';
+        internal const char Tab = (char)9;
+        internal const char Comma = ',';
+        internal const char Semicolon = ';';
+
+        internal const int MaxBaggageLength = 8192;
+        internal const int MaxKeyValueLength = 4096;
+        internal const int MaxBaggageItems = 180;
+
         internal const string TraceParent = "traceparent";
         internal const string RequestId = "Request-Id";
         internal const string TraceState = "tracestate";
         internal const string Baggage = "baggage";
         internal const string CorrelationContext = "Correlation-Context";
-        internal static readonly char[] EqualSignSeparator = new[] { '=' };
-        internal static readonly char[] CommaSignSeparator = new[] { ',' };
-        internal const int MaxBaggageLength = 8192;
-        internal const int MaxBaggageItems = 180;
+
+        internal static readonly char[] s_trimmingSpaceCharacters = new char[] { Space, Tab };
 
         internal static void InjectBaggage(object carrier, IEnumerable<KeyValuePair<string, string?>> baggage, Action<object /* carrier */, string /* field name */, string /* value to inject */> setter, bool injectAsW3C = false)
         {
@@ -67,7 +74,7 @@ namespace System.Diagnostics
                     do
                     {
                         KeyValuePair<string, string?> item = e.Current;
-                        baggageList.Append(WebUtility.UrlEncode(item.Key)).Append('=').Append(WebUtility.UrlEncode(item.Value)).Append(',');
+                        baggageList.Append(WebUtility.UrlEncode(item.Key)).Append('=').Append(WebUtility.UrlEncode(item.Value)).Append(Comma);
                     }
                     while (e.MoveNext());
                     baggageList.Remove(baggageList.Length - 1, 1);
@@ -87,41 +94,79 @@ namespace System.Diagnostics
                 return true;
             }
 
-            foreach (string pair in baggagestring.Split(CommaSignSeparator))
+            int currentIndex = 0;
+
+            do
             {
-                baggageLength += pair.Length + 1; // pair and comma
+                // Skip spaces
+                while (currentIndex < baggagestring.Length && (baggagestring[currentIndex] == Space || baggagestring[currentIndex] == Tab)) { currentIndex++; }
 
-                if (baggageLength >= MaxBaggageLength || baggageList?.Count >= MaxBaggageItems)
+                if (currentIndex >= baggagestring.Length) { break; } // No Key exist
+
+                int keyStart = currentIndex;
+
+                // Search end of the key
+                while (currentIndex < baggagestring.Length && baggagestring[currentIndex] != Space && baggagestring[currentIndex] != Tab && baggagestring[currentIndex] != '=') { currentIndex++; }
+
+                if (currentIndex >= baggagestring.Length) { break; }
+
+                int keyEnd = currentIndex;
+
+                if (baggagestring[currentIndex] != '=')
                 {
-                    break;
+                    // Skip Spaces
+                    while (currentIndex < baggagestring.Length && (baggagestring[currentIndex] == Space || baggagestring[currentIndex] == Tab)) { currentIndex++; }
+
+                    if (currentIndex >= baggagestring.Length) { break; } // Wrong key format
                 }
 
-                if (pair.IndexOf('=') < 0)
+                if (baggagestring[currentIndex] != '=') { break; } // wrong key format.
+
+                currentIndex++;
+
+                // Skip spaces
+                while (currentIndex < baggagestring.Length && (baggagestring[currentIndex] == Space || baggagestring[currentIndex] == Tab)) { currentIndex++; }
+
+                if (currentIndex >= baggagestring.Length) { break; } // Wrong value format
+
+                int valueStart = currentIndex;
+
+                // Search end of the value
+                while (currentIndex < baggagestring.Length && baggagestring[currentIndex] != Space && baggagestring[currentIndex] != Tab &&
+                       baggagestring[currentIndex] != Comma && baggagestring[currentIndex] != Semicolon)
+                { currentIndex++; }
+
+                if (keyStart < keyEnd && valueStart < currentIndex)
                 {
-                    continue;
+                    int keyValueLength = (keyEnd - keyStart) + (currentIndex - valueStart);
+                    if (keyValueLength > MaxKeyValueLength || keyValueLength + baggageLength >= MaxBaggageLength)
+                    {
+                        break;
+                    }
+
+                    if (baggageList is null)
+                    {
+                        baggageList = new();
+                    }
+
+                    baggageLength += keyValueLength;
+
+                    // Insert in reverse order for asp.net compatability.
+                    baggageList.Insert(0, new KeyValuePair<string, string?>(
+                                                WebUtility.UrlDecode(baggagestring.Substring(keyStart, keyEnd - keyStart)).Trim(s_trimmingSpaceCharacters),
+                                                WebUtility.UrlDecode(baggagestring.Substring(valueStart, currentIndex - valueStart)).Trim(s_trimmingSpaceCharacters)));
+
+                    if (baggageList.Count >= MaxBaggageItems)
+                    {
+                        break;
+                    }
                 }
 
-                var parts = pair.Split(EqualSignSeparator, 2);
-                if (parts.Length != 2)
-                {
-                    continue;
-                }
+                // Skip to end of values
+                while (currentIndex < baggagestring.Length && baggagestring[currentIndex] != Comma) { currentIndex++; }
 
-                var key = WebUtility.UrlDecode(parts[0]);
-                var value = WebUtility.UrlDecode(parts[1]);
-
-                if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                if (baggageList is null)
-                {
-                    baggageList = new();
-                }
-
-                baggageList.Add(new KeyValuePair<string, string?>(key, value));
-            }
+                currentIndex++; // Move to next key-value entry
+            } while (currentIndex < baggagestring.Length);
 
             baggage = baggageList;
             return baggageList != null;
@@ -220,7 +265,6 @@ namespace System.Diagnostics
                 span[i] = s[i];
             }
         }
-
     }
 
     internal class LegacyTextMapPropagator : TextMapPropagator

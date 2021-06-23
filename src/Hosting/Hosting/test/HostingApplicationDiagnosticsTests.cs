@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             hostingApplication.CreateContext(features);
             Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value3");
-            Assert.Contains(Activity.Current.Baggage, pair => pair.Key == " Key2" && pair.Value == "value4");
+            Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value4");
         }
 
 

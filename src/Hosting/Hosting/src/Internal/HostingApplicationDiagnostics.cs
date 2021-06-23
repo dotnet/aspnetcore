@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Hosting
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
         {
-            var propagator = TextMapPropagator.DefaultPropagator;
+            var propagator = TextMapPropagator.Default;
             var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
             if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
             {
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Hosting
                 // An order could be important if baggage has two items with the same key (that is allowed by the contract)
                 if (baggage is not null)
                 {
-                    foreach (var baggageItem in baggage.Reverse())
+                    foreach (var baggageItem in baggage)
                     {
                         activity.AddBaggage(baggageItem.Key, baggageItem.Value);
                     }
