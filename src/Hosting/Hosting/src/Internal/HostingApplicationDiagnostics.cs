@@ -5,15 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -283,7 +278,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
             var headers = httpContext.Request.Headers;
 
-            propagator.Extract(headers, (object carrier, string fieldName, out string? value) =>
+            propagator.Extract(headers, static (object carrier, string fieldName, out string? value) =>
             {
                 value = default;
                 var headers = ((IHeaderDictionary)carrier);
@@ -309,8 +304,9 @@ namespace Microsoft.AspNetCore.Hosting
             
             if (!string.IsNullOrEmpty(requestId))
             {
-                propagator.Extract(headers, (object carrier, string fieldName, out string? value) =>
+                propagator.Extract(headers, static (object carrier, string fieldName, out string? value) =>
                 {
+                    var headers = ((IHeaderDictionary)carrier);
                     value = headers[fieldName];
                     return true;
                 }, out IEnumerable<KeyValuePair<string, string?>>? baggage);
