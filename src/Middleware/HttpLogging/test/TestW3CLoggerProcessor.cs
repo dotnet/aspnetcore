@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal sealed class TestW3CLoggerProcessor : W3CLoggerProcessor
     {
-        private int WriteCount = 0;
+        private int _writeCount = 0;
         private int _expectedWrites;
         private TaskCompletionSource _tcs;
         private bool _hasWritten;
@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             Lines.Add(message);
             lock (_writeCountLock)
             {
-                WriteCount++;
-                if (_tcs != null && WriteCount >= _expectedWrites)
+                _writeCount++;
+                if (_tcs != null && _writeCount >= _expectedWrites)
                 {
                     _tcs.SetResult();
                 }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             lock (_writeCountLock)
             {
-                if (WriteCount >= numWrites)
+                if (_writeCount >= numWrites)
                 {
                     return Task.CompletedTask;
                 }
