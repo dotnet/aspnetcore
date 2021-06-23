@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return (states[destination].Candidates, states[destination].Policies);
         }
 
-        private void ProcessCaptures(
+        private static void ProcessCaptures(
             KeyValuePair<string, object?>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
             string path,
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private void ProcessCatchAll(
+        private static void ProcessCatchAll(
             KeyValuePair<string, object?>[] slots,
             in (string parameterName, int segmentIndex, int slotIndex) catchAll,
             string path,

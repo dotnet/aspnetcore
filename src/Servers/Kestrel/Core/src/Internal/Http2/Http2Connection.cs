@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return false;
         }
 
-        private bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private static bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -1448,7 +1448,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
+        private static PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
         {
             if (name.IsEmpty || name[0] != (byte)':')
             {

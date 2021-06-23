@@ -13,19 +13,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
     internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
     {
         private const string _loglevelPadding = ": ";
-        private static readonly string _messagePadding;
-        private static readonly string _newLineWithMessagePadding;
+        private static readonly string _messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + _loglevelPadding.Length);
+        private static readonly string _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
         private static readonly StringBuilder _logBuilder = new StringBuilder();
 
         private readonly string _name;
         private readonly WebAssemblyJSRuntime _jsRuntime;
-
-        static WebAssemblyConsoleLogger()
-        {
-            var logLevelString = GetLogLevelString(LogLevel.Information);
-            _messagePadding = new string(' ', logLevelString.Length + _loglevelPadding.Length);
-            _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
-        }
 
         public WebAssemblyConsoleLogger(IJSRuntime jsRuntime)
             : this(string.Empty, (WebAssemblyJSRuntime)jsRuntime) // Cast for DI

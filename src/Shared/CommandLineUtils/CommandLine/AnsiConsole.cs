@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.CommandLineUtils
 
         public ConsoleColor OriginalForegroundColor { get; }
 
-        private void SetColor(ConsoleColor color)
+        private static void SetColor(ConsoleColor color)
         {
             Console.ForegroundColor = (ConsoleColor)(((int)Console.ForegroundColor & 0x08) | ((int)color & 0x07));
         }

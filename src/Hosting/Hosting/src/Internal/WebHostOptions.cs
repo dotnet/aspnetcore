@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Hosting
             return HostingStartupAssemblies.Except(HostingStartupExcludeAssemblies, StringComparer.OrdinalIgnoreCase);
         }
 
-        private IReadOnlyList<string> Split(string value)
+        private static IReadOnlyList<string> Split(string value)
         {
             return value?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                 ?? Array.Empty<string>();

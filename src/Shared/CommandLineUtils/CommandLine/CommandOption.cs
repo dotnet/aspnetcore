@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             return HasValue() ? Values[0] : null;
         }
 
-        private bool IsEnglishLetter(char c)
+        private static bool IsEnglishLetter(char c)
         {
             return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
         }

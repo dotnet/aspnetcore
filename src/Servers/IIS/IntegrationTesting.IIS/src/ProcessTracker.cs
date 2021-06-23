@@ -11,18 +11,18 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     // Uses Windows Job Objects to ensure external processes are killed if the current process is terminated non-gracefully.
     internal static class ProcessTracker
     {
-        private static readonly IntPtr _jobHandle;
+        private static readonly IntPtr _jobHandle = IntiailizeProcessTracker();
 
-        static ProcessTracker()
+        private static IntPtr IntiailizeProcessTracker()
         {
             // Requires Win8 or later
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || Environment.OSVersion.Version < new Version(6, 2))
             {
-                return;
+                return IntPtr.Zero;
             }
 
             // Job name is optional but helps with diagnostics.  Job name must be unique if non-null.
-            _jobHandle = CreateJobObject(IntPtr.Zero, name: $"ProcessTracker{Environment.ProcessId}");
+            var jobHandle = CreateJobObject(IntPtr.Zero, name: $"ProcessTracker{Environment.ProcessId}");
 
             var extendedInfo = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
             {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 Marshal.StructureToPtr(extendedInfo, extendedInfoPtr, false);
 
-                if (!SetInformationJobObject(_jobHandle, JobObjectInfoType.ExtendedLimitInformation,
+                if (!SetInformationJobObject(jobHandle, JobObjectInfoType.ExtendedLimitInformation,
                     extendedInfoPtr, (uint)length))
                 {
                     throw new Win32Exception();
@@ -48,6 +48,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 Marshal.FreeHGlobal(extendedInfoPtr);
             }
+
+            return jobHandle;
         }
 
         public static void Add(Process process)

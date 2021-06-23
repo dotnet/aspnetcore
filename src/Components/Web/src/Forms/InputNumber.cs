@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
     {
-        private readonly static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
+        private static readonly string _stepAttributeValue = GetStepAttributeValue();
 
-        static InputNumber()
+        private static string GetStepAttributeValue()
         {
             // Unwrap Nullable<T>, because InputBase already deals with the Nullable aspect
             // of it for us. We will only get asked to parse the T for nonempty inputs.
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 targetType == typeof(double) ||
                 targetType == typeof(decimal))
             {
-                _stepAttributeValue = "any";
+                return "any";
             }
             else
             {

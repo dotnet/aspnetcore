@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.ObjectPool
             }
         }
 
-        private void DisposeItem(T? item)
+        private static void DisposeItem(T? item)
         {
             if (item is IDisposable disposable)
             {

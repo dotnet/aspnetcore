@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Routing
             return parameterPolicy;
         }
 
-        private IParameterPolicy InitializeRouteConstraint(
+        private static IParameterPolicy InitializeRouteConstraint(
             bool optional,
             IRouteConstraint routeConstraint)
         {

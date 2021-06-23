@@ -518,7 +518,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Returns true if the value starts and ends with a quote
-        private bool IsQuoted(StringSegment value)
+        private static bool IsQuoted(StringSegment value)
         {
             Contract.Assert(value != null);
 
@@ -527,7 +527,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // tspecials are required to be in a quoted string.  Only non-ascii needs to be encoded.
-        private bool RequiresEncoding(StringSegment input)
+        private static bool RequiresEncoding(StringSegment input)
         {
             Contract.Assert(input != null);
 
@@ -607,7 +607,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Encode a string using RFC 5987 encoding
         // encoding'lang'PercentEncodedSpecials
-        private string Encode5987(StringSegment input)
+        private static string Encode5987(StringSegment input)
         {
             var builder = new StringBuilder("UTF-8\'\'");
             for (int i = 0; i < input.Length; i++)
@@ -649,7 +649,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Attempt to decode using RFC 5987 encoding.
         // encoding'language'my%20string
-        private bool TryDecode5987(StringSegment input, [NotNullWhen(true)] out string? output)
+        private static bool TryDecode5987(StringSegment input, [NotNullWhen(true)] out string? output)
         {
             output = null;
 

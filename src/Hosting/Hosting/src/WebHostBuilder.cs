@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Hosting
             return services;
         }
 
-        private void AddApplicationServices(IServiceCollection services, IServiceProvider hostingServiceProvider)
+        private static void AddApplicationServices(IServiceCollection services, IServiceProvider hostingServiceProvider)
         {
             // We are forwarding services from hosting container so hosting container
             // can still manage their lifetime (disposal) shared instances with application services.
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Hosting
             services.Replace(ServiceDescriptor.Singleton(typeof(ActivitySource), activitySource!));
         }
 
-        private string ResolveContentRootPath(string contentRootPath, string basePath)
+        private static string ResolveContentRootPath(string contentRootPath, string basePath)
         {
             if (string.IsNullOrEmpty(contentRootPath))
             {

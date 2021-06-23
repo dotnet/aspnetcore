@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         // Base32 encoding - in ascii sort order for easy text based sorting
         private static readonly char[] s_encode32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV".ToCharArray();
         // Global ID
-        private static long NextId;
+        private static long NextId = InitializeNextId();
 
         // Instance components
         private string? _idString;
@@ -31,12 +31,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         // Static constructor to initialize global components
-        static FastGuid()
+        private static long InitializeNextId()
         {
             var guidBytes = Guid.NewGuid().ToByteArray();
 
             // Use the first 4 bytes from the Guid to initialize global ID
-            NextId =
+            return
                 guidBytes[0] << 32 |
                 guidBytes[1] << 40 |
                 guidBytes[2] << 48 |

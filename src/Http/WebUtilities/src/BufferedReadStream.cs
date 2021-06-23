@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             foundCR = b == CR;
         }
 
-        private string DecodeLine(MemoryStream builder, bool foundCRLF)
+        private static string DecodeLine(MemoryStream builder, bool foundCRLF)
         {
             // Drop the final CRLF, if any
             var length = foundCRLF ? builder.Length - 2 : builder.Length;
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        private void ValidateBuffer(byte[] buffer, int offset, int count)
+        private static void ValidateBuffer(byte[] buffer, int offset, int count)
         {
             // Delegate most of our validation.
             var ignored = new ArraySegment<byte>(buffer, offset, count);

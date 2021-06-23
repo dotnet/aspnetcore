@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <remarks>
         /// This value is currently fixed at 48 hours.
         /// </remarks>
-        internal TimeSpan KeyPropagationWindow
+        internal static TimeSpan KeyPropagationWindow
         {
             get
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <remarks>
         /// This value is currently fixed at 24 hours.
         /// </remarks>
-        internal TimeSpan KeyRingRefreshPeriod
+        internal static TimeSpan KeyRingRefreshPeriod
         {
             get
             {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <remarks>
         /// This value is currently fixed at 5 minutes.
         /// </remarks>
-        internal TimeSpan MaxServerClockSkew
+        internal static TimeSpan MaxServerClockSkew
         {
             get
             {
