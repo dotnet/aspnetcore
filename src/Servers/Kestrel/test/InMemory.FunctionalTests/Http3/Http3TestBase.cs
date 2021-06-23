@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -611,12 +612,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
-                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(),
-                    _testBase._serviceContext.ServerOptions.RequestHeaderEncodingSelector,
+                var done = QPackHeaderWriter.BeginEncode(GetHeadersEnumerator(headers),
                     buffer.Span, ref headersTotalSize, out var length);
                 Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
+            }
+
+            internal Http3HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
+            {
+                var dictionary = headers
+                    .GroupBy(g => g.Key)
+                    .ToDictionary(g => g.Key, g => new StringValues(g.Select(values => values.Value).ToArray()));
+
+                var headersEnumerator = new Http3HeadersEnumerator();
+                headersEnumerator.Initialize(dictionary);
+                return headersEnumerator;
             }
 
             internal async Task SendHeadersPartialAsync()

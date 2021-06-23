@@ -45,8 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         // Write headers to a buffer that can grow. Possible performance improvement
         // by writing directly to output writer (difficult as frame length is prefixed).
         private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
-        private IEnumerator<KeyValuePair<string, string>>? _headersEnumerator;
-        private Func<string, Encoding?>? _encodingSelector;
+        private Http3HeadersEnumerator _headersEnumerator = new();
         private int _headersTotalSize;
 
         private long _unflushedBytes;
@@ -273,14 +272,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _headersEnumerator = EnumerateHeaders(headers).GetEnumerator();
-                    _encodingSelector = headers.EncodingSelector;
+                    _headersEnumerator.Initialize(headers);
                     _headersTotalSize = 0;
                     _headerEncodingBuffer.Clear();
 
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
-                    var done = QPackHeaderWriter.BeginEncode(_headersEnumerator, _encodingSelector, buffer, ref _headersTotalSize, out var payloadLength);
+                    var done = QPackHeaderWriter.BeginEncode(_headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException ex)
@@ -328,12 +326,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _headersEnumerator = EnumerateHeaders(headers).GetEnumerator();
-                    _encodingSelector = headers.EncodingSelector;
+                    _headersEnumerator.Initialize(headers);
 
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
-                    var done = QPackHeaderWriter.BeginEncode(statusCode, _headersEnumerator, _encodingSelector, buffer, ref _headersTotalSize, out var payloadLength);
+                    var done = QPackHeaderWriter.BeginEncode(statusCode, _headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException ex)
@@ -352,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 ValidateHeadersTotalSize();
                 var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
-                done = QPackHeaderWriter.Encode(_headersEnumerator!, _encodingSelector!, buffer, ref _headersTotalSize, out payloadLength);
+                done = QPackHeaderWriter.Encode(_headersEnumerator!, buffer, ref _headersTotalSize, out payloadLength);
                 _headerEncodingBuffer.Advance(payloadLength);
             }
 
@@ -405,17 +402,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 _completed = true;
                 _outputWriter.Complete();
-            }
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)
-        {
-            foreach (var header in headers)
-            {
-                foreach (var value in header.Value)
-                {
-                    yield return new KeyValuePair<string, string>(header.Key, value);
-                }
             }
         }
     }
