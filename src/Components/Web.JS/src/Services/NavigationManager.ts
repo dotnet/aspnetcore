@@ -60,38 +60,48 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
 
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
-        performInternalNavigation(absoluteHref, true);
+        performInternalNavigation(absoluteHref, /* interceptedLink */ true, /* replace */ false);
       }
     }
   });
 }
 
-export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = false) {
+// For back-compat, we need to accept multiple overloads
+export function navigateTo(uri: string, options: NavigationOptions): void;
+export function navigateTo(uri: string, forceLoad: boolean): void;
+export function navigateTo(uri: string, forceLoad: boolean, replace: boolean): void;
+export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | boolean, replaceIfUsingOldOverload: boolean = false) {
   const absoluteUri = toAbsoluteUri(uri);
 
-  if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    // It's an internal URL, so do client-side navigation
-    performInternalNavigation(absoluteUri, false, replace);
-  } else if (forceLoad && location.href === uri) {
-    // Force-loading the same URL you're already on requires special handling to avoid
-    // triggering browser-specific behavior issues.
-    // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
-    const temporaryUri = uri + '?';
-    history.replaceState(null, '', temporaryUri);
-    location.replace(uri);
-  } else if (replace){
-      if (forceLoad) {
-        location.replace(uri);
-      } else {
-        history.replaceState(null, '', absoluteUri)
-      }
+  // Normalize the parameters to the newer overload (i.e., using NavigationOptions)
+  const options: NavigationOptions = forceLoadOrOptions instanceof Object
+    ? forceLoadOrOptions
+    : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
+
+  if (isWithinBaseUriSpace(absoluteUri) && !options.forceLoad) {
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry);
   } else {
-    // It's either an external URL, or forceLoad is requested, so do a full page load
-    location.href = uri;
+    performExternalNavigation(absoluteUri, options.replaceHistoryEntry);
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean = false) {
+function performExternalNavigation(absoluteUri: string, replace: boolean) {
+  if (location.href === absoluteUri) {
+    // If you're already on this URL, you can't append another copy of it to the history stack,
+    // so we can ignore the 'replace' flag. However, reloading the same URL you're already on
+    // requires special handling to avoid triggering browser-specific behavior issues.
+    // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
+    const temporaryUri = absoluteUri + '?';
+    history.replaceState(null, '', temporaryUri);
+    location.replace(absoluteUri);
+  } else if (replace) {
+    location.replace(absoluteUri);
+  } else {
+    location.href = absoluteUri;
+  }
+}
+
+function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean) {
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
@@ -99,11 +109,12 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
-  if(!replace){
+  if (!replace) {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-  }else{
+  } else {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   }
+
   notifyLocationChanged(interceptedLink);
 }
 
@@ -169,4 +180,10 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
   const targetAttributeValue = anchorTarget.getAttribute('target');
   const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
   return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
+}
+
+// Keep in sync with Components/src/NavigationOptions.cs
+interface NavigationOptions {
+  forceLoad: boolean;
+  replaceHistoryEntry: boolean;
 }
