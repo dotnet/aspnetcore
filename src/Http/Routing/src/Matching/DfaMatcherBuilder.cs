@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // precedence part of the DFA is over.
             var precedenceDigitComparer = Comparer<DfaBuilderWorkerWorkItem>.Create((x, y) =>
             {
-                return x.precedenceDigit.CompareTo(y.precedenceDigit);
+                return x._precedenceDigit.CompareTo(y._precedenceDigit);
             });
 
             var dfaWorker = new DfaBuilderWorker(work, precedenceDigitComparer, includeLabel, _parameterPolicyFactory);
@@ -113,13 +113,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return root;
         }
 
-        private struct DfaBuilderWorker
+        private class DfaBuilderWorker
         {
             private List<DfaBuilderWorkerWorkItem> _previousWork;
             private List<DfaBuilderWorkerWorkItem> _work;
             private int _workCount;
-            private Comparer<DfaBuilderWorkerWorkItem> _precedenceDigitComparer;
-            private bool _includeLabel;
+            private readonly Comparer<DfaBuilderWorkerWorkItem> _precedenceDigitComparer;
+            private readonly bool _includeLabel;
             private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
             public DfaBuilderWorker(
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     List<DfaNode> nextParents;
                     if (nextWorkCount < nextWork.Count)
                     {
-                        nextParents = nextWork[nextWorkCount].parents;
+                        nextParents = nextWork[nextWorkCount]._parents;
                         nextParents.Clear();
 
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
@@ -197,13 +197,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     }
                 }
 
-                // Prepare the process the next stage.
+                // Prepare to process the next stage.
                 _previousWork = _work;
                 _work = nextWork;
                 _workCount = nextWorkCount;
             }
 
-            private readonly void ProcessSegment(
+            private void ProcessSegment(
                 RouteEndpoint endpoint,
                 List<DfaNode> parents,
                 List<DfaNode> nextParents,
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            private readonly void AddParentsMatchingComplexSegment(RouteEndpoint endpoint, List<DfaNode> nextParents, RoutePatternPathSegment segment, DfaNode parent, RoutePatternParameterPart parameterPart)
+            private void AddParentsMatchingComplexSegment(RouteEndpoint endpoint, List<DfaNode> nextParents, RoutePatternPathSegment segment, DfaNode parent, RoutePatternParameterPart parameterPart)
             {
                 var routeValues = new RouteValueDictionary();
                 foreach (var literal in parent.Literals.Keys)
@@ -372,11 +372,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            private readonly void AddParentsWithMatchingLiteralConstraints(List<DfaNode> nextParents, DfaNode parent, RoutePatternParameterPart parameterPart, IReadOnlyList<RoutePatternParameterPolicyReference> parameterPolicyReferences)
+            private void AddParentsWithMatchingLiteralConstraints(List<DfaNode> nextParents, DfaNode parent, RoutePatternParameterPart parameterPart, IReadOnlyList<RoutePatternParameterPolicyReference> parameterPolicyReferences)
             {
                 // The list of parameters that fail to meet at least one ILiteralConstraint.
-                var hasFailingPolicy = parent.Literals.Keys.Count < 256 ?
-                    stackalloc bool [parent.Literals.Keys.Count] :
+                var hasFailingPolicy = parent.Literals.Keys.Count < 32 ?
+                    (stackalloc bool[32]).Slice(0, parent.Literals.Keys.Count) :
                     new bool[parent.Literals.Keys.Count];
 
                 // Whether or not all parameters have failed to meet at least one constraint.
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            private readonly void AddRequiredLiteralValue(RouteEndpoint endpoint, List<DfaNode> nextParents, DfaNode parent, RoutePatternParameterPart parameterPart, object requiredValue)
+            private void AddRequiredLiteralValue(RouteEndpoint endpoint, List<DfaNode> nextParents, DfaNode parent, RoutePatternParameterPart parameterPart, object requiredValue)
             {
                 if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
                 {
@@ -937,46 +937,46 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
         }
-    }
 
-    // TODO: Convert to record struct when available
-    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-    internal struct DfaBuilderWorkerWorkItem
-    {
-        public RouteEndpoint endpoint;
-        public int precedenceDigit;
-        public List<DfaNode> parents;
-
-        public DfaBuilderWorkerWorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)
+        // TODO: Convert to record struct when available
+        [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+        private struct DfaBuilderWorkerWorkItem
         {
-            this.endpoint = endpoint;
-            this.precedenceDigit = precedenceDigit;
-            this.parents = parents;
-        }
+            public readonly RouteEndpoint _endpoint;
+            public readonly int _precedenceDigit;
+            public readonly List<DfaNode> _parents;
 
-    public override bool Equals(object obj)
-        {
-            return obj is DfaBuilderWorkerWorkItem other &&
-                   EqualityComparer<RouteEndpoint>.Default.Equals(endpoint, other.endpoint) &&
-                   precedenceDigit == other.precedenceDigit &&
-                   EqualityComparer<List<DfaNode>>.Default.Equals(parents, other.parents);
-        }
+            public DfaBuilderWorkerWorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)
+            {
+                _endpoint = endpoint;
+                _precedenceDigit = precedenceDigit;
+                _parents = parents;
+            }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(endpoint, precedenceDigit, parents);
-        }
+            public override bool Equals(object obj)
+            {
+                return obj is DfaBuilderWorkerWorkItem other &&
+                       EqualityComparer<RouteEndpoint>.Default.Equals(_endpoint, other._endpoint) &&
+                       _precedenceDigit == other._precedenceDigit &&
+                       EqualityComparer<List<DfaNode>>.Default.Equals(_parents, other._parents);
+            }
 
-        public void Deconstruct(out RouteEndpoint endpoint, out int precedenceDigit, out List<DfaNode> parents)
-        {
-            endpoint = this.endpoint;
-            precedenceDigit = this.precedenceDigit;
-            parents = this.parents;
-        }
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(_endpoint, _precedenceDigit, _parents);
+            }
 
-        private string GetDebuggerDisplay()
-        {
-            return $"Endpoint: {endpoint.RoutePattern.RawText} - Parents: {string.Join(", ", parents.Select(p => p.Label))}";
+            public void Deconstruct(out RouteEndpoint endpoint, out int precedenceDigit, out List<DfaNode> parents)
+            {
+                endpoint = _endpoint;
+                precedenceDigit = _precedenceDigit;
+                parents = _parents;
+            }
+
+            private string GetDebuggerDisplay()
+            {
+                return $"Endpoint: {_endpoint.RoutePattern.RawText} - Parents: {string.Join(", ", _parents.Select(p => p.Label))}";
+            }
         }
     }
 }
