@@ -13,17 +13,18 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal sealed class TestW3CLoggerProcessor : W3CLoggerProcessor
     {
-        public int WriteCount = 0;
+        private int WriteCount = 0;
         private int _expectedWrites;
         private TaskCompletionSource _tcs;
-        public List<string> Lines;
         private bool _hasWritten;
-        private readonly object _lockObj = new object();
+        private readonly object _writeCountLock = new object();
 
         public TestW3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
         {
             Lines = new List<string>();
         }
+
+        public List<string> Lines { get; }
 
         internal override StreamWriter GetStreamWriter(string fileName)
         {
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         internal override void OnWrite(string message)
         {
             Lines.Add(message);
-            lock (_lockObj)
+            lock (_writeCountLock)
             {
                 WriteCount++;
                 if (_tcs != null && WriteCount >= _expectedWrites)
@@ -45,13 +46,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public Task WaitForWrites(int numWrites)
         {
-            lock (_lockObj)
+            lock (_writeCountLock)
             {
-                _expectedWrites = numWrites;
-                if (WriteCount >= _expectedWrites)
+                if (WriteCount >= numWrites)
                 {
                     return Task.CompletedTask;
                 }
+                _expectedWrites = numWrites;
                 _tcs = new TaskCompletionSource();
             }
             return _tcs.Task;

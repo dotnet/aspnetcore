@@ -11,9 +11,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal class TestW3CLogger : W3CLogger
     {
-        public TestW3CLoggerProcessor Processor;
 
         public TestW3CLogger(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory) { }
+
+        public TestW3CLoggerProcessor Processor { get; set; }
 
         internal override W3CLoggerProcessor InitializeMessageQueue(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
