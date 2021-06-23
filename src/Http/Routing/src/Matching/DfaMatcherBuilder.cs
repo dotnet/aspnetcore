@@ -279,6 +279,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             // doesn't meet the parameter constraint (length(2)) when building the tree, and avoid the extra nodes.
                             if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
                             {
+                                // We filter out sibling literals that don't match one of the constraints in the segment to avoid adding nodes to the DFA
+                                // that will never match a route and which will result in a much higher memory usage.
                                 AddParentsWithMatchingLiteralConstraints(nextParents, parent, parameterPart, parameterPolicyReferences);
                             }
                             else
@@ -312,6 +314,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             // the tree on cases where the literal won't ever be able to match the complex parameter.
                             // For example, if we have a complex parameter {a}-{b}.{c?} and a literal "Hello" we can guarantee
                             // that it will never be a match.
+
+                            // We filter out sibling literals that don't match the complex parameter segment to avoid adding nodes to the DFA
+                            // that will never match a route and which will result in a much higher memory usage.
                             AddParentsMatchingComplexSegment(endpoint, nextParents, segment, parent, parameterPart);
                         }
                         nextParents.Add(parent.Parameters);
