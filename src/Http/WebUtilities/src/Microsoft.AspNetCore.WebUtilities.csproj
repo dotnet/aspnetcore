@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
   </ItemGroup>
