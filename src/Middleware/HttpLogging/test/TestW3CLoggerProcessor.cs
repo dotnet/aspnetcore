@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public TaskCompletionSource<bool> Tcs;
         public List<string> Lines;
         private bool _hasWritten;
+        private readonly object _lockObj = new object();
 
         public TestW3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
         {
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             Lines.Add(message);
             WriteCount++;
-            lock (Tcs)
+            lock (_lockObj)
             {
                 if (Tcs != null && WriteCount >= ExpectedWrites)
                 {

@@ -12,12 +12,13 @@ namespace Microsoft.AspNetCore.HttpLogging
     internal class TestW3CLogger : W3CLogger
     {
         public TestW3CLoggerProcessor Processor;
+        private readonly object _lockObj = new object();
 
         public TestW3CLogger(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory) { }
 
         public Task WaitForWrites(int numWrites)
         {
-            lock (Processor)
+            lock (_lockObj)
             {
                 Processor.ExpectedWrites = numWrites;
                 Processor.Tcs = new TaskCompletionSource<bool>();
