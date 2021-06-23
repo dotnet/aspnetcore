@@ -2036,6 +2036,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            // TODO: How to correctly modify this per test?
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+        }
+
+        [Fact]
         public async Task ResponseTrailers_WithoutData_Sent()
         {
             await InitializeConnectionAsync(context =>
@@ -2350,6 +2369,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("Custom 你好 Value", _decodedHeaders["CustomName"]);
             Assert.Equal("Custom 你好 Tag", _decodedHeaders[HeaderNames.ETag]);
             Assert.Equal("Custom 你好 Accept", _decodedHeaders[HeaderNames.Accept]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            // TODO: How to correctly modify this per test?
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
         }
 
         [Fact]

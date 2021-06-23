@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _hpackDecodingError(_http2Logger, connectionId, streamId, ex);
         }
 
-        public virtual void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex)
+        public virtual void HPackEncodingError(string connectionId, int streamId, Exception ex)
         {
             _hpackEncodingError(_http2Logger, connectionId, streamId, ex);
         }

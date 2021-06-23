@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
-                catch (HPackEncodingException hex)
+                catch (Exception hex) // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
                 {
                     _log.HPackEncodingError(_connectionId, streamId, hex);
                     _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
-                catch (HPackEncodingException hex)
+                catch (Exception hex)  // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
                 {
                     _log.HPackEncodingError(_connectionId, streamId, hex);
                     _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));

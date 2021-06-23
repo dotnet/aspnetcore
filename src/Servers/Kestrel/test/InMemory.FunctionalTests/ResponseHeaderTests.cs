@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseHeaders_WithNonAsciiWithCustomEncoder_ThrowsForInvalidValues()
+        public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
@@ -87,11 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await using var server = new TestServer(context =>
             {
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
-                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Accept = "Custom 你好 Accept");
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
                 context.Response.ContentLength = 11;
                 return context.Response.WriteAsync("Hello World");
             }, testContext);
@@ -102,12 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 "",
                 "");
 
-            await connection.Receive(
-                $"HTTP/1.1 200 OK",
-                $"Date: {server.Context.DateHeaderValue}",
-                "Content-Length: 11",
-                "",
-                "Hello World");
+            await connection.ReceiveEnd();
         }
     }
 }

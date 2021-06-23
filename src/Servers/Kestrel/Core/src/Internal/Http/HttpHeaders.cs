@@ -263,48 +263,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public static void ValidateHeaderValueCharacters(string headerName, StringValues headerValues, Func<string, Encoding?> encodingSelector)
         {
-            var encoding = ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
-                ? null : encodingSelector(headerName);
+            var requireAscii = ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                || encodingSelector(headerName) == null;
 
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
 
             {
-                ValidateHeaderValueCharacters(encoding, headerName, headerValues[i]);
+                ValidateHeaderValueCharacters(headerValues[i], requireAscii);
             }
         }
 
-        public static void ValidateHeaderValueCharacters(Encoding? encoding, string headerName, string headerCharacters)
+        public static void ValidateHeaderValueCharacters(string headerCharacters, bool requireAscii)
         {
             if (headerCharacters != null)
             {
-                // Only validate here if we're using the default encoding (ASCII). Otherwise we'll validate later when encoding.
-                if (encoding == null)
+                var invalid = requireAscii ? HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters)
+                    : HttpCharacters.IndexOfInvalidFieldValueCharExtended(headerCharacters);
+                if (invalid >= 0)
                 {
-                    // Check for control and non-ASCII characters.
-                    var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
-                    if (invalid >= 0)
-                    {
-                        ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
-                    }
-                }
-                else
-                {
-                    // Still check for control characters, but allow for non-ASCII.
-                    var invalid = HttpCharacters.IndexOfInvalidFieldValueCharExtended(headerCharacters);
-                    if (invalid >= 0)
-                    {
-                        ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
-                    }
-
-                    try
-                    {
-                        encoding.GetByteCount(headerCharacters);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new InvalidOperationException($"The '{headerName}' header '{headerCharacters}' contains invalid values.", ex);
-                    }
+                    ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
                 }
             }
         }

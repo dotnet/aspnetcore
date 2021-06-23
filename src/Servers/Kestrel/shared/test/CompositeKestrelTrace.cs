@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.HPackDecodingError(connectionId, streamId, ex);
         }
 
-        public void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex)
+        public void HPackEncodingError(string connectionId, int streamId, Exception ex)
         {
             _trace1.HPackEncodingError(connectionId, streamId, ex);
             _trace2.HPackEncodingError(connectionId, streamId, ex);
