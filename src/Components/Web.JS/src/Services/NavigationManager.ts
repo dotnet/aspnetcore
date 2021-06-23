@@ -81,23 +81,26 @@ export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | 
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
     performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry);
   } else {
-    performExternalNavigation(absoluteUri, options.replaceHistoryEntry);
+    // For external navigation, we work in terms of the originally-supplied uri string,
+    // not the computed absoluteUri. This is in case there are some special URI formats
+    // we're unable to translate into absolute URIs.
+    performExternalNavigation(uri, options.replaceHistoryEntry);
   }
 }
 
-function performExternalNavigation(absoluteUri: string, replace: boolean) {
-  if (location.href === absoluteUri) {
+function performExternalNavigation(uri: string, replace: boolean) {
+  if (location.href === uri) {
     // If you're already on this URL, you can't append another copy of it to the history stack,
     // so we can ignore the 'replace' flag. However, reloading the same URL you're already on
     // requires special handling to avoid triggering browser-specific behavior issues.
     // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
-    const temporaryUri = absoluteUri + '?';
+    const temporaryUri = uri + '?';
     history.replaceState(null, '', temporaryUri);
-    location.replace(absoluteUri);
+    location.replace(uri);
   } else if (replace) {
-    location.replace(absoluteUri);
+    location.replace(uri);
   } else {
-    location.href = absoluteUri;
+    location.href = uri;
   }
 }
 
