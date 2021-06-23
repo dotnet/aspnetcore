@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// The <see cref="AuthenticateResult"/> from the authorization middleware.
         /// Set to null if the <see cref="IHttpAuthenticationFeature.User"/> property is set after the authorization middleware.
         /// </summary>
-        AuthenticateResult? Result { get; set; }
+        AuthenticateResult? AuthenticateResult { get; set; }
     }
 }

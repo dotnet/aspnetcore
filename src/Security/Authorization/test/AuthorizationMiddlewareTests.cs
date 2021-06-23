@@ -454,8 +454,8 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(next.Called);
             var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
             Assert.NotNull(authenticateResultFeature);
-            Assert.NotNull(authenticateResultFeature.Result);
-            Assert.Same(context.User, authenticateResultFeature.Result.Principal);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
         }
 
         [Fact]
@@ -517,9 +517,9 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
             Assert.NotNull(authenticateResultFeature);
-            Assert.NotNull(authenticateResultFeature.Result);
-            Assert.Same(context.User, authenticateResultFeature.Result.Principal);
-            Assert.Equal(secondExpiration, authenticateResultFeature.Result?.Properties?.ExpiresUtc);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
+            Assert.Equal(secondExpiration, authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc);
         }
 
         [Fact]
@@ -541,11 +541,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(next.Called);
             var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
             Assert.NotNull(authenticateResultFeature);
-            Assert.NotNull(authenticateResultFeature.Result);
-            Assert.Same(context.User, authenticateResultFeature.Result.Principal);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
 
             context.User = new ClaimsPrincipal();
-            Assert.Null(authenticateResultFeature.Result);
+            Assert.Null(authenticateResultFeature.AuthenticateResult);
         }
 
         [Fact]
@@ -567,12 +567,45 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(next.Called);
             var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
             Assert.NotNull(authenticateResultFeature);
-            Assert.NotNull(authenticateResultFeature.Result);
-            Assert.Same(context.User, authenticateResultFeature.Result.Principal);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
 
             var newTicket = new AuthenticationTicket(new ClaimsPrincipal(), "");
-            authenticateResultFeature.Result = AuthenticateResult.Success(newTicket);
+            authenticateResultFeature.AuthenticateResult = AuthenticateResult.Success(newTicket);
             Assert.Same(context.User, newTicket.Principal);
+        }
+
+        class TestAuthResultFeature : IAuthenticateResultFeature
+        {
+            public AuthenticateResult AuthenticateResult { get; set; }
+        }
+
+        [Fact]
+        public async Task IAuthenticateResultFeature_ReplacesExistingFeature()
+        {
+            // Arrange
+            var policy = new AuthorizationPolicyBuilder().RequireClaim("Permission", "CanViewPage").Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
+
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var context = GetHttpContext(endpoint: CreateEndpoint(new AuthorizeAttribute()));
+            var testAuthenticateResultFeature = new TestAuthResultFeature();
+            var authenticateResult = AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), ""));
+            testAuthenticateResultFeature.AuthenticateResult = authenticateResult;
+            context.Features.Set<IAuthenticateResultFeature>(testAuthenticateResultFeature);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            Assert.True(next.Called);
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+            Assert.NotNull(authenticateResultFeature);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.NotSame(testAuthenticateResultFeature, authenticateResultFeature);
+            Assert.NotSame(authenticateResult, authenticateResultFeature.AuthenticateResult);
         }
 
         private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null)

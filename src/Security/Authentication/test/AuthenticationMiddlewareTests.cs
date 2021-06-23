@@ -3,12 +3,15 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -54,6 +57,126 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(607, (int)response.StatusCode);
         }
 
+        [Fact]
+        public async Task IAuthenticateResultFeature_SetOnSuccessfulAuthenticate()
+        {
+            var authenticationService = new Mock<IAuthenticationService>();
+            authenticationService.Setup(s => s.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), "custom"))));
+            var schemeProvider = new Mock<IAuthenticationSchemeProvider>();
+            schemeProvider.Setup(p => p.GetDefaultAuthenticateSchemeAsync())
+                .Returns(Task.FromResult(new AuthenticationScheme("custom", "custom", typeof(JwtBearerHandler))));
+            var middleware = new AuthenticationMiddleware(c => Task.CompletedTask, schemeProvider.Object);
+            var context = GetHttpContext(authenticationService: authenticationService.Object);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+            Assert.NotNull(authenticateResultFeature);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.True(authenticateResultFeature.AuthenticateResult.Succeeded);
+            Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
+        }
+
+        [Fact]
+        public async Task IAuthenticateResultFeature_NotSetOnUnsuccessfulAuthenticate()
+        {
+            var authenticationService = new Mock<IAuthenticationService>();
+            authenticationService.Setup(s => s.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(AuthenticateResult.Fail("not authenticated")));
+            var schemeProvider = new Mock<IAuthenticationSchemeProvider>();
+            schemeProvider.Setup(p => p.GetDefaultAuthenticateSchemeAsync())
+                .Returns(Task.FromResult(new AuthenticationScheme("custom", "custom", typeof(JwtBearerHandler))));
+            var middleware = new AuthenticationMiddleware(c => Task.CompletedTask, schemeProvider.Object);
+            var context = GetHttpContext(authenticationService: authenticationService.Object);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+            Assert.Null(authenticateResultFeature);
+        }
+
+        [Fact]
+        public async Task IAuthenticateResultFeature_NullResultWhenUserSetAfter()
+        {
+            var authenticationService = new Mock<IAuthenticationService>();
+            authenticationService.Setup(s => s.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), "custom"))));
+            var schemeProvider = new Mock<IAuthenticationSchemeProvider>();
+            schemeProvider.Setup(p => p.GetDefaultAuthenticateSchemeAsync())
+                .Returns(Task.FromResult(new AuthenticationScheme("custom", "custom", typeof(JwtBearerHandler))));
+            var middleware = new AuthenticationMiddleware(c => Task.CompletedTask, schemeProvider.Object);
+            var context = GetHttpContext(authenticationService: authenticationService.Object);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+            Assert.NotNull(authenticateResultFeature);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.True(authenticateResultFeature.AuthenticateResult.Succeeded);
+            Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
+
+            context.User = new ClaimsPrincipal();
+            Assert.Null(authenticateResultFeature.AuthenticateResult);
+        }
+
+        [Fact]
+        public async Task IAuthenticateResultFeature_SettingResultSetsUser()
+        {
+            var authenticationService = new Mock<IAuthenticationService>();
+            authenticationService.Setup(s => s.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), "custom"))));
+            var schemeProvider = new Mock<IAuthenticationSchemeProvider>();
+            schemeProvider.Setup(p => p.GetDefaultAuthenticateSchemeAsync())
+                .Returns(Task.FromResult(new AuthenticationScheme("custom", "custom", typeof(JwtBearerHandler))));
+            var middleware = new AuthenticationMiddleware(c => Task.CompletedTask, schemeProvider.Object);
+            var context = GetHttpContext(authenticationService: authenticationService.Object);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+            Assert.NotNull(authenticateResultFeature);
+            Assert.NotNull(authenticateResultFeature.AuthenticateResult);
+            Assert.True(authenticateResultFeature.AuthenticateResult.Succeeded);
+            Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
+
+            var newTicket = new AuthenticationTicket(new ClaimsPrincipal(), "");
+            authenticateResultFeature.AuthenticateResult = AuthenticateResult.Success(newTicket);
+            Assert.Same(context.User, newTicket.Principal);
+        }
+
+        private HttpContext GetHttpContext(
+            Action<IServiceCollection> registerServices = null,
+            IAuthenticationService authenticationService = null)
+        {
+            // ServiceProvider
+            var serviceCollection = new ServiceCollection();
+
+            authenticationService = authenticationService ?? Mock.Of<IAuthenticationService>();
+
+            serviceCollection.AddSingleton(authenticationService);
+            serviceCollection.AddOptions();
+            serviceCollection.AddLogging();
+            serviceCollection.AddAuthentication();
+            registerServices?.Invoke(serviceCollection);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            //// HttpContext
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = serviceProvider;
+
+            return httpContext;
+        }
+
         private class ThreeOhFiveHandler : StatusCodeHandler {
             public ThreeOhFiveHandler() : base(305) { }
         }
@@ -77,7 +200,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 _code = code;
             }
-            
+
             public Task<AuthenticateResult> AuthenticateAsync()
             {
                 throw new NotImplementedException();
