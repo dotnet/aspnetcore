@@ -15,12 +15,14 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public TestW3CLogger(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory) { }
 
-        public async Task WaitForWrites(int numWrites)
+        public Task WaitForWrites(int numWrites)
         {
-            while (Processor.WriteCount != numWrites)
+            lock (Processor)
             {
-                await Task.Delay(100);
+                Processor.ExpectedWrites = numWrites;
+                Processor.Tcs = new TaskCompletionSource<bool>();
             }
+            return Processor.Tcs.Task;
         }
 
         internal override W3CLoggerProcessor InitializeMessageQueue(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
