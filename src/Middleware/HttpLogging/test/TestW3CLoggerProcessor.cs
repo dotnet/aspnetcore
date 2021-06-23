@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         internal override void OnWrite(string message)
         {
             Lines.Add(message);
-            WriteCount++;
             lock (_lockObj)
             {
+                WriteCount++;
                 if (_tcs != null && WriteCount >= _expectedWrites)
                 {
                     _tcs.SetResult();
@@ -48,6 +48,10 @@ namespace Microsoft.AspNetCore.HttpLogging
             lock (_lockObj)
             {
                 _expectedWrites = numWrites;
+                if (WriteCount >= _expectedWrites)
+                {
+                    return Task.CompletedTask;
+                }
                 _tcs = new TaskCompletionSource();
             }
             return _tcs.Task;
