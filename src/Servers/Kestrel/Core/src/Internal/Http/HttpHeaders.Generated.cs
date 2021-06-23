@@ -14787,7 +14787,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // Clear bit
                     tempBits ^= (1UL << next);
-                    var encoder = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    var encoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
                         ? null : EncodingSelector(headerName);
                     var valueCount = values.Count;
                     Debug.Assert(valueCount > 0);
@@ -14799,13 +14799,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         if (value != null)
                         {
                             output.Write(headerKey);
-                            if (encoder is null)
+                            if (encoding is null)
                             {
                                 output.WriteAscii(value);
                             }
                             else
                             {
-                                output.Write(encoder.GetBytes(value)); // TODO non-allocating
+                                output.WriteEncoded(value, encoding);
                             }
                         }
                     }

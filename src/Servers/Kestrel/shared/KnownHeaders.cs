@@ -1208,7 +1208,7 @@ $@"        private void Clear(long bitsToClear)
                 {{
                     // Clear bit
                     tempBits ^= (1UL << next);
-                    var encoder = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    var encoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
                         ? null : EncodingSelector(headerName);
                     var valueCount = values.Count;
                     Debug.Assert(valueCount > 0);
@@ -1220,13 +1220,13 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            if (encoder is null)
+                            if (encoding is null)
                             {{
                                 output.WriteAscii(value);
                             }}
                             else
                             {{
-                                output.Write(encoder.GetBytes(value)); // TODO non-allocating
+                                output.WriteEncoded(value, encoding);
                             }}
                         }}
                     }}

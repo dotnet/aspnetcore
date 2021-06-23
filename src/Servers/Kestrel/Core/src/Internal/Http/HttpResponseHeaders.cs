@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             }
                             else
                             {
-                                buffer.Write(encoding.GetBytes(value)); // TODO non-allocating
+                                buffer.WriteEncoded(value, encoding);
                             }
                         }
                     }

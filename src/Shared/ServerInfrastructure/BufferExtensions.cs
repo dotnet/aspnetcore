@@ -124,7 +124,7 @@ namespace System.Buffers
             }
             else
             {
-                WriteAsciiMultiWrite(ref buffer, data);
+                WriteEncodedMultiWrite(ref buffer, data, sourceLength, Encoding.ASCII);
             }
         }
 
@@ -199,32 +199,60 @@ namespace System.Buffers
             buffer.Write(new ReadOnlySpan<byte>(byteBuffer, position, length));
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void WriteAsciiMultiWrite(ref this BufferWriter<PipeWriter> buffer, string data)
+        internal static void WriteEncoded(ref this BufferWriter<PipeWriter> buffer, string data, Encoding encoding)
         {
-            var dataLength = data.Length;
-            var offset = 0;
-            var bytes = buffer.Span;
-            do
+            if (string.IsNullOrEmpty(data))
             {
-                var writable = Math.Min(dataLength - offset, bytes.Length);
-                // Zero length spans are possible, though unlikely.
-                // ASCII.GetBytes and .Advance will both handle them so we won't special case for them.
-                Encoding.ASCII.GetBytes(data.AsSpan(offset, writable), bytes);
-                buffer.Advance(writable);
+                return;
+            }
 
-                offset += writable;
-                if (offset >= dataLength)
+            var dest = buffer.Span;
+            var sourceLength = encoding.GetByteCount(data);
+            // Fast path, try encoding to the available memory directly
+            if (sourceLength <= dest.Length)
+            {
+                encoding.GetBytes(data, dest);
+                buffer.Advance(sourceLength);
+            }
+            else
+            {
+                WriteEncodedMultiWrite(ref buffer, data, sourceLength, encoding);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WriteEncodedMultiWrite(ref this BufferWriter<PipeWriter> buffer, string data, int encodedLength, Encoding encoding)
+        {
+            var source = data.AsSpan();
+            var bytes = buffer.Span;
+            var totalBytesUsed = 0;
+            var encoder = encoding.GetEncoder();
+            var minBufferSize = encoding.GetMaxByteCount(1);
+            var completed = false;
+
+            // This may be a bug, but encoder.Convert returns completed = true for UTF7 too early.
+            // Therefore, we check encodedLength - totalBytesUsed too.
+            while (!completed || encodedLength - totalBytesUsed != 0)
+            {
+                // Zero length spans are possible, though unlikely.
+                // encoding.Convert and .Advance will both handle them so we won't special case for them.
+                encoder.Convert(source, bytes, flush: true, out var charsUsed, out var bytesUsed, out completed);
+                buffer.Advance(bytesUsed);
+
+                totalBytesUsed += bytesUsed;
+                if (totalBytesUsed >= encodedLength)
                 {
-                    Debug.Assert(offset == dataLength);
+                    Debug.Assert(totalBytesUsed == encodedLength);
                     // Encoded everything
                     break;
                 }
 
+                source = source.Slice(charsUsed);
+
                 // Get new span, more to encode.
-                buffer.Ensure();
+                buffer.Ensure(minBufferSize);
                 bytes = buffer.Span;
-            } while (true);
+            }
         }
 
         private static byte[] NumericBytesScratch => _numericBytesScratch ?? CreateNumericBytesScratch();
