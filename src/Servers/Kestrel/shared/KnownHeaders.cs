@@ -329,13 +329,15 @@ namespace CodeGenerator
             var header = group.Header;
             if (header.Name == HeaderNames.ContentLength)
             {
-                return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
+                return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(HeaderNames.ContentLength);
+                    if (customEncoding == null)
                     {{
                         AppendContentLength(value);
                     }}
                     else
                     {{
-                        AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        AppendContentLengthCustomEncoding(value, customEncoding);
                     }}
                     return true;";
             }
@@ -370,13 +372,15 @@ namespace CodeGenerator
                 if (header.Name == HeaderNames.ContentLength)
                 {
                     return $@"
-                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
+                        {extraIndent}var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        {extraIndent}   ? null : EncodingSelector(HeaderNames.ContentLength);
+                        {extraIndent}if (customEncoding == null)
                         {extraIndent}{{
                         {extraIndent}    AppendContentLength(value);
                         {extraIndent}}}
                         {extraIndent}else
                         {extraIndent}{{
-                        {extraIndent}    AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        {extraIndent}    AppendContentLengthCustomEncoding(value, customEncoding);
                         {extraIndent}}}
                         {extraIndent}return;";
                 }
@@ -860,7 +864,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var flag = {header.FlagBit()};
                 if (value.Count > 0)
                 {{
-                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);
+                    {(loop.ClassName != "HttpRequestHeaders" ?
+                        $@"ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);" : "")}
                     _bits |= flag;
                     _headers._{header.Identifier} = value;
                 }}
@@ -888,7 +893,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {{
                 if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
 
-                ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);
+                {(loop.ClassName != "HttpRequestHeaders" ?
+                    $@"ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);" : "")}
                 SetValueUnknown(HeaderNames.{header}, value);
             }}
         }}")}
