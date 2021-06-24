@@ -167,7 +167,14 @@ namespace Microsoft.AspNetCore.HttpLogging
             finally
             {
                 RollFiles();
-                streamWriter.Dispose();
+                try
+                {
+                    streamWriter.Dispose();
+                }
+                catch
+                {
+                    // streamWriter may have been disposed above, catch and continue if so
+                }
             }
 
         }
@@ -197,7 +204,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 return;
             }
-            await streamWriter.WriteLineAsync(message);
+            await streamWriter.WriteLineAsync(MemoryExtensions.AsMemory(message), cancellationTokenSource.Token);
             await streamWriter.FlushAsync();
         }
 
