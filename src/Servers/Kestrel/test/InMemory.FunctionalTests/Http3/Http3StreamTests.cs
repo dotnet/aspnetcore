@@ -780,7 +780,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
             };
 
-            // TODO: How to correctly modify this per test?
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
             _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
 
@@ -821,7 +820,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
                 DecoderFallback.ExceptionFallback);
-            // TODO: How to correctly modify this per test?
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
 
             var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
@@ -938,7 +936,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
             };
 
-            // TODO: How to correctly modify this per test?
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
             _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
 
@@ -981,7 +978,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
                 DecoderFallback.ExceptionFallback);
-            // TODO: How to correctly modify this per test?
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
 
             var requestStream = await InitializeConnectionAndStreamsAsync(async context =>

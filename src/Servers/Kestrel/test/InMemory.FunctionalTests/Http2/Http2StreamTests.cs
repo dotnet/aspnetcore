@@ -1994,7 +1994,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ResponseHeaders_WithNonAsciiAndCustomEncoder_Works()
         {
-            // TODO: How to correctly modify this per test?
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
             _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
 
@@ -2038,7 +2037,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
         {
-            // TODO: How to correctly modify this per test?
             var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
                 DecoderFallback.ExceptionFallback);
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
@@ -2321,7 +2319,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ResponseTrailers_WithNonAsciiAndCustomEncoder_Works()
         {
-            // TODO: How to correctly modify this per test?
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
             _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
 
@@ -2374,7 +2371,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ResponseTrailers_WithInvalidValuesAndCustomEncoder_AbortsConnection()
         {
-            // TODO: How to correctly modify this per test?
             var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
                 DecoderFallback.ExceptionFallback);
             _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
