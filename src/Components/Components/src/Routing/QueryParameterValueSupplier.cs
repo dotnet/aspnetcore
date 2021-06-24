@@ -13,14 +13,17 @@ namespace Microsoft.AspNetCore.Components.Routing
     internal sealed class QueryParameterValueSupplier
     {
         private static Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
-        private QueryParameterMapping[] _mappings;
+        private readonly QueryParameterMapping[] _mappings;
+        private readonly SortedList<string, object?> _assignmentsTemplate;
 
         public static QueryParameterValueSupplier? ForType(Type componentType)
         {
             if (!_cacheByType.TryGetValue(componentType, out var instanceOrNull))
             {
+                // If the component doesn't have any query parameters, store a null value for it
+                // so we know the upstream code can't try to render query parameter frames for it.
                 var mappings = FindQueryParameterMappings(componentType);
-                instanceOrNull = mappings == null ? null : new QueryParameterValueSupplier(mappings);
+                instanceOrNull = mappings.Length == 0 ? null : new QueryParameterValueSupplier(mappings);
                 _cacheByType.TryAdd(componentType, instanceOrNull);
             }
 
@@ -30,24 +33,28 @@ namespace Microsoft.AspNetCore.Components.Routing
         private QueryParameterValueSupplier(QueryParameterMapping[] mappings)
         {
             _mappings = mappings;
-        }
 
-        public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlySpan<char> queryString)
-        {
             // We must always supply a value for all parameters that can be populated from the querystring
-            // (so that, if no value is supplied, the parameter is reset back to a default). So start by
-            // building a dictionary containing nulls.
-            // TODO: Could this be precomputed and then fast-cloned somehow?
-            var assignmentByComponentParameterName = new Dictionary<string, object?>(StringComparer.Ordinal);
+            // (so that, if no value is supplied, the parameter is reset back to a default). So, precompute
+            // a SortedList with nulls for all values. We can then shallow-clone this on each navigation.
+            // The comparer can be case-sensitive because the keys only come from our own code based on
+            // PropertyInfo.Name.
+            _assignmentsTemplate = new (StringComparer.Ordinal);
             foreach (var mapping in _mappings)
             {
                 foreach (var destination in mapping.Destinations)
                 {
-                    assignmentByComponentParameterName.Add(destination.ComponentParameterName, null);
+                    _assignmentsTemplate.Add(destination.ComponentParameterName, null);
                 }
             }
+        }
 
-            // Now we can populate the assignments dictionary in a single pass through the querystring
+        public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlySpan<char> queryString)
+        {
+            var assignmentByComponentParameterName = new SortedList<string, object?>(
+                _assignmentsTemplate, StringComparer.Ordinal);
+
+            // Populate the assignments dictionary in a single pass through the querystring
             var queryStringEnumerable = new QueryStringEnumerable(queryString);
             foreach (var suppliedPair in queryStringEnumerable)
             {
@@ -99,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private static QueryParameterMapping[]? FindQueryParameterMappings(Type componentType)
+        private static QueryParameterMapping[] FindQueryParameterMappings(Type componentType)
         {
             var candidateProperties = MemberAssignment.GetPropertiesIncludingInherited(componentType, ComponentProperties.BindablePropertyFlags);
             Dictionary<string, List<QueryParameterDestination>>? mappingsByQueryParameterName = null;
@@ -133,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
             if (mappingsByQueryParameterName == null)
             {
-                return null;
+                return Array.Empty<QueryParameterMapping>();
             }
             else
             {
