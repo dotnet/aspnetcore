@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private string _fileName;
         private int? _maxFileSize;
         private int? _maxRetainedFiles;
-        private int _fileNumber = 1;
+        private int _fileNumber;
         private TimeSpan _flushInterval;
 
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         /// <summary>
-        /// Gets or sets a strictly positive value representing the maximum retained file count or null for no limit.
+        /// Gets or sets a strictly positive value representing the maximum retained file count.
         /// Defaults to <c>4</c>.
         /// </summary>
         public int? RetainedFileCountLimit
@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             get { return _retainedFileCountLimit; }
             set
             {
-                if (value <= 0)
+                if (value <= 0 || value > 10000)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(RetainedFileCountLimit)} must be positive and non-zero.");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(RetainedFileCountLimit)} must be between 1 and 10,000 (inclusive)");
                 }
                 _retainedFileCountLimit = value;
             }
