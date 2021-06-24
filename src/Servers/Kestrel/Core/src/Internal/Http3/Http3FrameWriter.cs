@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     var done = QPackHeaderWriter.BeginEncode(_headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
-                catch (QPackEncodingException ex)
+                catch (Exception ex) // Any encoding error can corrupt connection state.
                 {
                     _log.QPackEncodingError(_connectionId, streamId, ex);
                     _http3Stream.Abort(new ConnectionAbortedException(ex.Message, ex), Http3ErrorCode.InternalError);
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     var done = QPackHeaderWriter.BeginEncode(statusCode, _headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
-                catch (QPackEncodingException ex)
+                catch (Exception ex) // Any encoding error can corrupt connection state.
                 {
                     _http3Stream.Abort(new ConnectionAbortedException(ex.Message, ex), Http3ErrorCode.InternalError);
                     throw new InvalidOperationException(ex.Message, ex); // Report the error to the user if this was the first write.

@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.QPackDecodingError(connectionId, streamId, ex);
         }
 
-        public void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex)
+        public void QPackEncodingError(string connectionId, long streamId, Exception ex)
         {
             _trace1.QPackEncodingError(connectionId, streamId, ex);
             _trace2.QPackEncodingError(connectionId, streamId, ex);

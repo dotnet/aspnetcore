@@ -809,6 +809,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            // TODO: How to correctly modify this per test?
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, "");
+        }
+
+        [Fact]
         public async Task ResponseTrailers_WithData_Sent()
         {
             var headers = new[]
@@ -939,6 +966,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("Custom 你好 Accept", responseTrailers[HeaderNames.Accept]);
 
             await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            // TODO: How to correctly modify this per test?
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, "");
         }
 
         [Fact]

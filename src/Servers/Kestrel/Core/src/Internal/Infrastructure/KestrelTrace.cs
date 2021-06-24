@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _qpackDecodingError(_http3Logger, connectionId, streamId, ex);
         }
 
-        public virtual void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex)
+        public virtual void QPackEncodingError(string connectionId, long streamId, Exception ex)
         {
             _qpackEncodingError(_http3Logger, connectionId, streamId, ex);
         }

@@ -4981,6 +4981,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task HEADERS_Received_CustomEncoding_InvalidCharacters_AbortsConnection()
+        {
+            var encoding = Encoding.GetEncoding(Encoding.ASCII.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => encoding;
+
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.Equal("£", context.Request.Headers["X-Test"]);
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, LatinHeaderData, endStream: true);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
+                Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+        }
+
+        [Fact]
         public async Task RemoveConnectionSpecificHeaders()
         {
             await InitializeConnectionAsync(async context =>
