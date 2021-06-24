@@ -48,6 +48,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Extensions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Features" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Results" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />

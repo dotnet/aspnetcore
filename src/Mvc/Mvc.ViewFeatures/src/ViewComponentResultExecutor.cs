@@ -4,9 +4,11 @@
 #nullable enable
 
 using System;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -112,7 +114,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 result.ContentType,
                 response.ContentType,
-                ViewExecutor.DefaultContentType,
+                (ViewExecutor.DefaultContentType, Encoding.UTF8),
+                MediaType.GetEncoding,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 
