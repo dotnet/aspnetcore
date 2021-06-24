@@ -40,11 +40,18 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         [Fact]
-        public void ThrowsOnNegativeFlushPeriod()
+        public void ThrowsOnNonRootedLogDirectory()
         {
             var options = new W3CLoggerOptions();
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.FlushPeriod = TimeSpan.FromSeconds(-1));
-            Assert.Contains("FlushPeriod must be positive", ex.Message);
+            Assert.Throws<FormatException>(() => options.LogDirectory = ".\\logs");
+        }
+
+        [Fact]
+        public void ThrowsOnNegativeFlushInterval()
+        {
+            var options = new W3CLoggerOptions();
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.FlushInterval = TimeSpan.FromSeconds(-1));
+            Assert.Contains("FlushInterval must be positive", ex.Message);
         }
     }
 }

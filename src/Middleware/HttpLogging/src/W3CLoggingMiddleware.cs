@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Invokes the <see cref="HttpLoggingMiddleware" />.
         /// </summary>
         /// <param name="context"></param>
-        /// <returns></returns>HttpResponseLog.cs
+        /// <returns></returns>
         public async Task Invoke(HttpContext context)
         {
             var options = _options.CurrentValue;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             // Whether any of the requested fields actually had content
             bool shouldLog = false;
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if (options.LoggingFields.HasFlag(W3CLoggingFields.Date))
             {
                 shouldLog |= AddToList(elements, _dateIndex, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));

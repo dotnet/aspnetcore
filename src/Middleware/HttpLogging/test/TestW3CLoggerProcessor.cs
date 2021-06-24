@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -58,11 +59,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             return _tcs.Task;
         }
 
-        public override async Task OnFirstWrite(StreamWriter streamWriter)
+        public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
         {
             if (!_hasWritten)
             {
-                await base.OnFirstWrite(streamWriter);
+                await base.OnFirstWrite(streamWriter, cancellationTokenSource);
                 _hasWritten = true;
             }
         }

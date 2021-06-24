@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private int? _retainedFileCountLimit = 4;
         private string _fileName = "w3clog-";
         private string _logDirectory = "";
-        private TimeSpan _flushPeriod = TimeSpan.FromSeconds(1);
+        private TimeSpan _flushInterval = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum log size in bytes or null for no limit.
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(RetainedFileCountLimit)} must be positive.");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(RetainedFileCountLimit)} must be positive and non-zero.");
                 }
                 _retainedFileCountLimit = value;
             }
@@ -84,6 +84,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
+                if (!Path.IsPathRooted(value))
+                {
+                    throw new FormatException($"{nameof(LogDirectory)} must be a rooted path.");
+                }
                 _logDirectory = value;
             }
         }
@@ -92,16 +96,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Gets or sets the period after which logs will be flushed to the store.
         /// Defaults to 1 second.
         /// </summary>
-        public TimeSpan FlushPeriod
+        public TimeSpan FlushInterval
         {
-            get { return _flushPeriod; }
+            get { return _flushInterval; }
             set
             {
                 if (value <= TimeSpan.Zero)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(FlushPeriod)} must be positive.");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(FlushInterval)} must be positive.");
                 }
-                _flushPeriod = value;
+                _flushInterval = value;
             }
         }
 

@@ -27,14 +27,14 @@ namespace Microsoft.AspNetCore.HttpLogging
         private int? _maxFileSize;
         private int? _maxRetainedFiles;
         private int _fileNumber = 1;
-        private TimeSpan _flushPeriod;
+        private TimeSpan _flushInterval;
 
-        private IOptionsMonitor<W3CLoggerOptions> _options;
+        private readonly IOptionsMonitor<W3CLoggerOptions> _options;
         private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
         private readonly ILogger _logger;
         private readonly List<string> _currentBatch = new List<string>();
-        private Task _outputTask;
-        private CancellationTokenSource _cancellationTokenSource;
+        private readonly Task _outputTask;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
         public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             _fileName = loggerOptions.FileName;
             _maxFileSize = loggerOptions.FileSizeLimit;
             _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
-            _flushPeriod = loggerOptions.FlushPeriod;
+            _flushInterval = loggerOptions.FlushInterval;
             _options.OnChange(options =>
             {
                 // Clear the cached settings.
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 _fileName = loggerOptions.FileName;
                 _maxFileSize = loggerOptions.FileSizeLimit;
                 _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
-                _flushPeriod = loggerOptions.FlushPeriod;
+                _flushInterval = loggerOptions.FlushInterval;
             });
 
             _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     try
                     {
-                        await WriteMessagesAsync(_currentBatch);
+                        await WriteMessagesAsync(_currentBatch, _cancellationTokenSource);
                     }
                     catch (Exception ex)
                     {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     try
                     {
-                        await Task.Delay(_flushPeriod, _cancellationTokenSource.Token);
+                        await Task.Delay(_flushInterval, _cancellationTokenSource.Token);
                     }
                     catch
                     {
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private async Task WriteMessagesAsync(List<string> messages)
+        private async Task WriteMessagesAsync(List<string> messages, CancellationTokenSource cancellationTokenSource)
         {
             // Files are grouped by day, and written up to _maxFileSize before rolling to a new file
             DateTime today = DateTime.Now;
@@ -132,38 +132,44 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
             var streamWriter = GetStreamWriter(fullName);
 
-            foreach (var message in messages)
+            try
             {
-                if (_cancellationTokenSource.IsCancellationRequested)
+                foreach (var message in messages)
                 {
-                    return;
-                }
-                fileInfo.Refresh();
-                // Roll to new file if _maxFileSize is reached
-                // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling
-                if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
-                {
-                    _fileNumber++;
-                    fullName = GetFullName(today);
-                    fileInfo = new FileInfo(fullName);
-                    streamWriter.Dispose();
-                    if (!TryCreateDirectory())
+                    if (cancellationTokenSource.IsCancellationRequested)
                     {
-                        // return early if we fail to create the directory
                         return;
                     }
-                    streamWriter = GetStreamWriter(fullName);
-                }
-                if (!fileInfo.Exists || fileInfo.Length == 0)
-                {
-                    await OnFirstWrite(streamWriter);
-                }
+                    fileInfo.Refresh();
+                    // Roll to new file if _maxFileSize is reached
+                    // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling
+                    if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
+                    {
+                        _fileNumber++;
+                        fullName = GetFullName(today);
+                        fileInfo = new FileInfo(fullName);
+                        streamWriter.Dispose();
+                        if (!TryCreateDirectory())
+                        {
+                            // return early if we fail to create the directory
+                            return;
+                        }
+                        streamWriter = GetStreamWriter(fullName);
+                    }
+                    if (!fileInfo.Exists || fileInfo.Length == 0)
+                    {
+                        await OnFirstWrite(streamWriter, _cancellationTokenSource);
+                    }
 
-                await WriteMessageAsync(message, streamWriter);
+                    await WriteMessageAsync(message, streamWriter, _cancellationTokenSource);
+                }
             }
-            streamWriter.Dispose();
+            finally
+            {
+                RollFiles();
+                streamWriter.Dispose();
+            }
 
-            RollFiles();
         }
 
         internal bool TryCreateDirectory()
@@ -185,8 +191,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         // Virtual for testing
-        internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter)
+        internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
         {
+            if (cancellationTokenSource.IsCancellationRequested)
+            {
+                return;
+            }
             await streamWriter.WriteLineAsync(message);
             await streamWriter.FlushAsync();
         }
@@ -222,10 +232,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string GetFullName(DateTime date)
         {
-            return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber}.txt"));
+            return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
         }
 
-        public virtual Task OnFirstWrite(StreamWriter streamWriter)
+        public virtual Task OnFirstWrite(StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
         {
             return Task.CompletedTask;
         }
@@ -236,7 +246,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 LoggerMessage.Define(
                     LogLevel.Debug,
                     new EventId(1, "WriteMessagesFailed"),
-                    "FileLoggerProcessor failed to write all messages.");
+                    "Failed to write all messages.");
 
             public static void WriteMessagesFailed(ILogger logger, Exception ex) => _writeMessagesFailed(logger, ex);
 

@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             return new W3CLoggerProcessor(options, environment, factory);
         }
 
-        public async ValueTask DisposeAsync() => await _messageQueue.DisposeAsync();
+        public ValueTask DisposeAsync() => _messageQueue.DisposeAsync();
 
         public void Log(string[] elements)
         {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (!string.IsNullOrEmpty(date) && !string.IsNullOrEmpty(time) && _loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
             {
                 DateTime start = DateTime.ParseExact(date + time, "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture);
-                var elapsed = DateTime.Now.Subtract(start);
+                var elapsed = DateTime.UtcNow.Subtract(start);
                 elements[W3CLoggingMiddleware._timeTakenIndex] = elapsed.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
             }
 

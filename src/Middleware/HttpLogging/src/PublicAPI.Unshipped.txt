@@ -42,8 +42,8 @@ Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.get -> string!
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.set -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileSizeLimit.get -> int?
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileSizeLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FlushPeriod.get -> System.TimeSpan
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FlushPeriod.set -> void
+Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FlushInterval.get -> System.TimeSpan
+Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FlushInterval.set -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.LogDirectory.get -> string!
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.LogDirectory.set -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.W3CLoggingFields

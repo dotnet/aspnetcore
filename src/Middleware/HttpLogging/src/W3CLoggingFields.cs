@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// which may have regulatory concerns under GDPR
         /// and other laws. UserName should not be logged
         /// unless logs are secure and access controlled
-        /// and the privacy impact accessed.
+        /// and the privacy impact assessed.
         /// </summary>
         UserName = 0x8,
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         Host = 0x2000,
 
         /// <summary>
-        /// Flag for logging the browser used on the client.
+        /// Flag for logging the requesting user agent.
         /// </summary>
         UserAgent = 0x4000,
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// or private information which may have regulatory concerns
         /// under GDPR and other laws. Cookies should not be logged
         /// unless logs are secure and access controlled
-        /// and the privacy impact accessed.
+        /// and the privacy impact assessed.
         /// </summary>
         Cookie = 0x8000,
 
