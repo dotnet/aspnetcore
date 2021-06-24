@@ -25,6 +25,14 @@
   ],
   "sources": [
     {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ],
+      "copyOnly": [
+        "wwwroot/**"
+      ],
       "modifiers": [
         {
           "condition": "(!IndividualLocalAuth || UseLocalDB)",
