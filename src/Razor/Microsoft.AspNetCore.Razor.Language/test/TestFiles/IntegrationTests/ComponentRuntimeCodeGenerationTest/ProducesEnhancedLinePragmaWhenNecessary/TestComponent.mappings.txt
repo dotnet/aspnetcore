@@ -1,0 +1,15 @@
+Source Location: (166:11,7 [79] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public string JsonToHtml(string foo)
+    {
+        return foo;
+    }
+|
+Generated Location: (1274:47,7 [79] )
+|
+    public string JsonToHtml(string foo)
+    {
+        return foo;
+    }
+|
+

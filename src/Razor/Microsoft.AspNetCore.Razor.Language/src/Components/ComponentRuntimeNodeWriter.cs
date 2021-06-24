@@ -96,27 +96,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // Since we're not in the middle of writing an element, this must evaluate as some
-            // text to display
-            context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddContent}")
-                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
-                .WriteParameterSeparator();
+            var methodInvocation = $"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddContent}(" +
+                _sourceSequence++.ToString(CultureInfo.InvariantCulture);
+            var parameterSeparatorLength = 2;
 
-            for (var i = 0; i < node.Children.Count; i++)
+            using (context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context, methodInvocation.Length + parameterSeparatorLength))
             {
-                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
-                {
-                    WriteCSharpToken(context, token);
-                }
-                else
-                {
-                    // There may be something else inside the expression like a Template or another extension node.
-                    context.RenderNode(node.Children[i]);
-                }
-            }
+                // Since we're not in the middle of writing an element, this must evaluate as some
+                // text to display
+                context.CodeWriter
+                    .Write(methodInvocation)
+                    .WriteParameterSeparator();
 
-            context.CodeWriter.WriteEndMethodInvocation();
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    if (node.Children[i] is IntermediateToken token && token.IsCSharp)
+                    {
+                        WriteCSharpToken(context, token, includeLinePragma: false);
+                    }
+                    else
+                    {
+                        // There may be something else inside the expression like a Template or another extension node.
+                        context.RenderNode(node.Children[i]);
+                    }
+                }
+                context.CodeWriter.WriteEndMethodInvocation();
+            }
         }
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
@@ -1030,7 +1035,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private static void WriteCSharpToken(CodeRenderingContext context, IntermediateToken token)
+        private static void WriteCSharpToken(CodeRenderingContext context, IntermediateToken token, bool includeLinePragma = true)
         {
             if (string.IsNullOrWhiteSpace(token.Content))
             {
@@ -1043,11 +1048,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            using (context.CodeWriter.BuildLinePragma(token.Source, context))
+            if (includeLinePragma)
             {
-                context.CodeWriter.WritePadding(0, token.Source.Value, context);
-                context.CodeWriter.Write(token.Content);
+                using (context.CodeWriter.BuildLinePragma(token.Source, context))
+                {
+                    context.CodeWriter.WritePadding(0, token.Source.Value, context);
+                    context.CodeWriter.Write(token.Content);
+                }
+                return;
             }
+
+            context.CodeWriter.Write(token.Content);
         }
     }
 }

@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         public virtual bool OmitMinimizedComponentAttributeValues { get; set; }
 
+        public virtual bool UseEnhancedLinePragma { get; set; }
+
         public abstract RazorCodeGenerationOptions Build();
 
         public virtual void SetDesignTime(bool designTime)

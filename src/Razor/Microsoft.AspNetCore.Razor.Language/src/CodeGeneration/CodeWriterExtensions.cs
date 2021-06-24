@@ -145,6 +145,27 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return writer;
         }
 
+        public static CodeWriter WriteEnhancedLineNumberDirective(this CodeWriter writer, SourceSpan span, int characterOffset)
+        {
+            // All values here need to be offset by 1 since #line uses a 1-indexed numbering system.
+            var lineNumberAsString = (span.LineIndex + 1).ToString(CultureInfo.InvariantCulture);
+            var characterStartAsString = (span.CharacterIndex + 1).ToString(CultureInfo.InvariantCulture);
+            var lineEndAsString = (span.LineIndex + 1 + span.LineCount).ToString(CultureInfo.InvariantCulture);
+            var characterEndAsString = (span.EndCharacterIndex + 1).ToString(CultureInfo.InvariantCulture);
+            var characterOffsetAsString = characterOffset.ToString(CultureInfo.InvariantCulture);
+            return writer.Write("#line (")
+                .Write(lineNumberAsString)
+                .Write(",")
+                .Write(characterStartAsString)
+                .Write(")-(")
+                .Write(lineEndAsString)
+                .Write(",")
+                .Write(characterEndAsString)
+                .Write(") ")
+                .Write(characterOffsetAsString)
+                .Write(" \"").Write(span.FilePath).WriteLine("\"");
+        }
+
         public static CodeWriter WriteLineNumberDirective(this CodeWriter writer, SourceSpan span)
         {
             if (writer.Length >= writer.NewLine.Length && !IsAtBeginningOfLine(writer))
@@ -462,7 +483,18 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 return NullDisposable.Default;
             }
 
-            return new LinePragmaWriter(writer, span.Value, context);
+            return new LinePragmaWriter(writer, span.Value, context, 0, false);
+        }
+
+        public static IDisposable BuildEnhancedLinePragma(this CodeWriter writer, SourceSpan? span, CodeRenderingContext context, int characterOffset = 0)
+        {
+            if (string.IsNullOrEmpty(span?.FilePath))
+            {
+                // Can't build a valid line pragma without a file path.
+                return NullDisposable.Default;
+            }
+
+            return new LinePragmaWriter(writer, span.Value, context, characterOffset, useEnhancedLinePragma: true);
         }
 
         private static void WriteVerbatimStringLiteral(CodeWriter writer, string literal)
@@ -619,7 +651,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             public LinePragmaWriter(
                 CodeWriter writer,
                 SourceSpan span,
-                CodeRenderingContext context)
+                CodeRenderingContext context,
+                int characterOffset,
+                bool useEnhancedLinePragma = false)
             {
                 if (writer == null)
                 {
@@ -643,7 +677,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     _writer.WriteLine("#nullable restore");
                 }
 
-                WriteLineNumberDirective(writer, span);
+                if (useEnhancedLinePragma && _context.Options.UseEnhancedLinePragma)
+                {
+                    WriteEnhancedLineNumberDirective(writer, span, characterOffset);
+                }
+                else
+                {
+                    WriteLineNumberDirective(writer, span);
+                }
+                
 
                 // Capture the line index after writing the #line directive.
                 _startLineIndex = writer.Location.LineIndex;

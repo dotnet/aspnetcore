@@ -1,0 +1,65 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                MarkupElement - (0:0,0 [191] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    HtmlAttribute - (4:0,4 [12] x:\dir\subdir\Test\TestComponent.cshtml) -  class=" - "
+                        HtmlAttributeValue - (12:0,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            LazyIntermediateToken - (12:0,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - row
+                    HtmlContent - (17:0,17 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (17:0,17 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
+                    MarkupElement - (21:1,2 [58] x:\dir\subdir\Test\TestComponent.cshtml) - a
+                        HtmlAttribute - (23:1,4 [9] x:\dir\subdir\Test\TestComponent.cshtml) -  href=" - "
+                            HtmlAttributeValue - (30:1,11 [1] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                                LazyIntermediateToken - (30:1,11 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - #
+                        HtmlAttribute - (32:1,13 [16] x:\dir\subdir\Test\TestComponent.cshtml) -  @onclick= - 
+                            HtmlAttributeValue - (42:1,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                                LazyIntermediateToken - (42:1,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Toggle
+                        HtmlAttribute - (48:1,29 [15] x:\dir\subdir\Test\TestComponent.cshtml) -  class=" - "
+                            HtmlAttributeValue - (56:1,37 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                                LazyIntermediateToken - (56:1,37 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - col-12
+                        CSharpExpression - (65:1,46 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (65:1,46 [10] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ActionText
+                    HtmlContent - (79:1,60 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (79:1,60 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
+                    CSharpCode - (84:2,3 [26] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (84:2,3 [26] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - if (!Collapsed)\n  {\n    
+                    MarkupElement - (110:4,4 [68] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        HtmlAttribute - (114:4,8 [30] x:\dir\subdir\Test\TestComponent.cshtml) -  class=" - "
+                            HtmlAttributeValue - (122:4,16 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                                LazyIntermediateToken - (122:4,16 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - col-12
+                            HtmlAttributeValue - (128:4,22 [5] x:\dir\subdir\Test\TestComponent.cshtml) -  
+                                LazyIntermediateToken - (129:4,23 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - card
+                            HtmlAttributeValue - (133:4,27 [10] x:\dir\subdir\Test\TestComponent.cshtml) -  
+                                LazyIntermediateToken - (134:4,28 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - card-body
+                        HtmlContent - (145:4,39 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (145:4,39 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n      
+                        CSharpExpression - (154:5,7 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (154:5,7 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent
+                        HtmlContent - (166:5,19 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (166:5,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                    CSharpCode - (178:6,10 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (178:6,10 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  }
+                    HtmlContent - (183:7,3 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (183:7,3 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (191:8,6 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (191:8,6 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (201:10,1 [83] x:\dir\subdir\Test\TestComponent.cshtml)
+                LazyIntermediateToken - (201:10,1 [83] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  [Parameter]\n  public RenderFragment ChildContent { get; set; } = (context) => 
+            MarkupElement - (284:12,66 [15] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                CSharpExpression - (288:12,70 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (288:12,70 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context
+            CSharpCode - (299:12,81 [179] x:\dir\subdir\Test\TestComponent.cshtml)
+                LazyIntermediateToken - (299:12,81 [179] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  [Parameter]\n  public bool Collapsed { get; set; }\n  string ActionText { get => Collapsed ? "Expand" : "Collapse"; }\n  void Toggle()\n  {\n    Collapsed = !Collapsed;\n  }\n

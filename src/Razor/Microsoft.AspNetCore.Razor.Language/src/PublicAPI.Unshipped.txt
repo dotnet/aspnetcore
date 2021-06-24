@@ -19,3 +19,13 @@ abstract Microsoft.AspNetCore.Razor.Language.RazorConfiguration.UseConsolidatedM
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveDescriptorBuilderExtensions.AddOptionalGenericTypeConstraintToken(this Microsoft.AspNetCore.Razor.Language.IDirectiveDescriptorBuilder builder, string name, string description) -> Microsoft.AspNetCore.Razor.Language.IDirectiveDescriptorBuilder
 ~static Microsoft.AspNetCore.Razor.Language.RazorConfiguration.Create(Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion languageVersion, string configurationName, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorExtension> extensions, bool useConsolidatedMvcViews = false) -> Microsoft.AspNetCore.Razor.Language.RazorConfiguration
 ~static readonly Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion.Version_6_0 -> Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion
+~Microsoft.AspNetCore.Razor.Language.CodeGeneration.LinePragma.LinePragma(int startLineIndex, int lineCount, string filePath, int? startCharacterIndex, int? endCharacterIndex, int? characterOffset) -> void
+Microsoft.AspNetCore.Razor.Language.CodeGeneration.LinePragma.StartCharacterIndex.get -> int?
+Microsoft.AspNetCore.Razor.Language.CodeGeneration.LinePragma.EndCharacterIndex.get -> int?
+Microsoft.AspNetCore.Razor.Language.CodeGeneration.LinePragma.CharacterOffset.get -> int?
+~Microsoft.AspNetCore.Razor.Language.SourceSpan.SourceSpan(string filePath, int absoluteIndex, int lineIndex, int characterIndex, int length, int lineCount, int endCharacterIndex) -> void
+Microsoft.AspNetCore.Razor.Language.SourceSpan.LineCount.get -> int
+Microsoft.AspNetCore.Razor.Language.SourceSpan.EndCharacterIndex.get -> int
+virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.UseEnhancedLinePragma.get -> bool
+virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.UseEnhancedLinePragma.set -> void
+virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions.UseEnhancedLinePragma.get -> bool
