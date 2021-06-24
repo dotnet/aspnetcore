@@ -7,6 +7,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -19,6 +20,9 @@ namespace Microsoft.AspNetCore.Components
         private readonly RenderFragment _renderDelegate;
         private readonly RenderFragment _renderPageWithParametersDelegate;
         private RenderHandle _renderHandle;
+
+        [Inject]
+        private NavigationManager NavigationManager { get; set; }
 
         /// <summary>
         /// Gets or sets the route data. This determines the page that will be
@@ -88,6 +92,15 @@ namespace Microsoft.AspNetCore.Components
             foreach (var kvp in RouteData.RouteValues)
             {
                 builder.AddAttribute(1, kvp.Key, kvp.Value);
+            }
+
+            var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
+            if (queryParameterSupplier is not null)
+            {
+                var url = NavigationManager.Uri;
+                var queryStartPos = url.IndexOf('?');
+                var query = queryStartPos >= 0 ? url.AsSpan(queryStartPos) : default;
+                queryParameterSupplier.RenderParameterAttributes(builder, query);
             }
 
             builder.CloseComponent();
