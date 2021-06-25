@@ -118,12 +118,14 @@ namespace Microsoft.AspNetCore.Components.Routing
                         ? componentParameterName
                         : fromQueryAttribute.Name;
 
+                    // Lazily create a destination list this querystring parameter name
                     mappingsByQueryParameterName ??= new(StringComparer.OrdinalIgnoreCase);
                     if (!mappingsByQueryParameterName.ContainsKey(queryParameterName))
                     {
                         mappingsByQueryParameterName.Add(queryParameterName, new());
                     }
 
+                    // Append a destination list entry for this component parameter name
                     var underlyingType = Nullable.GetUnderlyingType(propertyInfo.PropertyType)
                         ?? propertyInfo.PropertyType;
                     if (!SupportedQueryValueTargetTypeToConstraintName.TryGetValue(underlyingType, out var constraintName)
@@ -143,6 +145,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
             else
             {
+                // Flatten the dictionary to a plain array. For the expected usage patterns, this will
+                // be faster to seek into (see comment above).
                 var result = new QueryParameterMapping[mappingsByQueryParameterName.Count];
                 var index = 0;
                 foreach (var (name, destinations) in mappingsByQueryParameterName)
