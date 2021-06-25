@@ -1568,7 +1568,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AcceptRanges, value);
             }
         }
@@ -1586,7 +1585,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AccessControlAllowCredentials, value);
             }
         }
@@ -1604,7 +1602,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AccessControlAllowHeaders, value);
             }
         }
@@ -1622,7 +1619,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AccessControlAllowMethods, value);
             }
         }
@@ -1640,7 +1636,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AccessControlAllowOrigin, value);
             }
         }
@@ -1658,7 +1653,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AccessControlExposeHeaders, value);
             }
         }
@@ -1676,7 +1670,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AccessControlMaxAge, value);
             }
         }
@@ -1694,7 +1687,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Age, value);
             }
         }
@@ -1712,7 +1704,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Allow, value);
             }
         }
@@ -1730,7 +1721,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.AltSvc, value);
             }
         }
@@ -1748,7 +1738,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentDisposition, value);
             }
         }
@@ -1766,7 +1755,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentEncoding, value);
             }
         }
@@ -1784,7 +1772,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentLanguage, value);
             }
         }
@@ -1802,7 +1789,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentLocation, value);
             }
         }
@@ -1820,7 +1806,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentMD5, value);
             }
         }
@@ -1838,7 +1823,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentRange, value);
             }
         }
@@ -1856,7 +1840,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentSecurityPolicy, value);
             }
         }
@@ -1874,7 +1857,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ContentSecurityPolicyReportOnly, value);
             }
         }
@@ -1892,7 +1874,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ETag, value);
             }
         }
@@ -1910,7 +1891,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Expires, value);
             }
         }
@@ -1928,7 +1908,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.GrpcMessage, value);
             }
         }
@@ -1946,7 +1925,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.GrpcStatus, value);
             }
         }
@@ -1964,7 +1942,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.LastModified, value);
             }
         }
@@ -1982,7 +1959,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Link, value);
             }
         }
@@ -2000,7 +1976,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Location, value);
             }
         }
@@ -2018,7 +1993,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ProxyAuthenticate, value);
             }
         }
@@ -2036,7 +2010,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.ProxyConnection, value);
             }
         }
@@ -2054,7 +2027,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.RetryAfter, value);
             }
         }
@@ -2072,7 +2044,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.SecWebSocketAccept, value);
             }
         }
@@ -2090,7 +2061,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.SecWebSocketKey, value);
             }
         }
@@ -2108,7 +2078,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.SecWebSocketProtocol, value);
             }
         }
@@ -2126,7 +2095,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.SecWebSocketVersion, value);
             }
         }
@@ -2144,7 +2112,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.SecWebSocketExtensions, value);
             }
         }
@@ -2162,7 +2129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Server, value);
             }
         }
@@ -2180,7 +2146,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.SetCookie, value);
             }
         }
@@ -2198,7 +2163,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.StrictTransportSecurity, value);
             }
         }
@@ -2216,7 +2180,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Trailer, value);
             }
         }
@@ -2234,7 +2197,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.Vary, value);
             }
         }
@@ -2252,7 +2214,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.WebSocketSubProtocols, value);
             }
         }
@@ -2270,7 +2231,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.WWWAuthenticate, value);
             }
         }
@@ -2288,7 +2248,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.XContentTypeOptions, value);
             }
         }
@@ -2306,7 +2265,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.XFrameOptions, value);
             }
         }
@@ -2324,7 +2282,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.XPoweredBy, value);
             }
         }
@@ -2342,7 +2299,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.XRequestedWith, value);
             }
         }
@@ -2360,7 +2316,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.XUACompatible, value);
             }
         }
@@ -2378,7 +2333,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                
                 SetValueUnknown(HeaderNames.XXSSProtection, value);
             }
         }

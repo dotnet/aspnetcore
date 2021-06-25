@@ -890,9 +890,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
-                {(loop.ClassName != "HttpRequestHeaders" ?
-                    $@"ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);" : "")}
+                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);" : "")}
                 SetValueUnknown(HeaderNames.{header}, value);
             }}
         }}")}
