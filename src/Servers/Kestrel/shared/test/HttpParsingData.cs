@@ -175,7 +175,6 @@ namespace Microsoft.AspNetCore.Testing
                     "GET / HTTP/1.1a\r\n",
                     "GET / HTTP/1.1ab\r\n",
                     "GET / hello\r\n",
-                    "GET / 8charact\r\n",
                     "GET? / HTTP/1.1\r\n",
                     "GET ? HTTP/1.1\r\n",
                     "GET /a?b=cHTTP/1.1\r\n",
@@ -207,7 +206,6 @@ namespace Microsoft.AspNetCore.Testing
                     "CUSTOM / HTTP/1.1a\r\n",
                     "CUSTOM / HTTP/1.1ab\r\n",
                     "CUSTOM / hello\r\n",
-                    "CUSTOM / 8charact\r\n",
                     "CUSTOM ? HTTP/1.1\r\n",
                     "CUSTOM /a?b=cHTTP/1.1\r\n",
                     "CUSTOM /a%20bHTTP/1.1\r\n",
@@ -363,6 +361,7 @@ namespace Microsoft.AspNetCore.Testing
             "http/1.1",
             "HTTP/1.2",
             "HTTP/3.0",
+            "8charact",
         };
 
         public static IEnumerable<object[]> RequestHeaderInvalidData => new[]
