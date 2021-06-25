@@ -73,12 +73,16 @@ namespace Microsoft.AspNetCore.Components.Routing
                     // then it would still work.
                     if (suppliedPair.NameEscaped.Equals(candidateMapping.QueryParameterName, StringComparison.OrdinalIgnoreCase))
                     {
+                        var unescapedValue = Uri.UnescapeDataString(suppliedPair.ValueEscaped.ToString().Replace('+', ' '));
+
                         foreach (var destination in candidateMapping.Destinations)
                         {
                             // TODO: If we want to support multiple same-named params populating an array,
                             // extend this logic to build a list here then later convert to an array
-                            var parsedValue = ParseValue(destination.ParameterType, suppliedPair.ValueEscaped);
-                            assignmentByComponentParameterName[destination.ComponentParameterName] = parsedValue;
+                            if (destination.Constraint.Match(unescapedValue, out var parsedVaue))
+                            {
+                                assignmentByComponentParameterName[destination.ComponentParameterName] = parsedVaue;
+                            }
                         }
 
                         break;
@@ -90,19 +94,6 @@ namespace Microsoft.AspNetCore.Components.Routing
             foreach (var (name, value) in assignmentByComponentParameterName)
             {
                 builder.AddAttribute(0, name, value);
-            }
-        }
-
-        private object ParseValue(Type parameterType, ReadOnlySpan<char> valueEscaped)
-        {
-            // TODO: This properly
-            if (parameterType == typeof(int))
-            {
-                return int.Parse(valueEscaped);
-            }
-            else
-            {
-                return Uri.UnescapeDataString(valueEscaped.ToString().Replace('+', ' '));
             }
         }
 
@@ -133,8 +124,14 @@ namespace Microsoft.AspNetCore.Components.Routing
                         mappingsByQueryParameterName.Add(queryParameterName, new());
                     }
 
+                    if (!SupportedQueryValueTargetTypeToConstraintName.TryGetValue(propertyInfo.PropertyType, out var constraintName)
+                        || !RouteConstraint.TryGetOrCreateRouteConstraint(constraintName, out var constraint))
+                    {
+                        throw new NotSupportedException($"Query parameters cannot be parsed as type '{propertyInfo.PropertyType}'.");
+                    }
+
                     mappingsByQueryParameterName[queryParameterName].Add(
-                        new QueryParameterDestination(componentParameterName, propertyInfo.PropertyType));
+                        new QueryParameterDestination(componentParameterName, constraint));
                 }
             }
 
@@ -156,6 +153,18 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         private record QueryParameterMapping(string QueryParameterName, QueryParameterDestination[] Destinations);
-        private record QueryParameterDestination(string ComponentParameterName, Type ParameterType);
+        private record QueryParameterDestination(string ComponentParameterName, RouteConstraint Constraint);
+
+        private readonly static Dictionary<Type, string> SupportedQueryValueTargetTypeToConstraintName = new()
+        {
+            { typeof(bool), "bool" },
+            { typeof(DateTime), "datetime" },
+            { typeof(decimal), "decimal" },
+            { typeof(double), "double" },
+            { typeof(float), "float" },
+            { typeof(Guid), "guid" },
+            { typeof(int), "int" },
+            { typeof(long), "long" },
+        };
     }
 }

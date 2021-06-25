@@ -1,16 +1,28 @@
 ﻿@page "/counter"
 
-<h1>Counter</h1>
+<h1>Counter [@Increment] [@SomeBool.ToString()]</h1>
 
 <p id="counter">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<a href="counter">No param</a>
+| <a href="counter?increment=123">Increment 123</a>
+| <a href="counter?increment=3&increment=3">Increment 3 twice</a>
+
 @code {
     int currentCount = 0;
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Increment { get; set; } = 1;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "b")]
+    public bool SomeBool { get; set; }
+
     void IncrementCount()
     {
-        currentCount++;
+        currentCount += Increment;
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -26,9 +27,19 @@ namespace Microsoft.AspNetCore.Components.Routing
                 throw new ArgumentException($"Malformed segment '{segment}' in route '{template}' contains an empty constraint.");
             }
 
-            if (_cachedConstraints.TryGetValue(constraint, out var cachedInstance))
+            if (!TryGetOrCreateRouteConstraint(constraint, out var result))
             {
-                return cachedInstance;
+                throw new ArgumentException($"Unsupported constraint '{constraint}' in route '{template}'.");
+            }
+
+            return result;
+        }
+
+        public static bool TryGetOrCreateRouteConstraint(string constraint, [MaybeNullWhen(false)] out RouteConstraint result)
+        {
+            if (_cachedConstraints.TryGetValue(constraint, out result))
+            {
+                return true;
             }
             else
             {
@@ -38,11 +49,13 @@ namespace Microsoft.AspNetCore.Components.Routing
                     // We've done to the work to create the constraint now, but it's possible
                     // we're competing with another thread. GetOrAdd can ensure only a single
                     // instance is returned so that any extra ones can be GC'ed.
-                    return _cachedConstraints.GetOrAdd(constraint, newInstance);
+                    result = _cachedConstraints.GetOrAdd(constraint, newInstance);
+                    return true;
                 }
                 else
                 {
-                    throw new ArgumentException($"Unsupported constraint '{constraint}' in route '{template}'.");
+                    result = null;
+                    return false;
                 }
             }
         }
