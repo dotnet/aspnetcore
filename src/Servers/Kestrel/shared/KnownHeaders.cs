@@ -863,8 +863,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var flag = {header.FlagBit()};
                 if (value.Count > 0)
-                {(loop.ClassName != "HttpRequestHeaders" ? $@"{{
-                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);" : "{")}
+                {{{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);" : "")}
                     _bits |= flag;
                     _headers._{header.Identifier} = value;
                 }}

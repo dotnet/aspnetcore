@@ -23,12 +23,14 @@ namespace System.Net.Http.HPack
         private bool _pendingTableSizeUpdate;
         private EncoderHeaderEntry? _removed;
 
+        internal uint TableSize => _headerTableSize;
+
         public DynamicHPackEncoder(bool allowDynamicCompression = true, uint maxHeaderTableSize = DefaultHeaderTableSize)
         {
             _allowDynamicCompression = allowDynamicCompression;
             _maxHeaderTableSize = maxHeaderTableSize;
             Head = new EncoderHeaderEntry();
-            Head.Initialize(-1, string.Empty, string.Empty, int.MaxValue, null);
+            Head.Initialize(-1, string.Empty, string.Empty, 0, int.MaxValue, null);
             // Bucket count balances memory usage and the expected low number of headers (constrained by the header table size).
             // Performance with different bucket counts hasn't been measured in detail.
             _headerBuckets = new EncoderHeaderEntry[16];
@@ -89,7 +91,8 @@ namespace System.Net.Http.HPack
 
             // Header is greater than the maximum table size.
             // Don't attempt to add dynamic header as all existing dynamic headers will be removed.
-            if (HeaderField.GetLength(name.Length, value.Length) > _maxHeaderTableSize) // TODO: Check the encoded value length
+            var headerLength = HeaderField.GetLength(name.Length, valueEncoding?.GetByteCount(value) ?? value.Length);
+            if (headerLength > _maxHeaderTableSize)
             {
                 int index = ResolveDynamicTableIndex(staticTableIndex, name);
 
@@ -98,7 +101,7 @@ namespace System.Net.Http.HPack
                     : HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(index, value, valueEncoding, buffer, out bytesWritten);
             }
 
-            return EncodeDynamicHeader(buffer, staticTableIndex, name, value, valueEncoding, out bytesWritten);
+            return EncodeDynamicHeader(buffer, staticTableIndex, name, value, headerLength, valueEncoding, out bytesWritten);
         }
 
         private int ResolveDynamicTableIndex(int staticTableIndex, string name)
@@ -112,8 +115,8 @@ namespace System.Net.Http.HPack
             return CalculateDynamicTableIndex(name);
         }
 
-        private bool EncodeDynamicHeader(Span<byte> buffer, int staticTableIndex, string name, string value, Encoding? valueEncoding,
-            out int bytesWritten)
+        private bool EncodeDynamicHeader(Span<byte> buffer, int staticTableIndex, string name, string value,
+            int headerLength, Encoding? valueEncoding, out int bytesWritten)
         {
             EncoderHeaderEntry? headerField = GetEntry(name, value);
             if (headerField != null)
@@ -125,7 +128,6 @@ namespace System.Net.Http.HPack
             else
             {
                 // Doesn't exist in dynamic table. Add new entry to dynamic table.
-                uint headerSize = (uint)HeaderField.GetLength(name.Length, value.Length);
 
                 int index = ResolveDynamicTableIndex(staticTableIndex, name);
                 bool success = index == -1
@@ -134,6 +136,7 @@ namespace System.Net.Http.HPack
 
                 if (success)
                 {
+                    uint headerSize = (uint)headerLength;
                     EnsureCapacity(headerSize);
                     AddHeaderEntry(name, value, headerSize);
                 }
@@ -215,7 +218,7 @@ namespace System.Net.Http.HPack
             EncoderHeaderEntry? oldEntry = _headerBuckets[bucketIndex];
             // Attempt to reuse removed entry
             EncoderHeaderEntry? newEntry = PopRemovedEntry() ?? new EncoderHeaderEntry();
-            newEntry.Initialize(hash, name, value, Head.Before!.Index - 1, oldEntry);
+            newEntry.Initialize(hash, name, value, headerSize, Head.Before!.Index - 1, oldEntry);
             _headerBuckets[bucketIndex] = newEntry;
             newEntry.AddBefore(Head);
             _headerTableSize += headerSize;
@@ -269,7 +272,7 @@ namespace System.Net.Http.HPack
                     {
                         prev.Next = next;
                     }
-                    _headerTableSize -= eldest.CalculateSize();
+                    _headerTableSize -= eldest.Size;
                     eldest.Remove();
                     return eldest;
                 }
