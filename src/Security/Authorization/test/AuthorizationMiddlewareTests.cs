@@ -581,7 +581,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         }
 
         [Fact]
-        public async Task IAuthenticateResultFeature_ReplacesExistingFeature()
+        public async Task IAuthenticateResultFeature_UsesExistingFeature()
         {
             // Arrange
             var policy = new AuthorizationPolicyBuilder().RequireClaim("Permission", "CanViewPage").Build();
@@ -604,7 +604,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
             Assert.NotNull(authenticateResultFeature);
             Assert.NotNull(authenticateResultFeature.AuthenticateResult);
-            Assert.NotSame(testAuthenticateResultFeature, authenticateResultFeature);
+            Assert.Same(testAuthenticateResultFeature, authenticateResultFeature);
             Assert.NotSame(authenticateResult, authenticateResultFeature.AuthenticateResult);
         }
 

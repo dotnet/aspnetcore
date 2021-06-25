@@ -73,9 +73,16 @@ namespace Microsoft.AspNetCore.Authorization
 
             if (authenticateResult?.Succeeded ?? false)
             {
-                var authFeatures = new AuthenticationFeatures(authenticateResult);
-                context.Features.Set<IHttpAuthenticationFeature>(authFeatures);
-                context.Features.Set<IAuthenticateResultFeature>(authFeatures);
+                if (context.Features.Get<IAuthenticateResultFeature>() is IAuthenticateResultFeature authenticateResultFeature)
+                {
+                    authenticateResultFeature.AuthenticateResult = authenticateResult;
+                }
+                else
+                {
+                    var authFeatures = new AuthenticationFeatures(authenticateResult);
+                    context.Features.Set<IHttpAuthenticationFeature>(authFeatures);
+                    context.Features.Set<IAuthenticateResultFeature>(authFeatures);
+                }
             }
 
             // Allow Anonymous still wants to run authorization to populate the User but skips any failure/challenge handling
