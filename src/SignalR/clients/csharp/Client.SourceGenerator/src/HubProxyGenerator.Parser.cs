@@ -51,13 +51,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     {
                         // T in GetProxy<T> must be an interface
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                "SSG0001",
-                                "Non-interface generic type argument",
-                                "'GetProxy<THub>' only accepts interfaces. '{0}' is not an interface.",
-                                "SignalR.Client.SourceGenerator",
-                                DiagnosticSeverity.Error,
-                                true), memberAccess.GetLocation(), proxyType.ToString()));
+                            DiagnosticDescriptors.HubProxyNonInterfaceGenericTypeArgument,
+                            memberAccess.GetLocation(),
+                            proxyType.ToString()));
                         continue;
                     }
 
