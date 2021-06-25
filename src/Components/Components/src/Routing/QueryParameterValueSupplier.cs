@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             // a SortedList with nulls for all values. We can then shallow-clone this on each navigation.
             // The comparer can be case-sensitive because the keys only come from our own code based on
             // PropertyInfo.Name.
-            _assignmentsTemplate = new (StringComparer.Ordinal);
+            _assignmentsTemplate = new(StringComparer.Ordinal);
             foreach (var mapping in _mappings)
             {
                 foreach (var destination in mapping.Destinations)
@@ -77,9 +79,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                         foreach (var destination in candidateMapping.Destinations)
                         {
-                            // TODO: If we want to support multiple same-named params populating an array,
-                            // extend this logic to build a list here then later convert to an array
-                            if (destination.Constraint.Match(unescapedValue, out var parsedVaue))
+                            if (destination.Parser.TryParseSingle(unescapedValue, out var parsedVaue))
                             {
                                 assignmentByComponentParameterName[destination.ComponentParameterName] = parsedVaue;
                             }
@@ -126,16 +126,9 @@ namespace Microsoft.AspNetCore.Components.Routing
                     }
 
                     // Append a destination list entry for this component parameter name
-                    var underlyingType = Nullable.GetUnderlyingType(propertyInfo.PropertyType)
-                        ?? propertyInfo.PropertyType;
-                    if (!SupportedQueryValueTargetTypeToConstraintName.TryGetValue(underlyingType, out var constraintName)
-                        || !RouteConstraint.TryGetOrCreateRouteConstraint(constraintName, out var constraint))
-                    {
-                        throw new NotSupportedException($"Query parameters cannot be parsed as type '{propertyInfo.PropertyType}'.");
-                    }
-
+                    var parser = QueryValueParser.GetOrCreate(propertyInfo.PropertyType);
                     mappingsByQueryParameterName[queryParameterName].Add(
-                        new QueryParameterDestination(componentParameterName, constraint));
+                        new QueryParameterDestination(componentParameterName, parser));
                 }
             }
 
@@ -159,18 +152,45 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         private record QueryParameterMapping(string QueryParameterName, QueryParameterDestination[] Destinations);
-        private record QueryParameterDestination(string ComponentParameterName, RouteConstraint Constraint);
+        private record QueryParameterDestination(string ComponentParameterName, QueryValueParser Parser);
 
-        private readonly static Dictionary<Type, string> SupportedQueryValueTargetTypeToConstraintName = new()
+        private class QueryValueParser
         {
-            { typeof(bool), "bool" },
-            { typeof(DateTime), "datetime" },
-            { typeof(decimal), "decimal" },
-            { typeof(double), "double" },
-            { typeof(float), "float" },
-            { typeof(Guid), "guid" },
-            { typeof(int), "int" },
-            { typeof(long), "long" },
-        };
+            private static ConcurrentDictionary<Type, QueryValueParser> _cache = new();
+
+            public static QueryValueParser GetOrCreate(Type targetType)
+                => _cache.GetOrAdd(targetType, t => new QueryValueParser(t));
+
+            private readonly static Dictionary<Type, string> SupportedQueryValueTargetTypeToConstraintName = new()
+            {
+                { typeof(bool), "bool" },
+                { typeof(DateTime), "datetime" },
+                { typeof(decimal), "decimal" },
+                { typeof(double), "double" },
+                { typeof(float), "float" },
+                { typeof(Guid), "guid" },
+                { typeof(int), "int" },
+                { typeof(long), "long" },
+            };
+
+            private readonly RouteConstraint _constraint;
+
+            private QueryValueParser(Type targetType)
+            {
+                // If nullable, just use the underlying type. Unparseable values will leave the default value anyway.
+                var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+                if (!SupportedQueryValueTargetTypeToConstraintName.TryGetValue(underlyingType, out var constraintName)
+                    || !RouteConstraint.TryGetOrCreateRouteConstraint(constraintName, out var foundConstraint))
+                {
+                    throw new NotSupportedException($"Query parameters cannot be parsed as type '{targetType}'.");
+                }
+
+                _constraint = foundConstraint;
+            }
+
+            public bool TryParseSingle(string value, [MaybeNullWhen(false)] out object? result)
+                => _constraint.Match(value, out result);
+        }
     }
 }
