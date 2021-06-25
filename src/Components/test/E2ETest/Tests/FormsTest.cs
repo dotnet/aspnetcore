@@ -598,6 +598,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
         }
 
+        [Fact]
+        public void InputRangeAttributeOrderDoesNotAffectValue()
+        {
+            var appElement = Browser.MountTestComponent<InputRangeComponent>();
+            var rangeWithValueFirst = appElement.FindElement(By.Id("range-value-first"));
+            var rangeWithValueLast = appElement.FindElement(By.Id("range-value-last"));
+
+            // Value never gets incorrectly clamped.
+            Browser.Equal("210", () => rangeWithValueFirst.GetProperty("value"));
+            Browser.Equal("210", () => rangeWithValueLast.GetProperty("value"));
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))

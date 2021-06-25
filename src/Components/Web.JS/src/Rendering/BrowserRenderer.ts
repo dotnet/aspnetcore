@@ -4,6 +4,7 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const selectValuePropname = '_blazorSelectValue';
+const inputValuePropname = '_blazorInputValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
@@ -260,10 +261,21 @@ export class BrowserRenderer {
     if (newDomElementRaw instanceof HTMLOptionElement) {
       // Situation 1
       this.trySetSelectValueFromOptionElement(newDomElementRaw);
-    } else if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
-      // Situation 2
-      const selectValue: string | null = newDomElementRaw[selectValuePropname];
-      setSelectElementValue(newDomElementRaw, selectValue);
+    } else if (newDomElementRaw instanceof HTMLSelectElement) {
+      if (selectValuePropname in newDomElementRaw) {
+        // Situation 2
+        const selectValue: string | null = newDomElementRaw[selectValuePropname];
+        setSelectElementValue(newDomElementRaw, selectValue);
+      }
+    } else if (newDomElementRaw instanceof HTMLInputElement) {
+      // We defer setting the 'value' property for <input> because certain types of inputs have
+      // default attribute values that may incorrectly constain the specified 'value'.
+      // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
+      // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
+      if (inputValuePropname in newDomElementRaw) {
+        newDomElementRaw.value = newDomElementRaw[inputValuePropname];
+        delete newDomElementRaw[inputValuePropname];
+      }
     }
   }
 
@@ -370,23 +382,28 @@ export class BrowserRenderer {
     }
 
     switch (element.tagName) {
-      case 'INPUT':
-      case 'SELECT':
+      case 'INPUT': {
+        const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+        element[inputValuePropname] = value;
+
+        return true;
+      }
+      case 'SELECT': {
+        const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+        setSelectElementValue(element as HTMLSelectElement, value);
+
+        // <select> is special, in that anything we write to .value will be lost if there
+        // isn't yet a matching <option>. To maintain the expected behavior no matter the
+        // element insertion/update order, preserve the desired value separately so
+        // we can recover it when inserting any matching <option> or after inserting an
+        // entire markup block of descendants.
+        element[selectValuePropname] = value;
+
+        return true;
+      }
       case 'TEXTAREA': {
         const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-
-        if (element instanceof HTMLSelectElement) {
-          setSelectElementValue(element, value);
-
-          // <select> is special, in that anything we write to .value will be lost if there
-          // isn't yet a matching <option>. To maintain the expected behavior no matter the
-          // element insertion/update order, preserve the desired value separately so
-          // we can recover it when inserting any matching <option> or after inserting an
-          // entire markup block of descendants.
-          element[selectValuePropname] = value;
-        } else {
-          (element as any).value = value;
-        }
+        (element as any).value = value;
 
         return true;
       }
