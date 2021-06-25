@@ -89,39 +89,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[] { 3, 5, 7 };
 
-            var sendDataTask = Task.Run(async () =>
-            {
-                // Act & Assert 1
-                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
-                Assert.True(success);
+            // Act & Assert 1
+            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
+            Assert.True(success);
 
-                await Task.Delay(TimeSpan.FromSeconds(20));
+            await Task.Delay(TimeSpan.FromSeconds(20));
 
-                // Act & Assert 2
-                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null);
-                Assert.True(success);
-
-                // Wait 60 seconds (40 sec timeout + 20 sec buffer room)
-                await Task.Delay(TimeSpan.FromSeconds(60));
-
-                // Act & Assert 3
-                // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
-                success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 2, chunk, error: null);
-                Assert.False(success);
-                return true;
-            });
+            // Act & Assert 2
+            success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null);
+            Assert.True(success);
 
             // Wait 80 seconds (20 sec between first two calls + 40 sec timeout + 20 sec buffer room)
             await Task.Delay(TimeSpan.FromSeconds(80));
 
-            // Act & Assert 4
+            // Act & Assert 3
             using var mem = new MemoryStream();
             var ex = await Assert.ThrowsAsync<TimeoutException>(async() => await remoteJSDataStream.CopyToAsync(mem));
             Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
 
-            // Act & Assert 5
-            var sendDataCompleted = await sendDataTask;
-            Assert.True(sendDataCompleted);
+            // Act & Assert 4
+            // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
+            success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 2, chunk, error: null);
+            Assert.False(success);
         }
 
         [Fact]
