@@ -1,9 +1,9 @@
-﻿@page "/fetchdata"
+﻿@page "/fetchdata/{id:int?}"
 
 @using BlazorServerApp.Data
 @inject WeatherForecastService ForecastService
 
-<h1>Weather forecast</h1>
+<h1>Weather forecast [@Id]</h1>
 
 <p>This component demonstrates fetching data from a service.</p>
 
@@ -38,6 +38,8 @@ else
 
 @code {
     WeatherForecast[]? forecasts;
+
+    [Parameter] public int? Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

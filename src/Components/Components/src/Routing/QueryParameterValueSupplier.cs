@@ -124,7 +124,9 @@ namespace Microsoft.AspNetCore.Components.Routing
                         mappingsByQueryParameterName.Add(queryParameterName, new());
                     }
 
-                    if (!SupportedQueryValueTargetTypeToConstraintName.TryGetValue(propertyInfo.PropertyType, out var constraintName)
+                    var underlyingType = Nullable.GetUnderlyingType(propertyInfo.PropertyType)
+                        ?? propertyInfo.PropertyType;
+                    if (!SupportedQueryValueTargetTypeToConstraintName.TryGetValue(underlyingType, out var constraintName)
                         || !RouteConstraint.TryGetOrCreateRouteConstraint(constraintName, out var constraint))
                     {
                         throw new NotSupportedException($"Query parameters cannot be parsed as type '{propertyInfo.PropertyType}'.");

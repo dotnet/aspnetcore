@@ -15,7 +15,7 @@
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public int Increment { get; set; } = 1;
+    public int? Increment { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "b")]
@@ -23,6 +23,6 @@
 
     void IncrementCount()
     {
-        currentCount += Increment;
+        currentCount += Increment.GetValueOrDefault(1);
     }
 }
