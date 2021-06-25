@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -85,6 +86,10 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public abstract bool TryParseUntyped(string value, [MaybeNullWhen(false)] out object result);
 
+        public abstract bool TryAppendListValue(object? existingList, string value, [MaybeNullWhen(false)] out object updatedList);
+
+        public abstract object ToArray(object value);
+
         private class TypedUrlValueConstraint<T> : UrlValueConstraint
         {
             public delegate bool TryParseDelegate(string str, [MaybeNullWhen(false)] out T result);
@@ -109,6 +114,25 @@ namespace Microsoft.AspNetCore.Components.Routing
                     return false;
                 }
             }
+
+            public override bool TryAppendListValue(object? existingList, string value, [MaybeNullWhen(false)] out object updatedList)
+            {
+                if (_parser(value, out var typedResult))
+                {
+                    var list = existingList as List<T> ?? new List<T>();
+                    list.Add(typedResult);
+                    updatedList = list;
+                    return true;
+                }
+                else
+                {
+                    updatedList = null;
+                    return false;
+                }
+            }
+
+            public override object ToArray(object value)
+                => ((List<T>)value).ToArray();
 
             public override string ToString() => typeof(T) switch
             {

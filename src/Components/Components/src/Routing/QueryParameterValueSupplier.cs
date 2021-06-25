@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     {
         private static Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
         private readonly QueryParameterMapping[] _mappings;
-        private readonly SortedList<string, object?> _assignmentsTemplate;
+        private readonly Dictionary<QueryParameterDestination, object?> _assignmentsTemplate;
 
         public static QueryParameterValueSupplier? ForType(Type componentType)
         {
@@ -37,22 +37,19 @@ namespace Microsoft.AspNetCore.Components.Routing
             // We must always supply a value for all parameters that can be populated from the querystring
             // (so that, if no value is supplied, the parameter is reset back to a default). So, precompute
             // a SortedList with nulls for all values. We can then shallow-clone this on each navigation.
-            // The comparer can be case-sensitive because the keys only come from our own code based on
-            // PropertyInfo.Name.
-            _assignmentsTemplate = new(StringComparer.Ordinal);
+            _assignmentsTemplate = new();
             foreach (var mapping in _mappings)
             {
                 foreach (var destination in mapping.Destinations)
                 {
-                    _assignmentsTemplate.Add(destination.ComponentParameterName, null);
+                    _assignmentsTemplate.Add(destination, null);
                 }
             }
         }
 
         public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlySpan<char> queryString)
         {
-            var assignmentByComponentParameterName = new SortedList<string, object?>(
-                _assignmentsTemplate, StringComparer.Ordinal);
+            var assignmentsByDestination = new Dictionary<QueryParameterDestination, object?>(_assignmentsTemplate);
 
             // Populate the assignments dictionary in a single pass through the querystring
             var queryStringEnumerable = new QueryStringEnumerable(queryString);
@@ -77,9 +74,20 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                         foreach (var destination in candidateMapping.Destinations)
                         {
-                            if (destination.Parser.TryParseUntyped(unescapedValue, out var parsedVaue))
+                            if (destination.IsArray)
                             {
-                                assignmentByComponentParameterName[destination.ComponentParameterName] = parsedVaue;
+                                // If we're supplying an array, then assignmentsByDestination will be accumulating
+                                // the values in a List<T>. Only the closed-generic-type parser knows how to append
+                                // typed values to that list. The code here just sees it as Object.
+                                assignmentsByDestination.TryGetValue(destination, out var existingList);
+                                if (destination.Parser.TryAppendListValue(existingList, unescapedValue, out var updatedList))
+                                {
+                                    assignmentsByDestination[destination] = updatedList;
+                                }
+                            }
+                            else if (destination.Parser.TryParseUntyped(unescapedValue, out var parsedVaue))
+                            {
+                                assignmentsByDestination[destination] = parsedVaue;
                             }
                         }
 
@@ -89,9 +97,14 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             // Finally actually emit the rendertree frames
-            foreach (var (name, value) in assignmentByComponentParameterName)
+            foreach (var (destination, value) in assignmentsByDestination)
             {
-                builder.AddAttribute(0, name, value);
+                // If we're supplying multiple values, we'll have a List<T> here. The closed-generic-type
+                // parser knows how to convert this into a T[].
+                var finalValue = destination.IsArray && value is not null
+                    ? destination.Parser.ToArray(value)
+                    : value;
+                builder.AddAttribute(0, destination.ComponentParameterName, finalValue);
             }
         }
 
@@ -123,13 +136,36 @@ namespace Microsoft.AspNetCore.Components.Routing
                         mappingsByQueryParameterName.Add(queryParameterName, new());
                     }
 
-                    // Append a destination list entry for this component parameter name
-                    if (!UrlValueConstraint.TryGetByTargetType(propertyInfo.PropertyType, out var parser))
+                    // If it's an array type, capture that info and prepare to parse the element type
+                    Type effectiveType = propertyInfo.PropertyType;
+                    var isArray = false;
+                    if (effectiveType.IsArray)
                     {
-                        throw new InvalidOperationException($"Query string values cannot be parsed as type '{propertyInfo.PropertyType}'.");
+                        isArray = true;
+                        effectiveType = effectiveType.GetElementType()!;
                     }
+
+                    // If it's nullable, we can just use the underlying type, because missing values
+                    // will naturally leave the default value in the assignments list
+                    if (Nullable.GetUnderlyingType(effectiveType) is Type nullableUnderlyingType)
+                    {
+                        if (isArray)
+                        {
+                            // We could support this, but it would greatly complicate things, and it's unclear there are scenarios for it
+                            throw new NotSupportedException($"Querystring values cannot be parsed as arrays of nullables");
+                        }
+
+                        effectiveType = nullableUnderlyingType;
+                    }
+
+                    if (!UrlValueConstraint.TryGetByTargetType(effectiveType, out var parser))
+                    {
+                        throw new NotSupportedException($"Querystring values cannot be parsed as type '{propertyInfo.PropertyType}'.");
+                    }
+
+                    // Append a destination list entry for this component parameter name
                     mappingsByQueryParameterName[queryParameterName].Add(
-                        new QueryParameterDestination(componentParameterName, parser));
+                        new QueryParameterDestination(componentParameterName, parser, isArray));
                 }
             }
 
@@ -153,6 +189,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         private record QueryParameterMapping(string QueryParameterName, QueryParameterDestination[] Destinations);
-        private record QueryParameterDestination(string ComponentParameterName, UrlValueConstraint Parser);
+
+        private record QueryParameterDestination(string ComponentParameterName, UrlValueConstraint Parser, bool IsArray);
     }
 }
