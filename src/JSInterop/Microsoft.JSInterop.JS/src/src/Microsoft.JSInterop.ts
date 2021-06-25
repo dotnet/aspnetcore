@@ -150,7 +150,7 @@ export module DotNet {
     // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
     // using a JSStreamReference.
     if (!(arrayBufferView.buffer instanceof ArrayBuffer)) {
-      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it is not a valid ArrayBuffer.`);
+      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it is not have a 'buffer' property of type 'ArrayBuffer'.`);
     } else if (arrayBufferView.byteLength === undefined) {
       throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it doesn't have a byteLength.`);
     }

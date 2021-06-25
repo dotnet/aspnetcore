@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // overhead for the transfer, thus leaving at least 512 bytes for data
             // transfer per chunk.
             var chunkSize = maximumIncomingBytes > 1024 ?
-                maximumIncomingBytes - 512 :
+                Math.Min(maximumIncomingBytes, 50*1024) - 512 :
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
             var streamId = runtime.RemoteJSDataStreamNextInstanceId++;

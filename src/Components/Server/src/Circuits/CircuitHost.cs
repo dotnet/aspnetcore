@@ -428,7 +428,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             try
             {
-                return await RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
+                return await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    return RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
+                });
             }
             catch (Exception ex)
             {
