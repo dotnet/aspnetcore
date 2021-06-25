@@ -55,7 +55,7 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "**/wwwroot/**"
+        "**/wwwroot/css/**"
       ],
       "modifiers": [
         {
