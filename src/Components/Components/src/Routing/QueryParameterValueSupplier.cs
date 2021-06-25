@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -79,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                         foreach (var destination in candidateMapping.Destinations)
                         {
-                            if (destination.Parser.TryParseSingle(unescapedValue, out var parsedVaue))
+                            if (destination.Parser.TryParseUntyped(unescapedValue, out var parsedVaue))
                             {
                                 assignmentByComponentParameterName[destination.ComponentParameterName] = parsedVaue;
                             }
@@ -126,7 +124,10 @@ namespace Microsoft.AspNetCore.Components.Routing
                     }
 
                     // Append a destination list entry for this component parameter name
-                    var parser = QueryValueParser.GetOrCreate(propertyInfo.PropertyType);
+                    if (!UrlValueConstraint.TryGetByTargetType(propertyInfo.PropertyType, out var parser))
+                    {
+                        throw new InvalidOperationException($"Query string values cannot be parsed as type '{propertyInfo.PropertyType}'.");
+                    }
                     mappingsByQueryParameterName[queryParameterName].Add(
                         new QueryParameterDestination(componentParameterName, parser));
                 }
@@ -152,45 +153,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         private record QueryParameterMapping(string QueryParameterName, QueryParameterDestination[] Destinations);
-        private record QueryParameterDestination(string ComponentParameterName, QueryValueParser Parser);
-
-        private class QueryValueParser
-        {
-            private static ConcurrentDictionary<Type, QueryValueParser> _cache = new();
-
-            public static QueryValueParser GetOrCreate(Type targetType)
-                => _cache.GetOrAdd(targetType, t => new QueryValueParser(t));
-
-            private readonly static Dictionary<Type, string> SupportedQueryValueTargetTypeToConstraintName = new()
-            {
-                { typeof(bool), "bool" },
-                { typeof(DateTime), "datetime" },
-                { typeof(decimal), "decimal" },
-                { typeof(double), "double" },
-                { typeof(float), "float" },
-                { typeof(Guid), "guid" },
-                { typeof(int), "int" },
-                { typeof(long), "long" },
-            };
-
-            private readonly RouteConstraint _constraint;
-
-            private QueryValueParser(Type targetType)
-            {
-                // If nullable, just use the underlying type. Unparseable values will leave the default value anyway.
-                var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-
-                if (!SupportedQueryValueTargetTypeToConstraintName.TryGetValue(underlyingType, out var constraintName)
-                    || !RouteConstraint.TryGetOrCreateRouteConstraint(constraintName, out var foundConstraint))
-                {
-                    throw new NotSupportedException($"Query parameters cannot be parsed as type '{targetType}'.");
-                }
-
-                _constraint = foundConstraint;
-            }
-
-            public bool TryParseSingle(string value, [MaybeNullWhen(false)] out object? result)
-                => _constraint.Match(value, out result);
-        }
+        private record QueryParameterDestination(string ComponentParameterName, UrlValueConstraint Parser);
     }
 }

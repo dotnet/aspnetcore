@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                     throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}'. '?' character can only appear at the end of parameter name.");
                 }
 
-                Constraints = Array.Empty<RouteConstraint>();
+                Constraints = Array.Empty<UrlValueConstraint>();
             }
             else
             {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                         tokens[^1] = tokens[^1][0..^1];
             }
 
-                    Constraints = new RouteConstraint[tokens.Length - 1];
+                    Constraints = new UrlValueConstraint[tokens.Length - 1];
                     for (var i = 1; i < tokens.Length; i++)
                     {
                         Constraints[i - 1] = RouteConstraint.Parse(template, segment, tokens[i]);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
             else
             {
-                Constraints = Array.Empty<RouteConstraint>();
+                Constraints = Array.Empty<UrlValueConstraint>();
             }
 
             if (IsParameter)
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public bool IsCatchAll { get; }
 
-        public RouteConstraint[] Constraints { get; }
+        public UrlValueConstraint[] Constraints { get; }
 
         public bool Match(string pathSegment, out object? matchedParameterValue)
         {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                 foreach (var constraint in Constraints)
                 {
-                    if (!constraint.Match(pathSegment, out matchedParameterValue))
+                    if (!constraint.TryParseUntyped(pathSegment, out matchedParameterValue))
                     {
                         return false;
                     }
