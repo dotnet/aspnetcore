@@ -601,6 +601,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputRangeAttributeOrderDoesNotAffectValue()
         {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/33499
+
             var appElement = Browser.MountTestComponent<InputRangeComponent>();
             var rangeWithValueFirst = appElement.FindElement(By.Id("range-value-first"));
             var rangeWithValueLast = appElement.FindElement(By.Id("range-value-last"));
