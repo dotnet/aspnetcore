@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -17,71 +20,18 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-        private static readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, MethodCallExpression>?> MethodCallCache = new(); 
+        private static readonly ConcurrentDictionary<Type, Func<Expression, MethodCallExpression>?> MethodCallCache = new();
+        internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
 
         public static bool HasTryParseMethod(ParameterInfo parameter)
         {
-            return FindTryParseMethodCall(parameter) is not null;
+            var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+            return FindTryParseMethod(nonNullableParameterType) is not null;
         }
 
-        // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
-        public static MethodInfo? FindTryParseMethod(Type type)
+        public static Func<Expression, MethodCallExpression>? FindTryParseMethod(Type type)
         {
-            static MethodInfo? Finder(Type type)
-            {
-                if (type.IsEnum)
-                {
-                    return EnumTryParseMethod.MakeGenericMethod(type);
-                }
-
-                if (TryGetDateTimeTryPareMethod(type, out var methodDateInfo))
-                {
-                    return methodDateInfo;
-                }
-
-                if (TryGetNumberStylesTryGetMethod(type, out var methodInfo, out var _))
-                {
-                    return methodInfo;
-                }
-
-                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .OrderByDescending(m => m.GetParameters().Length); ;
-
-                foreach (var method in staticMethods)
-                {
-                    if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
-                    {
-                        continue;
-                    }
-
-                    var tryParseParameters = method.GetParameters();
-
-                    if (tryParseParameters.Length == 3 &&
-                        tryParseParameters[0].ParameterType == typeof(string) &&
-                        tryParseParameters[1].ParameterType == typeof(IFormatProvider) &&
-                        tryParseParameters[2].IsOut &&
-                        tryParseParameters[2].ParameterType == type.MakeByRefType())
-                    {
-                        return method;
-                    }
-                    else if (tryParseParameters.Length == 2 &&
-                        tryParseParameters[0].ParameterType == typeof(string) &&
-                        tryParseParameters[1].IsOut &&
-                        tryParseParameters[1].ParameterType == type.MakeByRefType())
-                    {
-                        return method;
-                    }
-                }
-
-                return null;
-            }
-
-            return Finder(type);
-        }
-
-        public static Func<ParameterExpression, Expression, MethodCallExpression>? FindTryParseMethodCall(ParameterInfo parameter)
-        {
-            static Func<ParameterExpression, Expression, MethodCallExpression>? Finder(Type type)
+            static Func<Expression, MethodCallExpression>? Finder(Type type)
             {
                 MethodInfo? methodInfo;
 
@@ -90,17 +40,17 @@ namespace Microsoft.AspNetCore.Http
                     methodInfo = EnumTryParseMethod.MakeGenericMethod(type);
                     if (methodInfo != null)
                     {
-                        return (parameterExpression, expression) => Expression.Call(methodInfo!, parameterExpression, expression);
+                        return (expression) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
                     }
 
                     return null;
                 }
 
-                if (TryGetDateTimeTryPareMethod(type, out methodInfo))
+                if (TryGetDateTimeTryParseMethod(type, out methodInfo))
                 {
-                    return (parameterExpression, expression) => Expression.Call(
+                    return (expression) => Expression.Call(
                         methodInfo!,
-                        parameterExpression,
+                        TempSourceStringExpr,
                         Expression.Constant(CultureInfo.InvariantCulture),
                         Expression.Constant(DateTimeStyles.None),
                         expression);
@@ -108,52 +58,36 @@ namespace Microsoft.AspNetCore.Http
 
                 if (TryGetNumberStylesTryGetMethod(type, out methodInfo, out var numberStyle))
                 {
-                    return (parameterExpression, expression) => Expression.Call(
+                    return (expression) => Expression.Call(
                         methodInfo!,
-                        parameterExpression,
+                        TempSourceStringExpr,
                         Expression.Constant(numberStyle),
                         Expression.Constant(CultureInfo.InvariantCulture),
                         expression);
                 }
 
-                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .OrderByDescending(m => m.GetParameters().Length); ;
+                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() });
 
-                foreach (var method in staticMethods)
+                if (methodInfo != null)
                 {
-                    if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
-                    {
-                        continue;
-                    }
+                    return (expression) => Expression.Call(
+                        methodInfo,
+                        TempSourceStringExpr,
+                        Expression.Constant(CultureInfo.InvariantCulture),
+                        expression);
+                }
 
-                    var tryParseParameters = method.GetParameters();
+                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), type.MakeByRefType() });
 
-                    if (tryParseParameters.Length == 3 &&
-                        tryParseParameters[0].ParameterType == typeof(string) &&
-                        tryParseParameters[1].ParameterType == typeof(IFormatProvider) &&
-                        tryParseParameters[2].IsOut &&
-                        tryParseParameters[2].ParameterType == type.MakeByRefType())
-                    {
-                        return (parameterExpression, expression) => Expression.Call(
-                            method,
-                            parameterExpression,
-                            Expression.Constant(CultureInfo.InvariantCulture),
-                            expression);
-                    }
-                    else if (tryParseParameters.Length == 2 &&
-                        tryParseParameters[0].ParameterType == typeof(string) &&
-                        tryParseParameters[1].IsOut &&
-                        tryParseParameters[1].ParameterType == type.MakeByRefType())
-                    {
-                        return (parameterExpression, expression) => Expression.Call(method, parameterExpression, expression);
-                    }
+                if (methodInfo != null)
+                {
+                    return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
                 }
 
                 return null;
             }
 
-            var underlyingType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            return MethodCallCache.GetOrAdd(underlyingType, Finder);
+            return MethodCallCache.GetOrAdd(type, Finder);
         }
 
         private static MethodInfo GetEnumTryParseMethod()
@@ -181,7 +115,7 @@ namespace Microsoft.AspNetCore.Http
             throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) not found.");
         }
 
-        private static bool TryGetDateTimeTryPareMethod(Type type, out MethodInfo? methodInfo)
+        private static bool TryGetDateTimeTryParseMethod(Type type, [NotNullWhen(true)] out MethodInfo? methodInfo)
         {
             methodInfo = null;
             if (type != typeof(DateTime) && type != typeof(DateOnly) &&
@@ -190,30 +124,17 @@ namespace Microsoft.AspNetCore.Http
                 return false;
             }
 
-            var staticDateMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                   .Where(m => m.Name == "TryParse" && m.ReturnType == typeof(bool))
-                   .OrderByDescending(m => m.GetParameters().Length);
+            var staticTryParseDateMethod = type.GetMethod(
+                "TryParse",
+                BindingFlags.Public | BindingFlags.Static,
+                new[] { typeof(string), typeof(IFormatProvider), typeof(DateTimeStyles), type.MakeByRefType() });
 
-            foreach (var method in staticDateMethods)
-            {
-                var tryParseParameters = method.GetParameters();
-
-                if (tryParseParameters.Length == 4 &&
-                    tryParseParameters[0].ParameterType == typeof(string) &&
-                    tryParseParameters[1].ParameterType == typeof(IFormatProvider) &&
-                    tryParseParameters[2].ParameterType == typeof(DateTimeStyles) &&
-                    tryParseParameters[3].IsOut &&
-                    tryParseParameters[3].ParameterType == type.MakeByRefType())
-                {
-                    methodInfo = method;
-                    break;
-                }
-            }
+            methodInfo = staticTryParseDateMethod;
 
             return methodInfo != null;
         }
 
-        private static bool TryGetNumberStylesTryGetMethod(Type type, out MethodInfo? method, out NumberStyles? numberStyles)
+        private static bool TryGetNumberStylesTryGetMethod(Type type, [NotNullWhen(true)] out MethodInfo? method, [NotNullWhen(true)] out NumberStyles? numberStyles)
         {
             method = null;
             numberStyles = null;
@@ -226,6 +147,9 @@ namespace Microsoft.AspNetCore.Http
             var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
                    .Where(m => m.Name == "TryParse" && m.ReturnType == typeof(bool))
                    .OrderByDescending(m => m.GetParameters().Length);
+
+            var numberStylesToUse = NumberStyles.Integer;
+            var methodToUse = default(MethodInfo);
 
             foreach (var methodInfo in staticMethods)
             {
@@ -243,23 +167,26 @@ namespace Microsoft.AspNetCore.Http
                         type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong) ||
                         type == typeof(BigInteger))
                     {
-                        numberStyles = NumberStyles.Integer;
+                        numberStylesToUse = NumberStyles.Integer;
                     }
 
                     if (type == typeof(double) || type == typeof(float) || type == typeof(Half))
                     {
-                        numberStyles = NumberStyles.AllowThousands | NumberStyles.Float;
+                        numberStylesToUse = NumberStyles.AllowThousands | NumberStyles.Float;
                     }
 
                     if (type == typeof(decimal))
                     {
-                        numberStyles = NumberStyles.Number;
+                        numberStylesToUse = NumberStyles.Number;
                     }
 
-                    method = methodInfo;
+                    methodToUse = methodInfo!;
                     break;
                 }
             }
+
+            numberStyles = numberStylesToUse!;
+            method = methodToUse!;
 
             return true;
         }

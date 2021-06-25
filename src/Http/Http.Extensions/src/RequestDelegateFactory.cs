@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
         private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
         private static readonly ParameterExpression WasTryParseFailureExpr = Expression.Variable(typeof(bool), "wasTryParseFailure");
-        private static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+        private static readonly ParameterExpression TempSourceStringExpr = TryParseMethodCache.TempSourceStringExpr;
 
         private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestServices));
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request));
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Http
             var isNotNullable = underlyingNullableType is null;
 
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
-            var tryParseMethodCall = TryParseMethodCache.FindTryParseMethodCall(parameter);
+            var tryParseMethodCall = TryParseMethodCache.FindTryParseMethod(nonNullableParameterType);
 
             if (tryParseMethodCall is null)
             {
@@ -558,7 +558,7 @@ namespace Microsoft.AspNetCore.Http
                 Expression.Call(LogParameterBindingFailureMethod,
                     HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, TempSourceStringExpr));
 
-            MethodCallExpression? tryParseCall = tryParseMethodCall(TempSourceStringExpr, parsedValue);
+            var tryParseCall = tryParseMethodCall(parsedValue);
 
             // If the parameter is nullable, we need to assign the "parsedValue" local to the nullable parameter on success.
             Expression tryParseExpression = isNotNullable ?

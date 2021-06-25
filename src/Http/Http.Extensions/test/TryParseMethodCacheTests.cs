@@ -1,5 +1,9 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Globalization;
+using System.Linq.Expressions;
 
 using Xunit;
 
@@ -25,7 +29,9 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
             Assert.NotNull(methodFound);
 
-            var parameters = methodFound!.GetParameters();
+            var call = methodFound!(Expression.Variable(type, "parsedValue"));
+            var parameters = call.Method.GetParameters();
+
             Assert.Equal(4, parameters.Length);
             Assert.Equal(typeof(string), parameters[0].ParameterType);
             Assert.Equal(typeof(NumberStyles), parameters[1].ParameterType);
@@ -45,7 +51,8 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
             Assert.NotNull(methodFound);
 
-            var parameters = methodFound!.GetParameters();
+            var call = methodFound!(Expression.Variable(type, "parsedValue"));
+            var parameters = call.Method.GetParameters();
 
             if (@type == typeof(TimeSpan))
             {
