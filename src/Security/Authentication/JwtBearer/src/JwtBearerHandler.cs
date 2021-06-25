@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             SecurityToken = validatedToken
                         };
 
-                        tokenValidatedContext.Properties.ExpiresUtc = validatedToken.ValidTo;
-                        tokenValidatedContext.Properties.IssuedUtc = validatedToken.ValidFrom;
+                        tokenValidatedContext.Properties.ExpiresUtc = GetSafeDateTime(validatedToken.ValidTo);
+                        tokenValidatedContext.Properties.IssuedUtc = GetSafeDateTime(validatedToken.ValidFrom);
 
                         await Events.TokenValidated(tokenValidatedContext);
                         if (tokenValidatedContext.Result != null)
@@ -200,6 +200,17 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 throw;
             }
+        }
+
+        private static DateTime? GetSafeDateTime(DateTime dateTime)
+        {
+            // Assigning DateTime.MinValue or default(DateTime) to a DateTimeOffset when in a UTC+X timezone will throw
+            // Since we don't really care about DateTime.MinValue in this case let's just set the field to null
+            if (dateTime == DateTime.MinValue)
+            {
+                return null;
+            }
+            return dateTime;
         }
 
         /// <inheritdoc />
