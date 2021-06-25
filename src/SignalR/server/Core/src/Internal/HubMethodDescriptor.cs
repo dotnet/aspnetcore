@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
@@ -22,8 +24,9 @@ internal class HubMethodDescriptor
 
     private readonly MethodInfo? _makeCancelableEnumeratorMethodInfo;
     private Func<object, CancellationToken, IAsyncEnumerator<object>>? _makeCancelableEnumerator;
+        private int _isServiceArgument;
 
-    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
+    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<IAuthorizeData> policies)
     {
         MethodExecutor = methodExecutor;
 
@@ -56,7 +59,7 @@ internal class HubMethodDescriptor
         }
 
         // Take out synthetic arguments that will be provided by the server, this list will be given to the protocol parsers
-        ParameterTypes = methodExecutor.MethodParameters.Where(p =>
+        ParameterTypes = methodExecutor.MethodParameters.Where((p, index) =>
         {
             // Only streams can take CancellationTokens currently
             if (IsStreamResponse && p.ParameterType == typeof(CancellationToken))
@@ -72,6 +75,17 @@ internal class HubMethodDescriptor
                 }
 
                 StreamingParameters.Add(p.ParameterType.GetGenericArguments()[0]);
+                HasSyntheticArguments = true;
+                return false;
+            }
+            else if (serviceProviderIsService?.IsService(p.ParameterType) == true)
+            {
+                if (index >= 32)
+                {
+                    throw new InvalidOperationException(
+                        "Hub methods can't use services from DI in the parameters after the 32nd parameter.");
+                }
+                _isServiceArgument |= (1 << index);
                 HasSyntheticArguments = true;
                 return false;
             }
@@ -103,6 +117,11 @@ internal class HubMethodDescriptor
     public IList<IAuthorizeData> Policies { get; }
 
     public bool HasSyntheticArguments { get; private set; }
+
+    public bool IsServiceArgument(int argumentIndex)
+    {
+        return (_isServiceArgument & (1 << argumentIndex)) != 0;
+    }
 
     public IAsyncEnumerator<object> FromReturnedStream(object stream, CancellationToken cancellationToken)
     {

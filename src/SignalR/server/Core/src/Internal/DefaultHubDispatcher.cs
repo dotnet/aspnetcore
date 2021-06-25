@@ -307,7 +307,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
                 CancellationTokenSource? cts = null;
                 if (descriptor.HasSyntheticArguments)
                 {
-                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, ref arguments, out cts);
+                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, scope, ref arguments, out cts);
                 }
 
                 if (isStreamResponse)
@@ -601,7 +601,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
     }
 
     private void ReplaceArguments(HubMethodDescriptor descriptor, HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamCall,
-        HubConnectionContext connection, ref object?[] arguments, out CancellationTokenSource? cts)
+        HubConnectionContext connection, AsyncServiceScope scope, ref object?[] arguments, out CancellationTokenSource? cts)
     {
         cts = null;
         // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
@@ -625,6 +625,10 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
                 {
                     cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                     arguments[parameterPointer] = cts.Token;
+                }
+                else if (descriptor.IsServiceArgument(parameterPointer))
+                {
+                    arguments[parameterPointer] = scope.ServiceProvider.GetRequiredService(descriptor.OriginalParameterTypes[parameterPointer]);
                 }
                 else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
                 {
@@ -650,6 +654,9 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
         var hubTypeInfo = hubType.GetTypeInfo();
         var hubName = hubType.Name;
 
+        using var scope = _serviceScopeFactory.CreateScope();
+        IServiceProviderIsService? serviceProviderIsService = scope.ServiceProvider.GetService<IServiceProviderIsService>();
+
         foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
         {
             if (methodInfo.IsGenericMethod)
@@ -668,7 +675,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
 
             var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
-            _methods[methodName] = new HubMethodDescriptor(executor, authorizeAttributes);
+            _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
 
             Log.HubMethodBound(_logger, hubName, methodName);
         }
