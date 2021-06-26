@@ -54,16 +54,16 @@ namespace Microsoft.AspNetCore.HttpLogging
                     return Task.CompletedTask;
                 }
                 _expectedWrites = numWrites;
-                _tcs = new TaskCompletionSource();
+                _tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
             return _tcs.Task;
         }
 
-        public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
+        public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
         {
             if (!_hasWritten)
             {
-                await base.OnFirstWrite(streamWriter, cancellationTokenSource);
+                await base.OnFirstWrite(streamWriter, cancellationToken);
                 _hasWritten = true;
             }
         }

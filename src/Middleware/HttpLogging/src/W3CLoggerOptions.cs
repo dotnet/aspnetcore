@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum retained file count.
         /// Defaults to <c>4</c>.
+        /// Must be between 1 and 10,000, inclusive.
         /// </summary>
         public int? RetainedFileCountLimit
         {
@@ -73,7 +74,9 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Gets or sets a string representing the directory where the log file will be written to
-        /// Defaults to <c>/logs/</c> relative to the app directory (ContentRoot).
+        /// Defaults to <c>./logs/</c> relative to the app directory (ContentRoot).
+        /// If a full path is given, that full path will be used. If a relative path is given,
+        /// the full path will be that path relative to ContentRoot.
         /// </summary>
         public string LogDirectory
         {
@@ -83,10 +86,6 @@ namespace Microsoft.AspNetCore.HttpLogging
                 if (string.IsNullOrEmpty(value))
                 {
                     throw new ArgumentNullException(nameof(value));
-                }
-                if (!Path.IsPathRooted(value))
-                {
-                    throw new FormatException($"{nameof(LogDirectory)} must be a rooted path.");
                 }
                 _logDirectory = value;
             }

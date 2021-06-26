@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private const int _maxQueuedMessages = 1024;
 
         private string _path;
+        private string _pathRoot;
         private string _fileName;
         private int? _maxFileSize;
         private int? _maxRetainedFiles;
@@ -36,31 +37,47 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly Task _outputTask;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
+        private readonly object _pathLock = new object();
+
         public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
             _options = options;
             var loggerOptions = _options.CurrentValue;
-            _path = loggerOptions.LogDirectory;
-            if (string.IsNullOrEmpty(_path))
+
+            _pathRoot = loggerOptions.LogDirectory;
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+            if (string.IsNullOrEmpty(_pathRoot))
             {
-                _path = Path.Join(environment.ContentRootPath, "logs", DateTimeOffset.Now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
+                _pathRoot = Path.Join(environment.ContentRootPath, "logs");
             }
+            else
+            {
+                if (!Path.IsPathRooted(_pathRoot))
+                {
+                    _pathRoot = Path.Join(environment.ContentRootPath, _pathRoot);
+                }
+            }
+            _path = Path.Join(_pathRoot, now);
+
             _fileName = loggerOptions.FileName;
             _maxFileSize = loggerOptions.FileSizeLimit;
             _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
             _flushInterval = loggerOptions.FlushInterval;
             _options.OnChange(options =>
             {
-                // Clear the cached settings.
-                loggerOptions = options;
-                if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
+                lock (_pathLock)
                 {
-                    _path = loggerOptions.LogDirectory;
+                    // Clear the cached settings.
+                    loggerOptions = options;
+                    if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
+                    {
+                        _path = loggerOptions.LogDirectory;
+                    }
+                    _fileName = loggerOptions.FileName;
+                    _maxFileSize = loggerOptions.FileSizeLimit;
+                    _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
+                    _flushInterval = loggerOptions.FlushInterval;
                 }
-                _fileName = loggerOptions.FileName;
-                _maxFileSize = loggerOptions.FileSizeLimit;
-                _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
-                _flushInterval = loggerOptions.FlushInterval;
             });
 
             _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
@@ -95,7 +112,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     try
                     {
-                        await WriteMessagesAsync(_currentBatch, _cancellationTokenSource);
+                        await WriteMessagesAsync(_currentBatch, _cancellationTokenSource.Token);
                     }
                     catch (Exception ex)
                     {
@@ -119,7 +136,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private async Task WriteMessagesAsync(List<string> messages, CancellationTokenSource cancellationTokenSource)
+        private async Task WriteMessagesAsync(List<string> messages, CancellationToken cancellationToken)
         {
             // Files are grouped by day, and written up to _maxFileSize before rolling to a new file
             DateTime today = DateTime.Now;
@@ -136,7 +153,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 foreach (var message in messages)
                 {
-                    if (cancellationTokenSource.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         return;
                     }
@@ -151,6 +168,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         streamWriter.Dispose();
                         if (!TryCreateDirectory())
                         {
+                            streamWriter = null;
                             // return early if we fail to create the directory
                             return;
                         }
@@ -158,23 +176,16 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                     if (!fileInfo.Exists || fileInfo.Length == 0)
                     {
-                        await OnFirstWrite(streamWriter, _cancellationTokenSource);
+                        await OnFirstWrite(streamWriter, cancellationToken);
                     }
 
-                    await WriteMessageAsync(message, streamWriter, _cancellationTokenSource);
+                    await WriteMessageAsync(message, streamWriter, cancellationToken);
                 }
             }
             finally
             {
                 RollFiles();
-                try
-                {
-                    streamWriter.Dispose();
-                }
-                catch
-                {
-                    // streamWriter may have been disposed above, catch and continue if so
-                }
+                streamWriter?.Dispose();
             }
 
         }
@@ -198,13 +209,13 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         // Virtual for testing
-        internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
+        internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
         {
-            if (cancellationTokenSource.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
             {
                 return;
             }
-            await streamWriter.WriteLineAsync(MemoryExtensions.AsMemory(message), cancellationTokenSource.Token);
+            await streamWriter.WriteLineAsync(message.AsMemory(), cancellationToken);
             await streamWriter.FlushAsync();
         }
 
@@ -218,14 +229,17 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             if (_maxRetainedFiles > 0)
             {
-                var files = new DirectoryInfo(_path)
-                    .GetFiles(_fileName + "*")
-                    .OrderByDescending(f => f.Name)
-                    .Skip(_maxRetainedFiles.Value);
-
-                foreach (var item in files)
+                lock (_pathLock)
                 {
-                    item.Delete();
+                    var files = new DirectoryInfo(_path)
+                        .GetFiles(_fileName + "*")
+                        .OrderByDescending(f => f.Name)
+                        .Skip(_maxRetainedFiles.Value);
+
+                    foreach (var item in files)
+                    {
+                        item.Delete();
+                    }
                 }
             }
         }
@@ -239,10 +253,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string GetFullName(DateTime date)
         {
-            return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
+            lock (_pathLock)
+            {
+                return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
+            }
         }
 
-        public virtual Task OnFirstWrite(StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
+        public virtual Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

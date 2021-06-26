@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.HttpLogging
             _loggingFields = options.CurrentValue.LoggingFields;
         }
 
-        public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
+        public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
         {
-            await WriteMessageAsync("#Version: 1.0", streamWriter, cancellationTokenSource);
+            await WriteMessageAsync("#Version: 1.0", streamWriter, cancellationToken);
 
-            await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationTokenSource);
+            await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
-            await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationTokenSource);
+            await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationToken);
         }
 
         private string GetFieldsDirective()
@@ -110,10 +110,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         // For testing
-        internal override Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationTokenSource cancellationTokenSource)
+        internal override Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
         {
             OnWrite(message);
-            return base.WriteMessageAsync(message, streamWriter, cancellationTokenSource);
+            return base.WriteMessageAsync(message, streamWriter, cancellationToken);
         }
 
         // Extensibility point for tests

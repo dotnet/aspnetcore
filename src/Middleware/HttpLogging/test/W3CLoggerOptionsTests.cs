@@ -40,13 +40,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         [Fact]
-        public void ThrowsOnNonRootedLogDirectory()
-        {
-            var options = new W3CLoggerOptions();
-            Assert.Throws<FormatException>(() => options.LogDirectory = ".\\logs");
-        }
-
-        [Fact]
         public void ThrowsOnNegativeFlushInterval()
         {
             var options = new W3CLoggerOptions();
