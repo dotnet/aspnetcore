@@ -232,6 +232,11 @@ namespace Microsoft.AspNetCore.Components.Server
                 return false;
             }
 
+            // Note: this await will block the circuit. This is intentional.
+            // The call into the circuitHost.ReceiveJSDataChunk will block regardless as we call into Renderer.Dispatcher.InvokeAsync
+            // which ensures we're running on the main circuit thread so that the server/client remain in the same
+            // synchronization context. Additionally, we're utilizing the return value as a heartbeat for the transfer
+            // process, and without it would likely need to setup a separate endpoint to handle that functionality.
             return await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
         }
 

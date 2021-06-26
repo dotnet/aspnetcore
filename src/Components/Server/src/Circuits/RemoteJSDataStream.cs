@@ -45,9 +45,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             TimeSpan jsInteropDefaultCallTimeout,
             CancellationToken cancellationToken = default)
         {
-            // Enforce minimum 1 kb SignalR message size as we budget 512 bytes
-            // overhead for the transfer, thus leaving at least 512 bytes for data
-            // transfer per chunk.
+            // Enforce minimum 1 kb, maximum 50 kb, SignalR message size.
+            // We budget 512 bytes overhead for the transfer, thus leaving at least 512 bytes for data
+            // transfer per chunk with a 1 kb message size.
+            // Additionally, to maintain interactivity, we put an upper limit of 50 kb on the message size.
             var chunkSize = maximumIncomingBytes > 1024 ?
                 Math.Min(maximumIncomingBytes, 50*1024) - 512 :
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _streamCancellationToken = cancellationToken;
 
-            _lastDataReceivedTime = DateTime.UtcNow;
+            _lastDataReceivedTime = DateTimeOffset.UtcNow;
             _ = ThrowOnTimeout();
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             try
             {
-                _lastDataReceivedTime = DateTime.UtcNow;
+                _lastDataReceivedTime = DateTimeOffset.UtcNow;
                 _ = ThrowOnTimeout();
 
                 if (!string.IsNullOrEmpty(error))
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             await Task.Delay(_jsInteropDefaultCallTimeout);
 
-            if (!_disposed && (DateTime.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
+            if (!_disposed && (DateTimeOffset.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
             {
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
                 var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");

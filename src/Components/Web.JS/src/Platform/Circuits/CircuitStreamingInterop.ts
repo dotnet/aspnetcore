@@ -12,8 +12,6 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
             let position = 0;
             let chunkId = 0;
 
-            // Note: The server-side `StreamBufferCapacity` option (defaults to 10) can be configured to limit how many
-            // stream items from the client (per stream) will be stored before reading any more stream items (thus applying backpressure).
             while (position < data.byteLength) {
                 const nextChunkSize = Math.min(chunkSize, data.byteLength - position);
                 const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);

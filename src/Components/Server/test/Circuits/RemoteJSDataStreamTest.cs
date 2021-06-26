@@ -74,18 +74,60 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_ReceiveDataTimeout_StreamDisposed()
+        public async void ReceiveData_NoDataProvidedBeforeTimeout_StreamDisposed()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var timeoutExceptionRaised = false;
+            jsRuntime.UnhandledException += (_, ex) =>
+            {
+                Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+                timeoutExceptionRaised = ex is TimeoutException;
+            };
+
             var jsStreamReference = Mock.Of<IJSStreamReference>();
             var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
-                jsRuntime ?? _jsRuntime,
+                jsRuntime,
                 jsStreamReference,
                 totalLength: 9,
                 maxBufferSize: 50,
                 maximumIncomingBytes: 10_000,
-                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(40)); // Note we're using a 40 second timeout for this test
+                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(10)); // Note we're using a 10 second timeout for this test
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[] { 3, 5, 7 };
+
+            // Act & Assert 1
+            // Wait past the initial timeout + 15 sec buffer room and then
+            // confirm unhandled exception raised to crush circuit
+            await Task.Delay(TimeSpan.FromSeconds(25));
+            Assert.True(timeoutExceptionRaised);
+
+            // Act & Assert 2
+            // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
+            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
+            Assert.False(success);
+        }
+
+        [Fact]
+        public async void ReceiveData_ReceivesDataThenTimesout_StreamDisposed()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var timeoutExceptionRaised = false;
+            jsRuntime.UnhandledException += (_, ex) =>
+            {
+                Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+                timeoutExceptionRaised = ex is TimeoutException;
+            };
+
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+                jsRuntime,
+                jsStreamReference,
+                totalLength: 9,
+                maxBufferSize: 50,
+                maximumIncomingBytes: 10_000,
+                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(30)); // Note we're using a 30 second timeout for this test
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[] { 3, 5, 7 };
 
@@ -93,19 +135,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
             Assert.True(success);
 
-            await Task.Delay(TimeSpan.FromSeconds(20));
+            await Task.Delay(TimeSpan.FromSeconds(15));
 
             // Act & Assert 2
             success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null);
             Assert.True(success);
 
-            // Wait 80 seconds (20 sec between first two calls + 40 sec timeout + 20 sec buffer room)
-            await Task.Delay(TimeSpan.FromSeconds(80));
-
             // Act & Assert 3
-            using var mem = new MemoryStream();
-            var ex = await Assert.ThrowsAsync<TimeoutException>(async() => await remoteJSDataStream.CopyToAsync(mem));
-            Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+            // Wait past the 30 sec timeout + 15 sec buffer room
+            // confirm unhandled exception raised to crush circuit
+            await Task.Delay(TimeSpan.FromSeconds(45));
+            Assert.True(timeoutExceptionRaised);
 
             // Act & Assert 4
             // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
@@ -210,7 +250,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
             }
 
-            new public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+            public new ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
             {
                 Assert.Equal("Blazor._internal.sendJSDataStream", identifier);
                 return ValueTask.FromResult<TValue>(default);
