@@ -206,11 +206,5 @@ namespace Microsoft.AspNetCore.Http
                 type == typeof(uint) ||
                 type == typeof(ulong) ||
                 type == typeof(BigInteger);
-
-        internal static bool UseTryParseWithDateTimeStyleOptions(Type type)
-            => type == typeof(DateTime) ||
-               type == typeof(DateTimeOffset) ||
-               type == typeof(DateOnly) ||
-               type == typeof(TimeOnly);
     }
 }
