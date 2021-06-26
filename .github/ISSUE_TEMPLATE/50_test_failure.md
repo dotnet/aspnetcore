@@ -27,10 +27,22 @@ Provide the error message associated with the test failure, if applicable.
 
 ## Stacktrace
 
-
 <details>
 <!--
 Provide the stack trace associated with the test failure, if applicable.
+-->
+
+```text
+
+```
+</details>
+
+
+## Logs
+
+<details>
+<!--
+Provide the (helix) logs associated with the test failure, if applicable.
 -->
 
 ```text
