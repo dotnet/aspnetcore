@@ -21,19 +21,22 @@ Provide the fully qualified name(s) of the failing tests.
 Provide the error message associated with the test failure, if applicable.
 -->
 
-```
+```text
 
 ```
 
 ## Stacktrace
 
+
+<details>
 <!--
 Provide the stack trace associated with the test failure, if applicable.
 -->
 
-```
+```text
 
 ```
+</details>
 
 ## Build
 
