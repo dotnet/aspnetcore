@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -240,23 +241,22 @@ namespace Microsoft.AspNetCore.Components.Web
         {
             var changeArgs = Deserialize(eventArgsJson, jsonSerializerContext.ChangeEventArgs);
             var jsonElement = (JsonElement)changeArgs.Value!;
-            switch (jsonElement.ValueKind)
-            {
-                case JsonValueKind.Null:
-                    changeArgs.Value = null;
-                    break;
-                case JsonValueKind.String:
-                    changeArgs.Value = jsonElement.GetString();
-                    break;
-                case JsonValueKind.True:
-                case JsonValueKind.False:
-                    changeArgs.Value = jsonElement.GetBoolean();
-                    break;
-                default:
-                    throw new ArgumentException($"Unsupported {nameof(ChangeEventArgs)} value {jsonElement}.");
-            }
+            changeArgs.Value = GetChangeEventArgsValue(jsonElement);
+
             return changeArgs;
         }
+
+        private static object? GetChangeEventArgsValue(JsonElement jsonElement)
+            => jsonElement.ValueKind switch
+            {
+                JsonValueKind.Null => null,
+                JsonValueKind.String => jsonElement.GetString(),
+                JsonValueKind.True or JsonValueKind.False => jsonElement.GetBoolean(),
+                JsonValueKind.Array => jsonElement.EnumerateArray()
+                    .Select(GetChangeEventArgsValue)
+                    .ToArray(),
+                _ => throw new ArgumentException($"Unsupported {nameof(ChangeEventArgs)} value {jsonElement}.")
+            };
     }
 
     [JsonSerializable(typeof(WebEventDescriptor))]
