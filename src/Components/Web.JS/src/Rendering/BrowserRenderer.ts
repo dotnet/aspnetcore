@@ -3,7 +3,7 @@ import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-const selectValuePropname = '_blazorSelectValue';
+const deferredValuePropname = '_blazorDeferredValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
@@ -257,21 +257,26 @@ export class BrowserRenderer {
     // [3] In case the the value of the select and the option value is changed in the same batch.
     //     We just receive an attribute frame and have to set the select value afterwards.
 
+    // We also defer setting the 'value' property for <input> because certain types of inputs have
+    // default attribute values that may incorrectly constain the specified 'value'.
+    // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
+    // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
+
     if (newDomElementRaw instanceof HTMLOptionElement) {
       // Situation 1
       this.trySetSelectValueFromOptionElement(newDomElementRaw);
-    } else if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
+    } else if (deferredValuePropname in newDomElementRaw) {
       // Situation 2
-      const selectValue: string | null = newDomElementRaw[selectValuePropname];
-      setSelectElementValue(newDomElementRaw, selectValue);
+      const deferredValue: string | null = newDomElementRaw[deferredValuePropname];
+      setDeferredElementValue(newDomElementRaw, deferredValue);
     }
   }
 
   private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
     const selectElem = this.findClosestAncestorSelectElement(optionElement);
-    if (selectElem && (selectValuePropname in selectElem) && selectElem[selectValuePropname] === optionElement.value) {
-      setSelectElementValue(selectElem, optionElement.value);
-      delete selectElem[selectValuePropname];
+    if (selectElem && (deferredValuePropname in selectElem) && selectElem[deferredValuePropname] === optionElement.value) {
+      setDeferredElementValue(selectElem, optionElement.value);
+      delete selectElem[deferredValuePropname];
       return true;
     }
     return false;
@@ -375,18 +380,18 @@ export class BrowserRenderer {
       case 'TEXTAREA': {
         const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
 
-        if (element instanceof HTMLSelectElement) {
-          setSelectElementValue(element, value);
+        // <select> is special, in that anything we write to .value will be lost if there
+        // isn't yet a matching <option>. To maintain the expected behavior no matter the
+        // element insertion/update order, preserve the desired value separately so
+        // we can recover it when inserting any matching <option> or after inserting an
+        // entire markup block of descendants.
 
-          // <select> is special, in that anything we write to .value will be lost if there
-          // isn't yet a matching <option>. To maintain the expected behavior no matter the
-          // element insertion/update order, preserve the desired value separately so
-          // we can recover it when inserting any matching <option> or after inserting an
-          // entire markup block of descendants.
-          element[selectValuePropname] = value;
-        } else {
-          (element as any).value = value;
-        }
+        // We also defer setting the 'value' property for <input> because certain types of inputs have
+        // default attribute values that may incorrectly constain the specified 'value'.
+        // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
+        // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
+        element[deferredValuePropname] = value;
+        setDeferredElementValue(element, value);
 
         return true;
       }
@@ -510,14 +515,18 @@ function stripOnPrefix(attributeName: string) {
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
 
-function setSelectElementValue(element: HTMLSelectElement, value: string | null) {
-  // There's no sensible way to represent a select option with value 'null', because
-  // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
-  // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
-  //     *text content* on that <option> element. Trying to suppress that default behavior would involve
-  //     a long chain of special-case hacks, as well as being breaking vs 3.x.
-  // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
-  // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
-  // string in a bound <select>, but that's a limit in the representational power of HTML.
-  element.value = value || '';
+function setDeferredElementValue(element: Element, value: string | null) {
+  if (element instanceof HTMLSelectElement) {
+    // There's no sensible way to represent a select option with value 'null', because
+    // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
+    // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
+    //     *text content* on that <option> element. Trying to suppress that default behavior would involve
+    //     a long chain of special-case hacks, as well as being breaking vs 3.x.
+    // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
+    // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
+    // string in a bound <select>, but that's a limit in the representational power of HTML.
+    element.value = value || '';
+  } else {
+    (element as any).value = value;
+  }
 }

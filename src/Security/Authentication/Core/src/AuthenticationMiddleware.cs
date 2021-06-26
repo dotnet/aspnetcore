@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -70,6 +71,12 @@ namespace Microsoft.AspNetCore.Authentication
                 if (result?.Principal != null)
                 {
                     context.User = result.Principal;
+                }
+                if (result?.Succeeded ?? false)
+                {
+                    var authFeatures = new AuthenticationFeatures(result);
+                    context.Features.Set<IHttpAuthenticationFeature>(authFeatures);
+                    context.Features.Set<IAuthenticateResultFeature>(authFeatures);
                 }
             }
 
