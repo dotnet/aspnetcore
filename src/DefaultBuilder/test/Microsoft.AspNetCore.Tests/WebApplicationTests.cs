@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
@@ -267,6 +268,14 @@ namespace Microsoft.AspNetCore.Tests
             var app = WebApplication.Create();
             var linkGenerator = app.Services.GetService(typeof(LinkGenerator));
             Assert.NotNull(linkGenerator);
+        }
+
+        [Fact]
+        public void WebApplicationCreate_RegistersApiExplorerForEndpoints()
+        {
+            var app = WebApplication.Create();
+            var apiDescriptionProvider = app.Services.GetService(typeof(IApiDescriptionProvider));
+            Assert.NotNull(apiDescriptionProvider);
         }
 
         [Fact]

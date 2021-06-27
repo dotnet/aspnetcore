@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        private void WriteNegotiatePayload(IBufferWriter<byte> writer, string? connectionId, string? connectionToken, HttpContext context, HttpConnectionDispatcherOptions options,
+        private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string? connectionId, string? connectionToken, HttpContext context, HttpConnectionDispatcherOptions options,
             int clientProtocolVersion, string? error)
         {
             var response = new NegotiationResponse();

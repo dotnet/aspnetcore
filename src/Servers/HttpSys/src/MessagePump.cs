@@ -214,11 +214,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 try
                 {
-                    ThreadPool.UnsafeQueueUserWorkItem(requestContext, preferLocal: false);
+                    if (_options.UnsafePreferInlineScheduling)
+                    {
+                        await requestContext.ExecuteAsync();
+                    }
+                    else
+                    {
+                        ThreadPool.UnsafeQueueUserWorkItem(requestContext, preferLocal: false);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Request processing failed to be queued in threadpool
+                    // Request processing failed
                     // Log the error message, release throttle and move on
                     Log.RequestListenerProcessError(_logger, ex);
                 }

@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Routing
                 namedOutboundMatchResults);
         }
 
-        private OutboundRouteEntry CreateOutboundRouteEntry(
+        private static OutboundRouteEntry CreateOutboundRouteEntry(
             RouteEndpoint endpoint,
             IReadOnlyDictionary<string, object?> requiredValues,
             string? routeName)

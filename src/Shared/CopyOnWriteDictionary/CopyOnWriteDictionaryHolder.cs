@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        public bool IsReadOnly
+        public static bool IsReadOnly
         {
             get
             {

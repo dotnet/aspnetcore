@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return applies;
         }
 
-        private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
+        private static bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
         {
             return endpoints.Any(e =>
             {
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new HostPolicyJumpTable(exitDestination, ordered);
         }
 
-        private int GetScore(in EdgeKey key)
+        private static int GetScore(in EdgeKey key)
         {
             // Higher score == lower priority.
             if (key.MatchesHost && !key.HasHostWildcard && key.MatchesPort)

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     internal static class HttpTokenParsingRules
     {
-        private static readonly bool[] TokenChars;
+        private static readonly bool[] TokenChars = CreateTokenChars();
         private const int MaxNestedCount = 5;
 
         internal const char CR = '\r';
@@ -21,36 +21,38 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         // iso-8859-1, Western European (ISO)
         internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding(28591);
 
-        static HttpTokenParsingRules()
+        private static bool[] CreateTokenChars()
         {
             // token = 1*<any CHAR except CTLs or separators>
             // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
 
-            TokenChars = new bool[128]; // everything is false
+            var tokenChars = new bool[128]; // everything is false
 
-            for (int i = 33; i < 127; i++) // skip Space (32) & DEL (127)
+            for (var i = 33; i < 127; i++) // skip Space (32) & DEL (127)
             {
-                TokenChars[i] = true;
+                tokenChars[i] = true;
             }
 
             // remove separators: these are not valid token characters
-            TokenChars[(byte)'('] = false;
-            TokenChars[(byte)')'] = false;
-            TokenChars[(byte)'<'] = false;
-            TokenChars[(byte)'>'] = false;
-            TokenChars[(byte)'@'] = false;
-            TokenChars[(byte)','] = false;
-            TokenChars[(byte)';'] = false;
-            TokenChars[(byte)':'] = false;
-            TokenChars[(byte)'\\'] = false;
-            TokenChars[(byte)'"'] = false;
-            TokenChars[(byte)'/'] = false;
-            TokenChars[(byte)'['] = false;
-            TokenChars[(byte)']'] = false;
-            TokenChars[(byte)'?'] = false;
-            TokenChars[(byte)'='] = false;
-            TokenChars[(byte)'{'] = false;
-            TokenChars[(byte)'}'] = false;
+            tokenChars[(byte)'('] = false;
+            tokenChars[(byte)')'] = false;
+            tokenChars[(byte)'<'] = false;
+            tokenChars[(byte)'>'] = false;
+            tokenChars[(byte)'@'] = false;
+            tokenChars[(byte)','] = false;
+            tokenChars[(byte)';'] = false;
+            tokenChars[(byte)':'] = false;
+            tokenChars[(byte)'\\'] = false;
+            tokenChars[(byte)'"'] = false;
+            tokenChars[(byte)'/'] = false;
+            tokenChars[(byte)'['] = false;
+            tokenChars[(byte)']'] = false;
+            tokenChars[(byte)'?'] = false;
+            tokenChars[(byte)'='] = false;
+            tokenChars[(byte)'{'] = false;
+            tokenChars[(byte)'}'] = false;
+
+            return tokenChars;
         }
 
         internal static bool IsTokenChar(char character)

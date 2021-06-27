@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Started(_logger);
         }
 
-        private ValueTask CloseAsync(ConnectionContext connection)
+        private static ValueTask CloseAsync(ConnectionContext connection)
         {
             return connection.DisposeAsync();
         }
@@ -1544,7 +1544,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
+        private static IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
         {
             if (!token1.CanBeCanceled)
             {

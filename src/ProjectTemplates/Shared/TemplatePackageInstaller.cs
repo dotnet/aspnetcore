@@ -128,8 +128,8 @@ namespace Templates.Test.Helpers
 
         private static async Task VerifyCanFindTemplate(ITestOutputHelper output, string templateName)
         {
-            var proc = await RunDotNetNew(output, $"");
-            if (!proc.Output.Contains($" {templateName} "))
+            var proc = await RunDotNetNew(output, $"--list");
+            if (!(proc.Output.Contains($" {templateName} ") || proc.Output.Contains($",{templateName}") || proc.Output.Contains($"{templateName},")))
             {
                 throw new InvalidOperationException($"Couldn't find {templateName} as an option in {proc.Output}.");
             }

@@ -54,6 +54,9 @@
       "exclude": [
         ".template.config/**"
       ],
+      "copyOnly": [
+        "**/wwwroot/css/**"
+      ],
       "modifiers": [
         {
           "condition": "(!Hosted)",

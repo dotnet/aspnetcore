@@ -13,16 +13,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         // as well as rooting them for GC purposes, since nothing would otherwise be referencing
         // them even though we might still receive incoming events from JS.
 
+        private static readonly Dictionary<int, WebAssemblyRenderer>? _renderers = OperatingSystem.IsBrowser() ? new() : null;
         private static int _nextId;
-        private static Dictionary<int, WebAssemblyRenderer>? _renderers;
-
-        static RendererRegistry()
-        {
-            if (OperatingSystem.IsBrowser())
-            {
-                _renderers = new Dictionary<int, WebAssemblyRenderer>();
-            }
-        }
 
         internal static WebAssemblyRenderer Find(int rendererId)
         {

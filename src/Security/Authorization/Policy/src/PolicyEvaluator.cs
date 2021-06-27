@@ -38,19 +38,29 @@ namespace Microsoft.AspNetCore.Authorization.Policy
             if (policy.AuthenticationSchemes != null && policy.AuthenticationSchemes.Count > 0)
             {
                 ClaimsPrincipal? newPrincipal = null;
+                DateTimeOffset? minExpiresUtc = null;
                 foreach (var scheme in policy.AuthenticationSchemes)
                 {
                     var result = await context.AuthenticateAsync(scheme);
                     if (result != null && result.Succeeded)
                     {
                         newPrincipal = SecurityHelper.MergeUserPrincipal(newPrincipal, result.Principal);
+
+                        if (minExpiresUtc is null || result.Properties?.ExpiresUtc < minExpiresUtc)
+                        {
+                            minExpiresUtc = result.Properties?.ExpiresUtc;
+                        }
                     }
                 }
 
                 if (newPrincipal != null)
                 {
                     context.User = newPrincipal;
-                    return AuthenticateResult.Success(new AuthenticationTicket(newPrincipal, string.Join(";", policy.AuthenticationSchemes)));
+                    var ticket = new AuthenticationTicket(newPrincipal, string.Join(";", policy.AuthenticationSchemes));
+                    // ExpiresUtc is the easiest property to reason about when dealing with multiple schemes
+                    // SignalR will use this property to evaluate auth expiration for long running connections
+                    ticket.Properties.ExpiresUtc = minExpiresUtc;
+                    return AuthenticateResult.Success(ticket);
                 }
                 else
                 {
