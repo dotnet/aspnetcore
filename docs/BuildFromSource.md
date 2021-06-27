@@ -32,7 +32,7 @@ If you've already cloned the `aspnetcore` repo without fetching submodule source
 git submodule update --init --recursive
 ```
 
-> :bulb: Some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>.
+> :bulb: Some ISPs have been known to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>.
 
 ### Tracking remote changes
 
