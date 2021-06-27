@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,9 +24,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly long _maximumIncomingBytes;
         private int _byteArraysToBeRevivedTotalBytes;
 
+        internal int RemoteJSDataStreamNextInstanceId;
+        internal readonly Dictionary<long, RemoteJSDataStream> RemoteJSDataStreamInstances = new();
+
         public ElementReferenceContext ElementReferenceContext { get; }
 
         public bool IsInitialized => _clientProxy is not null;
+
+        /// <summary>
+        /// Notifies when a runtime exception occurred.
+        /// </summary>
+        public event EventHandler<Exception>? UnhandledException;
 
         public RemoteJSRuntime(
             IOptions<CircuitOptions> circuitOptions,
@@ -44,6 +56,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         internal void Initialize(CircuitClientProxy clientProxy)
         {
             _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
+        }
+
+        internal void RaiseUnhandledException(Exception ex)
+        {
+            UnhandledException?.Invoke(this, ex);
         }
 
         protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
@@ -140,6 +157,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _clientProxy = null;
         }
 
+        protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
+            => await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(this, jsStreamReference, totalLength, maxBufferSize, _maximumIncomingBytes, _options.JSInteropDefaultCallTimeout, cancellationToken);
+
         public static class Log
         {
             private static readonly Action<ILogger, long, string, Exception> _beginInvokeJS =
@@ -198,7 +218,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     _invokeInstanceDotNetMethodSuccess(logger, invocationInfo.MethodIdentifier, invocationInfo.DotNetObjectId, invocationInfo.CallId, null);
                 }
-
             }
         }
     }

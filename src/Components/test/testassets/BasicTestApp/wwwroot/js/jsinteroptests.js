@@ -104,6 +104,19 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
   var returnedByteArrayWrapper = await DotNet.invokeMethodAsync(assemblyName, 'RoundTripByteArrayWrapperObjectAsync', byteArrayWrapper);
   results['roundTripByteArrayWrapperObjectAsyncFromJS'] = returnedByteArrayWrapper;
 
+  if (shouldSupportSyncInterop) {
+    results['jsToDotNetStreamParameterAsync'] = "Success";
+    results['jsToDotNetStreamWrapperObjectParameterAsync'] = "Success";
+  } else {
+    const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+    const largeByteArray = new Uint8Array(largeArray);
+    const jsStreamReference = DotNet.createJSStreamReference(largeByteArray);
+    results['jsToDotNetStreamParameterAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'JSToDotNetStreamParameterAsync', jsStreamReference);
+
+    var streamWrapper = { 'strVal': "SomeStr", 'jsStreamReferenceVal': jsStreamReference, 'intVal': 5 };
+    results['jsToDotNetStreamWrapperObjectParameterAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'JSToDotNetStreamWrapperObjectParameterAsync', streamWrapper);
+  }
+
   const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
     stringValue: 'My string',
     dtoByRef: dotNetObjectByRef
@@ -258,6 +271,27 @@ function roundTripByteArrayWrapperObject(byteArrayWrapperObject) {
     throw new Error('roundTripByteArrayWrapperObject did not receive a byte array.');
   }
   return byteArrayWrapperObject;
+}
+
+function jsToDotNetStreamReturnValueAsync() {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+      resolve(new Uint8Array(largeArray));
+    }, 100);
+  });
+}
+
+function jsToDotNetStreamWrapperObjectReturnValueAsync() {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+      const byteArray = new Uint8Array(largeArray);
+      const jsStreamReference = DotNet.createJSStreamReference(byteArray);
+      const returnValue = { strVal: 'SomeStr', intVal: 5, jsStreamReferenceVal: jsStreamReference }
+      resolve(returnValue);
+    }, 100);
+  });
 }
 
 function roundTripByteArrayWrapperObjectAsync(byteArrayWrapperObject) {

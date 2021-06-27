@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.CloseElement();
         }
 
-        internal Stream OpenReadStream(BrowserFile file, CancellationToken cancellationToken)
+        internal Stream OpenReadStream(BrowserFile file, long maxAllowedSize, CancellationToken cancellationToken)
             => _jsUnmarshalledRuntime != null ?
-                (Stream)new SharedBrowserFileStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
-                new RemoteBrowserFileStream(JSRuntime, _inputFileElement, file, Options.Value, cancellationToken);
+                new SharedBrowserFileStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
+                new RemoteBrowserFileStream(JSRuntime, _inputFileElement, file, Options.Value, maxAllowedSize, cancellationToken);
 
         internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
         {
