@@ -155,6 +155,102 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.Equal("Out of sequence chunk received, expected 5, but received 7.", ex.Message);
         }
 
+        [Fact]
+        public async void ReceiveData_NoDataProvidedBeforeTimeout_StreamDisposed()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var timeoutExceptionRaised = false;
+            jsRuntime.UnhandledException += (_, ex) =>
+            {
+                Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+                timeoutExceptionRaised = ex is TimeoutException;
+            };
+
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+                jsRuntime,
+                jsStreamReference,
+                totalLength: 15,
+                maximumIncomingBytes: 10_000,
+                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(10), // Note we're using a 10 second timeout for this test
+                pauseIncomingBytesThreshold: 50,
+                resumeIncomingBytesThreshold: 25,
+                cancellationToken: CancellationToken.None);
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[] { 3, 5, 7 };
+
+            // Act & Assert 1
+            // Wait past the initial timeout + 15 sec buffer room and then
+            // confirm unhandled exception raised to crush circuit
+            await Task.Delay(TimeSpan.FromSeconds(25));
+            Assert.True(timeoutExceptionRaised);
+
+            // Act & Assert 2
+            // Confirm exception also raised on pipe reader
+            using var mem = new MemoryStream();
+            var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await remoteJSDataStream.CopyToAsync(mem));
+            Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+
+            // Act & Assert 3
+            // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
+            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
+            Assert.False(success);
+        }
+
+        [Fact]
+        public async void ReceiveData_ReceivesDataThenTimesout_StreamDisposed()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var timeoutExceptionRaised = false;
+            jsRuntime.UnhandledException += (_, ex) =>
+            {
+                Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+                timeoutExceptionRaised = ex is TimeoutException;
+            };
+
+            var jsStreamReference = Mock.Of<IJSStreamReference>();
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+                jsRuntime,
+                jsStreamReference,
+                totalLength: 15,
+                maximumIncomingBytes: 10_000,
+                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(30), // Note we're using a 30 second timeout for this test
+                pauseIncomingBytesThreshold: 50,
+                resumeIncomingBytesThreshold: 25,
+                cancellationToken: CancellationToken.None); 
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[] { 3, 5, 7 };
+
+            // Act & Assert 1
+            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
+            Assert.True(success);
+
+            await Task.Delay(TimeSpan.FromSeconds(15));
+
+            // Act & Assert 2
+            success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null);
+            Assert.True(success);
+
+            // Act & Assert 3
+            // Wait past the initial timeout 30 sec timeout + 15 sec buffer room
+            // confirm unhandled exception raised to crush circuit
+            await Task.Delay(TimeSpan.FromSeconds(45));
+            Assert.True(timeoutExceptionRaised);
+
+            // Act & Assert 4
+            // Confirm exception also raised on pipe reader
+            using var mem = new MemoryStream();
+            var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await remoteJSDataStream.CopyToAsync(mem));
+            Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+
+            // Act & Assert 5
+            // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
+            success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 2, chunk, error: null);
+            Assert.False(success);
+        }
+
         private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)
         {
             var jsStreamReference = Mock.Of<IJSStreamReference>();

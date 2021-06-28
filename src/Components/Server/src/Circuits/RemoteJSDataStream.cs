@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _streamCancellationToken = cancellationToken;
 
+            ciData += $"Starting at {DateTime.UtcNow} {Environment.NewLine}";
             _lastDataReceivedTime = DateTimeOffset.UtcNow;
             _ = ThrowOnTimeout();
 
@@ -88,6 +89,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             try
             {
+                var errorToShow = string.IsNullOrEmpty(error) ? "no error" : error;
+                ciData += $"Received chunk {chunkId} at {DateTime.UtcNow} with error '{errorToShow}' {Environment.NewLine}";
                 _lastDataReceivedTime = DateTimeOffset.UtcNow;
                 _ = ThrowOnTimeout();
 
@@ -126,6 +129,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             catch (Exception e)
             {
+                ciData += $"Caught {e.Message} at {DateTime.UtcNow} {Environment.NewLine}";
                 await CompletePipeAndDisposeStream(e);
 
                 // Fatal exception, crush the circuit. A well behaved client
@@ -196,25 +200,51 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private async Task ThrowOnTimeout()
         {
+            ciData += $"Scheduled Time Out: Disposed: {_disposed} at {DateTimeOffset.UtcNow} with _lastDataReceivedTime {_lastDataReceivedTime} and timeout {_jsInteropDefaultCallTimeout} {Environment.NewLine}";
+
             await Task.Delay(_jsInteropDefaultCallTimeout);
+
+            ciData += $"Time interval passed, contains: {_runtime.RemoteJSDataStreamInstances.ContainsKey(_streamId)} {Environment.NewLine}";
 
             if (!_disposed && (DateTimeOffset.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
             {
+                ciData += $"Timed Out: Disposed: {_disposed} at {DateTimeOffset.UtcNow} with _lastDataReceivedTime {_lastDataReceivedTime} and timeout {_jsInteropDefaultCallTimeout} {Environment.NewLine}";
+
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
                 var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
                 await CompletePipeAndDisposeStream(timeoutException);
                 _runtime.RaiseUnhandledException(timeoutException);
             }
+            else
+            {
+                ciData += $"Not Timed Out: Disposed: {_disposed} at {DateTimeOffset.UtcNow} with _lastDataReceivedTime {_lastDataReceivedTime} and timeout {_jsInteropDefaultCallTimeout} {Environment.NewLine}";
+            }
         }
+
+        string ciData = string.Empty;
 
         internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
         {
+            // For CI debugging purposes
+            if (_totalLength == 15)
+            {
+                ciData += $"Completing, contains: {_runtime.RemoteJSDataStreamInstances.ContainsKey(_streamId)} {Environment.NewLine}";
+                throw new Exception($"SPECIAL1: {Environment.StackTrace} {Environment.NewLine} {ciData}");
+            }
+
             await _pipe.Writer.CompleteAsync(ex);
             Dispose(true);
         }
 
         protected override void Dispose(bool disposing)
         {
+            // For CI debugging purposes
+            if (_totalLength == 15)
+            {
+                ciData += $"Disposing, contains: {_runtime.RemoteJSDataStreamInstances.ContainsKey(_streamId)} {Environment.NewLine}";
+                throw new Exception($"SPECIAL2: {Environment.StackTrace} {Environment.NewLine} {ciData}");
+            }
+
             if (disposing)
             {
                 _runtime.RemoteJSDataStreamInstances.Remove(_streamId);
