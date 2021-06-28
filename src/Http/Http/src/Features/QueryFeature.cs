@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public class QueryFeature : IQueryFeature
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
+        private static readonly Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
 
         private FeatureReferences<IHttpRequestFeature> _features;
 
@@ -113,48 +113,21 @@ namespace Microsoft.AspNetCore.Http.Features
             }
 
             var accumulator = new KvpAccumulator();
-            var query = queryString.AsSpan();
-
-            if (query[0] == '?')
+            var enumerable = new QueryStringEnumerable(queryString.AsSpan());
+            foreach (var pair in enumerable)
             {
-                query = query[1..];
-            }
-
-            while (!query.IsEmpty)
-            {
-                var delimiterIndex = query.IndexOf('&');
-
-                var querySegment = delimiterIndex >= 0
-                    ? query.Slice(0, delimiterIndex)
-                    : query;
-
-                var equalIndex = querySegment.IndexOf('=');
-
-                if (equalIndex >= 0)
+                var name = SpanHelper.ReplacePlusWithSpace(pair.NameEscaped);
+                if (pair.ValueEscaped.IsEmpty)
                 {
-                    var name = SpanHelper.ReplacePlusWithSpace(querySegment.Slice(0, equalIndex));
-                    var value = SpanHelper.ReplacePlusWithSpace(querySegment.Slice(equalIndex + 1));
-
+                    accumulator.Append(Uri.UnescapeDataString(name));
+                }
+                else
+                {
+                    var value = SpanHelper.ReplacePlusWithSpace(pair.ValueEscaped);
                     accumulator.Append(
                         Uri.UnescapeDataString(name),
                         Uri.UnescapeDataString(value));
                 }
-                else
-                {
-                    if (!querySegment.IsEmpty)
-                    {
-                        var name = SpanHelper.ReplacePlusWithSpace(querySegment);
-
-                        accumulator.Append(Uri.UnescapeDataString(name));
-                    }
-                }
-
-                if (delimiterIndex < 0)
-                {
-                    break;
-                }
-
-                query = query.Slice(delimiterIndex + 1);
             }
 
             return accumulator.HasValues
