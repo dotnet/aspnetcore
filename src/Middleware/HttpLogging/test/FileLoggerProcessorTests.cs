@@ -132,7 +132,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             try
             {
                 string lastFileName;
-                string firstFileName;
                 var now = DateTimeOffset.Now;
                 var tomorrow = now.AddDays(1);
                 var options = new W3CLoggerOptions()
@@ -147,13 +146,15 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    firstFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
                     lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0009.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
                         await WaitForFile(lastFileName).DefaultTimeout();
-                        await WaitForRoll(firstFileName).DefaultTimeout();
+                        for (int i = 0; i < 6; i++)
+                        {
+                            await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i:0000}.txt"))).DefaultTimeout();
+                        }
                     }
                     catch
                     {
@@ -211,7 +212,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    var filePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0002.txt");
+                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0002.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(filePath).DefaultTimeout();
                 }
@@ -223,7 +224,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    var filePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0005.txt");
+                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0005.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(filePath).DefaultTimeout();
                 }
@@ -245,11 +246,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message");
-                    var firstFilePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt");
-                    var lastFilePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(lastFilePath).DefaultTimeout();
-                    await WaitForRoll(firstFilePath).DefaultTimeout();
+                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt"))).DefaultTimeout();
+                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"))).DefaultTimeout();
+                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"))).DefaultTimeout();
                 }
 
                 var actualFiles2 = new DirectoryInfo(path)
