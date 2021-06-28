@@ -106,6 +106,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
+        public void ParseQueryRetainsLeadingAndTrailingWhitespace()
+        {
+            var collection = QueryHelpers.ParseQuery("? key = value &");
+            Assert.Single(collection);
+            Assert.Equal(new[] { " value " }, collection[" key "]);
+        }
+
+        [Fact]
         public void AddQueryStringWithNullValueThrows()
         {
             Assert.Throws<ArgumentNullException>("value" ,() => QueryHelpers.AddQueryString("http://contoso.com/", "hello", null!));
