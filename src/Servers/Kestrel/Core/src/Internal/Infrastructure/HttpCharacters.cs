@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return -1;
         }
 
-        // Disallows control characters and anything more than 0x7E
+        // Disallows control characters and anything more than 0x7F
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfInvalidFieldValueChar(string s)
         {

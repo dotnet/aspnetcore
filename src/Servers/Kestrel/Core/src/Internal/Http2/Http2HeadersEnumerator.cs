@@ -33,10 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public KeyValuePair<string, string> Current { get; private set; }
         object IEnumerator.Current => Current;
 
-        public Http2HeadersEnumerator()
-        {
-        }
-
         public void Initialize(HttpResponseHeaders headers)
         {
             EncodingSelector = headers.EncodingSelector;

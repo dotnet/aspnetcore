@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // long.MaxValue = 9223372036854775807 (19 chars)
-            Span<char> decodedChars = stackalloc char[20];
+            Span<char> decodedChars = stackalloc char[32]; // power of two
             var numChars = customEncoding.GetChars(value, decodedChars);
             long parsed = -1;
 

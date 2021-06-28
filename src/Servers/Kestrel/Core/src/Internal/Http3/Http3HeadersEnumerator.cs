@@ -32,10 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public KeyValuePair<string, string> Current { get; private set; }
         object IEnumerator.Current => Current;
 
-        public Http3HeadersEnumerator()
-        {
-        }
-
         public void Initialize(HttpResponseHeaders headers)
         {
             EncodingSelector = headers.EncodingSelector;

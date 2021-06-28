@@ -42,33 +42,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             CopyToFast(ref buffer);
 
             var extraHeaders = MaybeUnknown;
+            // Only reserve stack space for the enumerators if there are extra headers
             if (extraHeaders != null && extraHeaders.Count > 0)
             {
-                // Only reserve stack space for the enumartors if there are extra headers
-                CopyExtraHeaders(ref buffer, extraHeaders, EncodingSelector);
-            }
-
-            static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers,
-                Func<string, Encoding?> encodingSelector)
-            {
+                var encodingSelector = EncodingSelector;
                 if (ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
                 {
-                    foreach (var kv in headers)
+                    CopyExtraHeaders(ref buffer, extraHeaders);
+                }
+                else
+                {
+                    CopyExtraHeadersCustomEncoding(ref buffer, extraHeaders, encodingSelector);
+                }
+            }
+
+            static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers)
+            {
+                foreach (var kv in headers)
+                {
+                    foreach (var value in kv.Value)
                     {
-                        foreach (var value in kv.Value)
+                        if (value != null)
                         {
-                            if (value != null)
-                            {
-                                buffer.Write(CrLf);
-                                buffer.WriteAscii(kv.Key);
-                                buffer.Write(ColonSpace);
-                                buffer.WriteAscii(value);
-                            }
+                            buffer.Write(CrLf);
+                            buffer.WriteAscii(kv.Key);
+                            buffer.Write(ColonSpace);
+                            buffer.WriteAscii(value);
                         }
                     }
-                    return;
                 }
+            }
 
+            static void CopyExtraHeadersCustomEncoding(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers,
+                Func<string, Encoding?> encodingSelector)
+            {
                 foreach (var kv in headers)
                 {
                     var encoding = encodingSelector(kv.Key);
