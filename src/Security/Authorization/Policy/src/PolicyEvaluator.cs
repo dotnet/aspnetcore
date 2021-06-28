@@ -69,9 +69,14 @@ namespace Microsoft.AspNetCore.Authorization.Policy
                 }
             }
 
-            return (context.User?.Identity?.IsAuthenticated ?? false)
-                ? AuthenticateResult.Success(new AuthenticationTicket(context.User, "context.User"))
-                : AuthenticateResult.NoResult();
+            return context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult ?? DefaultAuthenticateResult(context);
+
+            static AuthenticateResult DefaultAuthenticateResult(HttpContext context)
+            {
+                return (context.User?.Identity?.IsAuthenticated ?? false)
+                    ? AuthenticateResult.Success(new AuthenticationTicket(context.User, "context.User"))
+                    : AuthenticateResult.NoResult();
+            }
         }
 
         /// <summary>

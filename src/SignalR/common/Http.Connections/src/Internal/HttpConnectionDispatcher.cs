@@ -568,23 +568,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Setup the connection state from the http context
             connection.User = connection.HttpContext?.User;
 
-            // TODO: option to enable/disable this
-            var authorizeAttribute = connection.HttpContext?.GetEndpoint()?.Metadata.GetMetadata<AuthorizeAttribute>();
-
-            // Don't check token if the endpoint doesn't have authorization applied to it
-            if (authorizeAttribute is not null)
-            {
-                // AuthenticateResult should be cached since the context has already been authenticated.
-                // This is just to get the AuthenticateResult
-                var authResult = await connection.HttpContext!.AuthenticateAsync(authorizeAttribute.AuthenticationSchemes);
-                connection.AuthenticationExpiration = authResult.Properties?.ExpiresUtc;
-            }
+            UpdateExpiration(connection, context);
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
 
             return true;
+        }
+
+        private static void UpdateExpiration(HttpConnectionContext connection, HttpContext context)
+        {
+            // TODO: option to enable/disable this
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+
+            if (authenticateResultFeature is not null)
+            {
+                connection.AuthenticationExpiration = authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc;
+            }
         }
 
         private static void CloneUser(HttpContext newContext, HttpContext oldContext)
