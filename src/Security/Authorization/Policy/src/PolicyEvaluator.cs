@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy
                 }
             }
 
+            // No modifications made to the HttpContext so let's use the existing result if it exists
             return context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult ?? DefaultAuthenticateResult(context);
 
             static AuthenticateResult DefaultAuthenticateResult(HttpContext context)
