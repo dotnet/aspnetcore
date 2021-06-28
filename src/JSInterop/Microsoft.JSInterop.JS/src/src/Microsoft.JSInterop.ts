@@ -145,11 +145,13 @@ export module DotNet {
    * @returns The JavaScript data reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
    */
-  export function createJSStreamReference(streamReference: ArrayBufferView | StreamWithLength | any): any {
+  export function createJSStreamReference(streamReference: ArrayBufferView | Blob | any): any {
     let length = -1;
     // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
     // using a JSStreamReference.
-    if (streamReference instanceof StreamWithLength || streamReference.buffer instanceof ArrayBuffer) {
+    if (streamReference instanceof Blob) {
+      length = streamReference.size;
+    } else if (streamReference.buffer instanceof ArrayBuffer) {
       if (streamReference.byteLength === undefined) {
         throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
       }
@@ -171,11 +173,6 @@ export module DotNet {
     }
 
     return result;
-  }
-
-  export class StreamWithLength {
-    constructor(public stream: ReadableStream, public byteLength: number) {
-    }
   }
 
   /**

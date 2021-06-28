@@ -13,7 +13,7 @@ interface BrowserFile {
   name: string;
   size: number;
   contentType: string;
-  stream: ReadableStream | undefined;
+  blob: Blob | undefined;
 }
 
 export interface InputElement extends HTMLInputElement {
@@ -40,7 +40,7 @@ function init(callbackWrapper: any, elem: InputElement): void {
         name: file.name,
         size: file.size,
         contentType: file.type,
-        stream: file.stream(),
+        blob: file,
       };
 
       elem._blazorFilesById[result.id] = result;
@@ -83,7 +83,7 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     name: originalFile.name,
     size: resizedImageBlob?.size || 0,
     contentType: format,
-    stream: undefined,
+    blob: undefined,
   };
 
   elem._blazorFilesById[result.id] = result;
@@ -99,15 +99,14 @@ async function ensureArrayBufferReadyForSharedMemoryInterop(elem: InputElement, 
   // getFileById(elem, fileId).arrayBuffer = arrayBuffer;
 }
 
-async function readFileData(elem: InputElement, fileId: number): Promise<DotNet.StreamWithLength> {
+async function readFileData(elem: InputElement, fileId: number): Promise<Blob> {
   const file = getFileById(elem, fileId);
 
-  if (file.stream === undefined) {
-    throw new Error(`There is no stream for file with ID ${fileId}.`);
+  if (file.blob === undefined) {
+    throw new Error(`There is no blob for file with ID ${fileId}.`);
   }
 
-  // const stream = file.stream();
-  return new DotNet.StreamWithLength(file.stream, file.size);
+  return file.blob;
 }
 
 export function getFileById(elem: InputElement, fileId: number): BrowserFile {
