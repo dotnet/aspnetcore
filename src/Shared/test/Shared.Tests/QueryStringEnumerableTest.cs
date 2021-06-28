@@ -1,12 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Internal;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Internal
 {
     public class QueryStringEnumerableTest
     {
@@ -86,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             var enumerable = new QueryStringEnumerable(query);
             foreach (var pair in enumerable)
             {
-                result.Add((pair.NameEscaped.ToString(), pair.ValueEscaped.ToString()));
+                result.Add((pair.EncodedName.ToString(), pair.EncodedValue.ToString()));
             }
 
             return result;

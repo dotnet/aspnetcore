@@ -8,36 +8,62 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+#if QueryStringEnumerable_In_WebUtilities
+namespace Microsoft.AspNetCore.WebUtilities
+#else
 namespace Microsoft.AspNetCore.Internal
+#endif
 {
-    // A mechanism for reading key/value pairs from a querystring without having to allocate.
-    // It doesn't perform escaping because:
-    // [1] Uri.UnescapeDataString can only operate on string, not on ReadOnlySpan<char>
-    // [2] Maybe the caller doesn't even want to pay the cost of unescaping values they don't care about
-    // So, it's up to the caller to unescape the results if they want.
-    internal readonly ref struct QueryStringEnumerable
+    /// <summary>
+    /// An enumerable that can supply the name/value pairs from a URI query string.
+    /// </summary>
+    public readonly ref struct QueryStringEnumerable
     {
         private readonly ReadOnlySpan<char> _queryString;
 
+        /// <summary>
+        /// Constructs an instance of <see cref="QueryStringEnumerable"/>.
+        /// </summary>
+        /// <param name="queryString">The query string.</param>
         public QueryStringEnumerable(ReadOnlySpan<char> queryString)
         {
             _queryString = queryString;
         }
 
+        /// <summary>
+        /// Retrieves an object that can iterate through the name/value pairs in the query string.
+        /// </summary>
+        /// <returns>An object that can iterate through the name/value pairs in the query string.</returns>
         public Enumerator GetEnumerator()
             => new Enumerator(_queryString);
 
+        /// <summary>
+        /// Represents a single name/value pair extracted from a query string during enumeration.
+        /// </summary>
         public readonly ref struct EncodedNameValuePair
         {
-            public readonly ReadOnlySpan<char> EncodedName;
-            public readonly ReadOnlySpan<char> EncodedValue;
+            /// <summary>
+            /// Gets the name from this name/value pair in its original encoded form.
+            /// To get the decoded string, call <see cref="DecodeName"/>.
+            /// </summary>
+            public readonly ReadOnlySpan<char> EncodedName { get; }
 
-            public EncodedNameValuePair(ReadOnlySpan<char> encodedName, ReadOnlySpan<char> encodedValue)
+            /// <summary>
+            /// Gets the value from this name/value pair in its original encoded form.
+            /// To get the decoded string, call <see cref="DecodeValue"/>.
+            /// </summary>
+            public readonly ReadOnlySpan<char> EncodedValue { get; }
+
+            internal EncodedNameValuePair(ReadOnlySpan<char> encodedName, ReadOnlySpan<char> encodedValue)
             {
                 EncodedName = encodedName;
                 EncodedValue = encodedValue;
             }
 
+            /// <summary>
+            /// Decodes the name from this name/value pair.
+            /// </summary>
+            /// <returns>Characters representing the decoded name.</returns>
             public ReadOnlySpan<char> DecodeName()
             {
                 return EncodedName.IsEmpty
@@ -45,6 +71,10 @@ namespace Microsoft.AspNetCore.Internal
                     : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(EncodedName));
             }
 
+            /// <summary>
+            /// Decodes the value from this name/value pair.
+            /// </summary>
+            /// <returns>Characters representing the decoded value.</returns>
             public ReadOnlySpan<char> DecodeValue()
             {
                 return EncodedValue.IsEmpty
@@ -53,11 +83,14 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
+        /// <summary>
+        /// An enumerator that supplies the name/value pairs from a URI query string.
+        /// </summary>
         public ref struct Enumerator
         {
             private ReadOnlySpan<char> _query;
 
-            public Enumerator(ReadOnlySpan<char> query)
+            internal Enumerator(ReadOnlySpan<char> query)
             {
                 Current = default;
                 _query = query.IsEmpty || query[0] != '?'
@@ -65,8 +98,15 @@ namespace Microsoft.AspNetCore.Internal
                     : query.Slice(1);
             }
 
+            /// <summary>
+            /// Gets the currently referenced key/value pair in the query string being enumerated.
+            /// </summary>
             public EncodedNameValuePair Current { get; private set; }
 
+            /// <summary>
+            /// Moves to the next key/value pair in the query string being enumerated.
+            /// </summary>
+            /// <returns>True if there is another key/value pair, otherwise false.</returns>
             public bool MoveNext()
             {
                 while (!_query.IsEmpty)
