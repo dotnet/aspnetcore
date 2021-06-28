@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Http.Features
             var enumerable = new QueryStringEnumerable(queryString.AsSpan());
             foreach (var pair in enumerable)
             {
-                 accumulator.Append(pair.DecodeName(), pair.DecodeValue());
+                accumulator.Append(pair.DecodeName(), pair.DecodeValue());
             }
 
             return accumulator.HasValues
