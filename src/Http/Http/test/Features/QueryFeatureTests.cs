@@ -60,6 +60,20 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Equal(string.Empty, queryCollection[emptyParam]);
         }
 
+        [Fact]
+        public void EmptySegmentsIgnored()
+        {
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?&&key1=value1&" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Single(queryCollection);
+            Assert.Equal("value1", queryCollection["key1"].FirstOrDefault());
+        }
+
         [Theory]
         [InlineData("?&&")]
         [InlineData("?&")]

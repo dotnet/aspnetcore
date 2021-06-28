@@ -29,13 +29,11 @@ namespace Microsoft.AspNetCore.Internal
 
         public readonly ref struct EncodedNameValuePair
         {
-            public readonly bool HasValue;
             public readonly ReadOnlySpan<char> EncodedName;
             public readonly ReadOnlySpan<char> EncodedValue;
 
             public EncodedNameValuePair(ReadOnlySpan<char> encodedName, ReadOnlySpan<char> encodedValue)
             {
-                HasValue = true;
                 EncodedName = encodedName;
                 EncodedValue = encodedValue;
             }
@@ -57,76 +55,54 @@ namespace Microsoft.AspNetCore.Internal
 
         public ref struct Enumerator
         {
-            private readonly ReadOnlySpan<char> queryString;
-            private readonly int textLength;
-            private int scanIndex;
-            private int equalIndex;
+            private ReadOnlySpan<char> _query;
 
             public Enumerator(ReadOnlySpan<char> query)
             {
-                if (query.IsEmpty)
-                {
-                    this = default;
-                }
-                else
-                {
-                    Current = default;
-                    queryString = query;
-                    scanIndex = queryString[0] == '?' ? 1 : 0;
-                    textLength = queryString.Length;
-                    equalIndex = queryString.IndexOf('=');
-                    if (equalIndex == -1)
-                    {
-                        equalIndex = textLength;
-                    }
-                }
+                Current = default;
+                _query = query.IsEmpty || query[0] != '?'
+                    ? query
+                    : query.Slice(1);
             }
 
             public EncodedNameValuePair Current { get; private set; }
 
             public bool MoveNext()
             {
-                Current = default;
-
-                if (scanIndex < textLength)
+                while (!_query.IsEmpty)
                 {
-                    var delimiterIndex = queryString.Slice(scanIndex).IndexOf('&') + scanIndex;
-                    if (delimiterIndex < scanIndex)
+                    // Chomp off the next segment
+                    ReadOnlySpan<char> segment;
+                    var delimiterIndex = _query.IndexOf('&');
+                    if (delimiterIndex >= 0)
                     {
-                        delimiterIndex = textLength;
-                    }
-
-                    if (equalIndex < delimiterIndex)
-                    {
-                        while (scanIndex != equalIndex && char.IsWhiteSpace(queryString[scanIndex]))
-                        {
-                            ++scanIndex;
-                        }
-
-                        Current = new EncodedNameValuePair(
-                            queryString.Slice(scanIndex, equalIndex - scanIndex),
-                            queryString.Slice(equalIndex + 1, delimiterIndex - equalIndex - 1));
-
-                        equalIndex = queryString.Slice(delimiterIndex).IndexOf('=') + delimiterIndex;
-                        if (equalIndex < delimiterIndex)
-                        {
-                            equalIndex = textLength;
-                        }
+                        segment = _query.Slice(0, delimiterIndex);
+                        _query = _query.Slice(delimiterIndex + 1);
                     }
                     else
                     {
-                        if (delimiterIndex > scanIndex)
-                        {
-                            Current = new EncodedNameValuePair(
-                                queryString.Slice(scanIndex, delimiterIndex - scanIndex),
-                                ReadOnlySpan<char>.Empty);
-                        }
+                        segment = _query;
+                        _query = default;
                     }
 
-                    scanIndex = delimiterIndex + 1;
+                    // If it's nonempty, emit it
+                    var equalIndex = segment.IndexOf('=');
+                    if (equalIndex >= 0)
+                    {
+                        Current = new EncodedNameValuePair(
+                            segment.Slice(0, equalIndex),
+                            segment.Slice(equalIndex + 1));
+                        return true;
+                    }
+                    else if (!segment.IsEmpty)
+                    {
+                        Current = new EncodedNameValuePair(segment, default);
+                        return true;
+                    }
                 }
 
-                return Current.HasValue;
+                Current = default;
+                return false;
             }
         }
 
@@ -155,8 +131,8 @@ namespace Microsoft.AspNetCore.Internal
 
                     if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
                     {
-                        var vecPlus = Vector128.Create((ushort)'+');
-                        var vecSpace = Vector128.Create((ushort)' ');
+                        var vecPlus = Vector128.Create('+');
+                        var vecSpace = Vector128.Create(' ');
 
                         do
                         {
