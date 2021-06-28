@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http.Result
         /// <summary>
         /// Gets or sets the HTTP status code.
         /// </summary>
-        public int? StatusCode { get; }
+        public int StatusCode { get; }
 
         public Task ExecuteAsync(HttpContext httpContext)
         {
@@ -34,10 +34,7 @@ namespace Microsoft.AspNetCore.Http.Result
             var logger = loggerFactory.CreateLogger(GetType());
             Log.ObjectResultExecuting(logger, Value);
 
-            if (StatusCode is int statusCode)
-            {
-                httpContext.Response.StatusCode = statusCode;
-            }
+            httpContext.Response.StatusCode = StatusCode;
 
             OnFormatting(httpContext);
             return httpContext.Response.WriteAsJsonAsync(Value);
