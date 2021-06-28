@@ -49,6 +49,16 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlySpan<char> queryString)
         {
+            // TODO: For unparseable values, should we throw? I'm starting to think so, since there's no
+            // normal case where you'd expect to see unparseable values, and if you really need this,
+            // set the type to string and do you own parsing later.
+
+            // TODO: Consider changing this to Dictionary<QueryParameterDestination, StringValues> and just
+            // accumulating the decoded values by destination. Then when emitting the render tree frames,
+            // you can allocate arrays of the right size and parse into them.
+            // This only works if you're willing to throw for unparseable values, otherwise you wouldn't
+            // be able to know the right size up front.
+            // Benefit is that we can eliminate the whole concept of lists from UrlValueConstraint.
             var assignmentsByDestination = new Dictionary<QueryParameterDestination, object?>(_assignmentsTemplate);
 
             // Populate the assignments dictionary in a single pass through the querystring
