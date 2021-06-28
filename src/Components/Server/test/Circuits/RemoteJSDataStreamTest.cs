@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Wait past the initial timeout + 15 sec buffer room and then
             // confirm unhandled exception raised to crush circuit
             await Task.Delay(TimeSpan.FromSeconds(25));
-            Assert.True(timeoutExceptionRaised);
+            Assert.True(timeoutExceptionRaised, remoteJSDataStream.CiData);
 
             // Act & Assert 2
             // Confirm exception also raised on pipe reader
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(30), // Note we're using a 30 second timeout for this test
                 pauseIncomingBytesThreshold: 50,
                 resumeIncomingBytesThreshold: 25,
-                cancellationToken: CancellationToken.None); 
+                cancellationToken: CancellationToken.None);
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[] { 3, 5, 7 };
 
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Wait past the initial timeout 30 sec timeout + 15 sec buffer room
             // confirm unhandled exception raised to crush circuit
             await Task.Delay(TimeSpan.FromSeconds(45));
-            Assert.True(timeoutExceptionRaised);
+            Assert.True(timeoutExceptionRaised, remoteJSDataStream.CiData);
 
             // Act & Assert 4
             // Confirm exception also raised on pipe reader
