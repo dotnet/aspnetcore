@@ -215,10 +215,11 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="jsStreamReference"><see cref="IJSStreamReference"/> to produce a data stream for.</param>
         /// <param name="totalLength">Expected length of the incoming data stream.</param>
-        /// <param name="maxBufferSize">Amount of bytes to buffer before flushing.</param>
+        /// <param name="pauseIncomingBytesThreshold">The number of unconsumed bytes to accept from JS before blocking. A value of zero prevents JS from blocking, allowing .NET to receive an unlimited number of bytes.</param>
+        /// <param name="resumeIncomingBytesThreshold">The number of unflushed bytes at which point JS stops blocking.</param>
         /// <param name="cancellationToken"><see cref="CancellationToken" /> for cancelling read.</param>
         /// <returns><see cref="Stream"/> for the data reference represented by <paramref name="jsStreamReference"/>.</returns>
-        protected internal virtual Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
+        protected internal virtual Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold, long resumeIncomingBytesThreshold, CancellationToken cancellationToken)
         {
             // The reason it's virtual and not abstract is just for back-compat
 

@@ -16,15 +16,16 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Length of the <see cref="Stream"/> provided by JavaScript.
         /// </summary>
-        public long Length { get; }
+        long Length { get; }
 
         /// <summary>
         /// Opens a <see cref="Stream"/> with the <see cref="JSRuntime"/> for the current data reference.
         /// </summary>
         /// <param name="maxAllowedSize">Maximum number of bytes permitted to be read from JavaScript.</param>
-        /// <param name="maxBufferSize">Maximum number of bytes that are allowed to be buffered.</param>
+        /// <param name="pauseIncomingBytesThreshold">The number of unconsumed bytes to accept from JS before blocking. A value of zero prevents JS from blocking, allowing .NET to receive an unlimited number of bytes.</param>
+        /// <param name="resumeIncomingBytesThreshold">The number of unflushed bytes at which point JS stops blocking.</param>
         /// <param name="cancellationToken"><see cref="CancellationToken" /> for cancelling read.</param>
         /// <returns><see cref="Stream"/> which can provide data associated with the current data reference.</returns>
-        ValueTask<Stream> OpenReadStreamAsync(long maxAllowedSize = 512000, long maxBufferSize = 100 * 1024, CancellationToken cancellationToken = default);
+        ValueTask<Stream> OpenReadStreamAsync(long maxAllowedSize = 512000, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default);
     }
 }

@@ -40,10 +40,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
-            long maxBufferSize,
             long maximumIncomingBytes,
             TimeSpan jsInteropDefaultCallTimeout,
-            CancellationToken cancellationToken = default)
+            long pauseIncomingBytesThreshold,
+            long resumeIncomingBytesThreshold,
+            CancellationToken cancellationToken)
         {
             // Enforce minimum 1 kb, maximum 50 kb, SignalR message size.
             // We budget 512 bytes overhead for the transfer, thus leaving at least 512 bytes for data
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
             var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
-            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
         }
@@ -63,8 +64,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             long streamId,
             long totalLength,
-            long maxBufferSize,
             TimeSpan jsInteropDefaultCallTimeout,
+            long pauseIncomingBytesThreshold,
+            long resumeIncomingBytesThreshold,
             CancellationToken cancellationToken)
         {
             _runtime = runtime;
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
-            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize / 2));
+            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: pauseIncomingBytesThreshold, resumeWriterThreshold: resumeIncomingBytesThreshold));
             _pipeReaderStream = _pipe.Reader.AsStream();
         }
 

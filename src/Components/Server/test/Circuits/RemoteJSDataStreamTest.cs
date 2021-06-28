@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var jsStreamReference = Mock.Of<IJSStreamReference>();
 
             // Act
-            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1));
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), pauseIncomingBytesThreshold: 50, resumeIncomingBytesThreshold: 25, cancellationToken: CancellationToken.None);
 
             // Assert
             Assert.NotNull(remoteJSDataStream);
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
             var jsStreamReference = Mock.Of<IJSStreamReference>();
-            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1));
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), pauseIncomingBytesThreshold: 50, resumeIncomingBytesThreshold: 25, cancellationToken: CancellationToken.None);
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[110]; // 100 byte totalLength for stream
 
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
             var jsStreamReference = Mock.Of<IJSStreamReference>();
-            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1));
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), pauseIncomingBytesThreshold: 50, resumeIncomingBytesThreshold: 25, cancellationToken: CancellationToken.None);
             var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
             var chunk = new byte[5];
 
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)
         {
             var jsStreamReference = Mock.Of<IJSStreamReference>();
-            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime ?? _jsRuntime, jsStreamReference, totalLength: 100, maxBufferSize: 50, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1));
+            var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime ?? _jsRuntime, jsStreamReference, totalLength: 100, maximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), pauseIncomingBytesThreshold: 50, resumeIncomingBytesThreshold: 25, cancellationToken: CancellationToken.None);
             return remoteJSDataStream;
         }
 
