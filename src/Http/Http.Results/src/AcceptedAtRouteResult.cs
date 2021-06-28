@@ -38,12 +38,12 @@ namespace Microsoft.AspNetCore.Http.Result
         }
 
         /// <summary>
-        /// Gets or sets the name of the route to use for generating the URL.
+        /// Gets the name of the route to use for generating the URL.
         /// </summary>
         public string? RouteName { get; }
 
         /// <summary>
-        /// Gets or sets the route data to use for generating the URL.
+        /// Gets the route data to use for generating the URL.
         /// </summary>
         public RouteValueDictionary RouteValues { get; }
 

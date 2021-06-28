@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Http.Result
                 }
             }
 
-            [LoggerMessage(1, LogLevel.Information, "Executing ChallengeResult with authentication schemes ({Schemes}).", EventName = "ChallengeResultExecuting")]
+            [LoggerMessage(1, LogLevel.Information, "Executing ChallengeResult with authentication schemes ({Schemes}).", EventName = "ChallengeResultExecuting", SkipEnabledCheck = true)]
             private static partial void ChallengeResultExecuting(ILogger logger, string[] schemes);
         }
     }

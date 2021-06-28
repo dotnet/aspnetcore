@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Http.Result
             var fileInfo = GetFileInfoWrapper(FileName);
             if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException($"Could not find file: {FileName}");
+                throw new FileNotFoundException($"Could not find file: {FileName}", FileName);
             }
 
             var logger = httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileResult>>();
