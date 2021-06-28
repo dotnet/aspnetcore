@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Contains($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i:0000}.txt", actualFiles1[i]);
                 }
 
-                // Third instance should roll, deleting the 2 oldest files
+                // Third instance should ro
                 options.RetainedFileCountLimit = 5;
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
@@ -271,6 +271,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 await Task.Delay(100);
             }
+            // Wait another half second to give logger time to roll files
+            await Task.Delay(500);
         }
     }
 }
