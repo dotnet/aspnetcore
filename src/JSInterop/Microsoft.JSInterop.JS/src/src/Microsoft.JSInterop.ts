@@ -10,8 +10,7 @@ export module DotNet {
   class JSObject {
     _cachedFunctions: Map<string, Function>;
 
-    constructor(private _jsObject: any)
-    {
+    constructor(private _jsObject: any) {
       this._cachedFunctions = new Map<string, Function>();
     }
 
@@ -142,31 +141,41 @@ export module DotNet {
   /**
    * Creates a JavaScript data reference that can be passed to .NET via interop calls.
    *
-   * @param arrayBufferView The ArrayBufferView used to create the JavaScript stream reference.
+   * @param streamReference The ArrayBufferView used to create the JavaScript stream reference.
    * @returns The JavaScript data reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
    */
-  export function createJSStreamReference(arrayBufferView: ArrayBufferView | any): any {
+  export function createJSStreamReference(streamReference: ArrayBufferView | StreamWithLength | any): any {
+    let length = -1;
     // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
     // using a JSStreamReference.
-    if (!(arrayBufferView.buffer instanceof ArrayBuffer)) {
-      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it is not have a 'buffer' property of type 'ArrayBuffer'.`);
-    } else if (arrayBufferView.byteLength === undefined) {
-      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it doesn't have a byteLength.`);
+    if (streamReference instanceof StreamWithLength || streamReference.buffer instanceof ArrayBuffer) {
+      if (streamReference.byteLength === undefined) {
+        throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
+      }
+
+      length = streamReference.byteLength;
+    } else {
+      throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it is not a 'ReadableStream' and does not have a 'buffer' property of type 'ArrayBuffer'.`);
     }
 
     const result: any = {
-      [jsStreamReferenceLengthKey]: arrayBufferView.byteLength,
+      [jsStreamReferenceLengthKey]: length,
     }
 
     try {
-      const jsObjectReference = createJSObjectReference(arrayBufferView);
+      const jsObjectReference = createJSObjectReference(streamReference);
       result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
     } catch {
-      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}'.`);
+      throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
     }
 
     return result;
+  }
+
+  export class StreamWithLength {
+    constructor(public stream: ReadableStream, public byteLength: number) {
+    }
   }
 
   /**

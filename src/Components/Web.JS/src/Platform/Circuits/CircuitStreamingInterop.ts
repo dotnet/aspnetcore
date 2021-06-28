@@ -1,6 +1,7 @@
 import { HubConnection } from '@microsoft/signalr';
+import { DotNet } from '../../../../../JSInterop/Microsoft.JSInterop.JS/src/dist/Microsoft.JSInterop';
 
-export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView, streamId: string, chunkSize: number) {
+export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView | DotNet.StreamWithLength, streamId: string, chunkSize: number) {
     // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
     // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
     // because nobody's reading the pipe)
@@ -11,10 +12,46 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         try {
             let position = 0;
             let chunkId = 0;
+            let tmpData = new Uint8Array();
+            let reader: ReadableStreamDefaultReader | undefined = data instanceof DotNet.StreamWithLength ? data.stream.getReader() : undefined;
+
+            async function getNextChunk(): Promise<Uint8Array> {
+                if (reader === undefined) {
+                    throw new Error('Failed to get stream reader.');
+                }
+
+                let nextChunk: Uint8Array;
+
+                if (tmpData.length < chunkSize) {
+                    const readResult: ReadableStreamDefaultReadResult<any> = await reader.read();
+                    const newData = readResult.value as Uint8Array;
+
+                    if (newData === undefined) {
+                        return tmpData;
+                    }
+                    const numberOfBytesFromNewChunk = Math.min(chunkSize - tmpData.length, newData.length);
+                    const bytesFromNewChunk = newData.subarray(0, numberOfBytesFromNewChunk);
+                    nextChunk = new Uint8Array(Math.min(chunkSize, tmpData.length + numberOfBytesFromNewChunk));
+                    nextChunk.set(tmpData);
+                    nextChunk.set(bytesFromNewChunk, tmpData.length);
+                    tmpData = newData.subarray(numberOfBytesFromNewChunk);
+                    return nextChunk;
+                }
+
+                nextChunk = tmpData.subarray(0, chunkSize);
+                tmpData = tmpData.subarray(chunkSize);
+                return nextChunk;
+            }
 
             while (position < data.byteLength) {
                 const nextChunkSize = Math.min(chunkSize, data.byteLength - position);
-                const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
+                let nextChunkData: Uint8Array;
+
+                if (data instanceof DotNet.StreamWithLength) {
+                    nextChunkData = await getNextChunk();
+                } else {
+                    nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
+                }
 
                 numChunksUntilNextAck--;
                 if (numChunksUntilNextAck > 1) {
