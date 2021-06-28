@@ -17,7 +17,12 @@ namespace Microsoft.AspNetCore.Internal
     /// <summary>
     /// An enumerable that can supply the name/value pairs from a URI query string.
     /// </summary>
-    public readonly ref struct QueryStringEnumerable
+#if QueryStringEnumerable_In_WebUtilities
+    public
+#else
+    internal
+#endif
+    readonly ref struct QueryStringEnumerable
     {
         private readonly ReadOnlySpan<char> _queryString;
 
