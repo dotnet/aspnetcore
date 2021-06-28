@@ -67,9 +67,32 @@ namespace Microsoft.AspNetCore.Internal
         [InlineData("?")]
         [InlineData("")]
         [InlineData(null)]
+        [InlineData("?&&")]
         public void ParseEmptyOrNullQueryWorks(string queryString)
         {
             Assert.Empty(Parse(queryString));
+        }
+
+        [Fact]
+        public void ParseIgnoresEmptySegments()
+        {
+            Assert.Collection(Parse("?&key1=value1&&key2=value2&"),
+                kvp => AssertKeyValuePair("key1", "value1", kvp),
+                kvp => AssertKeyValuePair("key2", "value2", kvp));
+        }
+
+        [Theory]
+        [InlineData("?a+b=c+d", "a b", "c d")]
+        [InlineData("? %5Bkey%5D = %26value%3D ", " [key] ", " &value= ")]
+        [InlineData("?+", " ", "")]
+        [InlineData("?=+", "", " ")]
+        public void DecodingWorks(string queryString, string expectedDecodedName, string expectedDecodedValue)
+        {
+            foreach (var kvp in new QueryStringEnumerable(queryString))
+            {
+                Assert.Equal(expectedDecodedName, kvp.DecodeName().ToString());
+                Assert.Equal(expectedDecodedValue, kvp.DecodeValue().ToString());
+            }
         }
 
         private static void AssertKeyValuePair(string expectedKey, string expectedValue, (string key, string value) actual)
