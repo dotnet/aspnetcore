@@ -229,7 +229,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (_totalLength == 15)
             {
                 CiData += $"Completing, contains: {_runtime.RemoteJSDataStreamInstances.ContainsKey(_streamId)} {Environment.NewLine}";
-                throw new Exception($"SPECIAL1: {Environment.StackTrace} {Environment.NewLine} {CiData}");
             }
 
             await _pipe.Writer.CompleteAsync(ex);
@@ -242,7 +241,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (_totalLength == 15)
             {
                 CiData += $"Disposing, contains: {_runtime.RemoteJSDataStreamInstances.ContainsKey(_streamId)} {Environment.NewLine}";
-                throw new Exception($"SPECIAL2: {Environment.StackTrace} {Environment.NewLine} {CiData}");
             }
 
             if (disposing)
