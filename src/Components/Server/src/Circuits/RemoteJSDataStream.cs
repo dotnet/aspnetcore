@@ -156,7 +156,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             get => _pipeReaderStream.Position;
             set => throw new NotSupportedException();
         }
-        public System.String CiData { get => ciData; set => ciData = value; }
 
         public override void Flush()
             => throw new NotSupportedException();
