@@ -141,7 +141,7 @@ export module DotNet {
   /**
    * Creates a JavaScript data reference that can be passed to .NET via interop calls.
    *
-   * @param streamReference The ArrayBufferView used to create the JavaScript stream reference.
+   * @param streamReference The ArrayBufferView or Blob used to create the JavaScript stream reference.
    * @returns The JavaScript data reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
    */

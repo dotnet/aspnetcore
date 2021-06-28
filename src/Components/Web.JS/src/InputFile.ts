@@ -13,6 +13,8 @@ interface BrowserFile {
   name: string;
   size: number;
   contentType: string;
+  readPromise: Promise<ArrayBuffer> | undefined;
+  arrayBuffer: ArrayBuffer | undefined;
   blob: Blob | undefined;
 }
 
@@ -40,6 +42,8 @@ function init(callbackWrapper: any, elem: InputElement): void {
         name: file.name,
         size: file.size,
         contentType: file.type,
+        readPromise: undefined,
+        arrayBuffer: undefined,
         blob: file,
       };
 
@@ -83,6 +87,8 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     name: originalFile.name,
     size: resizedImageBlob?.size || 0,
     contentType: format,
+    readPromise: undefined,
+    arrayBuffer: undefined,
     blob: undefined,
   };
 
@@ -96,7 +102,7 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
 
 async function ensureArrayBufferReadyForSharedMemoryInterop(elem: InputElement, fileId: number): Promise<void> {
   const arrayBuffer = await getArrayBufferFromFileAsync(elem, fileId);
-  // getFileById(elem, fileId).arrayBuffer = arrayBuffer;
+  getFileById(elem, fileId).arrayBuffer = arrayBuffer;
 }
 
 async function readFileData(elem: InputElement, fileId: number): Promise<Blob> {
@@ -120,22 +126,24 @@ export function getFileById(elem: InputElement, fileId: number): BrowserFile {
 }
 
 function getArrayBufferFromFileAsync(elem: InputElement, fileId: number): Promise<ArrayBuffer> {
-  // const file = getFileById(elem, fileId);
+  const file = getFileById(elem, fileId);
 
-  // // On the first read, convert the FileReader into a Promise<ArrayBuffer>.
-  // if (!file.readPromise) {
-  //   file.readPromise = new Promise(function(resolve: (buffer: ArrayBuffer) => void, reject): void {
-  //     const reader = new FileReader();
-  //     reader.onload = function(): void {
-  //       resolve(reader.result as ArrayBuffer);
-  //     };
-  //     reader.onerror = function(err): void {
-  //       reject(err);
-  //     };
-  //     reader.readAsArrayBuffer(file['blob']);
-  //   });
-  // }
+  // On the first read, convert the FileReader into a Promise<ArrayBuffer>.
+  if (!file.readPromise) {
+    file.readPromise = new Promise(function(resolve: (buffer: ArrayBuffer) => void, reject): void {
+      const reader = new FileReader();
+      reader.onload = function(): void {
+        resolve(reader.result as ArrayBuffer);
+      };
+      reader.onerror = function(err): void {
+        reject(err);
+      };
+      if (file.blob === undefined) {
+        reject('Failed to find the file blob.');
+      }
+      reader.readAsArrayBuffer(file.blob!);
+    });
+  }
 
-  // return file.readPromise;
-  return new Promise(function(resolve: (buffer: ArrayBuffer) => void, reject) { });
+  return file.readPromise;
 }
