@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal sealed partial class GenericWebHostService : IHostedService
     {
+<<<<<<< HEAD
         public GenericWebHostService(
             IOptions<GenericWebHostServiceOptions> options,
             IServer server,
@@ -32,6 +33,19 @@ namespace Microsoft.AspNetCore.Hosting
             IEnumerable<IStartupFilter> startupFilters,
             IConfiguration configuration,
             IWebHostEnvironment hostingEnvironment)
+=======
+        public GenericWebHostService(IOptions<GenericWebHostServiceOptions> options,
+                                     IServer server,
+                                     ILoggerFactory loggerFactory,
+                                     DiagnosticListener diagnosticListener,
+                                     ActivitySource activitySource,
+                                     TextMapPropagator propagator,
+                                     IHttpContextFactory httpContextFactory,
+                                     IApplicationBuilderFactory applicationBuilderFactory,
+                                     IEnumerable<IStartupFilter> startupFilters,
+                                     IConfiguration configuration,
+                                     IWebHostEnvironment hostingEnvironment)
+>>>>>>> 73ed5781a2 (Fix tests)
         {
             Options = options.Value;
             Server = server;
@@ -39,6 +53,7 @@ namespace Microsoft.AspNetCore.Hosting
             LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
             ActivitySource = activitySource;
+            Propagator = propagator;
             HttpContextFactory = httpContextFactory;
             ApplicationBuilderFactory = applicationBuilderFactory;
             StartupFilters = startupFilters;
@@ -53,6 +68,7 @@ namespace Microsoft.AspNetCore.Hosting
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
         public ActivitySource ActivitySource { get; }
+        public TextMapPropagator Propagator { get; }
         public IHttpContextFactory HttpContextFactory { get; }
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
@@ -116,7 +132,7 @@ namespace Microsoft.AspNetCore.Hosting
                 application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
             }
 
-            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, HttpContextFactory);
+            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory);
 
             await Server.StartAsync(httpApplication, cancellationToken);
 
