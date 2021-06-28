@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Microsoft.AspNetCore.Internal
 {
@@ -22,17 +27,31 @@ namespace Microsoft.AspNetCore.Internal
         public Enumerator GetEnumerator()
             => new Enumerator(_queryString);
 
-        public readonly ref struct EscapedNameValuePair
+        public readonly ref struct EncodedNameValuePair
         {
             public readonly bool HasValue;
-            public readonly ReadOnlySpan<char> NameEscaped;
-            public readonly ReadOnlySpan<char> ValueEscaped;
+            public readonly ReadOnlySpan<char> EncodedName;
+            public readonly ReadOnlySpan<char> EncodedValue;
 
-            public EscapedNameValuePair(ReadOnlySpan<char> nameEscaped, ReadOnlySpan<char> valueEscaped)
+            public EncodedNameValuePair(ReadOnlySpan<char> encodedName, ReadOnlySpan<char> encodedValue)
             {
                 HasValue = true;
-                NameEscaped = nameEscaped;
-                ValueEscaped = valueEscaped;
+                EncodedName = encodedName;
+                EncodedValue = encodedValue;
+            }
+
+            public ReadOnlySpan<char> DecodeName()
+            {
+                return EncodedName.IsEmpty
+                    ? default
+                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(EncodedName));
+            }
+
+            public ReadOnlySpan<char> DecodeValue()
+            {
+                return EncodedValue.IsEmpty
+                    ? default
+                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(EncodedValue));
             }
         }
 
@@ -48,7 +67,6 @@ namespace Microsoft.AspNetCore.Internal
                 if (query.IsEmpty)
                 {
                     this = default;
-                    queryString = string.Empty;
                 }
                 else
                 {
@@ -64,7 +82,7 @@ namespace Microsoft.AspNetCore.Internal
                 }
             }
 
-            public EscapedNameValuePair Current { get; private set; }
+            public EncodedNameValuePair Current { get; private set; }
 
             public bool MoveNext()
             {
@@ -85,7 +103,7 @@ namespace Microsoft.AspNetCore.Internal
                             ++scanIndex;
                         }
 
-                        Current = new EscapedNameValuePair(
+                        Current = new EncodedNameValuePair(
                             queryString.Slice(scanIndex, equalIndex - scanIndex),
                             queryString.Slice(equalIndex + 1, delimiterIndex - equalIndex - 1));
 
@@ -99,7 +117,7 @@ namespace Microsoft.AspNetCore.Internal
                     {
                         if (delimiterIndex > scanIndex)
                         {
-                            Current = new EscapedNameValuePair(
+                            Current = new EncodedNameValuePair(
                                 queryString.Slice(scanIndex, delimiterIndex - scanIndex),
                                 ReadOnlySpan<char>.Empty);
                         }
@@ -109,6 +127,59 @@ namespace Microsoft.AspNetCore.Internal
                 }
 
                 return Current.HasValue;
+            }
+        }
+
+        private static class SpanHelper
+        {
+            private static readonly SpanAction<char, IntPtr> s_replacePlusWithSpace = ReplacePlusWithSpaceCore;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe string ReplacePlusWithSpace(ReadOnlySpan<char> span)
+            {
+                fixed (char* ptr = &MemoryMarshal.GetReference(span))
+                {
+                    return string.Create(span.Length, (IntPtr)ptr, s_replacePlusWithSpace);
+                }
+            }
+
+            private static unsafe void ReplacePlusWithSpaceCore(Span<char> buffer, IntPtr state)
+            {
+                fixed (char* ptr = &MemoryMarshal.GetReference(buffer))
+                {
+                    var input = (ushort*)state.ToPointer();
+                    var output = (ushort*)ptr;
+
+                    var i = (nint)0;
+                    var n = (nint)(uint)buffer.Length;
+
+                    if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
+                    {
+                        var vecPlus = Vector128.Create((ushort)'+');
+                        var vecSpace = Vector128.Create((ushort)' ');
+
+                        do
+                        {
+                            var vec = Sse2.LoadVector128(input + i);
+                            var mask = Sse2.CompareEqual(vec, vecPlus);
+                            var res = Sse41.BlendVariable(vec, vecSpace, mask);
+                            Sse2.Store(output + i, res);
+                            i += Vector128<ushort>.Count;
+                        } while (i <= n - Vector128<ushort>.Count);
+                    }
+
+                    for (; i < n; ++i)
+                    {
+                        if (input[i] != '+')
+                        {
+                            output[i] = input[i];
+                        }
+                        else
+                        {
+                            output[i] = ' ';
+                        }
+                    }
+                }
             }
         }
     }

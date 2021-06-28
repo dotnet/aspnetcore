@@ -2,12 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 
@@ -116,18 +112,7 @@ namespace Microsoft.AspNetCore.Http.Features
             var enumerable = new QueryStringEnumerable(queryString.AsSpan());
             foreach (var pair in enumerable)
             {
-                var name = SpanHelper.ReplacePlusWithSpace(pair.NameEscaped);
-                if (pair.ValueEscaped.IsEmpty)
-                {
-                    accumulator.Append(Uri.UnescapeDataString(name));
-                }
-                else
-                {
-                    var value = SpanHelper.ReplacePlusWithSpace(pair.ValueEscaped);
-                    accumulator.Append(
-                        Uri.UnescapeDataString(name),
-                        Uri.UnescapeDataString(value));
-                }
+                 accumulator.Append(pair.DecodeName(), pair.DecodeValue());
             }
 
             return accumulator.HasValues
@@ -144,8 +129,8 @@ namespace Microsoft.AspNetCore.Http.Features
             private AdaptiveCapacityDictionary<string, StringValues> _accumulator;
             private AdaptiveCapacityDictionary<string, List<string>> _expandingAccumulator;
 
-            public void Append(ReadOnlySpan<char> key, ReadOnlySpan<char> value = default)
-                => Append(key.ToString(), value.IsEmpty ? string.Empty : value.ToString());
+            public void Append(ReadOnlySpan<char> key, ReadOnlySpan<char> value)
+                => Append(key.ToString(), value.ToString());
 
             /// <summary>
             /// This API supports infrastructure and is not intended to be used
@@ -234,59 +219,6 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
 
                 return _accumulator ?? new AdaptiveCapacityDictionary<string, StringValues>(0, StringComparer.OrdinalIgnoreCase);
-            }
-        }
-
-        private static class SpanHelper
-        {
-            private static readonly SpanAction<char, IntPtr> s_replacePlusWithSpace = ReplacePlusWithSpaceCore;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static unsafe string ReplacePlusWithSpace(ReadOnlySpan<char> span)
-            {
-                fixed (char* ptr = &MemoryMarshal.GetReference(span))
-                {
-                    return string.Create(span.Length, (IntPtr)ptr, s_replacePlusWithSpace);
-                }
-            }
-
-            private static unsafe void ReplacePlusWithSpaceCore(Span<char> buffer, IntPtr state)
-            {
-                fixed (char* ptr = &MemoryMarshal.GetReference(buffer))
-                {
-                    var input = (ushort*)state.ToPointer();
-                    var output = (ushort*)ptr;
-
-                    var i = (nint)0;
-                    var n = (nint)(uint)buffer.Length;
-
-                    if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
-                    {
-                        var vecPlus = Vector128.Create((ushort)'+');
-                        var vecSpace = Vector128.Create((ushort)' ');
-
-                        do
-                        {
-                            var vec = Sse2.LoadVector128(input + i);
-                            var mask = Sse2.CompareEqual(vec, vecPlus);
-                            var res = Sse41.BlendVariable(vec, vecSpace, mask);
-                            Sse2.Store(output + i, res);
-                            i += Vector128<ushort>.Count;
-                        } while (i <= n - Vector128<ushort>.Count);
-                    }
-
-                    for (; i < n; ++i)
-                    {
-                        if (input[i] != '+')
-                        {
-                            output[i] = input[i];
-                        }
-                        else
-                        {
-                            output[i] = ' ';
-                        }
-                    }
-                }
             }
         }
     }

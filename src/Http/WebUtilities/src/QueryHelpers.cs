@@ -177,9 +177,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             foreach (var pair in enumerable)
             {
-                var key = Uri.UnescapeDataString(pair.NameEscaped.ToString().Replace('+', ' '));
-                var value = Uri.UnescapeDataString(pair.ValueEscaped.ToString().Replace('+', ' '));
-                accumulator.Append(key, value);
+                accumulator.Append(pair.DecodeName().ToString(), pair.DecodeValue().ToString());
             }
 
             if (!accumulator.HasValues)
