@@ -51,12 +51,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 _path = Path.Join(environment.ContentRootPath, "logs");
             }
-            else
+            else if (!Path.IsPathRooted(_path))
             {
-                if (!Path.IsPathRooted(_path))
-                {
-                    _path = Path.Join(environment.ContentRootPath, _path);
-                }
+                _path = Path.Join(environment.ContentRootPath, _path);
             }
 
             _fileName = loggerOptions.FileName;
@@ -167,7 +164,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         streamWriter.Dispose();
                         var fullFiles = 0;
-                        while (true)
+                        do
                         {
                             _fileNumber++;
                             fullFiles++;
@@ -179,11 +176,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                             }
                             fullName = GetFullName(today);
                             fileInfo = new FileInfo(fullName);
-                            if (!fileInfo.Exists || fileInfo.Length < _maxFileSize)
-                            {
-                                break;
-                            }
                         }
+                        while (fileInfo.Exists && fileInfo.Length > _maxFileSize);
                         if (!TryCreateDirectory())
                         {
                             streamWriter = null;
