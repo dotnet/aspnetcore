@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async override Task HasEndpointMatch()
+        public override async Task HasEndpointMatch()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/Routing/HasEndpointMatch");
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async override Task RouteData_Routers_ConventionalRoute()
+        public override async Task RouteData_Routers_ConventionalRoute()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/RouteData/Conventional");
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async override Task RouteData_Routers_AttributeRoute()
+        public override async Task RouteData_Routers_AttributeRoute()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/RouteData/Attribute");
