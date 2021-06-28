@@ -170,6 +170,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                             fullFiles++;
                             if (fullFiles > W3CLoggerOptions.MaxRetainedFileCount)
                             {
+                                streamWriter = null;
                                 // Return early if log directory is already full - could be hitting File System issues
                                 Log.MaxRetainedFilesReached(_logger, new ApplicationException());
                                 return;
@@ -243,12 +244,13 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 lock (_pathLock)
                 {
-                    var files = new DirectoryInfo(_path)
-                        .GetFiles(_fileName + "*")
-                        .OrderByDescending(f => f.CreationTime)
-                        .Skip(_maxRetainedFiles.Value);
+                    //Debugger.Launch();
+                    var files = new DirectoryInfo(_path);
+                    var files2 = files.GetFiles(_fileName + "*");
+                    var files3 = files2.OrderByDescending(f => f.CreationTime);
+                    var files4 = files3.Skip(_maxRetainedFiles.Value);
 
-                    foreach (var item in files)
+                    foreach (var item in files4)
                     {
                         item.Delete();
                     }

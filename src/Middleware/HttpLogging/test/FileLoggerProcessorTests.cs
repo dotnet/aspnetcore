@@ -131,7 +131,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             try
             {
-                string fileName;
+                string lastFileName;
+                string firstFileName;
                 var now = DateTimeOffset.Now;
                 var tomorrow = now.AddDays(1);
                 var options = new W3CLoggerOptions()
@@ -146,11 +147,13 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0009.txt"));
+                    firstFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
+                    lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0009.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
-                        await WaitForFile(fileName).DefaultTimeout();
+                        await WaitForFile(lastFileName).DefaultTimeout();
+                        await WaitForRoll(firstFileName).DefaultTimeout();
                     }
                     catch
                     {
@@ -242,9 +245,11 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message");
-                    var filePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt");
+                    var firstFilePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt");
+                    var lastFilePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(filePath).DefaultTimeout();
+                    await WaitForFile(lastFilePath).DefaultTimeout();
+                    await WaitForRoll(firstFilePath).DefaultTimeout();
                 }
 
                 var actualFiles2 = new DirectoryInfo(path)
@@ -256,7 +261,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 Assert.Equal(5, actualFiles2.Length);
                 for (int i = 0; i < 5; i++)
                 {
-                    Assert.Contains($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i + 2:0000}.txt", actualFiles2[i]);
+                    Assert.Equal($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i + 2:0000}.txt", actualFiles2[i]);
                 }
             }
             finally
@@ -271,8 +276,14 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 await Task.Delay(100);
             }
-            // Wait another half second to give logger time to roll files
-            await Task.Delay(500);
+        }
+
+        private async Task WaitForRoll(string fileName)
+        {
+            while (File.Exists(fileName))
+            {
+                await Task.Delay(100);
+            }
         }
     }
 }
