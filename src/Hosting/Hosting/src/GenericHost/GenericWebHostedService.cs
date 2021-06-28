@@ -21,19 +21,6 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal sealed partial class GenericWebHostService : IHostedService
     {
-<<<<<<< HEAD
-        public GenericWebHostService(
-            IOptions<GenericWebHostServiceOptions> options,
-            IServer server,
-            ILoggerFactory loggerFactory,
-            DiagnosticListener diagnosticListener,
-            ActivitySource activitySource,
-            IHttpContextFactory httpContextFactory,
-            IApplicationBuilderFactory applicationBuilderFactory,
-            IEnumerable<IStartupFilter> startupFilters,
-            IConfiguration configuration,
-            IWebHostEnvironment hostingEnvironment)
-=======
         public GenericWebHostService(IOptions<GenericWebHostServiceOptions> options,
                                      IServer server,
                                      ILoggerFactory loggerFactory,
@@ -45,7 +32,6 @@ namespace Microsoft.AspNetCore.Hosting
                                      IEnumerable<IStartupFilter> startupFilters,
                                      IConfiguration configuration,
                                      IWebHostEnvironment hostingEnvironment)
->>>>>>> 73ed5781a2 (Fix tests)
         {
             Options = options.Value;
             Server = server;

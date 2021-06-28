@@ -293,6 +293,7 @@ namespace Microsoft.AspNetCore.Hosting
             services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
             services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
             services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
+            services.TryAddSingleton(sp => TextMapPropagator.Default);
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
