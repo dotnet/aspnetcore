@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private string _fileName = "w3clog-";
         private string _logDirectory = "";
         private TimeSpan _flushInterval = TimeSpan.FromSeconds(1);
+        internal static int MaxRetainedFileCount = 9999;
 
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum log size in bytes or null for no limit.
@@ -39,16 +40,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum retained file count.
         /// Defaults to <c>4</c>.
-        /// Must be between 1 and 10,000, inclusive.
+        /// Must be between 1 and 9,999, inclusive.
         /// </summary>
         public int? RetainedFileCountLimit
         {
             get { return _retainedFileCountLimit; }
             set
             {
-                if (value <= 0 || value > 10000)
+                if (value <= 0 || value > MaxRetainedFileCount)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(RetainedFileCountLimit)} must be between 1 and 10,000 (inclusive)");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(RetainedFileCountLimit)} must be between 1 and 9,999 (inclusive)");
                 }
                 _retainedFileCountLimit = value;
             }

@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         private const int _maxQueuedMessages = 1024;
 
         private string _path;
-        private string _pathRoot;
         private string _fileName;
         private int? _maxFileSize;
         private int? _maxRetainedFiles;
@@ -44,20 +43,21 @@ namespace Microsoft.AspNetCore.HttpLogging
             _options = options;
             var loggerOptions = _options.CurrentValue;
 
-            _pathRoot = loggerOptions.LogDirectory;
-            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-            if (string.IsNullOrEmpty(_pathRoot))
+            _path = loggerOptions.LogDirectory;
+            // If user supplies no LogDirectory, default to {ContentRoot}/logs.
+            // If user supplies a relative path, use {ContentRoot}/{LogDirectory}.
+            // If user supplies a full path, use that.
+            if (string.IsNullOrEmpty(_path))
             {
-                _pathRoot = Path.Join(environment.ContentRootPath, "logs");
+                _path = Path.Join(environment.ContentRootPath, "logs");
             }
             else
             {
-                if (!Path.IsPathRooted(_pathRoot))
+                if (!Path.IsPathRooted(_path))
                 {
-                    _pathRoot = Path.Join(environment.ContentRootPath, _pathRoot);
+                    _path = Path.Join(environment.ContentRootPath, _path);
                 }
             }
-            _path = Path.Join(_pathRoot, now);
 
             _fileName = loggerOptions.FileName;
             _maxFileSize = loggerOptions.FileSizeLimit;
@@ -138,10 +138,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private async Task WriteMessagesAsync(List<string> messages, CancellationToken cancellationToken)
         {
-            // Files are grouped by day, and written up to _maxFileSize before rolling to a new file
+            // Files are written up to _maxFileSize before rolling to a new file
             DateTime today = DateTime.Now;
             var fullName = GetFullName(today);
             var fileInfo = new FileInfo(fullName);
+
             if (!TryCreateDirectory())
             {
                 // return early if we fail to create the directory
@@ -159,13 +160,30 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                     fileInfo.Refresh();
                     // Roll to new file if _maxFileSize is reached
-                    // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling
+                    // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling.
+                    // Previous instance of FileLoggerProcessor could have already written files to the same directory.
+                    // Loop through them until we find what the current _fileNumber should be.
                     if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
                     {
-                        _fileNumber++;
-                        fullName = GetFullName(today);
-                        fileInfo = new FileInfo(fullName);
                         streamWriter.Dispose();
+                        var fullFiles = 0;
+                        while (true)
+                        {
+                            _fileNumber++;
+                            fullFiles++;
+                            if (fullFiles > W3CLoggerOptions.MaxRetainedFileCount)
+                            {
+                                // Return early if log directory is already full - could be hitting File System issues
+                                Log.MaxRetainedFilesReached(_logger, new ApplicationException());
+                                return;
+                            }
+                            fullName = GetFullName(today);
+                            fileInfo = new FileInfo(fullName);
+                            if (!fileInfo.Exists || fileInfo.Length < _maxFileSize)
+                            {
+                                break;
+                            }
+                        }
                         if (!TryCreateDirectory())
                         {
                             streamWriter = null;
@@ -233,7 +251,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     var files = new DirectoryInfo(_path)
                         .GetFiles(_fileName + "*")
-                        .OrderByDescending(f => f.Name)
+                        .OrderByDescending(f => f.CreationTime)
                         .Skip(_maxRetainedFiles.Value);
 
                     foreach (var item in files)
@@ -255,7 +273,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             lock (_pathLock)
             {
-                return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
+                return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber % 10000:0000}.txt"));
             }
         }
 
@@ -281,6 +299,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                     "Failed to create directory {Path}.");
 
             public static void CreateDirectoryFailed(ILogger logger, string path, Exception ex) => _createDirectoryFailed(logger, path, ex);
+
+            private static readonly Action<ILogger, Exception> _maxRetainedFilesReached =
+                LoggerMessage.Define(
+                    LogLevel.Error,
+                    new EventId(3, "MaxRetainedFilesReached"),
+                    "Log directory is over 10,000 file capacity");
+
+            public static void MaxRetainedFilesReached(ILogger logger, Exception ex) => _maxRetainedFilesReached(logger, ex);
         }
     }
 }

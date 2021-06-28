@@ -181,6 +181,90 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
+        [Fact]
+        public async Task InstancesWriteToSameDirectory()
+        {
+            var now = DateTimeOffset.Now;
+            if (now.Hour == 23)
+            {
+                // Don't bother trying to run this test when it's almost midnight.
+                return;
+            }
+
+            var path = Path.Combine(TempPath, Path.GetRandomFileName());
+            Directory.CreateDirectory(path);
+
+            try
+            {
+                var options = new W3CLoggerOptions()
+                {
+                    LogDirectory = path,
+                    RetainedFileCountLimit = 10,
+                    FileSizeLimit = 5
+                };
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        logger.EnqueueMessage("Message");
+                    }
+                    var filePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0002.txt");
+                    // Pause for a bit before disposing so logger can finish logging
+                    await WaitForFile(filePath).DefaultTimeout();
+                }
+
+                // Second instance should pick up where first one left off
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        logger.EnqueueMessage("Message");
+                    }
+                    var filePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0005.txt");
+                    // Pause for a bit before disposing so logger can finish logging
+                    await WaitForFile(filePath).DefaultTimeout();
+                }
+
+                var actualFiles1 = new DirectoryInfo(path)
+                    .GetFiles()
+                    .Select(f => f.Name)
+                    .OrderBy(f => f)
+                    .ToArray();
+
+                Assert.Equal(6, actualFiles1.Length);
+                for (int i = 0; i < 6; i++)
+                {
+                    Assert.Contains($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i:0000}.txt", actualFiles1[i]);
+                }
+
+                // Third instance should roll, deleting the 2 oldest files
+                options.RetainedFileCountLimit = 5;
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    logger.EnqueueMessage("Message");
+                    var filePath = Path.Combine(path, $"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt");
+                    // Pause for a bit before disposing so logger can finish logging
+                    await WaitForFile(filePath).DefaultTimeout();
+                }
+
+                var actualFiles2 = new DirectoryInfo(path)
+                    .GetFiles()
+                    .Select(f => f.Name)
+                    .OrderBy(f => f)
+                    .ToArray();
+
+                Assert.Equal(5, actualFiles2.Length);
+                for (int i = 0; i < 5; i++)
+                {
+                    Assert.Contains($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i + 2:0000}.txt", actualFiles2[i]);
+                }
+            }
+            finally
+            {
+                Helpers.DisposeDirectory(path);
+            }
+        }
+
         private async Task WaitForFile(string fileName)
         {
             while (!File.Exists(fileName))
