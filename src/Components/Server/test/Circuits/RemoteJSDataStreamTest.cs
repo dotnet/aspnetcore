@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 jsStreamReference,
                 totalLength: 15,
                 maximumIncomingBytes: 10_000,
-                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(1),
+                jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(2),
                 pauseIncomingBytesThreshold: 50,
                 resumeIncomingBytesThreshold: 25,
                 cancellationToken: CancellationToken.None);
@@ -210,7 +210,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var chunk = new byte[] { 3, 5, 7 };
 
             // Act & Assert 1
-            // Ensure unhandled exception raised to crush circuit
+            // Trigger timeout and ensure unhandled exception raised to crush circuit
+            remoteJSDataStream.InvalidateLastDataReceivedTimeForTimeout();
             var unhandledExceptionResult = await unhandledExceptionRaisedTask.Task.DefaultTimeout();
             Assert.True(unhandledExceptionResult);
 
@@ -260,7 +261,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.True(success);
 
             // Act & Assert 3
-            // Ensure unhandled exception raised to crush circuit
+            // Trigger timeout and ensure unhandled exception raised to crush circuit
+            remoteJSDataStream.InvalidateLastDataReceivedTimeForTimeout();
             var unhandledExceptionResult = await unhandledExceptionRaisedTask.Task.DefaultTimeout();
             Assert.True(unhandledExceptionResult);
 
