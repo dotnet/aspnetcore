@@ -689,4 +689,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3ControlStreamErrorUnsupportedType" xml:space="preserve">
     <value>Stream type {type} is unsupported.</value>
   </data>
+  <data name="Http3ControlStreamErrorInitializingOutbound" xml:space="preserve">
+    <value>Error initializing outbound control stream.</value>
+  </data>
 </root>

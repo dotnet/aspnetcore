@@ -227,7 +227,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Exception? error = null;
 
             // Don't delay setting up the connection on the control stream being ready.
-            _ = CreateControlStream(application).Preserve();
+            // Task is awaited when connection finishes.
+            var controlStreamTask = CreateControlStreamAsync(application);
 
             try
             {
@@ -353,6 +354,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     Abort(connectionError, Http3ErrorCode.NoError);
                     throw;
                 }
+
+                // Ensure control stream creation task finished. At this point the connection, including the control
+                // stream should be closed/aborted. Error handling inside method ensures await won't throw.
+                await controlStreamTask;
             }
         }
 
@@ -395,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
+        private async ValueTask CreateControlStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             try
             {
@@ -410,8 +415,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (Exception ex)
             {
+                Log.Http3OutboundControlStreamError(ConnectionId, ex);
+
+                var connectionError = new Http3ConnectionErrorException(CoreStrings.Http3ControlStreamErrorInitializingOutbound, Http3ErrorCode.ClosedCriticalStream);
+                Log.Http3ConnectionError(ConnectionId, connectionError);
+
                 // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
-                Abort(new ConnectionAbortedException("Error when initializing outbound control stream.", ex), Http3ErrorCode.ClosedCriticalStream);
+                Abort(new ConnectionAbortedException(connectionError.Message, connectionError), connectionError.ErrorCode);
             }
         }
 

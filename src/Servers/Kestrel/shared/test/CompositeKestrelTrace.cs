@@ -293,5 +293,11 @@ namespace Microsoft.AspNetCore.Testing
             _trace1.QPackEncodingError(connectionId, streamId, ex);
             _trace2.QPackEncodingError(connectionId, streamId, ex);
         }
+
+        public void Http3OutboundControlStreamError(string connectionId, Exception ex)
+        {
+            _trace1.Http3OutboundControlStreamError(connectionId, ex);
+            _trace2.Http3OutboundControlStreamError(connectionId, ex);
+        }
     }
 }

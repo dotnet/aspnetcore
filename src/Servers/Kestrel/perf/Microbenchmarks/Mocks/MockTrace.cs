@@ -69,5 +69,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame) { }
         public void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex) { }
         public void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex) { }
+        public void Http3OutboundControlStreamError(string connectionId, Exception ex) { }
     }
 }

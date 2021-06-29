@@ -157,8 +157,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 @"Connection id ""{ConnectionId}"": QPACK decoding error while decoding headers for stream ID {StreamId}.");
 
         private static readonly Action<ILogger, string, long, Exception> _qpackEncodingError =
-            LoggerMessage.Define<string, long>(LogLevel.Information, new EventId(49, "QPackEncodingError"),
+            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(49, "QPackEncodingError"),
                 @"Connection id ""{ConnectionId}"": QPACK encoding error while encoding headers for stream ID {StreamId}.");
+
+        private static readonly Action<ILogger, string, Exception> _http3OutboundControlStreamError =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(50, "Http3OutboundControlStreamError"),
+                @"Connection id ""{ConnectionId}"": Unexpected error when initializing outbound control stream.");
 
         protected readonly ILogger _generalLogger;
         protected readonly ILogger _badRequestsLogger;
@@ -399,6 +403,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public virtual void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex)
         {
             _qpackEncodingError(_http3Logger, connectionId, streamId, ex);
+        }
+
+        public void Http3OutboundControlStreamError(string connectionId, Exception ex)
+        {
+            _http3OutboundControlStreamError(_http3Logger, connectionId, ex);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
