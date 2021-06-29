@@ -70,21 +70,22 @@ namespace Microsoft.AspNetCore.Internal
             /// </summary>
             /// <returns>Characters representing the decoded name.</returns>
             public ReadOnlySpan<char> DecodeName()
-            {
-                return EncodedName.IsEmpty
-                    ? default
-                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(EncodedName));
-            }
+                => Decode(EncodedName);
 
             /// <summary>
             /// Decodes the value from this name/value pair.
             /// </summary>
             /// <returns>Characters representing the decoded value.</returns>
             public ReadOnlySpan<char> DecodeValue()
+                => Decode(EncodedValue);
+
+            private static ReadOnlySpan<char> Decode(ReadOnlySpan<char> chars)
             {
-                return EncodedValue.IsEmpty
-                    ? default
-                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(EncodedValue));
+                // If the value is short, it's cheap to check up front if it really needs decoding. If it doesn't,
+                // then we can save some allocations.
+                return chars.Length < 16 && chars.IndexOfAny('%', '+') < 0
+                    ? chars
+                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(chars));
             }
         }
 

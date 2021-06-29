@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -92,6 +93,18 @@ namespace Microsoft.AspNetCore.Internal
             {
                 Assert.Equal(expectedDecodedName, kvp.DecodeName().ToString());
                 Assert.Equal(expectedDecodedValue, kvp.DecodeValue().ToString());
+            }
+        }
+
+        [Fact]
+        public void DecodingRetainsSpansIfDecodingNotNeeded()
+        {
+            foreach (var kvp in new QueryStringEnumerable("?key=value"))
+            {
+                Assert.True(MemoryExtensions.Overlaps(kvp.EncodedName, kvp.DecodeName(), out var nameOffset));
+                Assert.True(MemoryExtensions.Overlaps(kvp.EncodedValue, kvp.DecodeValue(), out var valueOffset));
+                Assert.Equal(0, nameOffset);
+                Assert.Equal(0, valueOffset);
             }
         }
 
