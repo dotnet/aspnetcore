@@ -20,15 +20,14 @@
     }
 </select>
 
-<select name="cars" multiple @onchange="SelectionChanged">
+<select name="cars" @onchange="SelectionChanged" multiple>
     <option value="volvo">Volvo</option>
     <option value="saab">Saab</option>
     <option value="opel">Opel</option>
     <option value="audi">Audi</option>
 </select>
 
-@*TODO: Handle bindings for multiple select.*@
-<select name="cities" multiple @bind="SelectedCities">
+<select name="cities" @bind="SelectedCities" multiple>
     <option value="sf">San Francisco</option>
     <option value="la">Los Angeles</option>
     <option value="pdx">Portland</option>

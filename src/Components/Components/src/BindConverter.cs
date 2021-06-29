@@ -1544,9 +1544,7 @@ namespace Microsoft.AspNetCore.Components
 
                 bool ConvertToArray(object? obj, CultureInfo? culture, out T[]? value)
                 {
-                    var initialArray = (object?[]?)obj;
-
-                    if (initialArray is null)
+                    if (obj is not Array initialArray)
                     {
                         value = default;
                         return false;
@@ -1556,7 +1554,7 @@ namespace Microsoft.AspNetCore.Components
 
                     for (var i = 0; i < initialArray.Length; i++)
                     {
-                        if (!elementParser(initialArray[i], culture, out convertedArray[i]!))
+                        if (!elementParser(initialArray.GetValue(i), culture, out convertedArray[i]!))
                         {
                             value = default;
                             return false;

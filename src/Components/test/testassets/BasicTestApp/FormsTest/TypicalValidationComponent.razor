@@ -44,7 +44,7 @@
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="cities">
-        <InputSelect multiple @bind-Value="person.SelectedCities">
+        <InputSelect @bind-Value="person.SelectedCities" multiple>
             <option value="@City.SanFrancisco">San Francisco</option>
             <option value="@City.Tokyo">Tokyo</option>
             <option value="@City.London">London</option>
