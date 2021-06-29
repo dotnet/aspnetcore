@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 throw new IOException($"Supplied file with size {Size} bytes exceeds the maximum of {maxAllowedSize} bytes.");
             }
 
-            return Owner.OpenReadStream(this, cancellationToken);
+            return Owner.OpenReadStream(this, maxAllowedSize, cancellationToken);
         }
     }
 }

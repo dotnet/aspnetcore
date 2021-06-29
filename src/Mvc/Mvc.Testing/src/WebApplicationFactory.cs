@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
@@ -32,8 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         private TestServer? _server;
         private IHost? _host;
         private Action<IWebHostBuilder> _configuration;
-        private List<HttpClient> _clients = new();
-        private List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
+        private readonly List<HttpClient> _clients = new();
+        private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
         /// <summary>
         /// <para>
@@ -226,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
         }
 
-        private string GetContentRootFromFile(string file)
+        private static string GetContentRootFromFile(string file)
         {
             var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file))!;
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
@@ -350,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             return Array.Empty<Assembly>();
         }
 
-        private void EnsureDepsFile()
+        private static void EnsureDepsFile()
         {
             if (typeof(TEntryPoint).Assembly.EntryPoint == null)
             {
@@ -413,7 +412,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
         /// create the server.</param>
         /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-        protected virtual TestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
+        protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
         /// <summary>
         /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
@@ -478,7 +477,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 var serverHandler = _server.CreateHandler();
-                handlers[handlers.Length - 1].InnerHandler = serverHandler;
+                handlers[^1].InnerHandler = serverHandler;
 
                 client = new HttpClient(handlers[0]);
             }
@@ -524,6 +523,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -589,6 +589,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             _disposedAsync = true;
 
             Dispose(disposing: true);
+
+            GC.SuppressFinalize(this);
         }
 
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>

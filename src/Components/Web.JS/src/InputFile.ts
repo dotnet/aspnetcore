@@ -101,9 +101,9 @@ async function ensureArrayBufferReadyForSharedMemoryInterop(elem: InputElement, 
   getFileById(elem, fileId).arrayBuffer = arrayBuffer;
 }
 
-async function readFileData(elem: InputElement, fileId: number, startOffset: number, count: number): Promise<Uint8Array> {
+async function readFileData(elem: InputElement, fileId: number): Promise<Uint8Array> {
   const arrayBuffer = await getArrayBufferFromFileAsync(elem, fileId);
-  return new Uint8Array(arrayBuffer, startOffset, count);
+  return new Uint8Array(arrayBuffer);
 }
 
 export function getFileById(elem: InputElement, fileId: number): BrowserFile {

@@ -49,6 +49,7 @@ export module DotNet {
   }
 
   const jsObjectIdKey = "__jsObjectId";
+  const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
   const windowJSObjectId = 0;
@@ -136,6 +137,36 @@ export module DotNet {
     } else {
       throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
     }
+  }
+
+  /**
+   * Creates a JavaScript data reference that can be passed to .NET via interop calls.
+   *
+   * @param arrayBufferView The ArrayBufferView used to create the JavaScript stream reference.
+   * @returns The JavaScript data reference (this will be the same instance as the given object).
+   * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
+   */
+  export function createJSStreamReference(arrayBufferView: ArrayBufferView | any): any {
+    // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
+    // using a JSStreamReference.
+    if (!(arrayBufferView.buffer instanceof ArrayBuffer)) {
+      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it is not have a 'buffer' property of type 'ArrayBuffer'.`);
+    } else if (arrayBufferView.byteLength === undefined) {
+      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it doesn't have a byteLength.`);
+    }
+
+    const result: any = {
+      [jsStreamReferenceLengthKey]: arrayBufferView.byteLength,
+    }
+
+    try {
+      const jsObjectReference = createJSObjectReference(arrayBufferView);
+      result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
+    } catch {
+      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}'.`);
+    }
+
+    return result;
   }
 
   /**
@@ -231,7 +262,8 @@ export module DotNet {
    */
   export enum JSCallResultType {
     Default = 0,
-    JSObjectReference = 1
+    JSObjectReference = 1,
+    JSStreamReference = 2,
   }
 
   /**
@@ -446,6 +478,8 @@ export module DotNet {
         return returnValue;
       case JSCallResultType.JSObjectReference:
         return createJSObjectReference(returnValue);
+      case JSCallResultType.JSStreamReference:
+        return createJSStreamReference(returnValue);
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

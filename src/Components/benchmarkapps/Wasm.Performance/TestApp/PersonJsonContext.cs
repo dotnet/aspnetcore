@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Wasm.Performance.TestApp
 {
-    [JsonSerializable(typeof(Person), GenerationMode = JsonSourceGenerationMode.MetadataAndSerialization)]
+    [JsonSerializable(typeof(Person))]
     internal partial class PersonJsonContext : JsonSerializerContext
     {
     }
