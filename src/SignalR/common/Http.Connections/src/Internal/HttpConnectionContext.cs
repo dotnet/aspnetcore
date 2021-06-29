@@ -621,7 +621,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public void RequestClose()
         {
-            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
+            ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
         }
 
         private static class Log

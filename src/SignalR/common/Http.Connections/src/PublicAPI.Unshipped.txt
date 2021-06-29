@@ -1,5 +1,7 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationExpiration.get -> bool
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationExpiration.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportSendTimeout.get -> System.TimeSpan
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportSendTimeout.set -> void

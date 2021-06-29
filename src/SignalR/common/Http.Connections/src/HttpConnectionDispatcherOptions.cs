@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.Http.Connections
@@ -93,6 +94,15 @@ namespace Microsoft.AspNetCore.Http.Connections
                 TransportSendTimeoutTicks = value.Ticks;
             }
         }
+
+        /// <summary>
+        /// Authenticated connections that set the <see cref="AuthenticationProperties.ExpiresUtc"/> value will be closed
+        /// and allowed to reconnect when the token expires.
+        /// </summary>
+        /// <remarks>
+        /// Closed connections will not see messages sent while closed.
+        /// </remarks>
+        public bool EnableAuthenticationExpiration { get; set; }
 
         internal long TransportSendTimeoutTicks { get; private set; }
         internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;

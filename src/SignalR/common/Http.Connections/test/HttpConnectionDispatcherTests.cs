@@ -2752,7 +2752,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 });
             }, endpoints =>
             {
-                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo");
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.EnableAuthenticationExpiration = true);
 
                 endpoints.MapGet("/generatetoken", context =>
                 {
@@ -2819,7 +2819,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     .AddCookie();
             }, endpoints =>
             {
-                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo");
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.EnableAuthenticationExpiration = true);
 
                 endpoints.MapGet("/signin", async context =>
                 {
@@ -2914,7 +2914,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         });
                 }, endpoints =>
                 {
-                    endpoints.MapConnectionHandler<JwtConnectionHandler>("/foo");
+                    endpoints.MapConnectionHandler<JwtConnectionHandler>("/foo", o => o.EnableAuthenticationExpiration = true);
 
                     endpoints.MapGet("/generatetoken", context =>
                     {
@@ -2965,6 +2965,101 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
             Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
+
+            await connection.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task AuthenticationExpirationNotSetByDefault()
+        {
+            SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+            JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
+
+            using var host = CreateHost(services =>
+            {
+                services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                }).AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters =
+                        new TokenValidationParameters
+                        {
+                            LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
+                            ValidateAudience = false,
+                            ValidateIssuer = false,
+                            ValidateActor = false,
+                            ValidateLifetime = true,
+                            IssuerSigningKey = SecurityKey
+                        };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
+                            {
+                                context.Token = context.Request.Query["access_token"];
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+            }, endpoints =>
+            {
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo");
+
+                endpoints.MapGet("/generatetoken", context =>
+                {
+                    return context.Response.WriteAsync(GenerateToken(context));
+                });
+
+                string GenerateToken(HttpContext httpContext)
+                {
+                    var claims = new[] { new Claim(ClaimTypes.NameIdentifier, httpContext.Request.Query["user"]) };
+                    var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
+                    var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.UtcNow.AddMinutes(1), signingCredentials: credentials);
+                    return JwtTokenHandler.WriteToken(token);
+                }
+            }, LoggerFactory);
+
+            host.Start();
+
+            var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+            var url = host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
+
+            string token = "";
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(url);
+
+                var response = await client.GetAsync("generatetoken?user=bob");
+                token = await response.Content.ReadAsStringAsync();
+            }
+
+            url += "/foo";
+            var stream = new MemoryStream();
+            var connection = new HttpConnection(
+                new HttpConnectionOptions()
+                {
+                    Url = new Uri(url),
+                    AccessTokenProvider = () => Task.FromResult(token),
+                    DefaultTransferFormat = TransferFormat.Text,
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream)
+                },
+                LoggerFactory);
+
+            await connection.StartAsync();
+
+            var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
+
+            Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
+
+            Assert.Null(context.AuthenticationExpiration);
 
             await connection.DisposeAsync();
         }

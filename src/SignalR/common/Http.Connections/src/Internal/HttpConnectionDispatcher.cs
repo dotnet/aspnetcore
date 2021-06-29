@@ -568,7 +568,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Setup the connection state from the http context
             connection.User = connection.HttpContext?.User;
 
-            UpdateExpiration(connection, context);
+            if (options.EnableAuthenticationExpiration)
+            {
+                UpdateExpiration(connection, context);
+            }
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
@@ -579,7 +582,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static void UpdateExpiration(HttpConnectionContext connection, HttpContext context)
         {
-            // TODO: option to enable/disable this
             var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
 
             if (authenticateResultFeature is not null)

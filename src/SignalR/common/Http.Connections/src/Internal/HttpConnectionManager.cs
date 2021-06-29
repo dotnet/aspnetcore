@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // Tick the heartbeat, if the connection is still active
                     connection.TickHeartbeat();
 
-                    if (connection.AuthenticationExpiration < utcNow)
+                    if (connection.AuthenticationExpiration < utcNow && !connection.ConnectionClosedRequested.IsCancellationRequested)
                     {
                         Log.AuthenticationExpired(_logger, connection.ConnectionId);
                         connection.RequestClose();
