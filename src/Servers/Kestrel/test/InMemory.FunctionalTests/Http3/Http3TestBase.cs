@@ -529,17 +529,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var outputWriter = _pair.Application.Output;
                 frame.Length = data.Length;
                 Http3FrameWriter.WriteHeader(frame, outputWriter);
-                await SendAsync(data.Span);
 
-                if (endStream)
+                if (!endStream)
                 {
-                    await EndStreamAsync();
+                    await SendAsync(data.Span);
+                }
+                else
+                {
+                    // Write and end stream at the same time.
+                    // Avoid race condition of frame read separately from end of stream.
+                    await EndStreamAsync(data.Span);
                 }
             }
 
-            internal Task EndStreamAsync()
+            internal Task EndStreamAsync(ReadOnlySpan<byte> span = default)
             {
-                return _pair.Application.Output.CompleteAsync().AsTask();
+                var writableBuffer = _pair.Application.Output;
+                if (span.Length > 0)
+                {
+                    writableBuffer.Write(span);
+                }
+                return writableBuffer.CompleteAsync().AsTask();
             }
 
             internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, string expectedErrorMessage)
@@ -559,8 +569,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
         {
-            private TestStreamContext _testStreamContext;
-            private long _streamId;
+            private readonly TestStreamContext _testStreamContext;
+            private readonly long _streamId;
 
             internal ConnectionContext StreamContext { get; }
 
@@ -572,7 +582,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public bool Disposed => _testStreamContext.Disposed;
 
             private readonly byte[] _headerEncodingBuffer = new byte[64 * 1024];
-            private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
+            private readonly QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             public Http3RequestStream(Http3TestBase testBase, Http3Connection connection)
@@ -684,7 +694,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public class Http3ControlStream : Http3StreamBase
         {
             internal ConnectionContext StreamContext { get; }
-            private long _streamId;
+            private readonly long _streamId;
 
             public bool CanRead => true;
             public bool CanWrite => false;
@@ -917,7 +927,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature
         {
-            private DuplexPipePair _pair;
+            private readonly DuplexPipePair _pair;
             public TestStreamContext(bool canRead, bool canWrite, DuplexPipePair pair, IProtocolErrorCodeFeature errorCodeFeature, long streamId)
             {
                 _pair = pair;
