@@ -160,11 +160,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
-            var timeoutExceptionRaised = false;
+            var timeoutExceptionRaisedSemaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1);
             jsRuntime.UnhandledException += (_, ex) =>
             {
                 Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
-                timeoutExceptionRaised = ex is TimeoutException;
+                Assert.IsType<TimeoutException>(ex);
+                timeoutExceptionRaisedSemaphore.Release();
             };
 
             var jsStreamReference = Mock.Of<IJSStreamReference>();
@@ -181,10 +182,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var chunk = new byte[] { 3, 5, 7 };
 
             // Act & Assert 1
-            // Wait past the initial timeout + 15 sec buffer room and then
-            // confirm unhandled exception raised to crush circuit
-            await Task.Delay(TimeSpan.FromSeconds(25));
-            Assert.True(timeoutExceptionRaised, remoteJSDataStream.CiData);
+            // Trigger timeout and ensure unhandled exception raised to crush circuit
+            remoteJSDataStream.InvalidateLastDataReceivedTimeForTimeout();
+            await timeoutExceptionRaisedSemaphore.WaitAsync();
 
             // Act & Assert 2
             // Confirm exception also raised on pipe reader
@@ -203,11 +203,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
-            var timeoutExceptionRaised = false;
+            var timeoutExceptionRaisedSemaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1);
             jsRuntime.UnhandledException += (_, ex) =>
             {
                 Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
-                timeoutExceptionRaised = ex is TimeoutException;
+                Assert.IsType<TimeoutException>(ex);
+                timeoutExceptionRaisedSemaphore.Release();
             };
 
             var jsStreamReference = Mock.Of<IJSStreamReference>();
@@ -227,17 +228,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
             Assert.True(success);
 
-            await Task.Delay(TimeSpan.FromSeconds(15));
-
             // Act & Assert 2
             success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null);
             Assert.True(success);
 
             // Act & Assert 3
-            // Wait past the initial timeout 30 sec timeout + 15 sec buffer room
-            // confirm unhandled exception raised to crush circuit
-            await Task.Delay(TimeSpan.FromSeconds(45));
-            Assert.True(timeoutExceptionRaised, remoteJSDataStream.CiData);
+            // Trigger timeout and ensure unhandled exception raised to crush circuit
+            remoteJSDataStream.InvalidateLastDataReceivedTimeForTimeout();
+            await timeoutExceptionRaisedSemaphore.WaitAsync();
 
             // Act & Assert 4
             // Confirm exception also raised on pipe reader

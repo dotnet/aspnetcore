@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public string CiData { get; private set; } = string.Empty;
 
-        internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
+        private async Task CompletePipeAndDisposeStream(Exception? ex = null)
         {
             // For CI debugging purposes
             if (_totalLength == 15)
@@ -233,6 +233,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             await _pipe.Writer.CompleteAsync(ex);
             Dispose(true);
+        }
+
+        /// <summary>
+        /// For testing purposes only.
+        ///
+        /// Triggers the timeout on the next check.
+        /// </summary>
+        internal void InvalidateLastDataReceivedTimeForTimeout()
+        {
+            _lastDataReceivedTime = _lastDataReceivedTime.Subtract(_jsInteropDefaultCallTimeout);
         }
 
         protected override void Dispose(bool disposing)
