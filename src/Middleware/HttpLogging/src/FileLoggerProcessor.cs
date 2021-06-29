@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             public static void MaxRetainedFilesReached(ILogger logger, Exception ex) => _maxRetainedFilesReached(logger, ex);
         }
 
-        private class FileInfoComparer : IComparer<FileInfo>
+        private struct FileInfoComparer : IComparer<FileInfo>
         {
             // Linux file creation time has 1-second precision, so fall back to fileName if
             // the creation times are too close.
