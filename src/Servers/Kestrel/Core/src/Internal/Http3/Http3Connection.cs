@@ -226,15 +226,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Don't create Encoder and Decoder as they aren't used now.
             Exception? error = null;
 
-            // TODO should we await the control stream task?
-            var controlTask = CreateControlStream(application);
+            // Don't delay setting up the connection on the control stream being ready.
+            _ = CreateControlStream(application).Preserve();
 
             try
             {
                 while (_isClosed == 0)
                 {
-                    // TODO implement way to unblock loop for one call to accept async to update state.
-                    // Use cts for now, update to custom awaitable or different solution in the future.
+                    // Don't pass a cancellation token to AcceptAsync.
+                    // AcceptAsync will return null if the connection is gracefully shutting down or aborted.
                     var streamContext = await _multiplexedContext.AcceptAsync();
                     try
                     {
@@ -243,10 +243,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             break;
                         }
 
-                        var quicStreamFeature = streamContext.Features.Get<IStreamDirectionFeature>();
+                        var streamDirectionFeature = streamContext.Features.Get<IStreamDirectionFeature>();
                         var streamIdFeature = streamContext.Features.Get<IStreamIdFeature>();
 
-                        Debug.Assert(quicStreamFeature != null);
+                        Debug.Assert(streamDirectionFeature != null);
                         Debug.Assert(streamIdFeature != null);
 
                         var httpConnectionContext = new Http3StreamContext(
@@ -265,9 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             _serverSettings);
                         httpConnectionContext.TimeoutControl = _context.TimeoutControl;
 
-                        var streamId = streamIdFeature.StreamId;
-
-                        if (!quicStreamFeature.CanWrite)
+                        if (!streamDirectionFeature.CanWrite)
                         {
                             // Unidirectional stream
                             var stream = new Http3ControlStream<TContext>(application, httpConnectionContext);
@@ -278,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         else
                         {
                             // Request stream
-                            UpdateHighestStreamId(streamId);
+                            UpdateHighestStreamId(streamIdFeature.StreamId);
 
                             var stream = new Http3Stream<TContext>(application, httpConnectionContext);
                             _streamLifetimeHandler.OnStreamCreated(stream);
@@ -399,13 +397,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
-            var stream = await CreateNewUnidirectionalStreamAsync(application);
-            lock (_sync)
+            try
             {
-                OutboundControlStream = stream;
+                var stream = await CreateNewUnidirectionalStreamAsync(application);
+                lock (_sync)
+                {
+                    OutboundControlStream = stream;
+                }
+
+                await stream.SendStreamIdAsync(id: 0);
+                await stream.SendSettingsFrameAsync();
             }
-            await stream.SendStreamIdAsync(id: 0);
-            await stream.SendSettingsFrameAsync();
+            catch (Exception ex)
+            {
+                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
+                Abort(new ConnectionAbortedException("Error when initializing outbound control stream.", ex), Http3ErrorCode.ClosedCriticalStream);
+            }
         }
 
         private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull

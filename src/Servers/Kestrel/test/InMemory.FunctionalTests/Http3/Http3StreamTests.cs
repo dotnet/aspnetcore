@@ -2516,5 +2516,90 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // TODO(JamesNK): Check for abort of request side of stream after https://github.com/dotnet/aspnetcore/issues/31970
             Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
         }
+
+        [Fact]
+        public async Task HEADERS_WriteLargeResponseHeaderSection_Success()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var headerText = string.Create(6 * 1024, new object(), (chars, state) =>
+            {
+                for (var i = 0; i < chars.Length; i++)
+                {
+                    chars[i] = (char)('0' + i % 10);
+                }
+            });
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    c.Response.Headers["Header" + i] = i + "-" + headerText;
+                }
+
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+
+            for (var i = 0; i < 10; i++)
+            {
+                Assert.Equal(i + "-" + headerText, responseHeaders["Header" + i]);
+            }
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task HEADERS_WriteLargeResponseHeaderSectionTrailers_Success()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var headerText = string.Create(6 * 1024, new object(), (chars, state) =>
+            {
+                for (var i = 0; i < chars.Length; i++)
+                {
+                    chars[i] = (char)('0' + i % 10);
+                }
+            });
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    c.Response.AppendTrailer("Header" + i, i + "-" + headerText);
+                }
+
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+
+            var responseTrailers = await requestStream.ExpectHeadersAsync();
+            for (var i = 0; i < 10; i++)
+            {
+                Assert.Equal(i + "-" + headerText, responseTrailers["Header" + i]);
+            }
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
     }
 }
