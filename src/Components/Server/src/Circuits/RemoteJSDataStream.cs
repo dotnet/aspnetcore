@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             long totalLength,
             long maximumIncomingBytes,
             TimeSpan jsInteropDefaultCallTimeout,
-            long pauseIncomingBytesThreshold,
-            long resumeIncomingBytesThreshold,
-            CancellationToken cancellationToken)
+            long pauseIncomingBytesThreshold = -1,
+            long resumeIncomingBytesThreshold = -1,
+            CancellationToken cancellationToken = default)
         {
             // Enforce minimum 1 kb, maximum 50 kb, SignalR message size.
             // We budget 512 bytes overhead for the transfer, thus leaving at least 512 bytes for data
