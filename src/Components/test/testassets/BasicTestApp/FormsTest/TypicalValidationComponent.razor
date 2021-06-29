@@ -43,6 +43,14 @@
         </InputSelect>
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
+    <p class="cities">
+        <InputSelect multiple @bind-Value="person.SelectedCities">
+            <option value="@City.SanFrancisco">San Francisco</option>
+            <option value="@City.Tokyo">Tokyo</option>
+            <option value="@City.London">London</option>
+            <option value="@City.Madrid">Madrid</option>
+        </InputSelect>
+    </p>
     <p class="airline">
         <InputRadioGroup @bind-Value="person.Airline">
             Airline:
@@ -158,6 +166,9 @@
         [Required, StringLength(10), CustomValidationClassName(Valid = "valid-socks", Invalid = "invalid-socks")]
         public string SocksColor { get; set; }
 
+        [Required, MinLength(2), MaxLength(3)]
+        public City[] SelectedCities { get; set; } = new[] { City.SanFrancisco };
+
         public string Username { get; set; }
     }
 
@@ -168,6 +179,8 @@
     enum Color { Red, Green, Blue, Orange }
 
     enum Country { Japan, Yemen, Latvia }
+
+    enum City { SanFrancisco, Tokyo, London, Madrid }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 
