@@ -145,10 +145,15 @@ export module DotNet {
    * @returns The JavaScript data reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
    */
-  export function createJSStreamReference(streamReference: ArrayBufferView | Blob | any): any {
+  export function createJSStreamReference(streamReference: ArrayBuffer | ArrayBufferView | Blob | any): any {
     let length = -1;
-    // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
-    // using a JSStreamReference.
+
+    // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
+    // ArrayBuffers' aren't directly readable.
+    if (streamReference instanceof ArrayBuffer) {
+      streamReference = new Uint8Array(streamReference);
+    }
+
     if (streamReference instanceof Blob) {
       length = streamReference.size;
     } else if (streamReference.buffer instanceof ArrayBuffer) {
@@ -158,7 +163,7 @@ export module DotNet {
 
       length = streamReference.byteLength;
     } else {
-      throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it is not a 'ReadableStream' and does not have a 'buffer' property of type 'ArrayBuffer'.`);
+      throw new Error('Supplied value is not a typed array or blob.');
     }
 
     const result: any = {

@@ -1,5 +1,3 @@
-import { DotNet } from '@microsoft/dotnet-js-interop';
-
 export const InputFile = {
   init,
   toImageFile,
@@ -15,7 +13,7 @@ interface BrowserFile {
   contentType: string;
   readPromise: Promise<ArrayBuffer> | undefined;
   arrayBuffer: ArrayBuffer | undefined;
-  blob: Blob | undefined;
+  blob: Blob;
 }
 
 export interface InputElement extends HTMLInputElement {
@@ -49,9 +47,6 @@ function init(callbackWrapper: any, elem: InputElement): void {
 
       elem._blazorFilesById[result.id] = result;
 
-      // Attach the blob data itself as a non-enumerable property so it doesn't appear in the JSON.
-      Object.defineProperty(result, 'blob', { value: file });
-
       return result;
     });
 
@@ -81,6 +76,7 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     canvas.getContext('2d')?.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(resolve, format);
   });
+
   const result: BrowserFile = {
     id: ++elem._blazorInputFileNextFileId,
     lastModified: originalFile.lastModified,
@@ -89,13 +85,10 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     contentType: format,
     readPromise: undefined,
     arrayBuffer: undefined,
-    blob: undefined,
+    blob: resizedImageBlob ? resizedImageBlob : originalFile.blob,
   };
 
   elem._blazorFilesById[result.id] = result;
-
-  // Attach the blob data itself as a non-enumerable property so it doesn't appear in the JSON.
-  Object.defineProperty(result, 'blob', { value: resizedImageBlob });
 
   return result;
 }
@@ -107,11 +100,6 @@ async function ensureArrayBufferReadyForSharedMemoryInterop(elem: InputElement, 
 
 async function readFileData(elem: InputElement, fileId: number): Promise<Blob> {
   const file = getFileById(elem, fileId);
-
-  if (file.blob === undefined) {
-    throw new Error(`There is no blob for file with ID ${fileId}.`);
-  }
-
   return file.blob;
 }
 
@@ -138,9 +126,6 @@ function getArrayBufferFromFileAsync(elem: InputElement, fileId: number): Promis
       reader.onerror = function(err): void {
         reject(err);
       };
-      if (file.blob === undefined) {
-        reject('Failed to find the file blob.');
-      }
       reader.readAsArrayBuffer(file.blob!);
     });
   }
