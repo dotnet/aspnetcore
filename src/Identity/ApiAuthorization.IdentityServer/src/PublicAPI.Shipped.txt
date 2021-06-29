@@ -30,10 +30,7 @@ Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityServerJwtConstants.
 Microsoft.AspNetCore.Authentication.AuthenticationBuilderExtensions
 Microsoft.Extensions.DependencyInjection.IdentityServerBuilderConfigurationExtensions
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationDbContext<TUser>
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationDbContext<TUser>.ApiAuthorizationDbContext(Microsoft.EntityFrameworkCore.DbContextOptions options, Microsoft.Extensions.Options.IOptions<IdentityServer4.EntityFramework.Options.OperationalStoreOptions> operationalStoreOptions) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationDbContext<TUser>.DeviceFlowCodes.get -> Microsoft.EntityFrameworkCore.DbSet<IdentityServer4.EntityFramework.Entities.DeviceFlowCodes>
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationDbContext<TUser>.DeviceFlowCodes.set -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationDbContext<TUser>.PersistedGrants.get -> Microsoft.EntityFrameworkCore.DbSet<IdentityServer4.EntityFramework.Entities.PersistedGrant>
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationDbContext<TUser>.PersistedGrants.set -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationOptions.ApiResources.get -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceCollection
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationOptions.ApiResources.set -> void
@@ -46,34 +43,18 @@ Microsoft.Extensions.DependencyInjection.IdentityServerBuilderConfigurationExten
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationOptions.SigningCredential.get -> Microsoft.IdentityModel.Tokens.SigningCredentials
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiAuthorizationOptions.SigningCredential.set -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder.AllowAllClients() -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder.ApiResourceBuilder(IdentityServer4.Models.ApiResource resource) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder.Build() -> IdentityServer4.Models.ApiResource
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder.ReplaceScopes(params string[] resourceScopes) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder.WithApplicationProfile(string profile) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder.WithScopes(params string[] resourceScopes) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceCollection.AddApiResource(string name, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder> configure) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceCollection.AddIdentityServerJwt(string name, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder> configure) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceCollection.AddRange(params IdentityServer4.Models.ApiResource[] resources) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceCollection.ApiResourceCollection(System.Collections.Generic.IList<IdentityServer4.Models.ApiResource> list) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceCollection.this[string key].get -> IdentityServer4.Models.ApiResource
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiScopeCollection.AddRange(params IdentityServer4.Models.ApiScope[] scopes) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiScopeCollection.ApiScopeCollection(System.Collections.Generic.IList<IdentityServer4.Models.ApiScope> list) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiScopeCollection.ContainsScope(string key) -> bool
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiScopeCollection.this[string key].get -> IdentityServer4.Models.ApiScope
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.Build() -> IdentityServer4.Models.Client
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.ClientBuilder(IdentityServer4.Models.Client client) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.WithApplicationProfile(string profile) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.WithClientId(string clientId) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.WithLogoutRedirectUri(string logoutUri) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.WithRedirectUri(string redirectUri) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.WithScopes(params string[] scopes) -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder.WithoutClientSecrets() -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientCollection.AddIdentityServerSPA(string clientId, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder> configure) -> IdentityServer4.Models.Client
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientCollection.AddNativeApp(string clientId, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder> configure) -> IdentityServer4.Models.Client
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientCollection.AddRange(params IdentityServer4.Models.Client[] clients) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientCollection.AddSPA(string clientId, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder> configure) -> IdentityServer4.Models.Client
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientCollection.ClientCollection(System.Collections.Generic.IList<IdentityServer4.Models.Client> list) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientCollection.this[string key].get -> IdentityServer4.Models.Client
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientParametersTagHelper.ClientId.get -> string
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientParametersTagHelper.ClientId.set -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientParametersTagHelper.ClientParametersTagHelper(Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IClientRequestParametersProvider clientRequestParametersProvider) -> void
@@ -81,16 +62,11 @@ Microsoft.Extensions.DependencyInjection.IdentityServerBuilderConfigurationExten
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientParametersTagHelper.ViewContext.set -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IClientRequestParametersProvider.GetClientParameters(Microsoft.AspNetCore.Http.HttpContext context, string clientId) -> System.Collections.Generic.IDictionary<string, string>
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder.AllowAllClients() -> Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder.Build() -> IdentityServer4.Models.IdentityResource
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder.IdentityResourceBuilder(IdentityServer4.Models.IdentityResource resource) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.AddAddress(System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder> configure) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.AddEmail(System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder> configure) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.AddOpenId(System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder> configure) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.AddPhone(System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder> configure) -> void
 ~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.AddProfile(System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder> configure) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.AddRange(params IdentityServer4.Models.IdentityResource[] identityResources) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.IdentityResourceCollection(System.Collections.Generic.IList<IdentityServer4.Models.IdentityResource> list) -> void
-~Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceCollection.this[string key].get -> IdentityServer4.Models.IdentityResource
 ~const Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApplicationProfiles.API = "API" -> string
 ~const Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApplicationProfiles.IdentityServerJwt = "IdentityServerJwt" -> string
 ~const Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApplicationProfiles.IdentityServerSPA = "IdentityServerSPA" -> string
