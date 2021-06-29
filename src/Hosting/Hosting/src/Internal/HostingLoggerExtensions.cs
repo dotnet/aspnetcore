@@ -11,28 +11,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal static class HostingLoggerExtensions
+    internal static partial class HostingLoggerExtensions
     {
-        private static readonly Action<ILogger, string, Exception?> _startupAssemblyLoaded =
-                LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.HostingStartupAssemblyLoaded, "Loaded hosting startup assembly {assemblyName}", skipEnabledCheck: true);
-
-        private static readonly Action<ILogger, string, Exception?> _listeningOnAddress =
-                LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ServerListeningOnAddresses, "Now listening on: {address}");
-
         public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
             return logger.BeginScope(new HostingLogScope(httpContext));
         }
 
-        public static void ListeningOnAddress(this ILogger logger, string address)
-        {
-            _listeningOnAddress(logger, address, null);
-        }
+        [LoggerMessage(LoggerEventIds.ServerListeningOnAddresses, LogLevel.Information,
+            "Now listening on: {address}",
+            EventName = "ListeningOnAddress")]
+        public static partial void ListeningOnAddress(this ILogger logger, string address);
 
-        public static void StartupAssemblyLoaded(this ILogger logger, string assemblyName)
-        {
-            _startupAssemblyLoaded(logger, assemblyName, null);
-        }
+        [LoggerMessage(LoggerEventIds.HostingStartupAssemblyLoaded, LogLevel.Debug,
+            "Loaded hosting startup assembly {assemblyName}",
+            EventName = "HostingStartupAssemblyLoaded",
+            SkipEnabledCheck = true)]
+        public static partial void StartupAssemblyLoaded(this ILogger logger, string assemblyName);
 
         public static void ApplicationError(this ILogger logger, Exception exception)
         {
@@ -52,8 +47,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public static void ApplicationError(this ILogger logger, EventId eventId, string message, Exception exception)
         {
-            var reflectionTypeLoadException = exception as ReflectionTypeLoadException;
-            if (reflectionTypeLoadException != null)
+            if (exception is ReflectionTypeLoadException reflectionTypeLoadException)
             {
                 foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
                 {
@@ -167,7 +161,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
             {
-                for (int i = 0; i < Count; ++i)
+                for (var i = 0; i < Count; ++i)
                 {
                     yield return this[i];
                 }

@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Http
                     return StringValues.Empty;
                 }
 
-                if (TryGetValue(key, out StringValues value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }

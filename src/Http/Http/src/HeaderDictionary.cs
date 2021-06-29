@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Http
                     return StringValues.Empty;
                 }
 
-                if (TryGetValue(key, out StringValues value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Http
         public bool Contains(KeyValuePair<string, StringValues> item)
         {
             if (Store == null ||
-                !Store.TryGetValue(item.Key, out StringValues value) ||
+                !Store.TryGetValue(item.Key, out var value) ||
                 !StringValues.Equals(value, item.Value))
             {
                 return false;
