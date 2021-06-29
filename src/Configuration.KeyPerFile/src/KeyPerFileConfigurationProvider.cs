@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         }
 
         private string NormalizeKey(string key)
-            => key.Replace(Source.Delimiter, ConfigurationPath.KeyDelimiter);
+            => key.Replace(Source.SectionDelimiter, ConfigurationPath.KeyDelimiter);
 
         private static string TrimNewLine(string value)
             => value.EndsWith(Environment.NewLine, StringComparison.Ordinal)

@@ -84,7 +84,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
         }
 
         [Fact]
-        public void LoadWithCustomDelimiter()
+        public void LoadWithCustomSectionDelimiter()
         {
             var testFileProvider = new TestFileProvider(
                 new TestFile("Secret0--Secret1--Secret2--Key", "SecretValue2"),
@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
                 .AddKeyPerFile(o =>
                 {
                     o.FileProvider = testFileProvider;
-                    o.Delimiter = "--";
+                    o.SectionDelimiter = "--";
                 })
                 .Build();
 
