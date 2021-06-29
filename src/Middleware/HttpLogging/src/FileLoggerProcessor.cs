@@ -142,7 +142,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             var fullName = GetFullName(today);
             if (_maxFilesReached)
             {
-                // Return early if we've already logged that today's file limit has been reached
+                // Return early if we've already logged that today's file limit has been reached.
+                // Need to do this check after the call to GetFullName(), since it resets _maxFilesReached
+                // when a new day starts.
                 return;
             }
             var fileInfo = new FileInfo(fullName);
