@@ -219,16 +219,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Dispose(true);
         }
 
-        /// <summary>
-        /// For testing purposes only.
-        ///
-        /// Triggers the timeout on the next check.
-        /// </summary>
-        internal void InvalidateLastDataReceivedTimeForTimeout()
-        {
-            _lastDataReceivedTime = _lastDataReceivedTime.Subtract(_jsInteropDefaultCallTimeout);
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
