@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     {
         private const string _plaintextExpectedResponse =
             "HTTP/1.1 200 OK\r\n" +
+            "Content-Length: 13\r\n" +
             "Date: Fri, 02 Mar 2018 18:37:05 GMT\r\n" +
             "Content-Type: text/plain\r\n" +
             "Server: Kestrel\r\n" +
-            "Content-Length: 13\r\n" +
             "\r\n" +
             "Hello, World!";
 
