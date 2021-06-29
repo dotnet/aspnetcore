@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.Contains($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i:0000}.txt", actualFiles1[i]);
                 }
 
-                // Third instance should ro
+                // Third instance should roll to 5 most recent files
                 options.RetainedFileCountLimit = 5;
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
