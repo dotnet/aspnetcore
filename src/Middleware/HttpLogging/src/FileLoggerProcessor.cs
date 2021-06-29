@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     var files = new DirectoryInfo(_path)
                         .GetFiles(_fileName + "*")
-                        .OrderByDescending(f => f.Name)
+                        .OrderByDescending(f => f, new FileInfoComparer())
                         .Skip(_maxRetainedFiles.Value);
 
                     foreach (var item in files)
@@ -303,5 +303,27 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             public static void MaxRetainedFilesReached(ILogger logger, Exception ex) => _maxRetainedFilesReached(logger, ex);
         }
+
+        private class FileInfoComparer : IComparer<FileInfo>
+        {
+            // Linux file creation time has 1-second precision, so fall back to fileName if
+            // the creation times are too close.
+            public int Compare(FileInfo? f1, FileInfo? f2)
+            {
+                if (f1?.CreationTime.Second > f2?.CreationTime.Second)
+                {
+                    return 1;
+                }
+                else if (f1?.CreationTime.Second < f2?.CreationTime.Second)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return string.Compare(f1?.Name, f2?.Name, StringComparison.Ordinal);
+                }
+            }
+        }
     }
+
 }
