@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private int? _maxFileSize;
         private int? _maxRetainedFiles;
         private int _fileNumber;
+        private bool _maxFilesReached;
         private TimeSpan _flushInterval;
         private DateTime _today = DateTime.Now;
 
@@ -139,6 +140,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             // Files are written up to _maxFileSize before rolling to a new file
             DateTime today = DateTime.Now;
             var fullName = GetFullName(today);
+            if (_maxFilesReached)
+            {
+                // Return early if we've already logged that today's file limit has been reached
+                return;
+            }
             var fileInfo = new FileInfo(fullName);
 
             if (!TryCreateDirectory())
@@ -170,6 +176,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                             if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
                             {
                                 streamWriter = null;
+                                _maxFilesReached = true;
                                 // Return early if log directory is already full
                                 Log.MaxFilesReached(_logger, new ApplicationException());
                                 return;
@@ -271,6 +278,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     _today = date;
                     _fileNumber = 0;
+                    _maxFilesReached = false;
                 }
                 return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
             }
