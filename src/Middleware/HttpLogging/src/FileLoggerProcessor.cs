@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             lock (_pathLock)
             {
-                if ((_today.Date - date.Date).Days >= 1)
+                if ((date.Date - _today.Date).Days != 0)
                 {
                     _today = date;
                     _fileNumber = 0;
