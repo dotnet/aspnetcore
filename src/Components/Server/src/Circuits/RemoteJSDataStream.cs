@@ -207,7 +207,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-
         private async Task CompletePipeAndDisposeStream(Exception? ex = null)
         {
             await _pipe.Writer.CompleteAsync(ex);
