@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private int? _maxRetainedFiles;
         private int _fileNumber;
         private TimeSpan _flushInterval;
+        private DateTime _today = DateTime.Now;
 
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
         private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
@@ -163,16 +164,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                     if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
                     {
                         streamWriter.Dispose();
-                        var fullFiles = 0;
                         do
                         {
                             _fileNumber++;
-                            fullFiles++;
-                            if (fullFiles > W3CLoggerOptions.MaxRetainedFileCount)
+                            if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
                             {
                                 streamWriter = null;
-                                // Return early if log directory is already full - could be hitting File System issues
-                                Log.MaxRetainedFilesReached(_logger, new ApplicationException());
+                                // Return early if log directory is already full
+                                Log.MaxFilesReached(_logger, new ApplicationException());
                                 return;
                             }
                             fullName = GetFullName(today);
@@ -246,7 +245,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     var files = new DirectoryInfo(_path)
                         .GetFiles(_fileName + "*")
-                        .OrderByDescending(f => f, new FileInfoComparer())
+                        .OrderByDescending(f => f.Name)
                         .Skip(_maxRetainedFiles.Value);
 
                     foreach (var item in files)
@@ -268,7 +267,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             lock (_pathLock)
             {
-                return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber % 10000:0000}.txt"));
+                if ((_today.Date - date.Date).Days >= 1)
+                {
+                    _today = date;
+                    _fileNumber = 0;
+                }
+                return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
             }
         }
 
@@ -295,34 +299,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             public static void CreateDirectoryFailed(ILogger logger, string path, Exception ex) => _createDirectoryFailed(logger, path, ex);
 
-            private static readonly Action<ILogger, Exception> _maxRetainedFilesReached =
+            private static readonly Action<ILogger, Exception> _maxFilesReached =
                 LoggerMessage.Define(
-                    LogLevel.Error,
-                    new EventId(3, "MaxRetainedFilesReached"),
-                    "Log directory is over 10,000 file capacity");
+                    LogLevel.Warning,
+                    new EventId(3, "MaxFilesReached"),
+                    "Limit of 10,000 files per day has been reached");
 
-            public static void MaxRetainedFilesReached(ILogger logger, Exception ex) => _maxRetainedFilesReached(logger, ex);
-        }
-
-        private struct FileInfoComparer : IComparer<FileInfo>
-        {
-            // Linux file creation time has 1-second precision, so fall back to fileName if
-            // the creation times are too close.
-            public int Compare(FileInfo? f1, FileInfo? f2)
-            {
-                if (f1?.CreationTime.Second > f2?.CreationTime.Second)
-                {
-                    return 1;
-                }
-                else if (f1?.CreationTime.Second < f2?.CreationTime.Second)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return string.Compare(f1?.Name, f2?.Name, StringComparison.Ordinal);
-                }
-            }
+            public static void MaxFilesReached(ILogger logger, Exception ex) => _maxFilesReached(logger, ex);
         }
     }
 
