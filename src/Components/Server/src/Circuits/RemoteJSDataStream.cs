@@ -82,7 +82,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: pauseIncomingBytesThreshold, resumeWriterThreshold: resumeIncomingBytesThreshold));
             _pipeReaderStream = _pipe.Reader.AsStream();
+            PipeReader = _pipe.Reader;
         }
+
+        /// <summary>
+        /// Gets a <see cref="PipeReader"/> to directly read data sent by the JavaScript client.
+        /// </summary>
+        public PipeReader PipeReader { get; }
 
         private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
         {
@@ -201,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (!_disposed && (DateTimeOffset.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
             {
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
-                var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
+                var timeoutException = new TimeoutException("Did not receive any data in the allotted time.");
                 await CompletePipeAndDisposeStream(timeoutException);
                 _runtime.RaiseUnhandledException(timeoutException);
             }

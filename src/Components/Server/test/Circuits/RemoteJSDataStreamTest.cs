@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private static readonly TestRemoteJSRuntime _jsRuntime = new(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
         [Fact]
-        public async void CreateRemoteJSDataStreamAsync_CreatesStream()
+        public async Task CreateRemoteJSDataStreamAsync_CreatesStream()
         {
             // Arrange
             var jsStreamReference = Mock.Of<IJSStreamReference>();
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_DoesNotFindStream()
+        public async Task ReceiveData_DoesNotFindStream()
         {
             // Arrange
             var chunk = new byte[] { 3, 5, 6, 7 };
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_SuccessReadsBackStream()
+        public async Task ReceiveData_SuccessReadsBackStream()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -75,7 +75,35 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_WithError()
+        public async Task ReceiveData_SuccessReadsBackPipeReader()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[100];
+            var random = new Random();
+            random.NextBytes(chunk);
+
+            var sendDataTask = Task.Run(async () =>
+            {
+                // Act 1
+                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null);
+                return success;
+            });
+
+            // Act & Assert 2
+            using var memoryStream = new MemoryStream();
+            await remoteJSDataStream.PipeReader.CopyToAsync(memoryStream);
+            Assert.Equal(chunk, memoryStream.ToArray());
+
+            // Act & Assert 3
+            var sendDataCompleted = await sendDataTask;
+            Assert.True(sendDataCompleted);
+        }
+
+        [Fact]
+        public async Task ReceiveData_WithError()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -93,7 +121,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_WithZeroLengthChunk()
+        public async Task ReceiveData_WithZeroLengthChunk()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -112,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_ProvidedWithMoreBytesThanRemaining()
+        public async Task ReceiveData_ProvidedWithMoreBytesThanRemaining()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -132,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_ProvidedWithOutOfOrderChunk_SimulatesSignalRDisconnect()
+        public async Task ReceiveData_ProvidedWithOutOfOrderChunk_SimulatesSignalRDisconnect()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -156,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_NoDataProvidedBeforeTimeout_StreamDisposed()
+        public async Task ReceiveData_NoDataProvidedBeforeTimeout_StreamDisposed()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -190,7 +218,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Confirm exception also raised on pipe reader
             using var mem = new MemoryStream();
             var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await remoteJSDataStream.CopyToAsync(mem));
-            Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+            Assert.Equal("Did not receive any data in the allotted time.", ex.Message);
 
             // Act & Assert 3
             // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
@@ -199,14 +227,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async void ReceiveData_ReceivesDataThenTimesout_StreamDisposed()
+        public async Task ReceiveData_ReceivesDataThenTimesout_StreamDisposed()
         {
             // Arrange
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
             var timeoutExceptionRaisedSemaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1);
             jsRuntime.UnhandledException += (_, ex) =>
             {
-                Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
+                Assert.Equal("Did not receive any data in the allotted time.", ex.Message);
                 Assert.IsType<TimeoutException>(ex);
                 timeoutExceptionRaisedSemaphore.Release();
             };
