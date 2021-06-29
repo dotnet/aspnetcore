@@ -26,8 +26,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
-    internal delegate ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> HttpsOptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken);
-
     internal class HttpsConnectionMiddleware
     {
         private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
@@ -45,9 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly X509Certificate2? _serverCertificate;
         private readonly Func<ConnectionContext, string?, X509Certificate2?>? _serverCertificateSelector;
 
-        // The following fields are only set by ServerOptionsSelectionCallback ctor.
-        private readonly HttpsOptionsCallback? _httpsOptionsCallback;
-        private readonly object? _httpsOptionsCallbackState;
+        // The following fields are only set by TlsHandshakeCallbackOptions ctor.
+        private readonly Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>>? _tlsCallbackOptions;
+        private readonly object? _tlsCallbackOptionsState;
 
         // Pool for cancellation tokens that cancel the handshake
         private readonly CancellationTokenSourcePool _ctsPool = new();
@@ -120,17 +118,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         internal HttpsConnectionMiddleware(
             ConnectionDelegate next,
-            HttpsOptionsCallback httpsOptionsCallback,
-            object httpsOptionsCallbackState,
-            TimeSpan handshakeTimeout,
+            TlsHandshakeCallbackOptions tlsCallbackOptions,
             ILoggerFactory loggerFactory)
         {
             _next = next;
-            _handshakeTimeout = handshakeTimeout;
+            _handshakeTimeout = tlsCallbackOptions.HandshakeTimeout;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
 
-            _httpsOptionsCallback = httpsOptionsCallback;
-            _httpsOptionsCallbackState = httpsOptionsCallbackState;
+            _tlsCallbackOptions = tlsCallbackOptions.OnConnection;
+            _tlsCallbackOptionsState = tlsCallbackOptions.OnConnectionState;
             _sslStreamFactory = s => new SslStream(s);
         }
 
@@ -149,7 +145,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             var feature = new Core.Internal.TlsConnectionFeature(sslStream);
             // Set the mode if options were used. If the callback is used it will set the mode later.
-            feature.ClientCertificateMode = _options?.ClientCertificateMode ?? ClientCertificateMode.NoCertificate;
+            feature.AllowDelayedClientCertificateNegotation =
+                _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
@@ -159,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 using var cancellationTokenSource = _ctsPool.Rent();
                 cancellationTokenSource.CancelAfter(_handshakeTimeout);
 
-                if (_httpsOptionsCallback is null)
+                if (_tlsCallbackOptions is null)
                 {
                     await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
                 }
@@ -426,9 +423,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             feature.HostName = clientHelloInfo.ServerName;
             context.Features.Set(sslStream);
-
-            var (sslOptions, clientCertificateMode) = await middleware._httpsOptionsCallback!(context, sslStream, clientHelloInfo, middleware._httpsOptionsCallbackState!, cancellationToken);
-            feature.ClientCertificateMode = clientCertificateMode;
+            var callbackContext = new TlsHandshakeCallbackContext()
+            {
+                Connection = context,
+                SslStream = sslStream,
+                State = middleware._tlsCallbackOptionsState,
+                CancellationToken = cancellationToken,
+                ClientHelloInfo = clientHelloInfo,
+            };
+            var sslOptions = await middleware._tlsCallbackOptions!(callbackContext);
+            feature.AllowDelayedClientCertificateNegotation = callbackContext.AllowDelayedClientCertificateNegotation;
 
             KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
 
