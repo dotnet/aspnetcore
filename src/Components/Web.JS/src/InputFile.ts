@@ -126,7 +126,7 @@ function getArrayBufferFromFileAsync(elem: InputElement, fileId: number): Promis
       reader.onerror = function(err): void {
         reject(err);
       };
-      reader.readAsArrayBuffer(file.blob!);
+      reader.readAsArrayBuffer(file.blob);
     });
   }
 
