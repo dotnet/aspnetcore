@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly TimingPipeFlusher _flusher;
 
         // HTTP/3 doesn't have a max frame size (peer can optionally specify a size).
-        // Write headers a buffer that can grow. Possible performance improvement
+        // Write headers to a buffer that can grow. Possible performance improvement
         // by writing directly to output writer (difficult as frame length is prefixed).
         private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
         private IEnumerator<KeyValuePair<string, string>>? _headersEnumerator;
