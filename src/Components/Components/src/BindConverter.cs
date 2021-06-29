@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components
@@ -494,6 +495,16 @@ namespace Microsoft.AspNetCore.Components
             }
 
             return value.ToString();
+        }
+
+        private static string? FormatArrayValueCore<T>(T value, CultureInfo? culture)
+        {
+            if (value is not Array array)
+            {
+                return null;
+            }
+
+            return $"[{string.Join(", ", array.Cast<object>().Select(item => $"\"{item}\""))}]";
         }
 
         /// <summary>
@@ -1366,6 +1377,10 @@ namespace Microsoft.AspNetCore.Components
                     {
                         formatter = (BindFormatter<T>)FormatEnumValueCore<T>;
                     }
+                    else if (typeof(T).IsArray)
+                    {
+                        formatter = (BindFormatter<T>)FormatArrayValueCore<T>;
+                    }
                     else
                     {
                         formatter = MakeTypeConverterFormatter<T>();
@@ -1404,6 +1419,7 @@ namespace Microsoft.AspNetCore.Components
 
             private static MethodInfo? _convertToEnum;
             private static MethodInfo? _convertToNullableEnum;
+            private static MethodInfo? _convertToArray;
 
             [UnconditionalSuppressMessage(
                 "ReflectionAnalysis",
@@ -1503,6 +1519,12 @@ namespace Microsoft.AspNetCore.Components
                         var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
                         parser = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
                     }
+                    else if (typeof(T).IsArray)
+                    {
+                        var method = _convertToArray ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        var elementType = typeof(T).GetElementType()!;
+                        parser = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
+                    }
                     else
                     {
                         parser = MakeTypeConverterConverter<T>();
@@ -1512,6 +1534,38 @@ namespace Microsoft.AspNetCore.Components
                 }
 
                 return (BindParser<T>)parser;
+            }
+
+            private static BindParser<T[]?> MakeArrayTypeConverter<T>()
+            {
+                var elementParser = Get<T>();
+
+                return ConvertToArray;
+
+                bool ConvertToArray(object? obj, CultureInfo? culture, out T[]? value)
+                {
+                    var initialArray = (object?[]?)obj;
+
+                    if (initialArray is null)
+                    {
+                        value = default;
+                        return false;
+                    }
+
+                    var convertedArray = new T[initialArray.Length];
+
+                    for (var i = 0; i < initialArray.Length; i++)
+                    {
+                        if (!elementParser(initialArray[i], culture, out convertedArray[i]!))
+                        {
+                            value = default;
+                            return false;
+                        }
+                    }
+
+                    value = convertedArray;
+                    return true;
+                }
             }
 
             private static BindParser<T> MakeTypeConverterConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()

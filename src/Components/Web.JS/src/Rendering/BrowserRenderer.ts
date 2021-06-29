@@ -265,6 +265,12 @@ export class BrowserRenderer {
     if (newDomElementRaw instanceof HTMLOptionElement) {
       // Situation 1
       this.trySetSelectValueFromOptionElement(newDomElementRaw);
+    } else if (newDomElementRaw instanceof HTMLSelectElement && newDomElementRaw.type === 'select-multiple') {
+      const deferredValue = newDomElementRaw[deferredValuePropname] || [];
+
+      for (let i = 0; i < newDomElementRaw.options.length; i++) {
+        newDomElementRaw.options[i].selected = deferredValue.indexOf(newDomElementRaw.options[i].value) !== -1;
+      }
     } else if (deferredValuePropname in newDomElementRaw) {
       // Situation 2
       const deferredValue: string | null = newDomElementRaw[deferredValuePropname];
@@ -274,9 +280,25 @@ export class BrowserRenderer {
 
   private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
     const selectElem = this.findClosestAncestorSelectElement(optionElement);
-    if (selectElem && (deferredValuePropname in selectElem) && selectElem[deferredValuePropname] === optionElement.value) {
-      setDeferredElementValue(selectElem, optionElement.value);
-      delete selectElem[deferredValuePropname];
+    if (selectElem && (deferredValuePropname in selectElem)) {
+      if (selectElem.type === 'multiple-select') {
+        return this.trySetMultipleSelectValueFromOptionElement(selectElem, optionElement);
+      } else {
+        return this.trySetSingleSelectValueFromOptionElement(selectElem, optionElement);
+      }
+    }
+    return false;
+  }
+
+  private trySetMultipleSelectValueFromOptionElement(selectElement: HTMLSelectElement, optionElement: HTMLOptionElement) {
+    optionElement.selected = selectElement[deferredValuePropname].indexOf(optionElement.value) !== -1;
+    return true;
+  }
+
+  private trySetSingleSelectValueFromOptionElement(selectElement: HTMLSelectElement, optionElement: HTMLOptionElement) {
+    if (selectElement[deferredValuePropname] === optionElement.value) {
+      setDeferredElementValue(selectElement, optionElement.value);
+      delete selectElement[deferredValuePropname];
       return true;
     }
     return false;
@@ -390,8 +412,17 @@ export class BrowserRenderer {
         // default attribute values that may incorrectly constain the specified 'value'.
         // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
         // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
-        element[deferredValuePropname] = value;
-        setDeferredElementValue(element, value);
+
+        if (element instanceof HTMLSelectElement && element.type === 'select-multiple') {
+          const selectedOptions = value
+            ? JSON.parse(value)
+            : [];
+
+          element[deferredValuePropname] = selectedOptions;
+        } else {
+          element[deferredValuePropname] = value;
+          setDeferredElementValue(element, value);
+        }
 
         return true;
       }

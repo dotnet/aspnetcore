@@ -40,7 +40,7 @@
 @code
 {
     public string SelectValue { get; set; } = "B";
-    public string SelectedCities { get; set; } = string.Empty;
+    public string[] SelectedCities { get; set; } = new[] { "sf", "sea" };
     public bool ShowAdditionalOption = false;
 
     void ToggleShowAdditionalOption() {
@@ -54,7 +54,7 @@
             return;
         }
 
-        Console.WriteLine($"Selected cities: {SelectedCities}");
+        Console.WriteLine($"Selected cities: {string.Join(", ", SelectedCities)}");
     }
 
     void SelectionChanged(ChangeEventArgs e)
