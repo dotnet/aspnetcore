@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 @"Connection id ""{ConnectionId}"": QPACK decoding error while decoding headers for stream ID {StreamId}.");
 
         private static readonly Action<ILogger, string, long, Exception> _qpackEncodingError =
-            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(49, "QPackEncodingError"),
+            LoggerMessage.Define<string, long>(LogLevel.Information, new EventId(49, "QPackEncodingError"),
                 @"Connection id ""{ConnectionId}"": QPACK encoding error while encoding headers for stream ID {StreamId}.");
 
         private static readonly Action<ILogger, string, Exception> _http3OutboundControlStreamError =
