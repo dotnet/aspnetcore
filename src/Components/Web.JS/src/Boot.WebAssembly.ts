@@ -15,6 +15,7 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { WasmInputFile } from './WasmInputFile';
+import { sendJSDataStreamWASM } from './Platform/WebAssemblyStreamingInterop';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -50,6 +51,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveByteArray = receiveByteArray;
   Blazor._internal.retrieveByteArray = retrieveByteArray;
+  Blazor._internal.sendJSDataStream = sendJSDataStreamWASM;
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
@@ -154,6 +156,7 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
       case DotNet.JSCallResultType.JSObjectReference:
         return DotNet.createJSObjectReference(result).__jsObjectId;
       case DotNet.JSCallResultType.JSStreamReference:
+        return DotNet.createJSStreamReference(result);
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

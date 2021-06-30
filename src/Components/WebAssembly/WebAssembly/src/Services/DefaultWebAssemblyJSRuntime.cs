@@ -1,10 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
+using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -12,6 +19,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
     internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
+        internal int WebAssemblyJSDataStreamNextInstanceId;
+        internal readonly Dictionary<long, WebAssemblyJSDataStream> WebAssemblyJSDataStreamInstances = new();
+
         internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
@@ -89,5 +99,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 
             DotNetDispatcher.ReceiveByteArray(Instance, id, data);
         }
+
+        /// <inheritdoc />
+        protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
+            => await WebAssemblyJSDataStream.CreateWebAssemblyJSDataStreamAsync(this, jsStreamReference, totalLength, maxBufferSize, 1024 * 32, TimeSpan.FromMinutes(1), cancellationToken);
     }
 }

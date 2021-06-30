@@ -15,13 +15,14 @@ function readFileDataSharedMemory(readRequest: any): number {
     const destination = monoPlatform.readInt32Field(readRequest, 24) as unknown as System_Array<number>;
     const destinationOffset = monoPlatform.readInt32Field(readRequest, 32);
     const maxBytes = monoPlatform.readInt32Field(readRequest, 36);
-  
-    const sourceArrayBuffer = getFileById(inputFileElement as InputElement, fileId).arrayBuffer as ArrayBuffer;
-    const bytesToRead = Math.min(maxBytes, sourceArrayBuffer.byteLength - sourceOffset);
-    const sourceUint8Array = new Uint8Array(sourceArrayBuffer, sourceOffset, bytesToRead);
-  
+
+    const chunk = getFileById(inputFileElement as InputElement, fileId).chunk;
+    if (chunk === undefined) {
+        throw new Error(`Chunk for file ${fileId} with source offset ${sourceOffset} was undefined, unable to read further.`)
+    }
+
     const destinationUint8Array = monoPlatform.toUint8Array(destination);
-    destinationUint8Array.set(sourceUint8Array, destinationOffset);
-  
-    return bytesToRead;
-  }
+    destinationUint8Array.set(chunk, destinationOffset);
+
+    return chunk.length;
+}

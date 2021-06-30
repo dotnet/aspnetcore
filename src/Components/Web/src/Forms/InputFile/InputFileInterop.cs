@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         public const string Init = JsFunctionsPrefix + "init";
 
-        public const string EnsureArrayBufferReadyForSharedMemoryInterop = JsFunctionsPrefix + "ensureArrayBufferReadyForSharedMemoryInterop";
+        public const string EnsureChunkReadyForSharedMemoryInterop = JsFunctionsPrefix + "ensureChunkReadyForSharedMemoryInterop";
 
         public const string ReadFileData = JsFunctionsPrefix + "readFileData";
 

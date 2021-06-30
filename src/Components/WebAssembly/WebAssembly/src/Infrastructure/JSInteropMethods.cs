@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -51,6 +52,29 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
                 webEvent.EventHandlerId,
                 webEvent.EventFieldInfo,
                 webEvent.EventArgs);
+        }
+
+        /// <summary>
+        /// Invoked via Mono's JS interop mechanism (invoke_method)
+        ///
+        /// Notifies .NET of an JS Stream Data Chunk that's available for transfer from JS to .NET
+        ///
+        /// Ideally that byte array would be transferred directly as a parameter on this
+        /// call, however that's not currently possible due to: https://github.com/dotnet/runtime/issues/53378
+        /// </summary>
+        /// <param name="streamId"></param>
+        /// <param name="chunkId"></param>
+        /// <param name="error"></param>
+        [JSInvokable("NotifyJSStreamDataChunkAvailable")]
+        public static async Task NotifyJSStreamDataChunkAvailable(long streamId, long chunkId, string error)
+        {
+            var data = Array.Empty<byte>();
+            if (string.IsNullOrEmpty(error))
+            {
+                data = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
+            }
+
+            await WebAssemblyJSDataStream.ReceiveData(DefaultWebAssemblyJSRuntime.Instance, streamId, chunkId, data, error);
         }
     }
 }

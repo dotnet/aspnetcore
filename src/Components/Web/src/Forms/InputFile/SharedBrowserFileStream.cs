@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         protected override async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, Memory<byte> destination, CancellationToken cancellationToken)
         {
-            await _jsRuntime.InvokeVoidAsync(InputFileInterop.EnsureArrayBufferReadyForSharedMemoryInterop, cancellationToken, _inputFileElement, File.Id);
 
             var readRequest = new ReadRequest
             {
@@ -36,6 +35,8 @@ namespace Microsoft.AspNetCore.Components.Forms
                 SourceOffset = sourceOffset
             };
 
+            // We don't leverage the streaming mechanism directly as we want JavaScript to populate the 
+            // pre-allocated .NET memory.
             if (MemoryMarshal.TryGetArray(destination, out ArraySegment<byte> destinationArraySegment))
             {
                 readRequest.Destination = destinationArraySegment.Array!;
@@ -52,6 +53,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 destination.CopyTo(new Memory<byte>(readRequest.Destination));
             }
 
+            await _jsRuntime.InvokeVoidAsync(InputFileInterop.EnsureChunkReadyForSharedMemoryInterop, cancellationToken, _inputFileElement, File.Id, sourceOffset, readRequest.MaxBytes);
             return _jsUnmarshalledRuntime.InvokeUnmarshalled<ReadRequest, int>(InputFileInterop.ReadFileDataSharedMemory, readRequest);
         }
     }

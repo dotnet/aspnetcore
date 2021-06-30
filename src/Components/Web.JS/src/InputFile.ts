@@ -1,7 +1,7 @@
 export const InputFile = {
   init,
   toImageFile,
-  ensureArrayBufferReadyForSharedMemoryInterop,
+  ensureChunkReadyForSharedMemoryInterop,
   readFileData,
 };
 
@@ -11,9 +11,8 @@ interface BrowserFile {
   name: string;
   size: number;
   contentType: string;
-  readPromise: Promise<ArrayBuffer> | undefined;
-  arrayBuffer: ArrayBuffer | undefined;
   blob: Blob;
+  chunk: Uint8Array | undefined;
 }
 
 export interface InputElement extends HTMLInputElement {
@@ -43,6 +42,7 @@ function init(callbackWrapper: any, elem: InputElement): void {
         readPromise: undefined,
         arrayBuffer: undefined,
         blob: file,
+        chunk: undefined,
       };
 
       elem._blazorFilesById[result.id] = result;
@@ -83,9 +83,8 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     name: originalFile.name,
     size: resizedImageBlob?.size || 0,
     contentType: format,
-    readPromise: undefined,
-    arrayBuffer: undefined,
     blob: resizedImageBlob ? resizedImageBlob : originalFile.blob,
+    chunk: undefined,
   };
 
   elem._blazorFilesById[result.id] = result;
@@ -93,9 +92,13 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
   return result;
 }
 
-async function ensureArrayBufferReadyForSharedMemoryInterop(elem: InputElement, fileId: number): Promise<void> {
-  const arrayBuffer = await getArrayBufferFromFileAsync(elem, fileId);
-  getFileById(elem, fileId).arrayBuffer = arrayBuffer;
+async function ensureChunkReadyForSharedMemoryInterop(elem: InputElement, fileId: number, sourceOffset: number, maxBytes: number): Promise<void> {
+  const file = getFileById(elem, fileId);
+  const chunkBlob = file.blob.slice(sourceOffset, Math.min(sourceOffset + maxBytes, file.blob.size));
+  const arrayBuffer = await chunkBlob.arrayBuffer();
+  const chunkByteArray = new Uint8Array(arrayBuffer);
+
+  file.chunk = chunkByteArray;
 }
 
 async function readFileData(elem: InputElement, fileId: number): Promise<Blob> {
@@ -111,24 +114,4 @@ export function getFileById(elem: InputElement, fileId: number): BrowserFile {
   }
 
   return file;
-}
-
-function getArrayBufferFromFileAsync(elem: InputElement, fileId: number): Promise<ArrayBuffer> {
-  const file = getFileById(elem, fileId);
-
-  // On the first read, convert the FileReader into a Promise<ArrayBuffer>.
-  if (!file.readPromise) {
-    file.readPromise = new Promise(function(resolve: (buffer: ArrayBuffer) => void, reject): void {
-      const reader = new FileReader();
-      reader.onload = function(): void {
-        resolve(reader.result as ArrayBuffer);
-      };
-      reader.onerror = function(err): void {
-        reject(err);
-      };
-      reader.readAsArrayBuffer(file.blob!);
-    });
-  }
-
-  return file.readPromise;
 }
