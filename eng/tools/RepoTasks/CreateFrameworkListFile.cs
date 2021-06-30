@@ -61,11 +61,11 @@ namespace RepoTasks
                 string type = f.IsNative ? "Native" : "Managed";
                 var element = new XElement("File", new XAttribute("Path", path));
 
-                if (path.StartsWith("analyzers/"))
+                if (path.StartsWith("analyzers/", StringComparison.Ordinal))
                 {
                     type = "Analyzer";
 
-                    if (path.EndsWith(".resources.dll"))
+                    if (path.EndsWith(".resources.dll", StringComparison.Ordinal))
                     {
                         // omit analyzer resources
                         continue;
@@ -78,6 +78,7 @@ namespace RepoTasks
                         Log.LogError($"Unexpected analyzer path format {path}.  Expected  'analyzers/dotnet(/language)/analyzer.dll");
                     }
 
+                    // Check if we have enough parts for language directory and include it
                     if (pathParts.Length > 3)
                     {
                         element.Add(new XAttribute("Language", pathParts[2]));
