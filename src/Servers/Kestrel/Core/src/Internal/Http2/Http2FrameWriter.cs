@@ -189,11 +189,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
-                catch (Exception hex) // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
+                // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
-                    _log.HPackEncodingError(_connectionId, streamId, hex);
-                    _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
-                    throw new InvalidOperationException(hex.Message, hex); // Report the error to the user if this was the first write.
+                    _log.HPackEncodingError(_connectionId, streamId, ex);
+                    _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+                    throw new InvalidOperationException(ex.Message, ex); // Report the error to the user if this was the first write.
                 }
             }
         }
@@ -215,10 +217,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
-                catch (Exception hex)  // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
+                // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
-                    _log.HPackEncodingError(_connectionId, streamId, hex);
-                    _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
+                    _log.HPackEncodingError(_connectionId, streamId, ex);
+                    _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
                 }
 
                 return TimeFlushUnsynchronizedAsync();
