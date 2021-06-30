@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         public static bool TryDeserializeOutgoing(string message, out OutgoingMessageType messageType, out ArraySegment<JsonElement> args)
             => TryDeserialize(message, out messageType, out args);
 
-        private static string Serialize(string messageType, object[] args)
+        public static string Serialize(string messageType, object[] args)
         {
             // We could come up with something a little more low-level here if we
             // wanted to avoid a couple of allocations
@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             OnRenderCompleted,
             OnLocationChanged,
             ReceiveByteArrayFromJS,
+            ReceiveJSDataChunk,
         }
 
         public enum OutgoingMessageType
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             NotifyUnhandledException,
             BeginInvokeJS,
             SendByteArrayToJS,
+            SendJSDataStream,
         }
     }
 }

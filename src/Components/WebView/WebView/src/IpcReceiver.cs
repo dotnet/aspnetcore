@@ -5,6 +5,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView.Services;
 using Microsoft.JSInterop.Infrastructure;
 
 // Sync vs Async APIs for this.
@@ -62,6 +63,9 @@ namespace Microsoft.AspNetCore.Components.WebView
                     case IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS:
                         ReceiveByteArrayFromJS(pageContext, args[0].GetInt32(), args[1].GetBytesFromBase64());
                         break;
+                    case IpcCommon.IncomingMessageType.ReceiveJSDataChunk:
+                        await ReceiveJSDataChunk(pageContext, args[0].GetInt64(), args[1].GetInt64(), args[2].GetBytesFromBase64(), args[3].GetString());
+                        break;
                     case IpcCommon.IncomingMessageType.DispatchBrowserEvent:
                         await DispatchBrowserEventAsync(pageContext, args[0].GetRawText(), args[1].GetRawText());
                         break;
@@ -93,6 +97,14 @@ namespace Microsoft.AspNetCore.Components.WebView
         private static void ReceiveByteArrayFromJS(PageContext pageContext, int id, byte[] data)
         {
             DotNetDispatcher.ReceiveByteArray(pageContext.JSRuntime, id, data);
+        }
+
+        private static Task ReceiveJSDataChunk(PageContext pageContext, long streamId, long chunkId, byte[] chunk, string error)
+        {
+            return pageContext.Renderer.Dispatcher.InvokeAsync(async () =>
+            {
+                await WebViewJSDataStream.ReceiveData(pageContext.JSRuntime, streamId, chunkId, chunk, error);
+            });
         }
 
         private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)

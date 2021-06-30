@@ -63,6 +63,11 @@ namespace Microsoft.AspNetCore.Components.WebView
             DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.SendByteArrayToJS, id, data));
         }
 
+        public void SendJSDataStream(IJSStreamReference jsStreamReference, long streamId, long chunkSize)
+        {
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize("Blazor._internal.sendJSDataStream", new object[] { jsStreamReference, streamId, chunkSize }));
+        }
+
         public void NotifyUnhandledException(Exception exception)
         {
             var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.Message, exception.StackTrace);
