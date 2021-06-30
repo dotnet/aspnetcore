@@ -164,9 +164,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             await connection.Receive(
                 "HTTP/1.1 408 Request Timeout",
+                "Content-Length: 0",
                 "Connection: close",
                 $"Date: {testContext.DateHeaderValue}",
-                "Content-Length: 0",
                 "",
                 "");
         }

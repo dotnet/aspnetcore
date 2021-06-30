@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 {
     public class ResponseHeadersWritingBenchmark
     {
+        private const int Iterations = 1000;
+
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
         private static readonly byte[] _helloWorldPayload = Encoding.ASCII.GetBytes("Hello, World!");
 
@@ -32,11 +34,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             BenchmarkTypes.PlaintextChunked,
             BenchmarkTypes.PlaintextWithCookie,
             BenchmarkTypes.PlaintextChunkedWithCookie,
-            BenchmarkTypes.LiveAspNet
+            BenchmarkTypes.LiveAspNet,
+            BenchmarkTypes.Common
         )]
         public BenchmarkTypes Type { get; set; }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = Iterations)]
         public void Output()
         {
             switch (Type)
@@ -56,6 +59,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
                 case BenchmarkTypes.LiveAspNet:
                     LiveAspNet();
                     break;
+                case BenchmarkTypes.Common:
+                    Common();
+                    break;
             }
         }
 
@@ -66,7 +72,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             responseHeaders.ContentLength = _helloWorldPayload.Length;
 
             var writer = new BufferWriter<PipeWriter>(_writer);
-            _responseHeaders.CopyTo(ref writer);
+
+            for (var i = 0; i < Iterations; i++)
+            {
+                _responseHeaders.CopyTo(ref writer);
+            }
         }
 
         private void PlaintextChunked()
@@ -75,7 +85,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             responseHeaders.ContentType = "text/plain";
 
             var writer = new BufferWriter<PipeWriter>(_writer);
-            _responseHeaders.CopyTo(ref writer);
+
+            for (var i = 0; i < Iterations; i++)
+            {
+                _responseHeaders.CopyTo(ref writer);
+            }
         }
 
         private void LiveAspNet()
@@ -88,7 +102,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             _responseHeadersDict["X-Powered-By"] = "ASP.NET";
 
             var writer = new BufferWriter<PipeWriter>(_writer);
-            _responseHeaders.CopyTo(ref writer);
+
+            for (var i = 0; i < Iterations; i++)
+            {
+                _responseHeaders.CopyTo(ref writer);
+            }
+        }
+
+        private void Common()
+        {
+            var responseHeaders = _responseHeadersDict;
+            responseHeaders.ContentType = "text/css";
+            responseHeaders.ContentLength = 421;
+
+            responseHeaders.Connection = "Close";
+            responseHeaders.CacheControl = "public, max-age=30672000";
+            responseHeaders.Vary = "Accept-Encoding";
+            responseHeaders.ContentEncoding = "gzip";
+            responseHeaders.Expires = "Fri, 12 Jan 2018 22:01:55 GMT";
+            responseHeaders.LastModified = "Wed, 22 Jun 2016 20:08:29 GMT";
+            responseHeaders.SetCookie = "prov=20629ccd-8b0f-e8ef-2935-cd26609fc0bc; __qca=P0-1591065732-1479167353442; _ga=GA1.2.1298898376.1479167354; _gat=1; sgt=id=9519gfde_3347_4762_8762_df51458c8ec2; acct=t=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric&s=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric";
+            responseHeaders.ETag = "\"54ef7954-1078\"";
+            responseHeaders.TransferEncoding = "chunked";
+            responseHeaders.ContentLanguage = "en-gb";
+            responseHeaders.Upgrade = "websocket";
+            responseHeaders.Via = "1.1 varnish";
+            responseHeaders.AccessControlAllowOrigin = "*";
+            responseHeaders.AccessControlAllowCredentials = "true";
+            responseHeaders.AccessControlExposeHeaders = "Client-Protocol, Content-Length, Content-Type, X-Bandwidth-Est, X-Bandwidth-Est2, X-Bandwidth-Est-Comp, X-Bandwidth-Avg, X-Walltime-Ms, X-Sequence-Num";
+
+            var dateHeaderValues = _dateHeaderValueManager.GetDateHeaderValues();
+            _responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
+            _responseHeaders.SetRawServer("Kestrel", _bytesServer);
+
+            var writer = new BufferWriter<PipeWriter>(_writer);
+
+            for (var i = 0; i < Iterations; i++)
+            {
+                _responseHeaders.CopyTo(ref writer);
+            }
         }
 
         private void PlaintextWithCookie()
@@ -99,7 +151,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             responseHeaders.ContentLength = _helloWorldPayload.Length;
 
             var writer = new BufferWriter<PipeWriter>(_writer);
-            _responseHeaders.CopyTo(ref writer);
+
+            for (var i = 0; i < Iterations; i++)
+            {
+                _responseHeaders.CopyTo(ref writer);
+            }
         }
 
         private void PlaintextChunkedWithCookie()
@@ -110,7 +166,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             responseHeaders.TransferEncoding = "chunked";
 
             var writer = new BufferWriter<PipeWriter>(_writer);
-            _responseHeaders.CopyTo(ref writer);
+
+            for (var i = 0; i < Iterations; i++)
+            {
+                _responseHeaders.CopyTo(ref writer);
+            }
         }
 
         [GlobalSetup]
@@ -151,7 +211,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             PlaintextChunked,
             PlaintextWithCookie,
             PlaintextChunkedWithCookie,
-            LiveAspNet
+            LiveAspNet,
+            Common
         }
     }
 }

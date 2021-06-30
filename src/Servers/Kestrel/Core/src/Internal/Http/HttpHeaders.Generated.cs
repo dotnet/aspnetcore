@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Numerics;
@@ -14261,481 +14262,350 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {
-            var tempBits = (ulong)_bits | (_contentLength.HasValue ? 0x8000000000000000L : 0);
-            var next = 0;
-            var keyStart = 0;
-            var keyLength = 0;
-            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var tempBits = (ulong)_bits;
+            // Set exact next
+            var next = BitOperations.TrailingZeroCount(tempBits);
 
+            // Output Content-Length now as it isn't contained in the bit flags.
+            if (_contentLength.HasValue)
+            {
+                output.Write(HeaderBytes.Slice(640, 18));
+                output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
+            }
+            if (tempBits == 0)
+            {
+                return;
+            }
+
+            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
             do
             {
+                int keyStart;
+                int keyLength;
                 switch (next)
                 {
                     case 0: // Header: "Connection"
-                        if ((tempBits & 0x1L) != 0)
+                        Debug.Assert((tempBits & 0x1L) != 0);
+                        if (_headers._rawConnection != null)
                         {
+                            // Clear and set next as not using common output.
                             tempBits ^= 0x1L;
-                            if (_headers._rawConnection != null)
-                            {
-                                output.Write(_headers._rawConnection);
-                            }
-                            else
-                            {
-                                values = ref _headers._Connection;
-                                keyStart = 0;
-                                keyLength = 14;
-                                next = 1;
-                                break; // OutputHeader
-                            }
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._rawConnection);
+                            continue; // Jump to next, already output header
                         }
-                        goto case 1;
+                        else
+                        {
+                            values = ref _headers._Connection;
+                            keyStart = 0;
+                            keyLength = 14;
+                        }
+                        break; // OutputHeader
+
                     case 1: // Header: "Content-Type"
-                        if ((tempBits & 0x2L) != 0)
-                        {
-                            tempBits ^= 0x2L;
-                            values = ref _headers._ContentType;
-                            keyStart = 14;
-                            keyLength = 16;
-                            next = 2;
-                            break; // OutputHeader
-                        }
-                        goto case 2;
+                        Debug.Assert((tempBits & 0x2L) != 0);
+                        values = ref _headers._ContentType;
+                        keyStart = 14;
+                        keyLength = 16;
+                        break; // OutputHeader
+
                     case 2: // Header: "Date"
-                        if ((tempBits & 0x4L) != 0)
+                        Debug.Assert((tempBits & 0x4L) != 0);
+                        if (_headers._rawDate != null)
                         {
+                            // Clear and set next as not using common output.
                             tempBits ^= 0x4L;
-                            if (_headers._rawDate != null)
-                            {
-                                output.Write(_headers._rawDate);
-                            }
-                            else
-                            {
-                                values = ref _headers._Date;
-                                keyStart = 30;
-                                keyLength = 8;
-                                next = 3;
-                                break; // OutputHeader
-                            }
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._rawDate);
+                            continue; // Jump to next, already output header
                         }
-                        goto case 3;
+                        else
+                        {
+                            values = ref _headers._Date;
+                            keyStart = 30;
+                            keyLength = 8;
+                        }
+                        break; // OutputHeader
+
                     case 3: // Header: "Server"
-                        if ((tempBits & 0x8L) != 0)
+                        Debug.Assert((tempBits & 0x8L) != 0);
+                        if (_headers._rawServer != null)
                         {
+                            // Clear and set next as not using common output.
                             tempBits ^= 0x8L;
-                            if (_headers._rawServer != null)
-                            {
-                                output.Write(_headers._rawServer);
-                            }
-                            else
-                            {
-                                values = ref _headers._Server;
-                                keyStart = 38;
-                                keyLength = 10;
-                                next = 4;
-                                break; // OutputHeader
-                            }
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._rawServer);
+                            continue; // Jump to next, already output header
                         }
-                        goto case 4;
-                    case 4: // Header: "Content-Length"
-                        if ((tempBits & 0x8000000000000000L) != 0)
+                        else
                         {
-                            tempBits ^= 0x8000000000000000L;
-                            output.Write(HeaderBytes.Slice(640, 18));
-                            output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
-                            if (tempBits == 0)
-                            {
-                                return;
-                            }
-                        }
-                        goto case 5;
-                    case 5: // Header: "Accept-Ranges"
-                        if ((tempBits & 0x10L) != 0)
-                        {
-                            tempBits ^= 0x10L;
-                            values = ref _headers._AcceptRanges;
-                            keyStart = 48;
-                            keyLength = 17;
-                            next = 6;
-                            break; // OutputHeader
-                        }
-                        goto case 6;
-                    case 6: // Header: "Access-Control-Allow-Credentials"
-                        if ((tempBits & 0x20L) != 0)
-                        {
-                            tempBits ^= 0x20L;
-                            values = ref _headers._AccessControlAllowCredentials;
-                            keyStart = 65;
-                            keyLength = 36;
-                            next = 7;
-                            break; // OutputHeader
-                        }
-                        goto case 7;
-                    case 7: // Header: "Access-Control-Allow-Headers"
-                        if ((tempBits & 0x40L) != 0)
-                        {
-                            tempBits ^= 0x40L;
-                            values = ref _headers._AccessControlAllowHeaders;
-                            keyStart = 101;
-                            keyLength = 32;
-                            next = 8;
-                            break; // OutputHeader
-                        }
-                        goto case 8;
-                    case 8: // Header: "Access-Control-Allow-Methods"
-                        if ((tempBits & 0x80L) != 0)
-                        {
-                            tempBits ^= 0x80L;
-                            values = ref _headers._AccessControlAllowMethods;
-                            keyStart = 133;
-                            keyLength = 32;
-                            next = 9;
-                            break; // OutputHeader
-                        }
-                        goto case 9;
-                    case 9: // Header: "Access-Control-Allow-Origin"
-                        if ((tempBits & 0x100L) != 0)
-                        {
-                            tempBits ^= 0x100L;
-                            values = ref _headers._AccessControlAllowOrigin;
-                            keyStart = 165;
-                            keyLength = 31;
-                            next = 10;
-                            break; // OutputHeader
-                        }
-                        goto case 10;
-                    case 10: // Header: "Access-Control-Expose-Headers"
-                        if ((tempBits & 0x200L) != 0)
-                        {
-                            tempBits ^= 0x200L;
-                            values = ref _headers._AccessControlExposeHeaders;
-                            keyStart = 196;
-                            keyLength = 33;
-                            next = 11;
-                            break; // OutputHeader
-                        }
-                        goto case 11;
-                    case 11: // Header: "Access-Control-Max-Age"
-                        if ((tempBits & 0x400L) != 0)
-                        {
-                            tempBits ^= 0x400L;
-                            values = ref _headers._AccessControlMaxAge;
-                            keyStart = 229;
-                            keyLength = 26;
-                            next = 12;
-                            break; // OutputHeader
-                        }
-                        goto case 12;
-                    case 12: // Header: "Age"
-                        if ((tempBits & 0x800L) != 0)
-                        {
-                            tempBits ^= 0x800L;
-                            values = ref _headers._Age;
-                            keyStart = 255;
-                            keyLength = 7;
-                            next = 13;
-                            break; // OutputHeader
-                        }
-                        goto case 13;
-                    case 13: // Header: "Allow"
-                        if ((tempBits & 0x1000L) != 0)
-                        {
-                            tempBits ^= 0x1000L;
-                            values = ref _headers._Allow;
-                            keyStart = 262;
-                            keyLength = 9;
-                            next = 14;
-                            break; // OutputHeader
-                        }
-                        goto case 14;
-                    case 14: // Header: "Alt-Svc"
-                        if ((tempBits & 0x2000L) != 0)
-                        {
-                            tempBits ^= 0x2000L;
-                            values = ref _headers._AltSvc;
-                            keyStart = 271;
-                            keyLength = 11;
-                            next = 15;
-                            break; // OutputHeader
-                        }
-                        goto case 15;
-                    case 15: // Header: "Cache-Control"
-                        if ((tempBits & 0x4000L) != 0)
-                        {
-                            tempBits ^= 0x4000L;
-                            values = ref _headers._CacheControl;
-                            keyStart = 282;
-                            keyLength = 17;
-                            next = 16;
-                            break; // OutputHeader
-                        }
-                        goto case 16;
-                    case 16: // Header: "Content-Encoding"
-                        if ((tempBits & 0x8000L) != 0)
-                        {
-                            tempBits ^= 0x8000L;
-                            values = ref _headers._ContentEncoding;
-                            keyStart = 299;
-                            keyLength = 20;
-                            next = 17;
-                            break; // OutputHeader
-                        }
-                        goto case 17;
-                    case 17: // Header: "Content-Language"
-                        if ((tempBits & 0x10000L) != 0)
-                        {
-                            tempBits ^= 0x10000L;
-                            values = ref _headers._ContentLanguage;
-                            keyStart = 319;
-                            keyLength = 20;
-                            next = 18;
-                            break; // OutputHeader
-                        }
-                        goto case 18;
-                    case 18: // Header: "Content-Location"
-                        if ((tempBits & 0x20000L) != 0)
-                        {
-                            tempBits ^= 0x20000L;
-                            values = ref _headers._ContentLocation;
-                            keyStart = 339;
-                            keyLength = 20;
-                            next = 19;
-                            break; // OutputHeader
-                        }
-                        goto case 19;
-                    case 19: // Header: "Content-MD5"
-                        if ((tempBits & 0x40000L) != 0)
-                        {
-                            tempBits ^= 0x40000L;
-                            values = ref _headers._ContentMD5;
-                            keyStart = 359;
-                            keyLength = 15;
-                            next = 20;
-                            break; // OutputHeader
-                        }
-                        goto case 20;
-                    case 20: // Header: "Content-Range"
-                        if ((tempBits & 0x80000L) != 0)
-                        {
-                            tempBits ^= 0x80000L;
-                            values = ref _headers._ContentRange;
-                            keyStart = 374;
-                            keyLength = 17;
-                            next = 21;
-                            break; // OutputHeader
-                        }
-                        goto case 21;
-                    case 21: // Header: "ETag"
-                        if ((tempBits & 0x100000L) != 0)
-                        {
-                            tempBits ^= 0x100000L;
-                            values = ref _headers._ETag;
-                            keyStart = 391;
-                            keyLength = 8;
-                            next = 22;
-                            break; // OutputHeader
-                        }
-                        goto case 22;
-                    case 22: // Header: "Expires"
-                        if ((tempBits & 0x200000L) != 0)
-                        {
-                            tempBits ^= 0x200000L;
-                            values = ref _headers._Expires;
-                            keyStart = 399;
-                            keyLength = 11;
-                            next = 23;
-                            break; // OutputHeader
-                        }
-                        goto case 23;
-                    case 23: // Header: "Grpc-Encoding"
-                        if ((tempBits & 0x400000L) != 0)
-                        {
-                            tempBits ^= 0x400000L;
-                            values = ref _headers._GrpcEncoding;
-                            keyStart = 410;
-                            keyLength = 17;
-                            next = 24;
-                            break; // OutputHeader
-                        }
-                        goto case 24;
-                    case 24: // Header: "Keep-Alive"
-                        if ((tempBits & 0x800000L) != 0)
-                        {
-                            tempBits ^= 0x800000L;
-                            values = ref _headers._KeepAlive;
-                            keyStart = 427;
-                            keyLength = 14;
-                            next = 25;
-                            break; // OutputHeader
-                        }
-                        goto case 25;
-                    case 25: // Header: "Last-Modified"
-                        if ((tempBits & 0x1000000L) != 0)
-                        {
-                            tempBits ^= 0x1000000L;
-                            values = ref _headers._LastModified;
-                            keyStart = 441;
-                            keyLength = 17;
-                            next = 26;
-                            break; // OutputHeader
-                        }
-                        goto case 26;
-                    case 26: // Header: "Location"
-                        if ((tempBits & 0x2000000L) != 0)
-                        {
-                            tempBits ^= 0x2000000L;
-                            values = ref _headers._Location;
-                            keyStart = 458;
-                            keyLength = 12;
-                            next = 27;
-                            break; // OutputHeader
-                        }
-                        goto case 27;
-                    case 27: // Header: "Pragma"
-                        if ((tempBits & 0x4000000L) != 0)
-                        {
-                            tempBits ^= 0x4000000L;
-                            values = ref _headers._Pragma;
-                            keyStart = 470;
+                            values = ref _headers._Server;
+                            keyStart = 38;
                             keyLength = 10;
-                            next = 28;
-                            break; // OutputHeader
                         }
-                        goto case 28;
-                    case 28: // Header: "Proxy-Authenticate"
-                        if ((tempBits & 0x8000000L) != 0)
+                        break; // OutputHeader
+
+                    case 4: // Header: "Accept-Ranges"
+                        Debug.Assert((tempBits & 0x10L) != 0);
+                        values = ref _headers._AcceptRanges;
+                        keyStart = 48;
+                        keyLength = 17;
+                        break; // OutputHeader
+
+                    case 5: // Header: "Access-Control-Allow-Credentials"
+                        Debug.Assert((tempBits & 0x20L) != 0);
+                        values = ref _headers._AccessControlAllowCredentials;
+                        keyStart = 65;
+                        keyLength = 36;
+                        break; // OutputHeader
+
+                    case 6: // Header: "Access-Control-Allow-Headers"
+                        Debug.Assert((tempBits & 0x40L) != 0);
+                        values = ref _headers._AccessControlAllowHeaders;
+                        keyStart = 101;
+                        keyLength = 32;
+                        break; // OutputHeader
+
+                    case 7: // Header: "Access-Control-Allow-Methods"
+                        Debug.Assert((tempBits & 0x80L) != 0);
+                        values = ref _headers._AccessControlAllowMethods;
+                        keyStart = 133;
+                        keyLength = 32;
+                        break; // OutputHeader
+
+                    case 8: // Header: "Access-Control-Allow-Origin"
+                        Debug.Assert((tempBits & 0x100L) != 0);
+                        values = ref _headers._AccessControlAllowOrigin;
+                        keyStart = 165;
+                        keyLength = 31;
+                        break; // OutputHeader
+
+                    case 9: // Header: "Access-Control-Expose-Headers"
+                        Debug.Assert((tempBits & 0x200L) != 0);
+                        values = ref _headers._AccessControlExposeHeaders;
+                        keyStart = 196;
+                        keyLength = 33;
+                        break; // OutputHeader
+
+                    case 10: // Header: "Access-Control-Max-Age"
+                        Debug.Assert((tempBits & 0x400L) != 0);
+                        values = ref _headers._AccessControlMaxAge;
+                        keyStart = 229;
+                        keyLength = 26;
+                        break; // OutputHeader
+
+                    case 11: // Header: "Age"
+                        Debug.Assert((tempBits & 0x800L) != 0);
+                        values = ref _headers._Age;
+                        keyStart = 255;
+                        keyLength = 7;
+                        break; // OutputHeader
+
+                    case 12: // Header: "Allow"
+                        Debug.Assert((tempBits & 0x1000L) != 0);
+                        values = ref _headers._Allow;
+                        keyStart = 262;
+                        keyLength = 9;
+                        break; // OutputHeader
+
+                    case 13: // Header: "Alt-Svc"
+                        Debug.Assert((tempBits & 0x2000L) != 0);
+                        values = ref _headers._AltSvc;
+                        keyStart = 271;
+                        keyLength = 11;
+                        break; // OutputHeader
+
+                    case 14: // Header: "Cache-Control"
+                        Debug.Assert((tempBits & 0x4000L) != 0);
+                        values = ref _headers._CacheControl;
+                        keyStart = 282;
+                        keyLength = 17;
+                        break; // OutputHeader
+
+                    case 15: // Header: "Content-Encoding"
+                        Debug.Assert((tempBits & 0x8000L) != 0);
+                        values = ref _headers._ContentEncoding;
+                        keyStart = 299;
+                        keyLength = 20;
+                        break; // OutputHeader
+
+                    case 16: // Header: "Content-Language"
+                        Debug.Assert((tempBits & 0x10000L) != 0);
+                        values = ref _headers._ContentLanguage;
+                        keyStart = 319;
+                        keyLength = 20;
+                        break; // OutputHeader
+
+                    case 17: // Header: "Content-Location"
+                        Debug.Assert((tempBits & 0x20000L) != 0);
+                        values = ref _headers._ContentLocation;
+                        keyStart = 339;
+                        keyLength = 20;
+                        break; // OutputHeader
+
+                    case 18: // Header: "Content-MD5"
+                        Debug.Assert((tempBits & 0x40000L) != 0);
+                        values = ref _headers._ContentMD5;
+                        keyStart = 359;
+                        keyLength = 15;
+                        break; // OutputHeader
+
+                    case 19: // Header: "Content-Range"
+                        Debug.Assert((tempBits & 0x80000L) != 0);
+                        values = ref _headers._ContentRange;
+                        keyStart = 374;
+                        keyLength = 17;
+                        break; // OutputHeader
+
+                    case 20: // Header: "ETag"
+                        Debug.Assert((tempBits & 0x100000L) != 0);
+                        values = ref _headers._ETag;
+                        keyStart = 391;
+                        keyLength = 8;
+                        break; // OutputHeader
+
+                    case 21: // Header: "Expires"
+                        Debug.Assert((tempBits & 0x200000L) != 0);
+                        values = ref _headers._Expires;
+                        keyStart = 399;
+                        keyLength = 11;
+                        break; // OutputHeader
+
+                    case 22: // Header: "Grpc-Encoding"
+                        Debug.Assert((tempBits & 0x400000L) != 0);
+                        values = ref _headers._GrpcEncoding;
+                        keyStart = 410;
+                        keyLength = 17;
+                        break; // OutputHeader
+
+                    case 23: // Header: "Keep-Alive"
+                        Debug.Assert((tempBits & 0x800000L) != 0);
+                        values = ref _headers._KeepAlive;
+                        keyStart = 427;
+                        keyLength = 14;
+                        break; // OutputHeader
+
+                    case 24: // Header: "Last-Modified"
+                        Debug.Assert((tempBits & 0x1000000L) != 0);
+                        values = ref _headers._LastModified;
+                        keyStart = 441;
+                        keyLength = 17;
+                        break; // OutputHeader
+
+                    case 25: // Header: "Location"
+                        Debug.Assert((tempBits & 0x2000000L) != 0);
+                        values = ref _headers._Location;
+                        keyStart = 458;
+                        keyLength = 12;
+                        break; // OutputHeader
+
+                    case 26: // Header: "Pragma"
+                        Debug.Assert((tempBits & 0x4000000L) != 0);
+                        values = ref _headers._Pragma;
+                        keyStart = 470;
+                        keyLength = 10;
+                        break; // OutputHeader
+
+                    case 27: // Header: "Proxy-Authenticate"
+                        Debug.Assert((tempBits & 0x8000000L) != 0);
+                        values = ref _headers._ProxyAuthenticate;
+                        keyStart = 480;
+                        keyLength = 22;
+                        break; // OutputHeader
+
+                    case 28: // Header: "Proxy-Connection"
+                        Debug.Assert((tempBits & 0x10000000L) != 0);
+                        values = ref _headers._ProxyConnection;
+                        keyStart = 502;
+                        keyLength = 20;
+                        break; // OutputHeader
+
+                    case 29: // Header: "Retry-After"
+                        Debug.Assert((tempBits & 0x20000000L) != 0);
+                        values = ref _headers._RetryAfter;
+                        keyStart = 522;
+                        keyLength = 15;
+                        break; // OutputHeader
+
+                    case 30: // Header: "Set-Cookie"
+                        Debug.Assert((tempBits & 0x40000000L) != 0);
+                        values = ref _headers._SetCookie;
+                        keyStart = 537;
+                        keyLength = 14;
+                        break; // OutputHeader
+
+                    case 31: // Header: "Trailer"
+                        Debug.Assert((tempBits & 0x80000000L) != 0);
+                        values = ref _headers._Trailer;
+                        keyStart = 551;
+                        keyLength = 11;
+                        break; // OutputHeader
+
+                    case 32: // Header: "Transfer-Encoding"
+                        Debug.Assert((tempBits & 0x100000000L) != 0);
+                        if (_headers._rawTransferEncoding != null)
                         {
-                            tempBits ^= 0x8000000L;
-                            values = ref _headers._ProxyAuthenticate;
-                            keyStart = 480;
-                            keyLength = 22;
-                            next = 29;
-                            break; // OutputHeader
-                        }
-                        goto case 29;
-                    case 29: // Header: "Proxy-Connection"
-                        if ((tempBits & 0x10000000L) != 0)
-                        {
-                            tempBits ^= 0x10000000L;
-                            values = ref _headers._ProxyConnection;
-                            keyStart = 502;
-                            keyLength = 20;
-                            next = 30;
-                            break; // OutputHeader
-                        }
-                        goto case 30;
-                    case 30: // Header: "Retry-After"
-                        if ((tempBits & 0x20000000L) != 0)
-                        {
-                            tempBits ^= 0x20000000L;
-                            values = ref _headers._RetryAfter;
-                            keyStart = 522;
-                            keyLength = 15;
-                            next = 31;
-                            break; // OutputHeader
-                        }
-                        goto case 31;
-                    case 31: // Header: "Set-Cookie"
-                        if ((tempBits & 0x40000000L) != 0)
-                        {
-                            tempBits ^= 0x40000000L;
-                            values = ref _headers._SetCookie;
-                            keyStart = 537;
-                            keyLength = 14;
-                            next = 32;
-                            break; // OutputHeader
-                        }
-                        goto case 32;
-                    case 32: // Header: "Trailer"
-                        if ((tempBits & 0x80000000L) != 0)
-                        {
-                            tempBits ^= 0x80000000L;
-                            values = ref _headers._Trailer;
-                            keyStart = 551;
-                            keyLength = 11;
-                            next = 33;
-                            break; // OutputHeader
-                        }
-                        goto case 33;
-                    case 33: // Header: "Transfer-Encoding"
-                        if ((tempBits & 0x100000000L) != 0)
-                        {
+                            // Clear and set next as not using common output.
                             tempBits ^= 0x100000000L;
-                            if (_headers._rawTransferEncoding != null)
-                            {
-                                output.Write(_headers._rawTransferEncoding);
-                            }
-                            else
-                            {
-                                values = ref _headers._TransferEncoding;
-                                keyStart = 562;
-                                keyLength = 21;
-                                next = 34;
-                                break; // OutputHeader
-                            }
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._rawTransferEncoding);
+                            continue; // Jump to next, already output header
                         }
-                        goto case 34;
-                    case 34: // Header: "Upgrade"
-                        if ((tempBits & 0x200000000L) != 0)
+                        else
                         {
-                            tempBits ^= 0x200000000L;
-                            values = ref _headers._Upgrade;
-                            keyStart = 583;
-                            keyLength = 11;
-                            next = 35;
-                            break; // OutputHeader
+                            values = ref _headers._TransferEncoding;
+                            keyStart = 562;
+                            keyLength = 21;
                         }
-                        goto case 35;
-                    case 35: // Header: "Vary"
-                        if ((tempBits & 0x400000000L) != 0)
-                        {
-                            tempBits ^= 0x400000000L;
-                            values = ref _headers._Vary;
-                            keyStart = 594;
-                            keyLength = 8;
-                            next = 36;
-                            break; // OutputHeader
-                        }
-                        goto case 36;
-                    case 36: // Header: "Via"
-                        if ((tempBits & 0x800000000L) != 0)
-                        {
-                            tempBits ^= 0x800000000L;
-                            values = ref _headers._Via;
-                            keyStart = 602;
-                            keyLength = 7;
-                            next = 37;
-                            break; // OutputHeader
-                        }
-                        goto case 37;
-                    case 37: // Header: "Warning"
-                        if ((tempBits & 0x1000000000L) != 0)
-                        {
-                            tempBits ^= 0x1000000000L;
-                            values = ref _headers._Warning;
-                            keyStart = 609;
-                            keyLength = 11;
-                            next = 38;
-                            break; // OutputHeader
-                        }
-                        goto case 38;
-                    case 38: // Header: "WWW-Authenticate"
-                        if ((tempBits & 0x2000000000L) != 0)
-                        {
-                            tempBits ^= 0x2000000000L;
-                            values = ref _headers._WWWAuthenticate;
-                            keyStart = 620;
-                            keyLength = 20;
-                            next = 39;
-                            break; // OutputHeader
-                        }
-                        return;
+                        break; // OutputHeader
+
+                    case 33: // Header: "Upgrade"
+                        Debug.Assert((tempBits & 0x200000000L) != 0);
+                        values = ref _headers._Upgrade;
+                        keyStart = 583;
+                        keyLength = 11;
+                        break; // OutputHeader
+
+                    case 34: // Header: "Vary"
+                        Debug.Assert((tempBits & 0x400000000L) != 0);
+                        values = ref _headers._Vary;
+                        keyStart = 594;
+                        keyLength = 8;
+                        break; // OutputHeader
+
+                    case 35: // Header: "Via"
+                        Debug.Assert((tempBits & 0x800000000L) != 0);
+                        values = ref _headers._Via;
+                        keyStart = 602;
+                        keyLength = 7;
+                        break; // OutputHeader
+
+                    case 36: // Header: "Warning"
+                        Debug.Assert((tempBits & 0x1000000000L) != 0);
+                        values = ref _headers._Warning;
+                        keyStart = 609;
+                        keyLength = 11;
+                        break; // OutputHeader
+
+                    case 37: // Header: "WWW-Authenticate"
+                        Debug.Assert((tempBits & 0x2000000000L) != 0);
+                        values = ref _headers._WWWAuthenticate;
+                        keyStart = 620;
+                        keyLength = 20;
+                        break; // OutputHeader
+
                     default:
+                        ThrowInvalidHeaderBits();
                         return;
                 }
 
                 // OutputHeader
                 {
+                    // Clear bit
+                    tempBits ^= (1UL << next);
                     var valueCount = values.Count;
+                    Debug.Assert(valueCount > 0);
+
                     var headerKey = HeaderBytes.Slice(keyStart, keyLength);
                     for (var i = 0; i < valueCount; i++)
                     {
@@ -14746,6 +14616,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             output.WriteAscii(value);
                         }
                     }
+                    // Set exact next
+                    next = BitOperations.TrailingZeroCount(tempBits);
                 }
             } while (tempBits != 0);
         }

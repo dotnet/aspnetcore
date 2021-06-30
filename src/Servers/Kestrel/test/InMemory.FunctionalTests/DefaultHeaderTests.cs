@@ -32,15 +32,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         $"Date: {testContext.DateHeaderValue}",
                         "Server: Kestrel",
-                        "Content-Length: 0",
                         "",
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Server: Kestrel",
-                        "Content-Length: 0",
                         "",
                         "");
                 }

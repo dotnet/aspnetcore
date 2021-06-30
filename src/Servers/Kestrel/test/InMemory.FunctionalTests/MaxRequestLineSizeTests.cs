@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendAll(requestLine);
                     await connection.ReceiveEnd(
                         "HTTP/1.1 414 URI Too Long",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }

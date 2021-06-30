@@ -769,6 +769,7 @@ namespace CodeGenerator
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Numerics;
@@ -1150,52 +1151,61 @@ $@"        private void Clear(long bitsToClear)
         }}
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
-            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x" , CultureInfo.InvariantCulture)}L : 0);
-            var next = 0;
-            var keyStart = 0;
-            var keyLength = 0;
-            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var tempBits = (ulong)_bits;
+            // Set exact next
+            var next = BitOperations.TrailingZeroCount(tempBits);
 
+            // Output Content-Length now as it isn't contained in the bit flags.
+            if (_contentLength.HasValue)
+            {{
+                output.Write(HeaderBytes.Slice(640, 18));
+                output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
+            }}
+            if (tempBits == 0)
+            {{
+                return;
+            }}
+
+            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
             do
             {{
+                int keyStart;
+                int keyLength;
                 switch (next)
-                {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
-                    case {hi.Index}: // Header: ""{hi.Header.Name}""
-                        if ({hi.Header.TestTempBit()})
+                {{{Each(loop.Headers.OrderBy(h => h.Index).Where(h => h.Identifier != "ContentLength"), header => $@"
+                    case {header.Index}: // Header: ""{header.Name}""
+                        Debug.Assert({header.TestTempBit()});{(header.EnhancedSetter == false ? $@"
+                        values = ref _headers._{header.Identifier};
+                        keyStart = {header.BytesOffset};
+                        keyLength = {header.BytesCount};" : $@"
+                        if (_headers._raw{header.Identifier} != null)
                         {{
-                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x" , CultureInfo.InvariantCulture)}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
-                            values = ref _headers._{hi.Header.Identifier};
-                            keyStart = {hi.Header.BytesOffset};
-                            keyLength = {hi.Header.BytesCount};
-                            next = {hi.Index + 1};
-                            break; // OutputHeader" : $@"
-                            if (_headers._raw{hi.Header.Identifier} != null)
-                            {{
-                                output.Write(_headers._raw{hi.Header.Identifier});
-                            }}
-                            else
-                            {{
-                                values = ref _headers._{hi.Header.Identifier};
-                                keyStart = {hi.Header.BytesOffset};
-                                keyLength = {hi.Header.BytesCount};
-                                next = {hi.Index + 1};
-                                break; // OutputHeader
-                            }}")}" : $@"
-                            output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
-                            output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
-                            if (tempBits == 0)
-                            {{
-                                return;
-                            }}")}
+                            // Clear and set next as not using common output.
+                            tempBits ^= {"0x" + (1L << header.Index).ToString("x", CultureInfo.InvariantCulture)}L;
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._raw{header.Identifier});
+                            continue; // Jump to next, already output header
                         }}
-                        {(hi.Index + 1 < loop.Headers.Length ? $"goto case {hi.Index + 1};" : "return;")}")}
+                        else
+                        {{
+                            values = ref _headers._{header.Identifier};
+                            keyStart = {header.BytesOffset};
+                            keyLength = {header.BytesCount};
+                        }}")}
+                        break; // OutputHeader
+")}
                     default:
+                        ThrowInvalidHeaderBits();
                         return;
                 }}
 
                 // OutputHeader
                 {{
+                    // Clear bit
+                    tempBits ^= (1UL << next);
                     var valueCount = values.Count;
+                    Debug.Assert(valueCount > 0);
+
                     var headerKey = HeaderBytes.Slice(keyStart, keyLength);
                     for (var i = 0; i < valueCount; i++)
                     {{
@@ -1206,6 +1216,8 @@ $@"        private void Clear(long bitsToClear)
                             output.WriteAscii(value);
                         }}
                     }}
+                    // Set exact next
+                    next = BitOperations.TrailingZeroCount(tempBits);
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"

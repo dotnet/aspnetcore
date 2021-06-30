@@ -91,9 +91,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendAll($"GET / HTTP/1.1\r\n{headers}\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 431 Request Header Fields Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -115,9 +115,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendAll($"GET / HTTP/1.1\r\n{headers}\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 431 Request Header Fields Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
