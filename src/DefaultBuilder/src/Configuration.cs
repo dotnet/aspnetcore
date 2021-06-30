@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
@@ -19,10 +18,11 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder, IDisposable
     {
         private readonly ConfigurationSources _sources;
-        private ConfigurationRoot _configurationRoot;
 
+        private readonly object _providerLock = new();
+        private readonly List<IConfigurationProvider> _providers = new();
+        private readonly List<IDisposable> _changeTokenRegistrations = new();
         private ConfigurationReloadToken _changeToken = new();
-        private IDisposable? _changeTokenRegistration;
 
         /// <summary>
         /// Creates an empty mutable configuration object that is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
@@ -34,54 +34,87 @@ namespace Microsoft.AspNetCore.Builder
             // Make sure there's some default storage since there are no default providers.
             this.AddInMemoryCollection();
 
-            Update();
+            NotifySourceAdded(_sources[0]);
         }
 
-        /// <summary>
-        /// Automatically update the <see cref="IConfiguration"/> on <see cref="IConfigurationBuilder"/> changes.
-        /// If <see langword="false"/>, <see cref="Update()"/> will manually update the <see cref="IConfiguration"/>.
-        /// </summary>
-        internal bool AutoUpdate { get; set; } = true;
+        /// <inheritdoc/>
+        public string? this[string key]
+        {
+            get
+            {
+                lock (_providerLock)
+                {
+                    for (int i = _providers.Count - 1; i >= 0; i--)
+                    {
+                        var provider = _providers[i];
 
-        /// <inheritdoc />
-        public string this[string key] { get => _configurationRoot[key]; set => _configurationRoot[key] = value; }
+                        if (provider.TryGet(key, out string value))
+                        {
+                            return value;
+                        }
+                    }
 
-        /// <inheritdoc />
+                    return null;
+                }
+            }
+            set
+            {
+                lock (_providerLock)
+                {
+                    if (_providers.Count == 0)
+                    {
+                        throw new InvalidOperationException("A configuration source is not registered. Please register one before setting a value.");
+                    }
+
+                    foreach (var provider in _providers)
+                    {
+                        provider.Set(key, value);
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         public IConfigurationSection GetSection(string key) => new ConfigurationSection(this, key);
 
-        /// <inheritdoc />
-        public IEnumerable<IConfigurationSection> GetChildren() => GetChildrenImplementation(null);
+        /// <inheritdoc/>
+        public IEnumerable<IConfigurationSection> GetChildren()
+        {
+            lock (_providerLock)
+            {
+                // ToList() to eagerly evaluate inside lock.
+                return _providers
+                    .Aggregate(Enumerable.Empty<string>(),
+                        static (seed, source) => source.GetChildKeys(seed, parentPath: null))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(GetSection)
+                    .ToList();
+            }
+        }
 
         IDictionary<string, object> IConfigurationBuilder.Properties { get; } = new Dictionary<string, object>();
 
         IList<IConfigurationSource> IConfigurationBuilder.Sources => _sources;
 
-        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => _configurationRoot.Providers;
-
-        /// <summary>
-        /// Manually update the <see cref="IConfiguration"/> to reflect <see cref="IConfigurationBuilder"/> changes.
-        /// It is not necessary to call this if <see cref="AutoUpdate"/> is <see langword="true"/>.
-        /// </summary>
-        [MemberNotNull(nameof(_configurationRoot))]
-        internal void Update()
+        /// <inheritdoc/>
+        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers
         {
-            var newConfiguration = BuildConfigurationRoot();
-            var prevConfiguration = _configurationRoot;
-
-            _configurationRoot = newConfiguration;
-
-            _changeTokenRegistration?.Dispose();
-            (prevConfiguration as IDisposable)?.Dispose();
-
-            _changeTokenRegistration = ChangeToken.OnChange(() => newConfiguration.GetReloadToken(), RaiseChanged);
-            RaiseChanged();
+            get
+            {
+                lock (_providerLock)
+                {
+                    return new List<IConfigurationProvider>(_providers);
+                }
+            }
         }
 
-        /// <inheritdoc />
-        void IDisposable.Dispose()
+        /// <inheritdoc/>
+        public void Dispose()
         {
-            _changeTokenRegistration?.Dispose();
-            _configurationRoot?.Dispose();
+            lock (_providerLock)
+            {
+                DisposeRegistrationsAndProvidersUnsynchronized();
+            }
         }
 
         IConfigurationBuilder IConfigurationBuilder.Add(IConfigurationSource source)
@@ -90,29 +123,21 @@ namespace Microsoft.AspNetCore.Builder
             return this;
         }
 
-        IConfigurationRoot IConfigurationBuilder.Build() => BuildConfigurationRoot();
+        IConfigurationRoot IConfigurationBuilder.Build() => this;
 
         IChangeToken IConfiguration.GetReloadToken() => _changeToken;
 
-        void IConfigurationRoot.Reload() => _configurationRoot.Reload();
-
-        private void NotifySourcesChanged()
+        void IConfigurationRoot.Reload()
         {
-            if (AutoUpdate)
+            lock (_providerLock)
             {
-                Update();
+                foreach (var provider in _providers)
+                {
+                    provider.Load();
+                }
             }
-        }
 
-        private ConfigurationRoot BuildConfigurationRoot()
-        {
-            var providers = new List<IConfigurationProvider>();
-            foreach (var source in _sources)
-            {
-                var provider = source.Build(this);
-                providers.Add(provider);
-            }
-            return new ConfigurationRoot(providers);
+            RaiseChanged();
         }
 
         private void RaiseChanged()
@@ -121,19 +146,61 @@ namespace Microsoft.AspNetCore.Builder
             previousToken.OnReload();
         }
 
-        /// <summary>
-        /// Gets the immediate children sub-sections of configuration root based on key.
-        /// </summary>
-        /// <param name="path">Key of a section of which children to retrieve.</param>
-        /// <returns>Immediate children sub-sections of section specified by key.</returns>
-        private IEnumerable<IConfigurationSection> GetChildrenImplementation(string? path)
+        // Don't rebuild and reload all providers in the common case when a source is simply added to the IList.
+        private void NotifySourceAdded(IConfigurationSource source)
         {
-            // From https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/Microsoft.Extensions.Configuration/src/InternalConfigurationRootExtensions.cs
-            return _configurationRoot.Providers
-                .Aggregate(Enumerable.Empty<string>(),
-                    (seed, source) => source.GetChildKeys(seed, path))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(key => _configurationRoot.GetSection(path == null ? key : ConfigurationPath.Combine(path, key)));
+            lock (_providerLock)
+            {
+                var provider = source.Build(this);
+                _providers.Add(provider);
+
+                provider.Load();
+                _changeTokenRegistrations.Add(ChangeToken.OnChange(() => provider.GetReloadToken(), () => RaiseChanged()));
+            }
+
+            RaiseChanged();
+        }
+
+        // Something other than Add was called on IConfigurationBuilder.Sources.
+        // This is unusual, so we don't bother optimizing it.
+        private void NotifySourcesChanged()
+        {
+            lock (_providerLock)
+            {
+                DisposeRegistrationsAndProvidersUnsynchronized();
+
+                _changeTokenRegistrations.Clear();
+                _providers.Clear();
+
+                foreach (var source in _sources)
+                {
+                    _providers.Add(source.Build(this));
+                }
+
+                foreach (var p in _providers)
+                {
+                    p.Load();
+                    _changeTokenRegistrations.Add(ChangeToken.OnChange(() => p.GetReloadToken(), () => RaiseChanged()));
+                }
+            }
+
+            RaiseChanged();
+        }
+
+
+        private void DisposeRegistrationsAndProvidersUnsynchronized()
+        {
+            // dispose change token registrations
+            foreach (var registration in _changeTokenRegistrations)
+            {
+                registration.Dispose();
+            }
+
+            // dispose providers
+            foreach (var provider in _providers)
+            {
+                (provider as IDisposable)?.Dispose();
+            }
         }
 
         private class ConfigurationSources : IList<IConfigurationSource>
@@ -160,10 +227,10 @@ namespace Microsoft.AspNetCore.Builder
 
             public bool IsReadOnly => false;
 
-            public void Add(IConfigurationSource item)
+            public void Add(IConfigurationSource source)
             {
-                _sources.Add(item);
-                _config.NotifySourcesChanged();
+                _sources.Add(source);
+                _config.NotifySourceAdded(source);
             }
 
             public void Clear()
@@ -172,9 +239,9 @@ namespace Microsoft.AspNetCore.Builder
                 _config.NotifySourcesChanged();
             }
 
-            public bool Contains(IConfigurationSource item)
+            public bool Contains(IConfigurationSource source)
             {
-                return _sources.Contains(item);
+                return _sources.Contains(source);
             }
 
             public void CopyTo(IConfigurationSource[] array, int arrayIndex)
@@ -187,20 +254,20 @@ namespace Microsoft.AspNetCore.Builder
                 return _sources.GetEnumerator();
             }
 
-            public int IndexOf(IConfigurationSource item)
+            public int IndexOf(IConfigurationSource source)
             {
-                return _sources.IndexOf(item);
+                return _sources.IndexOf(source);
             }
 
-            public void Insert(int index, IConfigurationSource item)
+            public void Insert(int index, IConfigurationSource source)
             {
-                _sources.Insert(index, item);
+                _sources.Insert(index, source);
                 _config.NotifySourcesChanged();
             }
 
-            public bool Remove(IConfigurationSource item)
+            public bool Remove(IConfigurationSource source)
             {
-                var removed = _sources.Remove(item);
+                var removed = _sources.Remove(source);
                 _config.NotifySourcesChanged();
                 return removed;
             }
