@@ -14,6 +14,7 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { InputFile } from './InputFile';
+import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
 
 let renderingFailed = false;
 let started = false;
@@ -121,6 +122,8 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
+
+  Blazor._internal.sendJSDataStream = (data: ArrayBufferView, streamId: string, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
 
   try {
     await connection.start();

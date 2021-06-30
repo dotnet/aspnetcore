@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(nameof(Http3FrameType.Data))]
         [InlineData(nameof(Http3FrameType.Headers))]
         [InlineData(nameof(Http3FrameType.PushPromise))]
-        public async Task ControlStream_UnexpectedFrameType_ConnectionError(string frameType)
+        public async Task ControlStream_ClientToServer_UnexpectedFrameType_ConnectionError(string frameType)
         {
             await InitializeConnectionAsync(_noopApplication);
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ControlStream_ClientCloses_ConnectionError()
+        public async Task ControlStream_ClientToServer_ClientCloses_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
 
@@ -155,6 +155,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
                 expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
+        }
+
+        [Fact]
+        public async Task ControlStream_ServerToClient_ErrorInitializing_ConnectionError()
+        {
+            OnCreateServerControlStream = () => throw new Exception();
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            AssertConnectionError<Http3ConnectionErrorException>(
+                expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+                expectedErrorMessage: CoreStrings.Http3ControlStreamErrorInitializingOutbound);
         }
 
         [Fact]

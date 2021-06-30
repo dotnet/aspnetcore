@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
@@ -67,8 +68,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Circuit = new Circuit(this);
             Handle = new CircuitHandle() { CircuitHost = this, };
 
-            Renderer.UnhandledException += Renderer_UnhandledException;
+            // An unhandled exception from the renderer is always fatal because it came from user code.
+            Renderer.UnhandledException += ReportAndInvoke_UnhandledException;
             Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
+
+            JSRuntime.UnhandledException += ReportAndInvoke_UnhandledException;
         }
 
         public CircuitHandle Handle { get; }
@@ -415,6 +419,31 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        // ReceiveJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        internal async Task<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            try
+            {
+                return await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    return RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
+                });
+            }
+            catch (Exception ex)
+            {
+                // An error completing JS interop means that the user sent invalid data, a well-behaved
+                // client won't do this.
+                Log.ReceiveJSDataChunkException(_logger, streamId, ex);
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid chunk supplied to stream."));
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                return false;
+            }
+        }
+
         // DispatchEvent is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
         public async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
@@ -548,9 +577,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        // An unhandled exception from the renderer is always fatal because it came from user code.
         // We want to notify the client if it's still connected, and then tear-down the circuit.
-        private async void Renderer_UnhandledException(object sender, Exception e)
+        private async void ReportAndInvoke_UnhandledException(object sender, Exception e)
         {
             await ReportUnhandledException(e);
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(e, isTerminating: false));
@@ -638,6 +666,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
             private static readonly Action<ILogger, long, Exception> _receiveByteArraySuccess;
             private static readonly Action<ILogger, long, Exception> _receiveByteArrayException;
+            private static readonly Action<ILogger, long, Exception> _receiveJSDataChunkException;
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
             private static readonly Action<ILogger, string, CircuitId, Exception> _locationChange;
@@ -682,6 +711,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId OnRenderCompletedFailed = new EventId(212, "OnRenderCompletedFailed");
                 public static readonly EventId ReceiveByteArraySucceeded = new EventId(213, "ReceiveByteArraySucceeded");
                 public static readonly EventId ReceiveByteArrayException = new EventId(214, "ReceiveByteArrayException");
+                public static readonly EventId ReceiveJSDataChunkException = new EventId(215, "ReceiveJSDataChunkException");
             }
 
             static Log()
@@ -811,6 +841,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.ReceiveByteArrayException,
                     "The ReceiveByteArray call with id '{id}' failed.");
 
+                _receiveJSDataChunkException = LoggerMessage.Define<long>(
+                    LogLevel.Debug,
+                    EventIds.ReceiveJSDataChunkException,
+                    "The ReceiveJSDataChunk call with stream id '{streamId}' failed.");
+
                 _dispatchEventFailedToParseEventData = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.DispatchEventFailedToParseEventData,
@@ -875,6 +910,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
             internal static void ReceiveByteArraySuccess(ILogger logger, long id) => _receiveByteArraySuccess(logger, id, null);
             internal static void ReceiveByteArrayException(ILogger logger, long id, Exception ex) => _receiveByteArrayException(logger, id, ex);
+            internal static void ReceiveJSDataChunkException(ILogger logger, long streamId, Exception ex) => _receiveJSDataChunkException(logger, streamId, ex);
             public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 
