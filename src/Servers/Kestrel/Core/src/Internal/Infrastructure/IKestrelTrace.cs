@@ -97,5 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex);
 
         void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex);
+
+        void Http3OutboundControlStreamError(string connectionId, Exception ex);
     }
 }

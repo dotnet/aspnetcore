@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _echoPath;
         protected readonly RequestDelegate _echoHost;
 
+        protected Func<Http3ControlStream> OnCreateServerControlStream;
         private Http3ControlStream _inboundControlStream;
         private long _currentStreamId;
 
@@ -229,6 +230,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 VerifyGoAway(frame, expectedLastStreamId.GetValueOrDefault());
             }
 
+            AssertConnectionError<TException>(expectedErrorCode, expectedErrorMessage);
+        }
+
+        internal void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, params string[] expectedErrorMessage) where TException : Exception
+        {
             Assert.Equal((Http3ErrorCode)expectedErrorCode, (Http3ErrorCode)MultiplexedConnectionContext.Error);
 
             if (expectedErrorMessage?.Length > 0)
@@ -893,6 +899,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public override void Abort(ConnectionAbortedException abortReason)
             {
                 ToServerAcceptQueue.Writer.TryComplete();
+                ToClientAcceptQueue.Writer.TryComplete();
             }
 
             public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
@@ -910,7 +917,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
             {
-                var stream = new Http3ControlStream(_testBase, StreamInitiator.Server);
+                var stream = _testBase.OnCreateServerControlStream?.Invoke() ?? new Http3ControlStream(_testBase, StreamInitiator.Server);
                 ToClientAcceptQueue.Writer.WriteAsync(stream);
                 return new ValueTask<ConnectionContext>(stream.StreamContext);
             }
