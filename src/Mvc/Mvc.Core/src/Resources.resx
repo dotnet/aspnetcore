@@ -237,7 +237,7 @@
     <comment>0 is the newline - 1 is a newline separate list of action display names</comment>
   </data>
   <data name="FileResult_InvalidPath" xml:space="preserve">
-    <value>Could not find file: {0}</value>
+    <value>Could not find file: {0}.</value>
     <comment>{0} is the value for the provided path</comment>
   </data>
   <data name="SerializableError_DefaultError" xml:space="preserve">

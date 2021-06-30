@@ -4,49 +4,79 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class RedirectResultTest
+    public class RedirectResultTest : RedirectResultTestBase
     {
-        [Theory]
-        [InlineData("", "/Home/About", "/Home/About")]
-        [InlineData("/myapproot", "/test", "/test")]
-        public async Task Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
-            string appRoot,
-            string contentPath,
-            string expectedPath)
+        protected override Task ExecuteAsync(HttpContext httpContext, string contentPath)
         {
-            var action
-                = new Func<RedirectResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            httpContext.RequestServices = GetServiceProvider();
+            var actionContext = new ActionContext(httpContext, new(), new());
 
-            await BaseRedirectResultTest.Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
-                appRoot,
-                contentPath,
-                expectedPath,
-                action);
+            var redirectResult = new RedirectResult(contentPath);
+            return redirectResult.ExecuteResultAsync(actionContext);
         }
 
-        [Theory]
-        [InlineData(null, "~/Home/About", "/Home/About")]
-        [InlineData("/", "~/Home/About", "/Home/About")]
-        [InlineData("/", "~/", "/")]
-        [InlineData("", "~/Home/About", "/Home/About")]
-        [InlineData("/myapproot", "~/", "/myapproot/")]
-        public async Task Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
-            string appRoot,
-            string contentPath,
-            string expectedPath)
+        private static IServiceProvider GetServiceProvider()
         {
-            var action
-                = new Func<RedirectResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IActionResultExecutor<RedirectResult>, RedirectResultExecutor>();
+            serviceCollection.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+            serviceCollection.AddTransient<ILoggerFactory, NullLoggerFactory>();
+            return serviceCollection.BuildServiceProvider();
+        }
 
-            await BaseRedirectResultTest.Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
-                appRoot,
-                contentPath,
-                expectedPath,
-                action);
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrl_SetsResultUrlAndNotPermanentOrPreserveMethod()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url);
+
+            // Assert
+            Assert.False(result.PreserveMethod);
+            Assert.False(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrlAndPermanent_SetsResultUrlAndPermanentNotPreserveMethod()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url, permanent: true);
+
+            // Assert
+            Assert.False(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrlPermanentAndPreservesMethod_SetsResultUrlPermanentAndPreservesMethod()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url, permanent: true, preserveMethod: true);
+
+            // Assert
+            Assert.True(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
         }
     }
 }

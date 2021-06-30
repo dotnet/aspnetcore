@@ -64,6 +64,8 @@
       "src\\Mvc\\test\\WebSites\\RazorWebSite\\RazorWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\RoutingWebSite\\Mvc.RoutingWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\SecurityWebSite\\SecurityWebSite.csproj",
+      "src\\Mvc\\test\\WebSites\\SimpleWebSiteWithWebApplicationBuilderException\\SimpleWebSiteWithWebApplicationBuilderException.csproj",
+      "src\\Mvc\\test\\WebSites\\SimpleWebSiteWithWebApplicationBuilder\\SimpleWebSiteWithWebApplicationBuilder.csproj",
       "src\\Mvc\\test\\WebSites\\SimpleWebSite\\SimpleWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\TagHelpersWebSite\\TagHelpersWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\VersioningWebSite\\VersioningWebSite.csproj",

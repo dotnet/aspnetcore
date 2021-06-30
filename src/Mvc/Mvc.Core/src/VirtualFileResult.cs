@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// A <see cref="FileResult" /> that on execution writes the file specified using a virtual path to the response
     /// using mechanisms provided by the host.
     /// </summary>
-    public class VirtualFileResult : FileResult, IResult
+    public class VirtualFileResult : FileResult
     {
         private string _fileName;
 
@@ -73,43 +73,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<VirtualFileResult>>();
             return executor.ExecuteAsync(context, this);
-        }
-
-        Task IResult.ExecuteAsync(HttpContext httpContext)
-        {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            var hostingEnvironment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
-
-            var fileInfo = VirtualFileResultExecutor.GetFileInformation(this, hostingEnvironment);
-            if (!fileInfo.Exists)
-            {
-                throw new FileNotFoundException(
-                    Resources.FormatFileResult_InvalidPath(FileName), FileName);
-            }
-
-            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<RedirectResult>();
-
-            var lastModified = LastModified ?? fileInfo.LastModified;
-            var (range, rangeLength, serveBody) = FileResultExecutorBase.SetHeadersAndLog(
-                httpContext,
-                this,
-                fileInfo.Length,
-                EnableRangeProcessing,
-                lastModified,
-                EntityTag,
-                logger);
-
-            if (serveBody)
-            {
-                return VirtualFileResultExecutor.WriteFileAsyncInternal(httpContext, fileInfo, range, rangeLength, logger);
-            }
-
-            return Task.CompletedTask;
         }
     }
 }

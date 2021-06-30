@@ -2,186 +2,104 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class VirtualFileResultTest
+    public class VirtualFileResultTest : VirtualFileResultTestBase
     {
-        [Theory]
-        [InlineData(0, 3, "File", 4)]
-        [InlineData(8, 13, "Result", 6)]
-        [InlineData(null, 4, "ts¡", 4)]
-        [InlineData(8, null, "ResultTestFile contents¡", 25)]
-        public async Task WriteFileAsync_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
+        [Fact]
+        public void Constructor_SetsFileName()
         {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            // Arrange
+            var path = Path.GetFullPath("helllo.txt");
 
-            await BaseVirtualFileResultTest.WriteFileAsync_WritesRangeRequested(
-                start,
-                end,
-                expectedString,
-                contentLength,
-                action);
+            // Act
+            var result = new VirtualFileResult(path, "text/plain");
+
+            // Assert
+            Assert.Equal(path, result.FileName);
         }
 
         [Fact]
-        public async Task WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange()
+        public void Constructor_SetsContentTypeAndParameters()
         {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            // Arrange
+            var path = Path.GetFullPath("helllo.txt");
+            var contentType = "text/plain; charset=us-ascii; p1=p1-value";
+            var expectedMediaType = contentType;
 
-            await BaseVirtualFileResultTest.WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange(action);
+            // Act
+            var result = new VirtualFileResult(path, contentType);
+
+            // Assert
+            Assert.Equal(path, result.FileName);
+            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
         }
 
         [Fact]
-        public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored()
+        public void GetFileProvider_ReturnsFileProviderFromWebHostEnvironment()
         {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            // Arrange
+            var webHostFileProvider = Mock.Of<IFileProvider>();
+            var webHostEnvironment = Mock.Of<IWebHostEnvironment>(e => e.WebRootFileProvider == webHostFileProvider);
 
-            await BaseVirtualFileResultTest.WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored(action);
+            var result = new VirtualFileResult("some-path", "text/plain");
+
+            // Act
+            var fileProvider = VirtualFileResultExecutor.GetFileProvider(result, webHostEnvironment);
+
+            // Assert
+            Assert.Same(webHostFileProvider, fileProvider);
         }
 
         [Fact]
-        public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored()
+        public void GetFileProvider_ReturnsFileProviderFromResult()
         {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            // Arrange
+            var webHostFileProvider = Mock.Of<IFileProvider>();
+            var fileProvider = Mock.Of<IFileProvider>();
+            var webHostEnvironment = Mock.Of<IWebHostEnvironment>(e => e.WebRootFileProvider == webHostFileProvider);
 
-            await BaseVirtualFileResultTest.WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored(action);
+            var result = new VirtualFileResult("some-path", "text/plain") { FileProvider = fileProvider };
+
+            // Act
+            var actual = VirtualFileResultExecutor.GetFileProvider(result, webHostEnvironment);
+
+            // Assert
+            Assert.Same(fileProvider, actual);
         }
 
-        [Theory]
-        [InlineData("0-5")]
-        [InlineData("bytes = ")]
-        [InlineData("bytes = 1-4, 5-11")]
-        public async Task WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(string rangeString)
+        protected override Task ExecuteAsync(HttpContext httpContext, string path, string contentType, DateTimeOffset? lastModified = null, EntityTagHeaderValue entityTag = null, bool enableRangeProcessing = false)
         {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            var webHostEnvironment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+            httpContext.RequestServices = new ServiceCollection()
+                .AddSingleton(webHostEnvironment)
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, VirtualFileResultExecutor>()
+                .AddTransient<ILoggerFactory, NullLoggerFactory>()
+                .BuildServiceProvider();
 
-            await BaseVirtualFileResultTest.WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(rangeString, action);
-        }
+            var actionContext = new ActionContext(httpContext, new(), new());
+            var result = new VirtualFileResult(path, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+                EnableRangeProcessing = enableRangeProcessing,
+            };
 
-        [Theory]
-        [InlineData("bytes = 35-36")]
-        [InlineData("bytes = -0")]
-        public async Task WriteFileAsync_RangeRequestedNotSatisfiable(string rangeString)
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.WriteFileAsync_RangeRequestedNotSatisfiable(rangeString, action);
-        }
-
-        [Fact]
-        public async Task WriteFileAsync_RangeRequested_PreconditionFailed()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.WriteFileAsync_RangeRequested_PreconditionFailed(action);
-        }
-
-        [Fact]
-        public async Task WriteFileAsync_RangeRequested_NotModified()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.WriteFileAsync_RangeRequested_NotModified(action);
-        }
-
-        [Fact]
-        public async Task ExecuteResultAsync_FallsBackToWebRootFileProvider_IfNoFileProviderIsPresent()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest
-                .ExecuteResultAsync_FallsBackToWebRootFileProvider_IfNoFileProviderIsPresent(action);
-        }
-
-        [Fact]
-        public async Task ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest
-                .ExecuteResultAsync_CallsSendFileAsync_IfIHttpSendFilePresent(action);
-        }
-
-        [Theory]
-        [InlineData(0, 3, "File", 4)]
-        [InlineData(8, 13, "Result", 6)]
-        [InlineData(null, 3, "ts¡", 3)]
-        [InlineData(8, null, "ResultTestFile contents¡", 25)]
-        public async Task ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(long? start, long? end, string expectedString, long contentLength)
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(
-                start,
-                end,
-                expectedString,
-                contentLength,
-                action);
-        }
-
-        [Fact]
-        public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding(action);
-        }
-
-        [Fact]
-        public async Task ExecuteResultAsync_ReturnsFileContentsForRelativePaths()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.ExecuteResultAsync_ReturnsFileContentsForRelativePaths(action);
-        }
-
-        [Theory]
-        [InlineData("FilePathResultTestFile.txt")]
-        [InlineData("TestFiles/FilePathResultTestFile.txt")]
-        [InlineData("TestFiles/../FilePathResultTestFile.txt")]
-        [InlineData("TestFiles\\FilePathResultTestFile.txt")]
-        [InlineData("TestFiles\\..\\FilePathResultTestFile.txt")]
-        [InlineData(@"\\..//?><|""&@#\c:\..\? /..txt")]
-        public async Task ExecuteResultAsync_ReturnsFiles_ForDifferentPaths(string path)
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest
-                .ExecuteResultAsync_ReturnsFiles_ForDifferentPaths(path, action);
-        }
-
-        [Theory]
-        [InlineData("~/FilePathResultTestFile.txt")]
-        [InlineData("~/TestFiles/FilePathResultTestFile.txt")]
-        [InlineData("~/TestFiles/../FilePathResultTestFile.txt")]
-        [InlineData("~/TestFiles\\..\\FilePathResultTestFile.txt")]
-        [InlineData(@"~~~~\\..//?>~<|""&@#\c:\..\? /..txt~~~")]
-        public async Task ExecuteResultAsync_TrimsTilde_BeforeInvokingFileProvider(string path)
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest
-                .ExecuteResultAsync_TrimsTilde_BeforeInvokingFileProvider(path, action);
-        }
-
-        [Fact]
-        public async Task ExecuteResultAsync_WorksWithNonDiskBasedFiles()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.ExecuteResultAsync_WorksWithNonDiskBasedFiles(action);
-        }
-
-        [Fact]
-        public async Task ExecuteResultAsync_ThrowsFileNotFound_IfFileProviderCanNotFindTheFile()
-        {
-            var action = new Func<VirtualFileResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
-
-            await BaseVirtualFileResultTest.ExecuteResultAsync_ThrowsFileNotFound_IfFileProviderCanNotFindTheFile(action);
+            return result.ExecuteResultAsync(actionContext);
         }
     }
 }
