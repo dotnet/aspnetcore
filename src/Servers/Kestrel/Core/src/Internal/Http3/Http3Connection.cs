@@ -224,14 +224,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // the maximum capacity of the dynamic table to zero.
 
             // Don't create Encoder and Decoder as they aren't used now.
-            Exception? error = null;
 
-            // Don't delay setting up the connection on the control stream being ready.
-            // Task is awaited when connection finishes.
-            var controlStreamTask = CreateControlStreamAsync(application);
+            Exception? error = null;
+            ValueTask outboundControlStreamTask = default;
 
             try
             {
+                var outboundControlStream = await CreateNewUnidirectionalStreamAsync(application);
+                lock (_sync)
+                {
+                    OutboundControlStream = outboundControlStream;
+                }
+
+                // Don't delay on waiting to send outbound control stream settings.
+                outboundControlStreamTask = ProcessOutboundControlStreamAsync(outboundControlStream);
+
                 while (_isClosed == 0)
                 {
                     // Don't pass a cancellation token to AcceptAsync.
@@ -341,23 +348,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         stream.Abort(connectionError, (Http3ErrorCode)_errorCodeFeature.Error);
                     }
 
+                    lock (_sync)
+                    {
+                        OutboundControlStream?.Abort(connectionError, (Http3ErrorCode)_errorCodeFeature.Error);
+                    }
+
                     while (_activeRequestCount > 0)
                     {
                         await _streamCompletionAwaitable;
                     }
+
+                    await outboundControlStreamTask;
 
                     _context.TimeoutControl.CancelTimeout();
                     _context.TimeoutControl.StartDrainTimeout(Limits.MinResponseDataRate, Limits.MaxResponseBufferSize);
                 }
                 catch
                 {
-                    Abort(connectionError, Http3ErrorCode.NoError);
+                    Abort(connectionError, Http3ErrorCode.InternalError);
                     throw;
                 }
-
-                // Ensure control stream creation task finished. At this point the connection, including the control
-                // stream should be closed/aborted. Error handling inside method ensures await won't throw.
-                await controlStreamTask;
             }
         }
 
@@ -400,18 +410,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async ValueTask CreateControlStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
+        private async ValueTask ProcessOutboundControlStreamAsync(Http3ControlStream controlStream)
         {
             try
             {
-                var stream = await CreateNewUnidirectionalStreamAsync(application);
-                lock (_sync)
-                {
-                    OutboundControlStream = stream;
-                }
-
-                await stream.SendStreamIdAsync(id: 0);
-                await stream.SendSettingsFrameAsync();
+                await controlStream.SendStreamIdAsync(id: 0);
+                await controlStream.SendSettingsFrameAsync();
             }
             catch (Exception ex)
             {
@@ -449,15 +453,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return new Http3ControlStream<TContext>(application, httpConnectionContext);
         }
 
-        private ValueTask<FlushResult> SendGoAway(long id)
+        private async ValueTask<FlushResult> SendGoAway(long id)
         {
+            Http3ControlStream? stream;
             lock (_sync)
             {
-                if (OutboundControlStream != null)
+                stream = OutboundControlStream;
+            }
+
+            if (stream != null)
+            {
+                try
                 {
-                    return OutboundControlStream.SendGoAway(id);
+                    return await stream.SendGoAway(id);
+                }
+                catch
+                {
+                    // The control stream may not be healthy.
+                    // Ignore error sending go away.
                 }
             }
+
             return default;
         }
 
