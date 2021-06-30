@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         /// <inheritdoc />
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             Log.RequestingNavigation(_logger, uri, options);

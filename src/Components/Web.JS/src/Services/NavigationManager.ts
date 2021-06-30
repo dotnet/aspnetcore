@@ -186,7 +186,7 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
 }
 
 // Keep in sync with Components/src/NavigationOptions.cs
-interface NavigationOptions {
+export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
 }

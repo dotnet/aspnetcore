@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.JSInterop;
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             DispatchMessageWithErrorHandling(message);
         }
 
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
         public void Navigate(string uri, NavigationOptions options)
         {
             DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, uri, options));
