@@ -1,7 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -19,8 +23,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class JSInteropMethods
     {
-        private static WebEventJsonContext? _jsonContext;
-
         /// <summary>
         /// For framework use only.
         /// </summary>
@@ -34,23 +36,35 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(DispatchEvent))]
-        public static Task DispatchEvent(WebEventDescriptor eventDescriptor, string eventArgsJson)
+        public static async Task DispatchEvent(WebEventDescriptor eventDescriptor, string eventArgsJson)
         {
             var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
 
-            // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
-            // of the serializer settings.
-            if (_jsonContext is null)
-            {
-                var jsonSerializerOptions = DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions();
-                _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
-            }
+            var byteLength = Encoding.UTF8.GetByteCount(eventArgsJson);
+            var bytes = ArrayPool<byte>.Shared.Rent(byteLength);
 
-            var webEvent = WebEventData.Parse(renderer, _jsonContext, eventDescriptor, eventArgsJson);
-            return renderer.DispatchEventAsync(
-                webEvent.EventHandlerId,
-                webEvent.EventFieldInfo,
-                webEvent.EventArgs);
+            try
+            {
+                var writtenBytes = Encoding.UTF8.GetBytes(eventArgsJson, bytes);
+                Debug.Assert(writtenBytes == byteLength);
+                var jsonElement = GetJsonElement(bytes, writtenBytes);
+
+                var webEvent = WebEventData.Parse(renderer, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), eventDescriptor, jsonElement);
+                await renderer.DispatchEventAsync(
+                    webEvent.EventHandlerId,
+                    webEvent.EventFieldInfo,
+                    webEvent.EventArgs);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(bytes);
+            }
+        }
+
+        private static JsonElement GetJsonElement(byte[] bytes, int writtenBytes)
+        {
+            var jsonReader = new Utf8JsonReader(bytes.AsSpan(0, writtenBytes));
+            return JsonElement.ParseValue(ref jsonReader);
         }
     }
 }

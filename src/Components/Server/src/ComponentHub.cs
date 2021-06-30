@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -240,7 +241,7 @@ namespace Microsoft.AspNetCore.Components.Server
             return await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
         }
 
-        public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)
+        public async ValueTask DispatchBrowserEvent(JsonElement eventDescriptor, JsonElement eventArgs)
         {
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)

@@ -58,7 +58,7 @@
 
     <Compile Include="..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
-    <Compile Include="..\..\Shared\src\WebEventData.cs" />
+    <Compile Include="..\..\Shared\src\WebEventData\*.cs" LinkBase="WebEventData" />
 
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
