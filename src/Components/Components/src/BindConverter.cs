@@ -1425,6 +1425,10 @@ namespace Microsoft.AspNetCore.Components
                 "ReflectionAnalysis",
                 "IL2060:MakeGenericMethod",
                 Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
+            [UnconditionalSuppressMessage(
+                "ReflectionAnalysis",
+                "IL2075:MakeGenericMethod",
+                Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
             public static BindParser<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 if (!_cache.TryGetValue(typeof(T), out var parser))
@@ -1536,7 +1540,7 @@ namespace Microsoft.AspNetCore.Components
                 return (BindParser<T>)parser;
             }
 
-            private static BindParser<T[]?> MakeArrayTypeConverter<T>()
+            private static BindParser<T[]?> MakeArrayTypeConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 var elementParser = Get<T>();
 
