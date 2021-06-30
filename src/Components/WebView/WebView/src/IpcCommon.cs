@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         public static bool TryDeserializeOutgoing(string message, out OutgoingMessageType messageType, out ArraySegment<JsonElement> args)
             => TryDeserialize(message, out messageType, out args);
 
-        public static string Serialize(string messageType, object[] args)
+        private static string Serialize(string messageType, object[] args)
         {
             // We could come up with something a little more low-level here if we
             // wanted to avoid a couple of allocations

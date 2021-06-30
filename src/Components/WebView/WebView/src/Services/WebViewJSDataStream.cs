@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
         {
             var streamId = runtime.WebViewJSDataStreamNextInstanceId++;
             var webViewJSDataStream = new WebViewJSDataStream(runtime, streamId, totalLength, maxBufferSize, defaultCallTimeout, cancellationToken);
-            // runtime.SendJSDataStream(jsStreamReference, streamId, chunkSize);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
 
             return webViewJSDataStream;
