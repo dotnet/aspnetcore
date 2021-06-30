@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -27,31 +26,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [DisallowNull] public ElementReference? Element { get; protected set; }
 
-        /// <summary>
-        /// Gets or sets the current value of the input as a string array.
-        /// </summary>
-        protected string?[]? CurrentValueAsStringArray
-        {
-            get
-            {
-                if (CurrentValue is not Array array)
-                {
-                    return null;
-                }
-                
-                return array
-                    .Cast<object?>()
-                    .Select(item => item?.ToString())
-                    .ToArray();
-            }
-            set
-            {
-                CurrentValue = BindConverter.TryConvertTo<TValue>(value, CultureInfo.InvariantCulture, out var result)
-                    ? result
-                    : default;
-            }
-        }
-
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -62,12 +36,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             if (AdditionalAttributes?.ContainsKey("multiple") ?? false)
             {
                 builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
-                builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder(this, __value => CurrentValueAsStringArray = __value, CurrentValueAsStringArray));
+                builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder(this, SetCurrentValueAsStringArray, default(string[])));
             }
             else
             {
                 builder.AddAttribute(5, "value", CurrentValueAsString);
-                builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+                builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
             }
 
             builder.AddElementReferenceCapture(7, __selectReference => Element = __selectReference);
@@ -78,5 +52,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
             => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+
+        private void SetCurrentValueAsStringArray(string?[]? value)
+        {
+            CurrentValue = BindConverter.TryConvertTo<TValue>(value, CultureInfo.InvariantCulture, out var result)
+                ? result
+                : default;
+        }
     }
 }

@@ -51,16 +51,6 @@
         ShowAdditionalOption = true;
     }
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            return;
-        }
-
-        Console.WriteLine($"Selected cities: {string.Join(", ", SelectedCities)}");
-    }
-
     void SelectedCarsChanged(ChangeEventArgs e)
     {
         var array = e.Value as object[];

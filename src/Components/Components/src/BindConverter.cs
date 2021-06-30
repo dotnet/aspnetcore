@@ -6,8 +6,8 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -504,7 +504,25 @@ namespace Microsoft.AspNetCore.Components
                 return null;
             }
 
-            return $"[{string.Join(", ", array.Cast<object>().Select(item => $"\"{item}\""))}]";
+            if (array.Length == 0)
+            {
+                return "[]";
+            }
+
+            var builder = new StringBuilder("[\"");
+            builder.Append(array.GetValue(0));
+            builder.Append('\"');
+
+            for (var i = 1; i < array.Length; i++)
+            {
+                builder.Append(", \"");
+                builder.Append(array.GetValue(i));
+                builder.Append('\"');
+            }
+
+            builder.Append(']');
+
+            return builder.ToString();
         }
 
         /// <summary>
