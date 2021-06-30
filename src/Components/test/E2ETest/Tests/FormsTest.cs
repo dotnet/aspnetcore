@@ -544,6 +544,40 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void SelectWithMultipleAttributeCanBindValue()
+        {
+            var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
+            var select = new SelectElement(appElement.FindElement(By.Id("select-cities")));
+
+            // Assert that the binding works in the .NET -> JS direction
+            Browser.Equal(new[] { "sf", "sea" }, () => select.AllSelectedOptions.Select(option => option.GetAttribute("value")));
+
+            select.DeselectByIndex(0);
+            select.SelectByIndex(1);
+            select.SelectByIndex(2);
+
+            var label = appElement.FindElement(By.Id("selected-cities-label"));
+
+            // Assert that the binding works in the JS -> .NET direction
+            Browser.Equal("la, pdx, sea", () => label.Text);
+        }
+
+        [Fact]
+        public void SelectWithMultipleAttributeCanUseOnChangedCallback()
+        {
+            var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
+            var select = new SelectElement(appElement.FindElement(By.Id("select-cars")));
+
+            select.SelectByIndex(2);
+            select.SelectByIndex(3);
+
+            var label = appElement.FindElement(By.Id("selected-cars-label"));
+
+            // Assert that the callback was invoked and the selected options were correctly passed.
+            Browser.Equal("opel, audi", () => label.Text);
+        }
+
+        [Fact]
         public void RespectsCustomFieldCssClassProvider()
         {
             var appElement = MountTypicalValidationComponent();
