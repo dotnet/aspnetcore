@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Collections;
 using System.Collections.Generic;
@@ -67,9 +68,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return parsed;
         }
 
+        [DoesNotReturn]
         private static void ThrowInvalidContentLengthException(string value)
         {
             throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
+        }
+
+        [DoesNotReturn]
+        private static void ThrowInvalidHeaderBits()
+        {
+            throw new InvalidOperationException("Invalid Header Bits");
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
