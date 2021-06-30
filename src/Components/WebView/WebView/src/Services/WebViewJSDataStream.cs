@@ -50,7 +50,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
         {
             var streamId = runtime.WebViewJSDataStreamNextInstanceId++;
             var webViewJSDataStream = new WebViewJSDataStream(runtime, streamId, totalLength, maxBufferSize, defaultCallTimeout, cancellationToken);
-            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
+
+            var dotnetObjectReferenceForDataStream = DotNetObjectReference.Create(webViewJSDataStream);
+            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStreamWebview", jsStreamReference, streamId, chunkSize, dotnetObjectReferenceForDataStream);
 
             return webViewJSDataStream;
         }
@@ -78,7 +80,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             _pipeReaderStream = _pipe.Reader.AsStream();
         }
 
-        private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
+        [JSInvokable("ReceiveData")]
+        public async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
         {
             try
             {

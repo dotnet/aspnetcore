@@ -27,8 +27,8 @@ export function sendByteArray(id: number, data: Uint8Array) {
   send('ReceiveByteArrayFromJS', id, dataBase64Encoded);
 }
 
-export function sendJSDataStream(data: ArrayBufferView, streamId: string, chunkSize: number) {
-  sendJSDataStreamWebView(send, data, streamId, chunkSize);
+export function sendJSDataStream(data: ArrayBufferView, streamId: string, chunkSize: number, jsDataStream: any) {
+  sendJSDataStreamWebView(send, data, streamId, chunkSize, jsDataStream);
 }
 
 export function sendLocationChanged(uri: string, intercepted: boolean) {

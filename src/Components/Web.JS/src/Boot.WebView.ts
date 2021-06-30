@@ -24,7 +24,7 @@ async function boot(): Promise<void> {
   });
 
   Blazor._internal.InputFile = InputFile;
-  Blazor._internal.sendJSDataStream = sendJSDataStream;
+  Blazor._internal.sendJSDataStreamWebview = sendJSDataStream;
   navigationManagerFunctions.enableNavigationInterception();
   navigationManagerFunctions.listenForNavigationEvents(sendLocationChanged);
 

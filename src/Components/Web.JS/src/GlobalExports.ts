@@ -49,6 +49,7 @@ interface IBlazor {
     dotNetCriticalError?: any
     getSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: string, chunkSize: number) => void,
+    sendJSDataStreamWebview?: (data: any, streamId: string, chunkSize: number, jsDataStream: any) => void,
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
