@@ -132,13 +132,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Debug.Assert((long)end >= Vector256<sbyte>.Count);
 
             // PERF: so the JIT can reuse the zero from a register
-            Vector128<sbyte> zero = Vector128<sbyte>.Zero;
+            var zero = Vector128<sbyte>.Zero;
 
             if (Sse2.IsSupported)
             {
                 if (Avx2.IsSupported && input <= end - Vector256<sbyte>.Count)
                 {
-                    Vector256<sbyte> avxZero = Vector256<sbyte>.Zero;
+                    var avxZero = Vector256<sbyte>.Zero;
 
                     do
                     {
@@ -233,8 +233,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     // BMI2 could be used, but this variant is faster on both Intel and AMD.
                     if (Sse2.X64.IsSupported)
                     {
-                        Vector128<sbyte> vecNarrow = Sse2.X64.ConvertScalarToVector128Int64(value).AsSByte();
-                        Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
+                        var vecNarrow = Sse2.X64.ConvertScalarToVector128Int64(value).AsSByte();
+                        var vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
                         Sse2.Store((ulong*)output, vecWide);
                     }
                     else
@@ -570,8 +570,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // BMI2 could be used, but this variant is faster on both Intel and AMD.
             if (Sse2.X64.IsSupported)
             {
-                Vector128<sbyte> vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsSByte();
-                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
+                var vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsSByte();
+                var vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
                 Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
             }
             else
@@ -598,8 +598,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // BMI2 could be used, but this variant is faster on both Intel and AMD.
             if (Sse2.X64.IsSupported)
             {
-                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
-                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+                var vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                var vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
                 return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
                     Sse2.X64.ConvertToUInt64(vecWide);
             }
@@ -637,8 +637,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // BMI2 could be used, but this variant is faster on both Intel and AMD.
             if (Sse2.IsSupported)
             {
-                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
-                Vector128<uint> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt32();
+                var vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                var vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt32();
                 return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
                     Sse2.ConvertToUInt32(vecWide);
             }
@@ -725,34 +725,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             if (Ssse3.IsSupported)
             {
-                // These must be explicity typed as ReadOnlySpan<byte>
-                // They then become a non-allocating mappings to the data section of the assembly.
-                // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-                ReadOnlySpan<byte> shuffleMaskData = new byte[16]
-                {
+                var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalarUnsafe(tupleNumber).AsByte(), Vector128.Create(
                     0xF, 0xF, 3, 0xF,
                     0xF, 0xF, 2, 0xF,
                     0xF, 0xF, 1, 0xF,
                     0xF, 0xF, 0, 0xF
-                };
+                ).AsByte());
 
-                ReadOnlySpan<byte> asciiUpperCaseData = new byte[16]
-                {
+                var highNibbles = Sse2.ShiftRightLogical(Sse2.ShiftRightLogical128BitLane(lowNibbles, 2).AsInt32(), 4).AsByte();
+                var indices = Sse2.And(Sse2.Or(lowNibbles, highNibbles), Vector128.Create((byte)0xF));
+
+                // Lookup the hex values at the positions of the indices
+                var hex = Ssse3.Shuffle(Vector128.Create(
                     (byte)'0', (byte)'1', (byte)'2', (byte)'3',
                     (byte)'4', (byte)'5', (byte)'6', (byte)'7',
                     (byte)'8', (byte)'9', (byte)'A', (byte)'B',
                     (byte)'C', (byte)'D', (byte)'E', (byte)'F'
-                };
+                ), indices);
 
-                // Load from data section memory into Vector128 registers
-                var shuffleMask = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(shuffleMaskData));
-                var asciiUpperCase = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(asciiUpperCaseData));
-
-                var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalarUnsafe(tupleNumber).AsByte(), shuffleMask);
-                var highNibbles = Sse2.ShiftRightLogical(Sse2.ShiftRightLogical128BitLane(lowNibbles, 2).AsInt32(), 4).AsByte();
-                var indices = Sse2.And(Sse2.Or(lowNibbles, highNibbles), Vector128.Create((byte)0xF));
-                // Lookup the hex values at the positions of the indices
-                var hex = Ssse3.Shuffle(asciiUpperCase, indices);
                 // The high bytes (0x00) of the chars have also been converted to ascii hex '0', so clear them out.
                 hex = Sse2.And(hex, Vector128.Create((ushort)0xFF).AsByte());
 
