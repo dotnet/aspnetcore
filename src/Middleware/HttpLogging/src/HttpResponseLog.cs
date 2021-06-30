@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             if (_cachedToString == null)
             {
+                // Use 2kb as a rough average size for response headers
                 var builder = new ValueStringBuilder(2 * 1024);
                 var count = _keyValues.Count;
                 builder.Append("Response:");
