@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Text.Json;
 using MessagePack;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
@@ -37,17 +38,13 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                 }
                 else if (type == typeof(byte[]))
                 {
-                    var bytes = reader.ReadBytes();
-                    if (!bytes.HasValue)
-                    {
-                        return null;
-                    }
-                    else if (bytes.Value.Length == 0)
-                    {
-                        return Array.Empty<byte>();
-                    }
-
-                    return bytes.Value.ToArray();
+                    return ReadBytes(ref reader);
+                }
+                else if (type == typeof(JsonElement))
+                {
+                    var bytes = ReadBytes(ref reader);
+                    var jsonReader = new Utf8JsonReader(bytes);
+                    return JsonElement.ParseValue(ref jsonReader);
                 }
             }
             catch (Exception ex)
@@ -56,6 +53,21 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
             }
 
             throw new FormatException($"Type {type} is not supported");
+        }
+
+        private static byte[] ReadBytes(ref MessagePackReader reader)
+        {
+            var bytes = reader.ReadBytes();
+            if (!bytes.HasValue)
+            {
+                return null;
+            }
+            else if (bytes.Value.Length == 0)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return bytes.Value.ToArray();
         }
 
         protected override void Serialize(ref MessagePackWriter writer, Type type, object value)
