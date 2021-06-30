@@ -408,6 +408,110 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanNavigateProgrammaticallyValidateNoReplaceHistoryEntry()
+        {
+            // This test checks if default navigation does not replace Browser history entries
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
+
+            app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+            // We navigate to the /Other page
+            // This will also test our new NavigatTo(string uri) overload (it should not replace the browser history)
+            app.FindElement(By.Id("do-other-navigation")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+            AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            // After we press back, we should end up at the "/ProgrammaticNavigationCases" page so we know browser history has not been replaced
+            // If history had been replaced we would have ended up at the "/" page
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            AssertHighlightedLinks("Programmatic navigation cases");
+
+            // For completeness, we will test if the normal NavigateTo(string uri, bool forceLoad) overload will also
+            // NOT change the browser's history. So we basically repeat what we have done above.
+            app.FindElement(By.Id("do-other-navigation2")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+            AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            AssertHighlightedLinks("Programmatic navigation cases");
+
+            // Because this was client-side navigation, we didn't lose the state in the test selector
+            Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+
+            app.FindElement(By.Id("do-other-navigation-forced")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+
+            // We check if we had a force load
+            Assert.Throws<StaleElementReferenceException>(() =>
+                testSelector.SelectedOption.GetAttribute("value"));
+
+            // But still we should be able to navigate back, and end up at the "/ProgrammaticNavigationCases" page
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.WaitUntilTestSelectorReady();
+        }
+
+        [Fact]
+        public void CanNavigateProgrammaticallyWithReplaceHistoryEntry()
+        {
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
+
+            app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+            // We navigate to the /Other page, with "replace" enabled
+            app.FindElement(By.Id("do-other-navigation-replacehistoryentry")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+            AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            // After we press back, we should end up at the "/" page so we know browser history has been replaced
+            // If history would not have been replaced we would have ended up at the "/ProgrammaticNavigationCases" page
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/", StringComparison.Ordinal));
+            AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
+
+            // Because this was all with client-side navigation, we didn't lose the state in the test selector
+            Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanNavigateProgrammaticallyWithForceLoadAndReplaceHistoryEntry()
+        {
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
+
+            app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+            // We navigate to the /Other page, with replacehistroyentry and forceload enabled
+            app.FindElement(By.Id("do-other-navigation-forced-replacehistoryentry")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+
+            // We check if we had a force load
+            Assert.Throws<StaleElementReferenceException>(() =>
+                testSelector.SelectedOption.GetAttribute("value"));
+
+            // After we press back, we should end up at the "/" page so we know browser history has been replaced
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/", StringComparison.Ordinal));
+            Browser.WaitUntilTestSelectorReady();
+        }
+
+        [Fact]
         public void ClickingAnchorWithNoHrefShouldNotNavigate()
         {
             SetUrlViaPushState("/");
