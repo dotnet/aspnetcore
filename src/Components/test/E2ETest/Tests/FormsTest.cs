@@ -272,6 +272,29 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputSelectInteractsWithEditContext_MultipleAttribute()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var citiesInput = new SelectElement(appElement.FindElement(By.ClassName("cities")).FindElement(By.TagName("select")));
+            var select = citiesInput.WrappedElement;
+            var messagesAccesor = CreateValidationMessagesAccessor(appElement);
+
+            // Binding applies to option selection
+            Browser.Equal(new[] { "SanFrancisco" }, () => citiesInput.AllSelectedOptions.Select(option => option.GetAttribute("value")));
+
+            // Validates on edit
+            Browser.Equal("valid", () => select.GetAttribute("class"));
+            citiesInput.SelectByIndex(2);
+            Browser.Equal("modified valid", () => select.GetAttribute("class"));
+
+            // Can become invalid
+            citiesInput.SelectByIndex(1);
+            citiesInput.SelectByIndex(3);
+            Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+            Browser.Equal(new[] { "The field SelectedCities must be a string or array type with a maximum length of '3'." }, messagesAccesor);
+        }
+
+        [Fact]
         public void InputCheckboxInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
