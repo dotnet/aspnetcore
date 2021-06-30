@@ -63,11 +63,11 @@ namespace Wasm.Authentication.Server.Data.Migrations
             modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.Key", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Algorithm")
                         .IsRequired()
-                        .HasColumnType("nvarchar(100)")
+                        .HasColumnType("TEXT");
                         .HasMaxLength(100);
 
                     b.Property<DateTime>("Created")
@@ -75,7 +75,7 @@ namespace Wasm.Authentication.Server.Data.Migrations
 
                     b.Property<string>("Data")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("DataProtected")
                         .HasColumnType("bit");
@@ -84,7 +84,7 @@ namespace Wasm.Authentication.Server.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Use")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Version")
                         .HasColumnType("int");
