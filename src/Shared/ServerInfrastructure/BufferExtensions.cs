@@ -224,10 +224,11 @@ namespace System.Buffers
         private static void WriteEncodedMultiWrite(ref this BufferWriter<PipeWriter> buffer, string data, int encodedLength, Encoding encoding)
         {
             var source = data.AsSpan();
-            var bytes = buffer.Span;
             var totalBytesUsed = 0;
             var encoder = encoding.GetEncoder();
             var minBufferSize = encoding.GetMaxByteCount(1);
+            buffer.Ensure(minBufferSize);
+            var bytes = buffer.Span;
             var completed = false;
 
             // This may be a bug, but encoder.Convert returns completed = true for UTF7 too early.

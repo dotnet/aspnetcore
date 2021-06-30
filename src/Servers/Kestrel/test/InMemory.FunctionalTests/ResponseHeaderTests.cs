@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await connection.Receive(
                 $"HTTP/1.1 200 OK",
-                $"Date: {server.Context.DateHeaderValue}",
                 "Content-Length: 11",
+                $"Date: {server.Context.DateHeaderValue}",
                 "",
                 "Hello World");
         }
@@ -68,9 +68,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await connection.Receive(
                 $"HTTP/1.1 200 OK",
+                "Content-Length: 11",
                 "Content-Type: Custom 你好 Type",
                 $"Date: {server.Context.DateHeaderValue}",
-                "Content-Length: 11",
                 "Accept: Custom 你好 Accept",
                 "CustomName: Custom 你好 Value",
                 "",
