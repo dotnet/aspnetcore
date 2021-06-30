@@ -67,7 +67,7 @@ namespace Wasm.Authentication.Server.Data.Migrations
 
                     b.Property<string>("Algorithm")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
                         .HasMaxLength(100);
 
                     b.Property<DateTime>("Created")
