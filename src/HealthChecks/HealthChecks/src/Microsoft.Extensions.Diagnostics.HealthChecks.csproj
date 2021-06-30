@@ -30,10 +30,6 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-
-    <!-- Required for logging source generation -->
-    <!-- workaround https://github.com/dotnet/runtime/issues/52222 -->
-    <Reference Include="Microsoft.Extensions.Logging" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

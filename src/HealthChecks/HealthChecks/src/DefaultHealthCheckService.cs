@@ -197,11 +197,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             public const string HealthCheckErrorName = "HealthCheckError";
             public const string HealthCheckDataName = "HealthCheckData";
 
-            public static readonly EventId HealthCheckProcessingBegin = new EventId(HealthCheckProcessingBeginId, HealthCheckProcessingBeginName);
-            public static readonly EventId HealthCheckProcessingEnd = new EventId(HealthCheckProcessingEndId, HealthCheckProcessingEndName);
-            public static readonly EventId HealthCheckBegin = new EventId(HealthCheckBeginId, HealthCheckBeginName);
-            public static readonly EventId HealthCheckEnd = new EventId(HealthCheckEndId, HealthCheckEndName);
-            public static readonly EventId HealthCheckError = new EventId(HealthCheckErrorId, HealthCheckErrorName);
             public static readonly EventId HealthCheckData = new EventId(HealthCheckDataId, HealthCheckDataName);
         }
 

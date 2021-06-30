@@ -208,13 +208,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             public const string HealthCheckPublisherEndName = "HealthCheckPublisherEnd";
             public const string HealthCheckPublisherErrorName = "HealthCheckPublisherError";
             public const string HealthCheckPublisherTimeoutName = "HealthCheckPublisherTimeout";
-
-            public static readonly EventId HealthCheckPublisherProcessingBegin = new EventId(HealthCheckPublisherProcessingBeginId, HealthCheckPublisherProcessingBeginName);
-            public static readonly EventId HealthCheckPublisherProcessingEnd = new EventId(HealthCheckPublisherProcessingEndId, HealthCheckPublisherProcessingEndName);
-            public static readonly EventId HealthCheckPublisherBegin = new EventId(HealthCheckPublisherBeginId, HealthCheckPublisherBeginName);
-            public static readonly EventId HealthCheckPublisherEnd = new EventId(HealthCheckPublisherEndId, HealthCheckPublisherEndName);
-            public static readonly EventId HealthCheckPublisherError = new EventId(HealthCheckPublisherErrorId, HealthCheckPublisherErrorName);
-            public static readonly EventId HealthCheckPublisherTimeout = new EventId(HealthCheckPublisherTimeoutId, HealthCheckPublisherTimeoutName);
         }
 
         private static partial class Logger
@@ -229,7 +222,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             private static partial void HealthCheckPublisherProcessingEnd(ILogger logger, double ElapsedMilliseconds, Exception? exception = null);
 
             [LoggerMessage(EventIds.HealthCheckPublisherBeginId, LogLevel.Debug, "Running health check publisher '{HealthCheckPublisher}'", EventName = EventIds.HealthCheckPublisherBeginName)]
-            public  static partial void HealthCheckPublisherBegin(ILogger logger, IHealthCheckPublisher HealthCheckPublisher);
+            public static partial void HealthCheckPublisherBegin(ILogger logger, IHealthCheckPublisher HealthCheckPublisher);
 
             public static void HealthCheckPublisherEnd(ILogger logger, IHealthCheckPublisher HealthCheckPublisher, TimeSpan duration) =>
                 HealthCheckPublisherEnd(logger, HealthCheckPublisher, duration.TotalMilliseconds);
