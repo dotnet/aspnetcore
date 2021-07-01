@@ -46,6 +46,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.False(connection.ConnectionClosed.IsCancellationRequested);
 
             await connection.DisposeAsync().AsTask().DefaultTimeout();
+
+            // ConnectionClosed isn't triggered because the server initiated close.
+            Assert.False(connection.ConnectionClosed.IsCancellationRequested);
         }
     }
 }

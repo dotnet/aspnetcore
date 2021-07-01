@@ -45,12 +45,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var closedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             serverStream.ConnectionClosed.Register(() => closedTcs.SetResult());
 
+            // Read data from client.
             var read = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
             Assert.Equal(TestData, read.Buffer.ToArray());
             serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
 
+            // Shutdown client.
             clientStream.Shutdown();
 
+            // Receive shutdown on server.
             read = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
             Assert.True(read.IsCompleted);
 
@@ -86,10 +89,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var closedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             serverStream.ConnectionClosed.Register(() => closedTcs.SetResult());
 
+            // Read data from client.
             var read = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
             Assert.Equal(TestData, read.Buffer.ToArray());
             serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
 
+            // Read data from server.
             var data = new List<byte>();
             var buffer = new byte[1024];
             var readCount = 0;
@@ -103,8 +108,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             }
             Assert.Equal(TestData, data);
 
+            // Shutdown from client.
             clientStream.Shutdown();
 
+            // Get shutdown from client.
             read = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
             Assert.True(read.IsCompleted);
 
@@ -135,6 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             // Assert
             Assert.NotNull(clientStream);
 
+            // Read data from server.
             var data = new List<byte>();
             var buffer = new byte[1024];
             var readCount = 0;
@@ -148,8 +156,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             }
             Assert.Equal(TestData, data);
 
+            // Complete server.
             await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
 
+            // Receive complete in client.
             readCount = await clientStream.ReadAsync(buffer).DefaultTimeout();
             Assert.Equal(0, readCount);
         }
