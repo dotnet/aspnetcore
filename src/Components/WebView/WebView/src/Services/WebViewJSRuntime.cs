@@ -56,5 +56,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
             => await WebViewJSDataStream.CreateWebViewJSDataStreamAsync(this, jsStreamReference, totalLength, maxBufferSize, 1024 * 32, TimeSpan.FromMinutes(1), cancellationToken);
+
+        internal void RaiseUnhandledException(Exception ex)
+        {
+            _ipcSender.NotifyUnhandledException(ex);
+        }
     }
 }

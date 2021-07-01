@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             }
         }
 
-        protected abstract void RaiseUnhandledException(TimeoutException timeoutException);
+        protected abstract void RaiseUnhandledException(Exception exception);
 
         internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
         {

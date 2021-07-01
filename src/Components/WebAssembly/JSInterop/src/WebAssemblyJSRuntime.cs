@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -102,8 +100,7 @@ namespace Microsoft.JSInterop.WebAssembly
                         ? throw new JSException(exception)
                         : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
                 case JSCallResultType.JSStreamReference:
-                    // WebAssembly streaming interop is not presently supported (TODO). Thus we shouldn't see
-                    // a JSCallResultType.JSStreamReference.
+                    // TODO: Validate this functionality.
                 default:
                     throw new InvalidOperationException($"Invalid result type '{resultType}'.");
             }

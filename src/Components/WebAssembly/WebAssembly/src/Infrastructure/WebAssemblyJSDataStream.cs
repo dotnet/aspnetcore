@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
 {
     internal sealed class WebAssemblyJSDataStream : BaseJSDataStream
     {
+        private readonly DefaultWebAssemblyJSRuntime _webAssemblyJSRuntime;
+
         public static async Task<bool> ReceiveData(DefaultWebAssemblyJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
         {
             if (!runtime.JSDataStreamInstances.TryGetValue(streamId, out var instance))
@@ -46,12 +48,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             TimeSpan jsInteropDefaultCallTimeout,
             CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken)
         {
+            _webAssemblyJSRuntime = runtime;
         }
 
-        protected override void RaiseUnhandledException(TimeoutException timeoutException)
+        protected override void RaiseUnhandledException(Exception exception)
         {
-            // TODO
-            // _remoteJSRuntime.RaiseUnhandledException(timeoutException);
+            throw exception; // TODO: test
         }
     }
 }

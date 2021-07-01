@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _remoteJSRuntime = runtime;
         }
 
-        protected override void RaiseUnhandledException(TimeoutException timeoutException)
+        protected override void RaiseUnhandledException(Exception exception)
         {
-            _remoteJSRuntime.RaiseUnhandledException(timeoutException);
+            _remoteJSRuntime.RaiseUnhandledException(exception);
         }
     }
 }

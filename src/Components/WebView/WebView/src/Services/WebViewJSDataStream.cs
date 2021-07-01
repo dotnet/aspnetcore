@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 {
     internal sealed class WebViewJSDataStream : BaseJSDataStream
     {
-        //private readonly WebViewJSRuntime _webViewRuntime;
+        private readonly WebViewJSRuntime _webviewJSRuntime;
 
         public static async Task<bool> ReceiveData(WebViewJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
         {
@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             TimeSpan jsInteropDefaultCallTimeout,
             CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken)
         {
+            _webviewJSRuntime = runtime;
         }
 
-        protected override void RaiseUnhandledException(TimeoutException timeoutException)
+        protected override void RaiseUnhandledException(Exception exception)
         {
-            // TODO
-            // _webviewJSRuntime.RaiseUnhandledException(timeoutException);
+            _webviewJSRuntime.RaiseUnhandledException(exception);
         }
 
         [JSInvokable("ReceiveData")]
