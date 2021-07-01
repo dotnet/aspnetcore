@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -20,18 +21,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
     internal static class QuicTestHelpers
     {
-        public static QuicTransportFactory CreateTransportFactory()
+        private const string Alpn = "h3-29";
+
+        public static QuicTransportFactory CreateTransportFactory(ILoggerFactory loggerFactory = null)
         {
             var quicTransportOptions = new QuicTransportOptions();
-            quicTransportOptions.Alpn = "h3-29";
+            quicTransportOptions.Alpn = Alpn;
             quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
 
-            return new QuicTransportFactory(NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
+            return new QuicTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
         }
 
-        public static async Task<QuicConnectionListener> CreateConnectionListenerFactory()
+        public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(ILoggerFactory loggerFactory = null)
         {
-            var transportFactory = CreateTransportFactory();
+            var transportFactory = CreateTransportFactory(loggerFactory);
 
             // Use ephemeral port 0. OS will assign unused port.
             var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 {
                     ApplicationProtocols = new List<SslApplicationProtocol>
                     {
-                        new SslApplicationProtocol("h3-29")
+                        new SslApplicationProtocol(Alpn)
                     },
                     RemoteCertificateValidationCallback = RemoteCertificateValidationCallback
                 }

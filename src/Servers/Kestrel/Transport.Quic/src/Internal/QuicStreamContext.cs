@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
     {
-        private Task _processingTask = Task.CompletedTask;
+        // Internal for testing.
+        internal Task _processingTask = Task.CompletedTask;
+
         private readonly QuicStream _stream;
         private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
@@ -126,6 +128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // This could be ignored if _shutdownReason is already set.
                 error = new ConnectionResetException(ex.Message, ex);
+
+                _log.StreamAbort(this, error.Message);
             }
             catch (Exception ex)
             {

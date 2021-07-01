@@ -10,14 +10,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
-    public class QuicConnectionListenerTests
+    public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     {
         [ConditionalFact]
         [MsQuicSupported]
         public async Task AcceptAsync_AfterUnbind_Error()
         {
             // Arrange
-            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
             // Act
             await connectionListener.UnbindAsync().DefaultTimeout();
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task AcceptAsync_ClientCreatesConnection_ServerAccepts()
         {
             // Arrange
-            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
             // Act
             var acceptTask = connectionListener.AcceptAsync().DefaultTimeout();

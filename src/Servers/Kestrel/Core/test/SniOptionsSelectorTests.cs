@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class SniOptionsSelectorTests
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         [Fact]
         public void PrefersExactMatchOverWildcardPrefixOverWildcardOnly()
