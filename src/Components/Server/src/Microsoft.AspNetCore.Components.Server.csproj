@@ -25,7 +25,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <!-- Required for S.T.J source generation -->
     <Reference Include="System.Text.Json" PrivateAssets="All" />
-    
+
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
 
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Circuits" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\BaseJSDataStream.cs" LinkBase="Circuits" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Circuits" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Circuits" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />

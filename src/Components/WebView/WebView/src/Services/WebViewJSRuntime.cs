@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 {
     internal class WebViewJSRuntime : JSRuntime
     {
-        internal int WebViewJSDataStreamNextInstanceId;
-        internal readonly Dictionary<long, WebViewJSDataStream> WebViewJSDataStreamInstances = new();
+        internal int JSDataStreamNextInstanceId;
+        internal readonly Dictionary<long, BaseJSDataStream> JSDataStreamInstances = new();
 
         private IpcSender _ipcSender;
 

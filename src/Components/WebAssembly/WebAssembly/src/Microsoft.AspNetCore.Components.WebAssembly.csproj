@@ -7,6 +7,7 @@
     <!-- Workaround for https://github.com/dotnet/runtime/issues/52227 -->
     <NoWarn>$(NoWarn);CS8603</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DefineConstants>$(DefineConstants);BLAZOR_WEBASSEMBLY</DefineConstants>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
   </PropertyGroup>
@@ -23,6 +24,7 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\BaseJSDataStream.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />

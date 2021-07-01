@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
     internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
-        internal int WebAssemblyJSDataStreamNextInstanceId;
-        internal readonly Dictionary<long, WebAssemblyJSDataStream> WebAssemblyJSDataStreamInstances = new();
+        internal int JSDataStreamNextInstanceId;
+        internal readonly Dictionary<long, BaseJSDataStream> JSDataStreamInstances = new();
 
         internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
