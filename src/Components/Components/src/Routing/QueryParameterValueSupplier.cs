@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 {
     internal sealed class QueryParameterValueSupplier
     {
-        private static Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
+        private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
         private readonly QueryParameterMapping[] _mappings;
         private readonly Dictionary<QueryParameterDestination, object?> _assignmentsTemplate;
 
@@ -72,16 +72,15 @@ namespace Microsoft.AspNetCore.Components.Routing
                 // seek into it by binary search.
                 foreach (var candidateMapping in _mappings)
                 {
-                    // Note that we're comparing the names without unescaping.
-                    // Cost: we don't support component parameter names that need escaping (who would do this?)
-                    // Benefit: no need to allocate and decode for every unrelated user-supplied query param name
-                    // Alternatively, we could store pre-escaped names in _queryParameterToComponentParametersMap.
-                    // Then, if the param was either a simple name or used an escaping that matches up with ours,
-                    // then it would still work.
-                    if (suppliedPair.NameEscaped.Equals(candidateMapping.QueryParameterName, StringComparison.OrdinalIgnoreCase))
+                    // Open question: should we support encoded parameter names?
+                    // - It's very unlikely that anyone would want to have parameter names that require encoding,
+                    //   given that they are mapping them to C# properties and not some more complex data structure
+                    // - Doing the comparisons without decoding is better for perf, especially against hostile input
+                    // - We could add support for decoding later non-breakingly
+                    // ... so I think for now, I'm on the side of not supporting encoded parameter names.
+                    if (suppliedPair.EncodedName.Equals(candidateMapping.QueryParameterName, StringComparison.OrdinalIgnoreCase))
                     {
-                        var unescapedValue = Uri.UnescapeDataString(suppliedPair.ValueEscaped.ToString().Replace('+', ' '));
-
+                        var decodedValue = suppliedPair.DecodeValue();
                         foreach (var destination in candidateMapping.Destinations)
                         {
                             if (destination.IsArray)
@@ -90,12 +89,12 @@ namespace Microsoft.AspNetCore.Components.Routing
                                 // the values in a List<T>. Only the closed-generic-type parser knows how to append
                                 // typed values to that list. The code here just sees it as Object.
                                 assignmentsByDestination.TryGetValue(destination, out var existingList);
-                                if (destination.Parser.TryAppendListValue(existingList, unescapedValue, out var updatedList))
+                                if (destination.Parser.TryAppendListValue(existingList, decodedValue.ToString(), out var updatedList))
                                 {
                                     assignmentsByDestination[destination] = updatedList;
                                 }
                             }
-                            else if (destination.Parser.TryParseUntyped(unescapedValue, out var parsedVaue))
+                            else if (destination.Parser.TryParseUntyped(decodedValue, out var parsedVaue))
                             {
                                 assignmentsByDestination[destination] = parsedVaue;
                             }

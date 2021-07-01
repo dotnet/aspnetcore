@@ -36,9 +36,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             if (targetType == typeof(string))
             {
-                return new TypedUrlValueConstraint<string>((string str, out string result) =>
+                return new TypedUrlValueConstraint<string>((ReadOnlySpan<char> str, out string result) =>
                 {
-                    result = str;
+                    result = str.ToString();
                     return true;
                 });
             }
@@ -48,22 +48,22 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
             else if (targetType == typeof(DateTime))
             {
-                return new TypedUrlValueConstraint<DateTime>((string str, out DateTime result) =>
+                return new TypedUrlValueConstraint<DateTime>((ReadOnlySpan<char> str, out DateTime result) =>
                     DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result));
             }
             else if (targetType == typeof(decimal))
             {
-                return new TypedUrlValueConstraint<decimal>((string str, out decimal result) =>
+                return new TypedUrlValueConstraint<decimal>((ReadOnlySpan<char> str, out decimal result) =>
                     decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
             }
             else if (targetType == typeof(double))
             {
-                return new TypedUrlValueConstraint<double>((string str, out double result) =>
+                return new TypedUrlValueConstraint<double>((ReadOnlySpan<char> str, out double result) =>
                     double.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
             }
             else if (targetType == typeof(float))
             {
-                return new TypedUrlValueConstraint<float>((string str, out float result) =>
+                return new TypedUrlValueConstraint<float>((ReadOnlySpan<char> str, out float result) =>
                     float.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
             }
             else if (targetType == typeof(Guid))
@@ -72,19 +72,19 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
             else if (targetType == typeof(int))
             {
-                return new TypedUrlValueConstraint<int>((string str, out int result) =>
+                return new TypedUrlValueConstraint<int>((ReadOnlySpan<char> str, out int result) =>
                     int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
             }
             else if (targetType == typeof(long))
             {
-                return new TypedUrlValueConstraint<long>((string str, out long result) =>
+                return new TypedUrlValueConstraint<long>((ReadOnlySpan<char> str, out long result) =>
                     long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
             }
 
             return null;
         }
 
-        public abstract bool TryParseUntyped(string value, [MaybeNullWhen(false)] out object result);
+        public abstract bool TryParseUntyped(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out object result);
 
         public abstract bool TryAppendListValue(object? existingList, string value, [MaybeNullWhen(false)] out object updatedList);
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private class TypedUrlValueConstraint<T> : UrlValueConstraint
         {
-            public delegate bool TryParseDelegate(string str, [MaybeNullWhen(false)] out T result);
+            public delegate bool TryParseDelegate(ReadOnlySpan<char> str, [MaybeNullWhen(false)] out T result);
 
             private readonly TryParseDelegate _parser;
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 _parser = parser;
             }
 
-            public override bool TryParseUntyped(string value, [MaybeNullWhen(false)] out object result)
+            public override bool TryParseUntyped(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out object result)
             {
                 if (_parser(value, out var typedResult))
                 {
