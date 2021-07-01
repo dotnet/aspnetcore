@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
     <!--#if PWA -->
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
     <!--#endif -->
