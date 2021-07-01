@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
 
         protected override void RaiseUnhandledException(Exception exception)
         {
-            throw exception; // TODO: test
+            throw exception;
         }
 
         [JSInvokable("ReceiveJSDataChunk")]

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -100,10 +101,27 @@ namespace Microsoft.JSInterop.WebAssembly
                         ? throw new JSException(exception)
                         : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
                 case JSCallResultType.JSStreamReference:
-                    // TODO: Validate this functionality.
+                    var serializedStreamReference = InternalCalls.InvokeJS<T0, T1, T2, string>(out exception, ref callInfo, arg0, arg1, arg2);
+                    return exception != null
+                        ? throw new JSException(exception)
+                        : (TResult)(object)DeserializeJSStreamReference(serializedStreamReference);
                 default:
                     throw new InvalidOperationException($"Invalid result type '{resultType}'.");
             }
+        }
+
+        private IJSStreamReference DeserializeJSStreamReference(string serializedStreamReference)
+        {
+            var receivedBytes = Encoding.UTF8.GetBytes(serializedStreamReference);
+            var reader = new Utf8JsonReader(receivedBytes);
+            var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(ref reader, JsonSerializerOptions);
+
+            if (jsStreamReference is null)
+            {
+                throw new NullReferenceException($"Unable to parse the {nameof(serializedStreamReference)}.");
+            }
+
+            return jsStreamReference;
         }
 
         /// <inheritdoc />
