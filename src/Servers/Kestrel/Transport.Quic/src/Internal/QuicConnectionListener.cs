@@ -71,14 +71,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             if (_disposed)
             {
-                return new ValueTask();
+                return ValueTask.CompletedTask;
             }
 
+            _listener.Dispose();
             _disposed = true;
 
-            _listener.Dispose();
-
-            return new ValueTask();
+            return ValueTask.CompletedTask;
         }
     }
 }

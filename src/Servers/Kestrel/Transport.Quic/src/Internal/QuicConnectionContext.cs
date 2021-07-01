@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 _closeTask ??= _connection.CloseAsync(errorCode: 0).AsTask();
                 await _closeTask;
+                _connectionClosedTokenSource.Cancel();
             }
             catch (Exception ex)
             {

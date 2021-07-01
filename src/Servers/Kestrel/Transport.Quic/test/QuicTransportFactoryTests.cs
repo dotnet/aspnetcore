@@ -4,9 +4,12 @@
 using System;
 using System.Net;
 using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -16,7 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
     public class QuicTransportFactoryTests
     {
-        [Fact]
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task BindAsync_NoFeature_Error()
         {
             // Arrange
@@ -30,7 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.Equal("Couldn't find HTTPS configuration for QUIC transport.", ex.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task BindAsync_NoServerCertificate_Error()
         {
             // Arrange
