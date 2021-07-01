@@ -35,7 +35,8 @@
     </p>
     <p class="ticket-class">
         Ticket class:
-        <InputSelect @bind-Value="person.TicketClass" size="4">
+        @*We specify 'multiple' here, but it has no effect since we are not binding to an array type.*@
+        <InputSelect @bind-Value="person.TicketClass" size="4" multiple>
             <option>(select)</option>
             <option value="@TicketClass.Economy">Economy class</option>
             <option value="@TicketClass.Premium">Premium class</option>
@@ -44,7 +45,8 @@
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="cities">
-        <InputSelect @bind-Value="person.SelectedCities" multiple>
+        @*Here, the 'multiple' attribute is inferred because we are binding to an array type.*@
+        <InputSelect @bind-Value="person.SelectedCities">
             <option value="@City.SanFrancisco">San Francisco</option>
             <option value="@City.Tokyo">Tokyo</option>
             <option value="@City.London">London</option>

@@ -13,6 +13,16 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
     {
+        private readonly bool _isMultipleSelect;
+
+        /// <summary>
+        /// Constructs an instance of <see cref="InputSelect{TValue}"/>.
+        /// </summary>
+        public InputSelect()
+        {
+            _isMultipleSelect = typeof(TValue).IsArray;
+        }
+
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
         /// </summary>
@@ -32,20 +42,21 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenElement(0, "select");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "class", CssClass);
+            builder.AddAttribute(3, "multiple", _isMultipleSelect);
 
-            if (AdditionalAttributes?.ContainsKey("multiple") ?? false)
+            if (_isMultipleSelect)
             {
-                builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
-                builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder(this, SetCurrentValueAsStringArray, default(string[])));
+                builder.AddAttribute(4, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
+                builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?[]?>(this, SetCurrentValueAsStringArray, default));
             }
             else
             {
-                builder.AddAttribute(5, "value", CurrentValueAsString);
-                builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
+                builder.AddAttribute(6, "value", CurrentValueAsString);
+                builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
             }
 
-            builder.AddElementReferenceCapture(7, __selectReference => Element = __selectReference);
-            builder.AddContent(8, ChildContent);
+            builder.AddElementReferenceCapture(8, __selectReference => Element = __selectReference);
+            builder.AddContent(9, ChildContent);
             builder.CloseElement();
         }
 

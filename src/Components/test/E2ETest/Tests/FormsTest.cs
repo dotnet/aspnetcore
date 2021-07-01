@@ -295,6 +295,25 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputSelectIgnoresMultipleAttribute()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
+            var select = ticketClassInput.WrappedElement;
+
+            // Select does not have the 'multiple' attribute
+            Browser.False(() => ticketClassInput.IsMultiple);
+
+            // Check initial selection
+            Browser.Equal("Economy class", () => ticketClassInput.SelectedOption.Text);
+
+            ticketClassInput.SelectByText("First class");
+
+            // Only one option selected
+            Browser.Equal(1, () => ticketClassInput.AllSelectedOptions.Count);
+        }
+
+        [Fact]
         public void InputCheckboxInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
