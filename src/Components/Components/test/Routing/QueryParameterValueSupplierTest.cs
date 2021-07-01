@@ -263,8 +263,54 @@ namespace Microsoft.AspNetCore.Components.Routing
             Assert.Equal("Querystring values cannot be parsed as type 'System.Object'.", ex.Message);
         }
 
-        // Unparseable values
-        // Valid array types
+        [Theory]
+        [InlineData(nameof(ValidTypes.BoolVal), "abc", typeof(bool))]
+        [InlineData(nameof(ValidTypes.DateTimeVal), "2020-02-31", typeof(DateTime))]
+        [InlineData(nameof(ValidTypes.DecimalVal), "1.2.3", typeof(decimal))]
+        [InlineData(nameof(ValidTypes.DoubleVal), "1x", typeof(double))]
+        [InlineData(nameof(ValidTypes.FloatVal), "1e1000", typeof(float))]
+        [InlineData(nameof(ValidTypes.GuidVal), "123456-789-0", typeof(Guid))]
+        [InlineData(nameof(ValidTypes.IntVal), "5000000000", typeof(int))]
+        [InlineData(nameof(ValidTypes.LongVal), "this+is+a+long+value", typeof(long))]
+        [InlineData(nameof(ValidTypes.NullableBoolVal), "abc", typeof(bool))]
+        [InlineData(nameof(ValidTypes.NullableDateTimeVal), "2020-02-31", typeof(DateTime))]
+        [InlineData(nameof(ValidTypes.NullableDecimalVal), "1.2.3", typeof(decimal))]
+        [InlineData(nameof(ValidTypes.NullableDoubleVal), "1x", typeof(double))]
+        [InlineData(nameof(ValidTypes.NullableFloatVal), "1e1000", typeof(float))]
+        [InlineData(nameof(ValidTypes.NullableGuidVal), "123456-789-0", typeof(Guid))]
+        [InlineData(nameof(ValidTypes.NullableIntVal), "5000000000", typeof(int))]
+        [InlineData(nameof(ValidTypes.NullableLongVal), "this+is+a+long+value", typeof(long))]
+        public void RejectsUnparseableValues(string key, string value, Type targetType)
+        {
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => GetSuppliedParameters<ValidTypes>($"?{key}={value}"));
+            Assert.Equal($"Cannot parse the value '{value.Replace('+', ' ')}' as type '{targetType}' for '{key}'.", ex.Message);
+        }
+
+        [Theory]
+        [InlineData(nameof(ValidArrayTypes.BoolVals), "true", "abc", typeof(bool))]
+        [InlineData(nameof(ValidArrayTypes.DateTimeVals), "2020-02-28", "2020-02-31", typeof(DateTime))]
+        [InlineData(nameof(ValidArrayTypes.DecimalVals), "1.23", "1.2.3", typeof(decimal))]
+        [InlineData(nameof(ValidArrayTypes.DoubleVals), "1", "1x", typeof(double))]
+        [InlineData(nameof(ValidArrayTypes.FloatVals), "1000", "1e1000", typeof(float))]
+        [InlineData(nameof(ValidArrayTypes.GuidVals), "9e7257ad-03aa-42c7-9819-be08b177fef9", "123456-789-0", typeof(Guid))]
+        [InlineData(nameof(ValidArrayTypes.IntVals), "5000000", "5000000000", typeof(int))]
+        [InlineData(nameof(ValidArrayTypes.LongVals), "-1234", "this+is+a+long+value", typeof(long))]
+        [InlineData(nameof(ValidArrayTypes.NullableBoolVals), "true", "abc", typeof(bool))]
+        [InlineData(nameof(ValidArrayTypes.NullableDateTimeVals), "2020-02-28", "2020-02-31", typeof(DateTime))]
+        [InlineData(nameof(ValidArrayTypes.NullableDecimalVals), "1.23", "1.2.3", typeof(decimal))]
+        [InlineData(nameof(ValidArrayTypes.NullableDoubleVals), "1", "1x", typeof(double))]
+        [InlineData(nameof(ValidArrayTypes.NullableFloatVals), "1000", "1e1000", typeof(float))]
+        [InlineData(nameof(ValidArrayTypes.NullableGuidVals), "9e7257ad-03aa-42c7-9819-be08b177fef9", "123456-789-0", typeof(Guid))]
+        [InlineData(nameof(ValidArrayTypes.NullableIntVals), "5000000", "5000000000", typeof(int))]
+        [InlineData(nameof(ValidArrayTypes.NullableLongVals), "-1234", "this+is+a+long+value", typeof(long))]
+        public void RejectsUnparseableArrayEntries(string key, string validValue, string invalidValue, Type targetType)
+        {
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => GetSuppliedParameters<ValidArrayTypes>($"?{key}={validValue}&{key}={invalidValue}"));
+            Assert.Equal($"Cannot parse the value '{invalidValue.Replace('+', ' ')}' as type '{targetType}' for '{key}'.", ex.Message);
+        }
+
         // Blank single values
         // Blank single nullable values
         // Blank multiple values
