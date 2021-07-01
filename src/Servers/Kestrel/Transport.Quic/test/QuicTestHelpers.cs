@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         {
             var quicTransportOptions = new QuicTransportOptions();
             quicTransportOptions.Alpn = "h3-29";
-            quicTransportOptions.IdleTimeout = TimeSpan.FromSeconds(10);
+            quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
 
             return new QuicTransportFactory(NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
         }

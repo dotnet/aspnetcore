@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task AcceptAsync_AfterUnbind_Error()
         {
             // Arrange
-            var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
 
             // Act
             await connectionListener.UnbindAsync().DefaultTimeout();
@@ -31,22 +31,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task AcceptAsync_ClientCreatesConnection_ServerAccepts()
         {
             // Arrange
-            var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
 
             // Act
             var acceptTask = connectionListener.AcceptAsync().DefaultTimeout();
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-            var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
             // Assert
-            var connection = await acceptTask.DefaultTimeout();
+            await using var connection = await acceptTask.DefaultTimeout();
             Assert.False(connection.ConnectionClosed.IsCancellationRequested);
 
             await connection.DisposeAsync().AsTask().DefaultTimeout();
-            Assert.True(connection.ConnectionClosed.IsCancellationRequested);
         }
     }
 }
