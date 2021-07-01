@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -84,9 +85,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             return null;
         }
 
-        public abstract bool TryParseUntyped(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out object result);
+        public abstract bool TryParse(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out object result);
 
-        public abstract bool TryAppendListValue(object? existingList, string value, [MaybeNullWhen(false)] out object updatedList);
+        public abstract object? Parse(ReadOnlySpan<char> value, string destinationNameForMessage);
+
+        public abstract Array ParseMultiple(StringValues values, string destinationNameForMessage);
 
         public abstract object ToArray(object value);
 
@@ -101,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 _parser = parser;
             }
 
-            public override bool TryParseUntyped(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out object result)
+            public override bool TryParse(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out object result)
             {
                 if (_parser(value, out var typedResult))
                 {
@@ -115,20 +118,36 @@ namespace Microsoft.AspNetCore.Components.Routing
                 }
             }
 
-            public override bool TryAppendListValue(object? existingList, string value, [MaybeNullWhen(false)] out object updatedList)
+            public override object? Parse(ReadOnlySpan<char> value, string destinationNameForMessage)
             {
-                if (_parser(value, out var typedResult))
+                if (!_parser(value, out var parsedValue))
                 {
-                    var list = existingList as List<T> ?? new List<T>();
-                    list.Add(typedResult);
-                    updatedList = list;
-                    return true;
+                    throw new InvalidOperationException($"Cannot parse the value '{value.ToString()}' as type '{typeof(T)}' for '{destinationNameForMessage}'.");
                 }
-                else
+
+                return parsedValue;
+            }
+
+            public override Array ParseMultiple(StringValues values, string destinationNameForMessage)
+            {
+                if (values.Count == 0)
                 {
-                    updatedList = null;
-                    return false;
+                    return Array.Empty<T>();
                 }
+
+                var result = new T[values.Count];
+
+                for (var i = 0; i < values.Count; i++)
+                {
+                    if (!_parser(values[i], out var parsedValue))
+                    {
+                        throw new InvalidOperationException($"Cannot parse the value '{values[i]}' as type '{typeof(T)}' for '{destinationNameForMessage}'.");
+                    }
+
+                    result[i] = parsedValue;
+                }
+
+                return result;
             }
 
             public override object ToArray(object value)

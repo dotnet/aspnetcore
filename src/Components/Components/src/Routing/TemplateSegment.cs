@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                 foreach (var constraint in Constraints)
                 {
-                    if (!constraint.TryParseUntyped(pathSegment, out matchedParameterValue))
+                    if (!constraint.TryParse(pathSegment, out matchedParameterValue))
                     {
                         return false;
                     }

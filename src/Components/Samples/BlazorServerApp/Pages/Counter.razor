@@ -2,15 +2,13 @@
 
 <h1>Counter [@Increment] [@SomeBool.ToString()] [@Name]</h1>
 
-@if (Ids != null)
-{
-    <ul>
-        @foreach (var id in Ids)
-        {
-            <li>@id</li>
-        }
-    </ul>
-}
+<p>Number of IDs: @Ids.Length</p>
+<ul>
+    @foreach (var id in Ids)
+    {
+        <li>@id</li>
+    }
+</ul>
 
 <p id="counter">Current count: @currentCount</p>
 
@@ -36,7 +34,7 @@
     public bool SomeBool { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "id")]
-    public int[]? Ids { get; set; }
+    public int[] Ids { get; set; } = default!;
 
     void IncrementCount()
     {

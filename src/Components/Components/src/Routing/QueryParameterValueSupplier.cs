@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     {
         private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
         private readonly QueryParameterMapping[] _mappings;
-        private readonly Dictionary<QueryParameterDestination, object?> _assignmentsTemplate;
+        private readonly Dictionary<QueryParameterDestination, StringValues> _assignmentsTemplate;
 
         public static QueryParameterValueSupplier? ForType(Type componentType)
         {
@@ -42,24 +43,14 @@ namespace Microsoft.AspNetCore.Components.Routing
             {
                 foreach (var destination in mapping.Destinations)
                 {
-                    _assignmentsTemplate.Add(destination, null);
+                    _assignmentsTemplate.Add(destination, default);
                 }
             }
         }
 
         public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlySpan<char> queryString)
         {
-            // TODO: For unparseable values, should we throw? I'm starting to think so, since there's no
-            // normal case where you'd expect to see unparseable values, and if you really need this,
-            // set the type to string and do you own parsing later.
-
-            // TODO: Consider changing this to Dictionary<QueryParameterDestination, StringValues> and just
-            // accumulating the decoded values by destination. Then when emitting the render tree frames,
-            // you can allocate arrays of the right size and parse into them.
-            // This only works if you're willing to throw for unparseable values, otherwise you wouldn't
-            // be able to know the right size up front.
-            // Benefit is that we can eliminate the whole concept of lists from UrlValueConstraint.
-            var assignmentsByDestination = new Dictionary<QueryParameterDestination, object?>(_assignmentsTemplate);
+            var assignmentsByDestination = new Dictionary<QueryParameterDestination, StringValues>(_assignmentsTemplate);
 
             // Populate the assignments dictionary in a single pass through the querystring
             var queryStringEnumerable = new QueryStringEnumerable(queryString);
@@ -85,18 +76,16 @@ namespace Microsoft.AspNetCore.Components.Routing
                         {
                             if (destination.IsArray)
                             {
-                                // If we're supplying an array, then assignmentsByDestination will be accumulating
-                                // the values in a List<T>. Only the closed-generic-type parser knows how to append
-                                // typed values to that list. The code here just sees it as Object.
-                                assignmentsByDestination.TryGetValue(destination, out var existingList);
-                                if (destination.Parser.TryAppendListValue(existingList, decodedValue.ToString(), out var updatedList))
-                                {
-                                    assignmentsByDestination[destination] = updatedList;
-                                }
+                                // Collect as many values as we receive
+                                assignmentsByDestination[destination] = StringValues.Concat(
+                                    assignmentsByDestination[destination],
+                                    decodedValue.ToString());
                             }
-                            else if (destination.Parser.TryParseUntyped(decodedValue, out var parsedVaue))
+                            else
                             {
-                                assignmentsByDestination[destination] = parsedVaue;
+                                // TODO: Consider some mechanism for not stringifying this span and retaining it as span
+                                // for the parser
+                                assignmentsByDestination[destination] = new StringValues(decodedValue.ToString());
                             }
                         }
 
@@ -108,12 +97,12 @@ namespace Microsoft.AspNetCore.Components.Routing
             // Finally actually emit the rendertree frames
             foreach (var (destination, value) in assignmentsByDestination)
             {
-                // If we're supplying multiple values, we'll have a List<T> here. The closed-generic-type
-                // parser knows how to convert this into a T[].
-                var finalValue = destination.IsArray && value is not null
-                    ? destination.Parser.ToArray(value)
-                    : value;
-                builder.AddAttribute(0, destination.ComponentParameterName, finalValue);
+                // TODO: Have to handle all possible cases with missing values
+                // empty single values, empty value in array, target type is nullable, etc.
+                var valueToSupply = destination.IsArray
+                    ? destination.Parser.ParseMultiple(value, destination.ComponentParameterName)
+                    : destination.Parser.Parse(value[0], destination.ComponentParameterName);
+                builder.AddAttribute(0, destination.ComponentParameterName, valueToSupply);
             }
         }
 
