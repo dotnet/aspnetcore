@@ -22,15 +22,24 @@ namespace Microsoft.AspNetCore.Internal
 #else
     internal
 #endif
-    readonly ref struct QueryStringEnumerable
+    readonly struct QueryStringEnumerable
     {
-        private readonly ReadOnlySpan<char> _queryString;
+        private readonly ReadOnlyMemory<char> _queryString;
 
         /// <summary>
         /// Constructs an instance of <see cref="QueryStringEnumerable"/>.
         /// </summary>
         /// <param name="queryString">The query string.</param>
-        public QueryStringEnumerable(ReadOnlySpan<char> queryString)
+        public QueryStringEnumerable(string? queryString)
+            : this(queryString.AsMemory())
+        {
+        }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="QueryStringEnumerable"/>.
+        /// </summary>
+        /// <param name="queryString">The query string.</param>
+        public QueryStringEnumerable(ReadOnlyMemory<char> queryString)
         {
             _queryString = queryString;
         }
@@ -45,21 +54,21 @@ namespace Microsoft.AspNetCore.Internal
         /// <summary>
         /// Represents a single name/value pair extracted from a query string during enumeration.
         /// </summary>
-        public readonly ref struct EncodedNameValuePair
+        public readonly struct EncodedNameValuePair
         {
             /// <summary>
             /// Gets the name from this name/value pair in its original encoded form.
             /// To get the decoded string, call <see cref="DecodeName"/>.
             /// </summary>
-            public readonly ReadOnlySpan<char> EncodedName { get; }
+            public readonly ReadOnlyMemory<char> EncodedName { get; }
 
             /// <summary>
             /// Gets the value from this name/value pair in its original encoded form.
             /// To get the decoded string, call <see cref="DecodeValue"/>.
             /// </summary>
-            public readonly ReadOnlySpan<char> EncodedValue { get; }
+            public readonly ReadOnlyMemory<char> EncodedValue { get; }
 
-            internal EncodedNameValuePair(ReadOnlySpan<char> encodedName, ReadOnlySpan<char> encodedValue)
+            internal EncodedNameValuePair(ReadOnlyMemory<char> encodedName, ReadOnlyMemory<char> encodedValue)
             {
                 EncodedName = encodedName;
                 EncodedValue = encodedValue;
@@ -69,37 +78,37 @@ namespace Microsoft.AspNetCore.Internal
             /// Decodes the name from this name/value pair.
             /// </summary>
             /// <returns>Characters representing the decoded name.</returns>
-            public ReadOnlySpan<char> DecodeName()
+            public ReadOnlyMemory<char> DecodeName()
                 => Decode(EncodedName);
 
             /// <summary>
             /// Decodes the value from this name/value pair.
             /// </summary>
             /// <returns>Characters representing the decoded value.</returns>
-            public ReadOnlySpan<char> DecodeValue()
+            public ReadOnlyMemory<char> DecodeValue()
                 => Decode(EncodedValue);
 
-            private static ReadOnlySpan<char> Decode(ReadOnlySpan<char> chars)
+            private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
             {
                 // If the value is short, it's cheap to check up front if it really needs decoding. If it doesn't,
                 // then we can save some allocations.
-                return chars.Length < 16 && chars.IndexOfAny('%', '+') < 0
+                return chars.Length < 16 && chars.Span.IndexOfAny('%', '+') < 0
                     ? chars
-                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(chars));
+                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(chars.Span)).AsMemory();
             }
         }
 
         /// <summary>
         /// An enumerator that supplies the name/value pairs from a URI query string.
         /// </summary>
-        public ref struct Enumerator
+        public struct Enumerator
         {
-            private ReadOnlySpan<char> _query;
+            private ReadOnlyMemory<char> _query;
 
-            internal Enumerator(ReadOnlySpan<char> query)
+            internal Enumerator(ReadOnlyMemory<char> query)
             {
                 Current = default;
-                _query = query.IsEmpty || query[0] != '?'
+                _query = query.IsEmpty || query.Span[0] != '?'
                     ? query
                     : query.Slice(1);
             }
@@ -118,8 +127,8 @@ namespace Microsoft.AspNetCore.Internal
                 while (!_query.IsEmpty)
                 {
                     // Chomp off the next segment
-                    ReadOnlySpan<char> segment;
-                    var delimiterIndex = _query.IndexOf('&');
+                    ReadOnlyMemory<char> segment;
+                    var delimiterIndex = _query.Span.IndexOf('&');
                     if (delimiterIndex >= 0)
                     {
                         segment = _query.Slice(0, delimiterIndex);
@@ -132,7 +141,7 @@ namespace Microsoft.AspNetCore.Internal
                     }
 
                     // If it's nonempty, emit it
-                    var equalIndex = segment.IndexOf('=');
+                    var equalIndex = segment.Span.IndexOf('=');
                     if (equalIndex >= 0)
                     {
                         Current = new EncodedNameValuePair(

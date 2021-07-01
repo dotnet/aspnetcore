@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             if (_cachedToString == null)
             {
-                var builder = new StringBuilder();
+                // Use 2kb as a rough average size for response headers
+                var builder = new ValueStringBuilder(2 * 1024);
                 var count = _keyValues.Count;
                 builder.Append("Response:");
                 builder.Append(Environment.NewLine);
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     var kvp = _keyValues[i];
                     builder.Append(kvp.Key);
                     builder.Append(": ");
-                    builder.Append(kvp.Value);
+                    builder.Append(kvp.Value?.ToString());
                     builder.Append(Environment.NewLine);
                 }
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     var kvp = _keyValues[count - 1];
                     builder.Append(kvp.Key);
                     builder.Append(": ");
-                    builder.Append(kvp.Value);
+                    builder.Append(kvp.Value?.ToString());
                 }
 
                 _cachedToString = builder.ToString();

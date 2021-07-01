@@ -110,10 +110,10 @@ namespace Microsoft.AspNetCore.Http.Features
             }
 
             var accumulator = new KvpAccumulator();
-            var enumerable = new QueryStringEnumerable(queryString.AsSpan());
+            var enumerable = new QueryStringEnumerable(queryString);
             foreach (var pair in enumerable)
             {
-                accumulator.Append(pair.DecodeName(), pair.DecodeValue());
+                accumulator.Append(pair.DecodeName().Span, pair.DecodeValue().Span);
             }
 
             return accumulator.HasValues

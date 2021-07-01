@@ -11,20 +11,20 @@
 
 <ul class="navbar-nav">
 @*#if (IndividualB2CAuth)
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity?.IsAuthenticated == true)
 {
         @if (!string.IsNullOrEmpty(options.EditProfilePolicyId))
         {
             <li class="nav-item">
                 <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">
-                    <span class="text-dark">Hello @User.Identity.Name!</span>
+                    <span class="text-dark">Hello @User.Identity?.Name!</span>
                 </a>
             </li>
         }
         else
         {
             <li class="nav-item">
-                <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
+                <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
             </li>
         }
         <li class="nav-item">
@@ -38,10 +38,10 @@ else
         </li>
 }
 #else
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity?.IsAuthenticated == true)
 {
         <li class="nav-item">
-            <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
+            <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
         </li>
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>

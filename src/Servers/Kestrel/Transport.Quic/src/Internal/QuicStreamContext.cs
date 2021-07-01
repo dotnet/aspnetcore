@@ -216,7 +216,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
-
         private async Task DoSend()
         {
             Exception? shutdownReason = null;
