@@ -360,10 +360,56 @@ namespace Microsoft.AspNetCore.Components.Routing
             Assert.Equal(string.Empty, suppliedParameters[nameof(ValidTypes.StringVal)]);
         }
 
-        // Blank single values
-        // Blank single nullable values
-        // Blank multiple values
-        // Blank multiple nullable values
+        [Fact]
+        public void EmptyStringArrayValuesAreSuppliedAsEmptyStrings()
+        {
+            var query = $"?{nameof(ValidArrayTypes.StringVals)}=a&" +
+                $"{nameof(ValidArrayTypes.StringVals)}&" +
+                $"{nameof(ValidArrayTypes.StringVals)}=&" +
+                $"{nameof(ValidArrayTypes.StringVals)}=b";
+            var suppliedParameters = GetSuppliedParameters<ValidArrayTypes>(query).ToDictionary(x => x.key, x => x.value);
+            Assert.Equal(new[] { "a", string.Empty, string.Empty, "b" }, suppliedParameters[nameof(ValidArrayTypes.StringVals)]);
+        }
+
+        [Theory]
+        [InlineData(nameof(ValidArrayTypes.BoolVals), typeof(bool))]
+        [InlineData(nameof(ValidArrayTypes.DateTimeVals), typeof(DateTime))]
+        [InlineData(nameof(ValidArrayTypes.DecimalVals), typeof(decimal))]
+        [InlineData(nameof(ValidArrayTypes.DoubleVals), typeof(double))]
+        [InlineData(nameof(ValidArrayTypes.FloatVals), typeof(float))]
+        [InlineData(nameof(ValidArrayTypes.GuidVals), typeof(Guid))]
+        [InlineData(nameof(ValidArrayTypes.IntVals), typeof(int))]
+        [InlineData(nameof(ValidArrayTypes.LongVals), typeof(long))]
+        public void RejectsBlankArrayEntriesWhenNotNullable(string key, Type targetType)
+        {
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => GetSuppliedParameters<ValidArrayTypes>($"?{nameof(ValidTypes.StringVal)}=somevalue&{key}="));
+            Assert.Equal($"Cannot parse the value '' as type '{targetType}' for '{key}'.", ex.Message);
+        }
+
+        [Fact]
+        public void AcceptsBlankArrayEntriesWhenNullable()
+        {
+            var query =
+                $"{nameof(ValidArrayTypes.NullableBoolVals)}=&" +
+                $"{nameof(ValidArrayTypes.NullableDateTimeVals)}=&" +
+                $"{nameof(ValidArrayTypes.NullableDecimalVals)}=&" +
+                $"{nameof(ValidArrayTypes.NullableDoubleVals)}=&" +
+                $"{nameof(ValidArrayTypes.NullableFloatVals)}=&" +
+                $"{nameof(ValidArrayTypes.NullableGuidVals)}=&" +
+                $"{nameof(ValidArrayTypes.NullableIntVals)}=&" +
+                $"{nameof(ValidArrayTypes.NullableLongVals)}=&";
+            Assert.Collection(GetSuppliedParameters<ValidArrayTypes>(query).Where(pair => pair.key.StartsWith("Nullable", StringComparison.Ordinal)),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableBoolVals), new bool?[] { null }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDateTimeVals), new DateTime?[] { null }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDecimalVals), new decimal?[] { null }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDoubleVals), new double?[] { null }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableFloatVals), new float?[] { null }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableGuidVals), new Guid?[] { null }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableIntVals), new int?[] { null }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableLongVals), new long?[] { null }));
+        }
+
         // Decodes values
         // Doesn't decode keys
         // Matches keys case-insensitively
