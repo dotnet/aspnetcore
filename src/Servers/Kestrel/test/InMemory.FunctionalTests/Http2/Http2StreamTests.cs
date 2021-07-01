@@ -404,19 +404,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
-        public async Task HEADERS_Received_SchemeMismatch_Reset()
+        [Theory]
+        [InlineData("https")]
+        [InlineData("ftp")]
+        public async Task HEADERS_Received_SchemeMismatch_Reset(string scheme)
         {
             await InitializeConnectionAsync(_noopApplication);
 
-            // :path and :scheme are not allowed, :authority is optional
             var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "https") }; // Not the expected "http"
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
             await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR,
-                CoreStrings.FormatHttp2StreamErrorSchemeMismatch("https", "http"));
+                CoreStrings.FormatHttp2StreamErrorSchemeMismatch(scheme, "http"));
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Theory]
+        [InlineData("https")]
+        [InlineData("ftp")]
+        public async Task HEADERS_Received_SchemeMismatchAllowed_Processed(string scheme)
+        {
+            _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.Equal(scheme, context.Request.Scheme);
+                return Task.CompletedTask;
+            });
+
+            var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+            await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 36,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Theory]
+        [InlineData("https,http")]
+        [InlineData("http://fakehost/")]
+        public async Task HEADERS_Received_SchemeMismatchAllowed_InvalidScheme_Reset(string scheme)
+        {
+            _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+            await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR,
+                CoreStrings.FormatHttp2StreamErrorSchemeMismatch(scheme, "http"));
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
