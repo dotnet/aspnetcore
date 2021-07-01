@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Internal
         /// </summary>
         /// <param name="queryString">The query string.</param>
         public QueryStringEnumerable(string? queryString)
-            : this(MemoryExtensions.AsMemory(queryString))
+            : this(queryString.AsMemory())
         {
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Internal
                 // then we can save some allocations.
                 return chars.Length < 16 && chars.Span.IndexOfAny('%', '+') < 0
                     ? chars
-                    : MemoryExtensions.AsMemory(Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(chars.Span)));
+                    : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(chars.Span)).AsMemory();
             }
         }
 

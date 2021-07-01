@@ -97,14 +97,12 @@ namespace Microsoft.AspNetCore.Internal
         }
 
         [Fact]
-        public void DecodingRetainsSpansIfDecodingNotNeeded()
+        public void DecodingReusesMemoryIfDecodingNotNeeded()
         {
             foreach (var kvp in new QueryStringEnumerable("?key=value"))
             {
-                Assert.True(MemoryExtensions.Overlaps(kvp.EncodedName, kvp.DecodeName(), out var nameOffset));
-                Assert.True(MemoryExtensions.Overlaps(kvp.EncodedValue, kvp.DecodeValue(), out var valueOffset));
-                Assert.Equal(0, nameOffset);
-                Assert.Equal(0, valueOffset);
+                Assert.True(kvp.EncodedName.Equals(kvp.DecodeName()));
+                Assert.True(kvp.EncodedValue.Equals(kvp.DecodeValue()));
             }
         }
 
