@@ -11,10 +11,20 @@ namespace Microsoft.AspNetCore.Components.Routing
 {
     public class QueryParameterValueSupplierTest
     {
+        private class NoQueryParameters : ComponentBase { }
+
         [Fact]
         public void ComponentWithNoQueryParametersHasNoSupplier()
         {
             Assert.Null(QueryParameterValueSupplier.ForType(typeof(NoQueryParameters)));
+        }
+
+        private class IgnorableProperties : ComponentBase
+        {
+            [Parameter] public string Invalid1 { get; set; }
+            [SupplyParameterFromQuery] public string Invalid2 { get; set; }
+            [Parameter, SupplyParameterFromQuery] public string Valid { get; set; }
+            [Parameter] public object InvalidAndUnsupportedType { get; set; }
         }
 
         [Fact]
@@ -23,6 +33,28 @@ namespace Microsoft.AspNetCore.Components.Routing
             var query = $"?{nameof(IgnorableProperties.Invalid1)}=a&{nameof(IgnorableProperties.Invalid2)}=b&{nameof(IgnorableProperties.Valid)}=c";
             Assert.Collection(GetSuppliedParameters<IgnorableProperties>(query),
                 AssertKeyValuePair(nameof(IgnorableProperties.Valid), "c"));
+        }
+
+        private class ValidTypes : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery] public bool BoolVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public DateTime DateTimeVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public decimal DecimalVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public double DoubleVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public float FloatVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public Guid GuidVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public int IntVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public long LongVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public string StringVal { get; set; }
+
+            [Parameter, SupplyParameterFromQuery] public bool? NullableBoolVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public DateTime? NullableDateTimeVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public decimal? NullableDecimalVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public double? NullableDoubleVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public float? NullableFloatVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public Guid? NullableGuidVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public int? NullableIntVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public long? NullableLongVal { get; set; }
         }
 
         [Fact]
@@ -92,6 +124,28 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidTypes.NullableIntVal), (object)null),
                 AssertKeyValuePair(nameof(ValidTypes.NullableLongVal), (object)null),
                 AssertKeyValuePair(nameof(ValidTypes.StringVal), (object)null));
+        }
+
+        private class ValidArrayTypes : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery] public bool[] BoolVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public DateTime[] DateTimeVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public decimal[] DecimalVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public double[] DoubleVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public float[] FloatVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public Guid[] GuidVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public int[] IntVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public long[] LongVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public string[] StringVals { get; set; }
+
+            [Parameter, SupplyParameterFromQuery] public bool?[] NullableBoolVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public DateTime?[] NullableDateTimeVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public decimal?[] NullableDecimalVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public double?[] NullableDoubleVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public float?[] NullableFloatVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public Guid?[] NullableGuidVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public int?[] NullableIntVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public long?[] NullableLongVals { get; set; }
         }
 
         [Fact]
@@ -195,7 +249,20 @@ namespace Microsoft.AspNetCore.Components.Routing
                     "2020-01-02 03:04:05.678Z"));
         }
 
-        // Invalid (nonprimitive) types
+        class UnsupportedType : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery] public int IntValid { get; set; }
+            [Parameter, SupplyParameterFromQuery] public object ObjectValue { get; set; }
+        }
+
+        [Fact]
+        public void RejectsUnsupportedType()
+        {
+            var ex = Assert.Throws<NotSupportedException>(
+                () => QueryParameterValueSupplier.ForType(typeof(UnsupportedType)));
+            Assert.Equal("Querystring values cannot be parsed as type 'System.Object'.", ex.Message);
+        }
+
         // Unparseable values
         // Valid array types
         // Blank single values
@@ -239,59 +306,6 @@ namespace Microsoft.AspNetCore.Components.Routing
                     Assert.Equal(expectedValue, pair.value);
                 }
             };
-        }
-
-        private class NoQueryParameters : ComponentBase { }
-
-        private class IgnorableProperties : ComponentBase
-        {
-            [Parameter] public string Invalid1 { get; set; }
-            [SupplyParameterFromQuery] public string Invalid2 { get; set; }
-            [Parameter, SupplyParameterFromQuery] public string Valid { get; set; }
-        }
-
-        private class ValidTypes : ComponentBase
-        {
-            [Parameter, SupplyParameterFromQuery] public bool BoolVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public DateTime DateTimeVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public decimal DecimalVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public double DoubleVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public float FloatVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public Guid GuidVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public int IntVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public long LongVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public string StringVal { get; set; }
-
-            [Parameter, SupplyParameterFromQuery] public bool? NullableBoolVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public DateTime? NullableDateTimeVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public decimal? NullableDecimalVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public double? NullableDoubleVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public float? NullableFloatVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public Guid? NullableGuidVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public int? NullableIntVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public long? NullableLongVal { get; set; }
-        }
-
-        private class ValidArrayTypes : ComponentBase
-        {
-            [Parameter, SupplyParameterFromQuery] public bool[] BoolVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public DateTime[] DateTimeVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public decimal[] DecimalVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public double[] DoubleVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public float[] FloatVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public Guid[] GuidVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public int[] IntVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public long[] LongVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public string[] StringVals { get; set; }
-
-            [Parameter, SupplyParameterFromQuery] public bool?[] NullableBoolVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public DateTime?[] NullableDateTimeVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public decimal?[] NullableDecimalVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public double?[] NullableDoubleVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public float?[] NullableFloatVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public Guid?[] NullableGuidVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public int?[] NullableIntVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public long?[] NullableLongVals { get; set; }
         }
     }
 }
