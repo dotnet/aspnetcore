@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Components
             return ConvertToStringCore(obj, culture, out value);
         }
 
-        internal readonly static BindParser<string?> ConvertToString = ConvertToStringCore;
+        internal static readonly BindParser<string?> ConvertToString = ConvertToStringCore;
 
         private static bool ConvertToStringCore(object? obj, CultureInfo? culture, out string? value)
         {
@@ -585,8 +585,8 @@ namespace Microsoft.AspNetCore.Components
             return ConvertToNullableBoolCore(obj, culture, out value);
         }
 
-        internal readonly static BindParser<bool> ConvertToBool = ConvertToBoolCore;
-        internal readonly static BindParser<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
+        internal static readonly BindParser<bool> ConvertToBool = ConvertToBoolCore;
+        internal static readonly BindParser<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
 
         private static bool ConvertToBoolCore(object? obj, CultureInfo? culture, out bool value)
         {
@@ -1307,7 +1307,7 @@ namespace Microsoft.AspNetCore.Components
 
         private static class FormatterDelegateCache
         {
-            private readonly static ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+            private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
             public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
@@ -1433,7 +1433,7 @@ namespace Microsoft.AspNetCore.Components
 
         internal static class ParserDelegateCache
         {
-            private readonly static ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+            private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
             private static MethodInfo? _convertToEnum;
             private static MethodInfo? _convertToNullableEnum;

@@ -53,9 +53,6 @@
 
     void SelectedCarsChanged(ChangeEventArgs e)
     {
-        var array = e.Value as object[];
-        SelectedCars = array is null
-            ? new string[] { }
-            : array.Select(item => item?.ToString()).ToArray();
+        SelectedCars = e.MultipleValues;
     }
 }

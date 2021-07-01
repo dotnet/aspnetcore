@@ -275,24 +275,16 @@ export class BrowserRenderer {
     const selectElem = this.findClosestAncestorSelectElement(optionElement);
     if (selectElem && (deferredValuePropname in selectElem)) {
       if (selectElem.type === 'multiple-select') {
-        return this.trySetMultipleSelectValueFromOptionElement(selectElem, optionElement);
+        optionElement.selected = selectElem[deferredValuePropname].indexOf(optionElement.value) !== -1;
+        return true;
       } else {
-        return this.trySetSingleSelectValueFromOptionElement(selectElem, optionElement);
+        if (selectElem[deferredValuePropname] === optionElement.value) {
+          setSingleSelectElementValue(selectElem, optionElement.value);
+          delete selectElem[deferredValuePropname];
+          return true;
+        }
+        return false;
       }
-    }
-    return false;
-  }
-
-  private trySetMultipleSelectValueFromOptionElement(selectElement: HTMLSelectElement, optionElement: HTMLOptionElement) {
-    optionElement.selected = selectElement[deferredValuePropname].indexOf(optionElement.value) !== -1;
-    return true;
-  }
-
-  private trySetSingleSelectValueFromOptionElement(selectElement: HTMLSelectElement, optionElement: HTMLOptionElement) {
-    if (selectElement[deferredValuePropname] === optionElement.value) {
-      setDeferredElementValue(selectElement, optionElement.value);
-      delete selectElement[deferredValuePropname];
-      return true;
     }
     return false;
   }
@@ -535,23 +527,31 @@ function stripOnPrefix(attributeName: string) {
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
 
+function setSingleSelectElementValue(element: HTMLSelectElement, value: string | null) {
+  // There's no sensible way to represent a select option with value 'null', because
+  // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
+  // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
+  //     *text content* on that <option> element. Trying to suppress that default behavior would involve
+  //     a long chain of special-case hacks, as well as being breaking vs 3.x.
+  // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
+  // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
+  // string in a bound <select>, but that's a limit in the representational power of HTML.
+  element.value = value || '';
+}
+
+function setMultipleSelectElementValue(element: HTMLSelectElement, value: string[] | null) {
+  value ||= [];
+  for (let i = 0; i < element.options.length; i++) {
+    element.options[i].selected = value.indexOf(element.options[i].value) !== -1;
+  }
+}
+
 function setDeferredElementValue(element: Element, value: any) {
   if (element instanceof HTMLSelectElement) {
     if (element.type === 'select-multiple') {
-      value ||= [];
-      for (let i = 0; i < element.options.length; i++) {
-        element.options[i].selected = value.indexOf(element.options[i].value) !== -1;
-      }
+      setMultipleSelectElementValue(element, value);
     } else {
-      // There's no sensible way to represent a select option with value 'null', because
-      // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
-      // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
-      //     *text content* on that <option> element. Trying to suppress that default behavior would involve
-      //     a long chain of special-case hacks, as well as being breaking vs 3.x.
-      // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
-      // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
-      // string in a bound <select>, but that's a limit in the representational power of HTML.
-      element.value = value || '';
+      setSingleSelectElementValue(element, value);
     }
   } else {
     (element as any).value = value;

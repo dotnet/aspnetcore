@@ -10,9 +10,24 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public class ChangeEventArgs : EventArgs
     {
+        private string?[]? _multipleValues;
+
         /// <summary>
         /// Gets or sets the new value.
         /// </summary>
         public object? Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new array of values.
+        /// </summary>
+        public string?[]? MultipleValues
+        {
+            get => _multipleValues;
+            set
+            {
+                _multipleValues = value;
+                Value = value;
+            }
+        }
     }
 }
