@@ -147,12 +147,6 @@ namespace Microsoft.AspNetCore.Components.Routing
                     // will naturally leave the default value in the assignments list
                     if (Nullable.GetUnderlyingType(effectiveType) is Type nullableUnderlyingType)
                     {
-                        if (isArray)
-                        {
-                            // We could support this, but it would greatly complicate things, and it's unclear there are scenarios for it
-                            throw new NotSupportedException($"Querystring values cannot be parsed as arrays of nullables");
-                        }
-
                         effectiveType = nullableUnderlyingType;
                     }
 

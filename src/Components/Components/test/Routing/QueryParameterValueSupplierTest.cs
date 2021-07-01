@@ -94,6 +94,71 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidTypes.StringVal), (object)null));
         }
 
+        [Fact]
+        public void SupportsExpectedArrayTypes()
+        {
+            var query =
+                $"{nameof(ValidArrayTypes.BoolVals)}=true&" +
+                $"{nameof(ValidArrayTypes.DateTimeVals)}=2020-01-02+03:04:05.678Z&" +
+                $"{nameof(ValidArrayTypes.DecimalVals)}=-1.234&" +
+                $"{nameof(ValidArrayTypes.DoubleVals)}=-2.345&" +
+                $"{nameof(ValidArrayTypes.FloatVals)}=-3.456&" +
+                $"{nameof(ValidArrayTypes.GuidVals)}=9e7257ad-03aa-42c7-9819-be08b177fef9&" +
+                $"{nameof(ValidArrayTypes.IntVals)}=-54321&" +
+                $"{nameof(ValidArrayTypes.LongVals)}=-99987654321&" +
+                $"{nameof(ValidArrayTypes.StringVals)}=Some+string+%26+more&" +
+                $"{nameof(ValidArrayTypes.NullableBoolVals)}=true&" +
+                $"{nameof(ValidArrayTypes.NullableDateTimeVals)}=2021-01-02+03:04:05.678Z&" +
+                $"{nameof(ValidArrayTypes.NullableDecimalVals)}=1.234&" +
+                $"{nameof(ValidArrayTypes.NullableDoubleVals)}=2.345&" +
+                $"{nameof(ValidArrayTypes.NullableFloatVals)}=3.456&" +
+                $"{nameof(ValidArrayTypes.NullableGuidVals)}=1e7257ad-03aa-42c7-9819-be08b177fef9&" +
+                $"{nameof(ValidArrayTypes.NullableIntVals)}=54321&" +
+                $"{nameof(ValidArrayTypes.NullableLongVals)}=99987654321&";
+
+            Assert.Collection(GetSuppliedParameters<ValidArrayTypes>(query),
+                AssertKeyValuePair(nameof(ValidArrayTypes.BoolVals), new[] { true }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.DateTimeVals), new[] { new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc) }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.DecimalVals), new[] { -1.234m }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.DoubleVals), new[] { -2.345 }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.FloatVals), new[] { -3.456f }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.GuidVals), new[] { new Guid("9e7257ad-03aa-42c7-9819-be08b177fef9") }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.IntVals), new[] { -54321 }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.LongVals), new[] { -99987654321 }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableBoolVals), new[] { true }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDateTimeVals), new[] { new DateTime(2021, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc) }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDecimalVals), new[] { 1.234m }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDoubleVals), new[] { 2.345 }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableFloatVals), new[] { 3.456f }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableGuidVals), new[] { new Guid("1e7257ad-03aa-42c7-9819-be08b177fef9") }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableIntVals), new[] { 54321 }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableLongVals), new[] { 99987654321 }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.StringVals), new[] { "Some string & more" }));
+        }
+
+        [Fact]
+        public void SuppliesEmptyArrayForArrayTypesIfNotSpecified()
+        {
+            Assert.Collection(GetSuppliedParameters<ValidArrayTypes>(default),
+                AssertKeyValuePair(nameof(ValidArrayTypes.BoolVals), Array.Empty<bool>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.DateTimeVals), Array.Empty<DateTime>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.DecimalVals), Array.Empty<decimal>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.DoubleVals), Array.Empty<double>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.FloatVals), Array.Empty<float>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.GuidVals), Array.Empty<Guid>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.IntVals), Array.Empty<int>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.LongVals), Array.Empty<long>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableBoolVals), Array.Empty<bool?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDateTimeVals), Array.Empty<DateTime?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDecimalVals), Array.Empty<decimal?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDoubleVals), Array.Empty<double?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableFloatVals), Array.Empty<float?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableGuidVals), Array.Empty<Guid?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableIntVals), Array.Empty<int?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableLongVals), Array.Empty<long?>()),
+                AssertKeyValuePair(nameof(ValidArrayTypes.StringVals), Array.Empty<string>()));
+        }
+
         private static IEnumerable<(string key, object value)> GetSuppliedParameters<TComponent>(string query) where TComponent : IComponent
         {
             var supplier = QueryParameterValueSupplier.ForType(typeof(TComponent));
@@ -169,18 +234,15 @@ namespace Microsoft.AspNetCore.Components.Routing
             [Parameter, SupplyParameterFromQuery] public int[] IntVals { get; set; }
             [Parameter, SupplyParameterFromQuery] public long[] LongVals { get; set; }
             [Parameter, SupplyParameterFromQuery] public string[] StringVals { get; set; }
-        }
 
-        private class ValidArrayOfNullableTypes : ComponentBase
-        {
-            [Parameter, SupplyParameterFromQuery] public bool?[] BoolVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public DateTime?[] DateTimeVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public decimal?[] DecimalVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public double?[] DoubleVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public float?[] FloatVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public Guid?[] GuidVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public int?[] IntVals { get; set; }
-            [Parameter, SupplyParameterFromQuery] public long?[] LongVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public bool?[] NullableBoolVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public DateTime?[] NullableDateTimeVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public decimal?[] NullableDecimalVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public double?[] NullableDoubleVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public float?[] NullableFloatVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public Guid?[] NullableGuidVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public int?[] NullableIntVals { get; set; }
+            [Parameter, SupplyParameterFromQuery] public long?[] NullableLongVals { get; set; }
         }
 
         // Custom named query param
@@ -195,5 +257,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         // Decodes values
         // Doesn't decode keys
         // Matches keys case-insensitively
+        // Multiple values supplied for non-array parameter
     }
 }
