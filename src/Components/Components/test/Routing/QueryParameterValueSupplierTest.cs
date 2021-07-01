@@ -172,7 +172,8 @@ namespace Microsoft.AspNetCore.Components.Routing
                 .Take(frames.Count)
                 .Where(f => f.FrameType == RenderTree.RenderTreeFrameType.Attribute)
                 .Select(f => (f.AttributeName, f.AttributeValue))
-                .OrderBy(f => f.AttributeName); // The order isn't defined, so use alphabetical for tests
+                .OrderBy(f => f.AttributeName) // The order isn't defined, so use alphabetical for tests
+                .ToList();
         }
 
         private Action<(string key, object value)> AssertKeyValuePair<T>(string expectedKey, T expectedValue)
