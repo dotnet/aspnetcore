@@ -66,8 +66,8 @@
     </ItemGroup>
     
     <PropertyGroup>
-        <_CreateHardLinksForMvcCopyDependencyFilesIfPossible Condition="'$(CreateHardLinksForMvcCopyDependencyFilesIfPossible)' == ''">false</_CreateHardLinksForMvcCopyDependencyFilesIfPossible>
-        <_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible Condition="'$(CreateSymbolicLinksMvcCopyDependencyFilesIfPossible)' == ''">false</_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible>
+        <_CreateHardLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)' == ''">false</_CreateHardLinksForMvcCopyDependencyFilesIfPossible>
+        <_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateSymbolicLinksMvcCopyDependencyFilesIfPossible)' == ''">false</_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible>
     </PropertyGroup>
 
     <Copy SourceFiles="%(DepsFilePaths.FullPath)"
