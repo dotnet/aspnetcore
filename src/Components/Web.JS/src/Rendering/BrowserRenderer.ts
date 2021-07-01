@@ -267,15 +267,7 @@ export class BrowserRenderer {
       this.trySetSelectValueFromOptionElement(newDomElementRaw);
     } else if (deferredValuePropname in newDomElementRaw) {
       // Situation 2
-      if (newDomElementRaw instanceof HTMLSelectElement) {
-        if (newDomElementRaw.type === 'select-multiple') {
-          setMultipleSelectElementValue(newDomElementRaw, newDomElementRaw[deferredValuePropname] || []);
-        } else {
-          setSingleSelectElementValue(newDomElementRaw, newDomElementRaw[deferredValuePropname]);
-        }
-      } else {
-        (newDomElementRaw as any).value = newDomElementRaw[deferredValuePropname];
-      }
+      setDeferredElementValue(newDomElementRaw, newDomElementRaw[deferredValuePropname]);
     }
   }
 
@@ -298,7 +290,7 @@ export class BrowserRenderer {
 
   private trySetSingleSelectValueFromOptionElement(selectElement: HTMLSelectElement, optionElement: HTMLOptionElement) {
     if (selectElement[deferredValuePropname] === optionElement.value) {
-      setSingleSelectElementValue(selectElement, optionElement.value);
+      setDeferredElementValue(selectElement, optionElement.value);
       delete selectElement[deferredValuePropname];
       return true;
     }
@@ -401,7 +393,7 @@ export class BrowserRenderer {
       case 'INPUT':
       case 'SELECT':
       case 'TEXTAREA': {
-        const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+        let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
 
         // <select> is special, in that anything we write to .value will be lost if there
         // isn't yet a matching <option>. To maintain the expected behavior no matter the
@@ -414,22 +406,12 @@ export class BrowserRenderer {
         // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
         // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
 
-        if (element instanceof HTMLSelectElement) {
-          if (element.type === 'select-multiple') {
-            const selectedOptions = value
-              ? JSON.parse(value)
-              : [];
-
-            element[deferredValuePropname] = selectedOptions;
-            setMultipleSelectElementValue(element, selectedOptions);
-          } else {
-            element[deferredValuePropname] = value;
-            setSingleSelectElementValue(element, value);
-          }
-        } else {
-          element[deferredValuePropname] = value;
-          (element as any).value = value;
+        if (value && element instanceof HTMLSelectElement && element.type === 'select-multiple') {
+          value = JSON.parse(value);
         }
+
+        setDeferredElementValue(element, value);
+        element[deferredValuePropname] = value;
 
         return true;
       }
@@ -553,20 +535,25 @@ function stripOnPrefix(attributeName: string) {
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
 
-function setSingleSelectElementValue(element: HTMLSelectElement, value: string | null) {
-  // There's no sensible way to represent a select option with value 'null', because
-  // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
-  // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
-  //     *text content* on that <option> element. Trying to suppress that default behavior would involve
-  //     a long chain of special-case hacks, as well as being breaking vs 3.x.
-  // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
-  // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
-  // string in a bound <select>, but that's a limit in the representational power of HTML.
-  element.value = value || '';
-}
-
-function setMultipleSelectElementValue(element: HTMLSelectElement, value: string[]) {
-  for (let i = 0; i < element.options.length; i++) {
-    element.options[i].selected = value.indexOf(element.options[i].value) !== -1;
+function setDeferredElementValue(element: Element, value: any) {
+  if (element instanceof HTMLSelectElement) {
+    if (element.type === 'select-multiple') {
+      value ||= [];
+      for (let i = 0; i < element.options.length; i++) {
+        element.options[i].selected = value.indexOf(element.options[i].value) !== -1;
+      }
+    } else {
+      // There's no sensible way to represent a select option with value 'null', because
+      // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
+      // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
+      //     *text content* on that <option> element. Trying to suppress that default behavior would involve
+      //     a long chain of special-case hacks, as well as being breaking vs 3.x.
+      // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
+      // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
+      // string in a bound <select>, but that's a limit in the representational power of HTML.
+      element.value = value || '';
+    }
+  } else {
+    (element as any).value = value;
   }
 }
