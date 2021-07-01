@@ -143,13 +143,6 @@ namespace Microsoft.AspNetCore.Components.Routing
                         effectiveType = effectiveType.GetElementType()!;
                     }
 
-                    // If it's nullable, we can just use the underlying type, because missing values
-                    // will naturally leave the default value in the assignments list
-                    if (Nullable.GetUnderlyingType(effectiveType) is Type nullableUnderlyingType)
-                    {
-                        effectiveType = nullableUnderlyingType;
-                    }
-
                     if (!UrlValueConstraint.TryGetByTargetType(effectiveType, out var parser))
                     {
                         throw new NotSupportedException($"Querystring values cannot be parsed as type '{propertyInfo.PropertyType}'.");

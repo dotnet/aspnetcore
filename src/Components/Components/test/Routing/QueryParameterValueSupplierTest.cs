@@ -272,14 +272,14 @@ namespace Microsoft.AspNetCore.Components.Routing
         [InlineData(nameof(ValidTypes.GuidVal), "123456-789-0", typeof(Guid))]
         [InlineData(nameof(ValidTypes.IntVal), "5000000000", typeof(int))]
         [InlineData(nameof(ValidTypes.LongVal), "this+is+a+long+value", typeof(long))]
-        [InlineData(nameof(ValidTypes.NullableBoolVal), "abc", typeof(bool))]
-        [InlineData(nameof(ValidTypes.NullableDateTimeVal), "2020-02-31", typeof(DateTime))]
-        [InlineData(nameof(ValidTypes.NullableDecimalVal), "1.2.3", typeof(decimal))]
-        [InlineData(nameof(ValidTypes.NullableDoubleVal), "1x", typeof(double))]
-        [InlineData(nameof(ValidTypes.NullableFloatVal), "1e1000", typeof(float))]
-        [InlineData(nameof(ValidTypes.NullableGuidVal), "123456-789-0", typeof(Guid))]
-        [InlineData(nameof(ValidTypes.NullableIntVal), "5000000000", typeof(int))]
-        [InlineData(nameof(ValidTypes.NullableLongVal), "this+is+a+long+value", typeof(long))]
+        [InlineData(nameof(ValidTypes.NullableBoolVal), "abc", typeof(bool?))]
+        [InlineData(nameof(ValidTypes.NullableDateTimeVal), "2020-02-31", typeof(DateTime?))]
+        [InlineData(nameof(ValidTypes.NullableDecimalVal), "1.2.3", typeof(decimal?))]
+        [InlineData(nameof(ValidTypes.NullableDoubleVal), "1x", typeof(double?))]
+        [InlineData(nameof(ValidTypes.NullableFloatVal), "1e1000", typeof(float?))]
+        [InlineData(nameof(ValidTypes.NullableGuidVal), "123456-789-0", typeof(Guid?))]
+        [InlineData(nameof(ValidTypes.NullableIntVal), "5000000000", typeof(int?))]
+        [InlineData(nameof(ValidTypes.NullableLongVal), "this+is+a+long+value", typeof(long?))]
         public void RejectsUnparseableValues(string key, string value, Type targetType)
         {
             var ex = Assert.Throws<InvalidOperationException>(
@@ -296,19 +296,68 @@ namespace Microsoft.AspNetCore.Components.Routing
         [InlineData(nameof(ValidArrayTypes.GuidVals), "9e7257ad-03aa-42c7-9819-be08b177fef9", "123456-789-0", typeof(Guid))]
         [InlineData(nameof(ValidArrayTypes.IntVals), "5000000", "5000000000", typeof(int))]
         [InlineData(nameof(ValidArrayTypes.LongVals), "-1234", "this+is+a+long+value", typeof(long))]
-        [InlineData(nameof(ValidArrayTypes.NullableBoolVals), "true", "abc", typeof(bool))]
-        [InlineData(nameof(ValidArrayTypes.NullableDateTimeVals), "2020-02-28", "2020-02-31", typeof(DateTime))]
-        [InlineData(nameof(ValidArrayTypes.NullableDecimalVals), "1.23", "1.2.3", typeof(decimal))]
-        [InlineData(nameof(ValidArrayTypes.NullableDoubleVals), "1", "1x", typeof(double))]
-        [InlineData(nameof(ValidArrayTypes.NullableFloatVals), "1000", "1e1000", typeof(float))]
-        [InlineData(nameof(ValidArrayTypes.NullableGuidVals), "9e7257ad-03aa-42c7-9819-be08b177fef9", "123456-789-0", typeof(Guid))]
-        [InlineData(nameof(ValidArrayTypes.NullableIntVals), "5000000", "5000000000", typeof(int))]
-        [InlineData(nameof(ValidArrayTypes.NullableLongVals), "-1234", "this+is+a+long+value", typeof(long))]
+        [InlineData(nameof(ValidArrayTypes.NullableBoolVals), "true", "abc", typeof(bool?))]
+        [InlineData(nameof(ValidArrayTypes.NullableDateTimeVals), "2020-02-28", "2020-02-31", typeof(DateTime?))]
+        [InlineData(nameof(ValidArrayTypes.NullableDecimalVals), "1.23", "1.2.3", typeof(decimal?))]
+        [InlineData(nameof(ValidArrayTypes.NullableDoubleVals), "1", "1x", typeof(double?))]
+        [InlineData(nameof(ValidArrayTypes.NullableFloatVals), "1000", "1e1000", typeof(float?))]
+        [InlineData(nameof(ValidArrayTypes.NullableGuidVals), "9e7257ad-03aa-42c7-9819-be08b177fef9", "123456-789-0", typeof(Guid?))]
+        [InlineData(nameof(ValidArrayTypes.NullableIntVals), "5000000", "5000000000", typeof(int?))]
+        [InlineData(nameof(ValidArrayTypes.NullableLongVals), "-1234", "this+is+a+long+value", typeof(long?))]
         public void RejectsUnparseableArrayEntries(string key, string validValue, string invalidValue, Type targetType)
         {
             var ex = Assert.Throws<InvalidOperationException>(
                 () => GetSuppliedParameters<ValidArrayTypes>($"?{key}={validValue}&{key}={invalidValue}"));
             Assert.Equal($"Cannot parse the value '{invalidValue.Replace('+', ' ')}' as type '{targetType}' for '{key}'.", ex.Message);
+        }
+
+        [Theory]
+        [InlineData(nameof(ValidTypes.BoolVal), typeof(bool))]
+        [InlineData(nameof(ValidTypes.DateTimeVal), typeof(DateTime))]
+        [InlineData(nameof(ValidTypes.DecimalVal), typeof(decimal))]
+        [InlineData(nameof(ValidTypes.DoubleVal), typeof(double))]
+        [InlineData(nameof(ValidTypes.FloatVal), typeof(float))]
+        [InlineData(nameof(ValidTypes.GuidVal), typeof(Guid))]
+        [InlineData(nameof(ValidTypes.IntVal), typeof(int))]
+        [InlineData(nameof(ValidTypes.LongVal), typeof(long))]
+        public void RejectsBlankValuesWhenNotNullable(string key, Type targetType)
+        {
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => GetSuppliedParameters<ValidTypes>($"?{nameof(ValidTypes.StringVal)}=somevalue&{key}="));
+            Assert.Equal($"Cannot parse the value '' as type '{targetType}' for '{key}'.", ex.Message);
+        }
+
+        [Fact]
+        public void AcceptsBlankValuesWhenNullable()
+        {
+            var query =
+                $"{nameof(ValidTypes.NullableBoolVal)}=&" +
+                $"{nameof(ValidTypes.NullableDateTimeVal)}=&" +
+                $"{nameof(ValidTypes.NullableDecimalVal)}=&" +
+                $"{nameof(ValidTypes.NullableDoubleVal)}=&" +
+                $"{nameof(ValidTypes.NullableFloatVal)}=&" +
+                $"{nameof(ValidTypes.NullableGuidVal)}=&" +
+                $"{nameof(ValidTypes.NullableIntVal)}=&" +
+                $"{nameof(ValidTypes.NullableLongVal)}=&";
+            Assert.Collection(GetSuppliedParameters<ValidTypes>(query).Where(pair => pair.key.StartsWith("Nullable", StringComparison.Ordinal)),
+                AssertKeyValuePair(nameof(ValidTypes.NullableBoolVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDateTimeVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDecimalVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDoubleVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableFloatVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableGuidVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableIntVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableLongVal), (object)null));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("=")]
+        public void EmptyStringValuesAreSuppliedAsEmptyString(string queryPart)
+        {
+            var query = $"?{nameof(ValidTypes.StringVal)}{queryPart}";
+            var suppliedParameters = GetSuppliedParameters<ValidTypes>(query).ToDictionary(x => x.key, x => x.value);
+            Assert.Equal(string.Empty, suppliedParameters[nameof(ValidTypes.StringVal)]);
         }
 
         // Blank single values
