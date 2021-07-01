@@ -8,7 +8,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
-import { Arg, getErrorString } from "./Utils";
+import { Arg, getErrorString, Platform } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
@@ -49,6 +49,7 @@ export class HubConnection {
     private _handshakeResolver!: (value?: PromiseLike<{}>) => void;
     private _handshakeRejecter!: (reason?: any) => void;
     private _stopDuringStartError?: Error;
+    private _lockResolver!: (value?: PromiseLike<{}>) => void;
 
     private _connectionState: HubConnectionState;
     // connectionStarted is tracked independently from connectionState, so we can check if the
@@ -64,6 +65,11 @@ export class HubConnection {
     private _reconnectDelayHandle?: any;
     private _timeoutHandle?: any;
     private _pingServerHandle?: any;
+
+    private _freezeEventListener = () =>
+    {
+        this._logger.log(LogLevel.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost.");
+    };
 
     /** The server timeout in milliseconds.
      *
@@ -173,6 +179,27 @@ export class HubConnection {
 
         try {
             await this._startInternal();
+
+            if (Platform.isBrowser) {
+                if (document) {
+                    document.addEventListener("freeze", this._freezeEventListener);
+                }
+
+                const promise = new Promise((res) => {
+                    this._lockResolver = res;
+                });
+
+                // Chrome and Edge currently support Web Locks, it's also experimental, so let's be safe and check if the APIs exist
+                // https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API
+                // This should prevent the browsers from sleeping the tab which would close the connection unexpectedly
+                if (navigator && (navigator as any).locks && (navigator as any).locks.request) {
+                    // Use a 'shared' lock so multiple tabs to the same site can used the same lock
+                    (navigator as any).locks.request('signalr_client_lock', { mode: "shared" }, () => {
+                        // Keep lock until promise is resolved
+                        return promise;
+                    });
+                }
+            }
 
             this._connectionState = HubConnectionState.Connected;
             this._connectionStarted = true;
@@ -720,6 +747,13 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
+
+            this._lockResolver();
+            if (Platform.isBrowser) {
+                if (document) {
+                    document.removeEventListener("freeze", this._freezeEventListener);
+                }
+            }
 
             try {
                 this._closedCallbacks.forEach((c) => c.apply(this, [error]));
