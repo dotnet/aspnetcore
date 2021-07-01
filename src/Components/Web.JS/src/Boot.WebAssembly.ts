@@ -51,7 +51,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveByteArray = receiveByteArray;
   Blazor._internal.retrieveByteArray = retrieveByteArray;
-  Blazor._internal.sendJSDataStream = sendJSDataStreamWASM;
+  Blazor._internal.sendJSDataStreamUsingObjectReference = sendJSDataStreamWASM;
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);

@@ -4,8 +4,9 @@ import { shouldAutoStart } from './BootCommon';
 import { internalFunctions as navigationManagerFunctions } from './Services/NavigationManager';
 import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
-import { sendBrowserEvent, sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged, sendJSDataStream } from './Platform/WebView/WebViewIpcSender';
+import { sendBrowserEvent, sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
 import { InputFile } from './InputFile';
+import { sendJSDataStreamWebView } from './Platform/WebView/WebViewStreamingInterop';
 
 let started = false;
 
@@ -24,7 +25,7 @@ async function boot(): Promise<void> {
   });
 
   Blazor._internal.InputFile = InputFile;
-  Blazor._internal.sendJSDataStreamWebview = sendJSDataStream;
+  Blazor._internal.sendJSDataStreamUsingObjectReference = sendJSDataStreamWebView;
   navigationManagerFunctions.enableNavigationInterception();
   navigationManagerFunctions.listenForNavigationEvents(sendLocationChanged);
 

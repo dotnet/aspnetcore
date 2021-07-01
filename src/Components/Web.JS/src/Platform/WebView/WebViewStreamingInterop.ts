@@ -1,35 +1,15 @@
-import { getNextChunk } from '../../StreamingInterop';
+import { sendJSDataStreamUsingObjectReference } from "../../StreamingInterop";
 
-export function sendJSDataStreamWebView(send: (messageType: string, ...args: any[]) => void, data: ArrayBufferView | Blob, streamId: string, chunkSize: number, jsDataStream: any) {
-    // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
-    // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
-    // because nobody's reading the pipe)
-    setTimeout(async () => {
-        try {
-            const byteLength = data instanceof Blob ? data.size : data.byteLength;
-            let position = 0;
-            let chunkId = 0;
-
-            while (position < byteLength) {
-                const nextChunkSize = Math.min(chunkSize, byteLength - position);
-                const nextChunkByteArray = await getNextChunk(data, position, nextChunkSize);
-                const nextChunkData = btoa(String.fromCharCode.apply(null, nextChunkByteArray as unknown as number[]));
-
-                const streamIsAlive = await jsDataStream.invokeMethodAsync('ReceiveData', chunkId, nextChunkData, null);
-
-                // Checks to see if we should continue streaming or if the stream has been cancelled/disposed.
-                if (!streamIsAlive) {
-                    break;
-                }
-
-                // send('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
-
-                position += nextChunkSize;
-                chunkId++;
-            }
-        } catch (error) {
-            await jsDataStream.invokeMethodAsync('ReceiveData', streamId, '', error.toString());
-            // send('ReceiveJSDataChunk', streamId, -1, null, error.toString());
+export async function sendJSDataStreamWebView(data: ArrayBufferView | Blob, streamId: number, chunkSize: number, dotnetStreamReference: any) {
+    async function send(streamId: number, chunkId: number, nextChunkData: Uint8Array | null, error: string | null): Promise<boolean> {
+        if (error) {
+            await dotnetStreamReference.invokeMethodAsync('ReceiveJSDataChunk', streamId, -1, '', error.toString());
+            return false;
         }
-    }, 0);
+
+        const nextChunkDataStr = btoa(String.fromCharCode.apply(null, nextChunkData as unknown as number[]));
+        return await dotnetStreamReference.invokeMethodAsync('ReceiveJSDataChunk', streamId, chunkId, nextChunkDataStr, null);
+    }
+
+    sendJSDataStreamUsingObjectReference(send, data, streamId, chunkSize);
 };

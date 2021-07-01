@@ -123,7 +123,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
-  Blazor._internal.sendJSDataStream = (data: ArrayBufferView, streamId: string, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
+  Blazor._internal.sendJSDataStream = (data: ArrayBufferView, streamId: number, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
 
   try {
     await connection.start();

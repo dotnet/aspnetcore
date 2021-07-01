@@ -1,6 +1,5 @@
 import { EventDescriptor } from '../../Rendering/Events/EventDispatcher';
 import { trySerializeMessage } from './WebViewIpcCommon';
-import { sendJSDataStreamWebView } from './WebViewStreamingInterop';
 
 export function sendAttachPage(baseUrl: string, startUrl: string) {
   send('AttachPage', baseUrl, startUrl);
@@ -25,10 +24,6 @@ export function sendEndInvokeJSFromDotNet(asyncHandle: number, succeeded: boolea
 export function sendByteArray(id: number, data: Uint8Array) {
   const dataBase64Encoded = btoa(String.fromCharCode.apply(null, data as unknown as number[]));
   send('ReceiveByteArrayFromJS', id, dataBase64Encoded);
-}
-
-export function sendJSDataStream(data: ArrayBufferView, streamId: string, chunkSize: number, jsDataStream: any) {
-  sendJSDataStreamWebView(send, data, streamId, chunkSize, jsDataStream);
 }
 
 export function sendLocationChanged(uri: string, intercepted: boolean) {

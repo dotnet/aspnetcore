@@ -64,7 +64,6 @@ namespace Microsoft.AspNetCore.Components.WebView
             OnRenderCompleted,
             OnLocationChanged,
             ReceiveByteArrayFromJS,
-            ReceiveJSDataChunk,
         }
 
         public enum OutgoingMessageType

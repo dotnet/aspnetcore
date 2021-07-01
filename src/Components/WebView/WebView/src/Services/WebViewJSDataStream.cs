@@ -11,18 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
     internal sealed class WebViewJSDataStream : BaseJSDataStream
     {
         private readonly WebViewJSRuntime _webviewJSRuntime;
-
-        public static async Task<bool> ReceiveData(WebViewJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
-        {
-            if (!runtime.JSDataStreamInstances.TryGetValue(streamId, out var instance))
-            {
-                // There is no data stream with the given identifier. It may have already been disposed.
-                // We notify JS that the stream has been cancelled/disposed.
-                return false;
-            }
-
-            return await instance.ReceiveData(chunkId, chunk, error);
-        }
+        private readonly SemaphoreSlim receiveDataSemaphore = new(initialCount: 1, maxCount: 1);
 
         internal static async ValueTask<WebViewJSDataStream> CreateWebViewJSDataStreamAsync(
             WebViewJSRuntime runtime,
@@ -36,8 +25,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             var streamId = runtime.JSDataStreamNextInstanceId++;
             var webViewJSDataStream = new WebViewJSDataStream(runtime, streamId, totalLength, maxBufferSize, defaultCallTimeout, cancellationToken);
 
-            var dotnetObjectReferenceForDataStream = DotNetObjectReference.Create(webViewJSDataStream);
-            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStreamWebview", jsStreamReference, streamId, chunkSize, dotnetObjectReferenceForDataStream);
+            var dotnetStreamReference = DotNetObjectReference.Create(webViewJSDataStream);
+            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStreamUsingObjectReference", jsStreamReference, streamId, chunkSize, dotnetStreamReference);
 
             return webViewJSDataStream;
         }
@@ -58,8 +47,26 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             _webviewJSRuntime.RaiseUnhandledException(exception);
         }
 
-        [JSInvokable("ReceiveData")]
-        public Task<bool> ReceiveDataFromJS(long chunkId, byte[] chunk, string error)
-            => ReceiveData(chunkId, chunk, error);
+        [JSInvokable("ReceiveJSDataChunk")]
+        public async Task<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
+        {
+            // Ensure that the DotNetDataReference still points to an active stream
+            if (!_webviewJSRuntime.JSDataStreamInstances.ContainsKey(streamId))
+            {
+                // There is no data stream with the given identifier. It may have already been disposed.
+                // We notify JS that the stream has been cancelled/disposed.
+                return false;
+            }
+
+            try
+            {
+                await receiveDataSemaphore.WaitAsync(_streamCancellationToken);
+                return await ReceiveData(chunkId, chunk, error);
+            }
+            finally
+            {
+                receiveDataSemaphore.Release();
+            }
+        }
     }
 }

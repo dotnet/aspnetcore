@@ -1,7 +1,7 @@
 import { HubConnection } from '@microsoft/signalr';
 import { getNextChunk } from '../../StreamingInterop';
 
-export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView | Blob, streamId: string, chunkSize: number) {
+export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
     // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
     // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
     // because nobody's reading the pipe)

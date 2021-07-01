@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         private readonly long _streamId;
         private readonly long _totalLength;
         private readonly TimeSpan _jsInteropDefaultCallTimeout;
-        private readonly CancellationToken _streamCancellationToken;
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
         private long _bytesRead;
         private long _expectedChunkId;
         private DateTimeOffset _lastDataReceivedTime;
         private bool _disposed;
+        protected readonly CancellationToken _streamCancellationToken;
 
         protected BaseJSDataStream(
             Dictionary<long, BaseJSDataStream> dataStreamInstances,
