@@ -72,8 +72,8 @@
 
     <Copy SourceFiles="%(DepsFilePaths.FullPath)"
        DestinationFolder="$(OutDir)"
-       UseHardlinksIfPossible="$(CreateHardLinksForMvcCopyDependencyFilesIfPossible)"
-       UseSymboliclinksIfPossible="$(CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible)"
+       UseHardlinksIfPossible="$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)"
+       UseSymboliclinksIfPossible="$(_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible)"
        Condition="Exists('%(DepsFilePaths.FullPath)')" />
   </Target>
 
