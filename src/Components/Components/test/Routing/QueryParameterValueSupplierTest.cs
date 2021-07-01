@@ -410,10 +410,60 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidArrayTypes.NullableLongVals), new long?[] { null }));
         }
 
-        // Decodes values
-        // Doesn't decode keys
-        // Matches keys case-insensitively
-        // Multiple values supplied for non-array parameter
+        private class SpecialQueryParameterName : ComponentBase
+        {
+            public const string NameThatLooksEncoded = "name+that+looks+%5Bencoded%5D";
+            [Parameter, SupplyParameterFromQuery(Name = NameThatLooksEncoded)] public string Key { get; set; }
+        }
+
+        [Fact]
+        public void DecodesValuesButNotKeys()
+        {
+            // Keys are matched verbatim and not decoded
+            // Values are decoded
+            var query = $"?{SpecialQueryParameterName.NameThatLooksEncoded}=Some+%5Bencoded%5D+value";
+            Assert.Collection(GetSuppliedParameters<SpecialQueryParameterName>(query),
+                AssertKeyValuePair(nameof(SpecialQueryParameterName.Key), "Some [encoded] value"));
+
+            // If we try to supply some other key that would decode to an expected key name, it doesn't match
+            query = $"?{Uri.EscapeDataString(SpecialQueryParameterName.NameThatLooksEncoded)}=something";
+            Assert.Collection(GetSuppliedParameters<SpecialQueryParameterName>(query),
+                AssertKeyValuePair(nameof(SpecialQueryParameterName.Key), (string)null));
+        }
+
+        private class KeyCaseMatching : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery] public int KeyOne { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "keytwo")] public int KeyTwo { get; set; }
+        }
+
+        [Fact]
+        public void MatchesKeysCaseInsensitively()
+        {
+            var query = $"?KEYONE=1&KEYTWO=2";
+            Assert.Collection(GetSuppliedParameters<KeyCaseMatching>(query),
+                AssertKeyValuePair(nameof(KeyCaseMatching.KeyOne), 1),
+                AssertKeyValuePair(nameof(KeyCaseMatching.KeyTwo), 2));
+        }
+
+        private class ArrayValueOverwriting : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery] public int Age { get; set; }
+            [Parameter, SupplyParameterFromQuery] public int? Id { get; set; }
+            [Parameter, SupplyParameterFromQuery] public string Name { get; set; }
+        }
+
+        [Fact]
+        public void ForNonArrayValuesOnlyOneValueIsSupplied()
+        {
+            // For simplicity and speed, the value assignment logic doesn't check if the a single-valued destination is
+            // already populated, and just overwrites in a left-to-right manner. For nullable values it's possible to
+            // overwrite a value with null, or a string with empty.
+            Assert.Collection(GetSuppliedParameters<ArrayValueOverwriting>($"?age=123&age=456&age=789&id=1&id&name=Bobbins&name"),
+                AssertKeyValuePair(nameof(ArrayValueOverwriting.Age), 789),
+                AssertKeyValuePair(nameof(ArrayValueOverwriting.Id), (int?)null),
+                AssertKeyValuePair(nameof(ArrayValueOverwriting.Name), string.Empty));
+        }
 
         private static IEnumerable<(string key, object value)> GetSuppliedParameters<TComponent>(string query) where TComponent : IComponent
         {
