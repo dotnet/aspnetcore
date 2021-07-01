@@ -158,7 +158,7 @@
 
         if (shouldSupportSyncInterop)
         {
-            InvokeInProcessJSInterop();
+            await InvokeInProcessJSInterop();
         }
 
         var byteArray = new byte[] { 1, 5, 7, 15, 35, 200 };
@@ -250,7 +250,7 @@
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
     }
 
-    public void InvokeInProcessJSInterop()
+    public async Task InvokeInProcessJSInterop()
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
@@ -273,6 +273,11 @@
             Message = "Sent from .NET",
             NumberField = 42,
         }).ToString();
+
+
+        var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
+        using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
+        await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
     }
 
     public class PassDotNetObjectByRefArgs

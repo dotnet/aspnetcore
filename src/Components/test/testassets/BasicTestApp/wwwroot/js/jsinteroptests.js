@@ -277,6 +277,11 @@ function jsToDotNetStreamReturnValueAsync() {
   });
 }
 
+function jsToDotNetStreamReturnValue() {
+  const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+  return new Uint8Array(largeArray);
+}
+
 function jsToDotNetStreamWrapperObjectReturnValueAsync() {
   return new Promise((resolve, reject) => {
     setTimeout(function () {
