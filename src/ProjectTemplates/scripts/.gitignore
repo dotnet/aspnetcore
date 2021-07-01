@@ -8,3 +8,8 @@ mvc/
 razor/
 react/
 reactredux/
+web/
+webapp/
+webapi/
+worker/
+grpc/

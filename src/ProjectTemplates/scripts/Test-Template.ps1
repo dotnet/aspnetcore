@@ -32,18 +32,19 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
         $proj = "$tmpDir/$templateName.$extension"
         $projContent = Get-Content -Path $proj -Raw
         $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">
-  <Import Project=""$PSScriptRoot/../test/bin/Debug/net6.0/TestTemplates/TemplateTests.props"" />
+  <Import Project=""$PSScriptRoot/../test/bin/Debug/net6.0/TestTemplates/Directory.Build.props"" />
+  <Import Project=""$PSScriptRoot/../test/bin/Debug/net6.0/TestTemplates/Directory.Build.targets"" />
   <PropertyGroup>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>")
         $projContent | Set-Content $proj
         dotnet.exe ef migrations add mvc
         dotnet.exe publish --configuration Release
-        dotnet.exe bin\Release\net6.0\publish\$templateName.dll
+        Set-Location .\bin\Release\net6.0\publish
+        Invoke-Expression "./$templateName.exe"
     }
     finally {
         Pop-Location
-        Run-DotnetNew "--debug:reinit"
     }
 }
 

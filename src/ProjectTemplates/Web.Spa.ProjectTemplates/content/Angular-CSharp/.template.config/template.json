@@ -25,7 +25,8 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "wwwroot/**"
+        "wwwroot/**",
+        "ClientApp/package-lock.json"
       ],
       "modifiers": [
         {
