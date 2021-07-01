@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore
                 return;
             }
 
-            IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
+            IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref"), "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
             Assert.All(dlls, path =>
@@ -312,32 +312,46 @@ namespace Microsoft.AspNetCore
 
             var frameworkListDoc = XDocument.Load(frameworkListPath);
             var frameworkListEntries = frameworkListDoc.Root.Descendants();
+            var managedEntries = frameworkListEntries.Where(i => i.Attribute("Type").Value.Equals("Managed", StringComparison.Ordinal));
+            var analyzerEntries = frameworkListEntries.Where(i => i.Attribute("Type").Value.Equals("Analyzer", StringComparison.Ordinal));
 
-            _output.WriteLine("==== file contents ====");
-            _output.WriteLine(string.Join('\n', frameworkListEntries.Select(i => i.Attribute("AssemblyName").Value).OrderBy(i => i)));
-            _output.WriteLine("==== expected assemblies ====");
-            _output.WriteLine(string.Join('\n', expectedAssemblies.OrderBy(i => i)));
-
-             var actualAssemblies = frameworkListEntries
-                .Select(i =>
-                {
-                    var fileName = i.Attribute("AssemblyName").Value;
-                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
-                        ? fileName.Substring(0, fileName.Length - 4)
-                        : fileName;
-                })
+            var expectedAnalyzers = Directory.GetFiles(
+                Path.Combine(_targetingPackRoot, "analyzers"), "*.dll", SearchOption.AllDirectories)
+                .Select(p => Path.GetFileNameWithoutExtension(p))
+                .Where(f => !f.EndsWith(".resources", StringComparison.OrdinalIgnoreCase))
                 .ToHashSet();
 
-            var missing = expectedAssemblies.Except(actualAssemblies);
-            var unexpected = actualAssemblies.Except(expectedAssemblies);
+            CompareFrameworkElements(expectedAssemblies, managedEntries, "managed");
+            CompareFrameworkElements(expectedAnalyzers, analyzerEntries, "analyzer");
 
-            _output.WriteLine("==== missing assemblies from the framework list ====");
-            _output.WriteLine(string.Join('\n', missing));
-            _output.WriteLine("==== unexpected assemblies in the framework list ====");
-            _output.WriteLine(string.Join('\n', unexpected));
+            void CompareFrameworkElements(HashSet<string> expectedAssemblyNames, IEnumerable<XElement> actualElements, string type)
+            {
+                _output.WriteLine($"==== file contents ({type}) ====");
+                _output.WriteLine(string.Join('\n', actualElements.Select(i => i.Attribute("AssemblyName").Value).OrderBy(i => i)));
+                _output.WriteLine($"==== expected {type} assemblies ====");
+                _output.WriteLine(string.Join('\n', expectedAssemblyNames.OrderBy(i => i)));
 
-            Assert.Empty(missing);
-            Assert.Empty(unexpected);
+                var actualAssemblyNames = managedEntries
+                   .Select(i =>
+                   {
+                       var fileName = i.Attribute("AssemblyName").Value;
+                       return fileName.EndsWith(".dll", StringComparison.Ordinal)
+                           ? fileName.Substring(0, fileName.Length - 4)
+                           : fileName;
+                   })
+                   .ToHashSet();
+
+                var missing = actualAssemblyNames.Except(actualAssemblyNames);
+                var unexpected = actualAssemblyNames.Except(expectedAssemblies);
+
+                _output.WriteLine($"==== missing {type} assemblies from the framework list ====");
+                _output.WriteLine(string.Join('\n', missing));
+                _output.WriteLine($"==== unexpected {type} assemblies in the framework list ====");
+                _output.WriteLine(string.Join('\n', unexpected));
+
+                Assert.Empty(missing);
+                Assert.Empty(unexpected);
+            }
 
             Assert.All(frameworkListEntries, i =>
             {
@@ -370,7 +384,7 @@ namespace Microsoft.AspNetCore
             ZipArchive archive = ZipFile.OpenRead(targetingPackPath);
 
             var actualPaths = archive.Entries
-                .Where(i => i.FullName.EndsWith(".dll", StringComparison.Ordinal))
+                .Where(i => i.FullName.EndsWith(".dll", StringComparison.Ordinal) && !i.FullName.EndsWith(".resources.dll", StringComparison.Ordinal))
                 .Select(i => i.FullName).ToHashSet();
 
             var expectedPaths = frameworkListEntries.Select(i => i.Attribute("Path").Value).ToHashSet();
@@ -390,6 +404,39 @@ namespace Microsoft.AspNetCore
 
             Assert.Empty(missing);
             Assert.Empty(unexpected);
+        }
+
+        [Fact]
+        public void FrameworkListListsContainsAnalyzerLanguage()
+        {
+            if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                return;
+            }
+
+            var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
+
+            AssertEx.FileExists(frameworkListPath);
+
+            var frameworkListDoc = XDocument.Load(frameworkListPath);
+            var frameworkListEntries = frameworkListDoc.Root.Descendants();
+
+            var analyzerEntries = frameworkListEntries.Where(i => i.Attribute("Type").Value.Equals("Analyzer", StringComparison.Ordinal));
+
+            Assert.All(analyzerEntries, analyzerEntry =>
+            {
+                var actualLanguage = analyzerEntry.Attribute("Language")?.Value;
+                var assemblyPath = analyzerEntry.Attribute("Path").Value;
+
+                string expectedLanguage = Path.GetFileName(Path.GetDirectoryName(assemblyPath));
+
+                if (expectedLanguage.Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+                {
+                    expectedLanguage = null;
+                }
+
+                Assert.Equal(expectedLanguage, actualLanguage);
+            });
         }
     }
 }
