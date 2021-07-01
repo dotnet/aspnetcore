@@ -97,11 +97,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             // Finally actually emit the rendertree frames
             foreach (var (destination, value) in assignmentsByDestination)
             {
-                // TODO: Have to handle all possible cases with missing values
-                // empty single values, empty value in array, target type is nullable, etc.
                 var valueToSupply = destination.IsArray
                     ? destination.Parser.ParseMultiple(value, destination.ComponentParameterName)
-                    : destination.Parser.Parse(value[0], destination.ComponentParameterName);
+                    : value.Count == 0
+                        ? default
+                        : destination.Parser.Parse(value[0], destination.ComponentParameterName);
                 builder.AddAttribute(0, destination.ComponentParameterName, valueToSupply);
             }
         }

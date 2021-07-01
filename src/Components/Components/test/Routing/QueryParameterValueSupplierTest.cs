@@ -37,7 +37,15 @@ namespace Microsoft.AspNetCore.Components.Routing
                 $"{nameof(ValidTypes.GuidVal)}=9e7257ad-03aa-42c7-9819-be08b177fef9&" +
                 $"{nameof(ValidTypes.IntVal)}=-54321&" +
                 $"{nameof(ValidTypes.LongVal)}=-99987654321&" +
-                $"{nameof(ValidTypes.StringVal)}=Some+string+%26+more&";
+                $"{nameof(ValidTypes.StringVal)}=Some+string+%26+more&" +
+                $"{nameof(ValidTypes.NullableBoolVal)}=true&" +
+                $"{nameof(ValidTypes.NullableDateTimeVal)}=2021-01-02+03:04:05.678Z&" +
+                $"{nameof(ValidTypes.NullableDecimalVal)}=1.234&" +
+                $"{nameof(ValidTypes.NullableDoubleVal)}=2.345&" +
+                $"{nameof(ValidTypes.NullableFloatVal)}=3.456&" +
+                $"{nameof(ValidTypes.NullableGuidVal)}=1e7257ad-03aa-42c7-9819-be08b177fef9&" +
+                $"{nameof(ValidTypes.NullableIntVal)}=54321&" +
+                $"{nameof(ValidTypes.NullableLongVal)}=99987654321&";
 
             Assert.Collection(GetSuppliedParameters<ValidTypes>(query),
                 AssertKeyValuePair(nameof(ValidTypes.BoolVal), true),
@@ -48,7 +56,42 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidTypes.GuidVal), new Guid("9e7257ad-03aa-42c7-9819-be08b177fef9")),
                 AssertKeyValuePair(nameof(ValidTypes.IntVal), -54321),
                 AssertKeyValuePair(nameof(ValidTypes.LongVal), -99987654321),
+                AssertKeyValuePair(nameof(ValidTypes.NullableBoolVal), true),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDateTimeVal), new DateTime(2021, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc)),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDecimalVal), 1.234m),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDoubleVal), 2.345),
+                AssertKeyValuePair(nameof(ValidTypes.NullableFloatVal), 3.456f),
+                AssertKeyValuePair(nameof(ValidTypes.NullableGuidVal), new Guid("1e7257ad-03aa-42c7-9819-be08b177fef9")),
+                AssertKeyValuePair(nameof(ValidTypes.NullableIntVal), 54321),
+                AssertKeyValuePair(nameof(ValidTypes.NullableLongVal), 99987654321),
                 AssertKeyValuePair(nameof(ValidTypes.StringVal), "Some string & more"));
+        }
+
+        [Fact]
+        public void SuppliesNullForValueTypesIfNotSpecified()
+        {
+            // Although we could supply default(T) for missing values, there's precedent in the routing
+            // system for supplying null for missing route parameters. The component is then responsible
+            // for interpreting null as a blank value for the parameter, regardless of its type. To keep
+            // the rules aligned, we do the same thing for querystring parameters.
+            Assert.Collection(GetSuppliedParameters<ValidTypes>(default),
+                AssertKeyValuePair(nameof(ValidTypes.BoolVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.DateTimeVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.DecimalVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.DoubleVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.FloatVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.GuidVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.IntVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.LongVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableBoolVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDateTimeVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDecimalVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDoubleVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableFloatVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableGuidVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableIntVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.NullableLongVal), (object)null),
+                AssertKeyValuePair(nameof(ValidTypes.StringVal), (object)null));
         }
 
         private static IEnumerable<(string key, object value)> GetSuppliedParameters<TComponent>(string query) where TComponent : IComponent
@@ -72,8 +115,15 @@ namespace Microsoft.AspNetCore.Components.Routing
             return pair =>
             {
                 Assert.Equal(expectedKey, pair.key);
-                Assert.IsType<T>(expectedValue);
-                Assert.Equal(expectedValue, pair.value);
+                if (expectedValue is null)
+                {
+                    Assert.Null(pair.value);
+                }
+                else
+                {
+                    Assert.IsType<T>(expectedValue);
+                    Assert.Equal(expectedValue, pair.value);
+                }
             };
         }
 
@@ -97,18 +147,15 @@ namespace Microsoft.AspNetCore.Components.Routing
             [Parameter, SupplyParameterFromQuery] public int IntVal { get; set; }
             [Parameter, SupplyParameterFromQuery] public long LongVal { get; set; }
             [Parameter, SupplyParameterFromQuery] public string StringVal { get; set; }
-        }
 
-        private class ValidNullableTypes : ComponentBase
-        {
-            [Parameter, SupplyParameterFromQuery] public bool? BoolVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public DateTime? DateTimeVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public decimal? DecimalVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public double? DoubleVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public float? FloatVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public Guid? GuidVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public int? IntVal { get; set; }
-            [Parameter, SupplyParameterFromQuery] public long? LongVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public bool? NullableBoolVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public DateTime? NullableDateTimeVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public decimal? NullableDecimalVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public double? NullableDoubleVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public float? NullableFloatVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public Guid? NullableGuidVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public int? NullableIntVal { get; set; }
+            [Parameter, SupplyParameterFromQuery] public long? NullableLongVal { get; set; }
         }
 
         private class ValidArrayTypes : ComponentBase
