@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private static IEnumerable<(string key, object value)> GetSuppliedParameters<TComponent>(string query) where TComponent : IComponent
         {
             var supplier = QueryParameterValueSupplier.ForType(typeof(TComponent));
-            var renderTreeBuilder = new RenderTreeBuilder();
+            using var renderTreeBuilder = new RenderTreeBuilder();
             renderTreeBuilder.OpenComponent<TComponent>(0);
             supplier.RenderParameterAttributes(renderTreeBuilder, query);
             renderTreeBuilder.CloseComponent();
