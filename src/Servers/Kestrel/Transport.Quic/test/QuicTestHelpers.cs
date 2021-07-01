@@ -33,8 +33,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         {
             var transportFactory = CreateTransportFactory();
 
+            // Use ephemeral port 0. OS will assign unused port.
+            var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+
             var features = CreateBindAsyncFeatures();
-            return (QuicConnectionListener)await transportFactory.BindAsync(new IPEndPoint(IPAddress.Loopback, 5001), features, cancellationToken: CancellationToken.None);
+            return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
         }
 
         public static FeatureCollection CreateBindAsyncFeatures()
