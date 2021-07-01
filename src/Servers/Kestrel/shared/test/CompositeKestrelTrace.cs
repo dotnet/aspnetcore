@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http2StreamError(connectionId, ex);
         }
 
-        public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
+        public void HPackDecodingError(string connectionId, int streamId, Exception ex)
         {
             _trace1.HPackDecodingError(connectionId, streamId, ex);
             _trace2.HPackDecodingError(connectionId, streamId, ex);
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http3FrameSending(connectionId, streamId, frame);
         }
 
-        public void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex)
+        public void QPackDecodingError(string connectionId, long streamId, Exception ex)
         {
             _trace1.QPackDecodingError(connectionId, streamId, ex);
             _trace2.QPackDecodingError(connectionId, streamId, ex);

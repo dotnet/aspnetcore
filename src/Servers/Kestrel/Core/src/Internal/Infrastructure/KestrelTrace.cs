@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _http2StreamResetAbort(_http2Logger, traceIdentifier, error, abortReason);
         }
 
-        public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
+        public virtual void HPackDecodingError(string connectionId, int streamId, Exception ex)
         {
             _hpackDecodingError(_http2Logger, connectionId, streamId, ex);
         }
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public virtual void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex)
+        public virtual void QPackDecodingError(string connectionId, long streamId, Exception ex)
         {
             _qpackDecodingError(_http3Logger, connectionId, streamId, ex);
         }

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void ApplicationAbortedConnection(string connectionId, string traceIdentifier) { }
         public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex) { }
         public void Http2StreamError(string connectionId, Http2StreamErrorException ex) { }
-        public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex) { }
+        public void HPackDecodingError(string connectionId, int streamId, Exception ex) { }
         public void HPackEncodingError(string connectionId, int streamId, Exception ex) { }
         public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason) { }
         public void Http2ConnectionClosing(string connectionId) { }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason) { }
         public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame) { }
         public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame) { }
-        public void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex) { }
+        public void QPackDecodingError(string connectionId, long streamId, Exception ex) { }
         public void QPackEncodingError(string connectionId, long streamId, Exception ex) { }
         public void Http3OutboundControlStreamError(string connectionId, Exception ex) { }
     }
