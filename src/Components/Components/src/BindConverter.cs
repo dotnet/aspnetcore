@@ -497,34 +497,6 @@ namespace Microsoft.AspNetCore.Components
             return value.ToString();
         }
 
-        private static string? FormatArrayValueCore<T>(T value, CultureInfo? culture)
-        {
-            if (value is not Array array)
-            {
-                return null;
-            }
-
-            if (array.Length == 0)
-            {
-                return "[]";
-            }
-
-            var builder = new StringBuilder("[\"");
-            builder.Append(array.GetValue(0));
-            builder.Append('\"');
-
-            for (var i = 1; i < array.Length; i++)
-            {
-                builder.Append(", \"");
-                builder.Append(array.GetValue(i));
-                builder.Append('\"');
-            }
-
-            builder.Append(']');
-
-            return builder.ToString();
-        }
-
         /// <summary>
         /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
         /// </summary>
@@ -1309,6 +1281,16 @@ namespace Microsoft.AspNetCore.Components
         {
             private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
+            private static MethodInfo? _makeArrayFormatter;
+
+            [UnconditionalSuppressMessage(
+                "ReflectionAnalysis",
+                "IL2060:MakeGenericMethod",
+                Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
+            [UnconditionalSuppressMessage(
+                "ReflectionAnalysis",
+                "IL2075:MakeGenericMethod",
+                Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
             public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 if (!_cache.TryGetValue(typeof(T), out var formatter))
@@ -1397,7 +1379,9 @@ namespace Microsoft.AspNetCore.Components
                     }
                     else if (typeof(T).IsArray)
                     {
-                        formatter = (BindFormatter<T>)FormatArrayValueCore<T>;
+                        var method = _makeArrayFormatter ??= typeof(FormatterDelegateCache).GetMethod(nameof(MakeArrayFormatter), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        var elementType = typeof(T).GetElementType()!;
+                        formatter = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
                     }
                     else
                     {
@@ -1408,6 +1392,36 @@ namespace Microsoft.AspNetCore.Components
                 }
 
                 return (BindFormatter<T>)formatter;
+            }
+
+            private static BindFormatter<T[]> MakeArrayFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
+            {
+                var elementFormatter = Get<T>();
+
+                return FormatArrayValue;
+
+                string? FormatArrayValue(T[] value, CultureInfo? culture)
+                {
+                    if (value.Length == 0)
+                    {
+                        return "[]";
+                    }
+
+                    var builder = new StringBuilder("[\"");
+                    builder.Append(elementFormatter(value[0], culture));
+                    builder.Append('\"');
+
+                    for (var i = 1; i < value.Length; i++)
+                    {
+                        builder.Append(", \"");
+                        builder.Append(elementFormatter(value[i], culture));
+                        builder.Append('\"');
+                    }
+
+                    builder.Append(']');
+
+                    return builder.ToString();
+                }
             }
 
             private static BindFormatter<T> MakeTypeConverterFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
@@ -1437,7 +1451,7 @@ namespace Microsoft.AspNetCore.Components
 
             private static MethodInfo? _convertToEnum;
             private static MethodInfo? _convertToNullableEnum;
-            private static MethodInfo? _convertToArray;
+            private static MethodInfo? _makeArrayTypeConverter;
 
             [UnconditionalSuppressMessage(
                 "ReflectionAnalysis",
@@ -1543,7 +1557,7 @@ namespace Microsoft.AspNetCore.Components
                     }
                     else if (typeof(T).IsArray)
                     {
-                        var method = _convertToArray ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        var method = _makeArrayTypeConverter ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
                         var elementType = typeof(T).GetElementType()!;
                         parser = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
                     }

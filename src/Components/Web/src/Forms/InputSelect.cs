@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private void SetCurrentValueAsStringArray(string?[]? value)
         {
-            CurrentValue = BindConverter.TryConvertTo<TValue>(value, CultureInfo.InvariantCulture, out var result)
+            CurrentValue = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var result)
                 ? result
                 : default;
         }

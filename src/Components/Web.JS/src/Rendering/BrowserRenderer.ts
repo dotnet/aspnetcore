@@ -273,20 +273,23 @@ export class BrowserRenderer {
 
   private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
     const selectElem = this.findClosestAncestorSelectElement(optionElement);
-    if (selectElem && (deferredValuePropname in selectElem)) {
-      if (selectElem.type === 'multiple-select') {
-        optionElement.selected = selectElem[deferredValuePropname].indexOf(optionElement.value) !== -1;
-        return true;
-      } else {
-        if (selectElem[deferredValuePropname] === optionElement.value) {
-          setSingleSelectElementValue(selectElem, optionElement.value);
-          delete selectElem[deferredValuePropname];
-          return true;
-        }
+
+    if (!selectElem || !(deferredValuePropname in selectElem)) {
+      return false;
+    }
+
+    if (selectElem.type === 'multiple-select') {
+      optionElement.selected = selectElem[deferredValuePropname].indexOf(optionElement.value) !== -1;
+    } else {
+      if (selectElem[deferredValuePropname] !== optionElement.value) {
         return false;
       }
+
+      setSingleSelectElementValue(selectElem, optionElement.value);
     }
-    return false;
+
+    delete selectElem[deferredValuePropname];
+    return true;
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
