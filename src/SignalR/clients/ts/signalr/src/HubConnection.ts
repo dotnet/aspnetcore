@@ -185,14 +185,14 @@ export class HubConnection {
                     document.addEventListener("freeze", this._freezeEventListener);
                 }
 
-                const promise = new Promise((res) => {
-                    this._lockResolver = res;
-                });
-
                 // Chrome and Edge currently support Web Locks, it's also experimental, so let's be safe and check if the APIs exist
                 // https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API
                 // This should prevent the browsers from sleeping the tab which would close the connection unexpectedly
                 if (navigator && (navigator as any).locks && (navigator as any).locks.request) {
+                    const promise = new Promise((res) => {
+                        this._lockResolver = res;
+                    });
+
                     // Use a 'shared' lock so multiple tabs to the same site can used the same lock
                     (navigator as any).locks.request('signalr_client_lock', { mode: "shared" }, () => {
                         // Keep lock until promise is resolved
@@ -748,8 +748,10 @@ export class HubConnection {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
 
-            this._lockResolver();
             if (Platform.isBrowser) {
+                if (this._lockResolver) {
+                    this._lockResolver();
+                }
                 if (document) {
                     document.removeEventListener("freeze", this._freezeEventListener);
                 }
