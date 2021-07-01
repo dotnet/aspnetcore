@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             _log = log;
             _context = new QuicTransportContext(_log, options);
-            EndPoint = endpoint;
             var quicListenerOptions = new QuicListenerOptions();
 
             // TODO Should HTTP/3 specific ALPN still be global? Revisit whether it can be statically set once HTTP/3 is finalized.
@@ -44,6 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
+
+            // Listener endpoint will resolve an ephemeral port, e.g. 127.0.0.1:0, into the actual port.
+            EndPoint = _listener.ListenEndPoint;
         }
 
         public EndPoint EndPoint { get; set; }
@@ -71,14 +73,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             if (_disposed)
             {
-                return new ValueTask();
+                return ValueTask.CompletedTask;
             }
 
+            _listener.Dispose();
             _disposed = true;
 
-            _listener.Dispose();
-
-            return new ValueTask();
+            return ValueTask.CompletedTask;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private static readonly Action<ILogger, string, string, Exception?> _streamAborted =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "StreamAbort"), @"Stream id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
 
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public QuicTrace(ILogger logger)
         {
