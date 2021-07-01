@@ -6,6 +6,7 @@
     </Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
@@ -20,5 +21,4 @@
     <Compile Include="$(SharedSourceRoot)Buffers\**\*.cs" LinkBase="Internal\" />
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" />
   </ItemGroup>
-
 </Project>
