@@ -159,6 +159,54 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidArrayTypes.StringVals), Array.Empty<string>()));
         }
 
+        class OverrideParameterName : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery(Name = "anothername1")] public string Value1 { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "anothername2")] public string Value2 { get; set; }
+        }
+
+        [Fact]
+        public void CanOverrideParameterName()
+        {
+            var query = $"anothername1=Some+value+1&Value2=Some+value+2";
+            Assert.Collection(GetSuppliedParameters<OverrideParameterName>(query),
+                // Because we specified the mapped name, we receive the value
+                AssertKeyValuePair(nameof(OverrideParameterName.Value1), "Some value 1"),
+                // If we specify the component parameter name directly, we do not receive the value
+                AssertKeyValuePair(nameof(OverrideParameterName.Value2), (object)null));
+        }
+
+        class MapSingleQueryParameterToMultipleProperties : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery(Name = "q")] public DateTime ValueAsDateTime { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "q")] public string ValueAsString { get; set; }
+        }
+
+        [Fact]
+        public void CanMapSingleQueryParameterToMultipleProperties()
+        {
+            var query = "?q=2020-01-02+03:04:05.678Z";
+            Assert.Collection(GetSuppliedParameters<MapSingleQueryParameterToMultipleProperties>(query),
+                AssertKeyValuePair(
+                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsDateTime),
+                    new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc)),
+                AssertKeyValuePair(
+                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsString),
+                    "2020-01-02 03:04:05.678Z"));
+        }
+
+        // Invalid (nonprimitive) types
+        // Unparseable values
+        // Valid array types
+        // Blank single values
+        // Blank single nullable values
+        // Blank multiple values
+        // Blank multiple nullable values
+        // Decodes values
+        // Doesn't decode keys
+        // Matches keys case-insensitively
+        // Multiple values supplied for non-array parameter
+
         private static IEnumerable<(string key, object value)> GetSuppliedParameters<TComponent>(string query) where TComponent : IComponent
         {
             var supplier = QueryParameterValueSupplier.ForType(typeof(TComponent));
@@ -245,19 +293,5 @@ namespace Microsoft.AspNetCore.Components.Routing
             [Parameter, SupplyParameterFromQuery] public int?[] NullableIntVals { get; set; }
             [Parameter, SupplyParameterFromQuery] public long?[] NullableLongVals { get; set; }
         }
-
-        // Custom named query param
-        // Mapping to multiple destinations
-        // Invalid (nonprimitive) types
-        // Unparseable values
-        // Valid array types
-        // Blank single values
-        // Blank single nullable values
-        // Blank multiple values
-        // Blank multiple nullable values
-        // Decodes values
-        // Doesn't decode keys
-        // Matches keys case-insensitively
-        // Multiple values supplied for non-array parameter
     }
 }
