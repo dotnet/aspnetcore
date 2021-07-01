@@ -29,6 +29,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Abstractions" ProjectPath="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Extensions" ProjectPath="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Features" ProjectPath="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Results" ProjectPath="$(RepoRoot)src\Http\Http.Results\src\Microsoft.AspNetCore.Http.Results.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http" ProjectPath="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Metadata" ProjectPath="$(RepoRoot)src\Http\Metadata\src\Microsoft.AspNetCore.Metadata.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Owin" ProjectPath="$(RepoRoot)src\Http\Owin\src\Microsoft.AspNetCore.Owin.csproj" />

@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -100,7 +101,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 result.ContentType,
                 response.ContentType,
-                DefaultContentType,
+                (DefaultContentType, Encoding.UTF8),
+                MediaType.GetEncoding,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 
