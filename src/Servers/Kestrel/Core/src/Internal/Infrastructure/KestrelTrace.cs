@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public virtual void ResponseMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier)
         {
-            _responseMinimumDataRateNotSatisfied(_generalLogger, connectionId, traceIdentifier, null);
+            _responseMinimumDataRateNotSatisfied(_badRequestsLogger, connectionId, traceIdentifier, null);
         }
 
         public virtual void ApplicationAbortedConnection(string connectionId, string traceIdentifier)
