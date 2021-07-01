@@ -315,11 +315,13 @@ namespace Microsoft.AspNetCore
             var managedEntries = frameworkListEntries.Where(i => i.Attribute("Type").Value.Equals("Managed", StringComparison.Ordinal));
             var analyzerEntries = frameworkListEntries.Where(i => i.Attribute("Type").Value.Equals("Analyzer", StringComparison.Ordinal));
 
-            var expectedAnalyzers = Directory.GetFiles(
-                Path.Combine(_targetingPackRoot, "analyzers"), "*.dll", SearchOption.AllDirectories)
+            var analyzersDir = Path.Combine(_targetingPackRoot, "analyzers");
+            var expectedAnalyzers = Directory.Exists(analyzersDir) ?
+                Directory.GetFiles(analyzersDir, "*.dll", SearchOption.AllDirectories)
                 .Select(p => Path.GetFileNameWithoutExtension(p))
                 .Where(f => !f.EndsWith(".resources", StringComparison.OrdinalIgnoreCase))
-                .ToHashSet();
+                .ToHashSet() :
+                new HashSet<string>();
 
             CompareFrameworkElements(expectedAssemblies, managedEntries, "managed");
             CompareFrameworkElements(expectedAnalyzers, analyzerEntries, "analyzer");
