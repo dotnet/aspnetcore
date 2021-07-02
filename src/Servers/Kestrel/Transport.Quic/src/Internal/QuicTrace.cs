@@ -18,21 +18,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private static readonly Action<ILogger, string, Exception?> _connectionError =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionError"), @"Connection id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _connectionAborted =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionAborted"), @"Connection id ""{ConnectionId}"" aborted by peer.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "ConnectionAborted"), @"Connection id ""{ConnectionId}"" aborted by peer.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, string, Exception?> _connectionAbort =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(4, "ConnectionAbort"), @"Connection id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(6, "ConnectionAbort"), @"Connection id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "StreamError"), @"Stream id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "StreamError"), @"Stream id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "StreamPause"), @"Stream id ""{ConnectionId}"" paused.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "StreamPause"), @"Stream id ""{ConnectionId}"" paused.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "StreamResume"), @"Stream id ""{ConnectionId}"" resumed.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, "StreamResume"), @"Stream id ""{ConnectionId}"" resumed.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, string, Exception?> _streamShutdownWrite =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "StreamShutdownWrite"), @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(10, "StreamShutdownWrite"), @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamAborted =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, "StreamAborted"), @"Stream id ""{ConnectionId}"" aborted by peer.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(11, "StreamAborted"), @"Stream id ""{ConnectionId}"" aborted by peer.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, string, Exception?> _streamAbort =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(9, "StreamAbort"), @"Stream id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(12, "StreamAbort"), @"Stream id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
 
         private readonly ILogger _logger;
 
