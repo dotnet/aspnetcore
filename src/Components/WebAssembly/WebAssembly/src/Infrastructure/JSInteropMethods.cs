@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
     {
         /// <summary>
         /// For framework use only.
-        /// </summary>
+        /// </summary>z
         [JSInvokable(nameof(NotifyLocationChanged))]
         public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
         {
@@ -36,35 +35,38 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(DispatchEvent))]
-        public static async Task DispatchEvent(WebEventDescriptor eventDescriptor, string eventArgsJson)
+        public static async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
         {
+            var eventDescriptorElement = GetJsonElement(eventDescriptorJson);
+            var eventDescriptor = WebEventDescriptorReader.Read(eventDescriptorElement);
             var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
 
-            var byteLength = Encoding.UTF8.GetByteCount(eventArgsJson);
+            var eventArgsElement = GetJsonElement(eventArgsJson);
+
+            var webEvent = WebEventData.Parse(renderer, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), eventDescriptor, eventArgsElement);
+            await renderer.DispatchEventAsync(
+                webEvent.EventHandlerId,
+                webEvent.EventFieldInfo,
+                webEvent.EventArgs);
+        }
+
+        private static JsonElement GetJsonElement(string jsonString)
+        {
+            var byteLength = Encoding.UTF8.GetByteCount(jsonString);
             var bytes = ArrayPool<byte>.Shared.Rent(byteLength);
 
             try
             {
-                var writtenBytes = Encoding.UTF8.GetBytes(eventArgsJson, bytes);
+                var writtenBytes = Encoding.UTF8.GetBytes(jsonString, bytes);
                 Debug.Assert(writtenBytes == byteLength);
-                var jsonElement = GetJsonElement(bytes, writtenBytes);
 
-                var webEvent = WebEventData.Parse(renderer, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), eventDescriptor, jsonElement);
-                await renderer.DispatchEventAsync(
-                    webEvent.EventHandlerId,
-                    webEvent.EventFieldInfo,
-                    webEvent.EventArgs);
+                var jsonReader = new Utf8JsonReader(bytes.AsSpan(0, writtenBytes));
+                return JsonElement.ParseValue(ref jsonReader);
             }
             finally
             {
                 ArrayPool<byte>.Shared.Return(bytes);
             }
-        }
-
-        private static JsonElement GetJsonElement(byte[] bytes, int writtenBytes)
-        {
-            var jsonReader = new Utf8JsonReader(bytes.AsSpan(0, writtenBytes));
-            return JsonElement.ParseValue(ref jsonReader);
         }
     }
 }
