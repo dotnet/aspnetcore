@@ -64,6 +64,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task BidirectionalStream_ClientAbortWrite_ServerReceivesAbort()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await quicConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+
+            // Act
+            await using var clientStream = quicConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData).DefaultTimeout();
+
+            await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+            var closedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            serverStream.ConnectionClosed.Register(() => closedTcs.SetResult());
+
+            clientStream.AbortWrite((long)Http3ErrorCode.InternalError);
+
+            // Receive abort from client.
+            var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => serverStream.Transport.Input.ReadAsync().AsTask()).DefaultTimeout();
+
+            // Server completes its output.
+            await serverStream.Transport.Output.CompleteAsync();
+
+            // Assert
+            Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicStreamAbortedException)ex.InnerException).ErrorCode);
+
+            var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
+
+            // Both send and receive loops have exited.
+            await quicStreamContext._processingTask.DefaultTimeout();
+
+            await closedTcs.Task.DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task ClientToServerUnidirectionalStream_ServerReadsData_GracefullyClosed()
         {
             // Arrange

@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _log.ConnectionError(this, unexpectedError);
+                _log.StreamError(this, unexpectedError);
             }
             finally
             {
@@ -298,8 +298,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             lock (_shutdownLock)
             {
-                _stream.AbortRead(Error);
-                _stream.AbortWrite(Error);
+                if (_stream.CanRead)
+                {
+                    _stream.AbortRead(Error);
+                }
+                if (_stream.CanWrite)
+                {
+                    _stream.AbortWrite(Error);
+                }
             }
 
             // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
