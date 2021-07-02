@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private class NullableTypedUrlValueConstraint<T> : TypedUrlValueConstraint<T?> where T : struct
+        private sealed class NullableTypedUrlValueConstraint<T> : TypedUrlValueConstraint<T?> where T : struct
         {
             public NullableTypedUrlValueConstraint(TryParseDelegate<T> parser)
                 : base(SupportNullable(parser))
