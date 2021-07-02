@@ -286,9 +286,9 @@ export class BrowserRenderer {
       }
 
       setSingleSelectElementValue(selectElem, optionElement.value);
+      delete selectElem[deferredValuePropname];
     }
 
-    delete selectElem[deferredValuePropname];
     return true;
   }
 

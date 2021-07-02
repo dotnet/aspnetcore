@@ -53,6 +53,14 @@
             <option value="@City.Madrid">Madrid</option>
         </InputSelect>
     </p>
+    <p class="select-multiple-hostile">
+        <InputSelect @bind-Value="person.HostileStrings">
+            <option value="@("\"")">@("\"")</option>
+            <option value="{">{</option>
+            <option value="@("")">Empty string</option>
+        </InputSelect>
+        <span>@string.Join(", ", person.HostileStrings)</span>
+    </p>
     <p class="airline">
         <InputRadioGroup @bind-Value="person.Airline">
             Airline:
@@ -170,6 +178,9 @@
 
         [Required, MinLength(2), MaxLength(3)]
         public City[] SelectedCities { get; set; } = new[] { City.SanFrancisco };
+
+        [Required]
+        public string[] HostileStrings { get; set; } = new string[] { "\"", "{" };
 
         public string Username { get; set; }
     }

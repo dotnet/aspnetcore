@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -1408,13 +1409,13 @@ namespace Microsoft.AspNetCore.Components
                     }
 
                     var builder = new StringBuilder("[\"");
-                    builder.Append(elementFormatter(value[0], culture));
+                    builder.Append(JsonEncodedText.Encode(elementFormatter(value[0], culture)?.ToString() ?? string.Empty));
                     builder.Append('\"');
 
                     for (var i = 1; i < value.Length; i++)
                     {
                         builder.Append(", \"");
-                        builder.Append(elementFormatter(value[i], culture));
+                        builder.Append(JsonEncodedText.Encode(elementFormatter(value[i], culture)?.ToString() ?? string.Empty));
                         builder.Append('\"');
                     }
 

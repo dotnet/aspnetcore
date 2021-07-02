@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Components.Web
                     changeArgs.Value = jsonElement.GetBoolean();
                     break;
                 case JsonValueKind.Array:
-                    changeArgs.MultipleValues = GetJsonElementStringArrayValue(jsonElement);
+                    changeArgs.Value = GetJsonElementStringArrayValue(jsonElement);
                     break;
                 default:
                     throw new ArgumentException($"Unsupported {nameof(ChangeEventArgs)} value {jsonElement}.");

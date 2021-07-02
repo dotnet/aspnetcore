@@ -314,6 +314,25 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputSelectHandlesHostileStringValues()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var selectParagraph = appElement.FindElement(By.ClassName("select-multiple-hostile"));
+            var hostileSelectInput = new SelectElement(selectParagraph.FindElement(By.TagName("select")));
+            var select = hostileSelectInput.WrappedElement;
+            var hostileSelectLabel = selectParagraph.FindElement(By.TagName("span"));
+
+            // Check initial selection
+            Browser.Equal(new[] { "\"", "{" }, () => hostileSelectInput.AllSelectedOptions.Select(o => o.Text));
+
+            hostileSelectInput.DeselectByIndex(0);
+            hostileSelectInput.SelectByIndex(2);
+
+            // Bindings work from JS -> C#
+            Browser.Equal("{,", () => hostileSelectLabel.Text);
+        }
+
+        [Fact]
         public void InputCheckboxInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
@@ -592,7 +611,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var select = new SelectElement(appElement.FindElement(By.Id("select-cities")));
 
             // Assert that the binding works in the .NET -> JS direction
-            Browser.Equal(new[] { "sf", "sea" }, () => select.AllSelectedOptions.Select(option => option.GetAttribute("value")));
+            Browser.Equal(new[] { "\"sf\"", "\"sea\"" }, () => select.AllSelectedOptions.Select(option => option.GetAttribute("value")));
 
             select.DeselectByIndex(0);
             select.SelectByIndex(1);
@@ -601,7 +620,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var label = appElement.FindElement(By.Id("selected-cities-label"));
 
             // Assert that the binding works in the JS -> .NET direction
-            Browser.Equal("la, pdx, sea", () => label.Text);
+            Browser.Equal("\"la\", \"pdx\", \"sea\"", () => label.Text);
         }
 
         [Fact]

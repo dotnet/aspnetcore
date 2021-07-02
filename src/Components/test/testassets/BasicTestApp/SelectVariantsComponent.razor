@@ -30,10 +30,10 @@
 <span id="selected-cars-label">@string.Join(", ", SelectedCars)</span>
 
 <select id="select-cities" name="cities" @bind="SelectedCities" multiple>
-    <option value="sf">San Francisco</option>
-    <option value="la">Los Angeles</option>
-    <option value="pdx">Portland</option>
-    <option value="sea">Seattle</option>
+    <option value="@("\"sf\"")">San Francisco</option>
+    <option value="@("\"la\"")">Los Angeles</option>
+    <option value="@("\"pdx\"")">Portland</option>
+    <option value="@("\"sea\"")">Seattle</option>
 </select>
 
 <span id="selected-cities-label">@string.Join(", ", SelectedCities)</span>
@@ -43,7 +43,7 @@
 @code
 {
     public string SelectValue { get; set; } = "B";
-    public string[] SelectedCities { get; set; } = new[] { "sf", "sea" };
+    public string[] SelectedCities { get; set; } = new[] { "\"sf\"", "\"sea\"" };
     public string[] SelectedCars { get; set; } = new string[] { };
     public bool ShowAdditionalOption = false;
 
@@ -53,6 +53,6 @@
 
     void SelectedCarsChanged(ChangeEventArgs e)
     {
-        SelectedCars = e.MultipleValues;
+        SelectedCars = (string[])e.Value;
     }
 }
