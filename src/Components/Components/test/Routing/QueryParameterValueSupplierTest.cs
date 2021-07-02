@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             var supplier = QueryParameterValueSupplier.ForType(typeof(TComponent));
             using var renderTreeBuilder = new RenderTreeBuilder();
             renderTreeBuilder.OpenComponent<TComponent>(0);
-            supplier.RenderParameterAttributes(renderTreeBuilder, query);
+            supplier.RenderParameterAttributes(renderTreeBuilder, query.AsMemory());
             renderTreeBuilder.CloseComponent();
 
             var frames = renderTreeBuilder.GetFrames();

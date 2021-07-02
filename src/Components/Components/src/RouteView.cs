@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 var url = NavigationManager.Uri;
                 var queryStartPos = url.IndexOf('?');
-                var query = queryStartPos >= 0 ? url.AsSpan(queryStartPos) : default;
+                var query = queryStartPos >= 0 ? url.AsMemory(queryStartPos) : default;
                 queryParameterSupplier.RenderParameterAttributes(builder, query);
             }
 

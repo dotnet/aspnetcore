@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlySpan<char> queryString)
+        public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlyMemory<char> queryString)
         {
             var assignmentsByDestination = new Dictionary<QueryParameterDestination, StringValues>(_assignmentsTemplate);
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                     // - Doing the comparisons without decoding is better for perf, especially against hostile input
                     // - We could add support for decoding later non-breakingly
                     // ... so I think for now, I'm on the side of not supporting encoded parameter names.
-                    if (suppliedPair.EncodedName.Equals(candidateMapping.QueryParameterName, StringComparison.OrdinalIgnoreCase))
+                    if (suppliedPair.EncodedName.Span.Equals(candidateMapping.QueryParameterName, StringComparison.OrdinalIgnoreCase))
                     {
                         var decodedValue = suppliedPair.DecodeValue();
                         foreach (var destination in candidateMapping.Destinations)
