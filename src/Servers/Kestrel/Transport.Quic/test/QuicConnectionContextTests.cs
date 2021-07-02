@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
-    public class QuicConnectionContextTests
+    public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     {
         private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task AcceptAsync_ClientStartsAndStopsUnidirectionStream_ServerAccepts()
         {
             // Arrange
-            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task AcceptAsync_ClientStartsAndStopsBidirectionStream_ServerAccepts()
         {
             // Arrange
-            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task AcceptAsync_ServerStartsAndStopsUnidirectionStream_ClientAccepts()
         {
             // Arrange
-            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory();
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
