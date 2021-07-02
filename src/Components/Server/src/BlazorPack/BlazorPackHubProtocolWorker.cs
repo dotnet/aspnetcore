@@ -38,12 +38,27 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                 }
                 else if (type == typeof(byte[]))
                 {
-                    return ReadBytes(ref reader);
+                    var bytes = reader.ReadBytes();
+                    if (!bytes.HasValue)
+                    {
+                        return null;
+                    }
+                    else if (bytes.Value.Length == 0)
+                    {
+                        return Array.Empty<byte>();
+                    }
+
+                    return bytes.Value.ToArray();
                 }
                 else if (type == typeof(JsonElement))
                 {
-                    var bytes = ReadBytes(ref reader);
-                    var jsonReader = new Utf8JsonReader(bytes);
+                    var bytes = reader.ReadBytes();
+                    if (bytes is null)
+                    {
+                        return default;
+                    }
+
+                    var jsonReader = new Utf8JsonReader(bytes.Value);
                     return JsonElement.ParseValue(ref jsonReader);
                 }
             }
@@ -53,21 +68,6 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
             }
 
             throw new FormatException($"Type {type} is not supported");
-        }
-
-        private static byte[] ReadBytes(ref MessagePackReader reader)
-        {
-            var bytes = reader.ReadBytes();
-            if (!bytes.HasValue)
-            {
-                return null;
-            }
-            else if (bytes.Value.Length == 0)
-            {
-                return Array.Empty<byte>();
-            }
-
-            return bytes.Value.ToArray();
         }
 
         protected override void Serialize(ref MessagePackWriter writer, Type type, object value)

@@ -33,7 +33,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     // that are themselves triggered by the application of a renderbatch.
     const renderer = getRendererer(eventDescriptor.browserRendererId);
     if (renderer.eventDelegator.getHandler(eventDescriptor.eventHandlerId)) {
-      monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
+      monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', JSON.stringify(eventDescriptor), JSON.stringify(eventArgs)));
     }
   });
 
