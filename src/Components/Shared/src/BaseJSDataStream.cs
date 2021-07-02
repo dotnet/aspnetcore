@@ -58,9 +58,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         {
             try
             {
-                _lastDataReceivedTime = DateTimeOffset.UtcNow;
-                _ = ThrowOnTimeout();
-
                 if (!string.IsNullOrEmpty(error))
                 {
                     throw new InvalidOperationException($"An error occurred while reading the remote stream: {error}");
@@ -84,6 +81,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
                 {
                     throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were sent.");
                 }
+                
+                // Start timeout _after_ performing validations on data.
+                _lastDataReceivedTime = DateTimeOffset.UtcNow;
+                _ = ThrowOnTimeout();
 
                 await _pipe.Writer.WriteAsync(chunk, _streamCancellationToken);
 
