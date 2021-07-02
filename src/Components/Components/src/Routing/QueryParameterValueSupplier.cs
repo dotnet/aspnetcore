@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.Routing
 {
     internal sealed class QueryParameterValueSupplier
     {
+        public static void ClearCache() => _cacheByType.Clear();
+
         private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
         private readonly SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>> _destinationsByQueryParameterName;
         private readonly QueryParameterDestination[] _destinations;
