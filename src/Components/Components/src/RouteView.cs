@@ -98,12 +98,12 @@ namespace Microsoft.AspNetCore.Components
             var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
             if (queryParameterSupplier is not null)
             {
+                // Since this component does accept some parameters from query, we must supply values for all of them,
+                // even if the querystring in the URI is empty. So don't skip the following logic.
                 var url = NavigationManager.Uri;
                 var queryStartPos = url.IndexOf('?');
-                if (queryStartPos >= 0)
-                {
-                    queryParameterSupplier.RenderParametersFromQueryString(builder, url.AsMemory(queryStartPos));
-                }
+                var query = queryStartPos < 0 ? default : url.AsMemory(queryStartPos);
+                queryParameterSupplier.RenderParametersFromQueryString(builder, query);
             }
 
             builder.CloseComponent();

@@ -50,6 +50,18 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public void RenderParametersFromQueryString(RenderTreeBuilder builder, ReadOnlyMemory<char> queryString)
         {
+            // If there's no querystring contents, we can skip renting from the pool
+            if (queryString.IsEmpty)
+            {
+                for (var destinationIndex = 0; destinationIndex < _destinations.Length; destinationIndex++)
+                {
+                    ref var destination = ref _destinations[destinationIndex];
+                    var blankValue = destination.IsArray ? destination.Parser.ParseMultiple(default, string.Empty) : null;
+                    builder.AddAttribute(0, destination.ComponentParameterName, blankValue);
+                }
+                return;
+            }
+
             // Temporary workspace in which we accumulate the data while walking the querystring.
             var valuesByDestination = ArrayPool<StringSegmentAccumulator>.Shared.Rent(_destinationsCount);
 
