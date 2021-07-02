@@ -113,21 +113,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var queryEnd = offset;
 
-            // Consume space + Version + CR is 10 bytes which should take us to .Length
-            offset += 10;
-            // LF should have been dropped prior to method call, so offset should now be length
-            if ((uint)offset != (uint)requestLine.Length || requestLine[offset - 1] != ByteCR)
+            // Consume space
+            offset++;
+
+            // Version + CR is 9 bytes which should take us to .Length
+            // LF should have been dropped prior to method call
+            if ((uint)offset + 9 != (uint)requestLine.Length || requestLine[offset + sizeof(ulong)] != ByteCR)
             {
                 RejectRequestLine(requestLine);
             }
 
-            // Version (consume space after query end)
-            var remaining = requestLine.Slice(queryEnd + 1);
-            var httpVersion = remaining.GetKnownVersionAndConfirmCR();
+            // Version
+            var remaining = requestLine.Slice(offset);
+            var httpVersion = remaining.GetKnownVersion();
             versionAndMethod.Version = httpVersion;
             if (httpVersion == HttpVersion.Unknown)
             {
-                // HTTP version is unsupported or incorrectly terminated.
+                // HTTP version is unsupported.
                 RejectUnknownVersion(remaining);
             }
 

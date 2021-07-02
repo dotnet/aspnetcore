@@ -299,13 +299,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         public static bool GetKnownVersion(this ReadOnlySpan<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            knownVersion = GetKnownVersionAndConfirmCR(span);
-            if (knownVersion != HttpVersion.Unknown)
+            if (span.Length > sizeof(ulong) && span[sizeof(ulong)] == (byte)'\r')
             {
-                length = sizeof(ulong);
-                return true;
+                knownVersion = GetKnownVersion(span);
+                if (knownVersion != HttpVersion.Unknown)
+                {
+                    length = sizeof(ulong);
+                    return true;
+                }
             }
 
+            knownVersion = HttpVersion.Unknown;
             length = 0;
             return false;
         }
@@ -320,29 +324,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// The Known versions will be checked with the required '\r'.
         /// To optimize performance the HTTP/1.1 will be checked first.
         /// </remarks>
-        /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
+        /// <returns>the HTTP version if the input matches a known string, <c>Unknown</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static HttpVersion GetKnownVersionAndConfirmCR(this ReadOnlySpan<byte> location)
+        internal static HttpVersion GetKnownVersion(this ReadOnlySpan<byte> location)
         {
-            if (location.Length < sizeof(ulong))
+            Debug.Assert(location.Length > sizeof(ulong) && location[sizeof(ulong)] == (byte)'\r');
+
+            var version = BinaryPrimitives.ReadUInt64LittleEndian(location);
+            if (version == _http11VersionLong)
             {
-                return HttpVersion.Unknown;
+                return HttpVersion.Http11;
             }
-            else
+            else if (version == _http10VersionLong)
             {
-                var version = BinaryPrimitives.ReadUInt64LittleEndian(location);
-                if (sizeof(ulong) >= (uint)location.Length || location[sizeof(ulong)] != (byte)'\r')
-                {
-                    return HttpVersion.Unknown;
-                }
-                else if (version == _http11VersionLong)
-                {
-                    return HttpVersion.Http11;
-                }
-                else if (version == _http10VersionLong)
-                {
-                    return HttpVersion.Http10;
-                }
+                return HttpVersion.Http10;
             }
 
             return HttpVersion.Unknown;
