@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanArriveAtPageWithOptionalParametersNotProvided()
         {
-            SetUrlViaPushState($"/WithOptionalParameters");
+            SetUrlViaPushState($"/WithOptionalParameters?query=ignored");
 
             var app = Browser.MountTestComponent<TestRouter>();
             var expected = $"Your age is .";
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanArriveAtPageWithCatchAllParameter()
         {
-            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042");
+            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042?query=ignored");
 
             var app = Browser.MountTestComponent<TestRouter>();
             var expected = $"The answer: life/the/universe/and/everything = 42.";
@@ -766,6 +766,91 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             IWebElement GetFocusedElement()
                 => Browser.SwitchTo().ActiveElement();
+        }
+
+        [Fact]
+        public void CanArriveAtQueryStringPageWithNoQuery()
+        {
+            SetUrlViaPushState("/WithQueryParameters/Abc");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)");
+        }
+
+        [Fact]
+        public void CanArriveAtQueryStringPageWithQuery()
+        {
+            SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
+        }
+
+        [Fact]
+        public void CanNavigateToQueryStringPageWithNoQuery()
+        {
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("With query parameters (none)")).Click();
+
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)");
+        }
+
+        [Fact]
+        public void CanNavigateBetweenPagesWithQueryStrings()
+        {
+            SetUrlViaPushState("/");
+
+            // Navigate to a page with querystring
+            var app = Browser.MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("With query parameters (passing string value)")).Click();
+
+            Browser.Equal("Hello Abc .", () => app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+            var instanceId = app.FindElement(By.Id("instance-id")).Text;
+            Assert.True(!string.IsNullOrWhiteSpace(instanceId));
+
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
+
+            // We can also navigate to a different query while retaining the same component instance
+            app.FindElement(By.LinkText("With IntValue and LongValues")).Click();
+            Browser.Equal("123", () => app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("3 values (50, 100, -20)", app.FindElement(By.Id("value-LongValues")).Text);
+            Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
+            AssertHighlightedLinks("With query parameters (none)");
+
+            // We can also click back to go the preceding query while retaining the same component instance
+            Browser.Navigate().Back();
+            Browser.Equal("0", () => app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+            Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
         }
 
         private long BrowserScrollY
