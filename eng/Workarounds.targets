@@ -59,4 +59,11 @@
       <RazorReferencePath Include="@(ReferencePathWithRefAssemblies)" />
     </ItemGroup>
   </Target>
+
+  <!-- Work around https://github.com/dotnet/aspnetcore/issues/34048 -->
+  <Target Name="_RemoveDuplicateLoggingSourceGenerator" AfterTargets="ResolvePackageAssets" Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+    <ItemGroup>
+      <ResolvedAnalyzers Remove="@(ResolvedAnalyzers)" Condition="'%(ResolvedAnalyzers.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions'" />
+    </ItemGroup>
+  </Target>
 </Project>
