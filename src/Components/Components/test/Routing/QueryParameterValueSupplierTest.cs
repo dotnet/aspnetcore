@@ -99,14 +99,17 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidTypes.StringVal), "Some string & more"));
         }
 
-        [Fact]
-        public void SuppliesNullForValueTypesIfNotSpecified()
+        [Theory]
+        [InlineData("")]
+        [InlineData("?")]
+        [InlineData("?unrelated=123")]
+        public void SuppliesNullForValueTypesIfNotSpecified(string query)
         {
             // Although we could supply default(T) for missing values, there's precedent in the routing
             // system for supplying null for missing route parameters. The component is then responsible
             // for interpreting null as a blank value for the parameter, regardless of its type. To keep
             // the rules aligned, we do the same thing for querystring parameters.
-            Assert.Collection(GetSuppliedParameters<ValidTypes>(default),
+            Assert.Collection(GetSuppliedParameters<ValidTypes>(query),
                 AssertKeyValuePair(nameof(ValidTypes.BoolVal), (object)null),
                 AssertKeyValuePair(nameof(ValidTypes.DateTimeVal), (object)null),
                 AssertKeyValuePair(nameof(ValidTypes.DecimalVal), (object)null),
@@ -190,10 +193,13 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidArrayTypes.StringVals), new[] { "Some string & more" }));
         }
 
-        [Fact]
-        public void SuppliesEmptyArrayForArrayTypesIfNotSpecified()
+        [Theory]
+        [InlineData("")]
+        [InlineData("?")]
+        [InlineData("?unrelated=123")]
+        public void SuppliesEmptyArrayForArrayTypesIfNotSpecified(string query)
         {
-            Assert.Collection(GetSuppliedParameters<ValidArrayTypes>(default),
+            Assert.Collection(GetSuppliedParameters<ValidArrayTypes>(query),
                 AssertKeyValuePair(nameof(ValidArrayTypes.BoolVals), Array.Empty<bool>()),
                 AssertKeyValuePair(nameof(ValidArrayTypes.DateTimeVals), Array.Empty<DateTime>()),
                 AssertKeyValuePair(nameof(ValidArrayTypes.DecimalVals), Array.Empty<decimal>()),
