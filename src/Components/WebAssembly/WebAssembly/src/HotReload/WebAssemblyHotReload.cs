@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
     public static class WebAssemblyHotReload
     {
         private static HotReloadAgent? _hotReloadAgent;
-        private static UpdateDelta[] _updateDeltas = new[]
+        private static readonly UpdateDelta[] _updateDeltas = new[]
         {
             new UpdateDelta(),
         };

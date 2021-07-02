@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 _editContext.OnFieldChanged += OnFieldChanged;
                 _editContext.OnValidationRequested += OnValidationRequested;
 
-                if (HotReloadFeature.IsSupported)
+                if (MetadataUpdater.IsSupported)
                 {
                     OnClearCache += ClearCache;
                 }
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 _editContext.OnValidationRequested -= OnValidationRequested;
                 _editContext.NotifyValidationStateChanged();
 
-                if (HotReloadFeature.IsSupported)
+                if (MetadataUpdater.IsSupported)
                 {
                     OnClearCache -= ClearCache;
                 }
