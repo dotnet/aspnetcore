@@ -109,18 +109,16 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                     return;
                 }
 
-                var returnStatementSyntax = (ReturnStatementSyntax)returnOperation.Syntax;
-                var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
-                    symbolCache,
-                    semanticModel,
-                    returnStatementSyntax,
-                    operationAnalysisContext.CancellationToken);
+                var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnOperation(
+                    in symbolCache,
+                   returnOperation);
 
                 if (actualMetadata == null || actualMetadata.Value.StatusCode != 400)
                 {
                     return;
                 }
 
+                var returnStatementSyntax = returnOperation.Syntax;
                 var additionalLocations = new[]
                 {
                     ifStatement.GetLocation(),

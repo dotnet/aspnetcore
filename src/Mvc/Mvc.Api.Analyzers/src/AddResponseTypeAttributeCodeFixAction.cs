@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Simplification;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
@@ -128,8 +129,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             var root = await _document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var semanticModel = await _document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var methodReturnStatement = (ReturnStatementSyntax)root.FindNode(_diagnostic.Location.SourceSpan);
-            var methodSyntax = methodReturnStatement.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+            var diagnosticNode = root.FindNode(_diagnostic.Location.SourceSpan);
+            var methodSyntax = diagnosticNode.FirstAncestorOrSelf<MethodDeclarationSyntax>();
             var method = semanticModel.GetDeclaredSymbol(methodSyntax, cancellationToken);
 
             var statusCodesType = semanticModel.Compilation.GetTypeByMetadataName(ApiSymbolNames.HttpStatusCodes);
@@ -168,7 +169,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         private ICollection<(int statusCode, ITypeSymbol? typeSymbol)> CalculateStatusCodesToApply(in CodeActionContext context, IList<DeclaredApiResponseMetadata> declaredResponseMetadata)
         {
-            if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, context.SemanticModel, context.MethodSyntax, context.CancellationToken, out var actualResponseMetadata))
+            var operation = (IMethodBodyBaseOperation)context.SemanticModel.GetOperation(context.MethodSyntax, context.CancellationToken);
+
+            if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, operation, context.CancellationToken, out var actualResponseMetadata))
             {
                 // If we cannot parse metadata correctly, don't offer fixes.
                 return Array.Empty<(int, ITypeSymbol?)>();

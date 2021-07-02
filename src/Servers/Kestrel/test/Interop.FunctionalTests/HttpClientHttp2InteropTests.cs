@@ -1594,6 +1594,7 @@ namespace Interop.FunctionalTests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task ClientCertificate_Required()
         {
             var hostBuilder = new HostBuilder()
@@ -1638,6 +1639,7 @@ namespace Interop.FunctionalTests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task ClientCertificate_DelayedNotSupported()
         {
             var hostBuilder = new HostBuilder()

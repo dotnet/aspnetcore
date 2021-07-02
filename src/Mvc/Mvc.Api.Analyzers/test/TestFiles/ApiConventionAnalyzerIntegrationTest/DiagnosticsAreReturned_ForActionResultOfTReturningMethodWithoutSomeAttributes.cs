@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             if (!ModelState.IsValid)
             {
-                /*MM*/return UnprocessableEntity();
+                return /*MM*/UnprocessableEntity();
             }
 
             return Ok();
