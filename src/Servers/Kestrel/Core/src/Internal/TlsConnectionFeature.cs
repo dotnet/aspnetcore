@@ -46,7 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 return _clientCert ??= ConvertToX509Certificate2(_sslStream.RemoteCertificate);
             }
-            set => _clientCert = value;
+            set
+            {
+                _clientCert = value;
+                _clientCertTask = Task.FromResult(value);
+            }
         }
 
         // Used for event source, not part of any of the feature interfaces.
