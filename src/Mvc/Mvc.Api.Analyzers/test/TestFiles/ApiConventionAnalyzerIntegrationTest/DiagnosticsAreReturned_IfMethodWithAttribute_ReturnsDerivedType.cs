@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return NotFound();
             }
 
-            /*MM*/return new DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived();
+            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived();
         }
     }
 

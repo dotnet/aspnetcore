@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ActualApiResponseMetadataFactoryTest
@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ActualApiResponseMeta
 
             /*MM2*/return new TryGetActualResponseMetadataModel();
         }
+
+        public IActionResult ActionWithActionResultOfTReturningOkResultExpression() => Ok();
     }
 
     public class TryGetActualResponseMetadataModel { }

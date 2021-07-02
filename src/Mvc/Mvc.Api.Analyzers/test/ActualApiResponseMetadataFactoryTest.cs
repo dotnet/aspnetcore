@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ActualApiResponseMetadataFactoryTest;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
@@ -74,12 +75,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var method = (IMethodSymbol)returnType.GetMembers().First();
             var methodSyntax = syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
             var returnStatement = methodSyntax.DescendantNodes().OfType<ReturnStatementSyntax>().First();
+            var returnOperation = (IReturnOperation)compilation.GetSemanticModel(syntaxTree).GetOperation(returnStatement);
 
-            var actualResponseMetadata = ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
+            var actualResponseMetadata = ActualApiResponseMetadataFactory.InspectReturnOperation(
                 symbolCache,
-                compilation.GetSemanticModel(syntaxTree),
-                returnStatement,
-                CancellationToken.None);
+                returnOperation);
 
             // Assert
             Assert.Null(actualResponseMetadata);
@@ -288,13 +288,34 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 {
                     Assert.False(metadata.IsDefaultResponse);
                     Assert.Equal(204, metadata.StatusCode);
-                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM1"], metadata.ReturnStatement.GetLocation());
+                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM1"], metadata.ReturnOperation.Syntax.GetLocation());
 
                 },
                 metadata =>
                 {
                     Assert.True(metadata.IsDefaultResponse);
-                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM2"], metadata.ReturnStatement.GetLocation());
+                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM2"], metadata.ReturnOperation.Syntax.GetLocation());
+                });
+        }
+
+        [Fact]
+        public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningOkResultExpression()
+        {
+            // Arrange
+            var typeName = typeof(TryGetActualResponseMetadataController).FullName;
+            var methodName = nameof(TryGetActualResponseMetadataController.ActionWithActionResultOfTReturningOkResultExpression);
+
+            // Act
+            var (success, responseMetadatas, _) = await TryGetActualResponseMetadata(typeName, methodName);
+
+            // Assert
+            Assert.True(success);
+            Assert.Collection(
+                responseMetadatas,
+                metadata =>
+                {
+                    Assert.False(metadata.IsDefaultResponse);
+                    Assert.Equal(200, metadata.StatusCode);
                 });
         }
 
@@ -311,14 +332,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             var syntaxTree = method.DeclaringSyntaxReferences[0].SyntaxTree;
             var methodSyntax = (MethodDeclarationSyntax)syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
-            var semanticModel = compilation.GetSemanticModel(syntaxTree);
+            var methodOperation = (IMethodBodyBaseOperation)compilation.GetSemanticModel(syntaxTree).GetOperation(methodSyntax);
 
-            var result = ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, semanticModel, methodSyntax, CancellationToken.None, out var responseMetadatas);
+            var result = ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, methodOperation, CancellationToken.None, out var responseMetadatas);
 
             return (result, responseMetadatas, testSource);
         }
 
-        private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax([CallerMemberName]string test = null)
+        private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax([CallerMemberName] string test = null)
         {
             // Arrange
             var compilation = await GetCompilation("InspectReturnExpressionTests");
@@ -330,12 +351,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var method = (IMethodSymbol)Assert.Single(controllerType.GetMembers(test));
             var methodSyntax = syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
             var returnStatement = methodSyntax.DescendantNodes().OfType<ReturnStatementSyntax>().First();
+            var returnOperation = (IReturnOperation)compilation.GetSemanticModel(syntaxTree).GetOperation(returnStatement);
 
-            return ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
+            return ActualApiResponseMetadataFactory.InspectReturnOperation(
                 symbolCache,
-                compilation.GetSemanticModel(syntaxTree),
-                returnStatement,
-                CancellationToken.None);
+                returnOperation);
         }
 
         private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax(string source, string test)
@@ -350,12 +370,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var method = (IMethodSymbol)returnType.GetMembers().First();
             var methodSyntax = syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
             var returnStatement = methodSyntax.DescendantNodes().OfType<ReturnStatementSyntax>().First();
+            var returnOperation = (IReturnOperation)compilation.GetSemanticModel(syntaxTree).GetOperation(returnStatement);
 
-            return ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
+            return ActualApiResponseMetadataFactory.InspectReturnOperation(
                 symbolCache,
-                compilation.GetSemanticModel(syntaxTree),
-                returnStatement,
-                CancellationToken.None);
+                returnOperation);
         }
 
         private Task<Compilation> GetCompilation(string test)
