@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Rendering;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -475,11 +476,16 @@ namespace Microsoft.AspNetCore.Components.Routing
         private static IEnumerable<(string key, object value)> GetSuppliedParameters<TComponent>(string query) where TComponent : IComponent
         {
             var supplier = QueryParameterValueSupplier.ForType(typeof(TComponent));
-            var values = new Dictionary<string, object>(StringComparer.Ordinal);
-            supplier.AddParametersFromQueryString(values, query.AsMemory());
-            return values
-                .OrderBy(pair => pair.Key) // The order isn't defined, so use alphabetical for tests
-                .Select(pair => (pair.Key, pair.Value))
+            using var builder = new RenderTreeBuilder();
+            builder.OpenComponent<TComponent>(0);
+            supplier.RenderParametersFromQueryString(builder, query.AsMemory());
+            builder.CloseComponent();
+
+            var frames = builder.GetFrames();
+            return frames.Array.Take(frames.Count)
+                .Where(frame => frame.FrameType == RenderTree.RenderTreeFrameType.Attribute)
+                .Select(frame => (frame.AttributeName, frame.AttributeValue))
+                .OrderBy(pair => pair.AttributeName) // The order isn't defined, so use alphabetical for tests
                 .ToList();
         }
 

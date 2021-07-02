@@ -100,12 +100,9 @@ namespace Microsoft.AspNetCore.Components
             {
                 var url = NavigationManager.Uri;
                 var queryStartPos = url.IndexOf('?');
-                var query = queryStartPos >= 0 ? url.AsMemory(queryStartPos) : default;
-                var values = new Dictionary<string, object?>(StringComparer.Ordinal);
-                queryParameterSupplier.AddParametersFromQueryString(values, query);
-                foreach (var pair in values)
+                if (queryStartPos >= 0)
                 {
-                    builder.AddAttribute(0, pair.Key, pair.Value);
+                    queryParameterSupplier.RenderParametersFromQueryString(builder, url.AsMemory(queryStartPos));
                 }
             }
 

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Reflection;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        public void AddParametersFromQueryString(Dictionary<string, object?> target, ReadOnlyMemory<char> queryString)
+        public void RenderParametersFromQueryString(RenderTreeBuilder builder, ReadOnlyMemory<char> queryString)
         {
             // Temporary workspace in which we accumulate the data while walking the querystring.
             var valuesByDestination = ArrayPool<StringSegmentAccumulator>.Shared.Rent(_destinationsCount);
@@ -76,17 +77,19 @@ namespace Microsoft.AspNetCore.Components.Routing
                     }
                 }
 
-                // Finally, populate the target dictionary by parsing all the string segments and building arrays
+                // Finally, emit the parameter attributes by parsing all the string segments and building arrays
                 for (var destinationIndex = 0; destinationIndex < _destinations.Length; destinationIndex++)
                 {
                     ref var destination = ref _destinations[destinationIndex];
                     ref var values = ref valuesByDestination[destination.Index];
 
-                    target[destination.ComponentParameterName] = destination.IsArray
+                    var parsedValue = destination.IsArray
                         ? destination.Parser.ParseMultiple(values, destination.ComponentParameterName)
                         : values.Count == 0
                             ? default
                             : destination.Parser.Parse(values[0].Span, destination.ComponentParameterName);
+
+                    builder.AddAttribute(0, destination.ComponentParameterName, parsedValue);
                 }
             }
             finally

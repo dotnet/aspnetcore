@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
         // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
         // the same name. We don't give you a way to express this in code (would create duplicate properties),
         // and we don't have the ability to represent it in our data structures.
-        private readonly static ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
+        private static readonly ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
             = new ConcurrentDictionary<Type, WritersForType>();
 
         public static void ClearCache() => _cachedWritersByType.Clear();
