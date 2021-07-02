@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
     {
         /// <summary>
         /// For framework use only.
-        /// </summary>z
+        /// </summary>
         [JSInvokable(nameof(NotifyLocationChanged))]
         public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
         {
