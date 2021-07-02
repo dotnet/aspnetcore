@@ -2,20 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Reflection;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
     internal sealed class QueryParameterValueSupplier
     {
         private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
-        private readonly QueryParameterMapping[] _mappings;
-        private readonly Dictionary<QueryParameterDestination, StringValues> _assignmentsTemplate;
+        private readonly SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>> _destinationsByQueryParameterName;
+        private readonly QueryParameterDestination[] _destinations;
+        private readonly int _destinationsCount;
 
         public static QueryParameterValueSupplier? ForType(Type componentType)
         {
@@ -23,93 +24,82 @@ namespace Microsoft.AspNetCore.Components.Routing
             {
                 // If the component doesn't have any query parameters, store a null value for it
                 // so we know the upstream code can't try to render query parameter frames for it.
-                var mappings = FindQueryParameterMappings(componentType);
-                instanceOrNull = mappings.Length == 0 ? null : new QueryParameterValueSupplier(mappings);
+                var destinations = BuildQueryParameterMappings(componentType, out var destinationsCount);
+                instanceOrNull = destinations == null ? null : new QueryParameterValueSupplier(destinations, destinationsCount);
                 _cacheByType.TryAdd(componentType, instanceOrNull);
             }
 
             return instanceOrNull;
         }
 
-        private QueryParameterValueSupplier(QueryParameterMapping[] mappings)
+        private QueryParameterValueSupplier(SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>> destinationsByQueryParameterName, int destinationsCount)
         {
-            _mappings = mappings;
-
-            // We must always supply a value for all parameters that can be populated from the querystring
-            // (so that, if no value is supplied, the parameter is reset back to a default). So, precompute
-            // a SortedList with nulls for all values. We can then shallow-clone this on each navigation.
-            _assignmentsTemplate = new();
-            foreach (var mapping in _mappings)
+            _destinationsByQueryParameterName = destinationsByQueryParameterName;
+            _destinationsCount = destinationsCount;
+            _destinations = new QueryParameterDestination[destinationsCount];
+            var index = 0;
+            foreach (var group in destinationsByQueryParameterName)
             {
-                foreach (var destination in mapping.Destinations)
+                foreach (var destination in CollectionsMarshal.AsSpan(group.Value))
                 {
-                    _assignmentsTemplate.Add(destination, default);
+                    _destinations[index++] = destination;
                 }
             }
         }
 
-        public void RenderParameterAttributes(RenderTreeBuilder builder, ReadOnlyMemory<char> queryString)
+        public void AddParametersFromQueryString(Dictionary<string, object?> target, ReadOnlyMemory<char> queryString)
         {
-            var assignmentsByDestination = new Dictionary<QueryParameterDestination, StringValues>(_assignmentsTemplate);
+            // Temporary workspace in which we accumulate the data while walking the querystring.
+            var valuesByDestination = ArrayPool<StringSegmentAccumulator>.Shared.Rent(_destinationsCount);
 
-            // Populate the assignments dictionary in a single pass through the querystring
-            var queryStringEnumerable = new QueryStringEnumerable(queryString);
-            foreach (var suppliedPair in queryStringEnumerable)
+            try
             {
-                // The reason we do an O(N) linear search rather than something like a dictionary lookup is
-                // that _mappings will usually contain < 5 entries, so a series of string comparisons will
-                // likely be much faster than hashing a potentially long user-supplied ReadOnlySpan<char>.
-                // If this becomes limiting, consider other options like a SortedList<string> so we can
-                // seek into it by binary search.
-                foreach (var candidateMapping in _mappings)
+                // Capture values by destination in a single pass through the querystring
+                var queryStringEnumerable = new QueryStringEnumerable(queryString);
+                foreach (var suppliedPair in queryStringEnumerable)
                 {
-                    // Open question: should we support encoded parameter names?
-                    // - It's very unlikely that anyone would want to have parameter names that require encoding,
-                    //   given that they are mapping them to C# properties and not some more complex data structure
-                    // - Doing the comparisons without decoding is better for perf, especially against hostile input
-                    // - We could add support for decoding later non-breakingly
-                    // ... so I think for now, I'm on the side of not supporting encoded parameter names.
-                    if (suppliedPair.EncodedName.Span.Equals(candidateMapping.QueryParameterName, StringComparison.OrdinalIgnoreCase))
+                    if (_destinationsByQueryParameterName.TryGetValue(suppliedPair.EncodedName, out var destinations))
                     {
                         var decodedValue = suppliedPair.DecodeValue();
-                        foreach (var destination in candidateMapping.Destinations)
+
+                        foreach (ref var destination in CollectionsMarshal.AsSpan(destinations))
                         {
                             if (destination.IsArray)
                             {
-                                // Collect as many values as we receive
-                                assignmentsByDestination[destination] = StringValues.Concat(
-                                    assignmentsByDestination[destination],
-                                    decodedValue.ToString());
+                                valuesByDestination[destination.Index].Add(decodedValue);
                             }
                             else
                             {
-                                // TODO: Consider some mechanism for not stringifying this span and retaining it as span
-                                // for the parser
-                                assignmentsByDestination[destination] = new StringValues(decodedValue.ToString());
+                                valuesByDestination[destination.Index].SetSingle(decodedValue);
                             }
                         }
-
-                        break;
                     }
                 }
-            }
 
-            // Finally actually emit the rendertree frames
-            foreach (var (destination, value) in assignmentsByDestination)
+                // Finally, populate the target dictionary by parsing all the string segments and building arrays
+                for (var destinationIndex = 0; destinationIndex < _destinations.Length; destinationIndex++)
+                {
+                    ref var destination = ref _destinations[destinationIndex];
+                    ref var values = ref valuesByDestination[destination.Index];
+
+                    target[destination.ComponentParameterName] = destination.IsArray
+                        ? destination.Parser.ParseMultiple(values, destination.ComponentParameterName)
+                        : values.Count == 0
+                            ? default
+                            : destination.Parser.Parse(values[0].Span, destination.ComponentParameterName);
+                }
+            }
+            finally
             {
-                var valueToSupply = destination.IsArray
-                    ? destination.Parser.ParseMultiple(value, destination.ComponentParameterName)
-                    : value.Count == 0
-                        ? default
-                        : destination.Parser.Parse(value[0], destination.ComponentParameterName);
-                builder.AddAttribute(0, destination.ComponentParameterName, valueToSupply);
+                ArrayPool<StringSegmentAccumulator>.Shared.Return(valuesByDestination, true);
             }
         }
 
-        private static QueryParameterMapping[] FindQueryParameterMappings(Type componentType)
+        private static SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>>? BuildQueryParameterMappings(Type componentType, out int destinationsCount)
         {
             var candidateProperties = MemberAssignment.GetPropertiesIncludingInherited(componentType, ComponentProperties.BindablePropertyFlags);
-            Dictionary<string, List<QueryParameterDestination>>? mappingsByQueryParameterName = null;
+            SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>>? result = null;
+            destinationsCount = 0;
 
             foreach (var propertyInfo in candidateProperties)
             {
@@ -123,16 +113,9 @@ namespace Microsoft.AspNetCore.Components.Routing
                 {
                     // Found a parameter that's assignable from querystring
                     var componentParameterName = propertyInfo.Name;
-                    var queryParameterName = string.IsNullOrEmpty(fromQueryAttribute.Name)
+                    var queryParameterName = (string.IsNullOrEmpty(fromQueryAttribute.Name)
                         ? componentParameterName
-                        : fromQueryAttribute.Name;
-
-                    // Lazily create a destination list this querystring parameter name
-                    mappingsByQueryParameterName ??= new(StringComparer.OrdinalIgnoreCase);
-                    if (!mappingsByQueryParameterName.ContainsKey(queryParameterName))
-                    {
-                        mappingsByQueryParameterName.Add(queryParameterName, new());
-                    }
+                        : fromQueryAttribute.Name).AsMemory();
 
                     // If it's an array type, capture that info and prepare to parse the element type
                     Type effectiveType = propertyInfo.PropertyType;
@@ -149,32 +132,40 @@ namespace Microsoft.AspNetCore.Components.Routing
                     }
 
                     // Append a destination list entry for this component parameter name
-                    mappingsByQueryParameterName[queryParameterName].Add(
-                        new QueryParameterDestination(componentParameterName, parser, isArray));
+                    result ??= new(QueryParameterNameComparer.Instance);
+                    if (!result.TryGetValue(queryParameterName, out var list))
+                    {
+                        result[queryParameterName] = list = new();
+                    }
+                    list.Add(new QueryParameterDestination(componentParameterName, parser, isArray, destinationsCount++));
                 }
             }
 
-            if (mappingsByQueryParameterName == null)
-            {
-                return Array.Empty<QueryParameterMapping>();
-            }
-            else
-            {
-                // Flatten the dictionary to a plain array. For the expected usage patterns, this will
-                // be faster to seek into (see comment above).
-                var result = new QueryParameterMapping[mappingsByQueryParameterName.Count];
-                var index = 0;
-                foreach (var (name, destinations) in mappingsByQueryParameterName)
-                {
-                    result[index++] = new QueryParameterMapping(name, destinations.ToArray());
-                }
+            return result;
+        }
 
-                return result;
+        private readonly struct QueryParameterDestination
+        {
+            public readonly string ComponentParameterName;
+            public readonly UrlValueConstraint Parser;
+            public readonly bool IsArray;
+            public readonly int Index;
+
+            public QueryParameterDestination(string componentParameterName, UrlValueConstraint parser, bool isArray, int index)
+            {
+                ComponentParameterName = componentParameterName;
+                Parser = parser;
+                IsArray = isArray;
+                Index = index;
             }
         }
 
-        private record QueryParameterMapping(string QueryParameterName, QueryParameterDestination[] Destinations);
+        private class QueryParameterNameComparer : IComparer<ReadOnlyMemory<char>>
+        {
+            public static readonly QueryParameterNameComparer Instance = new();
 
-        private record QueryParameterDestination(string ComponentParameterName, UrlValueConstraint Parser, bool IsArray);
+            public int Compare(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
+                => x.Span.CompareTo(y.Span, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

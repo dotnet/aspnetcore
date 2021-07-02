@@ -4,6 +4,7 @@
 #nullable disable warnings
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -100,7 +101,12 @@ namespace Microsoft.AspNetCore.Components
                 var url = NavigationManager.Uri;
                 var queryStartPos = url.IndexOf('?');
                 var query = queryStartPos >= 0 ? url.AsMemory(queryStartPos) : default;
-                queryParameterSupplier.RenderParameterAttributes(builder, query);
+                var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+                queryParameterSupplier.AddParametersFromQueryString(values, query);
+                foreach (var pair in values)
+                {
+                    builder.AddAttribute(0, pair.Key, pair.Value);
+                }
             }
 
             builder.CloseComponent();

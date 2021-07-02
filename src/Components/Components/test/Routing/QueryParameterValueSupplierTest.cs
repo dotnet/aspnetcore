@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Components.Rendering;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -232,18 +231,26 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         class MapSingleQueryParameterToMultipleProperties : ComponentBase
         {
-            [Parameter, SupplyParameterFromQuery(Name = "q")] public DateTime ValueAsDateTime { get; set; }
-            [Parameter, SupplyParameterFromQuery(Name = "q")] public string ValueAsString { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "a")] public int ValueAsInt { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "b")] public DateTime ValueAsDateTime { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "a")] public long ValueAsLong { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "b")] public string ValueAsString { get; set; }
         }
 
         [Fact]
         public void CanMapSingleQueryParameterToMultipleProperties()
         {
-            var query = "?q=2020-01-02+03:04:05.678Z";
+            var query = "?a=12345&b=2020-01-02+03:04:05.678Z";
             Assert.Collection(GetSuppliedParameters<MapSingleQueryParameterToMultipleProperties>(query),
                 AssertKeyValuePair(
                     nameof(MapSingleQueryParameterToMultipleProperties.ValueAsDateTime),
                     new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc)),
+                AssertKeyValuePair(
+                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsInt),
+                    12345),
+                AssertKeyValuePair(
+                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsLong),
+                    12345L),
                 AssertKeyValuePair(
                     nameof(MapSingleQueryParameterToMultipleProperties.ValueAsString),
                     "2020-01-02 03:04:05.678Z"));
@@ -446,7 +453,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(KeyCaseMatching.KeyTwo), 2));
         }
 
-        private class ArrayValueOverwriting : ComponentBase
+        private class SingleValueOverwriting : ComponentBase
         {
             [Parameter, SupplyParameterFromQuery] public int Age { get; set; }
             [Parameter, SupplyParameterFromQuery] public int? Id { get; set; }
@@ -459,26 +466,20 @@ namespace Microsoft.AspNetCore.Components.Routing
             // For simplicity and speed, the value assignment logic doesn't check if the a single-valued destination is
             // already populated, and just overwrites in a left-to-right manner. For nullable values it's possible to
             // overwrite a value with null, or a string with empty.
-            Assert.Collection(GetSuppliedParameters<ArrayValueOverwriting>($"?age=123&age=456&age=789&id=1&id&name=Bobbins&name"),
-                AssertKeyValuePair(nameof(ArrayValueOverwriting.Age), 789),
-                AssertKeyValuePair(nameof(ArrayValueOverwriting.Id), (int?)null),
-                AssertKeyValuePair(nameof(ArrayValueOverwriting.Name), string.Empty));
+            Assert.Collection(GetSuppliedParameters<SingleValueOverwriting>($"?age=123&age=456&age=789&id=1&id&name=Bobbins&name"),
+                AssertKeyValuePair(nameof(SingleValueOverwriting.Age), 789),
+                AssertKeyValuePair(nameof(SingleValueOverwriting.Id), (int?)null),
+                AssertKeyValuePair(nameof(SingleValueOverwriting.Name), string.Empty));
         }
 
         private static IEnumerable<(string key, object value)> GetSuppliedParameters<TComponent>(string query) where TComponent : IComponent
         {
             var supplier = QueryParameterValueSupplier.ForType(typeof(TComponent));
-            using var renderTreeBuilder = new RenderTreeBuilder();
-            renderTreeBuilder.OpenComponent<TComponent>(0);
-            supplier.RenderParameterAttributes(renderTreeBuilder, query.AsMemory());
-            renderTreeBuilder.CloseComponent();
-
-            var frames = renderTreeBuilder.GetFrames();
-            return frames.Array
-                .Take(frames.Count)
-                .Where(f => f.FrameType == RenderTree.RenderTreeFrameType.Attribute)
-                .Select(f => (f.AttributeName, f.AttributeValue))
-                .OrderBy(f => f.AttributeName) // The order isn't defined, so use alphabetical for tests
+            var values = new Dictionary<string, object>(StringComparer.Ordinal);
+            supplier.AddParametersFromQueryString(values, query.AsMemory());
+            return values
+                .OrderBy(pair => pair.Key) // The order isn't defined, so use alphabetical for tests
+                .Select(pair => (pair.Key, pair.Value))
                 .ToList();
         }
 

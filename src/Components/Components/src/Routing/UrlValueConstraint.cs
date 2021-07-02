@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public abstract object? Parse(ReadOnlySpan<char> value, string destinationNameForMessage);
 
-        public abstract Array ParseMultiple(StringValues values, string destinationNameForMessage);
+        public abstract Array ParseMultiple(StringSegmentAccumulator values, string destinationNameForMessage);
 
         private class TypedUrlValueConstraint<T> : UrlValueConstraint
         {
@@ -119,23 +119,22 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return parsedValue;
             }
 
-            public override Array ParseMultiple(StringValues values, string destinationNameForMessage)
+            public override Array ParseMultiple(StringSegmentAccumulator values, string destinationNameForMessage)
             {
-                if (values.Count == 0)
+                var count = values.Count;
+                if (count == 0)
                 {
                     return Array.Empty<T>();
                 }
 
-                var result = new T[values.Count];
+                var result = new T?[count];
 
-                for (var i = 0; i < values.Count; i++)
+                for (var i = 0; i < count; i++)
                 {
-                    if (!_parser(values[i], out var parsedValue))
+                    if (!_parser(values[i].Span, out result[i]))
                     {
                         throw new InvalidOperationException($"Cannot parse the value '{values[i]}' as type '{typeof(T)}' for '{destinationNameForMessage}'.");
                     }
-
-                    result[i] = parsedValue;
                 }
 
                 return result;
