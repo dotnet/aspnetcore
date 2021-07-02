@@ -4,11 +4,13 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private readonly QueryParameterDestination[] _destinations;
         private readonly int _destinationsCount;
 
-        public static QueryParameterValueSupplier? ForType(Type componentType)
+        public static QueryParameterValueSupplier? ForType([DynamicallyAccessedMembers(Component)] Type componentType)
         {
             if (!_cacheByType.TryGetValue(componentType, out var instanceOrNull))
             {
@@ -110,7 +112,9 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private static SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>>? BuildQueryParameterMappings(Type componentType, out int destinationsCount)
+        private static SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>>? BuildQueryParameterMappings(
+            [DynamicallyAccessedMembers(Component)] Type componentType,
+            out int destinationsCount)
         {
             var candidateProperties = MemberAssignment.GetPropertiesIncludingInherited(componentType, ComponentProperties.BindablePropertyFlags);
             SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>>? result = null;
