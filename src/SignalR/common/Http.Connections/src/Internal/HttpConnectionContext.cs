@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private IDuplexPipe _application;
         private IDictionary<object, object?>? _items;
         private DateTimeOffset? _authenticationExpiration;
-        private CancellationTokenSource _connectionClosedTokenSource;
-        private CancellationTokenSource _connectionCloseRequested;
+        private readonly CancellationTokenSource _connectionClosedTokenSource;
+        private readonly CancellationTokenSource _connectionCloseRequested;
 
         private CancellationTokenSource? _sendCts;
         private bool _activeSend;

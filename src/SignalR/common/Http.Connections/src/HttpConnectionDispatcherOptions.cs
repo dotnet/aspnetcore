@@ -96,11 +96,11 @@ namespace Microsoft.AspNetCore.Http.Connections
         }
 
         /// <summary>
-        /// Authenticated connections that set the <see cref="AuthenticationProperties.ExpiresUtc"/> value will be closed
+        /// Authenticated connections whose token sets the <see cref="AuthenticationProperties.ExpiresUtc"/> value will be closed
         /// and allowed to reconnect when the token expires.
         /// </summary>
         /// <remarks>
-        /// Closed connections will not see messages sent while closed.
+        /// Closed connections will miss messages sent while closed.
         /// </remarks>
         public bool EnableAuthenticationExpiration { get; set; }
 

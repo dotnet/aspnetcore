@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 LoggerMessage.Define(LogLevel.Trace, new EventId(10, "HeartBeatEnded"), "Ending connection heartbeat.");
 
             private static readonly Action<ILogger, string, Exception?> _authenticationExpired =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(10, "AuthenticationExpired"), "Connection {TransportConnectionId} closing because the authentication token has expired.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(11, "AuthenticationExpired"), "Connection {TransportConnectionId} closing because the authentication token has expired.");
 
             public static void CreatedNewConnection(ILogger logger, string connectionId)
             {
