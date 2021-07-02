@@ -725,6 +725,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             if (Ssse3.IsSupported)
             {
+                // The constant inline vectors are read from the data section without any additional
+                // moves. See https://github.com/dotnet/runtime/issues/44115 Case 1.1 for further details.
+
                 var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalarUnsafe(tupleNumber).AsByte(), Vector128.Create(
                     0xF, 0xF, 3, 0xF,
                     0xF, 0xF, 2, 0xF,
