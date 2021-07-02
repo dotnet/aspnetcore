@@ -278,7 +278,7 @@ export class BrowserRenderer {
       return false;
     }
 
-    if (selectElem.type === 'multiple-select') {
+    if (isMultipleSelectElement(selectElem)) {
       optionElement.selected = selectElem[deferredValuePropname].indexOf(optionElement.value) !== -1;
     } else {
       if (selectElem[deferredValuePropname] !== optionElement.value) {
@@ -401,7 +401,7 @@ export class BrowserRenderer {
         // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
         // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
 
-        if (value && element instanceof HTMLSelectElement && element.type === 'select-multiple') {
+        if (value && element instanceof HTMLSelectElement && isMultipleSelectElement(element)) {
           value = JSON.parse(value);
         }
 
@@ -530,6 +530,10 @@ function stripOnPrefix(attributeName: string) {
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
 
+function isMultipleSelectElement(element: HTMLSelectElement) {
+  return element.type === 'select-multiple';
+}
+
 function setSingleSelectElementValue(element: HTMLSelectElement, value: string | null) {
   // There's no sensible way to represent a select option with value 'null', because
   // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
@@ -551,7 +555,7 @@ function setMultipleSelectElementValue(element: HTMLSelectElement, value: string
 
 function setDeferredElementValue(element: Element, value: any) {
   if (element instanceof HTMLSelectElement) {
-    if (element.type === 'select-multiple') {
+    if (isMultipleSelectElement(element)) {
       setMultipleSelectElementValue(element, value);
     } else {
       setSingleSelectElementValue(element, value);
