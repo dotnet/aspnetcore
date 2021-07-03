@@ -22,12 +22,15 @@ namespace Microsoft.AspNetCore.Components.Web
         internal static DragEventArgs Read(JsonElement jsonElement)
         {
             var eventArgs = new DragEventArgs();
-            MouseEventArgsReader.Read(jsonElement, eventArgs);
             foreach (var property in jsonElement.EnumerateObject())
             {
                 if (property.NameEquals(DataTransfer.EncodedUtf8Bytes))
                 {
                     eventArgs.DataTransfer = ReadDataTransfer(property.Value);
+                }
+                else
+                {
+                    MouseEventArgsReader.ReadProperty(eventArgs, property);
                 }
             }
 
@@ -66,6 +69,10 @@ namespace Microsoft.AspNetCore.Components.Web
                 {
                     dataTransfer.Types = ReadStringArray(property.Value);
                 }
+                else
+                {
+                    throw new JsonException($"Unknown property {property.Name}");
+                }
             }
 
             return dataTransfer;
@@ -83,6 +90,10 @@ namespace Microsoft.AspNetCore.Components.Web
                 else if (property.NameEquals(Type.EncodedUtf8Bytes))
                 {
                     item.Type = property.Value.GetString()!;
+                }
+                else
+                {
+                    throw new JsonException($"Unknown property {property.Name}");
                 }
             }
 
