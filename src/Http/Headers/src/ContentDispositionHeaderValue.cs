@@ -617,7 +617,14 @@ namespace Microsoft.Net.Http.Headers
                 //      ; token except ( "*" / "'" / "%" )
                 if (c > 0x7F) // Encodes as multiple utf-8 bytes
                 {
-                    var bytes = Encoding.UTF8.GetBytes(c.ToString());
+                    var startPos = i;
+                    while (i + 1 < input.Length && input[i + 1] > 0x7F)
+                    {
+                        i++;
+                    }
+
+                    var unicodePart = input.Value.Substring(startPos, i - startPos + 1);
+                    var bytes = Encoding.UTF8.GetBytes(unicodePart);
                     foreach (byte b in bytes)
                     {
                         HexEscape(builder, (char)b);
