@@ -28,7 +28,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 #endif
 #if (GenerateGraph)
-using Microsoft.Graph;
+using Graph = Microsoft.Graph;
 #endif
 #if (IndividualLocalAuth)
 using Company.WebApplication1.Data;
