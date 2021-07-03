@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
-                    var logs = new RemoteLogs(driver);
+                    var logs = driver.Manage().Logs;
 
                     return (driver, logs);
                 }
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     // Make sure implicit waits are disabled as they don't mix well with explicit waiting
                     // see https://www.selenium.dev/documentation/en/webdriver/waits/#implicit-wait
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.Zero;
-                    var logs = new RemoteLogs(driver);
+                    var logs = driver.Manage().Logs;
 
                     return (driver, logs);
                 }
