@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal class ModelEndpointDataSource : EndpointDataSource
     {
-        private List<DefaultEndpointConventionBuilder> _endpointConventionBuilders;
+        private readonly List<DefaultEndpointConventionBuilder> _endpointConventionBuilders;
 
         public ModelEndpointDataSource()
         {

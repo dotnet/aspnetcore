@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         private static EndpointModelMetadata CreateModelMetadata(Type type) =>
-            new EndpointModelMetadata(ModelMetadataIdentity.ForType(type));
+            new(ModelMetadataIdentity.ForType(type));
 
         private static void AddResponseContentTypes(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
         {
