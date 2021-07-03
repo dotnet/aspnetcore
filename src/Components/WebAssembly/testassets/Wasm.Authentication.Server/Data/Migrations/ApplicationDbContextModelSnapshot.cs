@@ -21,7 +21,7 @@ namespace Wasm.Authentication.Server.Data.Migrations
                     b.Property<string>("UserCode")
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
-                        
+
                     b.Property<string>("ClientId")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -157,7 +157,7 @@ namespace Wasm.Authentication.Server.Data.Migrations
 
                     b.ToTable("PersistedGrants");
                 });
-                
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
