@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder, IDisposable
     {
         private readonly ConfigurationSources _sources;
+        private readonly ConfigurationBuilderProperties _properties;
 
         private readonly object _providerLock = new();
         private readonly List<IConfigurationProvider> _providers = new();
@@ -30,6 +32,7 @@ namespace Microsoft.AspNetCore.Builder
         public Configuration()
         {
             _sources = new ConfigurationSources(this);
+            _properties = new ConfigurationBuilderProperties(this);
 
             // Make sure there's some default storage since there are no default providers.
             this.AddInMemoryCollection();
@@ -92,7 +95,7 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        IDictionary<string, object> IConfigurationBuilder.Properties { get; } = new Dictionary<string, object>();
+        IDictionary<string, object> IConfigurationBuilder.Properties => _properties;
 
         IList<IConfigurationSource> IConfigurationBuilder.Sources => _sources;
 
@@ -161,7 +164,7 @@ namespace Microsoft.AspNetCore.Builder
             RaiseChanged();
         }
 
-        // Something other than Add was called on IConfigurationBuilder.Sources.
+        // Something other than Add was called on IConfigurationBuilder.Sources or the FileProvider has been set to a new value.
         // This is unusual, so we don't bother optimizing it.
         private void NotifySourcesChanged()
         {
@@ -186,7 +189,6 @@ namespace Microsoft.AspNetCore.Builder
 
             RaiseChanged();
         }
-
 
         private void DisposeRegistrationsAndProvidersUnsynchronized()
         {
@@ -281,6 +283,110 @@ namespace Microsoft.AspNetCore.Builder
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
+            }
+        }
+
+        private class ConfigurationBuilderProperties : IDictionary<string, object>
+        {
+            private const string FileProviderKey = "FileProvider";
+
+            private readonly Dictionary<string, object> _properties = new();
+            private readonly Configuration _config;
+            private object? _fileProvider;
+
+            public ConfigurationBuilderProperties(Configuration config)
+            {
+                _config = config;
+            }
+
+            public object this[string key]
+            {
+                get => _properties[key];
+                set
+                {
+                    _properties[key] = value;
+                    CheckForFileProviderChange(key, value);
+                }
+            }
+
+            public ICollection<string> Keys => _properties.Keys;
+
+            public ICollection<object> Values => _properties.Values;
+
+            public int Count => _properties.Count;
+
+            public bool IsReadOnly => false;
+
+            public void Add(string key, object value)
+            {
+                _properties.Add(key, value);
+                CheckForFileProviderChange(key, value);
+            }
+
+            public void Add(KeyValuePair<string, object> item)
+            {
+                ((IDictionary<string, object>)_properties).Add(item);
+                CheckForFileProviderChange(item.Key, item.Value);
+            }
+
+            public void Clear()
+            {
+                _properties.Clear();
+                CheckForFileProviderChange(FileProviderKey, null);
+            }
+
+            public bool Contains(KeyValuePair<string, object> item)
+            {
+                return _properties.Contains(item);
+            }
+
+            public bool ContainsKey(string key)
+            {
+                return _properties.ContainsKey(key);
+            }
+
+            public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+            {
+                ((IDictionary<string, object>)_properties).CopyTo(array, arrayIndex);
+            }
+
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+            {
+                return _properties.GetEnumerator();
+            }
+
+            public bool Remove(string key)
+            {
+                var wasRemoved = _properties.Remove(key);
+                CheckForFileProviderChange(key, null);
+                return wasRemoved;
+            }
+
+            public bool Remove(KeyValuePair<string, object> item)
+            {
+                var wasRemoved = ((IDictionary<string, object>)_properties).Remove(item);
+                CheckForFileProviderChange(item.Key, null);
+                return wasRemoved;
+            }
+
+            public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+            {
+                return _properties.TryGetValue(key, out value);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _properties.GetEnumerator();
+            }
+
+            private void CheckForFileProviderChange(string key, object? value)
+            {
+                if (key == FileProviderKey && !ReferenceEquals(value, _fileProvider))
+                {
+                    _fileProvider = value;
+                    // Reload all the sources since the base path has likely changed.
+                    _config.NotifySourcesChanged();
+                }
             }
         }
     }

@@ -1091,7 +1091,6 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Same(config, ((IConfigurationBuilder)config).Build());
         }
 
-
         private static string Get(IConfigurationProvider provider, string key)
         {
             string value;
