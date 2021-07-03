@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Internal
+namespace Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal
 {
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

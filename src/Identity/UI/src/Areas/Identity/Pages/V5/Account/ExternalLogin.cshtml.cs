@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
+namespace Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal
 {
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

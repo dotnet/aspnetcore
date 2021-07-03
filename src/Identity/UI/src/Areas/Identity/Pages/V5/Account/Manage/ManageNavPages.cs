@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
+namespace Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal
 {
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
