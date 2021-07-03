@@ -40,6 +40,10 @@ namespace Microsoft.AspNetCore.Components.Web
                 {
                     eventArgs.Type = property.Value.GetString()!;
                 }
+                else
+                {
+                    throw new JsonException($"Unknown property {property.Name}");
+                }
             }
             return eventArgs;
         }

@@ -38,6 +38,10 @@ namespace Microsoft.AspNetCore.Components.Web
                 {
                     descriptor.EventFieldInfo = ReadEventFieldInfo(property.Value);
                 }
+                else
+                {
+                    throw new JsonException($"Unknown property {property.Name}");
+                }
             }
 
             return descriptor;
@@ -57,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 {
                     eventFieldInfo.ComponentId = property.Value.GetInt32();
                 }
-                if (property.NameEquals(FieldValueKey.EncodedUtf8Bytes))
+                else if (property.NameEquals(FieldValueKey.EncodedUtf8Bytes))
                 {
                     if (property.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
                     {
@@ -67,6 +71,10 @@ namespace Microsoft.AspNetCore.Components.Web
                     {
                         eventFieldInfo.FieldValue = property.Value.GetString()!;
                     }
+                }
+                else
+                {
+                    throw new JsonException($"Unknown property {property.Name}");
                 }
             }
 

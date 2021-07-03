@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Components.Web
         internal static PointerEventArgs Read(JsonElement jsonElement)
         {
             var eventArgs = new PointerEventArgs();
-            MouseEventArgsReader.Read(jsonElement, eventArgs);
 
             foreach (var property in jsonElement.EnumerateObject())
             {
@@ -56,6 +55,10 @@ namespace Microsoft.AspNetCore.Components.Web
                 else if (property.NameEquals(IsPrimary.EncodedUtf8Bytes))
                 {
                     eventArgs.IsPrimary = property.Value.GetBoolean();
+                }
+                else
+                {
+                    MouseEventArgsReader.ReadProperty(eventArgs, property);
                 }
             }
 

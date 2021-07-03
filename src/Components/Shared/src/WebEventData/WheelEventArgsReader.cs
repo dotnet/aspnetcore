@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Components.Web
         internal static WheelEventArgs Read(JsonElement jsonElement)
         {
             var eventArgs = new WheelEventArgs();
-            MouseEventArgsReader.Read(jsonElement, eventArgs);
 
             foreach (var property in jsonElement.EnumerateObject())
             {
@@ -37,6 +36,10 @@ namespace Microsoft.AspNetCore.Components.Web
                 else if (property.NameEquals(DeltaMode.EncodedUtf8Bytes))
                 {
                     eventArgs.DeltaMode = property.Value.GetInt64();
+                }
+                else
+                {
+                    MouseEventArgsReader.ReadProperty(eventArgs, property);
                 }
             }
 

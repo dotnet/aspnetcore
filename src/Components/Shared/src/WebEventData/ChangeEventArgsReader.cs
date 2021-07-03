@@ -36,6 +36,10 @@ namespace Microsoft.AspNetCore.Components.Web
                     }
                     return changeArgs;
                 }
+                else
+                {
+                    throw new JsonException($"Unknown property {property.Name}");
+                }
             }
 
             return changeArgs;
