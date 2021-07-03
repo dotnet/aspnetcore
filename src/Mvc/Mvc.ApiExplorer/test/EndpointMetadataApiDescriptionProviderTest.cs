@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -310,6 +311,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal("FOO", apiDescription.ActionDescriptor.DisplayName);
         }
 
+        [Fact]
+        public void AddsMetadataFromRouteEndpoint()
+        {
+            var apiDescription = GetApiDescription([ApiExplorerSettings(IgnoreApi = true)]() => { });
+
+            Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+            var apiExplorerSettings = apiDescription.ActionDescriptor.EndpointMetadata
+                .OfType<ApiExplorerSettingsAttribute>()
+                .FirstOrDefault();
+
+            Assert.NotNull(apiExplorerSettings);
+            Assert.True(apiExplorerSettings.IgnoreApi);
+        }
+
         private IList<ApiDescription> GetApiDescriptions(
             Delegate action,
             string pattern = null,
@@ -367,7 +383,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             public bool IsService(Type serviceType) => serviceType == typeof(IInferredServiceInterface);
         }
- 
+
         private class HostEnvironment : IHostEnvironment
         {
             public string EnvironmentName { get; set; }

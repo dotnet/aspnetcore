@@ -151,8 +151,10 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public struct Enumerator : IEnumerator<object?>
         {
+#pragma warning disable IDE0044
             // Intentionally not readonly to prevent defensive struct copies
             private object[] _items;
+#pragma warning restore IDE0044
             private int _index;
 
             internal Enumerator(EndpointMetadataCollection collection)
