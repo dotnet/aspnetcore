@@ -91,6 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {
+                    DisplayName = routeEndpoint.DisplayName,
                     RouteValues =
                     {
                         ["controller"] = controllerName,
