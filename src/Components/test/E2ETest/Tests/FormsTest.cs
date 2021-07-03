@@ -608,8 +608,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var rangeWithValueLast = appElement.FindElement(By.Id("range-value-last"));
 
             // Value never gets incorrectly clamped.
-            Browser.Equal("210", () => rangeWithValueFirst.GetProperty("value"));
-            Browser.Equal("210", () => rangeWithValueLast.GetProperty("value"));
+            Browser.Equal("210", () => rangeWithValueFirst.GetDomProperty("value"));
+            Browser.Equal("210", () => rangeWithValueLast.GetDomProperty("value"));
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
