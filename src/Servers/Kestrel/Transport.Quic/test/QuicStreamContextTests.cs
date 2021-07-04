@@ -94,6 +94,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.True(quicStreamContext.CanWrite);
             Assert.True(quicStreamContext.CanRead);
 
+            await quicStreamContext.DisposeAsync();
+
             return quicStreamContext;
         }
 
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
 
             // Input should be completed.
-            readResult = await serverStream.Transport.Input.ReadAsync();
+            readResult = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
 
             // Assert
             Assert.True(readResult.IsCompleted);

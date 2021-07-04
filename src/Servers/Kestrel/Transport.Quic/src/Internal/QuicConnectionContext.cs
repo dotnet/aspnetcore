@@ -77,12 +77,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 var stream = await _connection.AcceptStreamAsync(cancellationToken);
 
-                QuicStreamContext? context;
+                QuicStreamContext? context = null;
 
-                lock (_poolLock)
+                // Only use pool for bidirectional streams. Just a handful of unidirecitonal
+                // streams are created for a connection and they live for the lifetime of the connection.
+                if (stream.CanRead && stream.CanWrite)
                 {
-                    StreamPool.TryPop(out context);
+                    lock (_poolLock)
+                    {
+                        StreamPool.TryPop(out context);
+                    }
                 }
+
                 if (context == null)
                 {
                     context = new QuicStreamContext(this, _context);

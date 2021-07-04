@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Quic;
@@ -75,6 +76,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public void Initialize(QuicStream stream)
         {
+            Debug.Assert(_stream == null);
+
             _stream = stream;
 
             if (!(_streamClosedTokenSource?.TryReset() ?? false))
@@ -152,12 +155,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 await receiveTask;
                 await sendTask;
 
-                CanReuse = _transportPipeReader.IsComplete && _transportPipeReader.CompleteException == null
+                CanReuse = _stream.CanRead && _stream.CanWrite
+                    && _transportPipeReader.IsComplete && _transportPipeReader.CompleteException == null
                     && _transportPipeWriter.IsComplete && _transportPipeWriter.CompleteException == null;
-                if (CanReuse)
-                {
-                    _connection.ReturnStream(this);
-                }
             }
             catch (Exception ex)
             {
@@ -390,14 +390,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             await _processingTask;
 
-            DisposeCore();
+            _stream.Dispose();
+            _stream = null!;
 
-            _streamClosedTokenSource.Dispose();
+            if (CanReuse)
+            {
+                _connection.ReturnStream(this);
+            }
+            else
+            {
+                DisposeCore();
+            }
         }
 
-        public void DisposeCore()
+        internal void DisposeCore()
         {
-            _stream.Dispose();
+            _streamClosedTokenSource.Dispose();
         }
 
         private sealed class CompletionPipeWriter : PipeWriter
