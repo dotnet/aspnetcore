@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(servicesConfiguration));
             }
 
-            if (webHostBuilder.GetType().Name.Equals("GenericWebHostBuilder"))
+            if (webHostBuilder.GetType().Name.Equals("GenericWebHostBuilder", StringComparison.Ordinal))
             {
                 // Generic host doesn't need to do anything special here since there's only one container.
                 webHostBuilder.ConfigureServices(servicesConfiguration);
