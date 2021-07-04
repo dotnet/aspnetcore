@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
+            quicListenerOptions.MaxBidirectionalStreams = options.MaxBidirectionalStreamCount;
+            quicListenerOptions.MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount;
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
 

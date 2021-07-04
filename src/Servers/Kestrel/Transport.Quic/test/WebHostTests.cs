@@ -191,9 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             }
         }
 
-        public static IHostBuilder GetHostBuilder(
-            Func<MemoryPool<byte>> memoryPoolFactory = null,
-            long? maxReadBufferSize = null)
+        public static IHostBuilder GetHostBuilder(long? maxReadBufferSize = null)
         {
             return new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -201,7 +199,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                     webHostBuilder
                         .UseQuic(options =>
                         {
-                            options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory;
                             options.MaxReadBufferSize = maxReadBufferSize;
                             options.Alpn = QuicTestHelpers.Alpn;
                             options.IdleTimeout = TimeSpan.FromSeconds(20);
