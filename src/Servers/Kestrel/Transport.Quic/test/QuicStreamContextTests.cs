@@ -31,22 +31,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
-            await quicConnection.ConnectAsync().DefaultTimeout();
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
 
             await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
 
             // Act
-            await using var clientStream = quicConnection.OpenBidirectionalStream();
-            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            await CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
 
-            await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+            Assert.Contains(LogMessages, m => m.Message.Contains("send loop completed gracefully"));
+
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task BidirectionalStream_MultipleStreamsOnConnection_ReusedFromPool()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+
+            // Act
+            var stream1 = await CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+            var stream2 = await CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+
+            Assert.Same(stream1, stream2);
+
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+        }
+
+        private static async Task<QuicStreamContext> CreateAndCompleteBidirectionalStreamGracefully(QuicConnection quicConnection, MultiplexedConnectionContext serverConnection)
+        {
+            var clientStream = quicConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
             var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
             serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
 
             // Input should be completed.
             readResult = await serverStream.Transport.Input.ReadAsync();
-            // Complete output.
+
+            // Complete reading and writing.
+            await serverStream.Transport.Input.CompleteAsync();
             await serverStream.Transport.Output.CompleteAsync();
 
             // Assert
@@ -59,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.True(quicStreamContext.CanWrite);
             Assert.True(quicStreamContext.CanRead);
 
-            Assert.Contains(LogMessages, m => m.Message.Contains("send loop completed gracefully"));
+            return quicStreamContext;
         }
 
         [ConditionalFact]

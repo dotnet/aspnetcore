@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net.Quic;
 using System.Threading;
@@ -19,29 +20,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         // Internal for testing.
         internal Task _processingTask = Task.CompletedTask;
 
-        private readonly QuicStream _stream;
+        private QuicStream _stream = default!;
         private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
+        private readonly Pipe _inputPipe;
+        private readonly Pipe _outputPipe;
         private readonly IDuplexPipe _originalTransport;
-        private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
+        private readonly IDuplexPipe _originalApplication;
+        private readonly CompletionPipeReader _transportPipeReader;
+        private readonly CompletionPipeWriter _transportPipeWriter;
         private readonly IQuicTrace _log;
+        private CancellationTokenSource _streamClosedTokenSource = default!;
         private string? _connectionId;
         private const int MinAllocBufferSize = 4096;
         private volatile Exception? _shutdownReason;
         private bool _streamClosed;
         private bool _aborted;
-        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private TaskCompletionSource _waitForConnectionClosedTcs = default!;
         private readonly object _shutdownLock = new object();
 
-        public QuicStreamContext(QuicStream stream, QuicConnectionContext connection, QuicTransportContext context)
+        public QuicStreamContext(QuicConnectionContext connection, QuicTransportContext context)
         {
-            _stream = stream;
             _connection = connection;
             _context = context;
             _log = context.Log;
             MemoryPool = connection.MemoryPool;
-
-            ConnectionClosed = _streamClosedTokenSource.Token;
 
             var maxReadBufferSize = context.Options.MaxReadBufferSize ?? 0;
             var maxWriteBufferSize = context.Options.MaxWriteBufferSize ?? 0;
@@ -50,29 +53,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
             var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
 
-            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+            _inputPipe = new Pipe(inputOptions);
+            _outputPipe = new Pipe(outputOptions);
 
+            _transportPipeReader = new CompletionPipeReader(_inputPipe.Reader);
+            _transportPipeWriter = new CompletionPipeWriter(_outputPipe.Writer);
+
+            _originalApplication = new DuplexPipe(_outputPipe.Reader, _inputPipe.Writer);
+            _originalTransport = new DuplexPipe(_transportPipeReader, _transportPipeWriter);
+        }
+
+        public override MemoryPool<byte> MemoryPool { get; }
+        private PipeWriter Input => Application.Output;
+        private PipeReader Output => Application.Input;
+
+        public bool CanRead { get; private set; }
+        public bool CanWrite { get; private set; }
+
+        public long StreamId => _stream.StreamId;
+        public bool CanReuse { get; private set; }
+
+        public void Initialize(QuicStream stream)
+        {
+            _stream = stream;
+
+            if (!(_streamClosedTokenSource?.TryReset() ?? false))
+            {
+                _streamClosedTokenSource = new CancellationTokenSource();
+            }
+
+            ConnectionClosed = _streamClosedTokenSource.Token;
             Features.Set<IStreamDirectionFeature>(this);
             Features.Set<IProtocolErrorCodeFeature>(this);
             Features.Set<IStreamIdFeature>(this);
 
             // TODO populate the ITlsConnectionFeature (requires client certs).
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
-            CanRead = stream.CanRead;
-            CanWrite = stream.CanWrite;
+            CanRead = _stream.CanRead;
+            CanWrite = _stream.CanWrite;
+            Error = 0;
+            PoolExpirationTicks = 0;
 
-            Transport = _originalTransport = pair.Transport;
-            Application = pair.Application;
+            Transport = _originalTransport;
+            Application = _originalApplication;
+
+            _connectionId = null;
+            _shutdownReason = null;
+            _streamClosed = false;
+            _aborted = false;
+            // TODO - resetable TCS
+            _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // Only reset pipes if the stream has been reused.
+            if (CanReuse)
+            {
+                _inputPipe.Reset();
+                _outputPipe.Reset();
+            }
+
+            CanReuse = false;
         }
-
-        public override MemoryPool<byte> MemoryPool { get; }
-        public PipeWriter Input => Application.Output;
-        public PipeReader Output => Application.Input;
-
-        public bool CanRead { get; }
-        public bool CanWrite { get; }
-
-        public long StreamId => _stream.StreamId;
 
         public override string ConnectionId
         {
@@ -81,6 +121,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         }
 
         public long Error { get; set; }
+
+        public long PoolExpirationTicks { get; set; }
 
         public void Start()
         {
@@ -109,6 +151,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // Now wait for both to complete
                 await receiveTask;
                 await sendTask;
+
+                CanReuse = _transportPipeReader.IsComplete && _transportPipeReader.CompleteException == null
+                    && _transportPipeWriter.IsComplete && _transportPipeWriter.CompleteException == null;
+                if (CanReuse)
+                {
+                    _connection.ReturnStream(this);
+                }
             }
             catch (Exception ex)
             {
@@ -341,9 +390,123 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             await _processingTask;
 
-            _stream.Dispose();
+            DisposeCore();
 
             _streamClosedTokenSource.Dispose();
+        }
+
+        public void DisposeCore()
+        {
+            _stream.Dispose();
+        }
+
+        private sealed class CompletionPipeWriter : PipeWriter
+        {
+            private readonly PipeWriter _inner;
+
+            public bool IsComplete { get; private set; }
+            public Exception? CompleteException { get; private set; }
+
+            public CompletionPipeWriter(PipeWriter inner)
+            {
+                _inner = inner;
+            }
+
+            public override void Advance(int bytes)
+            {
+                _inner.Advance(bytes);
+            }
+
+            public override void CancelPendingFlush()
+            {
+                _inner.CancelPendingFlush();
+            }
+
+            public override void Complete(Exception? exception = null)
+            {
+                IsComplete = true;
+                CompleteException = exception;
+                _inner.Complete(exception);
+            }
+
+            public override ValueTask CompleteAsync(Exception? exception = null)
+            {
+                IsComplete = true;
+                CompleteException = exception;
+                return _inner.CompleteAsync(exception);
+            }
+
+            public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+            {
+                return _inner.WriteAsync(source, cancellationToken);
+            }
+
+            public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
+            {
+                return _inner.FlushAsync(cancellationToken);
+            }
+
+            public override Memory<byte> GetMemory(int sizeHint = 0)
+            {
+                return _inner.GetMemory(sizeHint);
+            }
+
+            public override Span<byte> GetSpan(int sizeHint = 0)
+            {
+                return _inner.GetSpan(sizeHint);
+            }
+        }
+
+        private sealed class CompletionPipeReader : PipeReader
+        {
+            private readonly PipeReader _inner;
+
+            public bool IsComplete { get; private set; }
+            public Exception? CompleteException { get; private set; }
+
+            public CompletionPipeReader(PipeReader inner)
+            {
+                _inner = inner;
+            }
+
+            public override void AdvanceTo(SequencePosition consumed)
+            {
+                _inner.AdvanceTo(consumed);
+            }
+
+            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+            {
+                _inner.AdvanceTo(consumed, examined);
+            }
+
+            public override ValueTask CompleteAsync(Exception? exception = null)
+            {
+                IsComplete = true;
+                CompleteException = exception;
+                return _inner.CompleteAsync(exception);
+            }
+
+            public override void Complete(Exception? exception = null)
+            {
+                IsComplete = true;
+                CompleteException = exception;
+                _inner.Complete(exception);
+            }
+
+            public override void CancelPendingRead()
+            {
+                _inner.CancelPendingRead();
+            }
+
+            public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+            {
+                return _inner.ReadAsync(cancellationToken);
+            }
+
+            public override bool TryRead(out ReadResult result)
+            {
+                return _inner.TryRead(out result);
+            }
         }
     }
 }
