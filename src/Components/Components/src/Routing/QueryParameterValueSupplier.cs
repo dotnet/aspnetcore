@@ -76,10 +76,9 @@ namespace Microsoft.AspNetCore.Components.Routing
                     var mappingIndex = Array.BinarySearch(_queryParameterNames, suppliedPair.EncodedName, QueryParameterNameComparer.Instance);
                     if (mappingIndex >= 0)
                     {
-                        var destination = _destinations[mappingIndex];
                         var decodedValue = suppliedPair.DecodeValue();
 
-                        if (destination.IsArray)
+                        if (_destinations[mappingIndex].IsArray)
                         {
                             valuesByMapping[mappingIndex].Add(decodedValue);
                         }
