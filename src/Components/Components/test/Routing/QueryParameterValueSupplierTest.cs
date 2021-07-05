@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             var query =
                 $"{nameof(ValidTypes.BoolVal)}=true&" +
-                $"{nameof(ValidTypes.DateTimeVal)}=2020-01-02+03:04:05.678Z&" +
+                $"{nameof(ValidTypes.DateTimeVal)}=2020-01-02+03:04:05.678-09:00&" +
                 $"{nameof(ValidTypes.DecimalVal)}=-1.234&" +
                 $"{nameof(ValidTypes.DoubleVal)}=-2.345&" +
                 $"{nameof(ValidTypes.FloatVal)}=-3.456&" +
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
             Assert.Collection(GetSuppliedParameters<ValidTypes>(query),
                 AssertKeyValuePair(nameof(ValidTypes.BoolVal), true),
-                AssertKeyValuePair(nameof(ValidTypes.DateTimeVal), new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc)),
+                AssertKeyValuePair(nameof(ValidTypes.DateTimeVal), new DateTimeOffset(2020, 1, 2, 3, 4, 5, 678, TimeSpan.FromHours(-9)).LocalDateTime),
                 AssertKeyValuePair(nameof(ValidTypes.DecimalVal), -1.234m),
                 AssertKeyValuePair(nameof(ValidTypes.DoubleVal), -2.345),
                 AssertKeyValuePair(nameof(ValidTypes.FloatVal), -3.456f),
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidTypes.IntVal), -54321),
                 AssertKeyValuePair(nameof(ValidTypes.LongVal), -99987654321),
                 AssertKeyValuePair(nameof(ValidTypes.NullableBoolVal), true),
-                AssertKeyValuePair(nameof(ValidTypes.NullableDateTimeVal), new DateTime(2021, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc)),
+                AssertKeyValuePair(nameof(ValidTypes.NullableDateTimeVal), new DateTime(2021, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc).ToLocalTime()),
                 AssertKeyValuePair(nameof(ValidTypes.NullableDecimalVal), 1.234m),
                 AssertKeyValuePair(nameof(ValidTypes.NullableDoubleVal), 2.345),
                 AssertKeyValuePair(nameof(ValidTypes.NullableFloatVal), 3.456f),
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
             Assert.Collection(GetSuppliedParameters<ValidArrayTypes>(query),
                 AssertKeyValuePair(nameof(ValidArrayTypes.BoolVals), new[] { true }),
-                AssertKeyValuePair(nameof(ValidArrayTypes.DateTimeVals), new[] { new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc) }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.DateTimeVals), new[] { new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc).ToLocalTime() }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.DecimalVals), new[] { -1.234m }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.DoubleVals), new[] { -2.345 }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.FloatVals), new[] { -3.456f }),
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 AssertKeyValuePair(nameof(ValidArrayTypes.IntVals), new[] { -54321 }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.LongVals), new[] { -99987654321 }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.NullableBoolVals), new[] { true }),
-                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDateTimeVals), new[] { new DateTime(2021, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc) }),
+                AssertKeyValuePair(nameof(ValidArrayTypes.NullableDateTimeVals), new[] { new DateTime(2021, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc).ToLocalTime() }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.NullableDecimalVals), new[] { 1.234m }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.NullableDoubleVals), new[] { 2.345 }),
                 AssertKeyValuePair(nameof(ValidArrayTypes.NullableFloatVals), new[] { 3.456f }),
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             Assert.Collection(GetSuppliedParameters<MapSingleQueryParameterToMultipleProperties>(query),
                 AssertKeyValuePair(
                     nameof(MapSingleQueryParameterToMultipleProperties.ValueAsDateTime),
-                    new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc)),
+                    new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc).ToLocalTime()),
                 AssertKeyValuePair(
                     nameof(MapSingleQueryParameterToMultipleProperties.ValueAsInt),
                     12345),
