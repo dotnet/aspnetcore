@@ -26,6 +26,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
   started = true;
 
+  const textEncoder = new TextEncoder();
+
   setEventDispatcher((eventDescriptor, eventArgs) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
     // renderbatch. For example, a renderbatch might mutate the DOM in such a way as to cause an <input> to lose
@@ -33,7 +35,11 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     // that are themselves triggered by the application of a renderbatch.
     const renderer = getRendererer(eventDescriptor.browserRendererId);
     if (renderer.eventDelegator.getHandler(eventDescriptor.eventHandlerId)) {
-      monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', JSON.stringify(eventDescriptor), JSON.stringify(eventArgs)));
+      monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync(
+          'Microsoft.AspNetCore.Components.WebAssembly',
+          'DispatchEvent',
+          textEncoder.encode(JSON.stringify([ eventDescriptor, eventArgs ]))
+      ));
     }
   });
 
