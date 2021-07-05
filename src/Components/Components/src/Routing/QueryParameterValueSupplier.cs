@@ -73,7 +73,8 @@ namespace Microsoft.AspNetCore.Components.Routing
                 var queryStringEnumerable = new QueryStringEnumerable(queryString);
                 foreach (var suppliedPair in queryStringEnumerable)
                 {
-                    var mappingIndex = Array.BinarySearch(_queryParameterNames, suppliedPair.EncodedName, QueryParameterNameComparer.Instance);
+                    var decodedName = suppliedPair.DecodeName();
+                    var mappingIndex = Array.BinarySearch(_queryParameterNames, decodedName, QueryParameterNameComparer.Instance);
                     if (mappingIndex >= 0)
                     {
                         var decodedValue = suppliedPair.DecodeValue();

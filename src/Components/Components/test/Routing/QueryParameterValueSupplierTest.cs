@@ -419,18 +419,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         [Fact]
-        public void DecodesValuesButNotKeys()
+        public void DecodesKeysAndValues()
         {
-            // Keys are matched verbatim and not decoded
-            // Values are decoded
-            var query = $"?{SpecialQueryParameterName.NameThatLooksEncoded}=Some+%5Bencoded%5D+value";
+            var encodedName = Uri.EscapeDataString(SpecialQueryParameterName.NameThatLooksEncoded);
+            var query = $"?{encodedName}=Some+%5Bencoded%5D+value";
             Assert.Collection(GetSuppliedParameters<SpecialQueryParameterName>(query),
                 AssertKeyValuePair(nameof(SpecialQueryParameterName.Key), "Some [encoded] value"));
-
-            // If we try to supply some other key that would decode to an expected key name, it doesn't match
-            query = $"?{Uri.EscapeDataString(SpecialQueryParameterName.NameThatLooksEncoded)}=something";
-            Assert.Collection(GetSuppliedParameters<SpecialQueryParameterName>(query),
-                AssertKeyValuePair(nameof(SpecialQueryParameterName.Key), (string)null));
         }
 
         private class KeyCaseMatching : ComponentBase
@@ -446,6 +440,22 @@ namespace Microsoft.AspNetCore.Components.Routing
             Assert.Collection(GetSuppliedParameters<KeyCaseMatching>(query),
                 AssertKeyValuePair(nameof(KeyCaseMatching.KeyOne), 1),
                 AssertKeyValuePair(nameof(KeyCaseMatching.KeyTwo), 2));
+        }
+
+        private class KeysWithNonAsciiChars : ComponentBase
+        {
+            [Parameter, SupplyParameterFromQuery] public string Имя_моей_собственности { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "خاصية_أخرى")] public string AnotherProperty { get; set; }
+        }
+
+        [Fact]
+        public void MatchesKeysWithNonAsciiChars()
+        {
+            var query = $"?{nameof(KeysWithNonAsciiChars.Имя_моей_собственности)}=first&خاصية_أخرى=second";
+            var result = GetSuppliedParameters<KeysWithNonAsciiChars>(query);
+            Assert.Collection(result,
+                AssertKeyValuePair(nameof(KeysWithNonAsciiChars.AnotherProperty), "second"),
+                AssertKeyValuePair(nameof(KeysWithNonAsciiChars.Имя_моей_собственности), "first"));
         }
 
         private class SingleValueOverwriting : ComponentBase
