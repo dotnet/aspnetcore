@@ -168,6 +168,12 @@ namespace Microsoft.AspNetCore.Components.Routing
             return mappings?.ToArray();
         }
 
+        private readonly struct QueryParameterMapping
+        {
+            public ReadOnlyMemory<char> QueryParameterName { get; init; }
+            public QueryParameterDestination Destination { get; init; }
+        }
+
         private readonly struct QueryParameterDestination
         {
             public readonly string ComponentParameterName;
@@ -180,12 +186,6 @@ namespace Microsoft.AspNetCore.Components.Routing
                 Parser = parser;
                 IsArray = isArray;
             }
-        }
-
-        private readonly struct QueryParameterMapping
-        {
-            public ReadOnlyMemory<char> QueryParameterName { get; init; }
-            public QueryParameterDestination Destination { get; init; }
         }
 
         private class QueryParameterNameComparer : IComparer<ReadOnlyMemory<char>>, IEqualityComparer<ReadOnlyMemory<char>>
