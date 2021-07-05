@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using static Microsoft.AspNetCore.Http.Results;
 
 var app = WebApplication.Create(args);
@@ -24,7 +26,10 @@ app.MapGet("/many-results", (int id) =>
     return RedirectPermanent("/json");
 });
 
-app.Run();
+app.MapGet("/environment", (IHostEnvironment environment) => environment.EnvironmentName);
 
+app.MapGet("/greeting", (IConfiguration config) => config["Greeting"]);
+
+app.Run();
 
 record Person(string Name, int Age);
