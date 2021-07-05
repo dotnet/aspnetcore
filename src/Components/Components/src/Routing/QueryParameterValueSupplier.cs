@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             // Temporary workspace in which we accumulate the data while walking the querystring.
-            var valuesByDestination = ArrayPool<StringSegmentAccumulator>.Shared.Rent(_destinations.Length);
+            var valuesByMapping = ArrayPool<StringSegmentAccumulator>.Shared.Rent(_destinations.Length);
 
             try
             {
@@ -81,20 +81,20 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                         if (destination.IsArray)
                         {
-                            valuesByDestination[destination.Index].Add(decodedValue);
+                            valuesByMapping[mappingIndex].Add(decodedValue);
                         }
                         else
                         {
-                            valuesByDestination[destination.Index].SetSingle(decodedValue);
+                            valuesByMapping[mappingIndex].SetSingle(decodedValue);
                         }
                     }
                 }
 
                 // Finally, emit the parameter attributes by parsing all the string segments and building arrays
-                for (var destinationIndex = 0; destinationIndex < _destinations.Length; destinationIndex++)
+                for (var mappingIndex = 0; mappingIndex < _destinations.Length; mappingIndex++)
                 {
-                    ref var destination = ref _destinations[destinationIndex];
-                    ref var values = ref valuesByDestination[destination.Index];
+                    ref var destination = ref _destinations[mappingIndex];
+                    ref var values = ref valuesByMapping[mappingIndex];
 
                     var parsedValue = destination.IsArray
                         ? destination.Parser.ParseMultiple(values, destination.ComponentParameterName)
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
             finally
             {
-                ArrayPool<StringSegmentAccumulator>.Shared.Return(valuesByDestination, true);
+                ArrayPool<StringSegmentAccumulator>.Shared.Return(valuesByMapping, true);
             }
         }
 
@@ -116,7 +116,6 @@ namespace Microsoft.AspNetCore.Components.Routing
             var candidateProperties = MemberAssignment.GetPropertiesIncludingInherited(componentType, ComponentProperties.BindablePropertyFlags);
             HashSet<ReadOnlyMemory<char>>? usedQueryParameterNames = null;
             List<QueryParameterMapping>? mappings = null;
-            var destinationIndex = 0;
 
             foreach (var propertyInfo in candidateProperties)
             {
@@ -160,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                     mappings.Add(new QueryParameterMapping
                     {
                         QueryParameterName = queryParameterName,
-                        Destination = new QueryParameterDestination(componentParameterName, parser, isArray, destinationIndex++)
+                        Destination = new QueryParameterDestination(componentParameterName, parser, isArray)
                     });
                 }
             }
@@ -174,14 +173,12 @@ namespace Microsoft.AspNetCore.Components.Routing
             public readonly string ComponentParameterName;
             public readonly UrlValueConstraint Parser;
             public readonly bool IsArray;
-            public readonly int Index;
 
-            public QueryParameterDestination(string componentParameterName, UrlValueConstraint parser, bool isArray, int index)
+            public QueryParameterDestination(string componentParameterName, UrlValueConstraint parser, bool isArray)
             {
                 ComponentParameterName = componentParameterName;
                 Parser = parser;
                 IsArray = isArray;
-                Index = index;
             }
         }
 
