@@ -18,7 +18,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public static void ClearCache() => _cacheByType.Clear();
 
         private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
-        private readonly SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination> _destinationsByQueryParameterName;
+
+        // These two arrays contain the same number of entries, and their corresponding positions refer to each other.
+        // Holding the info like this means we can use Array.BinarySearch with less custom implementation.
+        private readonly ReadOnlyMemory<char>[] _queryParameterNames;
         private readonly QueryParameterDestination[] _destinations;
 
         public static QueryParameterValueSupplier? ForType([DynamicallyAccessedMembers(Component)] Type componentType)
@@ -27,23 +30,23 @@ namespace Microsoft.AspNetCore.Components.Routing
             {
                 // If the component doesn't have any query parameters, store a null value for it
                 // so we know the upstream code can't try to render query parameter frames for it.
-                var destinations = BuildQueryParameterMappings(componentType);
-                instanceOrNull = destinations == null ? null : new QueryParameterValueSupplier(destinations);
+                var sortedMappings = GetSortedMappings(componentType);
+                instanceOrNull = sortedMappings == null ? null : new QueryParameterValueSupplier(sortedMappings);
                 _cacheByType.TryAdd(componentType, instanceOrNull);
             }
 
             return instanceOrNull;
         }
 
-        private QueryParameterValueSupplier(SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination> destinationsByQueryParameterName)
+        private QueryParameterValueSupplier(QueryParameterMapping[] sortedMappings)
         {
-            _destinationsByQueryParameterName = destinationsByQueryParameterName;
-
-            // Also store a flat array of destinations for lookup by index
-            _destinations = new QueryParameterDestination[destinationsByQueryParameterName.Count];
-            foreach (var destination in _destinationsByQueryParameterName.Values)
+            _queryParameterNames = new ReadOnlyMemory<char>[sortedMappings.Length];
+            _destinations = new QueryParameterDestination[sortedMappings.Length];
+            for (var i = 0; i < sortedMappings.Length; i++)
             {
-                _destinations[destination.Index] = destination;
+                ref var mapping = ref sortedMappings[i];
+                _queryParameterNames[i] = mapping.QueryParameterName;
+                _destinations[i] = mapping.Destination;
             }
         }
 
@@ -70,8 +73,10 @@ namespace Microsoft.AspNetCore.Components.Routing
                 var queryStringEnumerable = new QueryStringEnumerable(queryString);
                 foreach (var suppliedPair in queryStringEnumerable)
                 {
-                    if (_destinationsByQueryParameterName.TryGetValue(suppliedPair.EncodedName, out var destination))
+                    var mappingIndex = Array.BinarySearch(_queryParameterNames, suppliedPair.EncodedName, QueryParameterNameComparer.Instance);
+                    if (mappingIndex >= 0)
                     {
+                        var destination = _destinations[mappingIndex];
                         var decodedValue = suppliedPair.DecodeValue();
 
                         if (destination.IsArray)
@@ -106,11 +111,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private static SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination>? BuildQueryParameterMappings(
-            [DynamicallyAccessedMembers(Component)] Type componentType)
+        private static QueryParameterMapping[]? GetSortedMappings([DynamicallyAccessedMembers(Component)] Type componentType)
         {
             var candidateProperties = MemberAssignment.GetPropertiesIncludingInherited(componentType, ComponentProperties.BindablePropertyFlags);
-            SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination>? result = null;
+            HashSet<ReadOnlyMemory<char>>? usedQueryParameterNames = null;
+            List<QueryParameterMapping>? mappings = null;
             var destinationIndex = 0;
 
             foreach (var propertyInfo in candidateProperties)
@@ -144,17 +149,24 @@ namespace Microsoft.AspNetCore.Components.Routing
                     }
 
                     // Add the destination for this component parameter name
-                    result ??= new(QueryParameterNameComparer.Instance);
-                    if (result.ContainsKey(queryParameterName))
+                    usedQueryParameterNames ??= new(QueryParameterNameComparer.Instance);
+                    if (usedQueryParameterNames.Contains(queryParameterName))
                     {
                         throw new InvalidOperationException($"The component '{componentType}' declares more than one mapping for the query parameter '{queryParameterName}'.");
                     }
+                    usedQueryParameterNames.Add(queryParameterName);
 
-                    result.Add(queryParameterName, new QueryParameterDestination(componentParameterName, parser, isArray, destinationIndex++));
+                    mappings ??= new();
+                    mappings.Add(new QueryParameterMapping
+                    {
+                        QueryParameterName = queryParameterName,
+                        Destination = new QueryParameterDestination(componentParameterName, parser, isArray, destinationIndex++)
+                    });
                 }
             }
 
-            return result;
+            mappings?.Sort((a, b) => QueryParameterNameComparer.Instance.Compare(a.QueryParameterName, b.QueryParameterName));
+            return mappings?.ToArray();
         }
 
         private readonly struct QueryParameterDestination
@@ -173,12 +185,24 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private class QueryParameterNameComparer : IComparer<ReadOnlyMemory<char>>
+        private readonly struct QueryParameterMapping
+        {
+            public ReadOnlyMemory<char> QueryParameterName { get; init; }
+            public QueryParameterDestination Destination { get; init; }
+        }
+
+        private class QueryParameterNameComparer : IComparer<ReadOnlyMemory<char>>, IEqualityComparer<ReadOnlyMemory<char>>
         {
             public static readonly QueryParameterNameComparer Instance = new();
 
             public int Compare(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
                 => x.Span.CompareTo(y.Span, StringComparison.OrdinalIgnoreCase);
+
+            public bool Equals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
+                => x.Span.Equals(y.Span, StringComparison.OrdinalIgnoreCase);
+
+            public int GetHashCode([DisallowNull] ReadOnlyMemory<char> obj)
+                => string.GetHashCode(obj.Span, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

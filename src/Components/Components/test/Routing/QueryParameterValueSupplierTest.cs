@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             [Parameter, SupplyParameterFromQuery(Name = "a")] public int ValueAsInt { get; set; }
             [Parameter, SupplyParameterFromQuery(Name = "b")] public DateTime ValueAsDateTime { get; set; }
-            [Parameter, SupplyParameterFromQuery(Name = "a")] public long ValueAsLong { get; set; }
+            [Parameter, SupplyParameterFromQuery(Name = "A")] public long ValueAsLong { get; set; }
         }
 
         [Fact]
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             var ex = Assert.Throws<InvalidOperationException>(
                 () => QueryParameterValueSupplier.ForType(typeof(MapSingleQueryParameterToMultipleProperties)));
-            Assert.Contains("declares more than one mapping for the query parameter 'a'.", ex.Message);
+            Assert.Contains("declares more than one mapping for the query parameter 'a'.", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
         class UnsupportedType : ComponentBase
