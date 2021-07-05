@@ -241,26 +241,14 @@ namespace Microsoft.AspNetCore.Components.Routing
             [Parameter, SupplyParameterFromQuery(Name = "a")] public int ValueAsInt { get; set; }
             [Parameter, SupplyParameterFromQuery(Name = "b")] public DateTime ValueAsDateTime { get; set; }
             [Parameter, SupplyParameterFromQuery(Name = "a")] public long ValueAsLong { get; set; }
-            [Parameter, SupplyParameterFromQuery(Name = "b")] public string ValueAsString { get; set; }
         }
 
         [Fact]
-        public void CanMapSingleQueryParameterToMultipleProperties()
+        public void CannotMapSingleQueryParameterToMultipleProperties()
         {
-            var query = "?a=12345&b=2020-01-02+03:04:05.678Z";
-            Assert.Collection(GetSuppliedParameters<MapSingleQueryParameterToMultipleProperties>(query),
-                AssertKeyValuePair(
-                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsDateTime),
-                    new DateTime(2020, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc).ToLocalTime()),
-                AssertKeyValuePair(
-                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsInt),
-                    12345),
-                AssertKeyValuePair(
-                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsLong),
-                    12345L),
-                AssertKeyValuePair(
-                    nameof(MapSingleQueryParameterToMultipleProperties.ValueAsString),
-                    "2020-01-02 03:04:05.678Z"));
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => QueryParameterValueSupplier.ForType(typeof(MapSingleQueryParameterToMultipleProperties)));
+            Assert.Contains("declares more than one mapping for the query parameter 'a'.", ex.Message);
         }
 
         class UnsupportedType : ComponentBase

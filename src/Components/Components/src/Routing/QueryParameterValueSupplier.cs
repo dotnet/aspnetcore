@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
@@ -19,9 +18,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         public static void ClearCache() => _cacheByType.Clear();
 
         private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
-        private readonly SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>> _destinationsByQueryParameterName;
+        private readonly SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination> _destinationsByQueryParameterName;
         private readonly QueryParameterDestination[] _destinations;
-        private readonly int _destinationsCount;
 
         public static QueryParameterValueSupplier? ForType([DynamicallyAccessedMembers(Component)] Type componentType)
         {
@@ -29,26 +27,23 @@ namespace Microsoft.AspNetCore.Components.Routing
             {
                 // If the component doesn't have any query parameters, store a null value for it
                 // so we know the upstream code can't try to render query parameter frames for it.
-                var destinations = BuildQueryParameterMappings(componentType, out var destinationsCount);
-                instanceOrNull = destinations == null ? null : new QueryParameterValueSupplier(destinations, destinationsCount);
+                var destinations = BuildQueryParameterMappings(componentType);
+                instanceOrNull = destinations == null ? null : new QueryParameterValueSupplier(destinations);
                 _cacheByType.TryAdd(componentType, instanceOrNull);
             }
 
             return instanceOrNull;
         }
 
-        private QueryParameterValueSupplier(SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>> destinationsByQueryParameterName, int destinationsCount)
+        private QueryParameterValueSupplier(SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination> destinationsByQueryParameterName)
         {
             _destinationsByQueryParameterName = destinationsByQueryParameterName;
-            _destinationsCount = destinationsCount;
-            _destinations = new QueryParameterDestination[destinationsCount];
-            var index = 0;
-            foreach (var group in destinationsByQueryParameterName)
+
+            // Also store a flat array of destinations for lookup by index
+            _destinations = new QueryParameterDestination[destinationsByQueryParameterName.Count];
+            foreach (var destination in _destinationsByQueryParameterName.Values)
             {
-                foreach (var destination in CollectionsMarshal.AsSpan(group.Value))
-                {
-                    _destinations[index++] = destination;
-                }
+                _destinations[destination.Index] = destination;
             }
         }
 
@@ -67,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             // Temporary workspace in which we accumulate the data while walking the querystring.
-            var valuesByDestination = ArrayPool<StringSegmentAccumulator>.Shared.Rent(_destinationsCount);
+            var valuesByDestination = ArrayPool<StringSegmentAccumulator>.Shared.Rent(_destinations.Length);
 
             try
             {
@@ -75,20 +70,17 @@ namespace Microsoft.AspNetCore.Components.Routing
                 var queryStringEnumerable = new QueryStringEnumerable(queryString);
                 foreach (var suppliedPair in queryStringEnumerable)
                 {
-                    if (_destinationsByQueryParameterName.TryGetValue(suppliedPair.EncodedName, out var destinations))
+                    if (_destinationsByQueryParameterName.TryGetValue(suppliedPair.EncodedName, out var destination))
                     {
                         var decodedValue = suppliedPair.DecodeValue();
 
-                        foreach (ref var destination in CollectionsMarshal.AsSpan(destinations))
+                        if (destination.IsArray)
                         {
-                            if (destination.IsArray)
-                            {
-                                valuesByDestination[destination.Index].Add(decodedValue);
-                            }
-                            else
-                            {
-                                valuesByDestination[destination.Index].SetSingle(decodedValue);
-                            }
+                            valuesByDestination[destination.Index].Add(decodedValue);
+                        }
+                        else
+                        {
+                            valuesByDestination[destination.Index].SetSingle(decodedValue);
                         }
                     }
                 }
@@ -114,13 +106,12 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private static SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>>? BuildQueryParameterMappings(
-            [DynamicallyAccessedMembers(Component)] Type componentType,
-            out int destinationsCount)
+        private static SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination>? BuildQueryParameterMappings(
+            [DynamicallyAccessedMembers(Component)] Type componentType)
         {
             var candidateProperties = MemberAssignment.GetPropertiesIncludingInherited(componentType, ComponentProperties.BindablePropertyFlags);
-            SortedDictionary<ReadOnlyMemory<char>, List<QueryParameterDestination>>? result = null;
-            destinationsCount = 0;
+            SortedDictionary<ReadOnlyMemory<char>, QueryParameterDestination>? result = null;
+            var destinationIndex = 0;
 
             foreach (var propertyInfo in candidateProperties)
             {
@@ -152,13 +143,14 @@ namespace Microsoft.AspNetCore.Components.Routing
                         throw new NotSupportedException($"Querystring values cannot be parsed as type '{propertyInfo.PropertyType}'.");
                     }
 
-                    // Append a destination list entry for this component parameter name
+                    // Add the destination for this component parameter name
                     result ??= new(QueryParameterNameComparer.Instance);
-                    if (!result.TryGetValue(queryParameterName, out var list))
+                    if (result.ContainsKey(queryParameterName))
                     {
-                        result[queryParameterName] = list = new();
+                        throw new InvalidOperationException($"The component '{componentType}' declares more than one mapping for the query parameter '{queryParameterName}'.");
                     }
-                    list.Add(new QueryParameterDestination(componentParameterName, parser, isArray, destinationsCount++));
+
+                    result.Add(queryParameterName, new QueryParameterDestination(componentParameterName, parser, isArray, destinationIndex++));
                 }
             }
 
