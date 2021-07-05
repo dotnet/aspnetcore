@@ -93,11 +93,12 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   options.configureSignalR(connectionBuilder);
 
   const connection = connectionBuilder.build();
+  const textEncoder = new TextEncoder();
 
   setEventDispatcher((descriptor, args) => {
-    const getJsonBytes = (value) => new TextEncoder().encode(JSON.stringify(value));
-
-    connection.send('DispatchBrowserEvent', getJsonBytes(descriptor), getJsonBytes(args));
+    connection.send('DispatchBrowserEvent',
+      textEncoder.encode(JSON.stringify([descriptor, args]))
+    );
   });
 
   // Configure navigation via SignalR
