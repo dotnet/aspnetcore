@@ -610,6 +610,7 @@ namespace Microsoft.Net.Http.Headers
         private static string Encode5987(StringSegment input)
         {
             var builder = new StringBuilder("UTF-8\'\'");
+            byte[]? buffer = null;
             for (int i = 0; i < input.Length; i++)
             {
                 var c = input[i];
@@ -623,11 +624,26 @@ namespace Microsoft.Net.Http.Headers
                         i++;
                     }
 
-                    var unicodePart = input.Value.Substring(startPos, i - startPos + 1);
-                    var bytes = Encoding.UTF8.GetBytes(unicodePart);
-                    foreach (byte b in bytes)
+                    var unicodePart = ((ReadOnlySpan<char>)input).Slice(startPos, i - startPos + 1);
+                    int bytesCount = Encoding.UTF8.GetByteCount(unicodePart);
+
+                    try
                     {
-                        HexEscape(builder, (char)b);
+                        buffer = ArrayPool<byte>.Shared.Rent(bytesCount);
+                        //Buffer from the pool may be larger than we need
+                        var exactBuffer = buffer.AsSpan().Slice(0, bytesCount);
+                        Encoding.UTF8.GetBytes(unicodePart, exactBuffer);
+                        foreach (byte b in exactBuffer)
+                        {
+                            HexEscape(builder, (char)b);
+                        }
+                    }
+                    finally
+                    {
+                        if (buffer != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(buffer);
+                        }
                     }
                 }
                 else if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
