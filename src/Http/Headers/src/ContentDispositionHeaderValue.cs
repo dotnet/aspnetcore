@@ -610,7 +610,16 @@ namespace Microsoft.Net.Http.Headers
         private static string Encode5987(StringSegment input)
         {
             var builder = new StringBuilder("UTF-8\'\'");
-            byte[]? buffer = null;
+            var unicodeCharsCount = input.Value.Count(c => c > 0x7F);
+            var bufferSize = unicodeCharsCount > 0
+                ? Encoding.UTF8.GetMaxByteCount(unicodeCharsCount)
+                : 0;
+            Span<byte> buffer = bufferSize > 0
+                ? bufferSize <= 256
+                    ? stackalloc byte[bufferSize]
+                    : new byte[bufferSize]
+                : null;
+
             for (int i = 0; i < input.Length; i++)
             {
                 var c = input[i];
@@ -625,25 +634,10 @@ namespace Microsoft.Net.Http.Headers
                     }
 
                     var unicodePart = ((ReadOnlySpan<char>)input).Slice(startPos, i - startPos + 1);
-                    int bytesCount = Encoding.UTF8.GetByteCount(unicodePart);
-
-                    try
+                    var bytesEncoded = Encoding.UTF8.GetBytes(unicodePart, buffer);
+                    for (int j = 0; j < bytesEncoded; j++)
                     {
-                        buffer = ArrayPool<byte>.Shared.Rent(bytesCount);
-                        //Buffer from the pool may be larger than we need
-                        var exactBuffer = buffer.AsSpan().Slice(0, bytesCount);
-                        Encoding.UTF8.GetBytes(unicodePart, exactBuffer);
-                        foreach (byte b in exactBuffer)
-                        {
-                            HexEscape(builder, (char)b);
-                        }
-                    }
-                    finally
-                    {
-                        if (buffer != null)
-                        {
-                            ArrayPool<byte>.Shared.Return(buffer);
-                        }
+                        HexEscape(builder, (char)buffer[j]);
                     }
                 }
                 else if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
