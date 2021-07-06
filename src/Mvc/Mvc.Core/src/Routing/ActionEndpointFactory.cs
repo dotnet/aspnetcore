@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return (attributeRoutePattern, resolvedRequiredValues ?? action.RouteValues);
         }
 
-        private void AddActionDataToBuilder(
+        private static void AddActionDataToBuilder(
             EndpointBuilder builder,
             HashSet<string> routeNames,
             ActionDescriptor action,

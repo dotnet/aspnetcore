@@ -4,9 +4,11 @@
 #nullable disable warnings
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -19,6 +21,9 @@ namespace Microsoft.AspNetCore.Components
         private readonly RenderFragment _renderDelegate;
         private readonly RenderFragment _renderPageWithParametersDelegate;
         private RenderHandle _renderHandle;
+
+        [Inject]
+        private NavigationManager NavigationManager { get; set; }
 
         /// <summary>
         /// Gets or sets the route data. This determines the page that will be
@@ -88,6 +93,17 @@ namespace Microsoft.AspNetCore.Components
             foreach (var kvp in RouteData.RouteValues)
             {
                 builder.AddAttribute(1, kvp.Key, kvp.Value);
+            }
+
+            var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
+            if (queryParameterSupplier is not null)
+            {
+                // Since this component does accept some parameters from query, we must supply values for all of them,
+                // even if the querystring in the URI is empty. So don't skip the following logic.
+                var url = NavigationManager.Uri;
+                var queryStartPos = url.IndexOf('?');
+                var query = queryStartPos < 0 ? default : url.AsMemory(queryStartPos);
+                queryParameterSupplier.RenderParametersFromQueryString(builder, query);
             }
 
             builder.CloseComponent();

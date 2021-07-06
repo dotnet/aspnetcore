@@ -52,7 +52,6 @@ namespace Sockets.BindTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33206")]
         public async Task SocketTransportCallsCreateBoundListenSocketForFileHandleEndpoint()
         {
             using var fileHandleSocket = CreateBoundSocket();
@@ -70,7 +69,6 @@ namespace Sockets.BindTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33206")]
         public void CreateDefaultBoundListenSocket_PreservesLocalEndpointFromFileHandleEndpoint()
         {
             using var fileHandleSocket = CreateBoundSocket();
