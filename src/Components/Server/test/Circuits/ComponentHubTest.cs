@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,10 +74,17 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             var (mockClientProxy, hub) = InitializeComponentHub();
 
-            await hub.DispatchBrowserEvent(default);
+            await hub.DispatchBrowserEvent(GetJsonElement());
 
             var errorMessage = "Circuit not initialized.";
             mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
+
+            static JsonElement GetJsonElement()
+            {
+                var utf8JsonBytes = JsonSerializer.SerializeToUtf8Bytes(new object[2]);
+                var jsonReader = new Utf8JsonReader(utf8JsonBytes);
+                return JsonElement.ParseValue(ref jsonReader);
+            }
         }
 
         [Fact]
