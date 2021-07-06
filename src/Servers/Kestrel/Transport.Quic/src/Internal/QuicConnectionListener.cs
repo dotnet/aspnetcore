@@ -55,7 +55,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             try
             {
                 var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
-                return new QuicConnectionContext(quicConnection, _context);
+                var connectionContext = new QuicConnectionContext(quicConnection, _context);
+
+                _log.AcceptedConnection(connectionContext);
+
+                return connectionContext;
             }
             catch (QuicOperationAbortedException ex)
             {

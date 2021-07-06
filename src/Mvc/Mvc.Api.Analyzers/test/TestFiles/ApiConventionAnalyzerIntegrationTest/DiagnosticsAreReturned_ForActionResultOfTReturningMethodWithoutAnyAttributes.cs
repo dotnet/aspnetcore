@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             if (id == null)
             {
-                /*MM*/return NotFound();
+                return /*MM*/NotFound();
             }
 
             return "Hello world";

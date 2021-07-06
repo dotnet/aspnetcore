@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     {
         private Http2HeadersEnumerator _http2HeadersEnumerator;
         private DynamicHPackEncoder _hpackEncoder;
-        private IHeaderDictionary _knownResponseHeaders;
-        private IHeaderDictionary _unknownResponseHeaders;
+        private HttpResponseHeaders _knownResponseHeaders;
+        private HttpResponseHeaders _unknownResponseHeaders;
         private byte[] _buffer;
 
         [GlobalSetup]
@@ -31,18 +31,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
             _knownResponseHeaders = new HttpResponseHeaders();
 
-            _knownResponseHeaders.Server = "Kestrel";
-            _knownResponseHeaders.ContentType = "application/json";
-            _knownResponseHeaders.Date = "Date!";
-            _knownResponseHeaders.ContentLength = 0;
-            _knownResponseHeaders.AcceptRanges = "Ranges!";
-            _knownResponseHeaders.TransferEncoding = "Encoding!";
-            _knownResponseHeaders.Via = "Via!";
-            _knownResponseHeaders.Vary = "Vary!";
-            _knownResponseHeaders.WWWAuthenticate = "Authenticate!";
-            _knownResponseHeaders.LastModified = "Modified!";
-            _knownResponseHeaders.Expires = "Expires!";
-            _knownResponseHeaders.Age = "Age!";
+            var knownHeaders = (IHeaderDictionary)_knownResponseHeaders;
+            knownHeaders.Server = "Kestrel";
+            knownHeaders.ContentType = "application/json";
+            knownHeaders.Date = "Date!";
+            knownHeaders.ContentLength = 0;
+            knownHeaders.AcceptRanges = "Ranges!";
+            knownHeaders.TransferEncoding = "Encoding!";
+            knownHeaders.Via = "Via!";
+            knownHeaders.Vary = "Vary!";
+            knownHeaders.WWWAuthenticate = "Authenticate!";
+            knownHeaders.LastModified = "Modified!";
+            knownHeaders.Expires = "Expires!";
+            knownHeaders.Age = "Age!";
 
             _unknownResponseHeaders = new HttpResponseHeaders();
             for (var i = 0; i < 10; i++)
@@ -59,8 +60,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         }
 
         [Benchmark]
+        public void BeginEncodeHeaders_KnownHeaders_CustomEncoding()
+        {
+            _knownResponseHeaders.EncodingSelector = _ => Encoding.UTF8;
+            _http2HeadersEnumerator.Initialize(_knownResponseHeaders);
+            HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
+        }
+
+        [Benchmark]
         public void BeginEncodeHeaders_UnknownHeaders()
         {
+            _http2HeadersEnumerator.Initialize(_unknownResponseHeaders);
+            HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
+        }
+
+        [Benchmark]
+        public void BeginEncodeHeaders_UnknownHeaders_CustomEncoding()
+        {
+            _knownResponseHeaders.EncodingSelector = _ => Encoding.UTF8;
             _http2HeadersEnumerator.Initialize(_unknownResponseHeaders);
             HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
         }

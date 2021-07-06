@@ -374,6 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpRequestHeaders.EncodingSelector = ServerOptions.RequestHeaderEncodingSelector;
             HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
             HttpResponseHeaders.Reset();
+            HttpResponseHeaders.EncodingSelector = ServerOptions.ResponseHeaderEncodingSelector;
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
             RequestTrailers.Clear();

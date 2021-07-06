@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 using Xunit;
 

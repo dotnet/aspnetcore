@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -45,6 +46,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request));
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Response));
         private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestAborted));
+        private static readonly MemberExpression UserExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.User));
         private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
         private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
         private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
@@ -220,6 +222,18 @@ namespace Microsoft.AspNetCore.Http
             else if (parameter.ParameterType == typeof(HttpContext))
             {
                 return HttpContextExpr;
+            }
+            else if (parameter.ParameterType == typeof(HttpRequest))
+            {
+                return HttpRequestExpr;
+            }
+            else if (parameter.ParameterType == typeof(HttpResponse))
+            {
+                return HttpResponseExpr;
+            }
+            else if (parameter.ParameterType == typeof(ClaimsPrincipal))
+            {
+                return UserExpr;
             }
             else if (parameter.ParameterType == typeof(CancellationToken))
             {

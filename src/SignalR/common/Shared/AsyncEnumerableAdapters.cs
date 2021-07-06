@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             private class CancelableEnumerator<T> : IAsyncEnumerator<T>
             {
-                private IAsyncEnumerator<T> _asyncEnumerator;
+                private readonly IAsyncEnumerator<T> _asyncEnumerator;
                 private readonly CancellationTokenRegistration _cancellationTokenRegistration;
 
                 public T Current => (T)_asyncEnumerator.Current;
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private class BoxedAsyncEnumerator<T> : IAsyncEnumerator<object?>
         {
-            private IAsyncEnumerator<T> _asyncEnumerator;
+            private readonly IAsyncEnumerator<T> _asyncEnumerator;
 
             public BoxedAsyncEnumerator(IAsyncEnumerator<T> asyncEnumerator)
             {

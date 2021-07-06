@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.SignalR
         private bool _clientTimeoutActive;
         private volatile bool _connectionAborted;
         private volatile bool _allowReconnect = true;
-        private int _streamBufferCapacity;
-        private long? _maxMessageSize;
+        private readonly int _streamBufferCapacity;
+        private readonly long? _maxMessageSize;
         private bool _receivedMessageTimeoutEnabled;
         private long _receivedMessageElapsedTicks;
         private long _receivedMessageTimestamp;

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return NotFound();
             }
 
-            /*MM*/return Ok();
+            return /*MM*/Ok();
         }
     }
 }

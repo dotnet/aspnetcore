@@ -329,13 +329,15 @@ namespace CodeGenerator
             var header = group.Header;
             if (header.Name == HeaderNames.ContentLength)
             {
-                return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(HeaderNames.ContentLength);
+                    if (customEncoding == null)
                     {{
                         AppendContentLength(value);
                     }}
                     else
                     {{
-                        AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        AppendContentLengthCustomEncoding(value, customEncoding);
                     }}
                     return true;";
             }
@@ -370,13 +372,15 @@ namespace CodeGenerator
                 if (header.Name == HeaderNames.ContentLength)
                 {
                     return $@"
-                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                        {extraIndent}var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        {extraIndent}   ? null : EncodingSelector(HeaderNames.ContentLength);
+                        {extraIndent}if (customEncoding == null)
                         {extraIndent}{{
                         {extraIndent}    AppendContentLength(value);
                         {extraIndent}}}
                         {extraIndent}else
                         {extraIndent}{{
-                        {extraIndent}    AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        {extraIndent}    AppendContentLengthCustomEncoding(value, customEncoding);
                         {extraIndent}}}
                         {extraIndent}return;";
                 }
@@ -775,6 +779,7 @@ using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
@@ -858,7 +863,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var flag = {header.FlagBit()};
                 if (value.Count > 0)
-                {{
+                {{{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);" : "")}
                     _bits |= flag;
                     _headers._{header.Identifier} = value;
                 }}
@@ -884,8 +890,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
-
+                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);" : "")}
                 SetValueUnknown(HeaderNames.{header}, value);
             }}
         }}")}
@@ -948,7 +954,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -979,7 +985,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -1171,6 +1177,7 @@ $@"        private void Clear(long bitsToClear)
             {{
                 int keyStart;
                 int keyLength;
+                var headerName = string.Empty;
                 switch (next)
                 {{{Each(loop.Headers.OrderBy(h => h.Index).Where(h => h.Identifier != "ContentLength"), header => $@"
                     case {header.Index}: // Header: ""{header.Name}""
@@ -1191,6 +1198,7 @@ $@"        private void Clear(long bitsToClear)
                             values = ref _headers._{header.Identifier};
                             keyStart = {header.BytesOffset};
                             keyLength = {header.BytesCount};
+                            headerName = HeaderNames.{header.Identifier};
                         }}")}
                         break; // OutputHeader
 ")}
@@ -1203,6 +1211,8 @@ $@"        private void Clear(long bitsToClear)
                 {{
                     // Clear bit
                     tempBits ^= (1UL << next);
+                    var encoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(headerName);
                     var valueCount = values.Count;
                     Debug.Assert(valueCount > 0);
 
@@ -1213,7 +1223,14 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            output.WriteAscii(value);
+                            if (encoding is null)
+                            {{
+                                output.WriteAscii(value);
+                            }}
+                            else
+                            {{
+                                output.WriteEncoded(value, encoding);
+                            }}
                         }}
                     }}
                     // Set exact next

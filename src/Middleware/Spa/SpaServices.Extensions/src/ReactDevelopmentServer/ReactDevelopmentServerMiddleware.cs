@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 // the first request times out, subsequent requests could still work.
                 var timeout = spaBuilder.Options.StartupTimeout;
                 var port = await portTask.WithTimeout(timeout, $"The create-react-app server did not start listening for requests " +
-                    $"within the timeout period of {timeout.Seconds} seconds. " +
+                    $"within the timeout period of {timeout.TotalSeconds} seconds. " +
                     $"Check the log output for error information.");
 
                 // Everything we proxy is hardcoded to target http://localhost because:

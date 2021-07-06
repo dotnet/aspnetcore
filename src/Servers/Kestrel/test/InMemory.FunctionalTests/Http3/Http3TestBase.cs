@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -187,13 +188,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             if (_inboundControlStream == null)
             {
                 var reader = MultiplexedConnectionContext.ToClientAcceptQueue.Reader;
-                while (await reader.WaitToReadAsync())
+                while (await reader.WaitToReadAsync().DefaultTimeout())
                 {
                     while (reader.TryRead(out var stream))
                     {
                         _inboundControlStream = stream;
                         var streamId = await stream.TryReadStreamIdAsync();
-                        Debug.Assert(streamId == 0, "StreamId sent that was non-zero, which isn't handled by tests");
+
+                        // -1 means stream was completed.
+                        Debug.Assert(streamId == 0 || streamId == -1, "StreamId sent that was non-zero, which isn't handled by tests");
+
                         return _inboundControlStream;
                     }
                 }
@@ -231,6 +235,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
             AssertConnectionError<TException>(expectedErrorCode, expectedErrorMessage);
+
+            // Verify HttpConnection.ProcessRequestsAsync has exited.
+            await _connectionTask.DefaultTimeout();
+
+            // Verify server-to-client control stream has completed.
+            await _inboundControlStream.ReceiveEndAsync();
         }
 
         internal void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, params string[] expectedErrorMessage) where TException : Exception
@@ -611,10 +621,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
-                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, ref headersTotalSize, out var length);
+                var done = QPackHeaderWriter.BeginEncode(GetHeadersEnumerator(headers),
+                    buffer.Span, ref headersTotalSize, out var length);
                 Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
+            }
+
+            internal Http3HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
+            {
+                var dictionary = headers
+                    .GroupBy(g => g.Key)
+                    .ToDictionary(g => g.Key, g => new StringValues(g.Select(values => values.Value).ToArray()));
+
+                var headersEnumerator = new Http3HeadersEnumerator();
+                headersEnumerator.Initialize(dictionary);
+                return headersEnumerator;
             }
 
             internal async Task SendHeadersPartialAsync()

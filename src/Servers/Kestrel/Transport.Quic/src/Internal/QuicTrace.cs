@@ -11,20 +11,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     {
         private static readonly Action<ILogger, string, Exception?> _acceptedConnection =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "AcceptedConnection"), @"Connection id ""{ConnectionId}"" accepted.", skipEnabledCheck: true);
-        private static readonly Action<ILogger, string, Exception?> _acceptedStream =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "AcceptedStream"), @"Stream id ""{ConnectionId}"" accepted.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, StreamType, Exception?> _acceptedStream =
+            LoggerMessage.Define<string, StreamType>(LogLevel.Debug, new EventId(2, "AcceptedStream"), @"Stream id ""{ConnectionId}"" type {StreamType} accepted.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, StreamType, Exception?> _connectedStream =
+            LoggerMessage.Define<string, StreamType>(LogLevel.Debug, new EventId(3, "ConnectedStream"), @"Stream id ""{ConnectionId}"" type {StreamType} connected.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "ConnectionError"), @"Connection id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionError"), @"Connection id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, Exception?> _connectionAborted =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "ConnectionAborted"), @"Connection id ""{ConnectionId}"" aborted by peer.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, string, Exception?> _connectionAbort =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(6, "ConnectionAbort"), @"Connection id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "StreamError"), @"Stream id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "StreamError"), @"Stream id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "StreamPause"), @"Stream id ""{ConnectionId}"" paused.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "StreamPause"), @"Stream id ""{ConnectionId}"" paused.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "StreamResume"), @"Stream id ""{ConnectionId}"" resumed.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, "StreamResume"), @"Stream id ""{ConnectionId}"" resumed.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, string, Exception?> _streamShutdownWrite =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, "StreamShutdownWrite"), @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".", skipEnabledCheck: true);
-        private static readonly Action<ILogger, string, string, Exception?> _streamAborted =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "StreamAbort"), @"Stream id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(10, "StreamShutdownWrite"), @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, Exception?> _streamAborted =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(11, "StreamAborted"), @"Stream id ""{ConnectionId}"" aborted by peer.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, string, Exception?> _streamAbort =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(12, "StreamAbort"), @"Stream id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
 
         private readonly ILogger _logger;
 
@@ -52,7 +60,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _acceptedStream(_logger, streamContext.ConnectionId, null);
+                _acceptedStream(_logger, streamContext.ConnectionId, GetStreamType(streamContext), null);
+            }
+        }
+
+        public void ConnectedStream(QuicStreamContext streamContext)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectedStream(_logger, streamContext.ConnectionId, GetStreamType(streamContext), null);
             }
         }
 
@@ -61,6 +77,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 _connectionError(_logger, connection.ConnectionId, ex);
+            }
+        }
+
+        public void ConnectionAborted(BaseConnectionContext connection, Exception ex)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionAborted(_logger, connection.ConnectionId, ex);
+            }
+        }
+
+        public void ConnectionAbort(BaseConnectionContext connection, string reason)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionAbort(_logger, connection.ConnectionId, reason, null);
             }
         }
 
@@ -96,12 +128,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
+        public void StreamAborted(QuicStreamContext streamContext, Exception ex)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamAborted(_logger, streamContext.ConnectionId, ex);
+            }
+        }
+
         public void StreamAbort(QuicStreamContext streamContext, string reason)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _streamAborted(_logger, streamContext.ConnectionId, reason, null);
+                _streamAbort(_logger, streamContext.ConnectionId, reason, null);
             }
+        }
+
+        private StreamType GetStreamType(QuicStreamContext streamContext) =>
+            streamContext.CanRead && streamContext.CanWrite
+                ? StreamType.Bidirectional
+                : StreamType.Unidirectional;
+
+        private enum StreamType
+        {
+            Unidirectional,
+            Bidirectional
         }
     }
 }

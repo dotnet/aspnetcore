@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Pipelines;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -127,6 +128,117 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var kvp = new KeyValuePair<string, StringValues>(key, value);
                 ((IDictionary<string, StringValues>)responseHeaders).Add(key, value);
             });
+        }
+
+        [Theory]
+        [InlineData("\r\nData")]
+        [InlineData("\0Data")]
+        [InlineData("Data\r")]
+        [InlineData("Da\0ta")]
+        [InlineData("Da\u001Fta")]
+        [InlineData("Data\0")]
+        [InlineData("Da\nta")]
+        [InlineData("Da\u007Fta")]
+        [InlineData("Da\u0080ta")]
+        [InlineData("Da™ta")]
+        [InlineData("Dašta")]
+        public void AddingControlOrNonAsciiCharactersToHeaderPropertyThrows(string value)
+        {
+            var responseHeaders = (IHeaderDictionary)new HttpResponseHeaders();
+
+            // Known special header
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                responseHeaders.Allow = value;
+            });
+
+            // Unknown header fallback
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                responseHeaders.Accept = value;
+            });
+        }
+
+        [Theory]
+        [InlineData("\r\nData")]
+        [InlineData("\0Data")]
+        [InlineData("Data\r")]
+        [InlineData("Da\0ta")]
+        [InlineData("Da\u001Fta")]
+        [InlineData("Data\0")]
+        [InlineData("Da\nta")]
+        [InlineData("Da\u007Fta")]
+        public void AddingControlCharactersWithCustomEncoderThrows(string value)
+        {
+            var responseHeaders = new HttpResponseHeaders(_ => Encoding.UTF8);
+
+            // Known special header
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                ((IHeaderDictionary)responseHeaders).Allow = value;
+            });
+
+            // Unknown header fallback
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                ((IHeaderDictionary)responseHeaders).Accept = value;
+            });
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                ((IHeaderDictionary)responseHeaders)["Unknown"] = value;
+            });
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                ((IHeaderDictionary)responseHeaders)["Unknown"] = new StringValues(new[] { "valid", value });
+            });
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                ((IDictionary<string, StringValues>)responseHeaders)["Unknown"] = value;
+            });
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
+                ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
+            });
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
+                ((IDictionary<string, StringValues>)responseHeaders).Add("Unknown", value);
+            });
+        }
+
+        [Theory]
+        [InlineData("Da\u0080ta")]
+        [InlineData("Da™ta")]
+        [InlineData("Dašta")]
+        public void AddingNonAsciiCharactersWithCustomEncoderWorks(string value)
+        {
+            var responseHeaders = new HttpResponseHeaders(_ => Encoding.UTF8);
+
+            // Known special header
+            ((IHeaderDictionary)responseHeaders).Allow = value;
+
+            // Unknown header fallback
+            ((IHeaderDictionary)responseHeaders).Accept = value;
+
+            ((IHeaderDictionary)responseHeaders)["Unknown"] = value;
+
+            ((IHeaderDictionary)responseHeaders)["Unknown"] = new StringValues(new[] { "valid", value });
+
+            ((IDictionary<string, StringValues>)responseHeaders)["Unknown"] = value;
+
+            ((IHeaderDictionary)responseHeaders).Clear();
+            var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
+            ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
+
+            ((IHeaderDictionary)responseHeaders).Clear();
+            kvp = new KeyValuePair<string, StringValues>("Unknown", value);
+            ((IDictionary<string, StringValues>)responseHeaders).Add("Unknown", value);
         }
 
         [Fact]

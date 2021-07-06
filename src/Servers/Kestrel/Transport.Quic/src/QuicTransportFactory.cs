@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic");
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic");
             _log = new QuicTrace(logger);
             _options = options.Value;
         }

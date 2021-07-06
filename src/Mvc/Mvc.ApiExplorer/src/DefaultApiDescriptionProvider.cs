@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             };
         }
 
-        private IEnumerable<string?> GetHttpMethods(ControllerActionDescriptor action)
+        private static IEnumerable<string?> GetHttpMethods(ControllerActionDescriptor action)
         {
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private RouteTemplate? ParseTemplate(ControllerActionDescriptor action)
+        private static RouteTemplate? ParseTemplate(ControllerActionDescriptor action)
         {
             if (action.AttributeRouteInfo?.Template != null)
             {
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return contentTypes;
         }
 
-        private IApiRequestMetadataProvider[]? GetRequestMetadataAttributes(ControllerActionDescriptor action)
+        private static IApiRequestMetadataProvider[]? GetRequestMetadataAttributes(ControllerActionDescriptor action)
         {
             if (action.FilterDescriptors == null)
             {
