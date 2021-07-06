@@ -52,7 +52,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
 #if (GenerateApiOrGraph)
-var initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ');
 
 #endif
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
@@ -71,7 +71,7 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
 #endif
 #elif (IndividualB2CAuth)
 #if (GenerateApi)
-var initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ');
 
 #endif
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
