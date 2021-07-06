@@ -98,22 +98,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     Assert.Equal("Location", e.Name);
                     Assert.Equal("https://www.example.com", e.Value);
+                    Assert.Equal(63u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal("Cache-Control", e.Name);
                     Assert.Equal("private", e.Value);
+                    Assert.Equal(52u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal("Date", e.Name);
                     Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
+                    Assert.Equal(65u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal(":status", e.Name);
                     Assert.Equal("302", e.Value);
+                    Assert.Equal(42u, e.Size);
                 });
+
+            Assert.Equal(222u, hpackEncoder.TableSize);
 
             // Second response
             enumerator.Initialize(headers);
@@ -129,22 +135,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     Assert.Equal(":status", e.Name);
                     Assert.Equal("307", e.Value);
+                    Assert.Equal(42u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal("Location", e.Name);
                     Assert.Equal("https://www.example.com", e.Value);
+                    Assert.Equal(63u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal("Cache-Control", e.Name);
                     Assert.Equal("private", e.Value);
+                    Assert.Equal(52u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal("Date", e.Name);
                     Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
+                    Assert.Equal(65u, e.Size);
                 });
+
+            Assert.Equal(222u, hpackEncoder.TableSize);
 
             // Third response
             headers.Date = "Mon, 21 Oct 2013 20:13:22 GMT";
@@ -171,22 +183,172 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     Assert.Equal("Content-Encoding", e.Name);
                     Assert.Equal("gzip", e.Value);
+                    Assert.Equal(52u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal("Date", e.Name);
                     Assert.Equal("Mon, 21 Oct 2013 20:13:22 GMT", e.Value);
+                    Assert.Equal(65u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal(":status", e.Name);
                     Assert.Equal("307", e.Value);
+                    Assert.Equal(42u, e.Size);
                 },
                 e =>
                 {
                     Assert.Equal("Location", e.Name);
                     Assert.Equal("https://www.example.com", e.Value);
+                    Assert.Equal(63u, e.Size);
                 });
+
+            Assert.Equal(222u, hpackEncoder.TableSize);
+        }
+
+        [Fact]
+        public void BeginEncodeHeadersCustomEncoding_MaxHeaderTableSizeExceeded_EvictionsToFit()
+        {
+            // Test follows example https://tools.ietf.org/html/rfc7541#appendix-C.5
+
+            Span<byte> buffer = new byte[1024 * 16];
+
+            var headers = (IHeaderDictionary)new HttpResponseHeaders(_ => Encoding.UTF8);
+            headers.CacheControl = "你好e";
+            headers.Date = "Mon, 21 Oct 2013 20:13:21 GMT";
+            headers.Location = "你好你好你好你.c";
+
+            var enumerator = new Http2HeadersEnumerator();
+
+            var hpackEncoder = new DynamicHPackEncoder(maxHeaderTableSize: 256);
+
+            // First response
+            enumerator.Initialize((HttpResponseHeaders)headers);
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
+
+            var result = buffer.Slice(0, length).ToArray();
+            var hex = BitConverter.ToString(result);
+            Assert.Equal(
+                "48-03-33-30-32-61-1D-4D-6F-6E-2C-20-32-31-20-4F-" +
+                "63-74-20-32-30-31-33-20-32-30-3A-31-33-3A-32-31-" +
+                "20-47-4D-54-58-07-E4-BD-A0-E5-A5-BD-65-6E-17-E4-" +
+                "BD-A0-E5-A5-BD-E4-BD-A0-E5-A5-BD-E4-BD-A0-E5-A5-" +
+                "BD-E4-BD-A0-2E-63", hex);
+
+            var entries = GetHeaderEntries(hpackEncoder);
+            Assert.Collection(entries,
+                e =>
+                {
+                    Assert.Equal("Location", e.Name);
+                    Assert.Equal("你好你好你好你.c", e.Value);
+                    Assert.Equal(63u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal("Cache-Control", e.Name);
+                    Assert.Equal("你好e", e.Value);
+                    Assert.Equal(52u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal("Date", e.Name);
+                    Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
+                    Assert.Equal(65u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal(":status", e.Name);
+                    Assert.Equal("302", e.Value);
+                    Assert.Equal(42u, e.Size);
+                });
+
+            Assert.Equal(222u, hpackEncoder.TableSize);
+
+            // Second response
+            enumerator.Initialize(headers);
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(307, hpackEncoder, enumerator, buffer, out length));
+
+            result = buffer.Slice(0, length).ToArray();
+            hex = BitConverter.ToString(result);
+            Assert.Equal("48-03-33-30-37-C1-C0-BF", hex);
+
+            entries = GetHeaderEntries(hpackEncoder);
+            Assert.Collection(entries,
+                e =>
+                {
+                    Assert.Equal(":status", e.Name);
+                    Assert.Equal("307", e.Value);
+                    Assert.Equal(42u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal("Location", e.Name);
+                    Assert.Equal("你好你好你好你.c", e.Value);
+                    Assert.Equal(63u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal("Cache-Control", e.Name);
+                    Assert.Equal("你好e", e.Value);
+                    Assert.Equal(52u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal("Date", e.Name);
+                    Assert.Equal("Mon, 21 Oct 2013 20:13:21 GMT", e.Value);
+                    Assert.Equal(65u, e.Size);
+                });
+
+            Assert.Equal(222u, hpackEncoder.TableSize);
+
+            // Third response
+            headers.Date = "Mon, 21 Oct 2013 20:13:22 GMT";
+            headers.ContentEncoding = "gzip";
+            headers.SetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
+
+            enumerator.Initialize(headers);
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));
+
+            result = buffer.Slice(0, length).ToArray();
+            hex = BitConverter.ToString(result);
+            Assert.Equal(
+                "88-61-1D-4D-6F-6E-2C-20-32-31-20-4F-63-74-20-32-" +
+                "30-31-33-20-32-30-3A-31-33-3A-32-32-20-47-4D-54-" +
+                "C1-5A-04-67-7A-69-70-C1-1F-28-38-66-6F-6F-3D-41-" +
+                "53-44-4A-4B-48-51-4B-42-5A-58-4F-51-57-45-4F-50-" +
+                "49-55-41-58-51-57-45-4F-49-55-3B-20-6D-61-78-2D-" +
+                "61-67-65-3D-33-36-30-30-3B-20-76-65-72-73-69-6F-" +
+                "6E-3D-31", hex);
+
+            entries = GetHeaderEntries(hpackEncoder);
+            Assert.Collection(entries,
+                e =>
+                {
+                    Assert.Equal("Content-Encoding", e.Name);
+                    Assert.Equal("gzip", e.Value);
+                    Assert.Equal(52u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal("Date", e.Name);
+                    Assert.Equal("Mon, 21 Oct 2013 20:13:22 GMT", e.Value);
+                    Assert.Equal(65u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal(":status", e.Name);
+                    Assert.Equal("307", e.Value);
+                    Assert.Equal(42u, e.Size);
+                },
+                e =>
+                {
+                    Assert.Equal("Location", e.Name);
+                    Assert.Equal("你好你好你好你.c", e.Value);
+                    Assert.Equal(63u, e.Size);
+                });
+
+            Assert.Equal(222u, hpackEncoder.TableSize);
         }
 
         [Theory]

@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Http2Cat
 
         private static bool EncodeHeader(string name, string value, Span<byte> buffer, out int length)
         {
-            return HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out length);
+            return HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, valueEncoding: null, buffer, out length);
         }
     }
 }

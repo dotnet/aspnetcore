@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Testing
         private readonly Stream _stream;
         private readonly StreamReader _reader;
 
-        protected StreamBackedTestConnection(Stream stream)
+        protected StreamBackedTestConnection(Stream stream, Encoding encoding = null)
         {
             _stream = stream;
-            _reader = new StreamReader(_stream, Encoding.ASCII);
+            _reader = new StreamReader(_stream, encoding ?? Encoding.ASCII);
         }
 
         public Stream Stream => _stream;

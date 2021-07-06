@@ -70,9 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason);
 
-        void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex);
+        void HPackDecodingError(string connectionId, int streamId, Exception ex);
 
-        void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex);
+        void HPackEncodingError(string connectionId, int streamId, Exception ex);
 
         void Http2FrameReceived(string connectionId, Http2Frame frame);
 
@@ -94,9 +94,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame);
 
-        void QPackDecodingError(string connectionId, long streamId, QPackDecodingException ex);
+        void QPackDecodingError(string connectionId, long streamId, Exception ex);
 
-        void QPackEncodingError(string connectionId, long streamId, QPackEncodingException ex);
+        void QPackEncodingError(string connectionId, long streamId, Exception ex);
 
         void Http3OutboundControlStreamError(string connectionId, Exception ex);
     }

@@ -1954,6 +1954,105 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseHeaders_WithNonAscii_Throws()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task ResponseHeaders_WithNonAsciiAndCustomEncoder_Works()
+        {
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
+
+            await InitializeConnectionAsync(async context =>
+            {
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+                context.Response.ContentType = "Custom 你好 Type";
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 84,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(4, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("Custom 你好 Type", _decodedHeaders[HeaderNames.ContentType]);
+            Assert.Equal("Custom 你好 Value", _decodedHeaders["CustomName"]);
+        }
+
+        [Fact]
+        public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+        }
+
+        [Fact]
         public async Task ResponseTrailers_WithoutData_Sent()
         {
             await InitializeConnectionAsync(context =>
@@ -2185,6 +2284,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await context.Response.WriteAsync("Hello World");
                 Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
                 Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+                // ETag is one of the few special cased trailers. Accept is not.
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
             });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -2211,6 +2314,92 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(2, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithNonAsciiAndCustomEncoder_Works()
+        {
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+                context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+                // ETag is one of the few special cased trailers. Accept is not.
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Accept";
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 80,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Equal("Custom 你好 Value", _decodedHeaders["CustomName"]);
+            Assert.Equal("Custom 你好 Tag", _decodedHeaders[HeaderNames.ETag]);
+            Assert.Equal("Custom 你好 Accept", _decodedHeaders[HeaderNames.Accept]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
         }
 
         [Fact]
@@ -4785,6 +4974,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_CustomEncoding_InvalidCharacters_AbortsConnection()
+        {
+            var encoding = Encoding.GetEncoding(Encoding.ASCII.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => encoding;
+
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.Equal("£", context.Request.Headers["X-Test"]);
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, LatinHeaderData, endStream: true);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
+                Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
         }
 
         [Fact]
