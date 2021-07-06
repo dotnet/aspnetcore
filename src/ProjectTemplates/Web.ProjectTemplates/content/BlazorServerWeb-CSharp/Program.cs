@@ -46,13 +46,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 #if (IndividualLocalAuth)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 #if (UseLocalDB)
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 #else
-    options.UseSqlite(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(connectionString));
 #endif
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -139,6 +138,8 @@ app.UseHttpsRedirection();
 #endif
 
 app.UseStaticFiles();
+
+app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)
 app.UseAuthentication();
