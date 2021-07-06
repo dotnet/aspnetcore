@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
-        public async Task Http3AndSocketsCoExist()
+        public async Task Http3AndSocketsCoexist()
         {
             // Arrange
             var builder = GetHostBuilder()
