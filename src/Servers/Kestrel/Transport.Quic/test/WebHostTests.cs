@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
     {
         [ConditionalFact]
         [MsQuicSupported]
-        public async Task HelloWorld()
+        public async Task UseUrls_HelloWorld_ClientSuccess()
         {
             // Arrange
             var builder = GetHostBuilder()
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         [MsQuicSupported]
         [InlineData(5002, 5003)]
         [InlineData(5004, 5004)]
-        public async Task Http3AndSocketsCoexistOnDifferentEndpoints(int http3Port, int http1Port)
+        public async Task Listen_Http3AndSocketsCoexistOnDifferentEndpoints_ClientSuccess(int http3Port, int http1Port)
         {
             // Arrange
             var builder = GetHostBuilder()
@@ -112,14 +112,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var host = builder.Build();
             await host.StartAsync().DefaultTimeout();
 
-            await CallHttp3AndHttp1Endpoints(http3Port, http1Port);
+            await CallHttp3AndHttp1EndpointsAsync(http3Port, http1Port);
 
             await host.StopAsync().DefaultTimeout();
         }
 
         [ConditionalFact]
         [MsQuicSupported]
-        public async Task Http3AndSocketsCoexistOnSameEndpoint()
+        public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_ClientSuccess()
         {
             // Arrange
             var builder = GetHostBuilder()
@@ -147,12 +147,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var host = builder.Build();
             await host.StartAsync().DefaultTimeout();
 
-            await CallHttp3AndHttp1Endpoints(http3Port: 5005, http1Port: 5005);
+            await CallHttp3AndHttp1EndpointsAsync(http3Port: 5005, http1Port: 5005);
 
             await host.StopAsync().DefaultTimeout();
         }
 
-        private static async Task CallHttp3AndHttp1Endpoints(int http3Port, int http1Port)
+        private static async Task CallHttp3AndHttp1EndpointsAsync(int http3Port, int http1Port)
         {
             // HTTP/3
             using (var client = new HttpClient())
