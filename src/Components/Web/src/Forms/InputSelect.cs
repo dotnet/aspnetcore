@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -11,6 +13,16 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
     {
+        private readonly bool _isMultipleSelect;
+
+        /// <summary>
+        /// Constructs an instance of <see cref="InputSelect{TValue}"/>.
+        /// </summary>
+        public InputSelect()
+        {
+            _isMultipleSelect = typeof(TValue).IsArray;
+        }
+
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
         /// </summary>
@@ -30,15 +42,33 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenElement(0, "select");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "class", CssClass);
-            builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValueAsString));
-            builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-            builder.AddElementReferenceCapture(5, __selectReference => Element = __selectReference);
-            builder.AddContent(6, ChildContent);
+            builder.AddAttribute(3, "multiple", _isMultipleSelect);
+
+            if (_isMultipleSelect)
+            {
+                builder.AddAttribute(4, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
+                builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?[]?>(this, SetCurrentValueAsStringArray, default));
+            }
+            else
+            {
+                builder.AddAttribute(6, "value", CurrentValueAsString);
+                builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
+            }
+
+            builder.AddElementReferenceCapture(8, __selectReference => Element = __selectReference);
+            builder.AddContent(9, ChildContent);
             builder.CloseElement();
         }
 
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
             => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+
+        private void SetCurrentValueAsStringArray(string?[]? value)
+        {
+            CurrentValue = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var result)
+                ? result
+                : default;
+        }
     }
 }

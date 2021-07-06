@@ -252,10 +252,35 @@ namespace Microsoft.AspNetCore.Components.Web
                 case JsonValueKind.False:
                     changeArgs.Value = jsonElement.GetBoolean();
                     break;
+                case JsonValueKind.Array:
+                    changeArgs.Value = GetJsonElementStringArrayValue(jsonElement);
+                    break;
                 default:
                     throw new ArgumentException($"Unsupported {nameof(ChangeEventArgs)} value {jsonElement}.");
             }
+
             return changeArgs;
+        }
+
+        private static string?[] GetJsonElementStringArrayValue(JsonElement jsonElement)
+        {
+            var result = new string?[jsonElement.GetArrayLength()];
+            var elementIndex = 0;
+
+            foreach (var arrayElement in jsonElement.EnumerateArray())
+            {
+                if (arrayElement.ValueKind != JsonValueKind.String)
+                {
+                    throw new InvalidOperationException(
+                        $"Unsupported {nameof(JsonElement)} value kind '{arrayElement.ValueKind}' " +
+                        $"(expected '{JsonValueKind.String}').");
+                }
+
+                result[elementIndex] = arrayElement.GetString();
+                elementIndex++;
+            }
+
+            return result;
         }
     }
 
