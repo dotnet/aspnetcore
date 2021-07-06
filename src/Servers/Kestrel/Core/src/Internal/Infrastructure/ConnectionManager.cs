@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal class ConnectionManager
     {
+        private static long _lastConnectionId = long.MinValue;
+
         private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
         private readonly IKestrelTrace _trace;
 
@@ -21,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             UpgradedConnectionCount = upgradedConnections;
             _trace = trace;
         }
+
+        public long GetNewConnectionId() => Interlocked.Increment(ref _lastConnectionId);
 
         /// <summary>
         /// Connections that have been switched to a different protocol.
