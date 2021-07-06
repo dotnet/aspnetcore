@@ -5,7 +5,7 @@
     <!-- We are a package that depends on the shared framework, this allows us to
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
-    <!-- IdentityServer packages are not signed -->
+    <!-- IdentityServer packages are not strong named -->
     <NoWarn>CS8002</NoWarn>
   </PropertyGroup>
 

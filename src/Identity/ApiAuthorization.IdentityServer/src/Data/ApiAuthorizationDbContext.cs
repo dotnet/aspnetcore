@@ -46,11 +46,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
 
         /// <summary>
-        /// Gets or sets the keys.
+        /// Gets or sets the <see cref="DbSet{Key}"/>.
         /// </summary>
-        /// <value>
-        /// The keys.
-        /// </value>
         public DbSet<Key> Keys { get; set; }
 
         Task<int> IPersistedGrantDbContext.SaveChangesAsync() => base.SaveChangesAsync();
