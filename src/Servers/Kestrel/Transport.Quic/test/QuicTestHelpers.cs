@@ -32,7 +32,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var quicTransportOptions = new QuicTransportOptions();
             quicTransportOptions.Alpn = Alpn;
             quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
-            quicTransportOptions.SystemClock = systemClock;
+            if (systemClock != null)
+            {
+                quicTransportOptions.SystemClock = systemClock;
+            }
 
             return new QuicTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
         }
