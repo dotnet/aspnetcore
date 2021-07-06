@@ -1190,6 +1190,57 @@ describe("HubConnection", () => {
                 }
             });
         });
+
+        it("ignores error from 'next' and 'complete' function", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.stream("testMethod")
+                        .subscribe({
+                            next: (_item) => {
+                                throw new Error("from next");
+                            },
+                            error: (_e) => {},
+                            complete: () => {
+                                throw new Error("from complete");
+                            }
+                        });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
+
+                    connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, "Stream callback threw error 'Error: from complete'.",
+            "Stream callback threw error 'Error: from next'.");
+        });
+
+        it("ignores error from 'error' function", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.stream("testMethod")
+                        .subscribe({
+                            next: (_item) => {},
+                            error: (_e) => {
+                                throw new Error("from error");
+                            },
+                            complete: () => {}
+                        });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, "Stream 'error' callback called with 'Error: Invocation canceled due to the underlying connection being closed.' threw error 'Error: from error'.");
+        });
     });
 
     describe("onClose", () => {

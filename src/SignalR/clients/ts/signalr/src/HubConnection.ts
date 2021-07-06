@@ -544,7 +544,11 @@ export class HubConnection {
                             if (message.type === MessageType.Completion) {
                                 delete this._callbacks[message.invocationId];
                             }
-                            callback(message);
+                            try {
+                                callback(message);
+                            } catch (e) {
+                                this._logger.log(LogLevel.Error, `Stream callback threw error '${e}'.`);
+                            }
                         }
                         break;
                     }
@@ -830,7 +834,11 @@ export class HubConnection {
         Object.keys(callbacks)
             .forEach((key) => {
                 const callback = callbacks[key];
-                callback(null, error);
+                try {
+                    callback(null, error);
+                } catch (e) {
+                    this._logger.log(LogLevel.Error, `Stream 'error' callback called with '${error}' threw error '${e}'.`);
+                }
             });
     }
 
