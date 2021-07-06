@@ -59,7 +59,9 @@
     <ProjectReference
       Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\" />
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\">
+        <BuildProjectReferences></BuildProjectReferences>
+    </ProjectReference>
 
     <ProjectReference
       Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
