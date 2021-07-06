@@ -43,6 +43,9 @@ To run the ProjectTemplate tests:
 
 **Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
 
+Alternatively, you can run dotnet new -i Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\ to install the templates
+And run dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\ to turn off the built in templates
+
 ## More Information
 
 For more information, see the [ASP.NET Core README](../../README.md).
