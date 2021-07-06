@@ -1,5 +1,7 @@
 <Project>
 
+  <Sdk Name="Microsoft.DotNet.PackageValidation" Version="$(MicrosoftDotNetPackageValidationVersion)" />
+
   <PropertyGroup>
     <LangVersion>9.0</LangVersion>
 
