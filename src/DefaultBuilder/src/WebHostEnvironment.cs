@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             if (string.IsNullOrEmpty(webRootPath))
             {
-                return contentRootPath;
+                return Path.GetFullPath(contentRootPath);
             }
 
             if (Path.IsPathRooted(webRootPath))
