@@ -92,7 +92,6 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = options.DefaultPolicy;
 });
 builder.Services.AddRazorPages()
-    .AddMvcOptions(options => {})
     .AddMicrosoftIdentityUI();
 #elif (IndividualB2CAuth)
 builder.Services.AddRazorPages()
