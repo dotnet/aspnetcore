@@ -68,6 +68,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public bool AllowSynchronousIO { get; set; }
 
+        /// Gets or sets a value that controls how the `:scheme` field for HTTP/2 and HTTP/3 requests is validated.
+        /// <para>
+        /// If <c>false</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests must exactly match the transport (e.g. https for TLS
+        /// connections, http for non-TLS). If <c>true</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests can be set to alternate values
+        /// and this will be reflected by `HttpRequest.Scheme`. The Scheme must still be valid according to
+        /// https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1. Only enable this when working with a trusted proxy. This can be used in
+        /// scenarios such as proxies converting from alternate protocols. See https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3.
+        /// Applications that enable this should validate an expected scheme is provided before using it.
+        /// </para>
+        /// <remarks>
+        /// Defaults to <c>false</c>.
+        /// </remarks>
+        public bool AllowAlternateSchemes { get; set; }
+
         /// <summary>
         /// Gets or sets a value that controls whether the string values materialized
         /// will be reused across requests; if they match, or if the strings will always be reallocated.
