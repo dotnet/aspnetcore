@@ -60,7 +60,7 @@
       Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
       Targets="Build;Publish"
       Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\">
-        <BuildProjectReferences></BuildProjectReferences>
+        <BuildProjectReferences>false</BuildProjectReferences>
     </ProjectReference>
 
     <ProjectReference
