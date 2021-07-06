@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
-    public class QuicTransportFactoryTests
+    public class QuicTransportFactoryTests : TestApplicationErrorLoggerLoggedTest
     {
         [ConditionalFact]
         [MsQuicSupported]
