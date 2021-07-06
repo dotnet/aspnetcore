@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.Builder
             ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty;
             EnvironmentName = Environments.Production;
 
-            // This feels wrong, but HostingEnvironment also sets WebRoot to "default!".
-            WebRootPath = default!;
-
             // Default to /wwwroot if it exists.
             var wwwroot = Path.Combine(ContentRootPath, "wwwroot");
             if (Directory.Exists(wwwroot))
@@ -81,6 +78,8 @@ namespace Microsoft.AspNetCore.Builder
             destination.ApplicationName = ApplicationName;
             destination.EnvironmentName = EnvironmentName;
 
+            ResolveFileProviders(new Configuration());
+
             destination.ContentRootPath = ContentRootPath;
             destination.ContentRootFileProvider = ContentRootFileProvider;
 
@@ -106,6 +105,21 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
+        private string ResolveWebRootPath(string webRootPath, string contentRootPath)
+        {
+            if (string.IsNullOrEmpty(webRootPath))
+            {
+                return contentRootPath;
+            }
+
+            if (Path.IsPathRooted(webRootPath))
+            {
+                return webRootPath;
+            }
+
+            return Path.Combine(Path.GetFullPath(contentRootPath), webRootPath);
+        }
+
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
 
@@ -113,6 +127,13 @@ namespace Microsoft.AspNetCore.Builder
         public string ContentRootPath { get; set; }
 
         public IFileProvider WebRootFileProvider { get; set; }
-        public string WebRootPath { get; set; }
+
+        // Mimick the setting used in HostingEnvironment
+        private string _webRootPath = default!;
+        public string WebRootPath
+        {
+            get => _webRootPath;
+            set => _webRootPath = ResolveWebRootPath(value, ContentRootPath);
+        }
     }
 }
