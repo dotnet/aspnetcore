@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Builder
         public string WebRootPath
         {
             get => _webRootPath;
-            set => _webRootPath = ResolveWebRootPath(value, ContentRootPath);
+            set => _webRootPath = ResolveWebRootPath(value, ContentRootPath ?? Directory.GetCurrentDirectory());
         }
     }
 }
