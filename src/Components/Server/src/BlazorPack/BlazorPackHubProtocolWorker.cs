@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Text.Json;
 using MessagePack;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
@@ -48,6 +49,17 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                     }
 
                     return bytes.Value.ToArray();
+                }
+                else if (type == typeof(JsonElement))
+                {
+                    var bytes = reader.ReadBytes();
+                    if (bytes is null)
+                    {
+                        return default;
+                    }
+
+                    var jsonReader = new Utf8JsonReader(bytes.Value);
+                    return JsonElement.ParseValue(ref jsonReader);
                 }
             }
             catch (Exception ex)
