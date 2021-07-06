@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -241,8 +242,12 @@ namespace Microsoft.AspNetCore.Components.Server
             return await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
         }
 
-        public async ValueTask DispatchBrowserEvent(JsonElement eventDescriptor, JsonElement eventArgs)
+        public async ValueTask DispatchBrowserEvent(JsonElement eventInfo)
         {
+            Debug.Assert(eventInfo.GetArrayLength() == 2, "Array length should be 2");
+            var eventDescriptor = eventInfo[0];
+            var eventArgs = eventInfo[1];
+
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)
             {

@@ -35,38 +35,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(DispatchEvent))]
-        public static async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
+        public static async Task DispatchEvent(byte[] eventInfo)
         {
-            var eventDescriptorElement = GetJsonElement(eventDescriptorJson);
-            var eventDescriptor = WebEventDescriptorReader.Read(eventDescriptorElement);
+            var payload = GetJsonElements(eventInfo);
+            var eventDescriptor = WebEventDescriptorReader.Read(payload.EventDescriptor);
             var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
 
-            var eventArgsElement = GetJsonElement(eventArgsJson);
+            var webEvent = WebEventData.Parse(
+                renderer,
+                DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(),
+                eventDescriptor,
+                payload.EventArgs);
 
-            var webEvent = WebEventData.Parse(renderer, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), eventDescriptor, eventArgsElement);
             await renderer.DispatchEventAsync(
                 webEvent.EventHandlerId,
                 webEvent.EventFieldInfo,
                 webEvent.EventArgs);
         }
 
-        private static JsonElement GetJsonElement(string jsonString)
+        private static (JsonElement EventDescriptor, JsonElement EventArgs) GetJsonElements(byte[] eventInfo)
         {
-            var byteLength = Encoding.UTF8.GetByteCount(jsonString);
-            var bytes = ArrayPool<byte>.Shared.Rent(byteLength);
-
-            try
-            {
-                var writtenBytes = Encoding.UTF8.GetBytes(jsonString, bytes);
-                Debug.Assert(writtenBytes == byteLength);
-
-                var jsonReader = new Utf8JsonReader(bytes.AsSpan(0, writtenBytes));
-                return JsonElement.ParseValue(ref jsonReader);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(bytes);
-            }
+            // We receive data in the shape [eventDescriptor, eventArgs]
+            var jsonReader = new Utf8JsonReader(eventInfo);
+            var arrayElement = JsonElement.ParseValue(ref jsonReader);
+            Debug.Assert(arrayElement.GetArrayLength() == 2, "Array length should be 2");
+            return (arrayElement[0], arrayElement[1]);
         }
     }
 }
