@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             var (mockClientProxy, hub) = InitializeComponentHub();
 
-            await hub.DispatchBrowserEvent(default, default);
+            await hub.DispatchBrowserEvent(default);
 
             var errorMessage = "Circuit not initialized.";
             mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
