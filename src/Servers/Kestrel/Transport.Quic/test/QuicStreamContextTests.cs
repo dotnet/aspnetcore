@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
 
             // Act
-            await CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+            await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
 
             Assert.Contains(LogMessages, m => m.Message.Contains("send loop completed gracefully"));
 
@@ -60,43 +60,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
 
             // Act
-            var stream1 = await CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
-            var stream2 = await CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+            var stream1 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+            var stream2 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
 
             Assert.Same(stream1, stream2);
 
             var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
             Assert.Equal(1, quicConnectionContext.StreamPool.Count);
-        }
-
-        private static async Task<QuicStreamContext> CreateAndCompleteBidirectionalStreamGracefully(QuicConnection quicConnection, MultiplexedConnectionContext serverConnection)
-        {
-            var clientStream = quicConnection.OpenBidirectionalStream();
-            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
-            var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
-            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
-            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
-
-            // Input should be completed.
-            readResult = await serverStream.Transport.Input.ReadAsync();
-
-            // Complete reading and writing.
-            await serverStream.Transport.Input.CompleteAsync();
-            await serverStream.Transport.Output.CompleteAsync();
-
-            // Assert
-            Assert.True(readResult.IsCompleted);
-
-            var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
-
-            // Both send and receive loops have exited.
-            await quicStreamContext._processingTask.DefaultTimeout();
-            Assert.True(quicStreamContext.CanWrite);
-            Assert.True(quicStreamContext.CanRead);
-
-            await quicStreamContext.DisposeAsync();
-
-            return quicStreamContext;
         }
 
         [ConditionalFact]
@@ -304,6 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             serverStream.Abort(new ConnectionAbortedException("Test message"));
 
             // TODO - client isn't getting abort?
+            // https://github.com/dotnet/runtime/issues/55056
             readCount = await clientStream.ReadAsync(buffer).DefaultTimeout();
 
             // Assert

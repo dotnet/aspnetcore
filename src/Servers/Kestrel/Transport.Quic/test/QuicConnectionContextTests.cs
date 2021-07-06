@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Net.Quic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -162,6 +164,86 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             // Receive complete in client.
             readCount = await clientStream.ReadAsync(buffer).DefaultTimeout();
             Assert.Equal(0, readCount);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
+        {
+            // Arrange
+            var now = new DateTimeOffset(2021, 7, 6, 12, 0, 0, TimeSpan.Zero);
+            var testSystemClock = new TestSystemClock { UtcNow = now };
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testSystemClock);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+
+            var testHeartbeatFeature = new TestHeartbeatFeature();
+            serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
+
+            // Act & Assert
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+
+            var stream1 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+            QuicStreamContext pooledStream = quicConnectionContext.StreamPool._array[0];
+            Assert.Same(stream1, pooledStream);
+            Assert.Equal(now.Ticks + QuicConnectionContext.StreamPoolExpiryTicks, pooledStream.PoolExpirationTicks);
+
+            now = now.AddMilliseconds(100);
+            testSystemClock.UtcNow = now;
+            testHeartbeatFeature.RaiseHeartbeat();
+            // Not removed.
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+
+            var stream2 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+            pooledStream = quicConnectionContext.StreamPool._array[0];
+            Assert.Same(stream1, pooledStream);
+            Assert.Equal(now.Ticks + QuicConnectionContext.StreamPoolExpiryTicks, pooledStream.PoolExpirationTicks);
+
+            Assert.Same(stream1, stream2);
+
+            now = now.AddTicks(QuicConnectionContext.StreamPoolExpiryTicks);
+            testSystemClock.UtcNow = now;
+            testHeartbeatFeature.RaiseHeartbeat();
+            // Not removed.
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+
+            now = now.AddTicks(1);
+            testSystemClock.UtcNow = now;
+            testHeartbeatFeature.RaiseHeartbeat();
+            // Removed.
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+        }
+
+        private class TestSystemClock : ISystemClock
+        {
+            public DateTimeOffset UtcNow { get; set; }
+        }
+
+        private class TestHeartbeatFeature : IConnectionHeartbeatFeature
+        {
+            private readonly List<(Action<object> Action, object State)> _actions = new List<(Action<object>, object)>();
+
+            public void OnHeartbeat(Action<object> action, object state)
+            {
+                _actions.Add((action, state));
+            }
+
+            public void RaiseHeartbeat()
+            {
+                foreach (var a in _actions)
+                {
+                    a.Action(a.State);
+                }
+            }
         }
     }
 }

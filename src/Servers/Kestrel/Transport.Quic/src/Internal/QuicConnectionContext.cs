@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         internal QuicStreamStack StreamPool;
 
         private bool _streamPoolHeartbeatInitialized;
-        private long _currentTicks;
+        // Ticks updated once per-second in heartbeat event.
+        private long _heartbeatTicks;
         private readonly object _poolLock = new object();
 
         private readonly QuicConnection _connection;
@@ -156,7 +157,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 quicStream = _connection.OpenBidirectionalStream();
             }
 
-            // TODO - pool connect streams?
+            // Only a handful of control streams are created by the server and they last for the
+            // lifetime of the connection. No value in pooling them.
             QuicStreamContext? context = new QuicStreamContext(this, _context);
             context.Initialize(quicStream);
             context.Start();
@@ -173,19 +175,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 if (!_streamPoolHeartbeatInitialized)
                 {
                     // Heartbeat feature is added to connection features by Kestrel.
+                    // No event is on the context is raised between feature being added and serving
+                    // connections so initialize heartbeat the first time a stream is added to
+                    // the connection's stream pool.
                     var heartbeatFeature = Features.Get<IConnectionHeartbeatFeature>();
                     if (heartbeatFeature != null)
                     {
-                        heartbeatFeature.OnHeartbeat(state => ((QuicConnectionContext)state).RemoveExpiredStreams(), this);
+                        heartbeatFeature.OnHeartbeat(static state => ((QuicConnectionContext)state).RemoveExpiredStreams(), this);
                     }
 
+                    // Set ticks for the first time. Ticks are then updated in heartbeat.
                     var now = _context.Options.SystemClock.UtcNow.Ticks;
-                    Volatile.Write(ref _currentTicks, now);
+                    Volatile.Write(ref _heartbeatTicks, now);
 
                     _streamPoolHeartbeatInitialized = true;
                 }
 
-                stream.PoolExpirationTicks = Volatile.Read(ref _currentTicks) + StreamPoolExpiryTicks;
+                stream.PoolExpirationTicks = Volatile.Read(ref _heartbeatTicks) + StreamPoolExpiryTicks;
                 StreamPool.Push(stream);
             }
         }
@@ -194,8 +200,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             lock (_poolLock)
             {
+                // Update ticks on heartbeat. A precise value isn't necessary.
                 var now = _context.Options.SystemClock.UtcNow.Ticks;
-                Volatile.Write(ref _currentTicks, now);
+                Volatile.Write(ref _heartbeatTicks, now);
 
                 StreamPool.RemoveExpired(now);
             }
