@@ -75,9 +75,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             }
         }
 
-        [ConditionalFact]
+        [ConditionalTheory]
         [MsQuicSupported]
-        public async Task Http3AndSocketsCoexist()
+        [InlineData(5002, 5003)]
+        [InlineData(5004, 5004)]
+        public async Task Http3AndSocketsCoexistOnDifferentEndpoints(int http3Port, int http1Port)
         {
             // Arrange
             var builder = GetHostBuilder()
@@ -86,12 +88,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                     webHostBuilder
                         .UseKestrel(o =>
                         {
-                            o.Listen(IPAddress.Parse("127.0.0.1"), 5002, listenOptions =>
+                            o.Listen(IPAddress.Parse("127.0.0.1"), http3Port, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http3;
                                 listenOptions.UseHttps();
                             });
-                            o.Listen(IPAddress.Parse("127.0.0.1"), 5003, listenOptions =>
+                            o.Listen(IPAddress.Parse("127.0.0.1"), http1Port, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http1;
                                 listenOptions.UseHttps();
@@ -110,10 +112,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var host = builder.Build();
             await host.StartAsync().DefaultTimeout();
 
+            await CallHttp3AndHttp1Endpoints(http3Port, http1Port);
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task Http3AndSocketsCoexistOnSameEndpoint()
+        {
+            // Arrange
+            var builder = GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel(o =>
+                        {
+                            o.Listen(IPAddress.Parse("127.0.0.1"), 5005, listenOptions =>
+                            {
+                                listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
+                                listenOptions.UseHttps();
+                            });
+                        })
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
+                            {
+                                await context.Response.WriteAsync("hello, world");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
+
+            using var host = builder.Build();
+            await host.StartAsync().DefaultTimeout();
+
+            await CallHttp3AndHttp1Endpoints(http3Port: 5005, http1Port: 5005);
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        private static async Task CallHttp3AndHttp1Endpoints(int http3Port, int http1Port)
+        {
             // HTTP/3
             using (var client = new HttpClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:5002/");
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{http3Port}/");
                 request.Version = HttpVersion.Version30;
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
@@ -134,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using (var client = new HttpClient(httpClientHandler))
             {
                 // HTTP/1.1
-                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:5003/");
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{http1Port}/");
 
                 // Act
                 var response = await client.SendAsync(request).DefaultTimeout();
@@ -145,8 +189,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 var responseText = await response.Content.ReadAsStringAsync().DefaultTimeout();
                 Assert.Equal("hello, world", responseText);
             }
-
-            await host.StopAsync().DefaultTimeout();
         }
 
         public static IHostBuilder GetHostBuilder(
