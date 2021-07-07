@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 if (log)
                 {
-                    Logger.CandidatesNotFound(_logger, path);
+                    Log.CandidatesNotFound(_logger, path);
                 }
 
                 return Task.CompletedTask;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (log)
             {
-                Logger.CandidatesFound(_logger, path, candidates);
+                Log.CandidatesFound(_logger, path, candidates);
             }
 
             var policyCount = policies.Length;
@@ -169,11 +169,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     if (isMatch)
                     {
-                        Logger.CandidateValid(_logger, path, candidate.Endpoint);
+                        Log.CandidateValid(_logger, path, candidate.Endpoint);
                     }
                     else
                     {
-                        Logger.CandidateNotValid(_logger, path, candidate.Endpoint);
+                        Log.CandidateNotValid(_logger, path, candidate.Endpoint);
                     }
                 }
             }
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var text = path.AsSpan(segment.Start, segment.Length);
                 if (!RoutePatternMatcher.MatchComplexSegment(complexSegment, text, values))
                 {
-                    Logger.CandidateRejectedByComplexSegment(_logger, path, endpoint, complexSegment);
+                    Log.CandidateRejectedByComplexSegment(_logger, path, endpoint, complexSegment);
                     return false;
                 }
             }
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var constraint = constraints[i];
                 if (!constraint.Value.Match(httpContext, NullRouter.Instance, constraint.Key, values, RouteDirection.IncomingRequest))
                 {
-                    Logger.CandidateRejectedByConstraint(_logger, httpContext.Request.Path, endpoint, constraint.Key, constraint.Value, values[constraint.Key]);
+                    Log.CandidateRejectedByConstraint(_logger, httpContext.Request.Path, endpoint, constraint.Key, constraint.Value, values[constraint.Key]);
                     return false;
                 }
             }
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await _selector.SelectAsync(httpContext, candidateSet);
         }
 
-        private static partial class Logger
+        private static partial class Log
         {
             [LoggerMessage(1000, LogLevel.Debug,
                 "No candidates found for the request path '{Path}'",

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal static partial class HostingLoggerExtensions
+    internal static class HostingLoggerExtensions
     {
         public static void ApplicationError(this ILogger logger, Exception exception)
         {
