@@ -4695,6 +4695,17 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public void TooManyParametersWithServiceThrows()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        Assert.Throws<InvalidOperationException>(
+            () => serviceProvider.GetService<HubConnectionHandler<TooManyParamsHub>>());
+    }
+
     private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
     {
         public int ReleaseCount;

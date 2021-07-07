@@ -24,6 +24,7 @@ internal class HubMethodDescriptor
 
     private readonly MethodInfo? _makeCancelableEnumeratorMethodInfo;
     private Func<object, CancellationToken, IAsyncEnumerator<object>>? _makeCancelableEnumerator;
+        // bitset to store which parameters come from DI
         private int _isServiceArgument;
 
     public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<IAuthorizeData> policies)
