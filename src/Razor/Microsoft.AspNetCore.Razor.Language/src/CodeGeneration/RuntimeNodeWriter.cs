@@ -58,8 +58,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
-                context.CodeWriter.WritePadding(WriteCSharpExpressionMethod.Length + 1, node.Source, context);
+                linePragmaScope = context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context, WriteCSharpExpressionMethod.Length + 1);
+                if (!context.Options.UseEnhancedLinePragma)
+                {
+                    context.CodeWriter.WritePadding(WriteCSharpExpressionMethod.Length + 1, node.Source, context);
+                }
             }
 
             context.CodeWriter.WriteStartMethodInvocation(WriteCSharpExpressionMethod);

@@ -85,8 +85,8 @@ WriteAttributeValue(" ", 232, ch, 233, 3, false);
 #line hidden
 #nullable disable
 #nullable restore
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                            Write(cls);
+#line (10,35)-(10,38) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+Write(cls);
 
 #line default
 #line hidden

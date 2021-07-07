@@ -30,7 +30,7 @@ WriteAttributeValue("", 12, this.ToString(), 12, 16, false);
             EndWriteAttribute();
             WriteLiteral(">\r\n    Hello world\r\n    ");
 #nullable restore
-#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+#line (3,6)-(3,35) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
 Write(string.Format("{0}", "Hello"));
 
 #line default
@@ -57,8 +57,8 @@ Write(string.Format("{0}", "Hello"));
 #line hidden
 #nullable disable
 #nullable restore
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
-                        Write(cls);
+#line (8,31)-(8,34) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+Write(cls);
 
 #line default
 #line hidden

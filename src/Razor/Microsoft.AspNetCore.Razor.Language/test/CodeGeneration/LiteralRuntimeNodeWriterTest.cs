@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var node = new CSharpExpressionIntermediateNode()
             {
-                Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
+                Source = new SourceSpan("test.cshtml", 0, 0, 0, 3, 0, 3),
             };
             var builder = IntermediateNodeBuilder.Create(node);
             builder.Add(new IntermediateToken()
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             Assert.Equal(
 @"
 #nullable restore
-#line 1 ""test.cshtml""
+#line (1,1)-(1,4) 13 ""test.cshtml""
 WriteLiteral(i++);
 
 #line default

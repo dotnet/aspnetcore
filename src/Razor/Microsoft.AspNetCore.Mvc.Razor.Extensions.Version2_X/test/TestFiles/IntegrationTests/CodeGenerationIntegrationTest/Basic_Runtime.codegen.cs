@@ -33,7 +33,7 @@ WriteAttributeValue("", 12, this.ToString(), 12, 16, false);
             WriteLiteral(">\r\n    Hello world\r\n    ");
             EndContext();
             BeginContext(54, 29, false);
-#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+#line (3,6)-(3,35) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
 Write(string.Format("{0}", "Hello"));
 
 #line default
@@ -60,8 +60,8 @@ Write(string.Format("{0}", "Hello"));
 #line default
 #line hidden
                 BeginContext(153, 3, false);
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
-                        Write(cls);
+#line (8,31)-(8,34) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+Write(cls);
 
 #line default
 #line hidden

@@ -50,8 +50,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
                     __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                         WriteLiteral("Some buffered values with ");
 #nullable restore
-#line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
-                                                  Write(code);
+#line (11,57)-(11,61) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
+Write(code);
 
 #line default
 #line hidden
@@ -75,8 +75,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
                 BeginWriteTagHelperAttribute();
                 WriteLiteral("Current Time: ");
 #nullable restore
-#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
-                                      WriteLiteral(DateTime.Now);
+#line (9,52)-(9,64) 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
+WriteLiteral(DateTime.Now);
 
 #line default
 #line hidden

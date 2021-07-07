@@ -54,8 +54,8 @@ WriteAttributeValue(" ", 121, thing, 122, 6, false);
                     PushWriter(__razor_template_writer);
                     WriteLiteral("<span>");
 #nullable restore
-#line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-                                   Write(item);
+#line (16,42)-(16,46) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
+Write(item);
 
 #line default
 #line hidden
