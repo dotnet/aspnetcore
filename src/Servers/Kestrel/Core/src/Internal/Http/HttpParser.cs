@@ -112,7 +112,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             var queryEnd = offset;
-
             // Consume space
             offset++;
 
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Version
             var remaining = requestLine.Slice(offset);
-            var httpVersion = remaining.GetKnownVersion();
+            var httpVersion = remaining.GetKnownVersionUnchecked();
             versionAndMethod.Version = httpVersion;
             if (httpVersion == HttpVersion.Unknown)
             {

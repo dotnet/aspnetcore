@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (span.Length > sizeof(ulong) && span[sizeof(ulong)] == (byte)'\r')
             {
-                knownVersion = GetKnownVersion(span);
+                knownVersion = GetKnownVersionUnchecked(span);
                 if (knownVersion != HttpVersion.Unknown)
                 {
                     length = sizeof(ulong);
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </remarks>
         /// <returns>the HTTP version if the input matches a known string, <c>Unknown</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static HttpVersion GetKnownVersion(this ReadOnlySpan<byte> location)
+        internal static HttpVersion GetKnownVersionUnchecked(this ReadOnlySpan<byte> location)
         {
             Debug.Assert(location.Length > sizeof(ulong) && location[sizeof(ulong)] == (byte)'\r');
 
