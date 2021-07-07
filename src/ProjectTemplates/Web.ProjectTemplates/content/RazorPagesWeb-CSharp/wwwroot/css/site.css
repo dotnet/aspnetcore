@@ -7,7 +7,7 @@ a.navbar-brand {
   word-break: break-all;
 }
 
-/* Provide sufficient contrast against white background */
+/* Provide sufficient contrast against white background and black text */
 a {
   color: #0077cc;
 }
