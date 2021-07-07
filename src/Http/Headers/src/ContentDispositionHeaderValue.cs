@@ -544,14 +544,17 @@ namespace Microsoft.Net.Http.Headers
 
         // Encode using MIME encoding
         // And adds surrounding quotes, Encoded data must always be quoted, the equals signs are invalid in tokens
+        [SkipLocalsInit]
         private string EncodeMimeWithQuotes(StringSegment input)
         {
             var requiredLength = MimePrefix.Length +
                 Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
                 MimeSuffix.Length;
+            byte[]? bufferFromPool = null;
             Span<byte> buffer = requiredLength <= MaxStackSize
-                ? (stackalloc byte[MaxStackSize]).Slice(0, requiredLength)
-                : new byte[requiredLength];
+                ? stackalloc byte[MaxStackSize]
+                : bufferFromPool = ArrayPool<byte>.Shared.Rent(requiredLength);
+            buffer = buffer[..requiredLength];
 
             MimePrefix.CopyTo(buffer);
             var bufferContent = buffer.Slice(MimePrefix.Length);
@@ -561,7 +564,14 @@ namespace Microsoft.Net.Http.Headers
 
             MimeSuffix.CopyTo(bufferContent.Slice(base64ContentLength));
 
-            return Encoding.UTF8.GetString(buffer.Slice(0, MimePrefix.Length + base64ContentLength + MimeSuffix.Length));
+            var result = Encoding.UTF8.GetString(buffer.Slice(0, MimePrefix.Length + base64ContentLength + MimeSuffix.Length));
+
+            if (bufferFromPool is not null)
+            {
+                ArrayPool<byte>.Shared.Return(bufferFromPool);
+            }
+
+            return result;
         }
 
         // Attempt to decode MIME encoded strings
