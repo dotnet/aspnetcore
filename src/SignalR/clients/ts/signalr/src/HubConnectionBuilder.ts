@@ -13,7 +13,7 @@ import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
 import { Arg, ConsoleLogger } from "./Utils";
 
-const LogLevelNameMapping = {
+const LogLevelNameMapping: {[k: string]: LogLevel} = {
     trace: LogLevel.Trace,
     debug: LogLevel.Debug,
     info: LogLevel.Information,
