@@ -10,7 +10,7 @@ export function startIpcReceiver() {
   const messageHandlers = {
 
     'AttachToDocument': (componentId: number, elementSelector: string) => {
-      attachRootComponentToElement(elementSelector, componentId);
+      attachRootComponentToElement(elementSelector, componentId, false);
     },
 
     'RenderBatch': (batchId: number, batchDataBase64: string) => {
