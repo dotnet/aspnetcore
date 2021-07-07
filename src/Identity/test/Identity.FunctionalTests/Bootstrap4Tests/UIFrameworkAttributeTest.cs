@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Bootstrap4Tests
             var client = factory.CreateClient();
 
             // Assert
-            Assert.True(hasV5Part);
-            Assert.False(hasV4Part);
+            Assert.True(hasV5Part, "Should have V5 part");
+            Assert.False(hasV4Part, "Should not have V4 part");
         }
 
         private static bool HasPart(ApplicationPartManager apm, string name)

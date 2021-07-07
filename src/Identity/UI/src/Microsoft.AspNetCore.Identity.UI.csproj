@@ -28,7 +28,7 @@
 
   <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">
     <ItemGroup>
-      <_RazorGenerate Include="Areas\Identity\Pages\$(UIFrameworkVersion)\**\*.cshtml" />
+      <_RazorGenerate Include="Areas\Identity\Pages\V5\**\*.cshtml" />
 
       <RazorGenerate Include="@(_RazorGenerate)" Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
