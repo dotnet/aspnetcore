@@ -66,13 +66,14 @@
          '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsMicrobenchmarksProject)' == 'true') ">false</IsPackable>
   </PropertyGroup>
 
-  <!-- Properties for Package Validation -->
-  <!-- We only want to check for API changes in servicing branches -->
-  <PropertyGroup Condition=" '$(IsServicingBuild)' != 'true' ">
-    <DisablePackageBaselineValidation>true</DisablePackageBaselineValidation>
-  </PropertyGroup>
-
   <Import Project="eng\Baseline.Designer.props" />
+
+  <!-- Properties for Package Validation -->
+  <PropertyGroup>
+    <PackageValidationBaselineVersion>$(BaselinePackageVersion)</PackageValidationBaselineVersion>
+    <!-- We only want to check for API changes in servicing branches -->
+    <DisablePackageBaselineValidation  Condition=" '$(IsServicingBuild)' != 'true' ">true</DisablePackageBaselineValidation>
+  </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
