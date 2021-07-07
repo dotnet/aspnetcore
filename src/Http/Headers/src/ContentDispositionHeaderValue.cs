@@ -610,46 +610,43 @@ namespace Microsoft.Net.Http.Headers
         private static string Encode5987(StringSegment input)
         {
             var builder = new StringBuilder("UTF-8\'\'");
-            var unicodeCharsCount = input.Value.Count(c => c > 0x7F);
-            var bufferSize = unicodeCharsCount > 0
-                ? Encoding.UTF8.GetMaxByteCount(unicodeCharsCount)
-                : 0;
-            Span<byte> buffer = bufferSize > 0
-                ? bufferSize <= 256
-                    ? stackalloc byte[bufferSize]
-                    : new byte[bufferSize]
-                : null;
+            ReadOnlySpan<byte> inputBytes = Encoding.UTF8.GetBytes(input.Value);
 
-            for (int i = 0; i < input.Length; i++)
+            int totalBytesConsumed = 0;
+            while (totalBytesConsumed < inputBytes.Length)
             {
-                var c = input[i];
-                // attr-char = ALPHA / DIGIT / "!" / "#" / "$" / "&" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
-                //      ; token except ( "*" / "'" / "%" )
-                if (c > 0x7F) // Encodes as multiple utf-8 bytes
+                if (inputBytes[totalBytesConsumed] <= 0x7F)
                 {
-                    var startPos = i;
-                    while (i + 1 < input.Length && input[i + 1] > 0x7F)
+                    // This is an ASCII char. Let's handle it ourselves.
+
+                    char c = (char)inputBytes[totalBytesConsumed];
+                    if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
                     {
-                        i++;
+                        HexEscape(builder, c);
+                    }
+                    else
+                    {
+                        builder.Append(c);
                     }
 
-                    var unicodePart = ((ReadOnlySpan<char>)input).Slice(startPos, i - startPos + 1);
-                    var bytesEncoded = Encoding.UTF8.GetBytes(unicodePart, buffer);
-                    for (int j = 0; j < bytesEncoded; j++)
-                    {
-                        HexEscape(builder, (char)buffer[j]);
-                    }
-                }
-                else if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
-                {
-                    // ASCII - Only one encoded byte
-                    HexEscape(builder, c);
+                    totalBytesConsumed++;
                 }
                 else
                 {
-                    builder.Append(c);
+                    // Non-ASCII, let's rely on Rune to decode it.
+
+                    Rune.DecodeFromUtf8(inputBytes.Slice(totalBytesConsumed), out Rune r, out int bytesConsumedForRune);
+                    Contract.Assert(!r.IsAscii, "We shouldn't have gotten here if the Rune is ASCII.");
+
+                    for (int i = 0; i < bytesConsumedForRune; i++)
+                    {
+                        HexEscape(builder, (char)inputBytes[totalBytesConsumed + i]);
+                    }
+
+                    totalBytesConsumed += bytesConsumedForRune;
                 }
             }
+
             return builder.ToString();
         }
 
