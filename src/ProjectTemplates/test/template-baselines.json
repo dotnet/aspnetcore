@@ -1180,8 +1180,7 @@
         ".gitignore",
         "appsettings.Development.json",
         "appsettings.json",
-        "Program.cs",
-        "Startup.cs"
+        "Program.cs"
       ]
     }
   },
@@ -1222,8 +1221,7 @@
         ".gitignore",
         "appsettings.Development.json",
         "appsettings.json",
-        "Program.cs",
-        "Startup.cs"
+        "Program.cs"
       ]
     }
   }
