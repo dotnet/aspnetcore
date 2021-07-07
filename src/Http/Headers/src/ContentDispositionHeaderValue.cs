@@ -30,6 +30,7 @@ namespace Microsoft.Net.Http.Headers
         private const string ModificationDateString = "modification-date";
         private const string ReadDateString = "read-date";
         private const string SizeString = "size";
+        private const int MaxStackSize = 256;
         private static readonly char[] QuestionMark = new char[] { '?' };
         private static readonly char[] SingleQuote = new char[] { '\'' };
         private static readonly char[] EscapeChars = new char[] { '\\', '"' };
@@ -548,8 +549,8 @@ namespace Microsoft.Net.Http.Headers
             var requiredLength = MimePrefix.Length +
                 Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
                 MimeSuffix.Length;
-            Span<byte> buffer = requiredLength <= 256
-                ? (stackalloc byte[256]).Slice(0, requiredLength)
+            Span<byte> buffer = requiredLength <= MaxStackSize
+                ? (stackalloc byte[MaxStackSize]).Slice(0, requiredLength)
                 : new byte[requiredLength];
 
             MimePrefix.CopyTo(buffer);
@@ -607,10 +608,19 @@ namespace Microsoft.Net.Http.Headers
 
         // Encode a string using RFC 5987 encoding
         // encoding'lang'PercentEncodedSpecials
+        [SkipLocalsInit]
         private static string Encode5987(StringSegment input)
         {
             var builder = new StringBuilder("UTF-8\'\'");
-            ReadOnlySpan<byte> inputBytes = Encoding.UTF8.GetBytes(input.Value);
+
+            var maxInputBytes = Encoding.UTF8.GetMaxByteCount(input.Length);
+            byte[]? bufferFromPool = null;
+            Span<byte> inputBytes = maxInputBytes <= MaxStackSize
+                ? stackalloc byte[MaxStackSize]
+                : bufferFromPool = ArrayPool<byte>.Shared.Rent(maxInputBytes);
+
+            var bytesWritten = Encoding.UTF8.GetBytes(input, inputBytes);
+            inputBytes = inputBytes[..bytesWritten];
 
             int totalBytesConsumed = 0;
             while (totalBytesConsumed < inputBytes.Length)
@@ -645,6 +655,11 @@ namespace Microsoft.Net.Http.Headers
 
                     totalBytesConsumed += bytesConsumedForRune;
                 }
+            }
+
+            if (bufferFromPool is not null)
+            {
+                ArrayPool<byte>.Shared.Return(bufferFromPool);
             }
 
             return builder.ToString();
