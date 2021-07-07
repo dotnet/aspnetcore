@@ -313,6 +313,30 @@ namespace Microsoft.AspNetCore.Tests
                 args.Payload.OfType<string>().Any(p => p.Contains(guid)));
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WebApplicationBuilder_CanSetWebRootPaths(bool useSetter)
+        {
+            var builder = WebApplication.CreateBuilder();
+            var webRootPath = "www";
+            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
+
+            if (useSetter)
+            {
+                builder.Environment.WebRootPath = webRootPath;
+            }
+            else
+            {
+                builder.WebHost.UseWebRoot(webRootPath);
+                Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
+            }
+
+            
+            var app = builder.Build();
+            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
+        }
+
         private class TestEventListener : EventListener
         {
             private volatile bool _disposed;

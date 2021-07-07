@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(WebHostDefaults.ContentRootKey, webHostBuilderEnvironment.ContentRootPath);
             Assert.Equal(fullWebRootPath, webHostBuilderEnvironment.WebRootPath);
 
-            Assert.Same(originalEnvironment.ContentRootFileProvider, webHostBuilderEnvironment.ContentRootFileProvider);
-            Assert.Same(originalEnvironment.WebRootFileProvider, webHostBuilderEnvironment.WebRootFileProvider);
+            Assert.NotEqual(originalEnvironment.ContentRootFileProvider, webHostBuilderEnvironment.ContentRootFileProvider);
+            Assert.NotEqual(originalEnvironment.WebRootFileProvider, webHostBuilderEnvironment.WebRootFileProvider);
         }
 
         private class TestWebHostBuilder : IWebHostBuilder
