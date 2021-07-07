@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
     internal static class RedisLog
     {
         private static readonly Action<ILogger, string, string, Exception?> _connectingToEndpoints =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(1, "ConnectingToEndpoints"), "Connecting to Redis endpoints: {Endpoints}. Using Server Name: {ServerName}", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(1, "ConnectingToEndpoints"), "Connecting to Redis endpoints: {Endpoints}. Using Server Name: {ServerName}", new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, Exception?> _connected =
             LoggerMessage.Define(LogLevel.Information, new EventId(2, "Connected"), "Connected to Redis.");

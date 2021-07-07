@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 LogLevel.Debug,
                 new EventId(2, "ViewCompilerEndCodeGeneration"),
                 "Code generation for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             _viewCompilerLocatedCompiledView = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -100,19 +100,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 LogLevel.Debug,
                 new EventId(2, "GeneratedCodeToAssemblyCompilationEnd"),
                 "Compilation of the generated code for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             _tagHelperComponentInitialized = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(2, "TagHelperComponentInitialized"),
                 "Tag helper component '{ComponentName}' initialized.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             _tagHelperComponentProcessed = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(3, "TagHelperComponentProcessed"),
                 "Tag helper component '{ComponentName}' processed.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
         }
 
         public static void ViewCompilerStartCodeGeneration(this ILogger logger, string filePath)

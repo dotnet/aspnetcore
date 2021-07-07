@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
             {

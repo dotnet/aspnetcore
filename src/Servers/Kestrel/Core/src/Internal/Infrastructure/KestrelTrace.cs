@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string>(LogLevel.Warning, new EventId(24, "ConnectionRejected"), @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
 
         private static readonly Action<ILogger, string, string, Exception?> _requestBodyStart =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "RequestBodyStart"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "RequestBodyStart"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.", new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, string, string, Exception?> _requestBodyDone =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, "RequestBodyDone"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, "RequestBodyDone"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.", new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, string, string?, double, Exception?> _requestBodyMinimumDataRateNotSatisfied =
             LoggerMessage.Define<string, string?, double>(LogLevel.Debug, new EventId(27, "RequestBodyMinimumDataRateNotSatisfied"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
@@ -104,12 +104,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception?> _http2FrameReceived =
             LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, "Http2FrameReceived"),
                 @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception?> _http2FrameSending =
             LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(49, "Http2FrameSending"),
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, string, int, Exception> _hpackEncodingError =
             LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, "HPackEncodingError"),
@@ -140,17 +140,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, string, string, Exception> _http3StreamAbort =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
                 @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, string, string, long, long, Exception?> _http3FrameReceived =
             LoggerMessage.Define<string, string, long, long>(LogLevel.Trace, new EventId(46, "Http3FrameReceived"),
                 @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, string, string, long, long, Exception?> _http3FrameSending =
             LoggerMessage.Define<string, string, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
         private static readonly Action<ILogger, string, long, Exception> _qpackDecodingError =
             LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(48, "QPackDecodingError"),

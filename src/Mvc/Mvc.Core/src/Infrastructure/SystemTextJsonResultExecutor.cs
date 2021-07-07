@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             // EventId 2 BufferingAsyncEnumerable
 

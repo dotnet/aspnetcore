@@ -7,19 +7,19 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception?> _errorClosingTheSession;
-        private static Action<ILogger, string, Exception?> _accessingExpiredSession;
-        private static Action<ILogger, string, string, Exception?> _sessionStarted;
-        private static Action<ILogger, string, string, int, Exception?> _sessionLoaded;
-        private static Action<ILogger, string, string, int, Exception?> _sessionStored;
-        private static Action<ILogger, string, Exception?> _sessionCacheReadException;
-        private static Action<ILogger, Exception?> _errorUnprotectingCookie;
-        private static Action<ILogger, Exception?> _sessionLoadingTimeout;
-        private static Action<ILogger, Exception?> _sessionCommitTimeout;
-        private static Action<ILogger, Exception?> _sessionCommitCanceled;
-        private static Action<ILogger, Exception?> _sessionRefreshTimeout;
-        private static Action<ILogger, Exception?> _sessionRefreshCanceled;
-        private static Action<ILogger, Exception?> _sessionNotAvailable;
+        private static readonly Action<ILogger, Exception?> _errorClosingTheSession;
+        private static readonly Action<ILogger, string, Exception?> _accessingExpiredSession;
+        private static readonly Action<ILogger, string, string, Exception?> _sessionStarted;
+        private static readonly Action<ILogger, string, string, int, Exception?> _sessionLoaded;
+        private static readonly Action<ILogger, string, string, int, Exception?> _sessionStored;
+        private static readonly Action<ILogger, string, Exception?> _sessionCacheReadException;
+        private static readonly Action<ILogger, Exception?> _errorUnprotectingCookie;
+        private static readonly Action<ILogger, Exception?> _sessionLoadingTimeout;
+        private static readonly Action<ILogger, Exception?> _sessionCommitTimeout;
+        private static readonly Action<ILogger, Exception?> _sessionCommitCanceled;
+        private static readonly Action<ILogger, Exception?> _sessionRefreshTimeout;
+        private static readonly Action<ILogger, Exception?> _sessionRefreshCanceled;
+        private static readonly Action<ILogger, Exception?> _sessionNotAvailable;
 
         static LoggingExtensions()
         {
@@ -32,24 +32,24 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Information,
                 formatString: "Accessing expired session, Key:{sessionKey}");
             _sessionStarted = LoggerMessage.Define<string, string>(
-                eventId: new EventId(3, "SessionStarted"),
                 logLevel: LogLevel.Information,
+                eventId: new EventId(3, "SessionStarted"),
                 formatString: "Session started; Key:{sessionKey}, Id:{sessionId}",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
             _sessionLoaded = LoggerMessage.Define<string, string, int>(
-                eventId: new EventId(4, "SessionLoaded"),
                 logLevel: LogLevel.Debug,
+                eventId: new EventId(4, "SessionLoaded"),
                 formatString: "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
             _sessionStored = LoggerMessage.Define<string, string, int>(
                 eventId: new EventId(5, "SessionStored"),
                 logLevel: LogLevel.Debug,
                 formatString: "Session stored; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
             _sessionCacheReadException = LoggerMessage.Define<string>(
-                eventId: new EventId(6, "SessionCacheReadException"),
                 logLevel: LogLevel.Error,
+                eventId: new EventId(6, "SessionCacheReadException"),
                 formatString: "Session cache read exception, Key:{sessionKey}",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
             _errorUnprotectingCookie = LoggerMessage.Define(
                 eventId: new EventId(7, "ErrorUnprotectingCookie"),
                 logLevel: LogLevel.Warning,

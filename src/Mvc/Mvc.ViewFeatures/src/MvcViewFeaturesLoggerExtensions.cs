@@ -43,14 +43,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 LogLevel.Debug,
                 new EventId(1, "ViewComponentExecuting"),
                 "Executing view component {ViewComponentName} with arguments ({Arguments}).",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             _viewComponentExecuted = LoggerMessage.Define<string, double, string>(
                 LogLevel.Debug,
                 new EventId(2, "ViewComponentExecuted"),
                 "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned " +
                 "{ViewComponentResult}",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             _partialViewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 LogLevel.Information,
                 new EventId(1, "ViewComponentResultExecuting"),
                 "Executing ViewComponentResult, running {ViewComponentName}.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             _viewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,

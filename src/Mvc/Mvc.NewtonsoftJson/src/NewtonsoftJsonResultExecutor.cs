@@ -184,13 +184,13 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {

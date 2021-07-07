@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 LogLevel.Warning,
                 new EventId(104, "MalformedPageDirective"),
                 "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}",
-                skipEnabledCheck: true);
+                new LogDefineOptions() { SkipEnabledCheck = true });
         }
 
         public static void ViewCompilerLocatedCompiledView(this ILogger logger, string view)

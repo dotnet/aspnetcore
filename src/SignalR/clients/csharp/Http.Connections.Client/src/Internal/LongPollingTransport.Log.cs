@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             private static readonly Action<ILogger, int, long?, Exception?> _pollResponseReceived =
                 LoggerMessage.Define<int, long?>(LogLevel.Trace, new EventId(10, "PollResponseReceived"),
                     "Poll response with status code {StatusCode} received from server. Content length: {ContentLength}.",
-                    skipEnabledCheck: true);
+                    new LogDefineOptions() { SkipEnabledCheck = true });
 
             private static readonly Action<ILogger, Uri, Exception?> _sendingDeleteRequest =
                 LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(11, "SendingDeleteRequest"), "Sending DELETE request to '{PollUrl}'.");
