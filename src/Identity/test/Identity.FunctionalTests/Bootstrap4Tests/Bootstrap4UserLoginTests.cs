@@ -4,11 +4,11 @@
 using Identity.DefaultUI.WebSite;
 using Identity.DefaultUI.WebSite.Data;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests.Bootstrap3Tests
+namespace Microsoft.AspNetCore.Identity.FunctionalTests.Bootstrap4Tests
 {
-    public class Bootstrap3LoginTests : LoginTests<ApplicationUserStartup, ApplicationDbContext>
+    public class Bootstrap4LoginTests : LoginTests<ApplicationUserStartup, ApplicationDbContext>
     {
-        public Bootstrap3LoginTests(ServerFactory<ApplicationUserStartup, ApplicationDbContext> serverFactory) : base(serverFactory)
+        public Bootstrap4LoginTests(ServerFactory<ApplicationUserStartup, ApplicationDbContext> serverFactory) : base(serverFactory)
         {
             serverFactory.BootstrapFrameworkVersion = "V4";
         }
