@@ -393,12 +393,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _stream.Dispose();
             _stream = null!;
 
-            if (CanReuse)
+            if (!_connection.TryReturnStream(this))
             {
-                _connection.ReturnStream(this);
-            }
-            else
-            {
+                // Dispose when one of:
+                // - Stream is not bidirection
+                // - Stream didn't complete gracefully
+                // - Pool is full
                 DisposeCore();
             }
         }

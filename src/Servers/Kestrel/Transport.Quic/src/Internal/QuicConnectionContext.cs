@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             return new ValueTask<ConnectionContext>(context);
         }
 
-        internal void ReturnStream(QuicStreamContext stream)
+        internal bool TryReturnStream(QuicStreamContext stream)
         {
             lock (_poolLock)
             {
@@ -191,9 +191,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                     _streamPoolHeartbeatInitialized = true;
                 }
 
-                stream.PoolExpirationTicks = Volatile.Read(ref _heartbeatTicks) + StreamPoolExpiryTicks;
-                StreamPool.Push(stream);
+                if (stream.CanReuse && StreamPool.Count < MaxStreamPoolSize)
+                {
+                    stream.PoolExpirationTicks = Volatile.Read(ref _heartbeatTicks) + StreamPoolExpiryTicks;
+                    StreamPool.Push(stream);
+                    return true;
+                }
             }
+
+            return false;
         }
 
         private void RemoveExpiredStreams()

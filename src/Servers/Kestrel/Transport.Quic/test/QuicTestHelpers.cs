@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var quicTransportOptions = new QuicTransportOptions();
             quicTransportOptions.Alpn = Alpn;
             quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
+            quicTransportOptions.MaxBidirectionalStreamCount = 200;
+            quicTransportOptions.MaxUnidirectionalStreamCount = 200;
             if (systemClock != null)
             {
                 quicTransportOptions.SystemClock = systemClock;
@@ -74,8 +76,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         {
             return new QuicClientConnectionOptions
             {
-                MaxBidirectionalStreams = 10,
-                MaxUnidirectionalStreams = 20,
+                MaxBidirectionalStreams = 200,
+                MaxUnidirectionalStreams = 200,
                 RemoteEndPoint = remoteEndPoint,
                 ClientAuthenticationOptions = new SslClientAuthenticationOptions
                 {
@@ -98,13 +100,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             // Input should be completed.
             readResult = await serverStream.Transport.Input.ReadAsync();
+            Assert.True(readResult.IsCompleted);
 
             // Complete reading and writing.
             await serverStream.Transport.Input.CompleteAsync();
             await serverStream.Transport.Output.CompleteAsync();
-
-            // Assert
-            Assert.True(readResult.IsCompleted);
 
             var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 

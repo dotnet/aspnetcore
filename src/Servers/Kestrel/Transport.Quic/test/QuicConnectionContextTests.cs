@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Quic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
@@ -222,6 +223,94 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             // Removed.
             Assert.Equal(0, quicConnectionContext.StreamPool.Count);
         }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task StreamPool_ManyConcurrentStreams_StreamPoolFull()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+
+            var testHeartbeatFeature = new TestHeartbeatFeature();
+            serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
+
+            // Act
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+
+            var pauseCompleteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var allConnectionsOnServerTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var streamTasks = new List<Task>();
+            var requestState = new RequestState(clientConnection, serverConnection, allConnectionsOnServerTcs, pauseCompleteTcs.Task);
+
+            const int StreamsSent = 101;
+            for (var i = 0; i < StreamsSent; i++)
+            {
+                // TODO: Race condition in QUIC library.
+                // Delay between sending streams to avoid
+                // https://github.com/dotnet/runtime/issues/55249
+                await Task.Delay(50);
+                streamTasks.Add(SendStream(requestState));
+            }
+
+            await allConnectionsOnServerTcs.Task.DefaultTimeout();
+            pauseCompleteTcs.SetResult();
+
+            await Task.WhenAll(streamTasks).DefaultTimeout();
+
+            // Assert
+            // Up to 100 streams are pooled.
+            Assert.Equal(100, quicConnectionContext.StreamPool.Count);
+
+            static async Task SendStream(RequestState requestState)
+            {
+                var clientStream = requestState.QuicConnection.OpenBidirectionalStream();
+                await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+                var serverStream = await requestState.ServerConnection.AcceptAsync().DefaultTimeout();
+                var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+                serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+                // Input should be completed.
+                readResult = await serverStream.Transport.Input.ReadAsync();
+                Assert.True(readResult.IsCompleted);
+
+                lock (requestState)
+                {
+                    requestState.ActiveConcurrentConnections++;
+                    if (requestState.ActiveConcurrentConnections == StreamsSent)
+                    {
+                        requestState.AllConnectionsOnServerTcs.SetResult();
+                    }
+                }
+
+                await requestState.PauseCompleteTask;
+
+                // Complete reading and writing.
+                await serverStream.Transport.Input.CompleteAsync();
+                await serverStream.Transport.Output.CompleteAsync();
+
+                var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
+
+                // Both send and receive loops have exited.
+                await quicStreamContext._processingTask.DefaultTimeout();
+                await quicStreamContext.DisposeAsync();
+            }
+        }
+
+        private record RequestState(
+            QuicConnection QuicConnection,
+            MultiplexedConnectionContext ServerConnection,
+            TaskCompletionSource AllConnectionsOnServerTcs,
+            Task PauseCompleteTask)
+        {
+            public int ActiveConcurrentConnections { get; set; }
+        };
 
         private class TestSystemClock : ISystemClock
         {
