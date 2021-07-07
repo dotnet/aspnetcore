@@ -169,7 +169,7 @@ namespace Templates.Test.Helpers
 
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
                 }
-                Assert.True(string.IsNullOrEmpty(linkFailures), linkFailures);
+                Assert.True(string.IsNullOrEmpty(linkFailures), "Link failures: "+linkFailures);
             }
         }
 
