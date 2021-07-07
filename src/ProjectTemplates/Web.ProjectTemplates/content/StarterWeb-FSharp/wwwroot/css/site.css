@@ -7,14 +7,9 @@ a.navbar-brand {
   word-break: break-all;
 }
 
-/* Provide sufficient contrast against white background */
+/* Provide sufficient contrast against white background and black text */
 a {
-  color: #0366d6;
-}
-
-::selection {
-    color: #fff;
-    background-color: #333;
+  color: #0077cc;
 }
 
 .btn-primary {
