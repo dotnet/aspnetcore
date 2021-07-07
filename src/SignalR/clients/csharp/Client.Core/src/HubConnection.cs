@@ -757,6 +757,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // It's safe to access connectionState.UploadStreamToken as we still have the connection lock
             _state.AssertInConnectionLock();
             var cts = CancellationTokenSource.CreateLinkedTokenSource(connectionState.UploadStreamToken, token);
+            // Don't run any async code before this line, we're assuming the lock is still held by the calling code, but it wont be if we go async
 
             Log.StartingStream(_logger, streamId);
             string? responseError = null;
@@ -767,7 +768,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             catch (OperationCanceledException)
             {
                 Log.CancelingStream(_logger, streamId);
-                responseError = $"Stream canceled by client.";
+                responseError = "Stream canceled by client.";
+            }
+            catch (Exception ex)
+            {
+                Log.ErroredStream(_logger, streamId, ex);
+                responseError = $"Stream errored by client: '{ex.Message}'";
             }
 
             Log.CompletingStream(_logger, streamId);
