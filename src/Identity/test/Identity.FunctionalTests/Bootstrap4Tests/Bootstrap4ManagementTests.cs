@@ -6,9 +6,9 @@ using Identity.DefaultUI.WebSite.Data;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Bootstrap3Tests
 {
-    public class Bootstrap3ManagementTests : ManagementTests<ApplicationUserStartup, ApplicationDbContext>
+    public class Bootstrap4ManagementTests : ManagementTests<ApplicationUserStartup, ApplicationDbContext>
     {
-        public Bootstrap3ManagementTests(ServerFactory<ApplicationUserStartup, ApplicationDbContext> serverFactory) : base(serverFactory)
+        public Bootstrap4ManagementTests(ServerFactory<ApplicationUserStartup, ApplicationDbContext> serverFactory) : base(serverFactory)
         {
             serverFactory.BootstrapFrameworkVersion = "V4";
         }
