@@ -3,9 +3,9 @@
     <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
             dep:ProviderKey="$(var.BundleProviderKey)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
-            <bal:WixStandardBootstrapperApplication SuppressDowngradeFailure="yes"/>
             <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
+                                                    SuppressDowngradeFailure="yes"
                                                     SuppressOptionsUI="yes"
                                                     ThemeFile="thm.xml"
                                                     LocalizationFile="thm.wxl"/>
