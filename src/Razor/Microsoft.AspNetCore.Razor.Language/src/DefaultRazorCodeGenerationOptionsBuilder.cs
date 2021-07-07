@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool OmitMinimizedComponentAttributeValues { get; set; }
 
+        public override bool UseEnhancedLinePragma { get; set; }
+
         public override RazorCodeGenerationOptions Build()
         {
             return new DefaultRazorCodeGenerationOptions(
@@ -52,7 +54,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 SuppressMetadataAttributes,
                 SuppressPrimaryMethodBody,
                 SuppressNullabilityEnforcement,
-                OmitMinimizedComponentAttributeValues)
+                OmitMinimizedComponentAttributeValues,
+                UseEnhancedLinePragma)
             {
                 SuppressMetadataSourceChecksumAttributes = SuppressMetadataSourceChecksumAttributes,
             };

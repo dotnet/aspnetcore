@@ -13,35 +13,24 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.AddContent(0, 
 #nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-  RenderPerson((person) => 
+#line (1,3)-(1,28) 24 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder.AddContent(0, RenderPerson((person) => (__builder2) => {
+    __builder2.OpenElement(1, "div");
+#nullable restore
+#line (1,35)-(1,46) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(2, person.Name);
 
 #line default
 #line hidden
 #nullable disable
-            (__builder2) => {
-                __builder2.OpenElement(1, "div");
-                __builder2.AddContent(2, 
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                  person.Name
+    __builder2.CloseElement();
+}
+));
 
 #line default
 #line hidden
 #nullable disable
-                );
-                __builder2.CloseElement();
-            }
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                   )
-
-#line default
-#line hidden
-#nullable disable
-            );
         }
         #pragma warning restore 1998
 #nullable restore

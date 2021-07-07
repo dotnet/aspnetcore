@@ -31,27 +31,23 @@ namespace Test
 #nullable disable
             , 3, (context) => (__builder2) => {
                 __builder2.OpenElement(4, "div");
-                __builder2.AddContent(5, 
 #nullable restore
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                      context.ToLower()
+#line (2,23)-(2,40) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(5, context.ToLower());
 
 #line default
 #line hidden
 #nullable disable
-                );
                 __builder2.CloseElement();
             }
             , 6, (item) => (__builder2) => {
-                __builder2.AddContent(7, 
 #nullable restore
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
-   System.Math.Max(0, item.Item)
+#line (4,4)-(4,33) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(7, System.Math.Max(0, item.Item));
 
 #line default
 #line hidden
 #nullable disable
-                );
                 __builder2.AddMarkupContent(8, ";\r\n");
             }
             );

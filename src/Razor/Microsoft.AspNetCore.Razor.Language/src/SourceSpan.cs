@@ -17,17 +17,24 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         public SourceSpan(SourceLocation location, int contentLength)
-            : this(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength)
+            : this(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength, lineCount: 1, endCharacterIndex: 0)
         {
         }
 
         public SourceSpan(string filePath, int absoluteIndex, int lineIndex, int characterIndex, int length)
+            : this(filePath: filePath, absoluteIndex: absoluteIndex, lineIndex: lineIndex, characterIndex: characterIndex, length: length, lineCount: 0, endCharacterIndex: 0)
+        {
+        }
+
+        public SourceSpan(string filePath, int absoluteIndex, int lineIndex, int characterIndex, int length, int lineCount, int endCharacterIndex)
         {
             AbsoluteIndex = absoluteIndex;
             LineIndex = lineIndex;
             CharacterIndex = characterIndex;
             Length = length;
             FilePath = filePath;
+            LineCount = lineCount;
+            EndCharacterIndex = endCharacterIndex;
         }
 
         public SourceSpan(int absoluteIndex, int lineIndex, int characterIndex, int length)
@@ -42,6 +49,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public int LineIndex { get; }
 
         public int CharacterIndex { get; }
+
+        public int LineCount { get; }
+
+        public int EndCharacterIndex { get; }
 
         public string FilePath { get; }
 

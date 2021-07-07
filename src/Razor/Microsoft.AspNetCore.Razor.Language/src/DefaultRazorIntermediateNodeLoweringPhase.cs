@@ -618,7 +618,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -661,7 +663,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -698,7 +702,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -1105,7 +1111,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         node.Source.Value.AbsoluteIndex,
                         node.Source.Value.LineIndex,
                         node.Source.Value.CharacterIndex,
-                        node.Source.Value.Length + item.FullWidth);
+                        node.Source.Value.Length + item.FullWidth,
+                        node.Source.Value.LineCount,
+                        node.Source.Value.EndCharacterIndex);
                 }
             }
 
@@ -1277,7 +1285,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(node),
                 });
             }
-            
+
             // Example
             // <input checked="hello-world `@false`"/>
             //  Prefix= (space)
@@ -1446,7 +1454,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -1505,7 +1515,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -1558,7 +1570,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -2059,7 +2073,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         node.Source.Value.AbsoluteIndex,
                         node.Source.Value.LineIndex,
                         node.Source.Value.CharacterIndex,
-                        node.Source.Value.Length + item.FullWidth);
+                        node.Source.Value.Length + item.FullWidth,
+                        node.Source.Value.LineCount,
+                        node.Source.Value.EndCharacterIndex);
                 }
             }
 
@@ -2163,7 +2179,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
 
