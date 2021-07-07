@@ -17,9 +17,7 @@ namespace Microsoft.AspNetCore.Analyzers
         {
             _analyzer = analyzer;
             StartupSymbols = startupSymbols;
-#pragma warning disable RS1024
             _analysesByType = new Dictionary<INamedTypeSymbol, List<object>>();
-#pragma warning restore RS1024
             _lock = new object();
         }
 
