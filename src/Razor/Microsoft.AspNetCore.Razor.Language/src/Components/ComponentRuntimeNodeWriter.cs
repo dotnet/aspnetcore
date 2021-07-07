@@ -96,8 +96,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
-            var methodInvocation = $"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddContent}(" +
-                _sourceSequence++.ToString(CultureInfo.InvariantCulture);
+            var sourceSequenceAsString = _sourceSequence.ToString(CultureInfo.InvariantCulture);
+            var methodInvocation = _scopeStack.BuilderVarName + '.' + ComponentsApi.RenderTreeBuilder.AddContent +'(' + sourceSequenceAsString;
+            _sourceSequence++;
             var parameterSeparatorLength = 2;
 
             using (context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context, methodInvocation.Length + parameterSeparatorLength))

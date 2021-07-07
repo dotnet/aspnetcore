@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Analyzers
         {
             _analyzer = analyzer;
             StartupSymbols = startupSymbols;
+
             _analysesByType = new Dictionary<INamedTypeSymbol, List<object>>();
             _lock = new object();
         }
