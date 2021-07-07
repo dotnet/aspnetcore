@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Version
             var remaining = requestLine.Slice(offset);
-            var httpVersion = remaining.GetKnownVersionUnchecked();
+            var httpVersion = remaining.GetKnownVersion();
             versionAndMethod.Version = httpVersion;
             if (httpVersion == HttpVersion.Unknown)
             {

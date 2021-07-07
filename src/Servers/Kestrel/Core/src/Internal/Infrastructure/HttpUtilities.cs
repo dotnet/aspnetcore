@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (span.Length > sizeof(ulong) && span[sizeof(ulong)] == (byte)'\r')
             {
-                knownVersion = GetKnownVersionUnchecked(span);
+                knownVersion = GetKnownVersion(span);
                 if (knownVersion != HttpVersion.Unknown)
                 {
                     length = sizeof(ulong);
@@ -315,31 +315,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         /// <summary>
-        /// Checks 9 bytes from <paramref name="location"/>  correspond to a known HTTP version.
+        /// Checks 8 bytes from <paramref name="span"/>  correspond to a known HTTP version.
         /// </summary>
         /// <remarks>
         /// A "known HTTP version" Is is either HTTP/1.0 or HTTP/1.1.
         /// Since those fit in 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
         /// in that format, it can be checked against the known versions.
-        /// The Known versions will be checked with the required '\r'.
         /// To optimize performance the HTTP/1.1 will be checked first.
         /// </remarks>
         /// <returns>the HTTP version if the input matches a known string, <c>Unknown</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static HttpVersion GetKnownVersionUnchecked(this ReadOnlySpan<byte> location)
+        internal static HttpVersion GetKnownVersion(this ReadOnlySpan<byte> span)
         {
-            Debug.Assert(location.Length > sizeof(ulong) && location[sizeof(ulong)] == (byte)'\r');
-
-            var version = BinaryPrimitives.ReadUInt64LittleEndian(location);
-            if (version == _http11VersionLong)
+            if (BinaryPrimitives.TryReadUInt64LittleEndian(span, out var version))
             {
-                return HttpVersion.Http11;
+                if (version == _http11VersionLong)
+                {
+                    return HttpVersion.Http11;
+                }
+                else if (version == _http10VersionLong)
+                {
+                    return HttpVersion.Http10;
+                }
             }
-            else if (version == _http10VersionLong)
-            {
-                return HttpVersion.Http10;
-            }
-
             return HttpVersion.Unknown;
         }
 
