@@ -160,24 +160,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 async Task OnBind(ListenOptions options, CancellationToken onBindCancellationToken)
                 {
-                    // INVESTIGATE: For some reason, MsQuic needs to bind before
-                    // sockets for it to successfully listen. It also seems racy.
-                    if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
-                    {
-                        if (_multiplexedTransportFactory is null)
-                        {
-                            throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
-                        }
-
-                        options.UseHttp3Server(ServiceContext, application);
-                        var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
-
-                        // Add the connection limit middleware
-                        multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
-
-                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
-                    }
-
                     // Add the HTTP middleware as the terminal connection middleware
                     if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1
                         || (options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2
@@ -196,6 +178,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
                         options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
+                    }
+
+                    if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
+                    {
+                        if (_multiplexedTransportFactory is null)
+                        {
+                            throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
+                        }
+
+                        options.UseHttp3Server(ServiceContext, application);
+                        var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
+
+                        // Add the connection limit middleware
+                        multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
+
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
                     }
                 }
 

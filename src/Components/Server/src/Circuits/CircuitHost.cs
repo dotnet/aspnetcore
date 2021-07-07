@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger _logger;
         private bool _initialized;
         private bool _disposed;
-        private WebEventJsonContext _jsonContext;
 
         // This event is fired when there's an unrecoverable exception coming from the circuit, and
         // it need so be torn down. The registry listens to this even so that the circuit can
@@ -446,7 +445,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // DispatchEvent is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
+        public async Task DispatchEvent(JsonElement eventDescriptorJson, JsonElement eventArgsJson)
         {
             AssertInitialized();
             AssertNotDisposed();
@@ -456,12 +455,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
                 // of the serializer settings.
-                if (_jsonContext is null)
-                {
-                    _jsonContext = new(new JsonSerializerOptions(JSRuntime.ReadJsonSerializerOptions()));
-                }
-
-                webEventData = WebEventData.Parse(Renderer, _jsonContext, eventDescriptorJson, eventArgsJson);
+                webEventData = WebEventData.Parse(Renderer, JSRuntime.ReadJsonSerializerOptions(), eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {

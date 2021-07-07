@@ -111,10 +111,10 @@ namespace Ignitor
             return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(mouseEventArgs));
         }
 
-        private static string Serialize<T>(T payload) =>
-             JsonSerializer.Serialize(payload, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        private static byte[] Serialize<T>(T payload) =>
+             JsonSerializer.SerializeToUtf8Bytes(payload, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-        private static Task DispatchEventCore(HubConnection connection, string descriptor, string eventArgs) =>
+        private static Task DispatchEventCore(HubConnection connection, byte[] descriptor, byte[] eventArgs) =>
             connection.InvokeAsync("DispatchBrowserEvent", descriptor, eventArgs);
 
         public class ElementEventDescriptor

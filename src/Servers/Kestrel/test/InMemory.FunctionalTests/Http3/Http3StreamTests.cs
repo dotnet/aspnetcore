@@ -261,19 +261,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath);
         }
 
-        [Fact]
-        public async Task SchemeMismatch_Reset()
+        [Theory]
+        [InlineData("https")]
+        [InlineData("ftp")]
+        public async Task SchemeMismatch_Reset(string scheme)
         {
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
 
-            // :path and :scheme are not allowed, :authority is optional
             var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "https") }; // Not the expected "http"
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
 
             await requestStream.SendHeadersAsync(headers, endStream: true);
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3StreamErrorSchemeMismatch("https", "http"));
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3StreamErrorSchemeMismatch(scheme, "http"));
+        }
+
+        [Theory]
+        [InlineData("https")]
+        [InlineData("ftp")]
+        public async Task SchemeMismatchAllowed_Processed(string scheme)
+        {
+            _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+                Assert.Equal(scheme, context.Request.Scheme);
+                return Task.CompletedTask;
+            });
+
+            var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+            Assert.Equal(3, responseHeaders.Count);
+            Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+            Assert.Equal("0", responseHeaders["content-length"]);
+        }
+
+        [Theory]
+        [InlineData("https,http")]
+        [InlineData("http://fakehost/")]
+        public async Task SchemeMismatchAllowed_InvalidScheme_Reset(string scheme)
+        {
+            _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3StreamErrorSchemeMismatch(scheme, "http"));
         }
 
         [Fact]
