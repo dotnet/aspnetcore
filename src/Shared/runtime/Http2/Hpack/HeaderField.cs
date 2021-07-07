@@ -36,7 +36,7 @@ namespace System.Net.Http.HPack
         {
             if (Name != null)
             {
-                return Encoding.Latin1.GetString(Name) + ": " + Encoding.Latin1.GetString(Value);
+                return Encoding.ASCII.GetString(Name) + ": " + Encoding.ASCII.GetString(Value);
             }
             else
             {
