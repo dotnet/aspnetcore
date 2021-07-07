@@ -129,6 +129,30 @@ if [ "$?" == "0" ]; then
     PackageSources+=('dotnet5-internal-transport')
 fi
 
+# Ensure dotnet6-internal and dotnet6-internal-transport are in the packageSources if the public dotnet6 feeds are present
+grep -i "<add key=\"dotnet6\"" $ConfigFile
+if [ "$?" == "0" ]; then
+    grep -i "<add key=\"dotnet6-internal\"" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet6-internal to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet6-internal\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet6-internal/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet6-internal')
+
+    grep -i "<add key=\"dotnet6-internal-transport\">" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet6-internal-transport to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet6-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet6-internal-transport/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet6-internal-transport')
+fi
+
 # I want things split line by line
 PrevIFS=$IFS
 IFS=$'\n'
