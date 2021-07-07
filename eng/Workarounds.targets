@@ -64,6 +64,7 @@
   <Target Name="_RemoveDuplicateLoggingSourceGenerator" AfterTargets="ResolvePackageAssets" Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <ItemGroup>
       <ResolvedAnalyzers Remove="@(ResolvedAnalyzers)" Condition="'%(ResolvedAnalyzers.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions'" />
+      <ResolvedAnalyzers Remove="@(ResolvedAnalyzers)" Condition="'%(ResolvedAnalyzers.NuGetPackageId)' == 'System.Text.Json'" />
     </ItemGroup>
   </Target>
 </Project>
