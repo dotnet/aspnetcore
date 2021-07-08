@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
 
@@ -56,59 +56,14 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for unit testing
         internal static void ConfigureClientErrorMapping(ApiBehaviorOptions options)
         {
-            options.ClientErrorMapping[400] = new ClientErrorData
+            foreach (var (statusCode, value) in ProblemDetailsDefaults.Defaults)
             {
-                Link = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-                Title = Resources.ApiConventions_Title_400,
-            };
-
-            options.ClientErrorMapping[401] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc7235#section-3.1",
-                Title = Resources.ApiConventions_Title_401,
-            };
-
-            options.ClientErrorMapping[403] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc7231#section-6.5.3",
-                Title = Resources.ApiConventions_Title_403,
-            };
-
-            options.ClientErrorMapping[404] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-                Title = Resources.ApiConventions_Title_404,
-            };
-
-            options.ClientErrorMapping[406] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc7231#section-6.5.6",
-                Title = Resources.ApiConventions_Title_406,
-            };
-
-            options.ClientErrorMapping[409] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-                Title = Resources.ApiConventions_Title_409,
-            };
-
-            options.ClientErrorMapping[415] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc7231#section-6.5.13",
-                Title = Resources.ApiConventions_Title_415,
-            };
-
-            options.ClientErrorMapping[422] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc4918#section-11.2",
-                Title = Resources.ApiConventions_Title_422,
-            };
-
-            options.ClientErrorMapping[500] = new ClientErrorData
-            {
-                Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-                Title = Resources.ApiConventions_Title_500,
-            };
+                options.ClientErrorMapping[statusCode] = new()
+                {
+                    Link = value.Type,
+                    Title = value.Title,
+                };
+            }
         }
     }
 }

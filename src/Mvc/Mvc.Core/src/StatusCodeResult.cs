@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// produce an HTTP response with the given response status code.
     /// </summary>
-    public class StatusCodeResult : ActionResult, IResult, IClientErrorActionResult
+    public class StatusCodeResult : ActionResult, IClientErrorActionResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
@@ -41,22 +39,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Execute(context.HttpContext);
-        }
-
-        /// <summary>
-        /// Sets the status code on the HTTP response.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-        /// <returns>A task that represents the asynchronous execute operation.</returns>
-        Task IResult.ExecuteAsync(HttpContext httpContext)
-        {
-            Execute(httpContext);
-            return Task.CompletedTask;
-        }
-
-        private void Execute(HttpContext httpContext)
-        {
+            var httpContext = context.HttpContext;
             var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = factory.CreateLogger<StatusCodeResult>();
 
