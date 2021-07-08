@@ -11,6 +11,11 @@ a {
   color: #0077cc;
 }
 
+.form-control:focus {
+    border-color: #0077cc;
+    box-shadow: 0 0 0 0.2rem #0077cc;
+}
+
 .btn-primary {
   color: #fff;
   background-color: #1b6ec2;
