@@ -207,6 +207,7 @@ export class LongPollingTransport implements ITransport {
 
             const deleteOptions: HttpRequest = {
                 headers: { ...headers, ...this._headers },
+                timeout: 100 * 1000,
                 withCredentials: this._withCredentials,
             };
             const token = await this._getAccessToken();

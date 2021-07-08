@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpResponse } from "../src/HttpClient";
+import { HttpRequest, HttpResponse } from "../src/HttpClient";
 import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
@@ -1187,6 +1187,27 @@ describe("HttpConnection", () => {
                 await connection.stop();
             }
         }, "Failed to start the connection: Error: nope");
+    });
+
+    it("sets timeout on negotiate request", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let request!: HttpRequest;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", (r) => {
+                        request = r;
+                        return new HttpResponse(999);
+                    }),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects.toThrow();
+            expect(request.timeout).toEqual(100000);
+        },
+        "Failed to start the connection: Error: Unexpected status code returned from negotiate '999'");
     });
 
     it("logMessageContent displays correctly with binary data", async () => {
