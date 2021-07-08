@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void SettingValuesDoesNotTriggerReloadTokenWithOrWithoutAutoUpdate()
+        public void SettingConfigValuesDoesNotTriggerReloadToken()
         {
             var config = new Configuration();
             var reloadToken = ((IConfiguration)config).GetReloadToken();
@@ -68,26 +68,33 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("TestValue", config["TestKey"]);
 
             // ConfigurationRoot doesn't fire the token today when the setter is called. Maybe we should change that.
-            // At least you can manually call Configuration.Update() to fire a reload though this reloads all sources unnecessarily.
             Assert.False(reloadToken.HasChanged);
         }
 
         [Fact]
-        public void SettingIConfigurationBuilderPropertiesWorks()
+        public void SettingIConfigurationBuilderPropertiesReloadsSources()
         {
             var config = new Configuration();
+            IConfigurationBuilder configBuilder = config;
 
-            var configBuilder = (IConfigurationBuilder)config;
+            config["PreReloadTestConfigKey"] = "PreReloadTestConfigValue";
 
-            var reloadToken = ((IConfiguration)config).GetReloadToken();
+            var reloadToken1 = ((IConfiguration)config).GetReloadToken();
+            // Changing Properties causes all the IConfigurationSources to be reload.
+            configBuilder.Properties["TestPropertyKey"] = "TestPropertyValue";
 
-            configBuilder.Properties["TestKey"] = "TestValue";
+            var reloadToken2 = ((IConfiguration)config).GetReloadToken();
+            config["PostReloadTestConfigKey"] = "PostReloadTestConfigValue";
 
-            Assert.Equal("TestValue", configBuilder.Properties["TestKey"]);
+            Assert.Equal("TestPropertyValue", configBuilder.Properties["TestPropertyKey"]);
+            Assert.Null(config["TestPropertyKey"]);
 
-            // Changing properties should not change config keys or fire reload token.
-            Assert.Null(config["TestKey"]);
-            Assert.False(reloadToken.HasChanged);
+            // Changes before the reload are lost by the MemoryConfigurationSource.
+            Assert.Null(config["PreReloadTestConfigKey"]);
+            Assert.Equal("PostReloadTestConfigValue", config["PostReloadTestConfigKey"]);
+
+            Assert.True(reloadToken1.HasChanged);
+            Assert.False(reloadToken2.HasChanged);
         }
 
         [Fact]

@@ -288,11 +288,8 @@ namespace Microsoft.AspNetCore.Builder
 
         private class ConfigurationBuilderProperties : IDictionary<string, object>
         {
-            private const string FileProviderKey = "FileProvider";
-
             private readonly Dictionary<string, object> _properties = new();
             private readonly Configuration _config;
-            private object? _fileProvider;
 
             public ConfigurationBuilderProperties(Configuration config)
             {
@@ -305,7 +302,7 @@ namespace Microsoft.AspNetCore.Builder
                 set
                 {
                     _properties[key] = value;
-                    CheckForFileProviderChange(key, value);
+                    _config.NotifySourcesChanged();
                 }
             }
 
@@ -320,19 +317,19 @@ namespace Microsoft.AspNetCore.Builder
             public void Add(string key, object value)
             {
                 _properties.Add(key, value);
-                CheckForFileProviderChange(key, value);
+                _config.NotifySourcesChanged();
             }
 
             public void Add(KeyValuePair<string, object> item)
             {
                 ((IDictionary<string, object>)_properties).Add(item);
-                CheckForFileProviderChange(item.Key, item.Value);
+                _config.NotifySourcesChanged();
             }
 
             public void Clear()
             {
                 _properties.Clear();
-                CheckForFileProviderChange(FileProviderKey, null);
+                _config.NotifySourcesChanged();
             }
 
             public bool Contains(KeyValuePair<string, object> item)
@@ -358,14 +355,14 @@ namespace Microsoft.AspNetCore.Builder
             public bool Remove(string key)
             {
                 var wasRemoved = _properties.Remove(key);
-                CheckForFileProviderChange(key, null);
+                _config.NotifySourcesChanged();
                 return wasRemoved;
             }
 
             public bool Remove(KeyValuePair<string, object> item)
             {
                 var wasRemoved = ((IDictionary<string, object>)_properties).Remove(item);
-                CheckForFileProviderChange(item.Key, null);
+                _config.NotifySourcesChanged();
                 return wasRemoved;
             }
 
@@ -377,16 +374,6 @@ namespace Microsoft.AspNetCore.Builder
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return _properties.GetEnumerator();
-            }
-
-            private void CheckForFileProviderChange(string key, object? value)
-            {
-                if (key == FileProviderKey && !ReferenceEquals(value, _fileProvider))
-                {
-                    _fileProvider = value;
-                    // Reload all the sources since the base path has likely changed.
-                    _config.NotifySourcesChanged();
-                }
             }
         }
     }
