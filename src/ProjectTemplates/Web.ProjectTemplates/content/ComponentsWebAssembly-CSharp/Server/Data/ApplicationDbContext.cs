@@ -4,14 +4,13 @@ using Microsoft.Extensions.Options;
 using IdentityServer4.EntityFramework.Options;
 using ComponentsWebAssembly_CSharp.Server.Models;
 
-namespace ComponentsWebAssembly_CSharp.Server.Data
+namespace ComponentsWebAssembly_CSharp.Server.Data;
+
+public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
 {
-    public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
+    public ApplicationDbContext(
+        DbContextOptions options,
+        IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
     {
-        public ApplicationDbContext(
-            DbContextOptions options,
-            IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
-        {
-        }
     }
 }
