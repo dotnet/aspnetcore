@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Owin
     /// </summary>
     public class OwinEnvironment : IDictionary<string, object>
     {
-        private HttpContext _context;
-        private IDictionary<string, FeatureMap> _entries;
+        private readonly HttpContext _context;
+        private readonly IDictionary<string, FeatureMap> _entries;
 
         /// <summary>
         /// Initializes a new instance of <see cref="OwinEnvironment"/>.

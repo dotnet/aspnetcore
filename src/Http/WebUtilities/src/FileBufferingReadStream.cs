@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <inheritdoc/>
-        public async override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {

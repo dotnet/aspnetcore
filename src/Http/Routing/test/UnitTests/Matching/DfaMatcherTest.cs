@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 sink.Writes,
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidatesNotFound, log.EventId);
+                    Assert.Equal(1000, log.EventId);
                     Assert.Equal("No candidates found for the request path '/'", log.Message);
                 });
         }
@@ -587,17 +587,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 sink.Writes,
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidatesFound, log.EventId);
+                    Assert.Equal(1001, log.EventId);
                     Assert.Equal("1 candidate(s) found for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateRejectedByConstraint, log.EventId);
+                    Assert.Equal(1003, log.EventId);
                     Assert.Equal("Endpoint '/{p:int}' with route pattern '/{p:int}' was rejected by constraint 'p':'Microsoft.AspNetCore.Routing.Constraints.IntRouteConstraint' with value 'One' for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateNotValid, log.EventId);
+                    Assert.Equal(1004, log.EventId);
                     Assert.Equal("Endpoint '/{p:int}' with route pattern '/{p:int}' is not valid for the request path '/One'", log.Message);
                 });
         }
@@ -627,17 +627,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 sink.Writes,
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidatesFound, log.EventId);
+                    Assert.Equal(1001, log.EventId);
                     Assert.Equal("1 candidate(s) found for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateRejectedByComplexSegment, log.EventId);
+                    Assert.Equal(1002, log.EventId);
                     Assert.Equal("Endpoint '/x-{id}-y' with route pattern '/x-{id}-y' was rejected by complex segment 'x-{id}-y' for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateNotValid, log.EventId);
+                    Assert.Equal(1004, log.EventId);
                     Assert.Equal("Endpoint '/x-{id}-y' with route pattern '/x-{id}-y' is not valid for the request path '/One'", log.Message);
                 });
         }
@@ -669,32 +669,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 sink.Writes,
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidatesFound, log.EventId);
+                    Assert.Equal(1001, log.EventId);
                     Assert.Equal("3 candidate(s) found for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateValid, log.EventId);
+                    Assert.Equal(1005, log.EventId);
                     Assert.Equal("Endpoint '/One' with route pattern '/One' is valid for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateRejectedByConstraint, log.EventId);
+                    Assert.Equal(1003, log.EventId);
                     Assert.Equal("Endpoint '/{p:int}' with route pattern '/{p:int}' was rejected by constraint 'p':'Microsoft.AspNetCore.Routing.Constraints.IntRouteConstraint' with value 'One' for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateNotValid, log.EventId);
+                    Assert.Equal(1004, log.EventId);
                     Assert.Equal("Endpoint '/{p:int}' with route pattern '/{p:int}' is not valid for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateRejectedByComplexSegment, log.EventId);
+                    Assert.Equal(1002, log.EventId);
                     Assert.Equal("Endpoint '/x-{id}-y' with route pattern '/x-{id}-y' was rejected by complex segment 'x-{id}-y' for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {
-                    Assert.Equal(DfaMatcher.EventIds.CandidateNotValid, log.EventId);
+                    Assert.Equal(1004, log.EventId);
                     Assert.Equal("Endpoint '/x-{id}-y' with route pattern '/x-{id}-y' is not valid for the request path '/One'", log.Message);
                 });
         }

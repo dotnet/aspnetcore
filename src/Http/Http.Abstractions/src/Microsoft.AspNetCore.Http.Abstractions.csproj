@@ -19,6 +19,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Net.Http.Headers" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
