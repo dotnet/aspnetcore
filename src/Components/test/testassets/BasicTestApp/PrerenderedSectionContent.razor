@@ -2,5 +2,21 @@
 @page "/prerendered-section-content"
 
 <SectionContent Name="head">
-    <title>Title set in prerendering!</title>
+    <title>@_title</title>
+    <meta name="description" content="@_description">
 </SectionContent>
+
+<p>
+    Title:
+    <input type="text" @bind-value="_title" />
+</p>
+
+<p>
+    Description:
+    <input type="text" @bind-value="_description" />
+</p>
+
+@code {
+    private string _title = "Title set in prerendering!";
+    private string _description = "Description set in prerendering!";
+}

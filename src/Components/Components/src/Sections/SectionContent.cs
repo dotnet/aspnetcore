@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,12 +6,23 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Sections
 {
+    /// <summary>
+    /// Provides content to <see cref="SectionOutlet"/> components with matching <c>Name</c>s.
+    /// </summary>
     public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
     {
-        private string? _registeredName = default;
+        private string? _registeredName;
         private SectionRegistry _registry = default!;
 
+        /// <summary>
+        /// Gets or sets the name that determines which <see cref="SectionOutlet"/> instances will render
+        /// the content of this instance.
+        /// </summary>
         [Parameter] public string Name { get; set; } = default!;
+
+        /// <summary>
+        /// Gets or sets the content to be rendered in corresponding <see cref="SectionOutlet"/> instances.
+        /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; } = default;
 
         RenderFragment? ISectionContentProvider.Content => ChildContent;
@@ -46,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.Sections
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (_registeredName is not null)

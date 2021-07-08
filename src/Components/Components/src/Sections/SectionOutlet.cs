@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,15 +6,26 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Sections
 {
+    /// <summary>
+    /// Renders content provided by <see cref="SectionContent"/> components with matching <c>Name</c>s.
+    /// </summary>
     public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisposable
     {
         private static readonly RenderFragment _emptyRenderFragment = _ => { };
 
-        private string? _subscribedName = default;
-        private RenderHandle _renderHandle = default;
+        private string? _subscribedName;
+        private RenderHandle _renderHandle;
         private SectionRegistry _registry = default!;
 
+        /// <summary>
+        /// Gets or sets the name that determines which <see cref="SectionContent"/> instances will provide
+        /// content to this instance.
+        /// </summary>
         [Parameter] public string Name { get; set; } = default!;
+
+        /// <summary>
+        /// The content to be rendered when no <see cref="SectionContent"/> instances are providing content.
+        /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; } = default;
 
         void IComponent.Attach(RenderHandle renderHandle)
@@ -59,6 +70,7 @@ namespace Microsoft.AspNetCore.Components.Sections
             _renderHandle.Render(content ?? ChildContent ?? _emptyRenderFragment);
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (_subscribedName is not null)
