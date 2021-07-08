@@ -91,7 +91,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _minResponseDataRateFeature = minResponseDataRateFeature;
             _outputAborter = outputAborter;
 
-            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
+            _flusher = new TimingPipeFlusher(timeoutControl, log);
+            _flusher.Initialize(_pipeWriter);
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)

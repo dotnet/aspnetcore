@@ -94,6 +94,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 {
                     context = new QuicStreamContext(this, _context);
                 }
+                else
+                {
+                    context.ResetFeatureCollection();
+                    context.ResetItems();
+                }
 
                 context.Initialize(stream);
                 context.Start();

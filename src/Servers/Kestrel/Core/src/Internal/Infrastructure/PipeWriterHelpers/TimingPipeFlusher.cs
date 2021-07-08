@@ -19,18 +19,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
     /// </summary>
     internal class TimingPipeFlusher
     {
-        private readonly PipeWriter _writer;
+        private PipeWriter _writer = default!;
         private readonly ITimeoutControl? _timeoutControl;
         private readonly IKestrelTrace _log;
 
         public TimingPipeFlusher(
-            PipeWriter writer,
             ITimeoutControl? timeoutControl,
             IKestrelTrace log)
         {
-            _writer = writer;
             _timeoutControl = timeoutControl;
             _log = log;
+        }
+
+        public void Initialize(PipeWriter output)
+        {
+            _writer = output;
         }
 
         public ValueTask<FlushResult> FlushAsync()
