@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Tests
 
             Assert.Equal(WebHostDefaults.ApplicationKey, env.ApplicationName);
             Assert.Equal(WebHostDefaults.EnvironmentKey, env.EnvironmentName);
-            Assert.Equal(WebHostDefaults.ContentRootKey, env.ContentRootPath);
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, WebHostDefaults.ContentRootKey), env.ContentRootPath);
             var fullWebRootPath = Path.Combine(env.ContentRootPath, env.WebRootPath);
             Assert.Equal(fullWebRootPath, env.WebRootPath);
         }
@@ -60,17 +60,94 @@ namespace Microsoft.AspNetCore.Tests
 
             Assert.Equal(WebHostDefaults.ApplicationKey, settings[WebHostDefaults.ApplicationKey]);
             Assert.Equal(WebHostDefaults.EnvironmentKey, settings[WebHostDefaults.EnvironmentKey]);
-            Assert.Equal(WebHostDefaults.ContentRootKey, settings[WebHostDefaults.ContentRootKey]);
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, WebHostDefaults.ContentRootKey), settings[WebHostDefaults.ContentRootKey]);
             var fullWebRootPath = Path.Combine(settings[WebHostDefaults.ContentRootKey], settings[WebHostDefaults.WebRootKey]);
             Assert.Equal(fullWebRootPath, settings[WebHostDefaults.WebRootKey]);
 
             Assert.Equal(WebHostDefaults.ApplicationKey, webHostBuilderEnvironment.ApplicationName);
             Assert.Equal(WebHostDefaults.EnvironmentKey, webHostBuilderEnvironment.EnvironmentName);
-            Assert.Equal(WebHostDefaults.ContentRootKey, webHostBuilderEnvironment.ContentRootPath);
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, WebHostDefaults.ContentRootKey), webHostBuilderEnvironment.ContentRootPath);
             Assert.Equal(fullWebRootPath, webHostBuilderEnvironment.WebRootPath);
 
             Assert.NotEqual(originalEnvironment.ContentRootFileProvider, webHostBuilderEnvironment.ContentRootFileProvider);
             Assert.NotEqual(originalEnvironment.WebRootFileProvider, webHostBuilderEnvironment.WebRootFileProvider);
+        }
+
+        [Fact]
+        public void SettingPathsSetsContentProviders()
+        {
+            var environment = new WebHostEnvironment();
+            var tempPath = Path.GetTempPath();
+
+            environment.ContentRootPath = tempPath;
+            environment.WebRootPath = tempPath;
+
+            Assert.Equal(tempPath, environment.WebRootPath);
+            Assert.Equal(tempPath, environment.ContentRootPath);
+
+            Assert.IsType<PhysicalFileProvider>(environment.ContentRootFileProvider);
+            Assert.IsType<PhysicalFileProvider>(environment.WebRootFileProvider);
+
+            Assert.Equal(tempPath, ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
+            Assert.Equal(tempPath, ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
+        }
+
+        [Fact]
+        public void RelativePathsAreMappedToFullPaths()
+        {
+            var environment = new WebHostEnvironment();
+            var relativeRootPath = "/some-relative-path";
+            var relativeSubPath = "/some-other-relative-path";
+            
+            // ContentRootPath is mapped relative to AppContext.BaseDirectory
+            environment.ContentRootPath = relativeRootPath;
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, relativeRootPath), environment.ContentRootPath);
+
+            // WebRootPath is mapped relative to ContentRootPath
+            environment.WebRootPath = relativeSubPath;
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, relativeRootPath, relativeSubPath), environment.WebRootPath);
+        }
+
+        [Fact]
+        public void CannotUnsetPaths()
+        {
+            var environment = new WebHostEnvironment();
+            var webRootPath = Path.GetTempPath();
+
+            environment.WebRootPath = webRootPath;
+
+            Assert.Equal(webRootPath, environment.WebRootPath);
+            Assert.Equal(webRootPath, ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
+
+            // Setting WebRootPath to null no-ops
+            environment.WebRootPath = null;
+            Assert.Equal(webRootPath, environment.WebRootPath);
+            Assert.Equal(webRootPath, ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
+
+            // Setting ContentRootPath to null falls back to current directory
+            environment.ContentRootPath = null;
+            Assert.Equal(AppContext.BaseDirectory, environment.ContentRootPath);
+            Assert.Equal(AppContext.BaseDirectory, ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
+        }
+
+        [Fact]
+        public void SetContentRootAfterRelativeWebRoot()
+        {
+            var environment = new WebHostEnvironment();
+            var webRootPath = "/some-relative-path";
+            var tempPath = Path.GetTempPath();
+
+            environment.WebRootPath = webRootPath;
+
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, webRootPath), environment.WebRootPath);
+
+            // Setting the ContentRootPath after setting a relative WebRootPath
+            // does not modify the WebRootPath
+            environment.ContentRootPath = tempPath;
+
+            Assert.Equal(tempPath, environment.ContentRootPath);
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, webRootPath), environment.WebRootPath);
+            
         }
 
         private class TestWebHostBuilder : IWebHostBuilder

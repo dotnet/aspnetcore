@@ -16,9 +16,16 @@ namespace Microsoft.AspNetCore.Builder
     {
         private static readonly NullFileProvider NullFileProvider = new();
 
+        private IFileProvider _contentRootFileProvider = NullFileProvider;
+        private IFileProvider _webRootFileProvider = NullFileProvider;
+        // ContentRootPath and WebRootPath are set to default! on
+        // initialization to match the behavior in HostingEnvironment.
+        private string _contentRootPath = default!;
+        private string _webRootPath = default!;
+
         public WebHostEnvironment(Assembly? callingAssembly)
         {
-            ContentRootPath = Directory.GetCurrentDirectory();
+            ContentRootPath = AppContext.BaseDirectory;
 
             ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty;
             EnvironmentName = Environments.Production;
@@ -98,76 +105,62 @@ namespace Microsoft.AspNetCore.Builder
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
 
-        private IFileProvider _contentRootFileProvider = NullFileProvider;
+        
         public IFileProvider ContentRootFileProvider
         {
             get => _contentRootFileProvider;
-            set
-            {
-                if (_contentRootPath == default(string))
-                {
-                    throw new InvalidOperationException("Can only set ContenRootFileProvider if ContentRootPath is set.");
-                }
-                _contentRootFileProvider = value;
-            }
+            set => _contentRootFileProvider = value;
         }
-        private IFileProvider _webRootFileProvider = NullFileProvider;
+        
         public IFileProvider WebRootFileProvider
         {
             get => _webRootFileProvider;
-            set
-            {
-                if (_contentRootPath == default(string))
-                {
-                    throw new InvalidOperationException("Can only set ContenRootFileProvider if ContentRootPath is set.");
-                }
-                _webRootFileProvider = value;
-            }
+            set => _webRootFileProvider = value;
         }
 
-        // ContentRootPath and WebRootPath are set to default! on
-        // initialization to match the behavior in HostingEnvironment.
-        private string _contentRootPath = default!;
+        
         public string ContentRootPath
         {
             get => _contentRootPath;
             set
             {
-                _contentRootPath = value;
+                _contentRootPath = ResolvePathToRoot(value, AppContext.BaseDirectory);
                 if (Directory.Exists(_contentRootPath))
                 {
                     _contentRootFileProvider = new PhysicalFileProvider(_contentRootPath);
                 } 
             }
         }
-
-        private string _webRootPath = default!;
+      
         public string WebRootPath
         {
             get => _webRootPath;
             set
             {
-                _webRootPath = ResolveWebRootPath(value, ContentRootPath ?? Directory.GetCurrentDirectory());
-                if (Directory.Exists(_webRootPath))
+                if (!string.IsNullOrEmpty(value))
                 {
-                    _webRootFileProvider = new PhysicalFileProvider(_webRootPath);
+                    _webRootPath = ResolvePathToRoot(value, ContentRootPath);
+                    if (Directory.Exists(_webRootPath))
+                    {
+                        _webRootFileProvider = new PhysicalFileProvider(_webRootPath);
+                    }
                 }
             }
         }
 
-        private string ResolveWebRootPath(string webRootPath, string contentRootPath)
+        private string ResolvePathToRoot(string relativePath, string basePath)
         {
-            if (string.IsNullOrEmpty(webRootPath))
+            if (string.IsNullOrEmpty(relativePath))
             {
-                return Path.GetFullPath(contentRootPath);
+                return Path.GetFullPath(basePath);
             }
 
-            if (Path.IsPathRooted(webRootPath))
+            if (Path.IsPathRooted(relativePath))
             {
-                return webRootPath;
+                return relativePath;
             }
 
-            return Path.Combine(Path.GetFullPath(contentRootPath), webRootPath);
+            return Path.Combine(Path.GetFullPath(basePath), relativePath);
         }
     }
 }
