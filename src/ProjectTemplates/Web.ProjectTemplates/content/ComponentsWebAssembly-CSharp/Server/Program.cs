@@ -15,7 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 #if (GenerateGraph)
-using Microsoft.Graph;
+using Graph = Microsoft.Graph;
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web;
