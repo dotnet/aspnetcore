@@ -38,12 +38,12 @@ namespace Microsoft.AspNetCore.Owin
     public class OwinWebSocketAdapter : WebSocket
     {
         private const int _rentedBufferSize = 1024;
-        private IDictionary<string, object> _websocketContext;
-        private WebSocketSendAsync _sendAsync;
-        private WebSocketReceiveAsync _receiveAsync;
-        private WebSocketCloseAsync _closeAsync;
+        private readonly IDictionary<string, object> _websocketContext;
+        private readonly WebSocketSendAsync _sendAsync;
+        private readonly WebSocketReceiveAsync _receiveAsync;
+        private readonly WebSocketCloseAsync _closeAsync;
         private WebSocketState _state;
-        private string _subProtocol;
+        private readonly string _subProtocol;
 
         /// <summary>
         /// Initializes a new instance of <see cref="OwinWebSocketAdapter"/>.

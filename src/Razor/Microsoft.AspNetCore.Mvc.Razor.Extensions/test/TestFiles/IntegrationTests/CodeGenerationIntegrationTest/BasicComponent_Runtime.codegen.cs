@@ -25,15 +25,13 @@ namespace __GeneratedComponent
 #nullable disable
             );
             __builder.AddMarkupContent(2, "\r\n    Hello world\r\n    ");
-            __builder.AddContent(3, 
 #nullable restore
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
-     string.Format("{0}", "Hello")
+#line (4,6)-(4,35) 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
+__builder.AddContent(3, string.Format("{0}", "Hello"));
 
 #line default
 #line hidden
 #nullable disable
-            );
             __builder.CloseElement();
         }
         #pragma warning restore 1998

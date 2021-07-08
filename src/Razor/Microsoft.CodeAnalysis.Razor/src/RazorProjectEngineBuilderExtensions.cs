@@ -89,6 +89,11 @@ namespace Microsoft.CodeAnalysis.Razor
                     // This is a useful optimization but isn't supported by older framework versions
                     options.OmitMinimizedComponentAttributeValues = true;
                 }
+
+                if (CSharpLanguageVersion >= LanguageVersion.CSharp10)
+                {
+                    options.UseEnhancedLinePragma = true;
+                }
             }
         }
     }

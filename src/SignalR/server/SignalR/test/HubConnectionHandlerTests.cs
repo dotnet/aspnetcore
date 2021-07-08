@@ -4438,6 +4438,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task CanSendThroughIHubContext()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using var client = new TestClient();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+                IHubContext context = (IHubContext)serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
+                await context.Clients.All.SendAsync("Send", "test");
+
+                var message = await client.ReadAsync().DefaultTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(message);
+
+                Assert.Single(invocation.Arguments);
+                Assert.Equal("test", invocation.Arguments[0]);
+                Assert.Equal("Send", invocation.Target);
+            }
+        }
+
+        [Fact]
         public async Task ConnectionCloseCleansUploadStreams()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
@@ -4497,33 +4524,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await client.DisposeAsync().DefaultTimeout();
 
                 await connectionHandlerTask.DefaultTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task CanSendThroughIHubContext()
-        {
-            using (StartVerifiableLog())
-            {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-                using var client = new TestClient();
-
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                // Wait for a connection, or for the endpoint to fail.
-                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
-
-                IHubContext context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
-                await context.Clients.All.SendAsync("Send", "test");
-
-                var message = await client.ReadAsync().DefaultTimeout();
-                var invocation = Assert.IsType<InvocationMessage>(message);
-
-                Assert.Single(invocation.Arguments);
-                Assert.Equal("test", invocation.Arguments[0]);
-                Assert.Equal("Send", invocation.Target);
             }
         }
 

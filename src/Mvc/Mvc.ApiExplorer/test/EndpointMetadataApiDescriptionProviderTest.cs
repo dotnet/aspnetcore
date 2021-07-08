@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -253,6 +254,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((ClaimsPrincipal user) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
         }
 
