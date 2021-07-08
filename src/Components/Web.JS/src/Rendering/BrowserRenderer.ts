@@ -29,7 +29,7 @@ export class BrowserRenderer {
     this.attachComponentToElement(componentId, element);
 
     // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
-    // clearing existing children. Rendered content will then append rather than replace the existing HTML content
+    // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
     if (!append) {
       rootComponentsPendingFirstRender[componentId] = element;
     }

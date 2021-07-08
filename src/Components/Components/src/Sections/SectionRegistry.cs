@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.Sections
             }
         }
 
-        public void NotifyContentChanged(string name, SectionContent provider)
+        public void NotifyContentChanged(string name, ISectionContentProvider provider)
         {
             if (!_providersByName.TryGetValue(name, out var providers))
             {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Sections
             // most recently added provider changes.
             if (providers.Count != 0 && providers[^1] == provider)
             {
-                NotifyContentChangedForAllSubscribers(name, provider.ChildContent);
+                NotifyContentChangedForAllSubscribers(name, provider.Content);
             }
         }
 
