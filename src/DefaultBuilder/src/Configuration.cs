@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Builder
             // Make sure there's some default storage since there are no default providers.
             this.AddInMemoryCollection();
 
-            NotifySourceAdded(_sources[0]);
+            AddSource(_sources[0]);
         }
 
         /// <inheritdoc/>
@@ -99,7 +99,6 @@ namespace Microsoft.AspNetCore.Builder
 
         IList<IConfigurationSource> IConfigurationBuilder.Sources => _sources;
 
-        /// <inheritdoc/>
         IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers
         {
             get
@@ -150,7 +149,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         // Don't rebuild and reload all providers in the common case when a source is simply added to the IList.
-        private void NotifySourceAdded(IConfigurationSource source)
+        private void AddSource(IConfigurationSource source)
         {
             lock (_providerLock)
             {
@@ -164,9 +163,8 @@ namespace Microsoft.AspNetCore.Builder
             RaiseChanged();
         }
 
-        // Something other than Add was called on IConfigurationBuilder.Sources or the FileProvider has been set to a new value.
-        // This is unusual, so we don't bother optimizing it.
-        private void NotifySourcesChanged()
+        // Something other than Add was called on IConfigurationBuilder.Sources or IConfigurationBuilder.Properties has changed.
+        private void ReloadSources()
         {
             lock (_providerLock)
             {
@@ -221,7 +219,7 @@ namespace Microsoft.AspNetCore.Builder
                 set
                 {
                     _sources[index] = value;
-                    _config.NotifySourcesChanged();
+                    _config.ReloadSources();
                 }
             }
 
@@ -232,13 +230,13 @@ namespace Microsoft.AspNetCore.Builder
             public void Add(IConfigurationSource source)
             {
                 _sources.Add(source);
-                _config.NotifySourceAdded(source);
+                _config.AddSource(source);
             }
 
             public void Clear()
             {
                 _sources.Clear();
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
             }
 
             public bool Contains(IConfigurationSource source)
@@ -264,20 +262,20 @@ namespace Microsoft.AspNetCore.Builder
             public void Insert(int index, IConfigurationSource source)
             {
                 _sources.Insert(index, source);
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
             }
 
             public bool Remove(IConfigurationSource source)
             {
                 var removed = _sources.Remove(source);
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
                 return removed;
             }
 
             public void RemoveAt(int index)
             {
                 _sources.RemoveAt(index);
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -302,7 +300,7 @@ namespace Microsoft.AspNetCore.Builder
                 set
                 {
                     _properties[key] = value;
-                    _config.NotifySourcesChanged();
+                    _config.ReloadSources();
                 }
             }
 
@@ -317,19 +315,19 @@ namespace Microsoft.AspNetCore.Builder
             public void Add(string key, object value)
             {
                 _properties.Add(key, value);
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
             }
 
             public void Add(KeyValuePair<string, object> item)
             {
                 ((IDictionary<string, object>)_properties).Add(item);
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
             }
 
             public void Clear()
             {
                 _properties.Clear();
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
             }
 
             public bool Contains(KeyValuePair<string, object> item)
@@ -355,14 +353,14 @@ namespace Microsoft.AspNetCore.Builder
             public bool Remove(string key)
             {
                 var wasRemoved = _properties.Remove(key);
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
                 return wasRemoved;
             }
 
             public bool Remove(KeyValuePair<string, object> item)
             {
                 var wasRemoved = ((IDictionary<string, object>)_properties).Remove(item);
-                _config.NotifySourcesChanged();
+                _config.ReloadSources();
                 return wasRemoved;
             }
 
