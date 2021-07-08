@@ -110,6 +110,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public bool IsRequestStream => true;
 
+        public void InitializeWithExistingContext()
+        {
+            Initialize(_context);
+        }
+
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
             var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);

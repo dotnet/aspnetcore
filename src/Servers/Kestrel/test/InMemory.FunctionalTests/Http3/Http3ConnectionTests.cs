@@ -160,9 +160,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ControlStream_ServerToClient_ErrorInitializing_ConnectionError()
         {
-            OnCreateServerControlStream = () =>
+            OnCreateServerControlStream = testStreamContext =>
             {
-                var controlStream = new Http3ControlStream(this, StreamInitiator.Server);
+                var controlStream = new Http3ControlStream(this, testStreamContext);
 
                 // Make server connection error when trying to write to control stream.
                 controlStream.StreamContext.Transport.Output.Complete();
