@@ -241,6 +241,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
             services.TryAddScoped<ComponentApplicationLifetime>();
             services.TryAddScoped<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            services.TryAddScoped<PrerenderingDependencyManager>();
             services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();

@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private AttributeInfo _attributeInfo;
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
         private IUrlHelper? _urlHelper;
+        private PrerenderingDependencyManager? _prerendering;
 
         /// <inheritdoc/>
         public virtual ViewContext ViewContext { get; set; } = default!;
@@ -107,6 +108,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
         public ITempDataDictionary TempData => ViewContext?.TempData!;
+
+        /// <summary>
+        /// Gets the content store managing prerendering dependencies.
+        /// </summary>
+        public IPrerenderingDependencyManager Prerendering
+        {
+            get
+            {
+                if (_prerendering is null)
+                {
+                    var services = ViewContext.HttpContext.RequestServices;
+                    _prerendering = services.GetRequiredService<PrerenderingDependencyManager>();
+                }
+
+                return _prerendering;
+            }
+        }
 
         private Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
 

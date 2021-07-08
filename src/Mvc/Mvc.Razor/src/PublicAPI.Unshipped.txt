@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory
 Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory.ConsolidatedAssemblyApplicationPartFactory() -> void
+Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.Prerendering.get -> Microsoft.AspNetCore.Mvc.Rendering.IPrerenderingDependencyManager!
 override Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory.GetApplicationParts(System.Reflection.Assembly! assembly) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart!>!
 *REMOVED*Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.Model.get -> TModel
 *REMOVED*Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.ViewBag.get -> dynamic

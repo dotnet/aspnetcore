@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,6 +48,11 @@ namespace Microsoft.AspNetCore.Components
         /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
         /// </summary>
         public bool IsHotReloading => HotReloadFeature.IsSupported && (_renderer?.IsHotReloading ?? false);
+
+        /// <summary>
+        /// Gets whether the renderer has been disposed.
+        /// </summary>
+        internal bool IsRendererDisposed => _renderer?.Disposed ?? false;
 
         /// <summary>
         /// Notifies the renderer that the component should be rendered.

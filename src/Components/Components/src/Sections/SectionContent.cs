@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Sections
 {
-    public sealed class SectionContent : IComponent, IDisposable
+    public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
     {
+        private string? _registeredName = default;
         private SectionRegistry _registry = default!;
 
         [Parameter] public string Name { get; set; } = default!;
         [Parameter] public RenderFragment? ChildContent { get; set; } = default;
+
+        RenderFragment? ISectionContentProvider.Content => ChildContent;
 
         void IComponent.Attach(RenderHandle renderHandle)
         {
@@ -27,18 +30,30 @@ namespace Microsoft.AspNetCore.Components.Sections
                 throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(Name)}'.");
             }
 
-            _registry.SetContent(Name, ChildContent);
+            if (Name != _registeredName)
+            {
+                if (_registeredName is not null)
+                {
+                    _registry.RemoveProvider(_registeredName, this);
+                }
+
+                _registry.AddProvider(Name, this);
+                _registeredName = Name;
+            }
+
+            _registry.NotifyContentChanged(Name, this);
 
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
-            // TODO: This relies on the assumption that the old SectionContent gets disposed before the
-            // new one is added to the output. This won't be the case in all possible scenarios.
-            // We should have the registry keep track of which SectionContent is the most recent
-            // one to supply new content, and disregard updates from ones that were superseded.
-            _registry.SetContent(Name, null);
+            if (_registeredName is not null)
+            {
+                _registry.RemoveProvider(_registeredName, this);
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

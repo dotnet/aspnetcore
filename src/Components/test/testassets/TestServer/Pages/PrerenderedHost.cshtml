@@ -1,11 +1,16 @@
 ﻿@page
 @using BasicTestApp.RouterTest
+@using Components.TestServer
+
+@{
+    Prerendering.DependsOn<TestRouterWithLazyAssembly>();
+}
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Prerendering tests</title>
     <base href="~/" />
+    <component type="typeof(PrerenderedHeadSectionOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
     <app><component type="typeof(TestRouterWithLazyAssembly)" render-mode="ServerPrerendered" /></app>

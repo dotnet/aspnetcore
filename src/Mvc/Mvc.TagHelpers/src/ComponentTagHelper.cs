@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <inheritdoc />
-        public async override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (context == null)
             {
@@ -101,12 +102,39 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             var requestServices = ViewContext.HttpContext.RequestServices;
-            var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
-            var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
+
+            var result = _renderMode.Value switch
+            {
+                RenderMode.ServerPrerendered => await RenderComponentWithPrerenderingDependenciesAsync(requestServices),
+                _ => await RenderComponentAsync(requestServices)
+            };
 
             // Reset the TagName. We don't want `component` to render.
             output.TagName = null;
             output.Content.SetHtmlContent(result);
+        }
+
+        private async Task<IHtmlContent> RenderComponentWithPrerenderingDependenciesAsync(IServiceProvider services)
+        {
+            var prerendering = services.GetRequiredService<PrerenderingDependencyManager>();
+
+            if (prerendering.FirstRenderedComponentType is not null)
+            {
+                var result = await prerendering.GetOrRenderContentAsync(ViewContext);
+
+                if (prerendering.FirstRenderedComponentType == ComponentType)
+                {
+                    return result;
+                }
+            }
+
+            return await RenderComponentAsync(services);
+        }
+
+        private Task<IHtmlContent> RenderComponentAsync(IServiceProvider services)
+        {
+            var componentRenderer = services.GetRequiredService<IComponentRenderer>();
+            return componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable warnings
@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
-        private bool _disposed;
         private Task? _disposeTask;
 
         /// <summary>
@@ -124,6 +123,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
         /// </summary>
         internal bool IsHotReloading { get; private set; }
+
+        /// <summary>
+        /// Gets whether the renderer has been disposed.
+        /// </summary>
+        internal bool Disposed { get; private set; }
 
         private async void RenderRootComponentsOnHotReload()
         {
@@ -520,7 +524,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         protected virtual void ProcessPendingRender()
         {
-            if (_disposed)
+            if (Disposed)
             {
                 throw new ObjectDisposedException(nameof(Renderer), "Cannot process pending renders after the renderer has been disposed.");
             }
@@ -898,7 +902,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
-            _disposed = true;
+            Disposed = true;
 
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
@@ -1003,7 +1007,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
             }
 
-            if (_disposed)
+            if (Disposed)
             {
                 return;
             }
