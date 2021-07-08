@@ -180,17 +180,19 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {

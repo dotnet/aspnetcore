@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private static readonly Action<ILogger, string, string, Exception?> _viewLookupCacheHit;
         private static readonly Action<ILogger, string, Exception?> _precompiledViewFound;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         static MvcRazorLoggerExtensions()
         {
             _viewCompilerLocatedCompiledView = LoggerMessage.Define<string>(
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 LogLevel.Warning,
                 new EventId(104, "MalformedPageDirective"),
                 "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
         }
 
         public static void ViewCompilerLocatedCompiledView(this ILogger logger, string view)

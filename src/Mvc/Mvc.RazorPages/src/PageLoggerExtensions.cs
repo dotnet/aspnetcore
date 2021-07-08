@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private static readonly Action<ILogger, string, string, string, Exception> _beforeExecutingMethodOnFilter;
         private static readonly Action<ILogger, string, string, string, Exception> _afterExecutingMethodOnFilter;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         static PageLoggerExtensions()
         {
             // These numbers start at 101 intentionally to avoid conflict with the IDs used by ResourceInvoker.
@@ -39,55 +41,55 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 LogLevel.Debug,
                 new EventId(101, "ExecutingModelFactory"),
                "Executing page model factory for page {Page} ({AssemblyName})",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _pageModelFactoryExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(102, "ExecutedModelFactory"),
                 "Executed page model factory for page {Page} ({AssemblyName})",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _pageFactoryExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(101, "ExecutingPageFactory"),
                "Executing page factory for page {Page} ({AssemblyName})",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _pageFactoryExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(102, "ExecutedPageFactory"),
                 "Executed page factory for page {Page} ({AssemblyName})",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _handlerMethodExecuting = LoggerMessage.Define<string, ModelValidationState>(
                 LogLevel.Information,
                 new EventId(101, "ExecutingHandlerMethod"),
                 "Executing handler method {HandlerName} - ModelState is {ValidationState}",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _handlerMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
                 LogLevel.Trace,
                 new EventId(103, "HandlerMethodExecutingWithArguments"),
                 "Executing handler method {HandlerName} with arguments ({Arguments})",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(102, "ExecutedHandlerMethod"),
                 "Executed handler method {HandlerName}, returned result {ActionResult}.",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _implicitHandlerMethodExecuting = LoggerMessage.Define<ModelValidationState>(
                 LogLevel.Information,
                 new EventId(103, "ExecutingImplicitHandlerMethod"),
                 "Executing an implicit handler method - ModelState is {ValidationState}",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _implicitHandlerMethodExecuted = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 new EventId(104, "ExecutedImplicitHandlerMethod"),
                 "Executed an implicit handler method, returned result {ActionResult}.",
-               new LogDefineOptions() { SkipEnabledCheck = true });
+               SkipEnabledCheckLogOptions);
 
             _pageFilterShortCircuit = LoggerMessage.Define<object>(
                LogLevel.Debug,

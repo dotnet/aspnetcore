@@ -13,8 +13,10 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal static class HostingLoggerExtensions
     {
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         private static readonly Action<ILogger, string, Exception?> _startupAssemblyLoaded =
-                LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.HostingStartupAssemblyLoaded, "Loaded hosting startup assembly {assemblyName}", new LogDefineOptions() { SkipEnabledCheck = true });
+                LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.HostingStartupAssemblyLoaded, "Loaded hosting startup assembly {assemblyName}", SkipEnabledCheckLogOptions);
 
         private static readonly Action<ILogger, string, Exception?> _listeningOnAddress =
                 LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ServerListeningOnAddresses, "Now listening on: {address}");

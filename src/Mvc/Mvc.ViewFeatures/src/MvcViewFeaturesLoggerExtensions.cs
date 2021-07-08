@@ -37,20 +37,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static readonly Action<ILogger, Type, Exception> _notMostEffectiveFilter;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         static MvcViewFeaturesLoggerExtensions()
         {
             _viewComponentExecuting = LoggerMessage.Define<string, string[]>(
                 LogLevel.Debug,
                 new EventId(1, "ViewComponentExecuting"),
                 "Executing view component {ViewComponentName} with arguments ({Arguments}).",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _viewComponentExecuted = LoggerMessage.Define<string, double, string>(
                 LogLevel.Debug,
                 new EventId(2, "ViewComponentExecuted"),
                 "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned " +
                 "{ViewComponentResult}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _partialViewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -81,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 LogLevel.Information,
                 new EventId(1, "ViewComponentResultExecuting"),
                 "Executing ViewComponentResult, running {ViewComponentName}.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _viewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,

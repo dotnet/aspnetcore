@@ -338,6 +338,8 @@ namespace Microsoft.AspNetCore.Routing
 #nullable disable
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             public static class EventIds
             {
                 public static readonly EventId EndpointsFound = new EventId(100, "EndpointsFound");
@@ -356,7 +358,7 @@ namespace Microsoft.AspNetCore.Routing
                 LogLevel.Debug,
                 EventIds.EndpointsFound,
                 "Found the endpoints {Endpoints} for address {Address}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, object, Exception> _endpointsNotFound = LoggerMessage.Define<object>(
                 LogLevel.Debug,
@@ -374,14 +376,14 @@ namespace Microsoft.AspNetCore.Routing
                 "Failed to process the template {Template} for {Endpoint}. " +
                 "A required route value is missing, or has a different value from the required default values. " +
                 "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string, string, IRouteConstraint, string, string, Exception> _templateFailedConstraint = LoggerMessage.Define<string, string, IRouteConstraint, string, string>(
                 LogLevel.Debug,
                 EventIds.TemplateFailedConstraint,
                 "Failed to process the template {Template} for {Endpoint}. " +
                 "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string, string, string, Exception> _templateFailedExpansion = LoggerMessage.Define<string, string, string>(
                 LogLevel.Debug,
@@ -389,19 +391,19 @@ namespace Microsoft.AspNetCore.Routing
                 "Failed to process the template {Template} for {Endpoint}. " +
                 "The failure occurred while expanding the template with values {Values} " +
                 "This is usually due to a missing or empty value in a complex segment",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _linkGenerationSucceeded = LoggerMessage.Define<IEnumerable<string>, string>(
                 LogLevel.Debug,
                 EventIds.LinkGenerationSucceeded,
                 "Link generation succeeded for endpoints {Endpoints} with result {URI}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, IEnumerable<string>, Exception> _linkGenerationFailed = LoggerMessage.Define<IEnumerable<string>>(
                 LogLevel.Debug,
                 EventIds.LinkGenerationFailed,
                 "Link generation failed for endpoints {Endpoints}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             public static void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints)
             {

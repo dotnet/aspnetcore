@@ -21,6 +21,8 @@ namespace Microsoft.Extensions.Logging
         private static readonly Action<ILogger, Exception?> _sessionRefreshCanceled;
         private static readonly Action<ILogger, Exception?> _sessionNotAvailable;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         static LoggingExtensions()
         {
             _errorClosingTheSession = LoggerMessage.Define(
@@ -35,12 +37,12 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Information,
                 eventId: new EventId(3, "SessionStarted"),
                 formatString: "Session started; Key:{sessionKey}, Id:{sessionId}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
             _sessionLoaded = LoggerMessage.Define<string, string, int>(
                 logLevel: LogLevel.Debug,
                 eventId: new EventId(4, "SessionLoaded"),
                 formatString: "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
             _sessionStored = LoggerMessage.Define<string, string, int>(
                 eventId: new EventId(5, "SessionStored"),
                 logLevel: LogLevel.Debug,
@@ -49,7 +51,7 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Error,
                 eventId: new EventId(6, "SessionCacheReadException"),
                 formatString: "Session cache read exception, Key:{sessionKey}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
             _errorUnprotectingCookie = LoggerMessage.Define(
                 eventId: new EventId(7, "ErrorUnprotectingCookie"),
                 logLevel: LogLevel.Warning,

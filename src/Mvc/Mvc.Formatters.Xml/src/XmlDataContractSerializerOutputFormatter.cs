@@ -332,11 +332,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             private static readonly Action<ILogger, string, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
             {

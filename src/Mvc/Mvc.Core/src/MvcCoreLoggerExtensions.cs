@@ -156,55 +156,57 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static readonly Action<ILogger, Type, int?, Type, Exception> _transformingClientError;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         static MvcCoreLoggerExtensions()
         {
             _controllerFactoryExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(1, "ControllerFactoryExecuting"),
                 "Executing controller factory for controller {Controller} ({AssemblyName})",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _controllerFactoryExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(2, "ControllerFactoryExecuted"),
                 "Executed controller factory for controller {Controller} ({AssemblyName})",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _actionExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(1, "ActionExecuting"),
                 "Route matched with {RouteData}. Executing action {ActionName}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _controllerActionExecuting = LoggerMessage.Define<string, MethodInfo, string, string>(
                 LogLevel.Information,
                 new EventId(3, "ControllerActionExecuting"),
                 "Route matched with {RouteData}. Executing controller action with signature {MethodInfo} on controller {Controller} ({AssemblyName}).",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _actionExecuted = LoggerMessage.Define<string, double>(
                 LogLevel.Information,
                 new EventId(2, "ActionExecuted"),
                 "Executed action {ActionName} in {ElapsedMilliseconds}ms",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _pageExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(3, "PageExecuting"),
                 "Route matched with {RouteData}. Executing page {PageName}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _pageExecuted = LoggerMessage.Define<string, double>(
                 LogLevel.Information,
                 new EventId(4, "PageExecuted"),
                 "Executed page {PageName} in {ElapsedMilliseconds}ms",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _challengeResultExecuting = LoggerMessage.Define<string[]>(
                 LogLevel.Information,
                 new EventId(1, "ChallengeResultExecuting"),
                 "Executing ChallengeResult with authentication schemes ({Schemes}).",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _contentResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -215,25 +217,25 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Information,
                 new EventId(1, "ActionMethodExecuting"),
                 "Executing action method {ActionName} - Validation state: {ValidationState}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _actionMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
                 LogLevel.Trace,
                 new EventId(1, "ActionMethodExecutingWithArguments"),
                 "Executing action method {ActionName} with arguments ({Arguments})",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _actionMethodExecuted = LoggerMessage.Define<string, string, double>(
                 LogLevel.Information,
                 new EventId(2, "ActionMethodExecuted"),
                 "Executed action method {ActionName}, returned result {ActionResult} in {ElapsedMilliseconds}ms.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _logFilterExecutionPlan = LoggerMessage.Define<string, string[]>(
                 LogLevel.Debug,
                 new EventId(1, "FilterExecutionPlan"),
                 "Execution plan of {FilterType} filters (in the following order): {Filters}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _beforeExecutingMethodOnFilter = LoggerMessage.Define<string, string, Type>(
                 LogLevel.Trace,
@@ -269,13 +271,13 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Information,
                 new EventId(1, "ExecutingFileResult"),
                 "Executing {FileResultType}, sending file '{FileDownloadPath}' with download name '{FileDownloadName}' ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _executingFileResultWithNoFileName = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(2, "ExecutingFileResultWithNoFileName"),
                 "Executing {FileResultType}, sending file with download name '{FileDownloadName}' ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _authorizationFailure = LoggerMessage.Define<object>(
                 LogLevel.Information,
@@ -306,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Information,
                 new EventId(1, "ForbidResultExecuting"),
                 formatString: $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _signInResultExecuting = LoggerMessage.Define<string, ClaimsPrincipal>(
                 LogLevel.Information,
@@ -317,7 +319,7 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Information,
                 new EventId(1, "SignOutResultExecuting"),
                 formatString: $"Executing {nameof(SignOutResult)} with authentication schemes ({{Schemes}}).",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _httpStatusCodeResultExecuting = LoggerMessage.Define<int>(
                 LogLevel.Information,
@@ -333,19 +335,19 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Warning,
                 new EventId(1, "NoFormatter"),
                 "No output formatter was found for content types '{ContentTypes}' to write the response.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _objectResultExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(1, "ObjectResultExecuting"),
                 "Executing {ObjectResultType}, writing value of type '{Type}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _formatterSelected = LoggerMessage.Define<IOutputFormatter, string>(
                 LogLevel.Debug,
                 new EventId(2, "FormatterSelected"),
                 "Selected output formatter '{OutputFormatter}' and content type '{ContentType}' to write the response.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _skippedContentNegotiation = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -366,25 +368,25 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Debug,
                 new EventId(1, "InputFormatterSelected"),
                 "Selected input formatter '{InputFormatter}' for content type '{ContentType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _inputFormatterRejected = LoggerMessage.Define<IInputFormatter, string>(
                 LogLevel.Debug,
                 new EventId(2, "InputFormatterRejected"),
                 "Rejected input formatter '{InputFormatter}' for content type '{ContentType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _noInputFormatterSelected = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(3, "NoInputFormatterSelected"),
                 "No input formatter was found to support the content type '{ContentType}' for use with the [FromBody] attribute.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _removeFromBodyAttribute = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(4, "RemoveFromBodyAttribute"),
                 "To use model binding, remove the [FromBody] attribute from the property or parameter named '{ModelName}' with model type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _redirectResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -410,7 +412,7 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Debug,
                 new EventId(3, "NoActionsMatched"),
                 "No actions matched the current request. Route values: {RouteValues}",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _featureNotFound = LoggerMessage.Define(
                 LogLevel.Warning,
@@ -451,7 +453,7 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Debug,
                 new EventId(1, "InferredParameterSource"),
                 "Inferred binding source for '{ParameterName}` on `{ActionName}` as {BindingSource}.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _unsupportedFormatFilterContentType = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -522,25 +524,25 @@ namespace Microsoft.AspNetCore.Mvc
                LogLevel.Debug,
                 new EventId(13, "AttemptingToBindPropertyModel"),
                "Attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}' using the name '{ModelName}' in request data ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _doneAttemptingToBindPropertyModel = LoggerMessage.Define<Type, string, Type>(
                LogLevel.Debug,
                 new EventId(14, "DoneAttemptingToBindPropertyModel"),
                "Done attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _foundNoValueForPropertyInRequest = LoggerMessage.Define<string, Type, string, Type>(
                LogLevel.Debug,
                 new EventId(15, "FoundNoValueForPropertyInRequest"),
                "Could not find a value in the request with name '{ModelName}' for binding property '{PropertyContainerType}.{ModelFieldName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _foundNoValueForParameterInRequest = LoggerMessage.Define<string, string, Type>(
                LogLevel.Debug,
                 new EventId(16, "FoundNoValueForParameterInRequest"),
                "Could not find a value in the request with name '{ModelName}' for binding parameter '{ModelFieldName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _noPublicSettableProperties = LoggerMessage.Define<string, Type>(
                LogLevel.Debug,
@@ -571,37 +573,37 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Debug,
                 new EventId(22, "AttemptingToBindParameter"),
                 "Attempting to bind parameter '{ParameterName}' of type '{ModelType}' ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _doneAttemptingToBindParameter = LoggerMessage.Define<string, Type>(
                 LogLevel.Debug,
                 new EventId(23, "DoneAttemptingToBindParameter"),
                 "Done attempting to bind parameter '{ParameterName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _attemptingToBindModel = LoggerMessage.Define<Type, string>(
                 LogLevel.Debug,
                 new EventId(24, "AttemptingToBindModel"),
                 "Attempting to bind model of type '{ModelType}' using the name '{ModelName}' in request data ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _doneAttemptingToBindModel = LoggerMessage.Define<Type, string>(
                 LogLevel.Debug,
                 new EventId(25, "DoneAttemptingToBindModel"),
                 "Done attempting to bind model of type '{ModelType}' using the name '{ModelName}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _attemptingToValidateParameter = LoggerMessage.Define<string, Type>(
                 LogLevel.Debug,
                 new EventId(26, "AttemptingToValidateParameter"),
                 "Attempting to validate the bound parameter '{ParameterName}' of type '{ModelType}' ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _doneAttemptingToValidateParameter = LoggerMessage.Define<string, Type>(
                 LogLevel.Debug,
                 new EventId(27, "DoneAttemptingToValidateParameter"),
                 "Done attempting to validate the bound parameter '{ParameterName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _noNonIndexBasedFormatFoundForCollection = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
@@ -615,7 +617,7 @@ namespace Microsoft.AspNetCore.Mvc
                 "[0]=value1&[1]=value2, " +
                 "{ModelName}[0]=value1&{ModelName}[1]=value2, " +
                 "{ModelName}.index=zero&{ModelName}.index=one&{ModelName}[zero]=value1&{ModelName}[one]=value2",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _attemptingToBindCollectionOfKeyValuePair = LoggerMessage.Define<string, string, string, string, string, string>(
                 LogLevel.Debug,
@@ -624,7 +626,7 @@ namespace Microsoft.AspNetCore.Mvc
                 "[0].Key=key1&[0].Value=value1&[1].Key=key2&[1].Value=value2, " +
                 "{ModelName}[0].Key=key1&{ModelName}[0].Value=value1&{ModelName}[1].Key=key2&{ModelName}[1].Value=value2, " +
                 "{ModelName}[key1]=value1&{ModelName}[key2]=value2",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _noKeyValueFormatForDictionaryModelBinder = LoggerMessage.Define<string, string, string>(
                 LogLevel.Debug,
@@ -660,25 +662,25 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Debug,
                 new EventId(39, "AttemptingToBindProperty"),
                 "Attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}' ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _doneAttemptingToBindProperty = LoggerMessage.Define<Type, string, Type>(
                 LogLevel.Debug,
                 new EventId(40, "DoneAttemptingToBindProperty"),
                 "Done attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _attemptingToValidateProperty = LoggerMessage.Define<Type, string, Type>(
                 LogLevel.Debug,
                 new EventId(41, "AttemptingToValidateProperty"),
                 "Attempting to validate the bound property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}' ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _doneAttemptingToValidateProperty = LoggerMessage.Define<Type, string, Type>(
                 LogLevel.Debug,
                 new EventId(42, "DoneAttemptingToValidateProperty"),
                 "Done attempting to validate the bound property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _cannotCreateHeaderModelBinderCompatVersion_2_0 = LoggerMessage.Define<Type>(
                LogLevel.Debug,
@@ -689,31 +691,31 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Debug,
                 new EventId(44, "AttemptingToBindParameterModel"),
                 "Attempting to bind parameter '{ParameterName}' of type '{ModelType}' using the name '{ModelName}' in request data ...",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _doneAttemptingToBindParameterModel = LoggerMessage.Define<string, Type>(
                LogLevel.Debug,
                 new EventId(45, "DoneAttemptingToBindParameterModel"),
                "Done attempting to bind parameter '{ParameterName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _foundNoValueInRequest = LoggerMessage.Define<string, Type>(
                LogLevel.Debug,
                 new EventId(46, "FoundNoValueInRequest"),
                "Could not find a value in the request with name '{ModelName}' of type '{ModelType}'.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _parameterBinderRequestPredicateShortCircuitOfProperty = LoggerMessage.Define<Type, string>(
                LogLevel.Debug,
                 new EventId(47, "ParameterBinderRequestPredicateShortCircuitOfProperty"),
                "Skipped binding property '{PropertyContainerType}.{PropertyName}' since its binding information disallowed it for the current request.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _parameterBinderRequestPredicateShortCircuitOfParameter = LoggerMessage.Define<string>(
                LogLevel.Debug,
                 new EventId(48, "ParameterBinderRequestPredicateShortCircuitOfParameter"),
                "Skipped binding parameter '{ParameterName}' since its binding information disallowed it for the current request.",
-                new LogDefineOptions() { SkipEnabledCheck = true });
+                SkipEnabledCheckLogOptions);
 
             _transformingClientError = LoggerMessage.Define<Type, int?, Type>(
                 LogLevel.Trace,
