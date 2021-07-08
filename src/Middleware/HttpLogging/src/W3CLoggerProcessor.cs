@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     internal class W3CLoggerProcessor : FileLoggerProcessor
     {
         private readonly W3CLoggingFields _loggingFields;
+        internal const string W3CSepator = "#w3c#";
 
         public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
         {
@@ -118,5 +119,64 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         // Extensibility point for tests
         internal virtual void OnWrite(string message) { }
+
+        public void EnqueueMessage(string[] messages)
+        {
+            if (!_messageQueue.IsAddingCompleted)
+            {
+                try
+                {
+                    _messageQueue.Add(string.Join(W3CSepator, messages));
+                    return;
+                }
+                catch (InvalidOperationException) { }
+            }
+        }
+
+        internal override string FormatMessage(string message)
+        {
+            if (message.IndexOf(W3CSepator, 0, System.StringComparison.InvariantCulture) < 0)
+            {
+                return message;
+            }
+            var elements = message.Split(W3CSepator, options: System.StringSplitOptions.None);
+            // Need to calculate TimeTaken now, if applicable
+            var date = elements[W3CLoggingMiddleware._dateIndex];
+            var time = elements[W3CLoggingMiddleware._timeIndex];
+            if (!string.IsNullOrEmpty(date) && !string.IsNullOrEmpty(time) && _loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
+            {
+                DateTime start = DateTime.ParseExact(date + time, "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture);
+                var elapsed = DateTime.UtcNow.Subtract(start);
+                elements[W3CLoggingMiddleware._timeTakenIndex] = elapsed.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
+            }
+
+            // 200 is around the length of an average cookie-less entry
+            var sb = new ValueStringBuilder(200);
+            var firstElement = true;
+            for (var i = 0; i < elements.Length; i++)
+            {
+                if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)))
+                {
+                    if (!firstElement)
+                    {
+                        sb.Append(' ');
+                    }
+                    else
+                    {
+                        firstElement = false;
+                    }
+                    // If the element was not logged, or was the empty string, we log it as a dash
+                    if (string.IsNullOrEmpty(elements[i]))
+                    {
+                        sb.Append('-');
+                    }
+                    else
+                    {
+                        sb.Append(elements[i]);
+                    }
+                }
+            }
+            return sb.ToString();
+        }
     }
 }

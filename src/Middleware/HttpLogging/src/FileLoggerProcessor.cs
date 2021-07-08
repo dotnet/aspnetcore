@@ -32,13 +32,15 @@ namespace Microsoft.AspNetCore.HttpLogging
         private DateTime _today = DateTime.Now;
 
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
-        private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
+        
         private readonly ILogger _logger;
         private readonly List<string> _currentBatch = new List<string>();
         private readonly Task _outputTask;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         private readonly object _pathLock = new object();
+
+        internal readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
 
         public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
@@ -200,7 +202,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         await OnFirstWrite(streamWriter, cancellationToken);
                     }
 
-                    await WriteMessageAsync(message, streamWriter, cancellationToken);
+                    await WriteMessageAsync(FormatMessage(message), streamWriter, cancellationToken);
                 }
             }
             finally
@@ -245,6 +247,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             return File.AppendText(fileName);
         }
+
+        // Virtual (format message, needed by w3c)
+        internal virtual string FormatMessage(string message) => message;
 
         private void RollFiles()
         {
