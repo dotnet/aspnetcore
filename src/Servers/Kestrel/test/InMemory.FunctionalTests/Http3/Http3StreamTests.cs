@@ -2435,12 +2435,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var outboundcontrolStream = await CreateControlStream();
             await outboundcontrolStream.SendSettingsAsync(new List<Http3PeerSetting>
             {
-                new Http3PeerSetting(Internal.Http3.Http3SettingType.MaxFieldSectionSize, 100)
+                new Http3PeerSetting(Core.Internal.Http3.Http3SettingType.MaxFieldSectionSize, 100)
             });
 
             var maxFieldSetting = await ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
-            Assert.Equal(Internal.Http3.Http3SettingType.MaxFieldSectionSize, maxFieldSetting.Key);
+            Assert.Equal(Core.Internal.Http3.Http3SettingType.MaxFieldSectionSize, maxFieldSetting.Key);
             Assert.Equal(100, maxFieldSetting.Value);
 
             var requestStream = await CreateRequestStream().DefaultTimeout();

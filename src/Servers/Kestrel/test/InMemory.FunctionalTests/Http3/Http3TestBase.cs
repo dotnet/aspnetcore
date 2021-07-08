@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
         internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        internal readonly ConcurrentQueue<TestStreamContext> _streamContextPool = new ConcurrentQueue<TestStreamContext>();
         protected Task _connectionTask;
         protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -438,9 +439,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal async ValueTask<Http3ControlStream> CreateControlStream(int? id)
         {
-            var streamId = GetStreamId(0x02);
+            var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, this);
+            testStreamContext.Initialize(GetStreamId(0x02));
 
-            var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, this, streamId);
             var stream = new Http3ControlStream(this, testStreamContext);
             _runningStreams[stream.StreamId] = stream;
 
@@ -454,7 +455,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal ValueTask<Http3RequestStream> CreateRequestStream()
         {
-            var testStreamContext = new TestStreamContext(canRead: true, canWrite: true, this, GetStreamId(0x00));
+            if (!_streamContextPool.TryDequeue(out var testStreamContext))
+            {
+                testStreamContext = new TestStreamContext(canRead: true, canWrite: true, this);
+            }
+            testStreamContext.Initialize(GetStreamId(0x00));
 
             var stream = new Http3RequestStream(this, Connection, testStreamContext);
             _runningStreams[stream.StreamId] = stream;
@@ -922,8 +927,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
             {
-                var streamId = _testBase.GetStreamId(0x03);
-                var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, _testBase, streamId);
+                var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, _testBase);
+                testStreamContext.Initialize(_testBase.GetStreamId(0x03));
 
                 var stream = _testBase.OnCreateServerControlStream?.Invoke(testStreamContext) ?? new Http3ControlStream(_testBase, testStreamContext);
                 ToClientAcceptQueue.Writer.WriteAsync(stream);
@@ -942,28 +947,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature
         {
-            internal readonly DuplexPipePair _pair;
-            public TestStreamContext(bool canRead, bool canWrite, Http3TestBase testBase, long streamId)
+            private readonly Http3TestBase _testBase;
+
+            internal DuplexPipePair _pair;
+            private Pipe _inputPipe;
+            private Pipe _outputPipe;
+            private CompletionPipeReader _transportPipeReader;
+            private CompletionPipeWriter _transportPipeWriter;
+
+            private bool _isAborted;
+
+            public TestStreamContext(bool canRead, bool canWrite, Http3TestBase testBase)
             {
-                var inputPipeOptions = GetInputPipeOptions(testBase._serviceContext, testBase._memoryPool, PipeScheduler.ThreadPool);
-                var outputPipeOptions = GetOutputPipeOptions(testBase._serviceContext, testBase._memoryPool, PipeScheduler.ThreadPool);
-                _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-
                 Features = new FeatureCollection();
-                Features.Set<IStreamDirectionFeature>(this);
-                Features.Set<IStreamIdFeature>(this);
-                Features.Set< IProtocolErrorCodeFeature>(this);
-
                 CanRead = canRead;
                 CanWrite = canWrite;
+                _testBase = testBase;
+            }
+
+            public void Initialize(long streamId)
+            {
+                // Create new pipes when test stream context is reused rather than reseting them.
+                // This is required because the client tests read from these directly from these pipes.
+                // When a request is finished they'll check to see whether there is anymore content
+                // in the Application.Output pipe. If it has been reset then that code will error.
+                var inputOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
+                var outputOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
+
+                _inputPipe = new Pipe(inputOptions);
+                _outputPipe = new Pipe(outputOptions);
+
+                _transportPipeReader = new CompletionPipeReader(_inputPipe.Reader);
+                _transportPipeWriter = new CompletionPipeWriter(_outputPipe.Writer);
+
+                _pair = new DuplexPipePair(
+                    new DuplexPipe(_transportPipeReader, _transportPipeWriter),
+                    new DuplexPipe(_outputPipe.Reader, _inputPipe.Writer));
+
+                Features.Set<IStreamDirectionFeature>(this);
+                Features.Set<IStreamIdFeature>(this);
+                Features.Set<IProtocolErrorCodeFeature>(this);
+
                 StreamId = streamId;
+
+                Disposed = false;
             }
 
             public bool Disposed { get; private set; }
 
             public override string ConnectionId { get; set; }
 
-            public long StreamId { get; }
+            public long StreamId { get; private set; }
 
             public override IFeatureCollection Features { get; }
 
@@ -989,13 +1023,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public override void Abort(ConnectionAbortedException abortReason)
             {
+                _isAborted = true;
                 _pair.Application.Output.Complete(abortReason);
             }
 
             public override ValueTask DisposeAsync()
             {
                 Disposed = true;
-                return base.DisposeAsync();
+
+                if (!_isAborted &&
+                    _transportPipeReader.IsComplete && _transportPipeReader.CompleteException == null &&
+                    _transportPipeWriter.IsComplete && _transportPipeWriter.CompleteException == null)
+                {
+                    _testBase._streamContextPool.Enqueue(this);
+                }
+
+                return ValueTask.CompletedTask;
             }
         }
     }
