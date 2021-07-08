@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ComponentsWebAssembly_CSharp.Shared
+﻿namespace ComponentsWebAssembly_CSharp.Shared
 {
     public class WeatherForecast
     {
