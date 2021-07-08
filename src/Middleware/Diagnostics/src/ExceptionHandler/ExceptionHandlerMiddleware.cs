@@ -130,6 +130,11 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
+                if (exceptionHandlerFeature.Endpoint is not null || exceptionHandlerFeature.RouteValues is not null)
+                {
+                    context.Features.Set<IExceptionHandlerEndpointFeature>(exceptionHandlerFeature);
+                }
+
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
