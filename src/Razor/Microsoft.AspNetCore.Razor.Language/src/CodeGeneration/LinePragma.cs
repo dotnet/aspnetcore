@@ -10,6 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     public readonly struct LinePragma : IEquatable<LinePragma>
     {
         public LinePragma(int startLineIndex, int lineCount, string filePath)
+            : this(startLineIndex: startLineIndex, lineCount: lineCount, filePath: filePath, startCharacterIndex: null, endCharacterIndex: null, characterOffset: null)
+        {
+        }
+
+        public LinePragma(int startLineIndex, int lineCount, string filePath, int? startCharacterIndex, int? endCharacterIndex, int? characterOffset)
         {
             if (startLineIndex < 0)
             {
@@ -24,6 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             StartLineIndex = startLineIndex;
             LineCount = lineCount;
             FilePath = filePath;
+            StartCharacterIndex = startCharacterIndex;
+            EndCharacterIndex = endCharacterIndex;
+            CharacterOffset = characterOffset;
         }
 
         public int StartLineIndex { get; }
@@ -31,6 +39,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public int EndLineIndex => StartLineIndex + LineCount;
 
         public int LineCount { get; }
+
+        public int? StartCharacterIndex { get; }
+
+        public int? EndCharacterIndex { get; }
+
+        public int? CharacterOffset { get; }
 
         public string FilePath { get; }
 

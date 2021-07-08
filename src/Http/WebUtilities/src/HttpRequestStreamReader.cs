@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <inheritdoc />
-        public async override Task<string> ReadToEndAsync()
+        public override async Task<string> ReadToEndAsync()
         {
             StringBuilder sb = new StringBuilder(_charsRead - _charBufferIndex);
             do
