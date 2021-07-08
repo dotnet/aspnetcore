@@ -156,10 +156,9 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static readonly Action<ILogger, Type, int?, Type, Exception> _transformingClientError;
 
-        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
-
         static MvcCoreLoggerExtensions()
         {
+            LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
             _controllerFactoryExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(1, "ControllerFactoryExecuting"),
