@@ -2847,7 +2847,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             private readonly PipeReader _originalPipeReader;
             private TaskCompletionSource _waitForRead;
-            private object _lock = new object();
+            private readonly object _lock = new object();
 
             public PipeReaderWrapper(PipeReader pipeReader)
             {
@@ -4557,7 +4557,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;
-            private IServiceProvider _serviceProvider;
+            private readonly IServiceProvider _serviceProvider;
             public TaskCompletionSource ReleaseTask = new TaskCompletionSource();
             public TaskCompletionSource CreateTask = new TaskCompletionSource();
 

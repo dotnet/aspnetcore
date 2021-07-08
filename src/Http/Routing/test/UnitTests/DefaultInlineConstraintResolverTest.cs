@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class DefaultInlineConstraintResolverTest
     {
-        private IInlineConstraintResolver _constraintResolver;
+        private readonly IInlineConstraintResolver _constraintResolver;
 
         public DefaultInlineConstraintResolverTest()
         {

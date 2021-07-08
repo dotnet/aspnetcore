@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <summary>
     /// Wrappers around CryptProtectMemory / CryptUnprotectMemory.
     /// </summary>
-    internal unsafe static class MemoryProtection
+    internal static unsafe class MemoryProtection
     {
         // from dpapi.h
         private const uint CRYPTPROTECTMEMORY_SAME_PROCESS = 0x00;

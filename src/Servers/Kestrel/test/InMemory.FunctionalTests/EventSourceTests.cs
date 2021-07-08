@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         // To log all KestrelEventSource events, add `_listener = new TestEventListener(Logger);` to the start of the test method.
         // We could always construct TestEventListener with the test logger, but other concurrent tests could make this noisy.
-        private TestEventListener _listener = new TestEventListener();
+        private readonly TestEventListener _listener = new TestEventListener();
 
         [Fact]
         public async Task Http1_EmitsStartAndStopEventsWithActivityIds()

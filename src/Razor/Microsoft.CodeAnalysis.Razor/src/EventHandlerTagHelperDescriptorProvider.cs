@@ -260,7 +260,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private class EventHandlerDataVisitor : SymbolVisitor
         {
-            private List<INamedTypeSymbol> _results;
+            private readonly List<INamedTypeSymbol> _results;
 
             public EventHandlerDataVisitor(List<INamedTypeSymbol> results)
             {

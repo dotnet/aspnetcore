@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         private bool _aborted;
         private bool _terminated;
         private Exception _abortException;
-        private ConcurrentQueue<byte[]> _bufferedData;
+        private readonly ConcurrentQueue<byte[]> _bufferedData;
         private ArraySegment<byte> _topBuffer;
-        private SemaphoreSlim _readLock;
-        private SemaphoreSlim _writeLock;
+        private readonly SemaphoreSlim _readLock;
+        private readonly SemaphoreSlim _writeLock;
         private TaskCompletionSource<object> _readWaitingForData;
 
         internal BufferStream()
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             return base.EndRead(asyncResult);
         }
 
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (_terminated)
             {

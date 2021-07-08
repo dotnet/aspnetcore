@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class StartLineTests : IDisposable
     {
-        private readonly static IKestrelTrace _trace = Mock.Of<IKestrelTrace>();
+        private static readonly IKestrelTrace _trace = Mock.Of<IKestrelTrace>();
 
         private IDuplexPipe Transport { get; }
         private MemoryPool<byte> MemoryPool { get; }

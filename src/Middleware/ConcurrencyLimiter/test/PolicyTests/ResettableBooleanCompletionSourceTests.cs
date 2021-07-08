@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 {
     public static class ResettableBooleanCompletionSourceTests
      {
-        private static StackPolicy _testQueue = TestUtils.CreateStackPolicy(8);
+        private static readonly StackPolicy _testQueue = TestUtils.CreateStackPolicy(8);
 
         [Fact]
-        public async static void CanBeAwaitedMultipleTimes()
+        public static async void CanBeAwaitedMultipleTimes()
         {
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         }
 
         [Fact]
-        public async static void CanSetResultToTrue()
+        public static async void CanSetResultToTrue()
         {
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         }
 
         [Fact]
-        public async static void CanSetResultToFalse()
+        public static async void CanSetResultToFalse()
         {
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
 

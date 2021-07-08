@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             }
         }
 
-        unsafe protected void CreateMemory(LibuvFunctions uv, int threadId, int size)
+        protected unsafe void CreateMemory(LibuvFunctions uv, int threadId, int size)
         {
             _uv = uv;
             ThreadId = threadId;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this, _handleType));
         }
 
-        unsafe protected static void DestroyMemory(IntPtr memory)
+        protected static unsafe void DestroyMemory(IntPtr memory)
         {
             var gcHandlePtr = *(IntPtr*)memory;
             DestroyMemory(memory, gcHandlePtr);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             Debug.Assert(_threadId == Environment.CurrentManagedThreadId, "ThreadId is incorrect");
         }
 
-        unsafe public static THandle FromIntPtr<THandle>(IntPtr handle)
+        public static unsafe THandle FromIntPtr<THandle>(IntPtr handle)
         {
             GCHandle gcHandle = GCHandle.FromIntPtr(*(IntPtr*)handle);
             return (THandle)gcHandle.Target;

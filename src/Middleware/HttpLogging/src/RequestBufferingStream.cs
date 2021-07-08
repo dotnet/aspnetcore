@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal sealed class RequestBufferingStream : BufferingStream
     {
-        private Encoding _encoding;
+        private readonly Encoding _encoding;
         private readonly int _limit;
 
         public bool HasLogged { get; private set; }

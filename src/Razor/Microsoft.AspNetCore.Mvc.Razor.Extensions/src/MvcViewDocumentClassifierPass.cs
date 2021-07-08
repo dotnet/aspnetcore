@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class MvcViewDocumentClassifierPass : DocumentClassifierPassBase
     {
-        private bool _useConsolidatedMvcViews;
+        private readonly bool _useConsolidatedMvcViews;
 
         public static readonly string MvcViewDocumentKind = "mvc.1.0.view";
 

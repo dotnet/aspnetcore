@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// </summary>
     public class StringRouteConstraint : IRouteConstraint
     {
-        private string _value;
+        private readonly string _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringRouteConstraint"/> class.

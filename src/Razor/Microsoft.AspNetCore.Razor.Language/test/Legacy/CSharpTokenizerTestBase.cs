@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public abstract class CSharpTokenizerTestBase : TokenizerTestBase
     {
-        private static SyntaxToken _ignoreRemaining = SyntaxFactory.Token(SyntaxKind.Marker, string.Empty);
+        private static readonly SyntaxToken _ignoreRemaining = SyntaxFactory.Token(SyntaxKind.Marker, string.Empty);
 
         internal override object IgnoreRemaining
         {

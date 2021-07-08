@@ -579,7 +579,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private class BindElementDataVisitor : SymbolVisitor
         {
-            private List<INamedTypeSymbol> _results;
+            private readonly List<INamedTypeSymbol> _results;
 
             public BindElementDataVisitor(List<INamedTypeSymbol> results)
             {

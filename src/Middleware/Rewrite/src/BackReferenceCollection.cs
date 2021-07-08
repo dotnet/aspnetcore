@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite
 {
     internal class BackReferenceCollection
     {
-        private List<string> _backReferences = new List<string>();
+        private readonly List<string> _backReferences = new List<string>();
 
         public BackReferenceCollection(GroupCollection references)
         {

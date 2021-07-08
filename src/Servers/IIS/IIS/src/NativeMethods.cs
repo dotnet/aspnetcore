@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern void http_indicate_completion(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
 
         [DllImport(AspNetCoreModuleDll)]
-        private unsafe static extern int register_callbacks(NativeSafeHandle pInProcessApplication,
+        private static extern unsafe int register_callbacks(NativeSafeHandle pInProcessApplication,
             delegate* unmanaged<IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> requestCallback,
             delegate* unmanaged<IntPtr, int> shutdownCallback,
             delegate* unmanaged<IntPtr, void> disconnectCallback,

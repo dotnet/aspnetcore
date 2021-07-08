@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
     public class SecretsStore
     {
         private readonly string _secretsFilePath;
-        private IDictionary<string, string> _secrets;
+        private readonly IDictionary<string, string> _secrets;
 
         public SecretsStore(string userSecretsId, IReporter reporter)
         {

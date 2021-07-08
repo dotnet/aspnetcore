@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public class RouteCollection : IRouteCollection
     {
-        private readonly static char[] UrlQueryDelimiters = new char[] { '?', '#' };
+        private static readonly char[] UrlQueryDelimiters = new char[] { '?', '#' };
         private readonly List<IRouter> _routes = new List<IRouter>();
         private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
         private readonly Dictionary<string, INamedRouter> _namedRoutes =
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <inheritdoc />
-        public async virtual Task RouteAsync(RouteContext context)
+        public virtual async Task RouteAsync(RouteContext context)
         {
             // Perf: We want to avoid allocating a new RouteData for each route we need to process.
             // We can do this by snapshotting the state at the beginning and then restoring it

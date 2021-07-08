@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.Logging.Testing
         private readonly string _category;
         private readonly LogLevel _minLogLevel;
         private readonly ITestOutputHelper _output;
-        private DateTimeOffset? _logStart;
+        private readonly DateTimeOffset? _logStart;
 
         public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel, DateTimeOffset? logStart)
         {

@@ -337,8 +337,8 @@ namespace Microsoft.AspNetCore.Components
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator
         {
-            private object _dummy;
-            private int _dummyPrimitive;
+            private readonly object _dummy;
+            private readonly int _dummyPrimitive;
             public Microsoft.AspNetCore.Components.ParameterValue Current { get { throw null; } }
             public bool MoveNext() { throw null; }
         }

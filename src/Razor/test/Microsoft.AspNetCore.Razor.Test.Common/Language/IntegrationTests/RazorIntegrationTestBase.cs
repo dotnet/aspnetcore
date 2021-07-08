@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         private class TestImportProjectFeature : IImportProjectFeature
         {
-            private List<RazorProjectItem> _imports;
+            private readonly List<RazorProjectItem> _imports;
 
             public TestImportProjectFeature(List<RazorProjectItem> imports)
             {

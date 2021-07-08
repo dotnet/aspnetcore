@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Testing
             throw new PlatformNotSupportedException();
         }
 
-        static private Version GetCurrentOSVersion()
+        private static Version GetCurrentOSVersion()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

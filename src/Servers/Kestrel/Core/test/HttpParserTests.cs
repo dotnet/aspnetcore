@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class HttpParserTests
     {
-        private static IKestrelTrace _nullTrace = Mock.Of<IKestrelTrace>();
+        private static readonly IKestrelTrace _nullTrace = Mock.Of<IKestrelTrace>();
 
         [Theory]
         [MemberData(nameof(RequestLineValidData))]

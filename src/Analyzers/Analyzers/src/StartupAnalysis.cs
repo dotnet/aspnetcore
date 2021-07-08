@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal class StartupAnalysis
     {
-        private ImmutableDictionary<INamedTypeSymbol, ImmutableArray<object>> _analysesByType;
+        private readonly ImmutableDictionary<INamedTypeSymbol, ImmutableArray<object>> _analysesByType;
 
         public StartupAnalysis(
             StartupSymbols startupSymbols,

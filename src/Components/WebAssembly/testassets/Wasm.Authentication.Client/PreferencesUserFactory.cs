@@ -21,7 +21,7 @@ namespace Wasm.Authentication.Client
             _httpClient = new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
         }
 
-        public async override ValueTask<ClaimsPrincipal> CreateUserAsync(
+        public override async ValueTask<ClaimsPrincipal> CreateUserAsync(
             OidcAccount account,
             RemoteAuthenticationUserOptions options)
         {

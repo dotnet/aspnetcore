@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Localization
     /// <typeparam name="TResourceSource">The <see cref="Type"/> to provide strings for.</typeparam>
     public class StringLocalizer<TResourceSource> : IStringLocalizer<TResourceSource>
     {
-        private IStringLocalizer _localizer;
+        private readonly IStringLocalizer _localizer;
 
         /// <summary>
         /// Creates a new <see cref="StringLocalizer{TResourceSource}"/>.

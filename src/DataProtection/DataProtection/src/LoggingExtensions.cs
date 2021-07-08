@@ -17,137 +17,137 @@ namespace Microsoft.Extensions.Logging
     /// </summary>
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Guid, DateTimeOffset, Exception?> _usingFallbackKeyWithExpirationAsDefaultKey;
+        private static readonly Action<ILogger, Guid, DateTimeOffset, Exception?> _usingFallbackKeyWithExpirationAsDefaultKey;
 
-        private static Action<ILogger, Guid, Exception?> _usingKeyAsDefaultKey;
+        private static readonly Action<ILogger, Guid, Exception?> _usingKeyAsDefaultKey;
 
-        private static Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithHMAC;
+        private static readonly Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithHMAC;
 
-        private static Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithChainingModeCBC;
+        private static readonly Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithChainingModeCBC;
 
-        private static Action<ILogger, Guid, string, Exception?> _performingUnprotectOperationToKeyWithPurposes;
+        private static readonly Action<ILogger, Guid, string, Exception?> _performingUnprotectOperationToKeyWithPurposes;
 
-        private static Action<ILogger, Guid, Exception?> _keyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed;
+        private static readonly Action<ILogger, Guid, Exception?> _keyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed;
 
-        private static Action<ILogger, Guid, Exception?> _keyWasRevokedCallerRequestedUnprotectOperationProceedRegardless;
+        private static readonly Action<ILogger, Guid, Exception?> _keyWasRevokedCallerRequestedUnprotectOperationProceedRegardless;
 
-        private static Action<ILogger, Guid, Exception?> _keyWasRevokedUnprotectOperationCannotProceed;
+        private static readonly Action<ILogger, Guid, Exception?> _keyWasRevokedUnprotectOperationCannotProceed;
 
-        private static Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithChainingModeGCM;
+        private static readonly Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithChainingModeGCM;
 
-        private static Action<ILogger, string, Exception?> _usingManagedKeyedHashAlgorithm;
+        private static readonly Action<ILogger, string, Exception?> _usingManagedKeyedHashAlgorithm;
 
-        private static Action<ILogger, string, Exception?> _usingManagedSymmetricAlgorithm;
+        private static readonly Action<ILogger, string, Exception?> _usingManagedSymmetricAlgorithm;
 
-        private static Action<ILogger, Guid, string, Exception> _keyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed;
+        private static readonly Action<ILogger, Guid, string, Exception> _keyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed;
 
-        private static Action<ILogger, Guid, DateTimeOffset, Exception?> _consideringKeyWithExpirationDateAsDefaultKey;
+        private static readonly Action<ILogger, Guid, DateTimeOffset, Exception?> _consideringKeyWithExpirationDateAsDefaultKey;
 
-        private static Action<ILogger, Guid, Exception?> _keyIsNoLongerUnderConsiderationAsDefault;
+        private static readonly Action<ILogger, Guid, Exception?> _keyIsNoLongerUnderConsiderationAsDefault;
 
-        private static Action<ILogger, XName, Exception?> _unknownElementWithNameFoundInKeyringSkipping;
+        private static readonly Action<ILogger, XName, Exception?> _unknownElementWithNameFoundInKeyringSkipping;
 
-        private static Action<ILogger, Guid, Exception?> _markedKeyAsRevokedInTheKeyring;
+        private static readonly Action<ILogger, Guid, Exception?> _markedKeyAsRevokedInTheKeyring;
 
-        private static Action<ILogger, Guid, Exception?> _triedToProcessRevocationOfKeyButNoSuchKeyWasFound;
+        private static readonly Action<ILogger, Guid, Exception?> _triedToProcessRevocationOfKeyButNoSuchKeyWasFound;
 
-        private static Action<ILogger, Guid, Exception?> _foundKey;
+        private static readonly Action<ILogger, Guid, Exception?> _foundKey;
 
-        private static Action<ILogger, DateTimeOffset, Exception?> _foundRevocationOfAllKeysCreatedPriorTo;
+        private static readonly Action<ILogger, DateTimeOffset, Exception?> _foundRevocationOfAllKeysCreatedPriorTo;
 
-        private static Action<ILogger, Guid, Exception?> _foundRevocationOfKey;
+        private static readonly Action<ILogger, Guid, Exception?> _foundRevocationOfKey;
 
-        private static Action<ILogger, XElement, Exception> _exceptionWhileProcessingRevocationElement;
+        private static readonly Action<ILogger, XElement, Exception> _exceptionWhileProcessingRevocationElement;
 
-        private static Action<ILogger, DateTimeOffset, string?, Exception?> _revokingAllKeysAsOfForReason;
+        private static readonly Action<ILogger, DateTimeOffset, string?, Exception?> _revokingAllKeysAsOfForReason;
 
-        private static Action<ILogger, string, Exception?> _keyCacheExpirationTokenTriggeredByOperation;
+        private static readonly Action<ILogger, string, Exception?> _keyCacheExpirationTokenTriggeredByOperation;
 
-        private static Action<ILogger, XElement, Exception> _anExceptionOccurredWhileProcessingTheKeyElement;
+        private static readonly Action<ILogger, XElement, Exception> _anExceptionOccurredWhileProcessingTheKeyElement;
 
-        private static Action<ILogger, XElement, Exception> _anExceptionOccurredWhileProcessingTheKeyElementDebug;
+        private static readonly Action<ILogger, XElement, Exception> _anExceptionOccurredWhileProcessingTheKeyElementDebug;
 
-        private static Action<ILogger, string, Exception?> _encryptingToWindowsDPAPIForCurrentUserAccount;
+        private static readonly Action<ILogger, string, Exception?> _encryptingToWindowsDPAPIForCurrentUserAccount;
 
-        private static Action<ILogger, string, Exception?> _encryptingToWindowsDPAPINGUsingProtectionDescriptorRule;
+        private static readonly Action<ILogger, string, Exception?> _encryptingToWindowsDPAPINGUsingProtectionDescriptorRule;
 
-        private static Action<ILogger, string, Exception> _anErrorOccurredWhileEncryptingToX509CertificateWithThumbprint;
+        private static readonly Action<ILogger, string, Exception> _anErrorOccurredWhileEncryptingToX509CertificateWithThumbprint;
 
-        private static Action<ILogger, string, Exception?> _encryptingToX509CertificateWithThumbprint;
+        private static readonly Action<ILogger, string, Exception?> _encryptingToX509CertificateWithThumbprint;
 
-        private static Action<ILogger, string, Exception> _exceptionOccurredWhileTryingToResolveCertificateWithThumbprint;
+        private static readonly Action<ILogger, string, Exception> _exceptionOccurredWhileTryingToResolveCertificateWithThumbprint;
 
-        private static Action<ILogger, Guid, string, Exception?> _performingProtectOperationToKeyWithPurposes;
+        private static readonly Action<ILogger, Guid, string, Exception?> _performingProtectOperationToKeyWithPurposes;
 
-        private static Action<ILogger, Guid, DateTimeOffset, DateTimeOffset, DateTimeOffset, Exception?> _creatingKey;
+        private static readonly Action<ILogger, Guid, DateTimeOffset, DateTimeOffset, DateTimeOffset, Exception?> _creatingKey;
 
-        private static Action<ILogger, Guid, string, Exception?> _descriptorDeserializerTypeForKeyIs;
+        private static readonly Action<ILogger, Guid, string, Exception?> _descriptorDeserializerTypeForKeyIs;
 
-        private static Action<ILogger, Guid, Exception?> _keyEscrowSinkFoundWritingKeyToEscrow;
+        private static readonly Action<ILogger, Guid, Exception?> _keyEscrowSinkFoundWritingKeyToEscrow;
 
-        private static Action<ILogger, Guid, Exception?> _noKeyEscrowSinkFoundNotWritingKeyToEscrow;
+        private static readonly Action<ILogger, Guid, Exception?> _noKeyEscrowSinkFoundNotWritingKeyToEscrow;
 
-        private static Action<ILogger, Guid, Exception?> _noXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm;
+        private static readonly Action<ILogger, Guid, Exception?> _noXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm;
 
-        private static Action<ILogger, Guid, DateTimeOffset, string?, Exception?> _revokingKeyForReason;
+        private static readonly Action<ILogger, Guid, DateTimeOffset, string?, Exception?> _revokingKeyForReason;
 
-        private static Action<ILogger, string, Exception?> _readingDataFromFile;
+        private static readonly Action<ILogger, string, Exception?> _readingDataFromFile;
 
-        private static Action<ILogger, string, string, Exception?> _nameIsNotSafeFileName;
+        private static readonly Action<ILogger, string, string, Exception?> _nameIsNotSafeFileName;
 
-        private static Action<ILogger, string, Exception?> _writingDataToFile;
+        private static readonly Action<ILogger, string, Exception?> _writingDataToFile;
 
-        private static Action<ILogger, RegistryKey, string, Exception?>? _readingDataFromRegistryKeyValue;
+        private static readonly Action<ILogger, RegistryKey, string, Exception?>? _readingDataFromRegistryKeyValue;
 
-        private static Action<ILogger, string, string, Exception?> _nameIsNotSafeRegistryValueName;
+        private static readonly Action<ILogger, string, string, Exception?> _nameIsNotSafeRegistryValueName;
 
-        private static Action<ILogger, string?, Exception?> _decryptingSecretElementUsingWindowsDPAPING;
+        private static readonly Action<ILogger, string?, Exception?> _decryptingSecretElementUsingWindowsDPAPING;
 
-        private static Action<ILogger, Exception> _exceptionOccurredTryingToDecryptElement;
+        private static readonly Action<ILogger, Exception> _exceptionOccurredTryingToDecryptElement;
 
-        private static Action<ILogger, Exception?> _encryptingUsingNullEncryptor;
+        private static readonly Action<ILogger, Exception?> _encryptingUsingNullEncryptor;
 
-        private static Action<ILogger, Exception?> _usingEphemeralDataProtectionProvider;
+        private static readonly Action<ILogger, Exception?> _usingEphemeralDataProtectionProvider;
 
-        private static Action<ILogger, Exception?> _existingCachedKeyRingIsExpiredRefreshing;
+        private static readonly Action<ILogger, Exception?> _existingCachedKeyRingIsExpiredRefreshing;
 
-        private static Action<ILogger, Exception> _errorOccurredWhileRefreshingKeyRing;
+        private static readonly Action<ILogger, Exception> _errorOccurredWhileRefreshingKeyRing;
 
-        private static Action<ILogger, Exception> _errorOccurredWhileReadingKeyRing;
+        private static readonly Action<ILogger, Exception> _errorOccurredWhileReadingKeyRing;
 
-        private static Action<ILogger, Exception?> _keyRingDoesNotContainValidDefaultKey;
+        private static readonly Action<ILogger, Exception?> _keyRingDoesNotContainValidDefaultKey;
 
-        private static Action<ILogger, Exception?> _usingInmemoryRepository;
+        private static readonly Action<ILogger, Exception?> _usingInmemoryRepository;
 
-        private static Action<ILogger, Exception?> _decryptingSecretElementUsingWindowsDPAPI;
+        private static readonly Action<ILogger, Exception?> _decryptingSecretElementUsingWindowsDPAPI;
 
-        private static Action<ILogger, Exception?> _defaultKeyExpirationImminentAndRepository;
+        private static readonly Action<ILogger, Exception?> _defaultKeyExpirationImminentAndRepository;
 
-        private static Action<ILogger, Exception?> _repositoryContainsNoViableDefaultKey;
+        private static readonly Action<ILogger, Exception?> _repositoryContainsNoViableDefaultKey;
 
-        private static Action<ILogger, Exception> _errorOccurredWhileEncryptingToWindowsDPAPI;
+        private static readonly Action<ILogger, Exception> _errorOccurredWhileEncryptingToWindowsDPAPI;
 
-        private static Action<ILogger, Exception?> _encryptingToWindowsDPAPIForLocalMachineAccount;
+        private static readonly Action<ILogger, Exception?> _encryptingToWindowsDPAPIForLocalMachineAccount;
 
-        private static Action<ILogger, Exception> _errorOccurredWhileEncryptingToWindowsDPAPING;
+        private static readonly Action<ILogger, Exception> _errorOccurredWhileEncryptingToWindowsDPAPING;
 
-        private static Action<ILogger, Exception?> _policyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing;
+        private static readonly Action<ILogger, Exception?> _policyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing;
 
-        private static Action<ILogger, Guid, Exception?> _keyRingWasLoadedOnStartup;
+        private static readonly Action<ILogger, Guid, Exception?> _keyRingWasLoadedOnStartup;
 
-        private static Action<ILogger, Exception> _keyRingFailedToLoadOnStartup;
+        private static readonly Action<ILogger, Exception> _keyRingFailedToLoadOnStartup;
 
-        private static Action<ILogger, Exception?> _usingEphemeralKeyRepository;
+        private static readonly Action<ILogger, Exception?> _usingEphemeralKeyRepository;
 
-        private static Action<ILogger, string, Exception?> _usingRegistryAsKeyRepositoryWithDPAPI;
+        private static readonly Action<ILogger, string, Exception?> _usingRegistryAsKeyRepositoryWithDPAPI;
 
-        private static Action<ILogger, string, Exception?> _usingProfileAsKeyRepository;
+        private static readonly Action<ILogger, string, Exception?> _usingProfileAsKeyRepository;
 
-        private static Action<ILogger, string, Exception?> _usingProfileAsKeyRepositoryWithDPAPI;
+        private static readonly Action<ILogger, string, Exception?> _usingProfileAsKeyRepositoryWithDPAPI;
 
-        private static Action<ILogger, string, Exception?> _usingAzureAsKeyRepository;
+        private static readonly Action<ILogger, string, Exception?> _usingAzureAsKeyRepository;
 
-        private static Action<ILogger, string, Exception?> _usingEphemeralFileSystemLocationInContainer;
+        private static readonly Action<ILogger, string, Exception?> _usingEphemeralFileSystemLocationInContainer;
 
         static LoggingExtensions()
         {
