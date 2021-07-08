@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
         /// </summary>
-        public Configuration Configuration { get; } = new();
+        public Config Configuration { get; } = new();
 
         /// <summary>
         /// A collection of logging providers for the application to compose. This is useful for adding new logging providers.

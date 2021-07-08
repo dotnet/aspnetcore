@@ -1,11 +1,11 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.Configuration
-Microsoft.AspNetCore.Builder.Configuration.Configuration() -> void
-Microsoft.AspNetCore.Builder.Configuration.Dispose() -> void
-Microsoft.AspNetCore.Builder.Configuration.GetChildren() -> System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSection!>!
-Microsoft.AspNetCore.Builder.Configuration.GetSection(string! key) -> Microsoft.Extensions.Configuration.IConfigurationSection!
-Microsoft.AspNetCore.Builder.Configuration.this[string! key].get -> string?
-Microsoft.AspNetCore.Builder.Configuration.this[string! key].set -> void
+Microsoft.AspNetCore.Builder.Config
+Microsoft.AspNetCore.Builder.Config.Config() -> void
+Microsoft.AspNetCore.Builder.Config.Dispose() -> void
+Microsoft.AspNetCore.Builder.Config.GetChildren() -> System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSection!>!
+Microsoft.AspNetCore.Builder.Config.GetSection(string! key) -> Microsoft.Extensions.Configuration.IConfigurationSection!
+Microsoft.AspNetCore.Builder.Config.this[string! key].get -> string?
+Microsoft.AspNetCore.Builder.Config.this[string! key].set -> void
 Microsoft.AspNetCore.Builder.ConfigureHostBuilder
 Microsoft.AspNetCore.Builder.ConfigureHostBuilder.ConfigureAppConfiguration(System.Action<Microsoft.Extensions.Hosting.HostBuilderContext!, Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.Extensions.Hosting.IHostBuilder!
 Microsoft.AspNetCore.Builder.ConfigureHostBuilder.ConfigureContainer<TContainerBuilder>(System.Action<Microsoft.Extensions.Hosting.HostBuilderContext!, TContainerBuilder>! configureDelegate) -> Microsoft.Extensions.Hosting.IHostBuilder!

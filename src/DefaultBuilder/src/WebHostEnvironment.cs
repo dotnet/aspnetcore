@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Builder
             ContentRootFileProvider = NullFileProvider;
             WebRootFileProvider = NullFileProvider;
 
-            ResolveFileProviders(new Configuration());
+            ResolveFileProviders(new Config());
         }
 
         // For testing

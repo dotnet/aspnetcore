@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder
     /// Configuration is mutable configuration object. It is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
     /// As sources are added, it updates its current view of configuration. Once Build is called, configuration is frozen.
     /// </summary>
-    public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder, IDisposable
+    public sealed class Config : IConfigurationRoot, IConfigurationBuilder, IDisposable
     {
         private readonly ConfigurationSources _sources;
         private readonly ConfigurationBuilderProperties _properties;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Creates an empty mutable configuration object that is both an <see cref="IConfigurationBuilder"/> and an <see cref="IConfigurationRoot"/>.
         /// </summary>
-        public Configuration()
+        public Config()
         {
             _sources = new ConfigurationSources(this);
             _properties = new ConfigurationBuilderProperties(this);
@@ -206,9 +206,9 @@ namespace Microsoft.AspNetCore.Builder
         private class ConfigurationSources : IList<IConfigurationSource>
         {
             private readonly List<IConfigurationSource> _sources = new();
-            private readonly Configuration _config;
+            private readonly Config _config;
 
-            public ConfigurationSources(Configuration config)
+            public ConfigurationSources(Config config)
             {
                 _config = config;
             }
@@ -287,9 +287,9 @@ namespace Microsoft.AspNetCore.Builder
         private class ConfigurationBuilderProperties : IDictionary<string, object>
         {
             private readonly Dictionary<string, object> _properties = new();
-            private readonly Configuration _config;
+            private readonly Config _config;
 
-            public ConfigurationBuilderProperties(Configuration config)
+            public ConfigurationBuilderProperties(Config config)
             {
                 _config = config;
             }

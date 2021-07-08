@@ -21,12 +21,12 @@ namespace Microsoft.AspNetCore.Builder
         public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
         private readonly WebHostEnvironment _environment;
-        private readonly Configuration _configuration;
+        private readonly Config _configuration;
         private readonly IServiceCollection _services;
 
         private readonly HostBuilderContext _context;
 
-        internal ConfigureHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
+        internal ConfigureHostBuilder(Config configuration, WebHostEnvironment environment, IServiceCollection services)
         {
             _configuration = configuration;
             _environment = environment;

@@ -13,12 +13,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Tests
 {
-    public class ConfigurationTests
+    public class ConfigTests
     {
         [Fact]
         public void AutoUpdates()
         {
-            var config = new Configuration();
+            var config = new Config();
 
             config.AddInMemoryCollection(new Dictionary<string, string>
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void TriggersReloadTokenOnSourceAddition()
         {
-            var config = new Configuration();
+            var config = new Config();
 
             var reloadToken = ((IConfiguration)config).GetReloadToken();
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void SettingValuesWorksWithoutManuallyAddingSource()
         {
-            var config = new Configuration
+            var config = new Config
             {
                 ["TestKey"] = "TestValue",
             };
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void SettingConfigValuesDoesNotTriggerReloadToken()
         {
-            var config = new Configuration();
+            var config = new Config();
             var reloadToken = ((IConfiguration)config).GetReloadToken();
 
             config["TestKey"] = "TestValue";
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void SettingIConfigurationBuilderPropertiesReloadsSources()
         {
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configBuilder = config;
 
             config["PreReloadTestConfigKey"] = "PreReloadTestConfigValue";
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Tests
             var provider4 = new DisposableTestConfigurationProvider("qux", "qux-value");
             var provider5 = new DisposableTestConfigurationProvider("quux", "quux-value");
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder builder = config;
 
             builder.Add(new TestConfigurationSource(provider1));
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Tests
             var source4 = new TestConfigurationSource(provider4);
             var source5 = new TestConfigurationSource(provider5);
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder builder = config;
 
             builder.Add(source1);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Tests
             var providerMock = new Mock<IConfigurationProvider>();
             providerMock.Setup(p => p.GetReloadToken()).Returns(changeToken);
 
-            var config = new Configuration();
+            var config = new Config();
 
             ((IConfigurationBuilder)config).Add(new TestConfigurationSource(providerMock.Object));
 
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Tests
 
             var source = new TestConfigurationSource(providerMock.Object);
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder builder = config;
 
             builder.Add(source);
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Tests
                 provider
             });
 
-            var config = new Configuration();
+            var config = new Config();
 
             config.AddConfiguration(chainedConfig, shouldDisposeConfiguration: shouldDispose);
 
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dic3 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             // Act
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dic3 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             // Act
@@ -354,14 +354,14 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dic3 };
 
-            var config1 = new Configuration();
+            var config1 = new Config();
             IConfigurationBuilder configurationBuilder = config1;
 
             // Act
             configurationBuilder.Add(memConfigSrc1);
             configurationBuilder.Add(memConfigSrc2);
 
-            var config2 = new Configuration();
+            var config2 = new Config();
 
             config2
                 .AddConfiguration(config1)
@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dic3 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             // Act
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dic3 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             // Act
@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc1 = new MemoryConfigurationSource { InitialData = dic1 };
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             // Act
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new TestMemorySourceProvider(dict);
             var memConfigSrc3 = new TestMemorySourceProvider(dict);
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             configurationBuilder.Add(memConfigSrc1);
@@ -603,7 +603,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dic3 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             configurationBuilder.Add(memConfigSrc1);
@@ -647,7 +647,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc1 = new MemoryConfigurationSource { InitialData = dic1 };
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             configurationBuilder.Add(memConfigSrc1);
@@ -685,7 +685,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dic2 };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dic3 };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             configurationBuilder.Add(memConfigSrc1);
@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.Tests
             var memConfigSrc2 = new MemoryConfigurationSource { InitialData = dict };
             var memConfigSrc3 = new MemoryConfigurationSource { InitialData = dict };
 
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder configurationBuilder = config;
 
             // Act
@@ -735,7 +735,7 @@ namespace Microsoft.AspNetCore.Tests
         public void SetValueThrowsExceptionNoSourceRegistered()
         {
             // Arrange
-            var config = new Configuration();
+            var config = new Config();
 
             // A MemoryConfigurationSource is added by default, so there will be no error unless we clear it
             config["Title"] = "Welcome";
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.Tests
         public void SameReloadTokenIsReturnedRepeatedly()
         {
             // Arrange
-            IConfiguration config = new Configuration();
+            IConfiguration config = new Config();
 
             // Act
             var token1 = config.GetReloadToken();
@@ -769,7 +769,7 @@ namespace Microsoft.AspNetCore.Tests
         public void DifferentReloadTokenReturnedAfterReloading()
         {
             // Arrange
-            IConfigurationRoot config = new Configuration();
+            IConfigurationRoot config = new Config();
 
             // Act
             var token1 = config.GetReloadToken();
@@ -788,7 +788,7 @@ namespace Microsoft.AspNetCore.Tests
         public void TokenTriggeredWhenReloadOccurs()
         {
             // Arrange
-            IConfigurationRoot config = new Configuration();
+            IConfigurationRoot config = new Config();
 
             // Act
             var token1 = config.GetReloadToken();
@@ -805,7 +805,7 @@ namespace Microsoft.AspNetCore.Tests
         public void MultipleCallbacksCanBeRegisteredToReload()
         {
             // Arrange
-            IConfigurationRoot config = new Configuration();
+            IConfigurationRoot config = new Config();
 
             // Act
             var token1 = config.GetReloadToken();
@@ -837,7 +837,7 @@ namespace Microsoft.AspNetCore.Tests
         public void NewTokenAfterReloadIsNotChanged()
         {
             // Arrange
-            IConfigurationRoot config = new Configuration();
+            IConfigurationRoot config = new Config();
 
             // Act
             var token1 = config.GetReloadToken();
@@ -886,7 +886,7 @@ namespace Microsoft.AspNetCore.Tests
                 ["Key1::Key3"] = "value"
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -910,7 +910,7 @@ namespace Microsoft.AspNetCore.Tests
                 ["Key1:"] = "value"
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -934,7 +934,7 @@ namespace Microsoft.AspNetCore.Tests
                 {"Mem1:KeyInMem1:Deep1", "ValueDeep1"}
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -959,7 +959,7 @@ namespace Microsoft.AspNetCore.Tests
                 {"Mem1:KeyInMem1:Deep1", "ValueDeep1"}
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -981,7 +981,7 @@ namespace Microsoft.AspNetCore.Tests
                 {"Mem1:Deep1", "Value1"},
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             Assert.Throws<InvalidOperationException>(() => config.GetRequiredSection("Mem2"));
@@ -999,7 +999,7 @@ namespace Microsoft.AspNetCore.Tests
                 {"Mem2:KeyInMem2:Deep1", "ValueDeep2"}
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -1024,7 +1024,7 @@ namespace Microsoft.AspNetCore.Tests
                 {"Mem1", value}
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -1043,7 +1043,7 @@ namespace Microsoft.AspNetCore.Tests
                 {"Mem1", null}
             };
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -1067,7 +1067,7 @@ namespace Microsoft.AspNetCore.Tests
             };
 
 
-            var config = new Configuration();
+            var config = new Config();
             ((IConfigurationBuilder)config).AddInMemoryCollection(dict);
 
             // Act
@@ -1081,7 +1081,7 @@ namespace Microsoft.AspNetCore.Tests
         public void ProviderWithNullReloadToken()
         {
             // Arrange
-            var config = new Configuration();
+            var config = new Config();
             IConfigurationBuilder builder = config;
 
             // Assert
@@ -1092,7 +1092,7 @@ namespace Microsoft.AspNetCore.Tests
         public void BuildReturnsThis()
         {
             // Arrange
-            var config = new Configuration();
+            var config = new Config();
 
             // Assert
             Assert.Same(config, ((IConfigurationBuilder)config).Build());

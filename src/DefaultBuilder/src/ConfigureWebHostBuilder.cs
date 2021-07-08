@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class ConfigureWebHostBuilder : IWebHostBuilder
     {
         private readonly WebHostEnvironment _environment;
-        private readonly Configuration _configuration;
+        private readonly Config _configuration;
         private readonly Dictionary<string, string?> _settings = new(StringComparer.OrdinalIgnoreCase);
         private readonly IServiceCollection _services;
 
         private readonly WebHostBuilderContext _context;
 
-        internal ConfigureWebHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
+        internal ConfigureWebHostBuilder(Config configuration, WebHostEnvironment environment, IServiceCollection services)
         {
             _configuration = configuration;
             _environment = environment;

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting
     // This exists solely to bootstrap the configuration
     internal class BootstrapHostBuilder : IHostBuilder
     {
-        private readonly Configuration _configuration;
+        private readonly Config _configuration;
         private readonly WebHostEnvironment _environment;
 
         private readonly HostBuilderContext _hostContext;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
 
-        public BootstrapHostBuilder(Configuration configuration, WebHostEnvironment webHostEnvironment)
+        public BootstrapHostBuilder(Config configuration, WebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
             _environment = webHostEnvironment;
