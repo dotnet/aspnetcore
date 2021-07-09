@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
             public SemaphoreSlim Block { get; private set; }
 
-            protected async override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+            protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
             {
                 await stream.WriteAsync(new byte[5], 0, 5);
                 await stream.FlushAsync();

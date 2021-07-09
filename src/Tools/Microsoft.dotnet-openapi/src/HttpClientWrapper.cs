@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Openapi.Tools
 
     public class HttpResponseMessageWrapper : IHttpResponseMessageWrapper
     {
-        private HttpResponseMessage _response;
+        private readonly HttpResponseMessage _response;
 
         public HttpResponseMessageWrapper(HttpResponseMessage response)
         {

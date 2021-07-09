@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CSharpTokenizer : Tokenizer
     {
-        private Dictionary<char, Func<SyntaxKind>> _operatorHandlers;
+        private readonly Dictionary<char, Func<SyntaxKind>> _operatorHandlers;
 
         private static readonly Dictionary<string, CSharpKeyword> _keywords = new Dictionary<string, CSharpKeyword>(StringComparer.Ordinal)
         {
@@ -559,8 +559,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private StateResult QuotedStringLiteral() => QuotedLiteral('\"', IsEndQuotedStringLiteral, SyntaxKind.StringLiteral);
 
-        private Func<char, bool> IsEndQuotedCharacterLiteral = (c) => c == '\\' || c == '\'' || ParserHelpers.IsNewLine(c);
-        private Func<char, bool> IsEndQuotedStringLiteral = (c) => c == '\\' || c == '\"' || ParserHelpers.IsNewLine(c);
+        private readonly Func<char, bool> IsEndQuotedCharacterLiteral = (c) => c == '\\' || c == '\'' || ParserHelpers.IsNewLine(c);
+        private readonly Func<char, bool> IsEndQuotedStringLiteral = (c) => c == '\\' || c == '\"' || ParserHelpers.IsNewLine(c);
 
         private StateResult QuotedLiteral(char quote, Func<char, bool> isEndQuotedLiteral, SyntaxKind literalType)
         {

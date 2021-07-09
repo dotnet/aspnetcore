@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing
     public class RouteTest
     {
         private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
-        private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
+        private static readonly IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
         [Fact]
         public void CreateTemplate_InlineConstraint_Regex_Malformed()

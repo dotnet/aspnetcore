@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="cancel">The token to monitor for cancellation requests. The default value is <see cref="P:System.Threading.CancellationToken.None" />.</param>
         public static async Task CopyToAsync(Stream source, Stream destination, long? count, int bufferSize, CancellationToken cancel)
         {
-            long? bytesRemaining = count;
+            var bytesRemaining = count;
 
             var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
@@ -55,12 +55,12 @@ namespace Microsoft.AspNetCore.Http
 
                     cancel.ThrowIfCancellationRequested();
 
-                    int readLength = buffer.Length;
+                    var readLength = buffer.Length;
                     if (bytesRemaining.HasValue)
                     {
                         readLength = (int)Math.Min(bytesRemaining.GetValueOrDefault(), (long)readLength);
                     }
-                    int read = await source.ReadAsync(buffer.AsMemory(0, readLength), cancel);
+                    var read = await source.ReadAsync(buffer.AsMemory(0, readLength), cancel);
 
                     if (bytesRemaining.HasValue)
                     {

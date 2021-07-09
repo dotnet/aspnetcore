@@ -359,8 +359,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private class HostPolicyJumpTable : PolicyJumpTable
         {
-            private (EdgeKey host, int destination)[] _destinations;
-            private int _exitDestination;
+            private readonly (EdgeKey host, int destination)[] _destinations;
+            private readonly int _exitDestination;
 
             public HostPolicyJumpTable(int exitDestination, (EdgeKey host, int destination)[] destinations)
             {

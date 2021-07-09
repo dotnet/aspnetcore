@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private class TestTempDataProvider : ITempDataProvider
         {
-            private IDictionary<string, object> _data;
+            private readonly IDictionary<string, object> _data;
 
             public TestTempDataProvider(IDictionary<string, object> data)
             {

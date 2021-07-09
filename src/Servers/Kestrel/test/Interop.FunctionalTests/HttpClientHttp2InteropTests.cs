@@ -450,7 +450,7 @@ namespace Interop.FunctionalTests
 
         private class StreamingContent : HttpContent
         {
-            private TaskCompletionSource<int> _sendStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource<int> _sendStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             private Func<string, Task> _sendContent;
             private TaskCompletionSource<int> _sendComplete;
 

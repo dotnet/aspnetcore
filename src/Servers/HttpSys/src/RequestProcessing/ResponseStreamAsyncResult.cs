@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
-        private SafeNativeOverlapped? _overlapped;
-        private HttpApiTypes.HTTP_DATA_CHUNK[]? _dataChunks;
-        private FileStream? _fileStream;
-        private ResponseBody _responseStream;
-        private TaskCompletionSource<object?> _tcs;
+        private readonly SafeNativeOverlapped? _overlapped;
+        private readonly HttpApiTypes.HTTP_DATA_CHUNK[]? _dataChunks;
+        private readonly FileStream? _fileStream;
+        private readonly ResponseBody _responseStream;
+        private readonly TaskCompletionSource<object?> _tcs;
         private uint _bytesSent;
-        private CancellationToken _cancellationToken;
-        private CancellationTokenRegistration _cancellationRegistration;
+        private readonly CancellationToken _cancellationToken;
+        private readonly CancellationTokenRegistration _cancellationRegistration;
 
         internal ResponseStreamAsyncResult(ResponseBody responseStream, CancellationToken cancellationToken)
         {

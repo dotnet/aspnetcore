@@ -7,19 +7,19 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception?> _errorClosingTheSession;
-        private static Action<ILogger, string, Exception?> _accessingExpiredSession;
-        private static Action<ILogger, string, string, Exception?> _sessionStarted;
-        private static Action<ILogger, string, string, int, Exception?> _sessionLoaded;
-        private static Action<ILogger, string, string, int, Exception?> _sessionStored;
-        private static Action<ILogger, string, Exception?> _sessionCacheReadException;
-        private static Action<ILogger, Exception?> _errorUnprotectingCookie;
-        private static Action<ILogger, Exception?> _sessionLoadingTimeout;
-        private static Action<ILogger, Exception?> _sessionCommitTimeout;
-        private static Action<ILogger, Exception?> _sessionCommitCanceled;
-        private static Action<ILogger, Exception?> _sessionRefreshTimeout;
-        private static Action<ILogger, Exception?> _sessionRefreshCanceled;
-        private static Action<ILogger, Exception?> _sessionNotAvailable;
+        private static readonly Action<ILogger, Exception?> _errorClosingTheSession;
+        private static readonly Action<ILogger, string, Exception?> _accessingExpiredSession;
+        private static readonly Action<ILogger, string, string, Exception?> _sessionStarted;
+        private static readonly Action<ILogger, string, string, int, Exception?> _sessionLoaded;
+        private static readonly Action<ILogger, string, string, int, Exception?> _sessionStored;
+        private static readonly Action<ILogger, string, Exception?> _sessionCacheReadException;
+        private static readonly Action<ILogger, Exception?> _errorUnprotectingCookie;
+        private static readonly Action<ILogger, Exception?> _sessionLoadingTimeout;
+        private static readonly Action<ILogger, Exception?> _sessionCommitTimeout;
+        private static readonly Action<ILogger, Exception?> _sessionCommitCanceled;
+        private static readonly Action<ILogger, Exception?> _sessionRefreshTimeout;
+        private static readonly Action<ILogger, Exception?> _sessionRefreshCanceled;
+        private static readonly Action<ILogger, Exception?> _sessionNotAvailable;
 
         static LoggingExtensions()
         {

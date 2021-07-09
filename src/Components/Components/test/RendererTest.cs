@@ -4443,7 +4443,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class TestComponent : IComponent, IDisposable
         {
             private RenderHandle _renderHandle;
-            private RenderFragment _renderFragment;
+            private readonly RenderFragment _renderFragment;
 
             public TestComponent(RenderFragment renderFragment)
             {
@@ -5211,7 +5211,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestErrorBoundary : AutoRenderComponent, IErrorBoundary
         {
-            private TaskCompletionSource receivedErrorTaskCompletionSource = new();
+            private readonly TaskCompletionSource receivedErrorTaskCompletionSource = new();
 
             public Exception ReceivedException { get; private set; }
             public Task ReceivedErrorTask => receivedErrorTaskCompletionSource.Task;

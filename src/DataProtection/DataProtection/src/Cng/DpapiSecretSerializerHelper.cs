@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng
 {
-    internal unsafe static class DpapiSecretSerializerHelper
+    internal static unsafe class DpapiSecretSerializerHelper
     {
         // from ncrypt.h
         private const uint NCRYPT_SILENT_FLAG = 0x00000040;

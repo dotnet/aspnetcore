@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal sealed class EndpointMiddleware
+    internal sealed partial class EndpointMiddleware
     {
         internal const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareWithEndpointInvoked";
         internal const string CorsMiddlewareInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
@@ -101,28 +101,13 @@ namespace Microsoft.AspNetCore.Routing
                 "Configure your application startup by adding app.UseCors() inside the call to Configure(..) in the application startup code. The call to app.UseCors() must appear between app.UseRouting() and app.UseEndpoints(...).");
         }
 
-#nullable disable
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception> _executingEndpoint = LoggerMessage.Define<string>(
-                LogLevel.Information,
-                new EventId(0, "ExecutingEndpoint"),
-                "Executing endpoint '{EndpointName}'");
+            [LoggerMessage(0, LogLevel.Information, "Executing endpoint '{EndpointName}'", EventName = "ExecutingEndpoint")]
+            public static partial void ExecutingEndpoint(ILogger logger, Endpoint endpointName);
 
-            private static readonly Action<ILogger, string, Exception> _executedEndpoint = LoggerMessage.Define<string>(
-                LogLevel.Information,
-                new EventId(1, "ExecutedEndpoint"),
-                "Executed endpoint '{EndpointName}'");
-
-            public static void ExecutingEndpoint(ILogger logger, Endpoint endpoint)
-            {
-                _executingEndpoint(logger, endpoint.DisplayName, null);
-            }
-
-            public static void ExecutedEndpoint(ILogger logger, Endpoint endpoint)
-            {
-                _executedEndpoint(logger, endpoint.DisplayName, null);
-            }
+            [LoggerMessage(1, LogLevel.Information, "Executed endpoint '{EndpointName}'", EventName = "ExecutedEndpoint")]
+            public static partial void ExecutedEndpoint(ILogger logger, Endpoint endpointName);
         }
     }
 }

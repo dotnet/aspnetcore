@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
         private class MockControllerFactory
         {
-            private object _controller;
+            private readonly object _controller;
 
             public MockControllerFactory(object controller)
             {
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             public MockControllerFactory ControllerFactory { get; }
 
-            public async override Task InvokeAsync()
+            public override async Task InvokeAsync()
             {
                 await base.InvokeAsync();
 

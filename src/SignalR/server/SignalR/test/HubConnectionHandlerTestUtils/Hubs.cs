@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class HubWithAsyncDisposable : TestHub
     {
-        private AsyncDisposable _disposable;
+        private readonly AsyncDisposable _disposable;
 
         public HubWithAsyncDisposable(AsyncDisposable disposable)
         {
@@ -784,7 +784,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public class AsyncEnumerableImplChannelThrows<T> : ChannelReader<T>, IAsyncEnumerable<T>
         {
-            private ChannelReader<T> _inner;
+            private readonly ChannelReader<T> _inner;
 
             public AsyncEnumerableImplChannelThrows(ChannelReader<T> inner)
             {
@@ -922,7 +922,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class LongRunningHub : Hub
     {
-        private TcsService _tcsService;
+        private readonly TcsService _tcsService;
 
         public LongRunningHub(TcsService tcsService)
         {

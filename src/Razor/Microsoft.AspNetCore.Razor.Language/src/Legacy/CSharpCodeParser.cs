@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CSharpCodeParser : TokenizerBackedParser<CSharpTokenizer>
     {
-        private static HashSet<char> InvalidNonWhitespaceNameCharacters = new HashSet<char>(new[]
+        private static readonly HashSet<char> InvalidNonWhitespaceNameCharacters = new HashSet<char>(new[]
         {
             '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*'
         });
@@ -67,8 +67,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private readonly ISet<string> CurrentKeywords = new HashSet<string>(DefaultKeywords);
 
-        private Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _keywordParserMap = new Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>();
-        private Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _directiveParserMap = new Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>(StringComparer.Ordinal);
+        private readonly Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _keywordParserMap = new Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>();
+        private readonly Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _directiveParserMap = new Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>(StringComparer.Ordinal);
 
         public CSharpCodeParser(ParserContext context)
             : this(directives: Enumerable.Empty<DirectiveDescriptor>(), context: context)

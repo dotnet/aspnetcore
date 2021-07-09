@@ -932,7 +932,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
-        public async virtual Task CanFindUsersViaUserQuerable()
+        public virtual async Task CanFindUsersViaUserQuerable()
         {
             var mgr = CreateManager();
             if (mgr.SupportsQueryableUsers)

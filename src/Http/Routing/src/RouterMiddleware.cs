@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Middleware responsible for routing.
     /// </summary>
-    public class RouterMiddleware
+    public partial class RouterMiddleware
     {
         private readonly ILogger _logger;
         private readonly RequestDelegate _next;
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (context.Handler == null)
             {
-                _logger.RequestNotMatched();
+                Log.RequestNotMatched(_logger);
                 await _next.Invoke(httpContext);
             }
             else
@@ -65,6 +64,12 @@ namespace Microsoft.AspNetCore.Builder
 
                 await context.Handler(context.HttpContext);
             }
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Debug, "Request did not match any routes", EventName = "RequestNotMatched")]
+            public static partial void RequestNotMatched(ILogger logger);
         }
     }
 }

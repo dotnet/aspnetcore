@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// </summary>
     public sealed class RenderTreeBuilder : IDisposable
     {
-        private readonly static object BoxedTrue = true;
-        private readonly static object BoxedFalse = false;
-        private readonly static string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
+        private static readonly object BoxedTrue = true;
+        private static readonly object BoxedFalse = false;
+        private static readonly string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
         private readonly RenderTreeFrameArrayBuilder _entries = new RenderTreeFrameArrayBuilder();
         private readonly Stack<int> _openElementIndices = new Stack<int>();

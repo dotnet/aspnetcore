@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        private string _browserHost;
-        private string _debugProxyUrl;
+        private readonly string _browserHost;
+        private readonly string _debugProxyUrl;
 
         /// <summary>
         /// Initialize a new instance of <see cref="TargetPickerUi"/>.

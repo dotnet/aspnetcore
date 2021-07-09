@@ -18,8 +18,8 @@ namespace Microsoft.Net.Http.Headers
     /// </summary>
     public class RangeItemHeaderValue
     {
-        private long? _from;
-        private long? _to;
+        private readonly long? _from;
+        private readonly long? _to;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeItemHeaderValue"/> class.

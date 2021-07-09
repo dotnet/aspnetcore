@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         private TagHelperContent _childContent;
         private Func<Task> _executeChildContentAsync;
         private Dictionary<HtmlEncoder, TagHelperContent> _perEncoderChildContent;
-        private TagHelperAttributeList _allAttributes;
+        private readonly TagHelperAttributeList _allAttributes;
 
         /// <summary>
         /// Internal for testing purposes only.

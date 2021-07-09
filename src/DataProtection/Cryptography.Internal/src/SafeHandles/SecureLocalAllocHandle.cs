@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
     /// Represents a handle returned by LocalAlloc.
     /// The memory will be zeroed out before it's freed.
     /// </summary>
-    internal unsafe sealed class SecureLocalAllocHandle : LocalAllocHandle
+    internal sealed unsafe class SecureLocalAllocHandle : LocalAllocHandle
     {
         private readonly IntPtr _cb;
 

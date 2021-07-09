@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.TestHost
             return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
         }
 
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             VerifyBuffer(buffer, offset, count);
             CheckAborted();

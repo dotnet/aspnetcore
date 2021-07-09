@@ -1,4 +1,3 @@
-
 export const InputFile = {
   init,
   toImageFile,
@@ -14,6 +13,7 @@ interface BrowserFile {
   contentType: string;
   readPromise: Promise<ArrayBuffer> | undefined;
   arrayBuffer: ArrayBuffer | undefined;
+  blob: Blob;
 }
 
 export interface InputElement extends HTMLInputElement {
@@ -33,7 +33,7 @@ function init(callbackWrapper: any, elem: InputElement): void {
     // Reduce to purely serializable data, plus an index by ID.
     elem._blazorFilesById = {};
 
-    const fileList = Array.prototype.map.call(elem.files, function(file): BrowserFile {
+    const fileList = Array.prototype.map.call(elem.files, function(file: File): BrowserFile {
       const result = {
         id: ++elem._blazorInputFileNextFileId,
         lastModified: new Date(file.lastModified).toISOString(),
@@ -42,12 +42,10 @@ function init(callbackWrapper: any, elem: InputElement): void {
         contentType: file.type,
         readPromise: undefined,
         arrayBuffer: undefined,
+        blob: file,
       };
 
       elem._blazorFilesById[result.id] = result;
-
-      // Attach the blob data itself as a non-enumerable property so it doesn't appear in the JSON.
-      Object.defineProperty(result, 'blob', { value: file });
 
       return result;
     });
@@ -78,6 +76,7 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     canvas.getContext('2d')?.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(resolve, format);
   });
+
   const result: BrowserFile = {
     id: ++elem._blazorInputFileNextFileId,
     lastModified: originalFile.lastModified,
@@ -86,12 +85,10 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     contentType: format,
     readPromise: undefined,
     arrayBuffer: undefined,
+    blob: resizedImageBlob ? resizedImageBlob : originalFile.blob,
   };
 
   elem._blazorFilesById[result.id] = result;
-
-  // Attach the blob data itself as a non-enumerable property so it doesn't appear in the JSON.
-  Object.defineProperty(result, 'blob', { value: resizedImageBlob });
 
   return result;
 }
@@ -101,9 +98,9 @@ async function ensureArrayBufferReadyForSharedMemoryInterop(elem: InputElement, 
   getFileById(elem, fileId).arrayBuffer = arrayBuffer;
 }
 
-async function readFileData(elem: InputElement, fileId: number): Promise<Uint8Array> {
-  const arrayBuffer = await getArrayBufferFromFileAsync(elem, fileId);
-  return new Uint8Array(arrayBuffer);
+async function readFileData(elem: InputElement, fileId: number): Promise<Blob> {
+  const file = getFileById(elem, fileId);
+  return file.blob;
 }
 
 export function getFileById(elem: InputElement, fileId: number): BrowserFile {
@@ -129,7 +126,7 @@ function getArrayBufferFromFileAsync(elem: InputElement, fileId: number): Promis
       reader.onerror = function(err): void {
         reject(err);
       };
-      reader.readAsArrayBuffer(file['blob']);
+      reader.readAsArrayBuffer(file.blob);
     });
   }
 

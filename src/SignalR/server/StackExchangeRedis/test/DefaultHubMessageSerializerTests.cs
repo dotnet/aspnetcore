@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             return new DefaultHubProtocolResolver(hubProtocols, NullLogger<DefaultHubProtocolResolver>.Instance);
         }
 
-        private static Dictionary<string, ProtocolTestData> _invocationTestData = new[]
+        private static readonly Dictionary<string, ProtocolTestData> _invocationTestData = new[]
         {
             new ProtocolTestData(
                 "Single supported protocol",
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         }
 
         // The actual invocation message doesn't matter
-        private static InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
+        private static readonly InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
 
         internal class TestHubProtocol : IHubProtocol
         {

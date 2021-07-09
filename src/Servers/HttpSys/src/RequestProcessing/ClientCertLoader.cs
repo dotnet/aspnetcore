@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     // This class is used to load the client certificate on-demand.  Because client certs are optional, all
     // failures are handled internally and reported via ClientCertException or ClientCertError.
-    internal unsafe sealed partial class ClientCertLoader : IAsyncResult, IDisposable
+    internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposable
     {
         private const uint CertBoblSize = 1500;
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(WaitCallback);
@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private byte[]? _backingBuffer;
         private HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
         private uint _size;
-        private TaskCompletionSource<object?> _tcs;
-        private RequestContext _requestContext;
+        private readonly TaskCompletionSource<object?> _tcs;
+        private readonly RequestContext _requestContext;
 
         private int _clientCertError;
         private X509Certificate2? _clientCert;
         private Exception? _clientCertException;
-        private CancellationTokenRegistration _cancellationRegistration;
+        private readonly CancellationTokenRegistration _cancellationRegistration;
 
         internal ClientCertLoader(RequestContext requestContext, CancellationToken cancellationToken)
         {

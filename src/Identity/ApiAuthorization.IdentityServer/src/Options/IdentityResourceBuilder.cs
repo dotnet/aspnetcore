@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     /// </summary>
     public class IdentityResourceBuilder
     {
-        private IdentityResource _identityResource;
+        private readonly IdentityResource _identityResource;
         private bool _built;
 
         /// <summary>

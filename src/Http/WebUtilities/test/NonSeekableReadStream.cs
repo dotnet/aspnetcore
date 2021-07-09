@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public class NonSeekableReadStream : Stream
     {
-        private Stream _inner;
+        private readonly Stream _inner;
 
         public NonSeekableReadStream(byte[] data)
             : this(new MemoryStream(data))

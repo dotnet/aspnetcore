@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
     /// <summary>
     /// Base class implementation of an <see cref="IRouter"/>.
     /// </summary>
-    public abstract class RouteBase : IRouter, INamedRouter
+    public abstract partial class RouteBase : IRouter, INamedRouter
     {
         private readonly object _loggersLock = new object();
 
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 return Task.CompletedTask;
             }
-            _logger.RequestMatchedRoute(Name!, ParsedTemplate.TemplateText!);
+            Log.RequestMatchedRoute(_logger, Name, ParsedTemplate.TemplateText);
 
             return OnRouteMatched(context);
         }
@@ -348,6 +347,14 @@ namespace Microsoft.AspNetCore.Routing
         public override string ToString()
         {
             return ParsedTemplate.TemplateText!;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Debug,
+                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'",
+                EventName = "RequestMatchedRoute")]
+            public static partial void RequestMatchedRoute(ILogger logger, string? routeName, string? routeTemplate);
         }
     }
 }

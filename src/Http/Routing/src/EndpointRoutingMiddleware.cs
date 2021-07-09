@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal sealed class EndpointRoutingMiddleware
+    internal sealed partial class EndpointRoutingMiddleware
     {
         private const string DiagnosticsEndpointMatchedKey = "Microsoft.AspNetCore.Routing.EndpointMatched";
 
@@ -160,38 +160,22 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-#nullable disable
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception> _matchSuccess = LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                new EventId(1, "MatchSuccess"),
-                "Request matched endpoint '{EndpointName}'");
-
-            private static readonly Action<ILogger, Exception> _matchFailure = LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(2, "MatchFailure"),
-                "Request did not match any endpoints");
-
-            private static readonly Action<ILogger, string, Exception> _matchingSkipped = LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                new EventId(3, "MatchingSkipped"),
-                "Endpoint '{EndpointName}' already set, skipping route matching.");
-
             public static void MatchSuccess(ILogger logger, Endpoint endpoint)
-            {
-                _matchSuccess(logger, endpoint.DisplayName, null);
-            }
+                => MatchSuccess(logger, endpoint.DisplayName);
 
-            public static void MatchFailure(ILogger logger)
-            {
-                _matchFailure(logger, null);
-            }
+            [LoggerMessage(1, LogLevel.Debug, "Request matched endpoint '{EndpointName}'", EventName = "MatchSuccess")]
+            private static partial void MatchSuccess(ILogger logger, string? endpointName);
+
+            [LoggerMessage(2, LogLevel.Debug, "Request did not match any endpoints", EventName = "MatchFailure")]
+            public static partial void MatchFailure(ILogger logger);
 
             public static void MatchSkipped(ILogger logger, Endpoint endpoint)
-            {
-                _matchingSkipped(logger, endpoint.DisplayName, null);
-            }
+                => MatchingSkipped(logger, endpoint.DisplayName);
+
+            [LoggerMessage(3, LogLevel.Debug, "Endpoint '{EndpointName}' already set, skipping route matching.", EventName = "MatchingSkipped")]
+            private static partial void MatchingSkipped(ILogger logger, string? endpointName);
         }
     }
 }

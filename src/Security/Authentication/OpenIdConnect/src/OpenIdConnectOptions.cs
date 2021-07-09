@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     public class OpenIdConnectOptions : RemoteAuthenticationOptions
     {
         private CookieBuilder _nonceCookieBuilder;
-        private JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+        private readonly JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
 
         /// <summary>
         /// Initializes a new <see cref="OpenIdConnectOptions"/>

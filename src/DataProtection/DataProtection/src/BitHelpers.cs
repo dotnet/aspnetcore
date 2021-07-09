@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-    internal unsafe static class BitHelpers
+    internal static unsafe class BitHelpers
     {
         /// <summary>
         /// Writes an unsigned 32-bit value to a memory address, big-endian.

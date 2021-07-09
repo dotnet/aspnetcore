@@ -17,15 +17,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         private const int OuterLoopCount = 64;
         private const int OperationsPerInvoke = InnerLoopCount * OuterLoopCount;
 
-        private readonly static int IOQueueCount = Math.Min(Environment.ProcessorCount, 16);
+        private static readonly int IOQueueCount = Math.Min(Environment.ProcessorCount, 16);
 
         private PipeScheduler[] _ioQueueSchedulers;
         private PipeScheduler[] _threadPoolSchedulers;
         private PipeScheduler[] _inlineSchedulers;
 
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(0);
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(0);
         private int _totalToReport;
-        private PaddedInteger[] _counters = new PaddedInteger[OuterLoopCount];
+        private readonly PaddedInteger[] _counters = new PaddedInteger[OuterLoopCount];
 
         private Func<int, ParallelLoopState, PipeScheduler[], PipeScheduler[]> _parallelAction;
         private Action<object> _action;

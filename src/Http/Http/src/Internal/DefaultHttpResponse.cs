@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Http
     internal sealed class DefaultHttpResponse : HttpResponse
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
-        private readonly static Func<IFeatureCollection, IHttpResponseBodyFeature?> _nullResponseBodyFeature = f => null;
-        private readonly static Func<IFeatureCollection, IResponseCookiesFeature?> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
+        private static readonly Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
+        private static readonly Func<IFeatureCollection, IHttpResponseBodyFeature?> _nullResponseBodyFeature = f => null;
+        private static readonly Func<IFeatureCollection, IResponseCookiesFeature?> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
 
         private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;

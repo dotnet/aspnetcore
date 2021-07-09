@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRequiredAttributeDescriptorBuilder : RequiredAttributeDescriptorBuilder
     {
-        private DefaultTagMatchingRuleDescriptorBuilder _parent;
+        private readonly DefaultTagMatchingRuleDescriptorBuilder _parent;
         private RazorDiagnosticCollection _diagnostics;
         private readonly Dictionary<string, string> _metadata = new Dictionary<string, string>();
 

@@ -72,8 +72,8 @@ namespace GenericHostWebSite.Controllers
 
         public class RedirectUsingStatusCode : ActionResult
         {
-            private string _url;
-            private HttpStatusCode _statusCode;
+            private readonly string _url;
+            private readonly HttpStatusCode _statusCode;
 
             public RedirectUsingStatusCode(string url, HttpStatusCode statusCode)
             {

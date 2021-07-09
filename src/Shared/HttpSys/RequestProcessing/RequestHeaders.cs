@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal partial class RequestHeaders : IHeaderDictionary
     {
         private IDictionary<string, StringValues>? _extra;
-        private NativeRequestContext _requestMemoryBlob;
+        private readonly NativeRequestContext _requestMemoryBlob;
         private long? _contentLength;
         private StringValues _contentLengthText;
 

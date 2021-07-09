@@ -1953,7 +1953,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private class ApiExplorerIsVisibleConvention : IApplicationModelConvention
         {
-            private bool _isVisible;
+            private readonly bool _isVisible;
 
             public ApiExplorerIsVisibleConvention(bool isVisible)
             {

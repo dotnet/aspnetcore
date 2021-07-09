@@ -21,12 +21,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private const int AlignmentPadding = 8;
         private const int DefaultBufferSize = 4096 - AlignmentPadding;
         private IntPtr _originalBufferAddress;
-        private bool _useLatin1;
+        private readonly bool _useLatin1;
         private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
         private readonly IMemoryOwner<byte>? _backingBuffer;
         private MemoryHandle _memoryHandle;
-        private int _bufferAlignment;
-        private bool _permanentlyPinned;
+        private readonly int _bufferAlignment;
+        private readonly bool _permanentlyPinned;
         private bool _disposed;
 
         [MemberNotNullWhen(false, nameof(_backingBuffer))]

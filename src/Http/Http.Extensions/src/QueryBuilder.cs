@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
     /// </summary>
     public class QueryBuilder : IEnumerable<KeyValuePair<string, string>>
     {
-        private IList<KeyValuePair<string, string>> _params;
+        private readonly IList<KeyValuePair<string, string>> _params;
 
         /// <summary>
         /// Initializes a new instance of <see cref="QueryBuilder"/>.

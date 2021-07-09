@@ -13,7 +13,7 @@ namespace Components.TestServer.Controllers
         // to the client. It's up to the developer to choose what kind of authentication state
         // data is needed on the client so it can display suitable options in the UI.
         // In this class, we inform the client only about certain roles and certain other claims.
-        static string[] ExposedRoles = new[] { "IrrelevantRole", "TestRole" };
+        static readonly string[] ExposedRoles = new[] { "IrrelevantRole", "TestRole" };
 
         // GET api/user
         [HttpGet]

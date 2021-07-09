@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 {
     public class CookiePolicyTests
     {
-        private RequestDelegate SecureCookieAppends = context =>
+        private readonly RequestDelegate SecureCookieAppends = context =>
         {
             context.Response.Cookies.Append("A", "A");
             context.Response.Cookies.Append("B", "B", new CookieOptions { Secure = false });
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             context.Response.Cookies.Append("D", "D", new CookieOptions { Secure = true });
             return Task.FromResult(0);
         };
-        private RequestDelegate HttpCookieAppends = context =>
+        private readonly RequestDelegate HttpCookieAppends = context =>
         {
             context.Response.Cookies.Append("A", "A");
             context.Response.Cookies.Append("B", "B", new CookieOptions { HttpOnly = false });
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             context.Response.Cookies.Append("D", "D", new CookieOptions { HttpOnly = true });
             return Task.FromResult(0);
         };
-        private RequestDelegate SameSiteCookieAppends = context =>
+        private readonly RequestDelegate SameSiteCookieAppends = context =>
         {
             context.Response.Cookies.Append("A", "A");
             context.Response.Cookies.Append("B", "B", new CookieOptions());

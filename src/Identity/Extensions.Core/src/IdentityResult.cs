@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity
     public class IdentityResult
     {
         private static readonly IdentityResult _success = new IdentityResult { Succeeded = true };
-        private List<IdentityError> _errors = new List<IdentityError>();
+        private readonly List<IdentityError> _errors = new List<IdentityError>();
 
         /// <summary>
         /// Flag indicating whether if the operation succeeded or not.

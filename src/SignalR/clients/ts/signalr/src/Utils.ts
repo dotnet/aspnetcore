@@ -92,7 +92,7 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
                                   content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
-    let headers = {};
+    let headers: {[k: string]: string} = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
@@ -265,4 +265,14 @@ function getRuntime(): string {
     } else {
         return "Browser";
     }
+}
+
+/** @private */
+export function getErrorString(e: any): string {
+    if (e.stack) {
+        return e.stack;
+    } else if (e.message) {
+        return e.message;
+    }
+    return `${e}`;
 }

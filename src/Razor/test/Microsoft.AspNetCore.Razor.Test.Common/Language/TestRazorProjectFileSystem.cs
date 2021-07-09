@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class TestRazorProjectFileSystem : DefaultRazorProjectFileSystem
     {
-        public new static RazorProjectFileSystem Empty = new TestRazorProjectFileSystem();
+        public static new RazorProjectFileSystem Empty = new TestRazorProjectFileSystem();
 
         private readonly Dictionary<string, RazorProjectItem> _lookup;
 

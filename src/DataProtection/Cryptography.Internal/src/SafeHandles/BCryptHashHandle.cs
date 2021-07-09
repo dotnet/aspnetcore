@@ -6,7 +6,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
-    internal unsafe sealed class BCryptHashHandle : BCryptHandle
+    internal sealed unsafe class BCryptHashHandle : BCryptHandle
     {
         private BCryptAlgorithmHandle? _algProviderHandle;
 
