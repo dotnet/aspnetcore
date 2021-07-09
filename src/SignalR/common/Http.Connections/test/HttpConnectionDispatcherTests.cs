@@ -2405,7 +2405,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             public CancellationToken RequestAborted { get; set; }
 
-            private CancellationTokenSource _cts;
+            private readonly CancellationTokenSource _cts;
             public CustomHttpRequestLifetimeFeature()
             {
                 _cts = new CancellationTokenSource();
@@ -2813,7 +2813,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
     public class TestConnectionHandler : ConnectionHandler
     {
-        private TaskCompletionSource _startedTcs = new TaskCompletionSource();
+        private readonly TaskCompletionSource _startedTcs = new TaskCompletionSource();
 
         public Task Started => _startedTcs.Task;
 

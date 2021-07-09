@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     /// </summary>
     public class FileProviderRazorProjectItem : RazorProjectItem
     {
-        private string _root;
+        private readonly string _root;
         private string? _relativePhysicalPath;
         private bool _isRelativePhysicalPathSet;
 

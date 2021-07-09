@@ -782,7 +782,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             return host;
         }
 
-        private CertificateAuthenticationEvents successfulValidationEvents = new CertificateAuthenticationEvents()
+        private readonly CertificateAuthenticationEvents successfulValidationEvents = new CertificateAuthenticationEvents()
         {
             OnCertificateValidated = context =>
             {
@@ -798,7 +798,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             }
         };
 
-        private CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
+        private readonly CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
         {
             OnCertificateValidated = context =>
             {
@@ -807,7 +807,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             }
         };
 
-        private CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
+        private readonly CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
         {
             OnCertificateValidated = context =>
             {

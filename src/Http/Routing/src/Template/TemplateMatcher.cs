@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         private readonly bool[] _hasDefaultValue;
         private readonly object?[] _defaultValues;
 
-        private RoutePatternMatcher _routePatternMatcher;
+        private readonly RoutePatternMatcher _routePatternMatcher;
 
         /// <summary>
         /// Creates a new <see cref="TemplateMatcher"/> instance given a <paramref name="template"/> and <paramref name="defaults"/>.

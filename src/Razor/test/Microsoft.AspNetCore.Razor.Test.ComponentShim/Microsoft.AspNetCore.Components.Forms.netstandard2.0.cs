@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Components.Forms
     }
     public sealed partial class ValidationRequestedEventArgs : System.EventArgs
     {
-        public static readonly new Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs Empty;
+        public static new readonly Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs Empty;
         public ValidationRequestedEventArgs() { }
     }
     public sealed partial class ValidationStateChangedEventArgs : System.EventArgs
     {
-        public static readonly new Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs Empty;
+        public static new readonly Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs Empty;
         public ValidationStateChangedEventArgs() { }
     }
 }

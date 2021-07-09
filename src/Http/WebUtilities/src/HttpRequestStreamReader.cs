@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         private const int DefaultBufferSize = 1024;
 
-        private Stream _stream;
+        private readonly Stream _stream;
         private readonly Encoding _encoding;
         private readonly Decoder _decoder;
 
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly ArrayPool<char> _charPool;
 
         private readonly int _byteBufferSize;
-        private byte[] _byteBuffer;
-        private char[] _charBuffer;
+        private readonly byte[] _byteBuffer;
+        private readonly char[] _charBuffer;
 
         private int _charBufferIndex;
         private int _charsRead;

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
 namespace Microsoft.AspNetCore.DataProtection.SP800_108
 {
-    internal unsafe sealed class Win7SP800_108_CTR_HMACSHA512Provider : ISP800_108_CTR_HMACSHA512Provider
+    internal sealed unsafe class Win7SP800_108_CTR_HMACSHA512Provider : ISP800_108_CTR_HMACSHA512Provider
     {
         private readonly BCryptHashHandle _hashHandle;
 

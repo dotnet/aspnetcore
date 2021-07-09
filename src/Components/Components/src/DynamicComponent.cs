@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
     public class DynamicComponent : IComponent
     {
         private RenderHandle _renderHandle;
-        private RenderFragment _cachedRenderFragment;
+        private readonly RenderFragment _cachedRenderFragment;
 
         /// <summary>
         /// Constructs an instance of <see cref="DynamicComponent"/>.

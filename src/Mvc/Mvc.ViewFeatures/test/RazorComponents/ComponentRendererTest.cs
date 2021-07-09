@@ -1012,7 +1012,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private class AsyncComponent : ComponentBase
         {
-            private static WeatherRow[] _weatherData = new[]
+            private static readonly WeatherRow[] _weatherData = new[]
             {
                 new WeatherRow
                 {

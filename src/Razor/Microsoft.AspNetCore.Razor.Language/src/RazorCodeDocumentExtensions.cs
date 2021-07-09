@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         private static readonly char[] PathSeparators = new char[] { '/', '\\' };
         private static readonly char[] NamespaceSeparators = new char[] { '.' };
-        private static object CssScopeKey = new object();
+        private static readonly object CssScopeKey = new object();
 
         public static TagHelperDocumentContext GetTagHelperContext(this RazorCodeDocument document)
         {

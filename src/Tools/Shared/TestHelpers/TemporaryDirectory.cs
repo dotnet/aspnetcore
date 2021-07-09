@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.Tools.Internal
 {
     public class TemporaryDirectory : IDisposable
     {
-        private List<TemporaryCSharpProject> _projects = new List<TemporaryCSharpProject>();
-        private List<TemporaryDirectory> _subdirs = new List<TemporaryDirectory>();
-        private Dictionary<string, string> _files = new Dictionary<string, string>();
-        private TemporaryDirectory? _parent;
+        private readonly List<TemporaryCSharpProject> _projects = new List<TemporaryCSharpProject>();
+        private readonly List<TemporaryDirectory> _subdirs = new List<TemporaryDirectory>();
+        private readonly Dictionary<string, string> _files = new Dictionary<string, string>();
+        private readonly TemporaryDirectory? _parent;
 
         public TemporaryDirectory()
         {

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
 
         private static int _id;
-        private IHubProtocol _protocol;
+        private readonly IHubProtocol _protocol;
         private readonly IInvocationBinder _invocationBinder;
         private readonly CancellationTokenSource _cts;
 

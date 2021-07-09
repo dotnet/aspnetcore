@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 {
     internal class UvTimerHandle : UvHandle
     {
-        private readonly static LibuvFunctions.uv_timer_cb _uv_timer_cb = UvTimerCb;
+        private static readonly LibuvFunctions.uv_timer_cb _uv_timer_cb = UvTimerCb;
 
         private Action<UvTimerHandle> _callback;
 

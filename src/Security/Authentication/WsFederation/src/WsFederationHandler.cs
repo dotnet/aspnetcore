@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// Handles Signout
         /// </summary>
         /// <returns></returns>
-        public async virtual Task SignOutAsync(AuthenticationProperties? properties)
+        public virtual async Task SignOutAsync(AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardSignOut);
             if (target != null)

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 {
     internal static class EventArgsTypeCache
     {
-        private static ConcurrentDictionary<MethodInfo, Type> Cache = new ConcurrentDictionary<MethodInfo, Type>();
+        private static readonly ConcurrentDictionary<MethodInfo, Type> Cache = new ConcurrentDictionary<MethodInfo, Type>();
 
         public static Type GetEventArgsType(MethodInfo methodInfo)
         {

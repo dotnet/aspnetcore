@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Authentication
         private class StatusCodeHandler : IAuthenticationRequestHandler
         {
             private HttpContext _context;
-            private int _code;
+            private readonly int _code;
 
             public StatusCodeHandler(int code)
             {

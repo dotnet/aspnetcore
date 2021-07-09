@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class NonSeekableReadStream : Stream
     {
-        private Stream _inner;
+        private readonly Stream _inner;
 
         public NonSeekableReadStream(byte[] data)
             : this(new MemoryStream(data))

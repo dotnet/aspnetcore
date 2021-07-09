@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.SpaServices.StaticFiles
     /// </summary>
     internal class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
     {
-        private IFileProvider? _fileProvider;
+        private readonly IFileProvider? _fileProvider;
 
         public DefaultSpaStaticFileProvider(
             IServiceProvider serviceProvider,

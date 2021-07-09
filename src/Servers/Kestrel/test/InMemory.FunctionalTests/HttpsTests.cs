@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class HttpsTests : LoggedTest
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         private KestrelServerOptions CreateServerOptions()
         {
@@ -653,7 +653,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private class HttpsConnectionFilterLogger : ILogger
         {
-            private int? _expectedEventId;
+            private readonly int? _expectedEventId;
 
             public HttpsConnectionFilterLogger()
             {

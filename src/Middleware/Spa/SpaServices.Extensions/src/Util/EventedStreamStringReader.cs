@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.NodeServices.Util
     /// </summary>
     internal class EventedStreamStringReader : IDisposable
     {
-        private EventedStreamReader _eventedStreamReader;
+        private readonly EventedStreamReader _eventedStreamReader;
         private bool _isDisposed;
-        private StringBuilder _stringBuilder = new StringBuilder();
+        private readonly StringBuilder _stringBuilder = new StringBuilder();
 
         public EventedStreamStringReader(EventedStreamReader eventedStreamReader)
         {

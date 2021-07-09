@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Session
         private bool _isModified;
         private bool _loaded;
         private bool _isAvailable;
-        private bool _isNewSessionKey;
+        private readonly bool _isNewSessionKey;
         private string? _sessionId;
         private byte[]? _sessionIdBytes;
 

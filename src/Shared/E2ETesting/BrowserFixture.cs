@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 {
     public class BrowserFixture : IAsyncLifetime
     {
-        private ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
+        private readonly ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
 
         public BrowserFixture(IMessageSink diagnosticsMessageSink)
         {

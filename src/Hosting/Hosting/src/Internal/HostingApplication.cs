@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly RequestDelegate _application;
         private readonly IHttpContextFactory? _httpContextFactory;
         private readonly DefaultHttpContextFactory? _defaultHttpContextFactory;
-        private HostingApplicationDiagnostics _diagnostics;
+        private readonly HostingApplicationDiagnostics _diagnostics;
 
         public HostingApplication(
             RequestDelegate application,

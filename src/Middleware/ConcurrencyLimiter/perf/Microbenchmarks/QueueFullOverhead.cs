@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
     {
         private const int _numRequests = 2000;
         private int _requestCount = 0;
-        private ManualResetEventSlim _mres = new ManualResetEventSlim();
+        private readonly ManualResetEventSlim _mres = new ManualResetEventSlim();
 
         private ConcurrencyLimiterMiddleware _middlewareQueue;
         private ConcurrencyLimiterMiddleware _middlewareStack;

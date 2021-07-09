@@ -14,8 +14,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     public class ClientBuilder
     {
         private const string NativeAppClientRedirectUri = "urn:ietf:wg:oauth:2.0:oob";
-
-        Client _client;
+        readonly Client _client;
         private bool _built;
 
         /// <summary>

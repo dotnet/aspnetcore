@@ -13,8 +13,8 @@ namespace BasicTestApp
     internal class PrependMessageLoggerProvider : ILoggerProvider
     {
         ILogger _logger;
-        string _message;
-        ILogger _defaultLogger;
+        readonly string _message;
+        readonly ILogger _defaultLogger;
         private bool _disposed = false;
 
         public PrependMessageLoggerProvider(string message, IJSRuntime runtime)

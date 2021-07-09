@@ -23,7 +23,7 @@ namespace SocialWeather
             _logger = logger;
         }
 
-        public async override Task OnConnectedAsync(ConnectionContext connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             _lifetimeManager.OnConnectedAsync(connection);
             await ProcessRequests(connection);

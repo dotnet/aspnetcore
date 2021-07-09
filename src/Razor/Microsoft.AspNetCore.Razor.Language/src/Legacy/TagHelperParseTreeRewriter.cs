@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             private readonly TagHelperBinder _tagHelperBinder;
             private readonly Stack<TagTracker> _trackerStack;
             private readonly ErrorSink _errorSink;
-            private RazorParserFeatureFlags _featureFlags;
+            private readonly RazorParserFeatureFlags _featureFlags;
 
             public Rewriter(
                 RazorSourceDocument source,

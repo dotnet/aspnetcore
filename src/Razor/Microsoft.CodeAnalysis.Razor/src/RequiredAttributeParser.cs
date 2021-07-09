@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Razor
             private static readonly char[] InvalidCssQuotelessValueCharacters = { ' ', '\t', ']' };
 
             private int _index;
-            private string _requiredAttributes;
+            private readonly string _requiredAttributes;
 
             public DefaultRequiredAttributeParser(string requiredAttributes)
             {

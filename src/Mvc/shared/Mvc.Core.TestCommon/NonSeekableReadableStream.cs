@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class NonSeekableReadStream : Stream
     {
-        private Stream _inner;
+        private readonly Stream _inner;
         private readonly bool _allowSyncReads;
 
         public NonSeekableReadStream(byte[] data, bool allowSyncReads = true)

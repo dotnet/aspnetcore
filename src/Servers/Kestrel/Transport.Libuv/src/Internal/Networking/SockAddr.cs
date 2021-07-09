@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         // https://msdn.microsoft.com/en-us/library/windows/desktop/ms740496(v=vs.85).aspx
         // although the c/c++ header defines it as a 2-byte short followed by a 14-byte array,
         // the simplest way to reserve the same size in c# is with four nameless long values
-        private long _field0;
-        private long _field1;
-        private long _field2;
+        private readonly long _field0;
+        private readonly long _field1;
+        private readonly long _field2;
         private long _field3;
 
         public SockAddr(long ignored)

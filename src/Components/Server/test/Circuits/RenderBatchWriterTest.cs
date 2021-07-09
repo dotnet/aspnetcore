@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Server
 {
     public class RenderBatchWriterTest
     {
-        static object NullStringMarker = new object();
+        static readonly object NullStringMarker = new object();
 
         [Fact]
         public void CanSerializeEmptyRenderBatch()

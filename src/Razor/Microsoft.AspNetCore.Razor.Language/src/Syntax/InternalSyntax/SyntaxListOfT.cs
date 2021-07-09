@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
         internal struct Enumerator
         {
-            private SyntaxList<TNode> _list;
+            private readonly SyntaxList<TNode> _list;
             private int _index;
 
             internal Enumerator(SyntaxList<TNode> list)

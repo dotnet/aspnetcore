@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Owin
 
     public class OwinExtensionTests
     {
-        static AppFunc notFound = env => new Task(() => { env["owin.ResponseStatusCode"] = 404; });
+        static readonly AppFunc notFound = env => new Task(() => { env["owin.ResponseStatusCode"] = 404; });
 
         [Fact]
         public async Task OwinConfigureServiceProviderAddsServices()
