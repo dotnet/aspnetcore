@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Identity
 
         private readonly IHttpContextAccessor _contextAccessor;
         private HttpContext _context;
-        private IAuthenticationSchemeProvider _schemes;
-        private IUserConfirmation<TUser> _confirmation;
+        private readonly IAuthenticationSchemeProvider _schemes;
+        private readonly IUserConfirmation<TUser> _confirmation;
 
         /// <summary>
         /// Gets the <see cref="ILogger"/> used to log messages from the manager.

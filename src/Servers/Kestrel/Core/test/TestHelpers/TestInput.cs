@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     class TestInput : IDisposable
     {
-        private MemoryPool<byte> _memoryPool;
+        private readonly MemoryPool<byte> _memoryPool;
 
         public TestInput(IKestrelTrace log = null, ITimeoutControl timeoutControl = null)
         {

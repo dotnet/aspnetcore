@@ -9,7 +9,7 @@ namespace HostedInAspNet.Server
 {
     public class BootResourceRequestLog
     {
-        private ConcurrentBag<string> _requestPaths = new ConcurrentBag<string>();
+        private readonly ConcurrentBag<string> _requestPaths = new ConcurrentBag<string>();
 
         public IReadOnlyCollection<string> RequestPaths => _requestPaths;
 

@@ -8,7 +8,7 @@ namespace ApplicationModelWebSite
 {
     public class ControllerDescriptionAttribute : Attribute, IControllerModelConvention
     {
-        private object _value;
+        private readonly object _value;
 
         public ControllerDescriptionAttribute(object value)
         {

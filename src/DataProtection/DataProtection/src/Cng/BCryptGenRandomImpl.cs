@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Cryptography.Cng;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng
 {
-    internal unsafe sealed class BCryptGenRandomImpl : IBCryptGenRandom
+    internal sealed unsafe class BCryptGenRandomImpl : IBCryptGenRandom
     {
         public static readonly BCryptGenRandomImpl Instance = new BCryptGenRandomImpl();
 

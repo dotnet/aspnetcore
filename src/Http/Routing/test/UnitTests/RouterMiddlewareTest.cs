@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private class TestRouter : IRouter
         {
-            private bool _isHandled;
+            private readonly bool _isHandled;
 
             public TestRouter(bool isHandled)
             {

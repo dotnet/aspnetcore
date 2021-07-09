@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private class TestComponent : IComponent, IHandleAfterRender
         {
             private RenderHandle _renderHandle;
-            private RenderFragment _renderFragment = (builder) =>
+            private readonly RenderFragment _renderFragment = (builder) =>
             {
                 builder.OpenElement(0, "my element");
                 builder.AddContent(1, "some text");

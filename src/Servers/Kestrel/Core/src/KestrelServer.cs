@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServer : IServer
     {
-        private KestrelServerImpl _innerKestrelServer;
+        private readonly KestrelServerImpl _innerKestrelServer;
 
         /// <summary>
         /// Initializes a new instance of <see cref="KestrelServer"/>.

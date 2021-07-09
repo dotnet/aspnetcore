@@ -186,9 +186,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private class MetadataBuilder : IMetadataBuilder
         {
-            private List<Action<BindingMetadata>> _bindingActions = new List<Action<BindingMetadata>>();
-            private List<Action<DisplayMetadata>> _displayActions = new List<Action<DisplayMetadata>>();
-            private List<Action<ValidationMetadata>> _validationActions = new List<Action<ValidationMetadata>>();
+            private readonly List<Action<BindingMetadata>> _bindingActions = new List<Action<BindingMetadata>>();
+            private readonly List<Action<DisplayMetadata>> _displayActions = new List<Action<DisplayMetadata>>();
+            private readonly List<Action<ValidationMetadata>> _validationActions = new List<Action<ValidationMetadata>>();
 
             private readonly ModelMetadataIdentity _key;
 

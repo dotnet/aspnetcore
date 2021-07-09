@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
     // going to the IV. This means that we'll only hit the 2^-32 probability limit after 2^96 encryption
     // operations, which will realistically never happen. (At the absurd rate of one encryption operation
     // per nanosecond, it would still take 180 times the age of the universe to hit 2^96 operations.)
-    internal unsafe sealed class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
+    internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
     {
         // Having a key modifier ensures with overwhelming probability that no two encryption operations
         // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's

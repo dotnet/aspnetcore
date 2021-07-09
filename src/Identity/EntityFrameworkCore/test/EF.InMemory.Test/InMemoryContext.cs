@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         private InMemoryContext(DbConnection connection) : base(connection)
         { }
 
-        public new static InMemoryContext Create(DbConnection connection)
+        public static new InMemoryContext Create(DbConnection connection)
             => Initialize(new InMemoryContext(connection));
 
         public static TContext Initialize<TContext>(TContext context) where TContext : DbContext

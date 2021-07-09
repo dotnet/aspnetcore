@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 {
     public class MemoryBufferWriterTests
     {
-        private static int MinimumSegmentSize;
+        private static readonly int MinimumSegmentSize;
 
         static MemoryBufferWriterTests()
         {

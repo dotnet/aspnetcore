@@ -14,9 +14,9 @@ namespace Wasm.Performance.Driver
     class Selenium
     {
         const int SeleniumPort = 4444;
-        static bool RunHeadlessBrowser = true;
+        const bool RunHeadlessBrowser = true;
 
-        static bool PoolForBrowserLogs = true;
+        const bool PoolForBrowserLogs = true;
 
         private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
         {

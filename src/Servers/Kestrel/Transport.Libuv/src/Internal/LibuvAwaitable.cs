@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal class LibuvAwaitable<TRequest> : ICriticalNotifyCompletion where TRequest : UvRequest
     {
-        private readonly static Action _callbackCompleted = () => { };
+        private static readonly Action _callbackCompleted = () => { };
 
         private Action _callback;
 

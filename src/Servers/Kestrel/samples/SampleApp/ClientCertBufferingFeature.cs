@@ -39,8 +39,8 @@ namespace SampleApp
 
     internal class ClientCertBufferingFeature : ITlsConnectionFeature
     {
-        private ITlsConnectionFeature _tlsFeature;
-        private HttpContext _context;
+        private readonly ITlsConnectionFeature _tlsFeature;
+        private readonly HttpContext _context;
 
         public ClientCertBufferingFeature(ITlsConnectionFeature tlsFeature, HttpContext context)
         {

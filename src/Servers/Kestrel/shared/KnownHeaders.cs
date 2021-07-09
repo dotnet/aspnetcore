@@ -15,10 +15,10 @@ namespace CodeGenerator
 {
     public class KnownHeaders
     {
-        public readonly static KnownHeader[] RequestHeaders;
-        public readonly static KnownHeader[] ResponseHeaders;
-        public readonly static KnownHeader[] ResponseTrailers;
-        public readonly static string[] InternalHeaderAccessors = new[]
+        public static readonly KnownHeader[] RequestHeaders;
+        public static readonly KnownHeader[] ResponseHeaders;
+        public static readonly KnownHeader[] ResponseTrailers;
+        public static readonly string[] InternalHeaderAccessors = new[]
         {
             HeaderNames.Allow,
             HeaderNames.AltSvc,
@@ -34,12 +34,12 @@ namespace CodeGenerator
 
         public static readonly string[] DefinedHeaderNames = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public).Select(h => h.Name).ToArray();
 
-        public readonly static string[] ObsoleteHeaderNames = new[]
+        public static readonly string[] ObsoleteHeaderNames = new[]
         {
             HeaderNames.DNT,
         };
 
-        public readonly static string[] PsuedoHeaderNames = new[]
+        public static readonly string[] PsuedoHeaderNames = new[]
         {
             "Authority", // :authority
             "Method", // :method
@@ -48,7 +48,7 @@ namespace CodeGenerator
             "Status" // :status
         };
 
-        public readonly static string[] NonApiHeaders =
+        public static readonly string[] NonApiHeaders =
             ObsoleteHeaderNames
             .Concat(PsuedoHeaderNames)
             .ToArray();
@@ -58,7 +58,7 @@ namespace CodeGenerator
             .Except(NonApiHeaders)
             .ToArray();
 
-        public readonly static long InvalidH2H3ResponseHeadersBits;
+        public static readonly long InvalidH2H3ResponseHeadersBits;
 
         static KnownHeaders()
         {

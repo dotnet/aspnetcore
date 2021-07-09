@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Marshal.SizeOf<HttpApiTypes.HTTP_TIMEOUT_LIMIT_INFO>();
 
         private UrlGroup? _urlGroup;
-        private int[] _timeouts;
+        private readonly int[] _timeouts;
         private uint _minSendBytesPerSecond;
 
         internal TimeoutManager()

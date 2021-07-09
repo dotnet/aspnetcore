@@ -9,7 +9,7 @@ namespace CookieSessionSample
     public class MemoryCacheTicketStore : ITicketStore
     {
         private const string KeyPrefix = "AuthSessionStore-";
-        private IMemoryCache _cache;
+        private readonly IMemoryCache _cache;
 
         public MemoryCacheTicketStore()
         {

@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             internal bool DisableNTLMCredentialCaching;
             internal ulong ExFlags;
             HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS DigestParams;
-            HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS BasicParams;
+            readonly HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS BasicParams;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -588,8 +588,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [StructLayout(LayoutKind.Sequential)]
         internal struct HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
         {
-            ushort RealmLength;
-            char* Realm;
+            readonly ushort RealmLength;
+            readonly char* Realm;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -680,7 +680,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal static class HTTP_RESPONSE_HEADER_ID
         {
-            private static string[] _strings =
+            private static readonly string[] _strings =
             {
                     "Cache-Control",
                     "Connection",
@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     "WWW-Authenticate",
                 };
 
-            private static Dictionary<string, int> _lookupTable = CreateLookupTable();
+            private static readonly Dictionary<string, int> _lookupTable = CreateLookupTable();
 
             private static Dictionary<string, int> CreateLookupTable()
             {

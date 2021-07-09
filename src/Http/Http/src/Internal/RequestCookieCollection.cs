@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // Do NOT make this readonly, or MoveNext will not work
             private AdaptiveCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
-            private bool _notEmpty;
+            private readonly bool _notEmpty;
 
             internal Enumerator(AdaptiveCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
             {

@@ -553,13 +553,13 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             return host;
         }
 
-        private static UrlEncoder _urlEncoder = UrlEncoder.Default;
+        private static readonly UrlEncoder _urlEncoder = UrlEncoder.Default;
         private static string UrlEncode(string content)
         {
             return _urlEncoder.Encode(content);
         }
 
-        private static JavaScriptEncoder _javaScriptEncoder = JavaScriptEncoder.Default;
+        private static readonly JavaScriptEncoder _javaScriptEncoder = JavaScriptEncoder.Default;
         private static string JavaScriptEncode(string content)
         {
             return _javaScriptEncoder.Encode(content);

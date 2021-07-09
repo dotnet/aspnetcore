@@ -752,7 +752,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             public Func<RemoteAuthenticationContext<RemoteAuthenticationState>, Task<RemoteAuthenticationResult<RemoteAuthenticationState>>> CompleteSignOutCallback { get; set; }
             public Func<ValueTask<ClaimsPrincipal>> GetAuthenticatedUserCallback { get; set; }
 
-            public async override Task<AuthenticationState> GetAuthenticationStateAsync() => new AuthenticationState(await GetAuthenticatedUserCallback());
+            public override async Task<AuthenticationState> GetAuthenticationStateAsync() => new AuthenticationState(await GetAuthenticatedUserCallback());
 
             public override Task<RemoteAuthenticationResult<RemoteAuthenticationState>> CompleteSignInAsync(RemoteAuthenticationContext<RemoteAuthenticationState> context) => CompleteSignInCallback(context);
 

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private class Visitor : IntermediateNodeWalker
         {
-            private Dictionary<string, (string name, IntermediateNode node)> _attributes = new Dictionary<string, (string, IntermediateNode)>(StringComparer.OrdinalIgnoreCase);
+            private readonly Dictionary<string, (string name, IntermediateNode node)> _attributes = new Dictionary<string, (string, IntermediateNode)>(StringComparer.OrdinalIgnoreCase);
 
             public override void VisitMarkupElement(MarkupElementIntermediateNode node)
             {

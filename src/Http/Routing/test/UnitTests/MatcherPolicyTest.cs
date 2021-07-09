@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             public override int Order => throw new System.NotImplementedException();
 
-            public new static bool ContainsDynamicEndpoints(IReadOnlyList<Endpoint> endpoints)
+            public static new bool ContainsDynamicEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return MatcherPolicy.ContainsDynamicEndpoints(endpoints);
             }

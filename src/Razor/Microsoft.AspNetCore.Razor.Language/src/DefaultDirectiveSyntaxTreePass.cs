@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         private class NestedSectionVerifier : SyntaxRewriter
         {
             private int _nestedLevel;
-            private RazorSyntaxTree _syntaxTree;
-            private List<RazorDiagnostic> _diagnostics;
+            private readonly RazorSyntaxTree _syntaxTree;
+            private readonly List<RazorDiagnostic> _diagnostics;
 
             public NestedSectionVerifier(RazorSyntaxTree syntaxTree)
             {

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultTagMatchingRuleDescriptorBuilder : TagMatchingRuleDescriptorBuilder
     {
-        private DefaultTagHelperDescriptorBuilder _parent;
+        private readonly DefaultTagHelperDescriptorBuilder _parent;
         private List<DefaultRequiredAttributeDescriptorBuilder> _requiredAttributeBuilders;
         private RazorDiagnosticCollection _diagnostics;
 

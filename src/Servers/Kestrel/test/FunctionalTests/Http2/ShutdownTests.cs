@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         private HttpClient Client { get; set; }
         private List<Http2Frame> ReceivedFrames { get; } = new List<Http2Frame>();

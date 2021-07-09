@@ -3243,7 +3243,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private class NumberModelBinder : IModelBinder
         {
             private readonly NumberStyles _supportedStyles = NumberStyles.Float | NumberStyles.AllowThousands;
-            private DecimalModelBinder _innerBinder;
+            private readonly DecimalModelBinder _innerBinder;
 
             public NumberModelBinder(ILoggerFactory loggerFactory)
             {

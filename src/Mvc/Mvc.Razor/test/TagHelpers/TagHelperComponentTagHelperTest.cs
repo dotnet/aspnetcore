@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 
         private class TestAddTagHelperComponent : ITagHelperComponent
         {
-            private int _order;
+            private readonly int _order;
 
             public TestAddTagHelperComponent(int order)
             {

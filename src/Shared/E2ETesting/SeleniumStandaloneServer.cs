@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 {
     public class SeleniumStandaloneServer : IDisposable
     {
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         private Process _process;
         private string _sentinelPath;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static IMessageSink _diagnosticsMessageSink;
 
         // 1h 30 min
-        private static int SeleniumProcessTimeout = 3600;
+        private const int SeleniumProcessTimeout = 3600;
 
         public SeleniumStandaloneServer(IMessageSink diagnosticsMessageSink)
         {

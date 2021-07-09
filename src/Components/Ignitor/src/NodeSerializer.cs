@@ -37,7 +37,7 @@ namespace Ignitor
             private readonly TextWriter _writer;
             private int _depth;
             private bool _atStartOfLine;
-            private HashSet<Node> _visited = new HashSet<Node>();
+            private readonly HashSet<Node> _visited = new HashSet<Node>();
 
             public Serializer(TextWriter writer)
             {

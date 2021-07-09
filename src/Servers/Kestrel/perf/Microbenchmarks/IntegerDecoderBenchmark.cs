@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     {
         private const int Iterations = 50_000;
 
-        private int _prefixLength = 5; // Arbitrary prefix length
-        private byte _singleByte = 0x1e; // 30
-        private byte[] _multiByte = new byte[] { 0x1f, 0xe0, 0xff, 0xff, 0xff, 0x03}; // int32.MaxValue
+        private readonly int _prefixLength = 5; // Arbitrary prefix length
+        private readonly byte _singleByte = 0x1e; // 30
+        private readonly byte[] _multiByte = new byte[] { 0x1f, 0xe0, 0xff, 0xff, 0xff, 0x03}; // int32.MaxValue
 
         [Benchmark(Baseline = true, OperationsPerInvoke = Iterations)]
         public void DecodeSingleByteInteger()

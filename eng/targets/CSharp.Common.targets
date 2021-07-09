@@ -27,6 +27,9 @@
         '$(ISBenchmarkProject)' == 'true' OR
         '$(IsSampleProject)' == 'true' OR
         '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
+
+    <!-- Enable .NET code style analysis during build for src projects. -->
+    <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">

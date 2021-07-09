@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         public const string ValidStateData = "ValidStateData";
 
         private string lastSavedAuthenticationProperties;
-        private DataContractSerializer serializer = new DataContractSerializer(typeof(AuthenticationProperties));
+        private readonly DataContractSerializer serializer = new DataContractSerializer(typeof(AuthenticationProperties));
 
         public string Protect(AuthenticationProperties data)
         {
