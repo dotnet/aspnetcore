@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -32,6 +32,7 @@
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" Link="Shared\ValueStopwatch\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" />
+    <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" Link="Shared\UrlDecoder\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
   </ItemGroup>
