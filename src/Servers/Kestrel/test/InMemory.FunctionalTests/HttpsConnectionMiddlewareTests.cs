@@ -705,14 +705,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
+        // TLS 1.2 and lower have to renegotiate the whole connection to get a client cert, and if that hits an error
+        // then the connection is aborted.
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
-        public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows()
+        public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows_TLS12()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.Protocols = HttpProtocols.Http1;
                 listenOptions.UseHttps(options =>
                 {
+                    options.SslProtocols = SslProtocols.Tls12;
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                    options.AllowAnyClientCertificate();
+                });
+            }
+
+            // Under 4kb can sometimes work because it fits into Kestrel's header parsing buffer.
+            var expectedBody = new string('a', 1024 * 4);
+
+            await using var server = new TestServer(async context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
+                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Null(tlsFeature.ClientCertificate);
+                Assert.Null(context.Connection.ClientCertificate);
+            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            // SslStream is used to ensure the certificate is actually passed to the server
+            // HttpClient might not send the certificate because it is invalid or it doesn't match any
+            // of the certificate authorities sent by the server in the SSL handshake.
+            // Use a random host name to avoid the TLS session resumption cache.
+            var stream = OpenSslStreamWithCert(connection.Stream);
+            await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
+            await AssertConnectionResult(stream, false, expectedBody);
+        }
+
+        [ConditionalFact]
+        // TLS 1.3 uses a new client cert negotiation extension that doesn't cause the connection to abort
+        // for this error.
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20145")] // Needs a preview version with TLS 1.3 enabled.
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows_TLS13()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.Protocols = HttpProtocols.Http1;
+                listenOptions.UseHttps(options =>
+                {
+                    options.SslProtocols = SslProtocols.Tls13;
                     options.ServerCertificate = _x509Certificate2;
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
