@@ -600,6 +600,17 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(expectedFileName, result.FileName);
         }
 
+        [Fact]
+        public void FileNameWithSurrogatePairs_EncodedCorrectly()
+        {
+            var contentDisposition = new ContentDispositionHeaderValue("attachment");
+
+            contentDisposition.SetHttpFileName("File 🤩 name.txt");
+            Assert.Equal("File __ name.txt", contentDisposition.FileName);
+            Assert.Equal(2, contentDisposition.Parameters.Count);
+            Assert.Equal("UTF-8\'\'File%20%F0%9F%A4%A9%20name.txt", contentDisposition.Parameters[1].Value);
+        }
+
         public class ContentDispositionValue
         {
             public ContentDispositionValue(string value, string description, bool valid)
