@@ -59,10 +59,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestHttp3Stream : Http3Stream
         {
-            public TestHttp3Stream(Http3StreamContext context) : base(context)
-            {
-            }
-
             public override void Execute()
             {
             }

@@ -36,12 +36,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
-        private readonly Http3FrameWriter _frameWriter;
-        private readonly Http3OutputProducer _http3Output;
+        private Http3FrameWriter _frameWriter = default!;
+        private Http3OutputProducer _http3Output = default!;
+        private Http3StreamContext _context = default!;
+        private IProtocolErrorCodeFeature _errorCodeFeature = default!;
+        private IStreamIdFeature _streamIdFeature = default!;
         private int _isClosed;
-        private readonly Http3StreamContext _context;
-        private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-        private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         protected RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
@@ -57,11 +57,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
         internal bool RstStreamReceived => (_completionState & StreamCompletionFlags.RstStreamReceived) == StreamCompletionFlags.RstStreamReceived;
 
-        public Pipe RequestBodyPipe { get; }
+        public Pipe RequestBodyPipe { get; private set; } = default!;
 
-        public Http3Stream(Http3StreamContext context)
+        public long? InputRemaining { get; internal set; }
+
+        public QPackDecoder QPackDecoder { get; private set; } = default!;
+
+        public PipeReader Input => _context.Transport.Input;
+
+        public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
+        public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
+        public long StreamId => _streamIdFeature.StreamId;
+
+        public long HeaderTimeoutTicks { get; set; }
+        public bool ReceivedHeader => _appCompleted != null; // TCS is assigned once headers are received
+
+        public bool IsRequestStream => true;
+
+        public void Initialize(Http3StreamContext context)
         {
-            Initialize(context);
+            base.Initialize(context);
 
             InputRemaining = null;
 
@@ -69,6 +84,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
             _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
+
+            _appCompleted = null;
+            _isClosed = 0;
+            _requestHeaderParsingState = default;
+            _parsedPseudoHeaderFields = default;
+            _totalParsedHeaderSize = 0;
+            _isMethodConnect = false;
+            _completionState = default;
+            HeaderTimeoutTicks = 0;
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
@@ -82,9 +106,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.ClientPeerSettings,
                 this);
 
-            // ResponseHeaders aren't set, kind of ugly that we need to reset.
-            Reset();
-
             _http3Output = new Http3OutputProducer(
                 _frameWriter,
                 context.MemoryPool,
@@ -95,23 +116,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
         }
 
-        public long? InputRemaining { get; internal set; }
-
-        public QPackDecoder QPackDecoder { get; }
-
-        public PipeReader Input => _context.Transport.Input;
-
-        public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
-        public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
-        public long StreamId => _streamIdFeature.StreamId;
-
-        public long HeaderTimeoutTicks { get; set; }
-        public bool ReceivedHeader => _appCompleted != null; // TCS is assigned once headers are received
-
-        public bool IsRequestStream => true;
-
-        public void InitializeWithExistingContext()
+        public void InitializeWithExistingContext(IDuplexPipe transport)
         {
+            _context.Transport = transport;
             Initialize(_context);
         }
 
@@ -629,6 +636,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override void OnReset()
         {
+            _keepAlive = true;
+            _connectionAborted = false;
+
             // Reset Http3 Features
             _currentIHttpMinRequestBodyDataRateFeature = this;
             _currentIHttpResponseTrailersFeature = this;

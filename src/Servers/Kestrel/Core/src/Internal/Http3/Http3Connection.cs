@@ -273,15 +273,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             // Check whether there is an existing HTTP/3 stream on the transport stream.
                             // A stream will only be cached if the transport stream itself is reused.
                             var stream = streamContext.Features.Get<ICachedHttp3StreamFeature<TContext>>()?.CachedStream;
-                            //if (stream == null)
+                            if (stream == null)
                             {
                                 stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
                                 streamContext.Features.Set<ICachedHttp3StreamFeature<TContext>>(new DefaultCachedHttp3StreamFeature<TContext>(stream));
                             }
-                            //else
-                            //{
-                            //    stream.InitializeWithExistingContext();
-                            //}
+                            else
+                            {
+                                stream.InitializeWithExistingContext(streamContext.Transport);
+                            }
 
                             _streamLifetimeHandler.OnStreamCreated(stream);
 
@@ -378,12 +378,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _context.MemoryPool,
                 streamContext.LocalEndPoint as IPEndPoint,
                 streamContext.RemoteEndPoint as IPEndPoint,
-                streamContext.Transport,
                 _streamLifetimeHandler,
                 streamContext,
                 _clientSettings,
                 _serverSettings);
             httpConnectionContext.TimeoutControl = _context.TimeoutControl;
+            httpConnectionContext.Transport = streamContext.Transport;
+
             return httpConnectionContext;
         }
 
@@ -459,12 +460,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _context.MemoryPool,
                 streamContext.LocalEndPoint as IPEndPoint,
                 streamContext.RemoteEndPoint as IPEndPoint,
-                streamContext.Transport,
                 _streamLifetimeHandler,
                 streamContext,
                 _clientSettings,
                 _serverSettings);
             httpConnectionContext.TimeoutControl = _context.TimeoutControl;
+            httpConnectionContext.Transport = streamContext.Transport;
 
             return new Http3ControlStream<TContext>(application, httpConnectionContext);
         }

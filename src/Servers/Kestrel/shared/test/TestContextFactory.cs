@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Testing
                 connectionFeatures,
                 memoryPool ?? MemoryPool<byte>.Shared,
                 localEndPoint,
-                remoteEndPoint,
-                transport);
+                remoteEndPoint);
             context.TimeoutControl = timeoutControl;
+            context.Transport = transport;
 
             return context;
         }
@@ -185,13 +185,13 @@ namespace Microsoft.AspNetCore.Testing
                 memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
                 localEndPoint: localEndPoint,
                 remoteEndPoint: remoteEndPoint,
-                transport: transport,
                 streamLifetimeHandler: streamLifetimeHandler,
                 streamContext: null,
                 clientPeerSettings: new Http3PeerSettings(),
                 serverPeerSettings: null
             );
             context.TimeoutControl = timeoutControl;
+            context.Transport = transport;
 
             return context;
         }

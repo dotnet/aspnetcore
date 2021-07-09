@@ -232,6 +232,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectReceiveEndOfStream();
 
+            await requestStream.OnStreamCompletedTask.DefaultTimeout();
+
             Assert.True(requestStream.Disposed);
 
             requestStream = await CreateRequestStream();
