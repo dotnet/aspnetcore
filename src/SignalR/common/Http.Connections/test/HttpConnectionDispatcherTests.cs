@@ -2875,8 +2875,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.WebSockets)]
         public async Task AuthenticationExpirationUsesCorrectScheme(HttpTransportType transportType)
         {
-            SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
-            JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
+            var SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+            var JwtTokenHandler = new JwtSecurityTokenHandler();
 
             using var host = CreateHost(services =>
                 {
@@ -3126,10 +3126,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         configureServices(services);
                         services.AddAuthorization();
 
-                        // Since tests run in parallel, it's possible multiple servers will startup and read files being written by another test
-                        // Use a unique directory per server to avoid this collision
-                        services.AddDataProtection()
-                            .PersistKeysToFileSystem(Directory.CreateDirectory(Path.GetRandomFileName()));
+                        // Since tests run in parallel, it's possible multiple servers will startup,
+                        // we use an ephemeral key provider to avoid filesystem contention issues
+                        services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
                     })
                     .Configure(app =>
                     {

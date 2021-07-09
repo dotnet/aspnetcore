@@ -114,10 +114,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         internal DateTimeOffset? AuthenticationExpiration
         {
             get => _authenticationExpiration;
-            set
-            {
-                _authenticationExpiration = value;
-            }
+            set => _authenticationExpiration = value;
         }
 
         public Task? TransportTask { get; set; }

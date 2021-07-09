@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             if (connectionContext.Features.Get<IConnectionLifetimeNotificationFeature>() is IConnectionLifetimeNotificationFeature lifetimeNotification)
             {
-                // This feature is used by HttpConnectionManager to gracefully close the connection on authentication expiration
+                // This feature is used by HttpConnectionManager to close the connection with a non-errored closed message on authentication expiration.
                 _closedRequestedRegistration = lifetimeNotification.ConnectionClosedRequested.Register(static (state) => ((HubConnectionContext)state!).AbortAllowReconnect(), this);
             }
 
