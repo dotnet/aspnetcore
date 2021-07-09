@@ -8,7 +8,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
-import { Arg } from "./Utils";
+import { Arg, getErrorString } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
@@ -547,7 +547,7 @@ export class HubConnection {
                             try {
                                 callback(message);
                             } catch (e) {
-                                this._logger.log(LogLevel.Error, `Stream callback threw error '${e}'.`);
+                                this._logger.log(LogLevel.Error, `Stream callback threw error: ${getErrorString(e)}`);
                             }
                         }
                         break;
@@ -837,7 +837,7 @@ export class HubConnection {
                 try {
                     callback(null, error);
                 } catch (e) {
-                    this._logger.log(LogLevel.Error, `Stream 'error' callback called with '${error}' threw error '${e}'.`);
+                    this._logger.log(LogLevel.Error, `Stream 'error' callback called with '${error}' threw error: ${getErrorString(e)}`);
                 }
             });
     }

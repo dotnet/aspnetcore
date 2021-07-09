@@ -266,3 +266,13 @@ function getRuntime(): string {
         return "Browser";
     }
 }
+
+/** @private */
+export function getErrorString(e: any): string {
+    if (e.stack) {
+        return e.stack;
+    } else if (e.message) {
+        return e.message;
+    }
+    return `${e}`;
+}

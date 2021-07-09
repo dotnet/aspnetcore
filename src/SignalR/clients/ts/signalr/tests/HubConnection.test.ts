@@ -1215,8 +1215,8 @@ describe("HubConnection", () => {
                 } finally {
                     await hubConnection.stop();
                 }
-            }, "Stream callback threw error 'Error: from complete'.",
-            "Stream callback threw error 'Error: from next'.");
+            }, /Stream callback threw error: Error: from complete/,
+            /Stream callback threw error: Error: from next/);
         });
 
         it("ignores error from 'error' function", async () => {
@@ -1239,7 +1239,7 @@ describe("HubConnection", () => {
                 } finally {
                     await hubConnection.stop();
                 }
-            }, "Stream 'error' callback called with 'Error: Invocation canceled due to the underlying connection being closed.' threw error 'Error: from error'.");
+            }, /Stream 'error' callback called with 'Error: Invocation canceled due to the underlying connection being closed.' threw error: Error: from error/);
         });
     });
 
