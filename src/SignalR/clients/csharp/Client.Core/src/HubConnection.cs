@@ -772,7 +772,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             catch (Exception ex)
             {
                 Log.ErroredStream(_logger, streamId, ex);
-                responseError = $"Stream errored by client: '{ex.Message}'";
+                responseError = $"Stream errored by client: '{ex}'";
             }
 
             Log.CompletingStream(_logger, streamId);

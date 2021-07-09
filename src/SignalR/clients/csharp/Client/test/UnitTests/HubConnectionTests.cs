@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 // the next sent message should be a completion message
                 var complete = await connection.ReadSentJsonAsync().DefaultTimeout();
                 Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
-                Assert.Equal("Stream errored by client: 'error from client'", ((string)complete["error"]));
+                Assert.StartsWith("Stream errored by client: 'System.Exception: error from client", ((string)complete["error"]));
             }
         }
 
