@@ -4411,6 +4411,130 @@ namespace Microsoft.AspNetCore.Components.Test
                 component => Assert.Same(exception, component.ReceivedException));
         }
 
+        [Fact]
+        public async Task CanRemoveRootComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.OpenComponent<DisposableComponent>(0);
+                builder.CloseComponent();
+
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.CloseComponent();
+            });
+            var unrelatedComponent = new DisposableComponent();
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            var unrelatedRootComponentId = renderer.AssignRootComponentId(unrelatedComponent);
+            rootComponent.TriggerRender();
+            unrelatedComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+
+            var nestedDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<DisposableComponent>().Single();
+            var nestedAsyncDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<AsyncDisposableComponent>().Single();
+
+            // Act
+            _ = renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(rootComponentId));
+
+            // Assert: we disposed the specified root component and its descendants, but not
+            // the other root component
+            Assert.Equal(3, renderer.Batches.Count);
+            var batch = renderer.Batches.Last();
+            Assert.Equal(new[]
+            {
+                rootComponentId,
+                nestedDisposableComponentFrame.ComponentId,
+                nestedAsyncDisposableComponentFrame.ComponentId,
+            }, batch.DisposedComponentIDs);
+
+            // Assert: component instances were disposed properly
+            Assert.True(((DisposableComponent)nestedDisposableComponentFrame.Component).Disposed);
+            Assert.True(((AsyncDisposableComponent)nestedAsyncDisposableComponentFrame.Component).Disposed);
+
+            // Assert: it's no longer known as a component
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                var ex = Assert.Throws<ArgumentException>(() =>
+                    renderer.RemoveRootComponent(rootComponentId));
+                Assert.Equal($"The renderer does not have a component with ID {rootComponentId}.", ex.Message);
+            });
+        }
+
+        [Fact]
+        public async Task CannotRemoveNonRootComponentsDirectly()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.OpenComponent<DisposableComponent>(0);
+                builder.CloseComponent();
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+
+            var nestedComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<DisposableComponent>().Single();
+            var nestedComponent = (DisposableComponent)nestedComponentFrame.Component;
+
+            // Act/Assert
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() =>
+                    renderer.RemoveRootComponent(nestedComponentFrame.ComponentId));
+                Assert.Equal("The specified component is not a root component", ex.Message);
+            });
+
+            Assert.False(nestedComponent.Disposed);
+        }
+
+        [Fact]
+        public void RemoveRootComponentHandlesDisposalExceptions()
+        {
+            // Arrange
+            var autoResetEvent = new AutoResetEvent(false);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled = () => autoResetEvent.Set();
+            var exception1 = new InvalidTimeZoneException();
+            var exception2Tcs = new TaskCompletionSource();
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<DisposableComponent>(1);
+                builder.AddAttribute(1, nameof(DisposableComponent.DisposeAction), (Action)(() => throw exception1));
+                builder.CloseComponent();
+
+                builder.OpenComponent<AsyncDisposableComponent>(2);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => await exception2Tcs.Task));
+                builder.CloseComponent();
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+            Assert.Single(renderer.Batches);
+
+            var nestedDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<DisposableComponent>().Single();
+            var nestedAsyncDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<AsyncDisposableComponent>().Single();
+
+            // Act
+            renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(rootComponentId));
+
+            // Assert: we get the synchronous exception synchronously
+            Assert.Same(exception1, Assert.Single(renderer.HandledExceptions));
+
+            // Assert: we get the asynchronous exception asynchronously
+            var exception2 = new InvalidTimeZoneException();
+            autoResetEvent.Reset();
+            exception2Tcs.SetException(exception2);
+            autoResetEvent.WaitOne();
+            Assert.Equal(2, renderer.HandledExceptions.Count);
+            Assert.Same(exception2, renderer.HandledExceptions[1]);
+        }
+
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
         {
             public List<Type> RequestedComponentTypes { get; } = new List<Type>();

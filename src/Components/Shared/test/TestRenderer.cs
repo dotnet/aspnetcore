@@ -55,6 +55,9 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
 
+        public new void RemoveRootComponent(int componentId)
+            => base.RemoveRootComponent(componentId);
+
         public new ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId)
             => base.GetCurrentRenderTreeFrames(componentId);
 

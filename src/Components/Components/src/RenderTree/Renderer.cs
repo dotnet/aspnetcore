@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
         private readonly ComponentFactory _componentFactory;
-        private List<(ComponentState, ParameterView)>? _rootComponents;
+        private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
 
         private int _nextComponentId;
         private bool _isBatchInProgress;
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             await Dispatcher.InvokeAsync(() =>
             {
-                if (_rootComponents is null)
+                if (_rootComponentsLatestParameters is null)
                 {
                     return;
                 }
@@ -142,9 +142,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 IsRenderingOnMetadataUpdate = true;
                 try
                 {
-                    foreach (var (componentState, initialParameters) in _rootComponents)
+                    foreach (var (componentId, parameters) in _rootComponentsLatestParameters)
                     {
-                        componentState.SetDirectParameters(initialParameters);
+                        var componentState = GetRequiredComponentState(componentId);
+                        componentState.SetDirectParameters(parameters);
                     }
                 }
                 finally
@@ -231,8 +232,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 // when we're doing hot-reload, stash away the parameters used while rendering root components.
                 // We'll use this to trigger re-renders on hot reload updates.
-                _rootComponents ??= new();
-                _rootComponents.Add((componentState, initialParameters.Clone()));
+                _rootComponentsLatestParameters ??= new();
+                _rootComponentsLatestParameters[componentId] = initialParameters.Clone();
             }
 
             componentState.SetDirectParameters(initialParameters);
@@ -246,6 +247,29 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 _pendingTasks = null;
             }
+        }
+
+        /// <summary>
+        /// Removes the specified component from the renderer, causing the component and its
+        /// descendants to be disposed.
+        /// </summary>
+        /// <param name="componentId">The ID of the root component.</param>
+        protected void RemoveRootComponent(int componentId)
+        {
+            Dispatcher.AssertAccess();
+
+            var rootComponentState = GetRequiredComponentState(componentId);
+            if (rootComponentState.ParentComponentState is not null)
+            {
+                throw new InvalidOperationException("The specified component is not a root component");
+            }
+
+            // This assumes there isn't currently a batch in progress, and will throw if there is.
+            // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
+            // during a batch, but if a scenario emerges we can add support.
+            _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
+            _rootComponentsLatestParameters?.Remove(componentId);
+            ProcessRenderQueue();
         }
 
         /// <summary>
@@ -544,7 +568,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (_batchBuilder.ComponentRenderQueue.Count == 0)
                 {
-                    return;
+                    if (_batchBuilder.ComponentDisposalQueue.Count == 0)
+                    {
+                        // Nothing to do
+                        return;
+                    }
+                    else
+                    {
+                        // Normally we process the disposal queue after each component rendering step,
+                        // but in this case disposal is the only pending action so far
+                        ProcessDisposalQueueInExistingBatch();
+                    }
                 }
 
                 // Process render queue until empty
@@ -714,9 +748,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 HandleExceptionViaErrorBoundary(renderFragmentException, componentState);
             }
 
-            List<Exception> exceptions = null;
-
             // Process disposal queue now in case it causes further component renders to be enqueued
+            ProcessDisposalQueueInExistingBatch();
+        }
+
+        private void ProcessDisposalQueueInExistingBatch()
+        {
+            List<Exception> exceptions = null;
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
