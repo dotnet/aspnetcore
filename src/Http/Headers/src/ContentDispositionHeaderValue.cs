@@ -30,7 +30,7 @@ namespace Microsoft.Net.Http.Headers
         private const string ModificationDateString = "modification-date";
         private const string ReadDateString = "read-date";
         private const string SizeString = "size";
-        private const int MaxStackSize = 256;
+        private const int MaxStackAllocSizeBytes = 256;
         private static readonly char[] QuestionMark = new char[] { '?' };
         private static readonly char[] SingleQuote = new char[] { '\'' };
         private static readonly char[] EscapeChars = new char[] { '\\', '"' };
@@ -551,8 +551,8 @@ namespace Microsoft.Net.Http.Headers
                 Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
                 MimeSuffix.Length;
             byte[]? bufferFromPool = null;
-            Span<byte> buffer = requiredLength <= MaxStackSize
-                ? stackalloc byte[MaxStackSize]
+            Span<byte> buffer = requiredLength <= MaxStackAllocSizeBytes
+                ? stackalloc byte[MaxStackAllocSizeBytes]
                 : bufferFromPool = ArrayPool<byte>.Shared.Rent(requiredLength);
             buffer = buffer[..requiredLength];
 
@@ -625,8 +625,8 @@ namespace Microsoft.Net.Http.Headers
 
             var maxInputBytes = Encoding.UTF8.GetMaxByteCount(input.Length);
             byte[]? bufferFromPool = null;
-            Span<byte> inputBytes = maxInputBytes <= MaxStackSize
-                ? stackalloc byte[MaxStackSize]
+            Span<byte> inputBytes = maxInputBytes <= MaxStackAllocSizeBytes
+                ? stackalloc byte[MaxStackAllocSizeBytes]
                 : bufferFromPool = ArrayPool<byte>.Shared.Rent(maxInputBytes);
 
             var bytesWritten = Encoding.UTF8.GetBytes(input, inputBytes);
