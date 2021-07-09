@@ -325,7 +325,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private static partial class Log
         {
-
             [LoggerMessage(1000, LogLevel.Debug,
                 "No candidates found for the request path '{Path}'",
                 EventName = "CandidatesNotFound",
