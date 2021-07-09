@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class HttpsConnectionMiddlewareTests : LoggedTest
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
-        private static X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
 
         [Fact]
         public async Task CanReadAndWriteWithHttpsConnectionMiddleware()

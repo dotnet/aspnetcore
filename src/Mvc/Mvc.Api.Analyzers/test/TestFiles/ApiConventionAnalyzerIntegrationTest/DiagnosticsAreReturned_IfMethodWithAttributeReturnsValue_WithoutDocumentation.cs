@@ -11,7 +11,7 @@
                 return NotFound();
             }
 
-            /*MM*/return new DiagnosticsAreReturned_IfMethodWithAttributeReturnsValue_WithoutDocumentationModel();
+            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttributeReturnsValue_WithoutDocumentationModel();
         }
     }
 

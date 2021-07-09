@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
         public IActionResult Get(int id)
         {
-            /*MM*/return Accepted();
+            return /*MM*/Accepted();
         }
     }
 }

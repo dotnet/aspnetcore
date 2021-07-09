@@ -148,8 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(2, 1)]
-        [InlineData(3, 1)]
+        [InlineData(3, 2)]
         [InlineData(4, 2)]
         [InlineData(5, 3)]
         [InlineData(7, 4)]

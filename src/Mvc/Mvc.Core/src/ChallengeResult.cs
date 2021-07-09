@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.ChallengeAsync"/>.
     /// </summary>
-    public class ChallengeResult : ActionResult, IResult
+    public class ChallengeResult : ActionResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ChallengeResult"/>.
@@ -91,24 +91,14 @@ namespace Microsoft.AspNetCore.Mvc
         public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
-        public override Task ExecuteResultAsync(ActionContext context)
+        public override async Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return ExecuteAsync(context.HttpContext);
-        }
-
-        /// <inheritdoc />
-        Task IResult.ExecuteAsync(HttpContext httpContext)
-        {
-            return ExecuteAsync(httpContext);
-        }
-
-        private async Task ExecuteAsync(HttpContext httpContext)
-        {
+            var httpContext = context.HttpContext;
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ChallengeResult>();
 

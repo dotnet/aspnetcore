@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanArriveAtPageWithOptionalParametersNotProvided()
         {
-            SetUrlViaPushState($"/WithOptionalParameters");
+            SetUrlViaPushState($"/WithOptionalParameters?query=ignored");
 
             var app = Browser.MountTestComponent<TestRouter>();
             var expected = $"Your age is .";
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanArriveAtPageWithCatchAllParameter()
         {
-            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042");
+            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042?query=ignored");
 
             var app = Browser.MountTestComponent<TestRouter>();
             var expected = $"The answer: life/the/universe/and/everything = 42.";
@@ -408,6 +408,110 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanNavigateProgrammaticallyValidateNoReplaceHistoryEntry()
+        {
+            // This test checks if default navigation does not replace Browser history entries
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
+
+            app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+            // We navigate to the /Other page
+            // This will also test our new NavigatTo(string uri) overload (it should not replace the browser history)
+            app.FindElement(By.Id("do-other-navigation")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+            AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            // After we press back, we should end up at the "/ProgrammaticNavigationCases" page so we know browser history has not been replaced
+            // If history had been replaced we would have ended up at the "/" page
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            AssertHighlightedLinks("Programmatic navigation cases");
+
+            // For completeness, we will test if the normal NavigateTo(string uri, bool forceLoad) overload will also
+            // NOT change the browser's history. So we basically repeat what we have done above.
+            app.FindElement(By.Id("do-other-navigation2")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+            AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            AssertHighlightedLinks("Programmatic navigation cases");
+
+            // Because this was client-side navigation, we didn't lose the state in the test selector
+            Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+
+            app.FindElement(By.Id("do-other-navigation-forced")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+
+            // We check if we had a force load
+            Assert.Throws<StaleElementReferenceException>(() =>
+                testSelector.SelectedOption.GetAttribute("value"));
+
+            // But still we should be able to navigate back, and end up at the "/ProgrammaticNavigationCases" page
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.WaitUntilTestSelectorReady();
+        }
+
+        [Fact]
+        public void CanNavigateProgrammaticallyWithReplaceHistoryEntry()
+        {
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
+
+            app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+            // We navigate to the /Other page, with "replace" enabled
+            app.FindElement(By.Id("do-other-navigation-replacehistoryentry")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+            AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            // After we press back, we should end up at the "/" page so we know browser history has been replaced
+            // If history would not have been replaced we would have ended up at the "/ProgrammaticNavigationCases" page
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/", StringComparison.Ordinal));
+            AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
+
+            // Because this was all with client-side navigation, we didn't lose the state in the test selector
+            Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanNavigateProgrammaticallyWithForceLoadAndReplaceHistoryEntry()
+        {
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
+
+            app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+            Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+            // We navigate to the /Other page, with replacehistroyentry and forceload enabled
+            app.FindElement(By.Id("do-other-navigation-forced-replacehistoryentry")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+
+            // We check if we had a force load
+            Assert.Throws<StaleElementReferenceException>(() =>
+                testSelector.SelectedOption.GetAttribute("value"));
+
+            // After we press back, we should end up at the "/" page so we know browser history has been replaced
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/", StringComparison.Ordinal));
+            Browser.WaitUntilTestSelectorReady();
+        }
+
+        [Fact]
         public void ClickingAnchorWithNoHrefShouldNotNavigate()
         {
             SetUrlViaPushState("/");
@@ -662,6 +766,91 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             IWebElement GetFocusedElement()
                 => Browser.SwitchTo().ActiveElement();
+        }
+
+        [Fact]
+        public void CanArriveAtQueryStringPageWithNoQuery()
+        {
+            SetUrlViaPushState("/WithQueryParameters/Abc");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)");
+        }
+
+        [Fact]
+        public void CanArriveAtQueryStringPageWithQuery()
+        {
+            SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
+        }
+
+        [Fact]
+        public void CanNavigateToQueryStringPageWithNoQuery()
+        {
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("With query parameters (none)")).Click();
+
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)");
+        }
+
+        [Fact]
+        public void CanNavigateBetweenPagesWithQueryStrings()
+        {
+            SetUrlViaPushState("/");
+
+            // Navigate to a page with querystring
+            var app = Browser.MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("With query parameters (passing string value)")).Click();
+
+            Browser.Equal("Hello Abc .", () => app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+            var instanceId = app.FindElement(By.Id("instance-id")).Text;
+            Assert.True(!string.IsNullOrWhiteSpace(instanceId));
+
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
+
+            // We can also navigate to a different query while retaining the same component instance
+            app.FindElement(By.LinkText("With IntValue and LongValues")).Click();
+            Browser.Equal("123", () => app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("3 values (50, 100, -20)", app.FindElement(By.Id("value-LongValues")).Text);
+            Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
+            AssertHighlightedLinks("With query parameters (none)");
+
+            // We can also click back to go the preceding query while retaining the same component instance
+            Browser.Navigate().Back();
+            Browser.Equal("0", () => app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+            Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
         }
 
         private long BrowserScrollY

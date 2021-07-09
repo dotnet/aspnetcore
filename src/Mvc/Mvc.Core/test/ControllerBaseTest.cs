@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -27,7 +26,7 @@ using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Core.Test
+namespace Microsoft.AspNetCore.Mvc
 {
     public class ControllerBaseTest
     {

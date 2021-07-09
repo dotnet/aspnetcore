@@ -28,9 +28,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
-            long maxBufferSize,
             long maximumIncomingBytes,
             TimeSpan jsInteropDefaultCallTimeout,
+            long pauseIncomingBytesThreshold = -1,
+            long resumeIncomingBytesThreshold = -1,
             CancellationToken cancellationToken = default)
         {
             // Enforce minimum 1 kb, maximum 50 kb, SignalR message size.
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
             var streamId = runtime.JSDataStreamNextInstanceId++;
-            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
         }
@@ -51,9 +52,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             long streamId,
             long totalLength,
-            long maxBufferSize,
             TimeSpan jsInteropDefaultCallTimeout,
-            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken)
+            long pauseIncomingBytesThreshold,
+            long resumeIncomingBytesThreshold,
+            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken)
         {
             _remoteJSRuntime = runtime;
         }

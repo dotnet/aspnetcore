@@ -31,24 +31,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             ConnectionClosed = _connectionClosedTokenSource.Token;
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
             Features.Set<IProtocolErrorCodeFeature>(this);
-
-            _log.AcceptedConnection(this);
-        }
-
-        public ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()
-        {
-            var stream = _connection.OpenUnidirectionalStream();
-            var context = new QuicStreamContext(stream, this, _context);
-            context.Start();
-            return new ValueTask<ConnectionContext>(context);
-        }
-
-        public ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
-        {
-            var stream = _connection.OpenBidirectionalStream();
-            var context = new QuicStreamContext(stream, this, _context);
-            context.Start();
-            return new ValueTask<ConnectionContext>(context);
         }
 
         public override async ValueTask DisposeAsync()
@@ -71,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public override void Abort(ConnectionAbortedException abortReason)
         {
             // dedup calls to abort here.
+            _log.ConnectionAbort(this, abortReason.Message);
             _closeTask = _connection.CloseAsync(errorCode: Error).AsTask();
         }
 
@@ -81,13 +64,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 var stream = await _connection.AcceptStreamAsync(cancellationToken);
                 var context = new QuicStreamContext(stream, this, _context);
                 context.Start();
+
+                _log.AcceptedStream(context);
+
                 return context;
             }
             catch (QuicConnectionAbortedException ex)
             {
                 // Shutdown initiated by peer, abortive.
-                // TODO cancel CTS here?
-                _log.LogDebug($"Accept loop ended with exception: {ex.Message}");
+                _log.ConnectionAborted(this, ex);
+
+                ThreadPool.UnsafeQueueUserWorkItem(state =>
+                {
+                    state.CancelConnectionClosedToken();
+                },
+                this,
+                preferLocal: false);
             }
             catch (QuicOperationAbortedException)
             {
@@ -99,13 +91,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             return null;
         }
 
+        private void CancelConnectionClosedToken()
+        {
+            try
+            {
+                _connectionClosedTokenSource.Cancel();
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(0, ex, $"Unexpected exception in {nameof(QuicConnectionContext)}.{nameof(CancelConnectionClosedToken)}.");
+            }
+        }
+
         public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
             QuicStream quicStream;
 
-            if (features != null)
+            var streamDirectionFeature = features?.Get<IStreamDirectionFeature>();
+            if (streamDirectionFeature != null)
             {
-                var streamDirectionFeature = features.Get<IStreamDirectionFeature>()!;
                 if (streamDirectionFeature.CanRead)
                 {
                     quicStream = _connection.OpenBidirectionalStream();
@@ -122,6 +126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             var context = new QuicStreamContext(quicStream, this, _context);
             context.Start();
+
+            _log.ConnectedStream(context);
 
             return new ValueTask<ConnectionContext>(context);
         }

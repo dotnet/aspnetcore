@@ -61,7 +61,7 @@ namespace RoutingWebSite
                 var results = new RouteValueDictionary();
                 foreach (var kvp in kvps)
                 {
-                    var split = kvp.Split("=");
+                    var split = kvp.Replace("%2F", "/", StringComparison.OrdinalIgnoreCase).Split("=");
                     results[split[0]] = split[1];
                 }
 

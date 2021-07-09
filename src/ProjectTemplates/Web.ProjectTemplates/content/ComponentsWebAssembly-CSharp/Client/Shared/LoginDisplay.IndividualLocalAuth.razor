@@ -7,7 +7,7 @@
 <AuthorizeView>
 @*#if (Hosted)
     <Authorized>
-        <a href="authentication/profile">Hello, @context.User.Identity.Name!</a>
+        <a href="authentication/profile">Hello, @context.User.Identity?.Name!</a>
         <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
     </Authorized>
     <NotAuthorized>
@@ -16,7 +16,7 @@
     </NotAuthorized>
   #else
     <Authorized>
-        Hello, @context.User.Identity.Name!
+        Hello, @context.User.Identity?.Name!
         <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
     </Authorized>
     <NotAuthorized>

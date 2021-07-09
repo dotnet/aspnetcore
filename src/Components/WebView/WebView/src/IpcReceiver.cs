@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Components.WebView
     internal class IpcReceiver
     {
         private readonly Func<string, string, Task> _onAttachMessage;
-        private WebEventJsonContext _jsonContext;
 
         public IpcReceiver(Func<string,string,Task> onAttachMessage)
         {
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebView
                         ReceiveByteArrayFromJS(pageContext, args[0].GetInt32(), args[1].GetBytesFromBase64());
                         break;
                     case IpcCommon.IncomingMessageType.DispatchBrowserEvent:
-                        await DispatchBrowserEventAsync(pageContext, args[0].GetRawText(), args[1].GetRawText());
+                        await DispatchBrowserEventAsync(pageContext, args[0], args[1]);
                         break;
                     case IpcCommon.IncomingMessageType.OnRenderCompleted:
                         OnRenderCompleted(pageContext, args[0].GetInt64(), args[1].GetString());
@@ -95,18 +94,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             DotNetDispatcher.ReceiveByteArray(pageContext.JSRuntime, id, data);
         }
 
-        private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
+        private Task DispatchBrowserEventAsync(PageContext pageContext, JsonElement eventDescriptor, JsonElement eventArgs)
         {
             var renderer = pageContext.Renderer;
-            // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
-            // of the serializer settings.
-            if (_jsonContext is null)
-            {
-                var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
-                _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
-            }
-
-            var webEventData = WebEventData.Parse(renderer, _jsonContext, eventDescriptor, eventArgs);
+            var webEventData = WebEventData.Parse(renderer, pageContext.JSRuntime.ReadJsonSerializerOptions(), eventDescriptor, eventArgs);
             return renderer.DispatchEventAsync(
                 webEventData.EventHandlerId,
                 webEventData.EventFieldInfo,

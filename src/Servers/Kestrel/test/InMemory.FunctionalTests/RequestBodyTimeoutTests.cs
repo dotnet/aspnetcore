@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "HTTP/1.1 408 Request Timeout",
                         "");
                     await connection.ReceiveEnd(
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {serviceContext.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -127,8 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // Disconnects after response completes due to the timeout
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {serviceContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -200,8 +200,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "HTTP/1.1 200 OK",
                         "");
                     await connection.ReceiveEnd(
-                        $"Date: {serviceContext.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "hello, world");
                 }

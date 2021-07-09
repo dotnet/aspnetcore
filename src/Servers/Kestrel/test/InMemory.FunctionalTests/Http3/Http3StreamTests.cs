@@ -261,19 +261,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath);
         }
 
-        [Fact]
-        public async Task SchemeMismatch_Reset()
+        [Theory]
+        [InlineData("https")]
+        [InlineData("ftp")]
+        public async Task SchemeMismatch_Reset(string scheme)
         {
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
 
-            // :path and :scheme are not allowed, :authority is optional
             var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "https") }; // Not the expected "http"
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
 
             await requestStream.SendHeadersAsync(headers, endStream: true);
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3StreamErrorSchemeMismatch("https", "http"));
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3StreamErrorSchemeMismatch(scheme, "http"));
+        }
+
+        [Theory]
+        [InlineData("https")]
+        [InlineData("ftp")]
+        public async Task SchemeMismatchAllowed_Processed(string scheme)
+        {
+            _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+                Assert.Equal(scheme, context.Request.Scheme);
+                return Task.CompletedTask;
+            });
+
+            var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+            Assert.Equal(3, responseHeaders.Count);
+            Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+            Assert.Equal("0", responseHeaders["content-length"]);
+        }
+
+        [Theory]
+        [InlineData("https,http")]
+        [InlineData("http://fakehost/")]
+        public async Task SchemeMismatchAllowed_InvalidScheme_Reset(string scheme)
+        {
+            _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3StreamErrorSchemeMismatch(scheme, "http"));
         }
 
         [Fact]
@@ -737,6 +783,103 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseHeaders_WithNonAscii_Throws()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            Assert.Equal(2, responseHeaders.Count);
+            Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task ResponseHeaders_WithNonAsciiAndCustomEncoder_Works()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+                context.Response.ContentType = "Custom 你好 Type";
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            Assert.Equal(4, responseHeaders.Count);
+            Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+            Assert.Equal("Custom 你好 Type", responseHeaders[HeaderNames.ContentType]);
+            Assert.Equal("Custom 你好 Value", responseHeaders["CustomName"]);
+        }
+
+        [Fact]
+        public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+                await context.Response.WriteAsync("Hello World");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, "");
+        }
+
+        [Fact]
         public async Task ResponseTrailers_WithData_Sent()
         {
             var headers = new[]
@@ -796,6 +939,106 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
             await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithNonAscii_Throws()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+                // ETag is one of the few special cased trailers. Accept is not.
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
+                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithNonAsciiAndCustomEncoder_Works()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF8; // Used for decoding response.
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+                context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+                // ETag is one of the few special cased trailers. Accept is not.
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
+                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Accept";
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            var responseTrailers = await requestStream.ExpectHeadersAsync();
+            Assert.Equal(3, responseTrailers.Count);
+            Assert.Equal("Custom 你好 Value", responseTrailers["CustomName"]);
+            Assert.Equal("Custom 你好 Tag", responseTrailers[HeaderNames.ETag]);
+            Assert.Equal("Custom 你好 Accept", responseTrailers[HeaderNames.Accept]);
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            _serviceContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello World", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, "");
         }
 
         [Fact]
@@ -2515,6 +2758,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // TODO(JamesNK): Check for abort of request side of stream after https://github.com/dotnet/aspnetcore/issues/31970
             Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
+        }
+
+        [Fact]
+        public async Task HEADERS_WriteLargeResponseHeaderSection_Success()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var headerText = string.Create(6 * 1024, new object(), (chars, state) =>
+            {
+                for (var i = 0; i < chars.Length; i++)
+                {
+                    chars[i] = (char)('0' + i % 10);
+                }
+            });
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    c.Response.Headers["Header" + i] = i + "-" + headerText;
+                }
+
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+
+            for (var i = 0; i < 10; i++)
+            {
+                Assert.Equal(i + "-" + headerText, responseHeaders["Header" + i]);
+            }
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task HEADERS_WriteLargeResponseHeaderSectionTrailers_Success()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var headerText = string.Create(6 * 1024, new object(), (chars, state) =>
+            {
+                for (var i = 0; i < chars.Length; i++)
+                {
+                    chars[i] = (char)('0' + i % 10);
+                }
+            });
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    c.Response.AppendTrailer("Header" + i, i + "-" + headerText);
+                }
+
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+
+            var responseTrailers = await requestStream.ExpectHeadersAsync();
+            for (var i = 0; i < 10; i++)
+            {
+                Assert.Equal(i + "-" + headerText, responseTrailers["Header" + i]);
+            }
+
+            await requestStream.ExpectReceiveEndOfStream();
         }
     }
 }

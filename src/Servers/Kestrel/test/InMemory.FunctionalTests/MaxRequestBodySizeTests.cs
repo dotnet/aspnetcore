@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -98,9 +98,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -142,8 +142,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "A");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 1",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "A");
                 }
@@ -169,13 +169,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "HTTP/1.1 413 Payload Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -214,8 +214,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         payload);
                     await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -295,9 +295,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -346,9 +346,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         chunkedPayload);
                     await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -392,8 +392,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         chunkedPayload + trailingHeaders);
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -459,13 +459,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         chunkedPayload);
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "HTTP/1.1 413 Payload Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -506,9 +506,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "1\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return NotFound();
             }
 
-            /*MM*/return new DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel();
+            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel();
         }
     }
 

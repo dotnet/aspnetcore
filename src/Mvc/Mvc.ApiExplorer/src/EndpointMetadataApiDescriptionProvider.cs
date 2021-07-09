@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -91,6 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {
+                    DisplayName = routeEndpoint.DisplayName,
                     RouteValues =
                     {
                         ["controller"] = controllerName,
@@ -167,6 +169,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                      parameter.ParameterType == typeof(HttpContext) ||
+                     parameter.ParameterType == typeof(HttpRequest) ||
+                     parameter.ParameterType == typeof(HttpResponse) ||
+                     parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
@@ -321,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         private static EndpointModelMetadata CreateModelMetadata(Type type) =>
-            new EndpointModelMetadata(ModelMetadataIdentity.ForType(type));
+            new(ModelMetadataIdentity.ForType(type));
 
         private static void AddResponseContentTypes(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
         {

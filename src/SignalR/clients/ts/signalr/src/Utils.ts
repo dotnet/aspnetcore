@@ -92,7 +92,7 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
                                   content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
-    let headers = {};
+    let headers: {[k: string]: string} = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {

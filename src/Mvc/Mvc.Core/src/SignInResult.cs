@@ -5,8 +5,6 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignInAsync"/>.
     /// </summary>
-    public class SignInResult : ActionResult, IResult
+    public class SignInResult : ActionResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="SignInResult"/> with the
@@ -86,17 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return ExecuteAsync(context.HttpContext);
-        }
-
-        /// <inheritdoc />
-        Task IResult.ExecuteAsync(HttpContext httpContext)
-        {
-            return ExecuteAsync(httpContext);
-        }
-
-        private Task ExecuteAsync(HttpContext httpContext)
-        {
+            var httpContext = context.HttpContext;
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<SignInResult>();
 

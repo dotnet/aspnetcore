@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Mvc.Core\src\Formatters\ResponseContentTypeHelper.cs" />
+    <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="..\..\Mvc.Core\src\Infrastructure\AsyncEnumerableReader.cs" />
   </ItemGroup>
 </Project>

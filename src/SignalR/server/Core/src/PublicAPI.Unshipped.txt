@@ -21,8 +21,6 @@
 *REMOVED*abstract Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub>.SendUsersAsync(System.Collections.Generic.IReadOnlyList<string!>! userIds, string! methodName, object?[]? args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.SignalR.IClientProxy.SendCoreAsync(string! method, object?[]? args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 *REMOVED*virtual Microsoft.AspNetCore.SignalR.HubConnectionContext.User.get -> System.Security.Claims.ClaimsPrincipal?
-*REMOVED*Microsoft.AspNetCore.SignalR.IHubContext<THub>.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients!
-*REMOVED*Microsoft.AspNetCore.SignalR.IHubContext<THub>.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
 Microsoft.AspNetCore.SignalR.IHubContext
 Microsoft.AspNetCore.SignalR.IHubContext.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients!
 Microsoft.AspNetCore.SignalR.IHubContext.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!

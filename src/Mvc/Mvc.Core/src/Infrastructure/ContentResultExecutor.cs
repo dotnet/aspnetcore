@@ -4,7 +4,9 @@
 #nullable enable
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 
@@ -48,7 +50,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 result.ContentType,
                 response.ContentType,
-                DefaultContentType,
+                (DefaultContentType, Encoding.UTF8),
+                MediaType.GetEncoding,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 

@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await connection.SendEmptyGet();
                 await connection.Receive(
                     "HTTP/1.1 200 OK",
-                    $"Date: {server.Context.DateHeaderValue}",
                     "Content-Length: 0",
+                    $"Date: {server.Context.DateHeaderValue}",
                     "",
                     "");
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Runtime.CompilerServices;
@@ -54,6 +54,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [Fact]
         public Task CodeFixWorksWhenMultipleIdenticalStatusCodesAreInError() => RunTest();
 
+        [Fact]
+        public Task CodeFixWorksOnExpressionBodiedMethod() => RunTest();
+
         private async Task RunTest([CallerMemberName] string testMethod = "")
         {
             // Arrange
@@ -64,6 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             // Act
             var diagnostics = await AnalyzerRunner.GetDiagnosticsAsync(project);
+            Assert.NotEmpty(diagnostics);
+
             var actualOutput = await CodeFixRunner.ApplyCodeFixAsync(
                 new AddResponseTypeAttributeCodeFixProvider(),
                 project.GetDocument(controllerDocument),
