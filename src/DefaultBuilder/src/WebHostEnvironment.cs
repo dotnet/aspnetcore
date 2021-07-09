@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
 
         public WebHostEnvironment(Assembly? callingAssembly)
         {
-            ContentRootPath = AppContext.BaseDirectory;
+            ContentRootPath = Directory.GetCurrentDirectory();
 
             ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty;
             EnvironmentName = Environments.Production;
@@ -105,20 +105,20 @@ namespace Microsoft.AspNetCore.Builder
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
 
-        
+
         public IFileProvider ContentRootFileProvider
         {
             get => _contentRootFileProvider;
             set => _contentRootFileProvider = value;
         }
-        
+
         public IFileProvider WebRootFileProvider
         {
             get => _webRootFileProvider;
             set => _webRootFileProvider = value;
         }
 
-        
+
         public string ContentRootPath
         {
             get => _contentRootPath;
@@ -128,10 +128,10 @@ namespace Microsoft.AspNetCore.Builder
                 if (Directory.Exists(_contentRootPath))
                 {
                     _contentRootFileProvider = new PhysicalFileProvider(_contentRootPath);
-                } 
+                }
             }
         }
-      
+
         public string WebRootPath
         {
             get => _webRootPath;
