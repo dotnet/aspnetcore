@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -253,6 +254,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((ClaimsPrincipal user) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
         }
 
@@ -302,10 +306,19 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(BindingSource.Body, fromBodyParam.Source);
         }
 
+        [Fact]
+        public void AddsDisplayNameFromRouteEndpoint()
+        {
+            var apiDescription = GetApiDescription(() => "foo", displayName: "FOO");
+
+            Assert.Equal("FOO", apiDescription.ActionDescriptor.DisplayName);
+        }
+
         private IList<ApiDescription> GetApiDescriptions(
             Delegate action,
             string pattern = null,
-            IEnumerable<string> httpMethods = null)
+            IEnumerable<string> httpMethods = null,
+            string displayName = null)
         {
             var methodInfo = action.Method;
             var attributes = methodInfo.GetCustomAttributes();
@@ -316,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var endpointMetadata = new EndpointMetadataCollection(metadataItems.ToArray());
             var routePattern = RoutePatternFactory.Parse(pattern ?? "/");
 
-            var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, null);
+            var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, displayName);
             var endpointDataSource = new DefaultEndpointDataSource(endpoint);
             var hostEnvironment = new HostEnvironment
             {
@@ -331,8 +344,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return context.Results;
         }
 
-        private ApiDescription GetApiDescription(Delegate action, string pattern = null) =>
-            Assert.Single(GetApiDescriptions(action, pattern));
+        private ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null) =>
+            Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName));
 
         private static void TestAction()
         {

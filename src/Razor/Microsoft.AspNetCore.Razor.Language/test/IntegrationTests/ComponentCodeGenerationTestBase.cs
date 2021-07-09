@@ -6792,5 +6792,96 @@ namespace Test
         }
 
         #endregion
+
+        #region LinePragmas
+
+        [Fact]
+        public void ProducesEnhancedLinePragmaWhenNecessary()
+        {
+            var generated = CompileToCSharp(@"
+<h1>Single line statement</h1>
+
+Time: @DateTime.Now
+
+<h1>Multiline block statement</h1>
+
+@JsonToHtml(@""{
+  'key1': 'value1'
+  'key2': 'value2'
+}"")
+
+@code {
+    public string JsonToHtml(string foo)
+    {
+        return foo;
+    }
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ProducesStandardLinePragmaForCSharpCode()
+        {
+            var generated = CompileToCSharp(@"
+<h1>Conditional statement</h1>
+@for (var i = 0; i < 10; i++)
+{
+    <p>@i</p>
+}
+
+<h1>Statements inside code block</h1>
+@{System.Console.WriteLine(1);System.Console.WriteLine(2);}
+
+<h1>Full-on code block</h1>
+@code {
+    [Parameter]
+    public int IncrementAmount { get; set; }
+}
+", throwOnFailure: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+        }
+
+        [Fact]
+        public void CanProduceLinePragmasForComponentWithRenderFragment()
+        {
+            var generated = CompileToCSharp(@"
+<div class=""row"">
+  <a href=""#"" @onclick=Toggle class=""col-12"">@ActionText</a>
+  @if (!Collapsed)
+  {
+    <div class=""col-12 card card-body"">
+      @ChildContent
+    </div>
+  }
+</div>
+@code
+{
+  [Parameter]
+  public RenderFragment ChildContent { get; set; } = (context) => <p>@context</p>
+  [Parameter]
+  public bool Collapsed { get; set; }
+  string ActionText { get => Collapsed ? ""Expand"" : ""Collapse""; }
+  void Toggle()
+  {
+    Collapsed = !Collapsed;
+  }
+}", throwOnFailure: false);
+
+// Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+        }
+
+        #endregion
     }
 }

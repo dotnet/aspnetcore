@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -115,11 +116,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public InMemoryHttpClientSlim HttpClientSlim { get; }
 
-        public InMemoryConnection CreateConnection()
+        public InMemoryConnection CreateConnection(Encoding encoding = null)
         {
             var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
             _transportFactory.AddConnection(transportConnection);
-            return new InMemoryConnection(transportConnection);
+            return new InMemoryConnection(transportConnection, encoding);
         }
 
         public Task StopAsync(CancellationToken cancellationToken = default)

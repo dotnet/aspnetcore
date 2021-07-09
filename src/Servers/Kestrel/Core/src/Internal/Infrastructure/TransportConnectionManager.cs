@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _connectionManager = connectionManager;
         }
 
+        public long GetNewConnectionId() => _connectionManager.GetNewConnectionId();
+
         public void AddConnection(long id, KestrelConnection connection)
         {
             var connectionReference = new ConnectionReference(id, connection, this);

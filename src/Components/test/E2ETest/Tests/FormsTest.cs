@@ -272,6 +272,67 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputSelectInteractsWithEditContext_MultipleAttribute()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var citiesInput = new SelectElement(appElement.FindElement(By.ClassName("cities")).FindElement(By.TagName("select")));
+            var select = citiesInput.WrappedElement;
+            var messagesAccesor = CreateValidationMessagesAccessor(appElement);
+
+            // Binding applies to option selection
+            Browser.Equal(new[] { "SanFrancisco" }, () => citiesInput.AllSelectedOptions.Select(option => option.GetAttribute("value")));
+
+            // Validates on edit
+            Browser.Equal("valid", () => select.GetAttribute("class"));
+            citiesInput.SelectByIndex(2);
+            Browser.Equal("modified valid", () => select.GetAttribute("class"));
+
+            // Can become invalid
+            citiesInput.SelectByIndex(1);
+            citiesInput.SelectByIndex(3);
+            Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+            Browser.Equal(new[] { "The field SelectedCities must be a string or array type with a maximum length of '3'." }, messagesAccesor);
+        }
+
+        [Fact]
+        public void InputSelectIgnoresMultipleAttribute()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
+            var select = ticketClassInput.WrappedElement;
+
+            // Select does not have the 'multiple' attribute
+            Browser.False(() => ticketClassInput.IsMultiple);
+
+            // Check initial selection
+            Browser.Equal("Economy class", () => ticketClassInput.SelectedOption.Text);
+
+            ticketClassInput.SelectByText("First class");
+
+            // Only one option selected
+            Browser.Equal(1, () => ticketClassInput.AllSelectedOptions.Count);
+        }
+
+        [Fact]
+        public void InputSelectHandlesHostileStringValues()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var selectParagraph = appElement.FindElement(By.ClassName("select-multiple-hostile"));
+            var hostileSelectInput = new SelectElement(selectParagraph.FindElement(By.TagName("select")));
+            var select = hostileSelectInput.WrappedElement;
+            var hostileSelectLabel = selectParagraph.FindElement(By.TagName("span"));
+
+            // Check initial selection
+            Browser.Equal(new[] { "\"", "{" }, () => hostileSelectInput.AllSelectedOptions.Select(o => o.Text));
+
+            hostileSelectInput.DeselectByIndex(0);
+            hostileSelectInput.SelectByIndex(2);
+
+            // Bindings work from JS -> C#
+            Browser.Equal("{,", () => hostileSelectLabel.Text);
+        }
+
+        [Fact]
         public void InputCheckboxInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
@@ -544,6 +605,40 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void SelectWithMultipleAttributeCanBindValue()
+        {
+            var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
+            var select = new SelectElement(appElement.FindElement(By.Id("select-cities")));
+
+            // Assert that the binding works in the .NET -> JS direction
+            Browser.Equal(new[] { "\"sf\"", "\"sea\"" }, () => select.AllSelectedOptions.Select(option => option.GetAttribute("value")));
+
+            select.DeselectByIndex(0);
+            select.SelectByIndex(1);
+            select.SelectByIndex(2);
+
+            var label = appElement.FindElement(By.Id("selected-cities-label"));
+
+            // Assert that the binding works in the JS -> .NET direction
+            Browser.Equal("\"la\", \"pdx\", \"sea\"", () => label.Text);
+        }
+
+        [Fact]
+        public void SelectWithMultipleAttributeCanUseOnChangedCallback()
+        {
+            var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
+            var select = new SelectElement(appElement.FindElement(By.Id("select-cars")));
+
+            select.SelectByIndex(2);
+            select.SelectByIndex(3);
+
+            var label = appElement.FindElement(By.Id("selected-cars-label"));
+
+            // Assert that the callback was invoked and the selected options were correctly passed.
+            Browser.Equal("opel, audi", () => label.Text);
+        }
+
+        [Fact]
         public void RespectsCustomFieldCssClassProvider()
         {
             var appElement = MountTypicalValidationComponent();
@@ -608,8 +703,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var rangeWithValueLast = appElement.FindElement(By.Id("range-value-last"));
 
             // Value never gets incorrectly clamped.
-            Browser.Equal("210", () => rangeWithValueFirst.GetProperty("value"));
-            Browser.Equal("210", () => rangeWithValueLast.GetProperty("value"));
+            Browser.Equal("210", () => rangeWithValueFirst.GetDomProperty("value"));
+            Browser.Equal("210", () => rangeWithValueLast.GetDomProperty("value"));
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <SpaRoot>ClientApp\</SpaRoot>
     <SpaProxyServerUrl Condition="'$(RequiresHttps)' == 'True'">https://localhost:5002</SpaProxyServerUrl>

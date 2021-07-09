@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -18,18 +19,19 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class GenericWebHostService : IHostedService
+    internal sealed partial class GenericWebHostService : IHostedService
     {
-        public GenericWebHostService(IOptions<GenericWebHostServiceOptions> options,
-                                     IServer server,
-                                     ILoggerFactory loggerFactory,
-                                     DiagnosticListener diagnosticListener,
-                                     ActivitySource activitySource,
-                                     IHttpContextFactory httpContextFactory,
-                                     IApplicationBuilderFactory applicationBuilderFactory,
-                                     IEnumerable<IStartupFilter> startupFilters,
-                                     IConfiguration configuration,
-                                     IWebHostEnvironment hostingEnvironment)
+        public GenericWebHostService(
+            IOptions<GenericWebHostServiceOptions> options,
+            IServer server,
+            ILoggerFactory loggerFactory,
+            DiagnosticListener diagnosticListener,
+            ActivitySource activitySource,
+            IHttpContextFactory httpContextFactory,
+            IApplicationBuilderFactory applicationBuilderFactory,
+            IEnumerable<IStartupFilter> startupFilters,
+            IConfiguration configuration,
+            IWebHostEnvironment hostingEnvironment)
         {
             Options = options.Value;
             Server = server;
@@ -122,7 +124,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var address in addresses)
                 {
-                    LifetimeLogger.ListeningOnAddress(address);
+                    Log.ListeningOnAddress(LifetimeLogger, address);
                 }
             }
 
@@ -130,7 +132,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var assembly in Options.WebHostOptions.GetFinalHostingStartupAssemblies())
                 {
-                    Logger.StartupAssemblyLoaded(assembly);
+                    Log.StartupAssemblyLoaded(Logger, assembly);
                 }
             }
 
@@ -153,6 +155,20 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 HostingEventSource.Log.HostStop();
             }
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(14, LogLevel.Information,
+                "Now listening on: {address}",
+                EventName = "ListeningOnAddress")]
+            public static partial void ListeningOnAddress(ILogger logger, string address);
+
+            [LoggerMessage(13, LogLevel.Debug,
+                "Loaded hosting startup assembly {assemblyName}",
+                EventName = "HostingStartupAssemblyLoaded",
+                SkipEnabledCheck = true)]
+            public static partial void StartupAssemblyLoaded(ILogger logger, string assemblyName);
         }
     }
 }

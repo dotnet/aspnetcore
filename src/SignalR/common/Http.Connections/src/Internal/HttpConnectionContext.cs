@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object?>? _items;
-        private CancellationTokenSource _connectionClosedTokenSource;
+        private readonly CancellationTokenSource _connectionClosedTokenSource;
 
         private CancellationTokenSource? _sendCts;
         private bool _activeSend;

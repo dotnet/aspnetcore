@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
-        private HttpConnectionOptions _httpConnectionOptions;
+        private readonly HttpConnectionOptions _httpConnectionOptions;
 
         private IDuplexPipe? _transport;
 

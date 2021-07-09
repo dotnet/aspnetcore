@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             null,
         };
 
-        private TimeSpan?[] _retryDelays;
+        private readonly TimeSpan?[] _retryDelays;
 
         public DefaultRetryPolicy()
         {

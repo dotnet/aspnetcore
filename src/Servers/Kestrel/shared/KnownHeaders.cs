@@ -329,13 +329,15 @@ namespace CodeGenerator
             var header = group.Header;
             if (header.Name == HeaderNames.ContentLength)
             {
-                return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(HeaderNames.ContentLength);
+                    if (customEncoding == null)
                     {{
                         AppendContentLength(value);
                     }}
                     else
                     {{
-                        AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        AppendContentLengthCustomEncoding(value, customEncoding);
                     }}
                     return true;";
             }
@@ -370,13 +372,15 @@ namespace CodeGenerator
                 if (header.Name == HeaderNames.ContentLength)
                 {
                     return $@"
-                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                        {extraIndent}var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        {extraIndent}   ? null : EncodingSelector(HeaderNames.ContentLength);
+                        {extraIndent}if (customEncoding == null)
                         {extraIndent}{{
                         {extraIndent}    AppendContentLength(value);
                         {extraIndent}}}
                         {extraIndent}else
                         {extraIndent}{{
-                        {extraIndent}    AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        {extraIndent}    AppendContentLengthCustomEncoding(value, customEncoding);
                         {extraIndent}}}
                         {extraIndent}return;";
                 }
@@ -769,11 +773,13 @@ namespace CodeGenerator
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
@@ -857,7 +863,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var flag = {header.FlagBit()};
                 if (value.Count > 0)
-                {{
+                {{{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);" : "")}
                     _bits |= flag;
                     _headers._{header.Identifier} = value;
                 }}
@@ -883,8 +890,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
-
+                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);" : "")}
                 SetValueUnknown(HeaderNames.{header}, value);
             }}
         }}")}
@@ -947,7 +954,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -978,7 +985,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -1150,52 +1157,65 @@ $@"        private void Clear(long bitsToClear)
         }}
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
-            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x" , CultureInfo.InvariantCulture)}L : 0);
-            var next = 0;
-            var keyStart = 0;
-            var keyLength = 0;
-            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var tempBits = (ulong)_bits;
+            // Set exact next
+            var next = BitOperations.TrailingZeroCount(tempBits);
 
+            // Output Content-Length now as it isn't contained in the bit flags.
+            if (_contentLength.HasValue)
+            {{
+                output.Write(HeaderBytes.Slice(640, 18));
+                output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
+            }}
+            if (tempBits == 0)
+            {{
+                return;
+            }}
+
+            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
             do
             {{
+                int keyStart;
+                int keyLength;
+                var headerName = string.Empty;
                 switch (next)
-                {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
-                    case {hi.Index}: // Header: ""{hi.Header.Name}""
-                        if ({hi.Header.TestTempBit()})
+                {{{Each(loop.Headers.OrderBy(h => h.Index).Where(h => h.Identifier != "ContentLength"), header => $@"
+                    case {header.Index}: // Header: ""{header.Name}""
+                        Debug.Assert({header.TestTempBit()});{(header.EnhancedSetter == false ? $@"
+                        values = ref _headers._{header.Identifier};
+                        keyStart = {header.BytesOffset};
+                        keyLength = {header.BytesCount};" : $@"
+                        if (_headers._raw{header.Identifier} != null)
                         {{
-                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x" , CultureInfo.InvariantCulture)}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
-                            values = ref _headers._{hi.Header.Identifier};
-                            keyStart = {hi.Header.BytesOffset};
-                            keyLength = {hi.Header.BytesCount};
-                            next = {hi.Index + 1};
-                            break; // OutputHeader" : $@"
-                            if (_headers._raw{hi.Header.Identifier} != null)
-                            {{
-                                output.Write(_headers._raw{hi.Header.Identifier});
-                            }}
-                            else
-                            {{
-                                values = ref _headers._{hi.Header.Identifier};
-                                keyStart = {hi.Header.BytesOffset};
-                                keyLength = {hi.Header.BytesCount};
-                                next = {hi.Index + 1};
-                                break; // OutputHeader
-                            }}")}" : $@"
-                            output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
-                            output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
-                            if (tempBits == 0)
-                            {{
-                                return;
-                            }}")}
+                            // Clear and set next as not using common output.
+                            tempBits ^= {"0x" + (1L << header.Index).ToString("x", CultureInfo.InvariantCulture)}L;
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._raw{header.Identifier});
+                            continue; // Jump to next, already output header
                         }}
-                        {(hi.Index + 1 < loop.Headers.Length ? $"goto case {hi.Index + 1};" : "return;")}")}
+                        else
+                        {{
+                            values = ref _headers._{header.Identifier};
+                            keyStart = {header.BytesOffset};
+                            keyLength = {header.BytesCount};
+                            headerName = HeaderNames.{header.Identifier};
+                        }}")}
+                        break; // OutputHeader
+")}
                     default:
+                        ThrowInvalidHeaderBits();
                         return;
                 }}
 
                 // OutputHeader
                 {{
+                    // Clear bit
+                    tempBits ^= (1UL << next);
+                    var encoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(headerName);
                     var valueCount = values.Count;
+                    Debug.Assert(valueCount > 0);
+
                     var headerKey = HeaderBytes.Slice(keyStart, keyLength);
                     for (var i = 0; i < valueCount; i++)
                     {{
@@ -1203,9 +1223,18 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            output.WriteAscii(value);
+                            if (encoding is null)
+                            {{
+                                output.WriteAscii(value);
+                            }}
+                            else
+                            {{
+                                output.WriteEncoded(value, encoding);
+                            }}
                         }}
                     }}
+                    // Set exact next
+                    next = BitOperations.TrailingZeroCount(tempBits);
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"

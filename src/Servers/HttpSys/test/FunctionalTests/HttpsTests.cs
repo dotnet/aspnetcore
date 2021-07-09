@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     public class HttpsTests
     {
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate("eku.client.pfx");
+
         [ConditionalFact]
         public async Task Https_200OK_Success()
         {
@@ -66,38 +68,61 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        [ConditionalFact]
-        public async Task Https_ClientCertNotSent_ClientCertNotPresent()
+        [ConditionalTheory]
+        [InlineData(ClientCertificateMethod.NoCertificate)]
+        [InlineData(ClientCertificateMethod.AllowCertificate)]
+        [InlineData(ClientCertificateMethod.AllowRenegotation)]
+        public async Task Https_ClientCertNotSent_ClientCertNotPresent(ClientCertificateMethod clientCertificateMethod)
         {
-            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            using (Utilities.CreateDynamicHttpsServer("", out var root, out var address, options =>
+            {
+                options.ClientCertificateMethod = clientCertificateMethod;
+            },
+            async httpContext =>
             {
                 var tls = httpContext.Features.Get<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
+                Assert.Null(tls.ClientCertificate);
                 var cert = await tls.GetClientCertificateAsync(CancellationToken.None);
                 Assert.Null(cert);
                 Assert.Null(tls.ClientCertificate);
             }))
             {
-                string response = await SendRequestAsync(address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }
         }
 
-        [ConditionalFact(Skip = "Manual test only, client certs are not always available.")]
-        public async Task Https_ClientCertRequested_ClientCertPresent()
+        [ConditionalTheory]
+        [InlineData(ClientCertificateMethod.NoCertificate)]
+        [InlineData(ClientCertificateMethod.AllowCertificate)]
+        [InlineData(ClientCertificateMethod.AllowRenegotation)]
+        public async Task Https_ClientCertRequested_ClientCertPresent(ClientCertificateMethod clientCertificateMethod)
         {
-            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            using (Utilities.CreateDynamicHttpsServer("", out var root, out var address, options =>
+            {
+                options.ClientCertificateMethod = clientCertificateMethod;
+            },
+            async httpContext =>
             {
                 var tls = httpContext.Features.Get<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
+                Assert.Null(tls.ClientCertificate);
                 var cert = await tls.GetClientCertificateAsync(CancellationToken.None);
-                Assert.NotNull(cert);
-                Assert.NotNull(tls.ClientCertificate);
+                if (clientCertificateMethod == ClientCertificateMethod.AllowRenegotation)
+                {
+                    Assert.NotNull(cert);
+                    Assert.NotNull(tls.ClientCertificate);
+                }
+                else
+                {
+                    Assert.Null(cert);
+                    Assert.Null(tls.ClientCertificate);
+                }
             }))
             {
-                X509Certificate2 cert = FindClientCert();
-                Assert.NotNull(cert);
-                string response = await SendRequestAsync(address, cert);
+                Assert.NotNull(_x509Certificate2);
+                var response = await SendRequestAsync(address, _x509Certificate2);
                 Assert.Equal(string.Empty, response);
             }
         }

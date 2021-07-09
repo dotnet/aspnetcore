@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Creates <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
     /// </summary>
-    public static class RequestDelegateFactory
+    public static partial class RequestDelegateFactory
     {
         private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -45,6 +46,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request));
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Response));
         private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestAborted));
+        private static readonly MemberExpression UserExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.User));
         private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
         private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
         private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
@@ -220,6 +222,18 @@ namespace Microsoft.AspNetCore.Http
             else if (parameter.ParameterType == typeof(HttpContext))
             {
                 return HttpContextExpr;
+            }
+            else if (parameter.ParameterType == typeof(HttpRequest))
+            {
+                return HttpRequestExpr;
+            }
+            else if (parameter.ParameterType == typeof(HttpResponse))
+            {
+                return HttpResponseExpr;
+            }
+            else if (parameter.ParameterType == typeof(ClaimsPrincipal))
+            {
+                return UserExpr;
             }
             else if (parameter.ParameterType == typeof(CancellationToken))
             {
@@ -734,37 +748,27 @@ namespace Microsoft.AspNetCore.Http
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, Exception> _requestBodyIOException = LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(1, "RequestBodyIOException"),
-                "Reading the request body failed with an IOException.");
-
-            private static readonly Action<ILogger, Exception> _requestBodyInvalidDataException = LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(2, "RequestBodyInvalidDataException"),
-                "Reading the request body failed with an InvalidDataException.");
-
-            private static readonly Action<ILogger, string, string, string, Exception?> _parameterBindingFailed = LoggerMessage.Define<string, string, string>(
-                LogLevel.Debug,
-                new EventId(3, "ParamaterBindingFailed"),
-                @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from ""{SourceValue}"".");
-
             public static void RequestBodyIOException(HttpContext httpContext, IOException exception)
-            {
-                _requestBodyIOException(GetLogger(httpContext), exception);
-            }
+                => RequestBodyIOException(GetLogger(httpContext), exception);
+
+            [LoggerMessage(1, LogLevel.Debug, "Reading the request body failed with an IOException.", EventName = "RequestBodyIOException")]
+            private static partial void RequestBodyIOException(ILogger logger, IOException exception);
 
             public static void RequestBodyInvalidDataException(HttpContext httpContext, InvalidDataException exception)
-            {
-                _requestBodyInvalidDataException(GetLogger(httpContext), exception);
-            }
+                => RequestBodyInvalidDataException(GetLogger(httpContext), exception);
+
+            [LoggerMessage(2, LogLevel.Debug, "Reading the request body failed with an InvalidDataException.", EventName = "RequestBodyInvalidDataException")]
+            private static partial void RequestBodyInvalidDataException(ILogger logger, InvalidDataException exception);
 
             public static void ParameterBindingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, string sourceValue)
-            {
-                _parameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue, null);
-            }
+                => ParameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue);
+
+            [LoggerMessage(3, LogLevel.Debug,
+                @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from ""{SourceValue}"".",
+                EventName = "ParamaterBindingFailed")]
+            private static partial void ParameterBindingFailed(ILogger logger, string parameterType, string parameterName, string sourceValue);
 
             private static ILogger GetLogger(HttpContext httpContext)
             {

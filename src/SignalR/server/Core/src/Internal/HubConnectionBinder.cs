@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal class HubConnectionBinder<THub> : IInvocationBinder where THub : Hub
     {
-        private HubDispatcher<THub> _dispatcher;
-        private HubConnectionContext _connection;
+        private readonly HubDispatcher<THub> _dispatcher;
+        private readonly HubConnectionContext _connection;
 
         public HubConnectionBinder(HubDispatcher<THub> dispatcher, HubConnectionContext connection)
         {

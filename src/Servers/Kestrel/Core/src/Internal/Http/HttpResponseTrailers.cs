@@ -5,12 +5,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpResponseTrailers : HttpHeaders
     {
+        public Func<string, Encoding?> EncodingSelector { get; set; }
+
+        public HttpResponseTrailers(Func<string, Encoding?>? encodingSelector = null)
+        {
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
+        }
+
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);

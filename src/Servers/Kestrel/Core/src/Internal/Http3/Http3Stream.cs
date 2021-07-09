@@ -685,15 +685,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // ":scheme" is not restricted to "http" and "https" schemed URIs.  A
             // proxy or gateway can translate requests for non - HTTP schemes,
             // enabling the use of HTTP to interact with non - HTTP services.
-
-            // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
-            // - For now we'll restrict it to http/s and require it match the transport.
-            // - We'll need to find some concrete scenarios to warrant unblocking this.
-            if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
+            var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            if (!ReferenceEquals(headerScheme, Scheme) &&
+                !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
-                var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme);
-                Abort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
-                return false;
+                if (!ServerOptions.AllowAlternateSchemes || !Uri.CheckSchemeName(headerScheme))
+                {
+                    var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme);
+                    Abort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
+                    return false;
+                }
+
+                Scheme = headerScheme;
             }
 
             // :path (and query) - Required

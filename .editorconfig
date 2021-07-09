@@ -244,6 +244,9 @@ dotnet_diagnostic.CA1846.severity = suggestion
 dotnet_diagnostic.CA2008.severity = suggestion
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = suggestion
+# IDE0044: Make field readonly
+dotnet_diagnostic.IDE0044.severity = suggestion
+
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion

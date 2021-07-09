@@ -130,6 +130,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Before re-rendering the root component, also clear any well-known caches in the framework
             _componentFactory.ClearCache();
             ComponentProperties.ClearCache();
+            Routing.QueryParameterValueSupplier.ClearCache();
 
             await Dispatcher.InvokeAsync(() =>
             {

@@ -17,23 +17,23 @@ namespace Microsoft.AspNetCore.Http.Connections
     public static class NegotiateProtocol
     {
         private const string ConnectionIdPropertyName = "connectionId";
-        private static JsonEncodedText ConnectionIdPropertyNameBytes = JsonEncodedText.Encode(ConnectionIdPropertyName);
+        private static readonly JsonEncodedText ConnectionIdPropertyNameBytes = JsonEncodedText.Encode(ConnectionIdPropertyName);
         private const string ConnectionTokenPropertyName = "connectionToken";
-        private static JsonEncodedText ConnectionTokenPropertyNameBytes = JsonEncodedText.Encode(ConnectionTokenPropertyName);
+        private static readonly JsonEncodedText ConnectionTokenPropertyNameBytes = JsonEncodedText.Encode(ConnectionTokenPropertyName);
         private const string UrlPropertyName = "url";
-        private static JsonEncodedText UrlPropertyNameBytes = JsonEncodedText.Encode(UrlPropertyName);
+        private static readonly JsonEncodedText UrlPropertyNameBytes = JsonEncodedText.Encode(UrlPropertyName);
         private const string AccessTokenPropertyName = "accessToken";
-        private static JsonEncodedText AccessTokenPropertyNameBytes = JsonEncodedText.Encode(AccessTokenPropertyName);
+        private static readonly JsonEncodedText AccessTokenPropertyNameBytes = JsonEncodedText.Encode(AccessTokenPropertyName);
         private const string AvailableTransportsPropertyName = "availableTransports";
-        private static JsonEncodedText AvailableTransportsPropertyNameBytes = JsonEncodedText.Encode(AvailableTransportsPropertyName);
+        private static readonly JsonEncodedText AvailableTransportsPropertyNameBytes = JsonEncodedText.Encode(AvailableTransportsPropertyName);
         private const string TransportPropertyName = "transport";
-        private static JsonEncodedText TransportPropertyNameBytes = JsonEncodedText.Encode(TransportPropertyName);
+        private static readonly JsonEncodedText TransportPropertyNameBytes = JsonEncodedText.Encode(TransportPropertyName);
         private const string TransferFormatsPropertyName = "transferFormats";
-        private static JsonEncodedText TransferFormatsPropertyNameBytes = JsonEncodedText.Encode(TransferFormatsPropertyName);
+        private static readonly JsonEncodedText TransferFormatsPropertyNameBytes = JsonEncodedText.Encode(TransferFormatsPropertyName);
         private const string ErrorPropertyName = "error";
-        private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
+        private static readonly JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
         private const string NegotiateVersionPropertyName = "negotiateVersion";
-        private static JsonEncodedText NegotiateVersionPropertyNameBytes = JsonEncodedText.Encode(NegotiateVersionPropertyName);
+        private static readonly JsonEncodedText NegotiateVersionPropertyNameBytes = JsonEncodedText.Encode(NegotiateVersionPropertyName);
 
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         // Used to detect ASP.NET SignalR Server connection attempt

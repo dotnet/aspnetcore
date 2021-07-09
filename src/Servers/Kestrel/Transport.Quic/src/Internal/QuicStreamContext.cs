@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
     {
-        private Task _processingTask = Task.CompletedTask;
+        // Internal for testing.
+        internal Task _processingTask = Task.CompletedTask;
+
         private readonly QuicStream _stream;
         private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
@@ -126,6 +128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // This could be ignored if _shutdownReason is already set.
                 error = new ConnectionResetException(ex.Message, ex);
+
+                _log.StreamAbort(this, error.Message);
             }
             catch (Exception ex)
             {
@@ -216,7 +220,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
-
         private async Task DoSend()
         {
             Exception? shutdownReason = null;
@@ -234,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _log.ConnectionError(this, unexpectedError);
+                _log.StreamError(this, unexpectedError);
             }
             finally
             {
@@ -295,8 +298,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             lock (_shutdownLock)
             {
-                _stream.AbortRead(Error);
-                _stream.AbortWrite(Error);
+                if (_stream.CanRead)
+                {
+                    _stream.AbortRead(Error);
+                }
+                if (_stream.CanWrite)
+                {
+                    _stream.AbortWrite(Error);
+                }
             }
 
             // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.

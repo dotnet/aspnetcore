@@ -28,7 +28,7 @@
     @*#if (IndividualAuth || OrganizationalAuth)
                     <partial name="_LoginPartial" />
     #elseif (WindowsAuth)
-                    <p class="nav navbar-text">Hello, @User.Identity.Name!</p>
+                    <p class="nav navbar-text">Hello, @User.Identity?.Name!</p>
     #endif*@
                 </div>
             </div>

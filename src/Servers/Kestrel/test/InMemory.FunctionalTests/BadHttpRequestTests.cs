@@ -225,9 +225,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var lines = new[]
             {
                 $"HTTP/1.1 {expectedResponseStatusCode}",
+                "Content-Length: 0",
                 "Connection: close",
                 $"Date: {expectedDateHeaderValue}",
-                "Content-Length: 0",
                 expectedAllowHeader,
                 "",
                 ""

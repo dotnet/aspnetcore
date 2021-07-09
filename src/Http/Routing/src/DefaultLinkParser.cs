@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class DefaultLinkParser : LinkParser, IDisposable
+    internal sealed partial class DefaultLinkParser : LinkParser, IDisposable
     {
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly ILogger<DefaultLinkParser> _logger;
@@ -169,72 +169,46 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-#nullable disable
-        private static class Log
+        private static partial class Log
         {
-            public static class EventIds
-            {
-                public static readonly EventId EndpointsFound = new EventId(100, "EndpointsFound");
-                public static readonly EventId EndpointsNotFound = new EventId(101, "EndpointsNotFound");
-
-                public static readonly EventId PathParsingSucceeded = new EventId(102, "PathParsingSucceeded");
-                public static readonly EventId PathParsingFailed = new EventId(103, "PathParsingFailed");
-            }
-
-            private static readonly Action<ILogger, IEnumerable<string>, object, Exception> _endpointsFound = LoggerMessage.Define<IEnumerable<string>, object>(
-                LogLevel.Debug,
-                EventIds.EndpointsFound,
-                "Found the endpoints {Endpoints} for address {Address}",
-                skipEnabledCheck: true);
-
-            private static readonly Action<ILogger, object, Exception> _endpointsNotFound = LoggerMessage.Define<object>(
-                LogLevel.Debug,
-                EventIds.EndpointsNotFound,
-                "No endpoints found for address {Address}");
-
-            private static readonly Action<ILogger, string, string, Exception> _pathParsingSucceeded = LoggerMessage.Define<string, string>(
-                LogLevel.Debug,
-                EventIds.PathParsingSucceeded,
-                "Path parsing succeeded for endpoint {Endpoint} and URI path {URI}",
-                skipEnabledCheck: true);
-
-            private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _pathParsingFailed = LoggerMessage.Define<IEnumerable<string>, string>(
-                LogLevel.Debug,
-                EventIds.PathParsingFailed,
-                "Path parsing failed for endpoints {Endpoints} and URI path {URI}",
-                skipEnabledCheck: true);
-
-            public static void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints)
+            public static void EndpointsFound(ILogger logger, object? address, IEnumerable<Endpoint> endpoints)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _endpointsFound(logger, endpoints.Select(e => e.DisplayName), address, null);
+                    EndpointsFound(logger, endpoints.Select(e => e.DisplayName), address);
                 }
             }
 
-            public static void EndpointsNotFound(ILogger logger, object address)
-            {
-                _endpointsNotFound(logger, address, null);
-            }
+            [LoggerMessage(100, LogLevel.Debug, "Found the endpoints {Endpoints} for address {Address}", EventName = "EndpointsFound", SkipEnabledCheck = true)]
+            private static partial void EndpointsFound(ILogger logger, IEnumerable<string?> endpoints, object? address);
+
+            [LoggerMessage(101, LogLevel.Debug, "No endpoints found for address {Address}", EventName = "EndpointsNotFound")]
+            public static partial void EndpointsNotFound(ILogger logger, object? address);
 
             public static void PathParsingSucceeded(ILogger logger, PathString path, Endpoint endpoint)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _pathParsingSucceeded(logger, endpoint.DisplayName, path.Value, null);
+                    PathParsingSucceeded(logger, endpoint.DisplayName, path.Value);
                 }
             }
+
+            [LoggerMessage(102, LogLevel.Debug, "Path parsing succeeded for endpoint {Endpoint} and URI path {URI}", EventName = "PathParsingSucceeded", SkipEnabledCheck = true)]
+            private static partial void PathParsingSucceeded(ILogger logger, string? endpoint, string? uri);
 
             public static void PathParsingFailed(ILogger logger, PathString path, IEnumerable<Endpoint> endpoints)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _pathParsingFailed(logger, endpoints.Select(e => e.DisplayName), path.Value, null);
+                    PathParsingFailed(logger, endpoints.Select(e => e.DisplayName), path.Value);
                 }
             }
+
+            [LoggerMessage(103, LogLevel.Debug, "Path parsing failed for endpoints {Endpoints} and URI path {URI}", EventName = "PathParsingFailed", SkipEnabledCheck = true)]
+            private static partial void PathParsingFailed(ILogger logger, IEnumerable<string?> endpoints, string? uri);
         }
     }
 }

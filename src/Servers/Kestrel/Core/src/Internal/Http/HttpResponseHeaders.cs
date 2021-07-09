@@ -3,10 +3,12 @@
 
 using System;
 using System.Buffers;
-using System.IO.Pipelines;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -17,6 +19,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> CrLf => new[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> ColonSpace => new[] { (byte)':', (byte)' ' };
+
+        public Func<string, Encoding?> EncodingSelector { get; set; }
+
+        public HttpResponseHeaders(Func<string, Encoding?>? encodingSelector = null)
+        {
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
+        }
 
         public Enumerator GetEnumerator()
         {
@@ -33,10 +42,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             CopyToFast(ref buffer);
 
             var extraHeaders = MaybeUnknown;
+            // Only reserve stack space for the enumerators if there are extra headers
             if (extraHeaders != null && extraHeaders.Count > 0)
             {
-                // Only reserve stack space for the enumartors if there are extra headers
-                CopyExtraHeaders(ref buffer, extraHeaders);
+                var encodingSelector = EncodingSelector;
+                if (ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
+                {
+                    CopyExtraHeaders(ref buffer, extraHeaders);
+                }
+                else
+                {
+                    CopyExtraHeadersCustomEncoding(ref buffer, extraHeaders, encodingSelector);
+                }
             }
 
             static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers)
@@ -55,6 +72,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
             }
+
+            static void CopyExtraHeadersCustomEncoding(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers,
+                Func<string, Encoding?> encodingSelector)
+            {
+                foreach (var kv in headers)
+                {
+                    var encoding = encodingSelector(kv.Key);
+                    foreach (var value in kv.Value)
+                    {
+                        if (value != null)
+                        {
+                            buffer.Write(CrLf);
+                            buffer.WriteAscii(kv.Key);
+                            buffer.Write(ColonSpace);
+
+                            if (encoding is null)
+                            {
+                                buffer.WriteAscii(value);
+                            }
+                            else
+                            {
+                                buffer.WriteEncoded(value, encoding);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private static long ParseContentLength(string value)
@@ -67,9 +111,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return parsed;
         }
 
+        [DoesNotReturn]
         private static void ThrowInvalidContentLengthException(string value)
         {
             throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
+        }
+
+        [DoesNotReturn]
+        private static void ThrowInvalidHeaderBits()
+        {
+            throw new InvalidOperationException("Invalid Header Bits");
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

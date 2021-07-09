@@ -1,4 +1,4 @@
-import { navigateTo, internalFunctions as navigationManagerInternalFunctions } from './Services/NavigationManager';
+import { navigateTo, internalFunctions as navigationManagerInternalFunctions, NavigationOptions } from './Services/NavigationManager';
 import { domFunctions } from './DomWrapper';
 import { Virtualize } from './Virtualize';
 import { registerCustomEventType, EventTypeOptions } from './Rendering/Events/EventTypes';
@@ -10,7 +10,7 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
 
 interface IBlazor {
-  navigateTo: (uri: string, forceLoad: boolean, replace: boolean) => void;
+  navigateTo: (uri: string, options: NavigationOptions) => void;
   registerCustomEventType: (eventName: string, options: EventTypeOptions) => void;
 
   disconnect?: () => void;

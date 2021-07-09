@@ -19,6 +19,23 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 {
     public class HealthCheckPublisherHostedServiceTest
     {
+        private static class DefaultHealthCheckEventIds
+        {
+            public static readonly EventId HealthCheckProcessingBegin = new EventId(DefaultHealthCheckService.EventIds.HealthCheckProcessingBeginId, DefaultHealthCheckService.EventIds.HealthCheckProcessingBeginName);
+            public static readonly EventId HealthCheckProcessingEnd = new EventId(DefaultHealthCheckService.EventIds.HealthCheckProcessingEndId, DefaultHealthCheckService.EventIds.HealthCheckProcessingEndName);
+            public static readonly EventId HealthCheckBegin = new EventId(DefaultHealthCheckService.EventIds.HealthCheckBeginId, DefaultHealthCheckService.EventIds.HealthCheckBeginName);
+            public static readonly EventId HealthCheckEnd = new EventId(DefaultHealthCheckService.EventIds.HealthCheckEndId, DefaultHealthCheckService.EventIds.HealthCheckEndName);
+        }
+        private static class HealthCheckPublisherEventIds
+        {
+            public static readonly EventId HealthCheckPublisherProcessingBegin = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingBeginId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingBeginName);
+            public static readonly EventId HealthCheckPublisherProcessingEnd = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingEndId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingEndName);
+            public static readonly EventId HealthCheckPublisherBegin = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherBeginId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherBeginName);
+            public static readonly EventId HealthCheckPublisherEnd = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherEndId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherEndName);
+            public static readonly EventId HealthCheckPublisherError = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherErrorId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherErrorName);
+            public static readonly EventId HealthCheckPublisherTimeout = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherTimeoutId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherTimeoutName);
+        }
+
         [Fact]
         public async Task StartAsync_WithoutPublishers_DoesNotStartTimer()
         {
@@ -210,16 +227,16 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             Assert.Collection(
                 sink.Writes,
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckBegin, entry.EventId); },
-                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
-                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckEnd, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingEnd, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherBegin, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherEnd, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherProcessingBegin, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckProcessingBegin, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckBegin, entry.EventId); },
+                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckEventIds.HealthCheckBegin, DefaultHealthCheckEventIds.HealthCheckEnd }); },
+                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckEventIds.HealthCheckBegin, DefaultHealthCheckEventIds.HealthCheckEnd }); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckEnd, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckProcessingEnd, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherBegin, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherEnd, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
         }
 
         // Not testing logs here to avoid differences in logging order
@@ -319,16 +336,16 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             Assert.Collection(
                 sink.Writes,
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckBegin, entry.EventId); },
-                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
-                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckEnd, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingEnd, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherBegin, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherTimeout, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherProcessingBegin, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckProcessingBegin, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckBegin, entry.EventId); },
+                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckEventIds.HealthCheckBegin, DefaultHealthCheckEventIds.HealthCheckEnd }); },
+                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckEventIds.HealthCheckBegin, DefaultHealthCheckEventIds.HealthCheckEnd }); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckEnd, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckProcessingEnd, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherBegin, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherTimeout, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
         }
 
         [Fact]
@@ -397,16 +414,16 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             Assert.Collection(
                 sink.Writes,
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckBegin, entry.EventId); },
-                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
-                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckEnd, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingEnd, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherBegin, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherError, entry.EventId); },
-                entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherProcessingBegin, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckProcessingBegin, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckBegin, entry.EventId); },
+                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckEventIds.HealthCheckBegin, DefaultHealthCheckEventIds.HealthCheckEnd }); },
+                entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckEventIds.HealthCheckBegin, DefaultHealthCheckEventIds.HealthCheckEnd }); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckEnd, entry.EventId); },
+                entry => { Assert.Equal(DefaultHealthCheckEventIds.HealthCheckProcessingEnd, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherBegin, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherError, entry.EventId); },
+                entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
         }
 
         // Not testing logging here to avoid flaky ordering issues

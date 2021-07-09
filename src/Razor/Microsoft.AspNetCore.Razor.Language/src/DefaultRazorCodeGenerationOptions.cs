@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             bool suppressMetadataAttributes,
             bool suppressPrimaryMethodBody,
             bool suppressNullabilityEnforcement,
-            bool omitMinimizedComponentAttributeValues)
+            bool omitMinimizedComponentAttributeValues,
+            bool useEnhancedLinePragma)
         {
             IndentWithTabs = indentWithTabs;
             IndentSize = indentSize;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             SuppressPrimaryMethodBody = suppressPrimaryMethodBody;
             SuppressNullabilityEnforcement = suppressNullabilityEnforcement;
             OmitMinimizedComponentAttributeValues = omitMinimizedComponentAttributeValues;
+            UseEnhancedLinePragma = useEnhancedLinePragma;
         }
 
         public override bool DesignTime { get; }
@@ -40,5 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override bool SuppressNullabilityEnforcement { get; }
 
         public override bool OmitMinimizedComponentAttributeValues { get; }
+
+        public override bool UseEnhancedLinePragma { get; }
     }
 }

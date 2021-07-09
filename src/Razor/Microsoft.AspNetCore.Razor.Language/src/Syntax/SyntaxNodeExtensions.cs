@@ -103,7 +103,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         public static SourceSpan GetSourceSpan(this SyntaxNode node, RazorSourceDocument source)
         {
             var location = node.GetSourceLocation(source);
-            return new SourceSpan(location, node.FullWidth);
+            var endLocation = source.Lines.GetLocation(node.EndPosition);
+            var lineCount = endLocation.LineIndex - location.LineIndex;
+            return new SourceSpan(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, node.FullWidth, lineCount, endLocation.CharacterIndex);
         }
 
         /// <summary>

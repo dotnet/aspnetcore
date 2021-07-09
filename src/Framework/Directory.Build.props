@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <ManifestsPackagePath>data/</ManifestsPackagePath>
+    <AnalyzersPackagePath>analyzers/</AnalyzersPackagePath>
     <!-- Shared between targeting pack and runtime build. -->
     <PlatformManifestFileName>PlatformManifest.txt</PlatformManifestFileName>
     <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>

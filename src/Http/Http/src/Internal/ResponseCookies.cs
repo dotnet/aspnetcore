@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// A wrapper for the response Set-Cookie header.
     /// </summary>
-    internal class ResponseCookies : IResponseCookies
+    internal partial class ResponseCookies : IResponseCookies
     {
         internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
         internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
@@ -156,8 +156,8 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
-            bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
-            bool pathHasValue = !string.IsNullOrEmpty(options.Path);
+            var domainHasValue = !string.IsNullOrEmpty(options.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(options.Path);
 
             Func<string, string, CookieOptions, bool> rejectPredicate;
             if (domainHasValue && pathHasValue)
@@ -212,17 +212,10 @@ namespace Microsoft.AspNetCore.Http
             });
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception?> _samesiteNotSecure = LoggerMessage.Define<string>(
-                LogLevel.Warning,
-                EventIds.SameSiteNotSecure,
-                "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.");
-
-            public static void SameSiteCookieNotSecure(ILogger logger, string name)
-            {
-                _samesiteNotSecure(logger, name, null);
-            }
+            [LoggerMessage(1, LogLevel.Warning, "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.", EventName = "SameSiteNotSecure")]
+            public static partial void SameSiteCookieNotSecure(ILogger logger, string name);
         }
     }
 }
