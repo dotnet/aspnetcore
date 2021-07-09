@@ -54,15 +54,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var bytesAvailableToRead = Length - Position;
-            var maxBytesToRead = bytesAvailableToRead > int.MaxValue ?
-                int.MaxValue :
-                (int)bytesAvailableToRead;
-
-            if (maxBytesToRead > buffer.Length)
-            {
-                maxBytesToRead = buffer.Length;
-            }
-
+            var maxBytesToRead = (int)Math.Min(bytesAvailableToRead, buffer.Length);
             if (maxBytesToRead <= 0)
             {
                 return 0;
