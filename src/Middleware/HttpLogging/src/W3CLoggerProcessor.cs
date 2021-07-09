@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
-            await WriteFieldDirectiveMessage(streamWriter, cancellationToken);
+            await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationToken);
         }
 
         private async Task WriteFieldDirectiveMessage(StreamWriter streamWriter, CancellationToken cancellationToken)
