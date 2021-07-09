@@ -112,10 +112,7 @@ namespace Microsoft.JSInterop.WebAssembly
 
         private IJSStreamReference DeserializeJSStreamReference(string serializedStreamReference)
         {
-            var receivedBytes = Encoding.UTF8.GetBytes(serializedStreamReference);
-            var reader = new Utf8JsonReader(receivedBytes);
-            var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(ref reader, JsonSerializerOptions);
-
+            var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);
             if (jsStreamReference is null)
             {
                 throw new NullReferenceException($"Unable to parse the {nameof(serializedStreamReference)}.");

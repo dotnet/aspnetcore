@@ -55,7 +55,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             TimeSpan jsInteropDefaultCallTimeout,
             long pauseIncomingBytesThreshold,
             long resumeIncomingBytesThreshold,
-            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken)
+            CancellationToken cancellationToken) :
+            base(
+                runtime.JSDataStreamInstances,
+                streamId,
+                totalLength,
+                jsInteropDefaultCallTimeout,
+                pauseIncomingBytesThreshold,
+                resumeIncomingBytesThreshold,
+                cancellationToken)
         {
             _remoteJSRuntime = runtime;
         }

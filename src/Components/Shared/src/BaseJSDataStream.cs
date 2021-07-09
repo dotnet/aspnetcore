@@ -7,15 +7,8 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.JSInterop;
 
-#if COMPONENTS_SERVER
-namespace Microsoft.AspNetCore.Components.Server.Circuits
-#elif BLAZOR_WEBVIEW
-namespace Microsoft.AspNetCore.Components.WebView
-#elif BLAZOR_WEBASSEMBLY
-namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
-#endif
+namespace Microsoft.AspNetCore.Components
 {
     internal abstract class BaseJSDataStream : Stream
     {

@@ -38,7 +38,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             TimeSpan jsInteropDefaultCallTimeout,
             long pauseIncomingBytesThreshold,
             long resumeIncomingBytesThreshold,
-            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken)
+            CancellationToken cancellationToken) :
+            base(
+                runtime.JSDataStreamInstances,
+                streamId,
+                totalLength,
+                jsInteropDefaultCallTimeout,
+                pauseIncomingBytesThreshold,
+                resumeIncomingBytesThreshold,
+                cancellationToken)
         {
             _webAssemblyJSRuntime = runtime;
         }
