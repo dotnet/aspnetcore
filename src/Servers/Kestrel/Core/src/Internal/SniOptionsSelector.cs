@@ -176,11 +176,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return (sslOptions, sniOptions.ClientCertificateMode);
         }
 
-        public static ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> OptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+        public static ValueTask<SslServerAuthenticationOptions> OptionsCallback(TlsHandshakeCallbackContext callbackContext)
         {
-            var sniOptionsSelector = (SniOptionsSelector)state;
-            var (options, clientCertificateMode) = sniOptionsSelector.GetOptions(connection, clientHelloInfo.ServerName);
-            return new ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)>((options, clientCertificateMode));
+            var sniOptionsSelector = (SniOptionsSelector)callbackContext.State!;
+            var (options, clientCertificateMode) = sniOptionsSelector.GetOptions(callbackContext.Connection, callbackContext.ClientHelloInfo.ServerName);
+            callbackContext.AllowDelayedClientCertificateNegotation = clientCertificateMode == ClientCertificateMode.DelayCertificate;
+            return new ValueTask<SslServerAuthenticationOptions>(options);
         }
 
         internal static SslServerAuthenticationOptions CloneSslOptions(SslServerAuthenticationOptions sslOptions) =>
