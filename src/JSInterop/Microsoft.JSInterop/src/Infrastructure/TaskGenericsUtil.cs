@@ -10,10 +10,10 @@ namespace Microsoft.JSInterop.Infrastructure
 {
     internal static class TaskGenericsUtil
     {
-        private static ConcurrentDictionary<Type, ITaskResultGetter> _cachedResultGetters
+        private static readonly ConcurrentDictionary<Type, ITaskResultGetter> _cachedResultGetters
             = new ConcurrentDictionary<Type, ITaskResultGetter>();
 
-        private static ConcurrentDictionary<Type, ITcsResultSetter> _cachedResultSetters
+        private static readonly ConcurrentDictionary<Type, ITcsResultSetter> _cachedResultSetters
             = new ConcurrentDictionary<Type, ITcsResultSetter>();
 
         public static void SetTaskCompletionSourceResult(object taskCompletionSource, object? result)

@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class TagHelperSpanVisitor : SyntaxWalker
     {
-        private RazorSourceDocument _source;
-        private List<TagHelperSpanInternal> _spans;
+        private readonly RazorSourceDocument _source;
+        private readonly List<TagHelperSpanInternal> _spans;
 
         public TagHelperSpanVisitor(RazorSourceDocument source)
         {

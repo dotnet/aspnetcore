@@ -694,7 +694,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private class FormMetadata : IEnumerable<Model>
         {
-            private List<Model> _fields = new List<Model>();
+            private readonly List<Model> _fields = new List<Model>();
 
             public int ID { get; set; }
 

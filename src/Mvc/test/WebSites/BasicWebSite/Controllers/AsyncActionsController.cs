@@ -199,7 +199,7 @@ namespace BasicWebSite.Controllers
 
         public class CustomAwaiter : INotifyCompletion
         {
-            private IList<Action> _continuations = new List<Action>();
+            private readonly IList<Action> _continuations = new List<Action>();
 
             public CustomAwaiter(int simulateDelayMilliseconds)
             {

@@ -38,10 +38,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
 
         [DllImport(api_ms_win_core_io_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        internal static unsafe extern uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
+        internal static extern unsafe uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
         [DllImport(api_ms_win_core_kernel32_legacy_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        internal static unsafe extern bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
+        internal static extern unsafe bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
 
         [Flags]
         internal enum FileCompletionNotificationModes : byte

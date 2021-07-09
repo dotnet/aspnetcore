@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Testing
 
         private class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
         {
-            private DateTimeOffset? _logStart;
+            private readonly DateTimeOffset? _logStart;
 
             public AssemblyLogTimestampOffsetEnricher(DateTimeOffset? logStart)
             {
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Testing
 
         private class Disposable : IDisposable
         {
-            private Action _action;
+            private readonly Action _action;
 
             public Disposable(Action action)
             {

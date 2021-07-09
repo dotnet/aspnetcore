@@ -840,7 +840,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 _allowed = authorized;
             }
 
-            private IEnumerable<OperationAuthorizationRequirement> _allowed;
+            private readonly IEnumerable<OperationAuthorizationRequirement> _allowed;
 
             protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, ExpenseReport resource)
             {
@@ -1186,7 +1186,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class DefaultAuthorizationServiceTestLogger : ILogger<DefaultAuthorizationService>
         {
-            private Action<LogLevel, EventId, object, Exception, Func<object, Exception, string>> _assertion;
+            private readonly Action<LogLevel, EventId, object, Exception, Func<object, Exception, string>> _assertion;
 
             public DefaultAuthorizationServiceTestLogger(Action<LogLevel, EventId, object, Exception, Func<object, Exception, string>> assertion)
             {

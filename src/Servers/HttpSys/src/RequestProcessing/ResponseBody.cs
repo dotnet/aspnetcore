@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal class ResponseBody : Stream
     {
-        private RequestContext _requestContext;
+        private readonly RequestContext _requestContext;
         private long _leftToWrite = long.MinValue;
         private bool _skipWrites;
         private bool _disposed;

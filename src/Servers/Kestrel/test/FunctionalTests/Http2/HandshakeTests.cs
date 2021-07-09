@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
     public class HandshakeTests : LoggedTest
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         public HttpClient Client { get; set; }
 

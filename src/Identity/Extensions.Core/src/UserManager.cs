@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Identity
 #if NETSTANDARD2_0 || NET461
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
-        private IServiceProvider _services;
+        private readonly IServiceProvider _services;
 
         /// <summary>
         /// The cancellation token used to cancel operations.

@@ -1,6 +1,6 @@
 import { HubConnection } from '@microsoft/signalr';
 
-export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView, streamId: string, chunkSize: number) {
+export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView | Blob, streamId: string, chunkSize: number) {
     // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
     // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
     // because nobody's reading the pipe)
@@ -9,12 +9,13 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         let numChunksUntilNextAck = 5;
         let lastAckTime = new Date().valueOf();
         try {
+            const byteLength = data instanceof Blob ? data.size : data.byteLength;
             let position = 0;
             let chunkId = 0;
 
-            while (position < data.byteLength) {
-                const nextChunkSize = Math.min(chunkSize, data.byteLength - position);
-                const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
+            while (position < byteLength) {
+                const nextChunkSize = Math.min(chunkSize, byteLength - position);
+                const nextChunkData = await getNextChunk(data, position, nextChunkSize);
 
                 numChunksUntilNextAck--;
                 if (numChunksUntilNextAck > 1) {
@@ -49,3 +50,23 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         }
     }, 0);
 };
+
+async function getNextChunk(data: ArrayBufferView | Blob, position: number, nextChunkSize: number): Promise<Uint8Array> {
+    if (data instanceof Blob) {
+        return await getChunkFromBlob(data, position, nextChunkSize);
+    } else {
+        return getChunkFromArrayBufferView(data, position, nextChunkSize);
+    }
+}
+
+async function getChunkFromBlob(data: Blob, position: number, nextChunkSize: number): Promise<Uint8Array> {
+    const chunkBlob = data.slice(position, position + nextChunkSize);
+    const arrayBuffer = await chunkBlob.arrayBuffer();
+    const nextChunkData = new Uint8Array(arrayBuffer);
+    return nextChunkData;
+}
+
+function getChunkFromArrayBufferView(data: ArrayBufferView, position: number, nextChunkSize: number) {
+    const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
+    return nextChunkData;
+}

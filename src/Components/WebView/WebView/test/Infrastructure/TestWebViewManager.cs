@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     public class TestWebViewManager : WebViewManager
     {
-        private static Uri AppBaseUri = new Uri("app://testhost/");
-        private List<string> _sentIpcMessages = new();
+        private static readonly Uri AppBaseUri = new Uri("app://testhost/");
+        private readonly List<string> _sentIpcMessages = new();
 
         public TestWebViewManager(IServiceProvider provider, IFileProvider fileProvider)
             : base(provider, Dispatcher.CreateDefault(), AppBaseUri, fileProvider, hostPageRelativePath: "index.html")

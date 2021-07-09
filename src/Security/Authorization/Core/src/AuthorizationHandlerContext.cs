@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authorization
     /// </summary>
     public class AuthorizationHandlerContext
     {
-        private HashSet<IAuthorizationRequirement> _pendingRequirements;
+        private readonly HashSet<IAuthorizationRequirement> _pendingRequirements;
         private bool _failCalled;
         private bool _succeedCalled;
 

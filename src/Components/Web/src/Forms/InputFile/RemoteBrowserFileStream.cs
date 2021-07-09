@@ -45,7 +45,11 @@ namespace Microsoft.AspNetCore.Components.Forms
                 _inputFileElement,
                 File.Id);
 
-            return await dataReference.OpenReadStreamAsync(_maxAllowedSize, options.MaxBufferSize, cancellationToken);
+            return await dataReference.OpenReadStreamAsync(
+                _maxAllowedSize,
+                pauseIncomingBytesThreshold: options.MaxBufferSize,
+                resumeIncomingBytesThreshold: options.MaxBufferSize / 2,
+                cancellationToken);
         }
 
         protected override async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, Memory<byte> destination, CancellationToken cancellationToken)

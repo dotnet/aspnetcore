@@ -8,8 +8,8 @@ namespace Microsoft.CodeAnalysis.Razor
     // Visits top-level types and finds interface implementations.
     internal class TagHelperTypeVisitor : SymbolVisitor
     {
-        private INamedTypeSymbol _interface;
-        private List<INamedTypeSymbol> _results;
+        private readonly INamedTypeSymbol _interface;
+        private readonly List<INamedTypeSymbol> _results;
 
         public TagHelperTypeVisitor(INamedTypeSymbol @interface, List<INamedTypeSymbol> results)
         {

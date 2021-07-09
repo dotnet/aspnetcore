@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(100);
 
-        private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
+        private readonly CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         private string _configPath;
         private string _debugLogFile;

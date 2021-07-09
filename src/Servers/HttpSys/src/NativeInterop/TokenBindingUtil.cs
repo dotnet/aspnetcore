@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     /// Contains helpers for dealing with TLS token binding.
     /// </summary>
     // TODO: https://github.com/aspnet/HttpSysServer/issues/231
-    internal unsafe static class TokenBindingUtil
+    internal static unsafe class TokenBindingUtil
     {
         private static byte[] ExtractIdentifierBlob(TOKENBINDING_RESULT_DATA* pTokenBindingResultData)
         {

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <summary>
         /// Gets or sets the <see cref="PageActionDescriptor"/>.
         /// </summary>
-        public virtual new CompiledPageActionDescriptor ActionDescriptor
+        public new virtual CompiledPageActionDescriptor ActionDescriptor
         {
             get => _actionDescriptor!;
             set

@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private class TestSession : ISession
         {
-            private Dictionary<string, byte[]> _innerDictionary = new Dictionary<string, byte[]>();
+            private readonly Dictionary<string, byte[]> _innerDictionary = new Dictionary<string, byte[]>();
 
             public IEnumerable<string> Keys { get { return _innerDictionary.Keys; } }
 

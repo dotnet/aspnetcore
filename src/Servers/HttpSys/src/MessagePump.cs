@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private readonly HttpSysOptions _options;
 
-        private int _maxAccepts;
+        private readonly int _maxAccepts;
         private int _acceptorCounts;
 
         private volatile int _stopping;

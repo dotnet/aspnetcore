@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Mvc.Core
     /// </summary>
     public class HtmlHelperNameExtensionsTest
     {
-        private static List<string> _staticCollection = new List<string>();
-        private static int _staticIndex = 6;
+        private static readonly List<string> _staticCollection = new List<string>();
+        private static readonly int _staticIndex = 6;
 
-        private List<string> _collection = new List<string>();
-        private int _index = 7;
-        private List<string[]> _nestedCollection = new List<string[]>();
-        private string _string = string.Empty;
+        private readonly List<string> _collection = new List<string>();
+        private readonly int _index = 7;
+        private readonly List<string[]> _nestedCollection = new List<string[]>();
+        private readonly string _string = string.Empty;
 
         private static List<string> StaticCollection { get; }
 

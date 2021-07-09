@@ -43,12 +43,12 @@ namespace Templates.Test
                 return _output;
             }
         }
-        
+
         public abstract string ProjectType { get; }
         private static readonly bool _isCIEnvironment =
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
 
-        protected async override Task InitializeCoreAsync(TestContext context)
+        protected override async Task InitializeCoreAsync(TestContext context)
         {
             BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);

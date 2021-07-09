@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception?> _noCertificate;
+        private static readonly Action<ILogger, Exception?> _noCertificate;
 
         static LoggingExtensions()
         {

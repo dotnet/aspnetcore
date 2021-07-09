@@ -16,7 +16,7 @@ namespace LargeResponseApp
     {
         private const int _chunkSize = 4096;
         private const int _defaultNumChunks = 16;
-        private static byte[] _chunk = Encoding.UTF8.GetBytes(new string('a', _chunkSize));
+        private static readonly byte[] _chunk = Encoding.UTF8.GetBytes(new string('a', _chunkSize));
 
         public void Configure(IApplicationBuilder app)
         {

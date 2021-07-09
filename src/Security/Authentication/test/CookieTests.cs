@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions>
     {
-        private TestClock _clock = new TestClock();
+        private readonly TestClock _clock = new TestClock();
 
         protected override string DefaultScheme => CookieAuthenticationDefaults.AuthenticationScheme;
         protected override Type HandlerType => typeof(CookieAuthenticationHandler);

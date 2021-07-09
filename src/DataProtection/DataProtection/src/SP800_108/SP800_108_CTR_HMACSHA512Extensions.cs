@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Cryptography;
 
 namespace Microsoft.AspNetCore.DataProtection.SP800_108
 {
-    internal unsafe static class SP800_108_CTR_HMACSHA512Extensions
+    internal static unsafe class SP800_108_CTR_HMACSHA512Extensions
     {
         public static void DeriveKeyWithContextHeader(this ISP800_108_CTR_HMACSHA512Provider provider, byte* pbLabel, uint cbLabel, byte[] contextHeader, byte* pbContext, uint cbContext, byte* pbDerivedKey, uint cbDerivedKey)
         {

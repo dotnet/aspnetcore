@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.WebSockets.Microbenchmarks
 {
     public class HandshakeBenchmark
     {
-        private string[] _requestKeys = {
+        private readonly string[] _requestKeys = {
             "F8/qpj9RYr2/sIymdDvlmw==",
             "PyQi8nyMkKnI7JKiAJ/IrA==",
             "CUe0z8ItSBRtgJlPqP1+SQ==",

@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         private const int WriteableOffset = 2;
 
-        private int _size;
-        private byte[] _buffer;
+        private readonly int _size;
+        private readonly byte[] _buffer;
         private int _hash;
 
         /// <devdoc>

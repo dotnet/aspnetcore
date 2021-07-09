@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _inner = inner;
         }
 
-        public async override Task MatchAsync(HttpContext httpContext)
+        public override async Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
             {

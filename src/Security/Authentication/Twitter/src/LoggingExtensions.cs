@@ -7,9 +7,9 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception?> _obtainRequestToken;
-        private static Action<ILogger, Exception?> _obtainAccessToken;
-        private static Action<ILogger, Exception?> _retrieveUserDetails;
+        private static readonly Action<ILogger, Exception?> _obtainRequestToken;
+        private static readonly Action<ILogger, Exception?> _obtainAccessToken;
+        private static readonly Action<ILogger, Exception?> _retrieveUserDetails;
 
         static LoggingExtensions()
         {
