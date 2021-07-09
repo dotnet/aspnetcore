@@ -42,5 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 _handshakeTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
             }
         }
+
+        // Copied from the ListenOptions to enable ALPN
+        internal HttpProtocols HttpProtocols { get; set; }
     }
 }
