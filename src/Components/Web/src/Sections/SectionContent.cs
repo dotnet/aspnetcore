@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Sections
     /// <summary>
     /// Provides content to <see cref="SectionOutlet"/> components with matching <c>Name</c>s.
     /// </summary>
-    public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
+    internal class SectionContent : ISectionContentProvider, IComponent, IDisposable
     {
         private string? _registeredName;
         private SectionRegistry _registry = default!;

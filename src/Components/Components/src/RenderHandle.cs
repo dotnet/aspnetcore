@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Gets whether the renderer has been disposed.
         /// </summary>
-        internal bool IsRendererDisposed => _renderer?.Disposed ?? false;
+        public bool IsRendererDisposed => _renderer?.Disposed ?? false;
 
         /// <summary>
         /// Notifies the renderer that the component should be rendered.
