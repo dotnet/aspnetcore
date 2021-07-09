@@ -1,14 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
+    #pragma warning disable IDE0044 // Add readonly modifier. We ddon't want to modify these types
+
     internal static unsafe class HttpApiTypes
     {
         internal enum HTTP_API_VERSION
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             internal bool DisableNTLMCredentialCaching;
             internal ulong ExFlags;
             HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS DigestParams;
-            readonly HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS BasicParams;
+            HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS BasicParams;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -588,8 +588,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [StructLayout(LayoutKind.Sequential)]
         internal struct HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
         {
-            readonly ushort RealmLength;
-            readonly char* Realm;
+            ushort RealmLength;
+            char* Realm;
         }
 
         [StructLayout(LayoutKind.Sequential)]
