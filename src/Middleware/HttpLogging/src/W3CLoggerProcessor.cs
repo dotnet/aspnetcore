@@ -30,7 +30,91 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
-            await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationToken);
+            await WriteFieldDirectiveMessage(streamWriter, cancellationToken);
+        }
+
+        private async Task WriteFieldDirectiveMessage(StreamWriter streamWriter, CancellationToken cancellationToken)
+        {
+            await WriteField("#Fields:", streamWriter, cancellationToken);
+            if (_loggingFields.HasFlag(W3CLoggingFields.Date))
+            {
+                await WriteField(" date", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Time))
+            {
+                await WriteField(" time", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ClientIpAddress))
+            {
+                await WriteField(" c-ip", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UserName))
+            {
+                await WriteField("#Fields:", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ServerName))
+            {
+                await WriteField(" s-computername", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ServerIpAddress))
+            {
+                await WriteField(" s-ip", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ServerPort))
+            {
+                await WriteField(" s-port", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Method))
+            {
+                await WriteField(" cs-method", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UriStem))
+            {
+                await WriteField(" cs-uri-stem", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UriQuery))
+            {
+                await WriteField(" cs-uri-query", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
+            {
+                await WriteField(" sc-status", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
+            {
+                await WriteField(" time-taken", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
+            {
+                await WriteField(" cs-version", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Host))
+            {
+                await WriteField(" cs-host", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UserAgent))
+            {
+                await WriteField(" cs(User-Agent)", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Cookie))
+            {
+                await WriteField(" cs(Cookie)", streamWriter, cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Referer))
+            {
+                await WriteField(" cs(Referer)", streamWriter, cancellationToken);
+            }
+        }
+
+        internal async Task WriteField(string messageField, StreamWriter streamWriter, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await streamWriter.WriteAsync(messageField.AsMemory(), cancellationToken);
+            await streamWriter.FlushAsync();
         }
 
         private string GetFieldsDirective()
