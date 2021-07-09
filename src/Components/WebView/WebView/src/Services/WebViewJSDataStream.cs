@@ -17,13 +17,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             WebViewJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
-            long maxBufferSize,
             long chunkSize,
             TimeSpan defaultCallTimeout,
+            long pauseIncomingBytesThreshold = -1,
+            long resumeIncomingBytesThreshold = -1,
             CancellationToken cancellationToken = default)
         {
             var streamId = runtime.JSDataStreamNextInstanceId++;
-            var webViewJSDataStream = new WebViewJSDataStream(runtime, streamId, totalLength, maxBufferSize, defaultCallTimeout, cancellationToken);
+            var webViewJSDataStream = new WebViewJSDataStream(runtime, streamId, totalLength, defaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
 
             var dotnetStreamReference = DotNetObjectReference.Create(webViewJSDataStream);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStreamUsingObjectReference", jsStreamReference, streamId, chunkSize, dotnetStreamReference);
@@ -35,9 +36,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             WebViewJSRuntime runtime,
             long streamId,
             long totalLength,
-            long maxBufferSize,
             TimeSpan jsInteropDefaultCallTimeout,
-            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken)
+            long pauseIncomingBytesThreshold,
+            long resumeIncomingBytesThreshold,
+            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken)
         {
             _webviewJSRuntime = runtime;
         }

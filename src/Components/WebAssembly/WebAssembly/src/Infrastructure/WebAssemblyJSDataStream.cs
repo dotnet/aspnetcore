@@ -18,13 +18,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             DefaultWebAssemblyJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
-            long maxBufferSize,
             long chunkSize,
             TimeSpan defaultCallTimeout,
+            long pauseIncomingBytesThreshold = -1,
+            long resumeIncomingBytesThreshold = -1,
             CancellationToken cancellationToken = default)
         {
             var streamId = runtime.JSDataStreamNextInstanceId++;
-            var webAssemblyJSDataStream = new WebAssemblyJSDataStream(runtime, streamId, totalLength, maxBufferSize, defaultCallTimeout, cancellationToken);
+            var webAssemblyJSDataStream = new WebAssemblyJSDataStream(runtime, streamId, totalLength, defaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
             var dotnetStreamReference = DotNetObjectReference.Create(webAssemblyJSDataStream);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStreamUsingObjectReference", jsStreamReference, streamId, chunkSize, dotnetStreamReference);
             return webAssemblyJSDataStream;
@@ -34,9 +35,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             DefaultWebAssemblyJSRuntime runtime,
             long streamId,
             long totalLength,
-            long maxBufferSize,
             TimeSpan jsInteropDefaultCallTimeout,
-            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken)
+            long pauseIncomingBytesThreshold,
+            long resumeIncomingBytesThreshold,
+            CancellationToken cancellationToken) : base(runtime.JSDataStreamInstances, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken)
         {
             _webAssemblyJSRuntime = runtime;
         }

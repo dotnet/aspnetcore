@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         }
 
         /// <inheritdoc />
-        protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
-            => await WebAssemblyJSDataStream.CreateWebAssemblyJSDataStreamAsync(this, jsStreamReference, totalLength, maxBufferSize, chunkSize: 1024 * 32, defaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken);
+        protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
+            => await WebAssemblyJSDataStream.CreateWebAssemblyJSDataStreamAsync(this, jsStreamReference, totalLength, chunkSize: 1024 * 32, defaultCallTimeout: TimeSpan.FromMinutes(1), pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
     }
 }

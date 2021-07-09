@@ -7,7 +7,7 @@ export async function getNextChunk(data: ArrayBufferView | Blob, position: numbe
 }
 
 async function getChunkFromBlob(data: Blob, position: number, nextChunkSize: number): Promise<Uint8Array> {
-    const chunkBlob = data.slice(position, Math.min(position + nextChunkSize, data.size));
+    const chunkBlob = data.slice(position, position + nextChunkSize);
     const arrayBuffer = await chunkBlob.arrayBuffer();
     const nextChunkData = new Uint8Array(arrayBuffer);
     return nextChunkData;

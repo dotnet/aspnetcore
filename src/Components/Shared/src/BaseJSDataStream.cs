@@ -35,8 +35,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             Dictionary<long, BaseJSDataStream> dataStreamInstances,
             long streamId,
             long totalLength,
-            long maxBufferSize,
             TimeSpan jsInteropDefaultCallTimeout,
+            long pauseIncomingBytesThreshold,
+            long resumeIncomingBytesThreshold,
             CancellationToken cancellationToken)
         {
             _dataStreamInstances = dataStreamInstances;
@@ -50,9 +51,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
 
             _dataStreamInstances.Add(_streamId, this);
 
-            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize / 2));
+            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: pauseIncomingBytesThreshold, resumeWriterThreshold: resumeIncomingBytesThreshold));
             _pipeReaderStream = _pipe.Reader.AsStream();
+            PipeReader = _pipe.Reader;
         }
+
+        /// <summary>
+        /// Gets a <see cref="PipeReader"/> to directly read data sent by the JavaScript client.
+        /// </summary>
+        public PipeReader PipeReader { get; }
 
         internal async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
         {
@@ -81,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
                 {
                     throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were sent.");
                 }
-                
+
                 // Start timeout _after_ performing validations on data.
                 _lastDataReceivedTime = DateTimeOffset.UtcNow;
                 _ = ThrowOnTimeout();
@@ -172,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             if (!_disposed && (DateTimeOffset.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
             {
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
-                var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
+                var timeoutException = new TimeoutException("Did not receive any data in the allotted time.");
                 await CompletePipeAndDisposeStream(timeoutException);
                 RaiseUnhandledException(timeoutException);
             }
@@ -180,7 +187,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
 
         protected abstract void RaiseUnhandledException(Exception exception);
 
-        internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
+        /// <summary>
+        /// For testing purposes only.
+        ///
+        /// Triggers the timeout on the next check.
+        /// </summary>
+        internal void InvalidateLastDataReceivedTimeForTimeout()
+        {
+            _lastDataReceivedTime = _lastDataReceivedTime.Subtract(_jsInteropDefaultCallTimeout);
+        }
+
+        private async Task CompletePipeAndDisposeStream(Exception? ex = null)
         {
             await _pipe.Writer.CompleteAsync(ex);
             Dispose(true);
