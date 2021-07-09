@@ -274,6 +274,121 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void CanReRenderRootComponentsWithNewParameters()
+        {
+            // This differs from the other "CanReRender..." tests above in that the root component is being supplied
+            // with new parameters from outside, as opposed to making its own decision to re-render.
+
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new MessageComponent();
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(MessageComponent.Message)] = "Hello"
+            }));
+
+            // Assert 1: First render
+            var batch = renderer.Batches.Single();
+            var diff = batch.DiffsByComponentId[componentId].Single();
+            Assert.Collection(diff.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            });
+            AssertFrame.Text(batch.ReferenceFrames[0], "Hello");
+
+            // Act 2: Update params
+            renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(MessageComponent.Message)] = "Goodbye"
+            }));
+
+            // Assert 2: Second render
+            var batch2 = renderer.Batches.Skip(1).Single();
+            var diff2 = batch2.DiffsByComponentId[componentId].Single();
+            Assert.Collection(diff2.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            });
+            AssertFrame.Text(batch2.ReferenceFrames[0], "Goodbye");
+        }
+
+        [Fact]
+        public async Task CanAddAndRenderNewRootComponentsWhileNotQuiescent()
+        {
+            // Arrange 1: An async root component
+            var renderer = new TestRenderer();
+            var tcs1 = new TaskCompletionSource();
+            var component1 = new AsyncComponent(tcs1.Task, 1);
+            var component1Id = renderer.AssignRootComponentId(component1);
+
+            // Act/Assert 1: Its SetParametersAsync task remains incomplete
+            var renderTask1 = renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(component1Id));
+            Assert.False(renderTask1.IsCompleted);
+
+            // Arrange/Act 2: Can add a second root component while not quiescent
+            var tcs2 = new TaskCompletionSource();
+            var component2 = new AsyncComponent(tcs2.Task, 1);
+            var component2Id = renderer.AssignRootComponentId(component2);
+            var renderTask2 = renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(component2Id));
+
+            // Assert 2
+            Assert.False(renderTask1.IsCompleted);
+            Assert.False(renderTask2.IsCompleted);
+
+            // Completing the first task isn't enough to consider the system quiescent, because there's now a second task
+            tcs1.SetResult();
+
+            // renderTask1 should not complete until we finish tcs2.
+            // We can't really prove that absolutely, but at least show it doesn't happen during a certain time period.
+            await Assert.ThrowsAsync<TimeoutException>(() => renderTask1.WaitAsync(TimeSpan.FromMilliseconds(250)));
+            Assert.False(renderTask1.IsCompleted);
+            Assert.False(renderTask2.IsCompleted);
+
+            // Completing the second task does finally complete both render tasks
+            tcs2.SetResult();
+            await Task.WhenAll(renderTask1, renderTask2);
+        }
+
+        [Fact]
+        public async Task AsyncComponentTriggeringRootReRenderDoesNotDeadlock()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var tcs = new TaskCompletionSource();
+            int? componentId = null;
+            var hasRendered = false;
+            var component = new CallbackDuringSetParametersAsyncComponent
+            {
+                Callback = async () =>
+                {
+                    await tcs.Task;
+                    if (!hasRendered)
+                    {
+                        hasRendered = true;
+
+                        // If we were to await here, then it would deadlock, because the component would be saying it's not
+                        // finished rendering until the rendering system has already finished. The point of this test is to
+                        // show that, as long as we don't await quiescence here, nothing within the system will be doing so
+                        // and hence the whole process can complete.
+                        _ = renderer.RenderRootComponentAsync(componentId.Value, ParameterView.Empty);
+                    }
+                }
+            };
+            componentId = renderer.AssignRootComponentId(component);
+
+            // Act
+            var renderTask = renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId.Value));
+
+            // Assert
+            Assert.False(renderTask.IsCompleted);
+            tcs.SetResult();
+            await renderTask;
+        }
+
+        [Fact]
         public async Task CanRenderAsyncComponentsWithSyncChildComponents()
         {
             // Arrange
@@ -5413,6 +5528,23 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     await ThrowDuringEventAsync;
                 }
+            }
+        }
+
+        private class CallbackDuringSetParametersAsyncComponent : AutoRenderComponent
+        {
+            public int RenderCount { get; private set; }
+            public Func<Task> Callback { get; set; }
+
+            public override async Task SetParametersAsync(ParameterView parameters)
+            {
+                await Callback();
+                await base.SetParametersAsync(parameters);
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                RenderCount++;
             }
         }
     }

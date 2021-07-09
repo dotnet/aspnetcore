@@ -200,37 +200,35 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
-        /// Performs the first render for a root component, waiting for this component and all
-        /// children components to finish rendering in case there is any asynchronous work being
-        /// done by any of the components. After this, the root component
-        /// makes its own decisions about when to re-render, so there is no need to call
-        /// this more than once.
+        /// Supplies parameters for a root component, normally causing it to render. This can be
+        /// used to trigger the first render of a root component, or to update its parameters and
+        /// trigger a subsequent render. Note that components may also make their own decisions about
+        /// when to re-render, and may re-render at any time.
+        ///
+        /// The returned <see cref="Task"/> waits for this component and all descendant components to
+        /// finish rendering in case there is any asynchronous work being done by any of them.
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
-        /// <param name="initialParameters">The <see cref="ParameterView"/>with the initial parameters to use for rendering.</param>
+        /// <param name="initialParameters">The <see cref="ParameterView"/> with the initial or updated parameters to use for rendering.</param>
         /// <remarks>
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
         protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
-            if (Interlocked.CompareExchange(ref _pendingTasks, new List<Task>(), null) != null)
-            {
-                throw new InvalidOperationException("There is an ongoing rendering in progress.");
-            }
+            Dispatcher.AssertAccess();
 
-            // During the rendering process we keep a list of components performing work in _pendingTasks.
-            // _renderer.AddToPendingTasks will be called by ComponentState.SetDirectParameters to add the
-            // the Task produced by Component.SetParametersAsync to _pendingTasks in order to track the
-            // remaining work.
-            // During the synchronous rendering process we don't wait for the pending asynchronous
-            // work to finish as it will simply trigger new renders that will be handled afterwards.
-            // During the asynchronous rendering process we want to wait up until all components have
-            // finished rendering so that we can produce the complete output.
+            // Since this is a "render root" operation being invoked from outside the system, we start tracking
+            // any async tasks from this point until we reach quiescence. This allows external code such as prerendering
+            // to know when the renderer has some finished output. We don't track async tasks at other times
+            // because nobody would be waiting for quiescence at other times.
+            // Having a nonnull value for _pendingTasks is what signals that we should be capturing the async tasks.
+            _pendingTasks ??= new();
+
             var componentState = GetRequiredComponentState(componentId);
             if (TestableMetadataUpdate.IsSupported)
             {
-                // when we're doing hot-reload, stash away the parameters used while rendering root components.
+                // When we're doing hot-reload, stash away the parameters used while rendering root components.
                 // We'll use this to trigger re-renders on hot reload updates.
                 _rootComponentsLatestParameters ??= new();
                 _rootComponentsLatestParameters[componentId] = initialParameters.Clone();
@@ -238,15 +236,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             componentState.SetDirectParameters(initialParameters);
 
-            try
-            {
-                await ProcessAsynchronousWork();
-                Debug.Assert(_pendingTasks.Count == 0);
-            }
-            finally
-            {
-                _pendingTasks = null;
-            }
+            await WaitForQuiescence();
+            Debug.Assert(_pendingTasks == null);
         }
 
         /// <summary>
@@ -278,21 +269,45 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="exception">The <see cref="Exception"/>.</param>
         protected abstract void HandleException(Exception exception);
 
-        private async Task ProcessAsynchronousWork()
+        private Task? _ongoingQuiescenceTask;
+
+        private async Task WaitForQuiescence()
         {
-            // Child components SetParametersAsync are stored in the queue of pending tasks,
-            // which might trigger further renders.
-            while (_pendingTasks.Count > 0)
+            // If there's already a loop waiting for quiescence, just join it
+            if (_ongoingQuiescenceTask is not null)
             {
-                // Create a Task that represents the remaining ongoing work for the rendering process
-                var pendingWork = Task.WhenAll(_pendingTasks);
+                await _ongoingQuiescenceTask;
+                return;
+            }
 
-                // Clear all pending work.
-                _pendingTasks.Clear();
+            try
+            {
+                _ongoingQuiescenceTask ??= ProcessAsynchronousWork();
+                await _ongoingQuiescenceTask;
+            }
+            finally
+            {
+                Debug.Assert(_pendingTasks.Count == 0);
+                _pendingTasks = null;
+                _ongoingQuiescenceTask = null;
+            }
 
-                // new work might be added before we check again as a result of waiting for all
-                // the child components to finish executing SetParametersAsync
-                await pendingWork;
+            async Task ProcessAsynchronousWork()
+            {
+                // Child components SetParametersAsync are stored in the queue of pending tasks,
+                // which might trigger further renders.
+                while (_pendingTasks.Count > 0)
+                {
+                    // Create a Task that represents the remaining ongoing work for the rendering process
+                    var pendingWork = Task.WhenAll(_pendingTasks);
+
+                    // Clear all pending work.
+                    _pendingTasks.Clear();
+
+                    // new work might be added before we check again as a result of waiting for all
+                    // the child components to finish executing SetParametersAsync
+                    await pendingWork;
+                }
             }
         }
 
