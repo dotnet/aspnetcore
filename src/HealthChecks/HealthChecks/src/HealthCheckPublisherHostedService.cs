@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private readonly ILogger _logger;
         private readonly IHealthCheckPublisher[] _publishers;
 
-        private CancellationTokenSource _stopping;
+        private readonly CancellationTokenSource _stopping;
         private Timer? _timer;
         private CancellationTokenSource? _runTokenSource;
 
