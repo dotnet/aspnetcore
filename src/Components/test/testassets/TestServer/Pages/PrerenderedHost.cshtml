@@ -2,18 +2,19 @@
 @using BasicTestApp.RouterTest
 @using Components.TestServer
 
-@{
-    Prerendering.DependsOn<TestRouterWithLazyAssembly>();
-}
+<prerender-source>
+    <component name="app" type="typeof(TestRouterWithLazyAssembly)" render-mode="ServerPrerendered" />
+    <component name="head" type="typeof(PrerenderedHeadRoot)" render-mode="ServerPrerendered" />
+</prerender-source>
 
 <!DOCTYPE html>
 <html>
 <head>
     <base href="~/" />
-    <component type="typeof(PrerenderedHeadRoot)" render-mode="ServerPrerendered" />
+    <prerender-output name="head" />
 </head>
 <body>
-    <app><component type="typeof(TestRouterWithLazyAssembly)" render-mode="ServerPrerendered" /></app>
+    <app><prerender-output name="app" /></app>
 
     @*
         So that E2E tests can make assertions about both the prerendered and

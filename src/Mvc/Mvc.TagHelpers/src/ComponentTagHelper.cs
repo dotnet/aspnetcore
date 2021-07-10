@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -46,6 +45,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
             set => _parameters = value;
         }
+
+        /// <summary>
+        /// Gets or sets the name used to identify this component in <c>&lt;prerender-output&gt;</c> elements.
+        /// </summary>
+        [HtmlAttributeName(PrerenderingHelpers.PrerenderedNameName)]
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the component type. This value is required.
@@ -102,39 +107,37 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             var requestServices = ViewContext.HttpContext.RequestServices;
-
-            var result = _renderMode.Value switch
-            {
-                RenderMode.ServerPrerendered => await RenderComponentWithPrerenderingDependenciesAsync(requestServices),
-                _ => await RenderComponentAsync(requestServices)
-            };
+            var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
+            var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
             // Reset the TagName. We don't want `component` to render.
             output.TagName = null;
-            output.Content.SetHtmlContent(result);
-        }
 
-        private async Task<IHtmlContent> RenderComponentWithPrerenderingDependenciesAsync(IServiceProvider services)
-        {
-            var prerendering = services.GetRequiredService<PrerenderingDependencyManager>();
-
-            if (prerendering.FirstRenderedComponentType is not null)
+            if (context.Items.ContainsKey(typeof(PrerenderSourceTagHelper)))
             {
-                var result = await prerendering.GetOrRenderContentAsync(ViewContext);
-
-                if (prerendering.FirstRenderedComponentType == ComponentType)
+                if (string.IsNullOrEmpty(Name))
                 {
-                    return result;
+                    throw new InvalidOperationException(
+                        $"Components in <{PrerenderSourceTagHelper.TagHelperName}> elements " +
+                        $"must specify a '{PrerenderingHelpers.PrerenderedNameName}' attribute.");
                 }
+
+                var prerenderCache = PrerenderingHelpers.GetOrCreatePrerenderCache(ViewContext);
+
+                if (prerenderCache.ContainsKey(Name))
+                {
+                    throw new InvalidOperationException(
+                        $"Components in <{PrerenderSourceTagHelper.TagHelperName}> elements " +
+                        $"may not have identical '{PrerenderingHelpers.PrerenderedNameName}' attributes.");
+                }
+
+                prerenderCache.Add(Name, result);
+                output.Content.SetHtmlContent(string.Empty);
             }
-
-            return await RenderComponentAsync(services);
-        }
-
-        private Task<IHtmlContent> RenderComponentAsync(IServiceProvider services)
-        {
-            var componentRenderer = services.GetRequiredService<IComponentRenderer>();
-            return componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
+            else 
+            {
+                output.Content.SetHtmlContent(result);
+            }
         }
     }
 }

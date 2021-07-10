@@ -29,15 +29,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <typeparam name="TComponent">The component type.</typeparam>
         /// <param name="selector">The DOM element selector.</param>
-        /// <param name="append">If <c>true</c> the child content of the root component will be appended to existing HTML content.</param>
-        public void Add<[DynamicallyAccessedMembers(Component)] TComponent>(string selector, bool append) where TComponent : IComponent
+        /// <param name="appendContent">If <c>true</c> the child content of the root component will be appended to existing HTML content.</param>
+        public void Add<[DynamicallyAccessedMembers(Component)] TComponent>(string selector, bool appendContent) where TComponent : IComponent
         {
             if (selector is null)
             {
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            Add(new RootComponentMapping(typeof(TComponent), selector, ParameterView.Empty, append));
+            Add(new RootComponentMapping(typeof(TComponent), selector, ParameterView.Empty, appendContent));
         }
 
         /// <summary>
@@ -67,8 +67,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
         /// <param name="selector">The DOM element selector.</param>
         /// <param name="parameters">The parameters to the root component.</param>
-        /// <param name="append">If <c>true</c> the child content of the root component will be appended to existing HTML content.</param>
-        public void Add([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters, bool append)
+        /// <param name="appendContent">If <c>true</c> the child content of the root component will be appended to existing HTML content.</param>
+        public void Add([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters, bool appendContent)
         {
             if (componentType is null)
             {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            Add(new RootComponentMapping(componentType, selector, parameters, append));
+            Add(new RootComponentMapping(componentType, selector, parameters, appendContent));
         }
 
         /// <summary>

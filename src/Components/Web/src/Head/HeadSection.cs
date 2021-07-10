@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Head
     /// <summary>
     /// Renders content provided by <see cref="HeadContent"/> components.
     /// </summary>
-    public class HeadOutlet : ComponentBase
+    public class HeadSection : ComponentBase
     {
         internal const string SectionOutletName = "head";
 

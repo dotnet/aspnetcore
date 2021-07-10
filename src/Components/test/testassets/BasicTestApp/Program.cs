@@ -26,7 +26,7 @@ namespace BasicTestApp
             await SimulateErrorsIfNeededForTest();
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.RootComponents.Add<HeadRoot>("head", append: true);
+            builder.RootComponents.Add<HeadRoot>("head", appendContent: true);
             builder.RootComponents.Add<Index>("root");
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

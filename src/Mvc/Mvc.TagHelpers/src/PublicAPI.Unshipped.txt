@@ -6,6 +6,19 @@ Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.PersistenceMo
 Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode
 Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode.Server = 0 -> Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode
 Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode.WebAssembly = 1 -> Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode
+Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderOutputTagHelper
+Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderOutputTagHelper.PrerenderOutputTagHelper() -> void
+Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderSourceTagHelper
+Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderSourceTagHelper.PrerenderSourceTagHelper() -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.ComponentTagHelper.Name.get -> string
+~Microsoft.AspNetCore.Mvc.TagHelpers.ComponentTagHelper.Name.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext
 ~Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.ViewContext.set -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderOutputTagHelper.Name.get -> string
+~Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderOutputTagHelper.Name.set -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderOutputTagHelper.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext
+~Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderOutputTagHelper.ViewContext.set -> void
 ~override Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
+~override Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderOutputTagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
+~override Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderSourceTagHelper.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
+~override Microsoft.AspNetCore.Mvc.TagHelpers.PrerenderSourceTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task

@@ -25,12 +25,12 @@ export class BrowserRenderer {
     attachNavigationManagerToEventDelegator(this.eventDelegator);
   }
 
-  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, append: boolean): void {
+  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
     this.attachComponentToElement(componentId, element);
 
     // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
     // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
-    if (!append) {
+    if (!appendContent) {
       rootComponentsPendingFirstRender[componentId] = element;
     }
   }

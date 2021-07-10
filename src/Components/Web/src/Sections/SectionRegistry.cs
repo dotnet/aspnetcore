@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Sections
         {
             if (!_providersByName.TryGetValue(name, out var providers))
             {
-                providers = new List<ISectionContentProvider>();
+                providers = new();
                 _providersByName.Add(name, providers);
             }
 
@@ -70,10 +70,12 @@ namespace Microsoft.AspNetCore.Components.Sections
 
         public void Unsubscribe(string name, ISectionContentSubscriber subscriber)
         {
-            if (_subscribersByName.TryGetValue(name, out var subscribers))
+            if (!_subscribersByName.TryGetValue(name, out var subscribers))
             {
-                subscribers.Remove(subscriber);
+                throw new InvalidOperationException($"The subscriber is already unsubscribed.");
             }
+
+            subscribers.Remove(subscriber);
         }
 
         public void NotifyContentChanged(string name, ISectionContentProvider provider)

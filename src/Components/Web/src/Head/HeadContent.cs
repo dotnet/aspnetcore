@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Components.Sections;
 namespace Microsoft.AspNetCore.Components.Head
 {
     /// <summary>
-    /// Provides content to <see cref="HeadOutlet"/> components.
+    /// Provides content to <see cref="HeadSection"/> components.
     /// </summary>
     public class HeadContent : ComponentBase
     {
         /// <summary>
-        /// Gets or sets the content to be rendered in <see cref="HeadOutlet"/> instances.
+        /// Gets or sets the content to be rendered in <see cref="HeadSection"/> instances.
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Head
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<SectionContent>(0);
-            builder.AddAttribute(1, nameof(SectionContent.Name), HeadOutlet.SectionOutletName);
+            builder.AddAttribute(1, nameof(SectionContent.Name), HeadSection.SectionOutletName);
             builder.AddAttribute(2, nameof(SectionContent.ChildContent), ChildContent);
             builder.CloseComponent();
         }

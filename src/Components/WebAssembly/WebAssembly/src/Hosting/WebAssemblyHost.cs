@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     {
                 foreach (var rootComponent in rootComponents)
                         {
-                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters, rootComponent.Append);
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters, rootComponent.AppendContent);
                         }
 
                         initializationTcs.SetResult();
