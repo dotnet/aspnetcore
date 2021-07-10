@@ -6,11 +6,11 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Http.Extensions
 {
-    internal class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails>
+    internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails>
     {
         private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
         private static readonly JsonEncodedText Title = JsonEncodedText.Encode("title");
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new JsonException(Resources.UnexpectedJsonEnd);
+                throw new JsonException("Unexcepted end when reading JSON.");
             }
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (reader.TokenType != JsonTokenType.EndObject)
             {
-                throw new JsonException(Resources.UnexpectedJsonEnd);
+                throw new JsonException("Unexcepted end when reading JSON.");
             }
 
             return problemDetails;

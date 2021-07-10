@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Microsoft.AspNetCore.Mvc
 {

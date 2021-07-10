@@ -466,30 +466,6 @@
   <data name="ValidationVisitor_ExceededMaxPropertyDepth" xml:space="preserve">
     <value>{0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.</value>
   </data>
-  <data name="ApiConventions_Title_400" xml:space="preserve">
-    <value>Bad Request</value>
-  </data>
-  <data name="ApiConventions_Title_401" xml:space="preserve">
-    <value>Unauthorized</value>
-  </data>
-  <data name="ApiConventions_Title_403" xml:space="preserve">
-    <value>Forbidden</value>
-  </data>
-  <data name="ApiConventions_Title_404" xml:space="preserve">
-    <value>Not Found</value>
-  </data>
-  <data name="ApiConventions_Title_406" xml:space="preserve">
-    <value>Not Acceptable</value>
-  </data>
-  <data name="ApiConventions_Title_409" xml:space="preserve">
-    <value>Conflict</value>
-  </data>
-  <data name="ApiConventions_Title_415" xml:space="preserve">
-    <value>Unsupported Media Type</value>
-  </data>
-  <data name="ApiConventions_Title_422" xml:space="preserve">
-    <value>Unprocessable Entity</value>
-  </data>
   <data name="ReferenceToNewtonsoftJsonRequired" xml:space="preserve">
     <value>'{0}' requires a reference to '{1}'. Configure your application by adding a reference to the '{1}' package and calling '{2}.{3}' inside the call to '{4}' in the application startup code.</value>
   </data>
@@ -509,9 +485,6 @@
   </data>
   <data name="UnexpectedJsonEnd" xml:space="preserve">
     <value>Unexcepted end when reading JSON.</value>
-  </data>
-  <data name="ApiConventions_Title_500" xml:space="preserve">
-    <value>An error occurred while processing your request.</value>
   </data>
   <data name="FailedToReadRequestForm" xml:space="preserve">
     <value>Failed to read the request form. {0}</value>
