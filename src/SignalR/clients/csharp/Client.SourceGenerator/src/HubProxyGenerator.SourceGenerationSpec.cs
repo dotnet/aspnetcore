@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             public string FullyQualifiedReturnTypeName;
             public List<ArgumentSpec> Arguments = new();
             public SupportClassification Support;
+            public string? SupportHint;
             public StreamSpec Stream;
             public string? InnerReturnTypeName;
             public bool IsReturnTypeValueTask => FullyQualifiedReturnTypeName.StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal);

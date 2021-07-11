@@ -16,24 +16,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
-        public static DiagnosticDescriptor HubProxyMultipleClientToServerStreams { get; } = new DiagnosticDescriptor(
-            id: "SSG0002",
-            title: "Multiple client to server streams",
-            messageFormat: "'{0}' has a signature with multiple client to server streams which is not supported for source generation.",
-            category: "SignalR.Client.SourceGenerator",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true);
-
-        public static DiagnosticDescriptor HubProxyStreamTypeMismatch { get; } = new DiagnosticDescriptor(
-            id: "SSG0003",
-            title: "Stream type mismatch",
-            messageFormat: "'{0}' has a signature with both ChannelReader and IAsyncEnumerable type streams.",
-            category: "SignalR.Client.SourceGenerator",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true);
-
         public static DiagnosticDescriptor HubProxyUnsupportedReturnTypeGeneral { get; } = new DiagnosticDescriptor(
-            id: "SSG0004",
+            id: "SSG0002",
             title: "Unsupported return type",
             messageFormat: "'{0}' has a return type of '{1}' but only Task, ValueTask, Task<T> and ValueTask<T> are supported for source generation.",
             category: "SignalR.Client.SourceGenerator",
@@ -41,9 +25,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             isEnabledByDefault: true);
 
         public static DiagnosticDescriptor HubProxyUnsupportedReturnTypeStream { get; } = new DiagnosticDescriptor(
-            id: "SSG0005",
+            id: "SSG0003",
             title: "Unsupported return type (streaming call)",
-            messageFormat: "'{0}' has a return type of '{1}' but only Task<T> and ValueTask<T> are supported for source generation of a client-to-server streaming method.",
+            messageFormat: "'{0}' has a return type of '{1}' but only Task and ValueTask are supported for source generation of a client-to-server streaming method.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true);

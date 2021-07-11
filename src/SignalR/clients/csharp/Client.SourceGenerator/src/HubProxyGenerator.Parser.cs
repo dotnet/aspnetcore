@@ -119,45 +119,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
                             switch (parameter.Type)
                             {
-                                case INamedTypeSymbol {Arity: 1, Name: "ChannelReader"} when
-                                    methodSpec.Stream.HasFlag(StreamSpec.ServerToClient) &&
-                                    methodSpec.Stream.HasFlag(StreamSpec.AsyncEnumerable):
-                                    _context.ReportDiagnostic(Diagnostic.Create(
-                                        DiagnosticDescriptors.HubProxyStreamTypeMismatch,
-                                        classSpec.CallSite,
-                                        methodSpec.Name));
-                                    methodSpec.Support = SupportClassification.StreamTypeMismatch;
-                                    continue;
-                                case INamedTypeSymbol {Arity: 1, Name: "ChannelReader"} when
-                                    methodSpec.Stream.HasFlag(StreamSpec.ClientToServer):
-                                    _context.ReportDiagnostic(Diagnostic.Create(
-                                        DiagnosticDescriptors.HubProxyMultipleClientToServerStreams,
-                                        classSpec.CallSite,
-                                        methodSpec.Name));
-                                    methodSpec.Support = SupportClassification.MultipleClientToServerStreams;
-                                    continue;
                                 case INamedTypeSymbol {Arity: 1, Name: "ChannelReader"}:
                                     methodSpec.Stream |= StreamSpec.ClientToServer;
                                     break;
-                                case INamedTypeSymbol {Arity: 1, Name: "IAsyncEnumerable"} when
-                                    methodSpec.Stream.HasFlag(StreamSpec.ServerToClient) &&
-                                    !methodSpec.Stream.HasFlag(StreamSpec.AsyncEnumerable):
-                                    _context.ReportDiagnostic(Diagnostic.Create(
-                                        DiagnosticDescriptors.HubProxyStreamTypeMismatch,
-                                        classSpec.CallSite,
-                                        methodSpec.Name));
-                                    methodSpec.Support = SupportClassification.StreamTypeMismatch;
-                                    continue;
-                                case INamedTypeSymbol {Arity: 1, Name: "IAsyncEnumerable"} when
-                                    methodSpec.Stream.HasFlag(StreamSpec.ClientToServer):
-                                    _context.ReportDiagnostic(Diagnostic.Create(
-                                        DiagnosticDescriptors.HubProxyMultipleClientToServerStreams,
-                                        classSpec.CallSite,
-                                        methodSpec.Name));
-                                    methodSpec.Support = SupportClassification.MultipleClientToServerStreams;
-                                    continue;
                                 case INamedTypeSymbol {Arity: 1, Name: "IAsyncEnumerable"}:
-                                    methodSpec.Stream |= StreamSpec.ClientToServer | StreamSpec.AsyncEnumerable;
+                                    methodSpec.Stream |= StreamSpec.ClientToServer;
                                     break;
                             }
                         }
@@ -173,6 +139,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                                     classSpec.CallSite,
                                     methodSpec.Name, member.ReturnType.Name));
                                 methodSpec.Support = SupportClassification.UnsupportedReturnType;
+                                methodSpec.SupportHint =
+                                    "Client to server streaming calls must return a Task or ValueTask";
                             }
                             else if (!methodSpec.Stream.HasFlag(StreamSpec.ClientToServer) &&
                                      member.ReturnType is not INamedTypeSymbol {Name: "Task" or "ValueTask"})
@@ -182,6 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                                     classSpec.CallSite,
                                     methodSpec.Name, member.ReturnType.Name));
                                 methodSpec.Support = SupportClassification.UnsupportedReturnType;
+                                methodSpec.SupportHint = "Non-streaming calls must return a Task, ValueTask, Task<T> or ValueTask<T>";
                             }
                         }
 

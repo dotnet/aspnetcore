@@ -84,7 +84,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     var body = "";
                     if (methodSpec.Support != SupportClassification.Supported)
                     {
-                        body = "throw new System.NotSupportedException();";
+                        body = methodSpec.SupportHint is null
+                            ? "throw new System.NotSupportedException();"
+                            : $"throw new System.NotSupportedException(\"{methodSpec.SupportHint}\");";
                     }
                     else
                     {
@@ -126,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerated
 {{
     public sealed class {classSpec.ClassTypeName} : {classSpec.FullyQualifiedInterfaceTypeName}
     {{
-        private IHubConnection conn;
+        private readonly IHubConnection conn;
         public {classSpec.ClassTypeName}(IHubConnection conn)
         {{
             this.conn = conn;
