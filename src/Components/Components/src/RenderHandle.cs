@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Components
         public bool IsInitialized => _renderer is not null;
 
         /// <summary>
-        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
+        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a metadata update (hot-reload) change.
         /// </summary>
-        public bool IsHotReloading => HotReloadFeature.IsSupported && (_renderer?.IsHotReloading ?? false);
+        public bool IsRenderingOnMetadataUpdate => TestableMetadataUpdate.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
 
         /// <summary>
         /// Notifies the renderer that the component should be rendered.

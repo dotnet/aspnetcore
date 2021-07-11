@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Linq;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -61,7 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ConfigureDefaultServices(services);
             AddMvcCoreServices(services);
 
-            if (environment?.IsDevelopment() ?? false)
+            if (MetadataUpdater.IsSupported)
             {
                 services.TryAddEnumerable(
                     ServiceDescriptor.Singleton<IActionDescriptorChangeProvider, HotReloadService>());
