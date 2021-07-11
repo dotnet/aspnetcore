@@ -1,7 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 #if (!NoAuth && Hosted)
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 #endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 #if (Hosted)
 using ComponentsWebAssembly_CSharp.Client;
 #else
