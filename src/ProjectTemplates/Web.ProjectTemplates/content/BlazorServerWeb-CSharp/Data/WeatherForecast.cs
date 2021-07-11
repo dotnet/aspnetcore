@@ -1,3 +1,5 @@
+using System;
+
 namespace BlazorServerWeb_CSharp.Data
 {
     public class WeatherForecast

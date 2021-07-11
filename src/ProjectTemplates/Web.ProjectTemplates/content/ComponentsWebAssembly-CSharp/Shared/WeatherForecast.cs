@@ -1,4 +1,8 @@
-﻿namespace ComponentsWebAssembly_CSharp.Shared
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace ComponentsWebAssembly_CSharp.Shared
 {
     public class WeatherForecast
     {

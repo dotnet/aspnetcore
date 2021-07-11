@@ -1,14 +1,19 @@
-﻿#if (GenerateApiOrGraph)
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+#if (GenerateApiOrGraph)
+using Microsoft.Extensions.Configuration;
+using Microsoft.Identity.Web;
 using System.Net;
+using System.Net.Http;
 #endif
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 #if (GenerateGraph)
 using Microsoft.Graph;
 #endif
-#if (GenerateApiOrGraph)
-using Microsoft.Identity.Web;
-#endif
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 
 namespace Company.WebApplication1.Pages
 {

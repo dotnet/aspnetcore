@@ -1,14 +1,21 @@
-﻿#if (!NoAuth)
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+#if (!NoAuth)
 using Microsoft.AspNetCore.Authorization;
 #endif
 #if (GenerateApi)
+using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Web;
 using System.Net;
+using System.Net.Http;
 #endif
 #if (GenerateGraph)
 using Microsoft.Graph;
 #endif
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web.Resource;
 #endif
