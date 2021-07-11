@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
 namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
@@ -13,5 +16,15 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// is un-escaped.
         /// </summary>
         string? Path { get; }
+
+        /// <summary>
+        /// Gets the selected <see cref="Http.Endpoint"/> for the original request.
+        /// </summary>
+        Endpoint? Endpoint => null;
+
+        /// <summary>
+        /// Gets the <see cref="RouteValueDictionary"/> associated with the original request.
+        /// </summary>
+        RouteValueDictionary? RouteValues => null;
     }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Diagnostics
     /// <summary>
     /// A feature containing the path and error of the original request for examination by an exception handler.
     /// </summary>
-    public class ExceptionHandlerFeature : IExceptionHandlerEndpointFeature
+    public class ExceptionHandlerFeature : IExceptionHandlerPathFeature
     {
         /// <inheritdoc/>
         public Exception Error { get; set; } = default!;
@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Diagnostics
         public string Path { get; set; } = default!;
 
         /// <inheritdoc/>
-        public Endpoint? Endpoint { get; set; } = default!;
+        public Endpoint? Endpoint { get; set; }
 
         /// <inheritdoc/>
-        public RouteValueDictionary? RouteValues { get; set; } = default!;
+        public RouteValueDictionary? RouteValues { get; set; }
     }
 }
