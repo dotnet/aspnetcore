@@ -14,9 +14,10 @@ using Microsoft.AspNetCore.Components;
 #line default
 #line hidden
 #nullable disable
-    public partial class TestComponent<TItem1, TItem2> : Microsoft.AspNetCore.Components.ComponentBase
-    where TItem1 : class
-    where TItem2 : struct
+    public partial class TestComponent<TItem1, TItem2, TItem3> : Microsoft.AspNetCore.Components.ComponentBase
+    where TItem1 : Image
+    where TItem2 : ITag
+    where TItem3 : Image, new()
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -35,7 +36,7 @@ global::System.Object TItem1 = null!;
 #pragma warning disable CS8321
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-void __TypeConstraints_TItem1<TItem1>() where TItem1 : class
+void __TypeConstraints_TItem1<TItem1>() where TItem1 : Image
 {
 }
 #pragma warning restore CS0693
@@ -61,7 +62,33 @@ global::System.Object TItem2 = null!;
 #pragma warning disable CS8321
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-void __TypeConstraints_TItem2<TItem2>() where TItem2 : struct
+void __TypeConstraints_TItem2<TItem2>() where TItem2 : ITag
+{
+}
+#pragma warning restore CS0693
+#pragma warning restore CS8321
+
+#line default
+#line hidden
+#nullable disable
+        }
+        ))();
+        ((System.Action)(() => {
+#nullable restore
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+global::System.Object TItem3 = null!;
+
+#line default
+#line hidden
+#nullable disable
+        }
+        ))();
+        ((System.Action)(() => {
+#pragma warning disable CS0693
+#pragma warning disable CS8321
+#nullable restore
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+void __TypeConstraints_TItem3<TItem3>() where TItem3 : Image, new()
 {
 }
 #pragma warning restore CS0693
@@ -81,7 +108,7 @@ void __TypeConstraints_TItem2<TItem2>() where TItem2 : struct
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
-#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
  foreach (var item2 in Items2)
 {
     
@@ -90,14 +117,14 @@ void __TypeConstraints_TItem2<TItem2>() where TItem2 : struct
 #line hidden
 #nullable disable
 #nullable restore
-#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 10 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = ChildContent(item2);
 
 #line default
 #line hidden
 #nullable disable
 #nullable restore
-#line 10 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 11 "x:\dir\subdir\Test\TestComponent.cshtml"
         
 }
 
@@ -107,10 +134,11 @@ __o = ChildContent(item2);
         }
         #pragma warning restore 1998
 #nullable restore
-#line 12 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 16 "x:\dir\subdir\Test\TestComponent.cshtml"
        
     [Parameter] public TItem1 Item1 { get; set; }
     [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public TItem3 Item3 { get; set; }
     [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 
 #line default

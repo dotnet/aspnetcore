@@ -34,6 +34,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         /// </summary>
         public List<CascadingGenericTypeParameter> ReceivesCascadingGenericTypes { get; set; }
 
+        /// <summary>
+        /// Gets a list describing the type and property constraints that are
+        /// set for generic types on the methods.
+        /// <example>
+        /// ["where T: Foo, new()", "where U: Image", "where Z: notnull"]
+        /// </example>
+        /// </summary>
+        public IEnumerable<string> GenericTypeConstraints { get; set; }
+
         public override void Accept(IntermediateNodeVisitor visitor)
         {
             if (visitor == null)
