@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
     {
+        private static readonly object StreamPersistentStateKey = new object();
+
         // Internal for unit testing
         internal readonly Dictionary<long, IHttp3Stream> _streams = new Dictionary<long, IHttp3Stream>();
         internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
@@ -270,16 +272,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             // Request stream
                             UpdateHighestStreamId(streamIdFeature.StreamId);
 
+                            Http3Stream<TContext> stream;
+
                             // Check whether there is an existing HTTP/3 stream on the transport stream.
                             // A stream will only be cached if the transport stream itself is reused.
-                            var stream = streamContext.Features.Get<ICachedHttp3StreamFeature<TContext>>()?.CachedStream;
-                            if (stream == null)
+                            if (!streamContext.PersistentState.TryGetValue(StreamPersistentStateKey, out var s))
                             {
                                 stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
-                                streamContext.Features.Set<ICachedHttp3StreamFeature<TContext>>(new DefaultCachedHttp3StreamFeature<TContext>(stream));
+                                streamContext.PersistentState.Add(StreamPersistentStateKey, stream);
                             }
                             else
                             {
+                                stream = (Http3Stream<TContext>)s!;
                                 stream.InitializeWithExistingContext(streamContext.Transport);
                             }
 
