@@ -48,16 +48,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _headerType = -1;
 
             _frameWriter = new Http3FrameWriter(
-                context.Transport.Output,
                 context.StreamContext,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
-                context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log,
                 _streamIdFeature,
                 context.ClientPeerSettings,
                 this);
+            _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
         }
 
         private void OnStreamClosed()

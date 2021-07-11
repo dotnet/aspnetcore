@@ -88,7 +88,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private Http3FrameWriter CreateFrameWriter(Pipe pipe)
         {
-            return new Http3FrameWriter(pipe.Writer, null, null, null, null, _dirtyMemoryPool, null, Mock.Of<IStreamIdFeature>(), new Http3PeerSettings(), null);
+            var frameWriter = new Http3FrameWriter(null, null, null, _dirtyMemoryPool, null, Mock.Of<IStreamIdFeature>(), new Http3PeerSettings(), null);
+            frameWriter.Reset(pipe.Writer, null);
+
+            return frameWriter;
         }
     }
 }

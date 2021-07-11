@@ -72,7 +72,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // No need to pass in timeoutControl here, since no minDataRates are passed to the TimingPipeFlusher.
             // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
-            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, _log);
+            _flusher = new TimingPipeFlusher(timeoutControl: null, _log);
+            _flusher.Initialize(_pipeWriter);
 
             _dataWriteProcessingTask = ProcessDataWrites();
         }

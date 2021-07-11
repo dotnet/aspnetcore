@@ -67,7 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _log = serviceContext.Log;
             _timeoutControl = timeoutControl;
             _minResponseDataRate = minResponseDataRate;
-            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, serviceContext.Log);
+            _flusher = new TimingPipeFlusher(timeoutControl, serviceContext.Log);
+            _flusher.Initialize(_outputWriter);
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
 

@@ -94,26 +94,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _completionState = default;
             HeaderTimeoutTicks = 0;
 
-            _frameWriter = new Http3FrameWriter(
-                context.Transport.Output,
-                context.StreamContext,
-                context.TimeoutControl,
-                context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
-                context.ConnectionId,
-                context.MemoryPool,
-                context.ServiceContext.Log,
-                _streamIdFeature,
-                context.ClientPeerSettings,
-                this);
+            if (_frameWriter == null)
+            {
+                _frameWriter = new Http3FrameWriter(
+                    context.StreamContext,
+                    context.TimeoutControl,
+                    context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
+                    context.MemoryPool,
+                    context.ServiceContext.Log,
+                    _streamIdFeature,
+                    context.ClientPeerSettings,
+                    this);
 
-            _http3Output = new Http3OutputProducer(
-                _frameWriter,
-                context.MemoryPool,
-                this,
-                context.ServiceContext.Log);
-            RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
-            Output = _http3Output;
-            QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
+                _http3Output = new Http3OutputProducer(
+                    _frameWriter,
+                    context.MemoryPool,
+                    this,
+                    context.ServiceContext.Log);
+                Output = _http3Output;
+                RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
+                QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
+            }
+            else
+            {
+                _http3Output.StreamReset();
+                RequestBodyPipe.Reset();
+                QPackDecoder.Reset();
+            }
+
+            _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
         }
 
         public void InitializeWithExistingContext(IDuplexPipe transport)
