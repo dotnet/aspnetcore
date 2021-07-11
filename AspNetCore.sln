@@ -7745,7 +7745,6 @@ Global
 		{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}.Release|x64.Build.0 = Release|Any CPU
 		{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}.Release|x86.ActiveCfg = Release|Any CPU
 		{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}.Release|x86.Build.0 = Release|Any CPU
-<<<<<<< HEAD
 		{5C641396-7E92-4F5C-A5A1-B4CDF480539B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5C641396-7E92-4F5C-A5A1-B4CDF480539B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C641396-7E92-4F5C-A5A1-B4CDF480539B}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -7794,7 +7793,6 @@ Global
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x64.Build.0 = Release|Any CPU
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x86.ActiveCfg = Release|Any CPU
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x86.Build.0 = Release|Any CPU
-=======
 		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E090F82D-8345-477E-92E8-F724F08ADC56}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -7807,7 +7805,6 @@ Global
 		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|x64.Build.0 = Release|Any CPU
 		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|x86.ActiveCfg = Release|Any CPU
 		{E090F82D-8345-477E-92E8-F724F08ADC56}.Release|x86.Build.0 = Release|Any CPU
->>>>>>> Introduce HubProxyGenerator and unit tests for it
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
