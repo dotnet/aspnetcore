@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
@@ -98,17 +97,6 @@ namespace Microsoft.AspNetCore.Tests
 
             var linkGenerator = host.Services.GetService(typeof(LinkGenerator));
             Assert.NotNull(linkGenerator);
-        }
-
-        [Fact]
-        public void CreateDefaultBuilder_RegistersApiExplorer()
-        {
-            var host = WebHost.CreateDefaultBuilder()
-                .Configure(_ => { })
-                .Build();
-
-            var apiDescriptionProvider = host.Services.GetService(typeof(IApiDescriptionProvider));
-            Assert.NotNull(apiDescriptionProvider);
         }
 
         [Fact]
