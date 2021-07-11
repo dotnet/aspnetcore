@@ -74,6 +74,7 @@ static Microsoft.AspNetCore.Http.Results.PhysicalFile(string! physicalPath, stri
 static Microsoft.AspNetCore.Http.Results.PhysicalFile(string! physicalPath, string! contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.PhysicalFile(string! physicalPath, string! contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag, bool enableRangeProcessing) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.PhysicalFile(string! physicalPath, string! contentType, string? fileDownloadName, bool enableRangeProcessing) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Redirect(string! url) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.RedirectPermanent(string! url) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.RedirectPermanentPreserveMethod(string! url) -> Microsoft.AspNetCore.Http.IResult!
@@ -102,3 +103,4 @@ static Microsoft.AspNetCore.Http.Results.StatusCode(int statusCode) -> Microsoft
 static Microsoft.AspNetCore.Http.Results.Unauthorized() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity(object? error) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null) -> Microsoft.AspNetCore.Http.IResult!

@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Result;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
@@ -1351,6 +1354,63 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult UnprocessableEntity(object? error)
             => new UnprocessableEntityObjectResult(error);
+
+        /// <summary>
+        /// Produces a <see cref="ProblemDetails"/> response.
+        /// </summary>
+        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <returns>The created <see cref="IResult"/> for the response.</returns>
+        public static IResult Problem(
+            string? detail = null,
+            string? instance = null,
+            int? statusCode = null,
+            string? title = null,
+            string? type = null)
+        {
+            return new ObjectResult(new ProblemDetails
+            {
+                Detail = detail,
+                Instance = instance,
+                Status = statusCode,
+                Title = title,
+                Type = type
+            });
+        }
+
+        /// <summary>
+        /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with a <see cref="HttpValidationProblemDetails"/> value.
+        /// </summary>
+        /// <param name="errors">One or more validation errors.</param>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <returns>The created <see cref="IResult"/> for the response.</returns>
+        public static IResult ValidationProblem(
+            IDictionary<string, string[]> errors,
+            string? detail = null,
+            string? instance = null,
+            int? statusCode = null,
+            string? title = null,
+            string? type = null)
+        {
+            var problemDetails = new HttpValidationProblemDetails(errors)
+            {
+                Detail = detail,
+                Instance = instance,
+                Title = title,
+                Type = type,
+                Status = statusCode,
+            };
+
+            return new ObjectResult(problemDetails);
+        }
 
         #region CreatedResult
         /// <summary>

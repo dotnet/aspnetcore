@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -14,23 +10,18 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 #endif
 using Microsoft.AspNetCore.Authorization;
 #endif
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
-using Microsoft.AspNetCore.Hosting;
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
 #endif
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
 #endif

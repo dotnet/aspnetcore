@@ -1,19 +1,13 @@
-﻿using System.Linq;
-#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
+﻿#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
 using Microsoft.AspNetCore.Authentication;
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 #endif
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
 #endif
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
 #endif

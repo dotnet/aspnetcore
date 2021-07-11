@@ -1,17 +1,12 @@
-using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
 #endif
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
+#endif
+#if (OrganizationalAuth || IndividualB2CAuth)
+using Microsoft.Identity.Web;
 #endif
 #if (EnableOpenAPI)
 using Microsoft.OpenApi.Models;

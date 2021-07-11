@@ -519,6 +519,32 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         [Fact]
         [LogLevel(LogLevel.Trace)]
+        public async Task UploadStreamErrorSendsStreamComplete()
+        {
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var cts = new CancellationTokenSource();
+                var channel = Channel.CreateUnbounded<int>();
+                var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader, cts.Token);
+
+                var invokeMessage = await connection.ReadSentJsonAsync().DefaultTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invokeMessage["type"]);
+
+                channel.Writer.Complete(new Exception("error from client"));
+
+                // the next sent message should be a completion message
+                var complete = await connection.ReadSentJsonAsync().DefaultTimeout();
+                Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
+                Assert.StartsWith("Stream errored by client: 'System.Exception: error from client", ((string)complete["error"]));
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task InvocationCanCompleteBeforeStreamCompletes()
         {
             using (StartVerifiableLog())

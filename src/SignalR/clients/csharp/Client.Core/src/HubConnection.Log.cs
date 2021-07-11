@@ -251,6 +251,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, Exception> _errorHandshakeCanceled =
                 LoggerMessage.Define(LogLevel.Error, new EventId(83, "ErrorHandshakeCanceled"), "The handshake was canceled by the client.");
 
+            private static readonly Action<ILogger, string, Exception?> _erroredStream =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(84, "ErroredStream"), "Client threw an error for stream '{StreamId}'.");
+
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
                 _preparingNonBlockingInvocation(logger, target, count, null);
@@ -665,6 +668,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public static void ErrorHandshakeCanceled(ILogger logger, Exception exception)
             {
                 _errorHandshakeCanceled(logger, exception);
+            }
+
+            public static void ErroredStream(ILogger logger, string streamId, Exception exception)
+            {
+                _erroredStream(logger, streamId, exception);
             }
         }
     }
