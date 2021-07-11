@@ -109,9 +109,10 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void CannotUnsetPaths()
+        public void UnsettingPathsFallsBackToDefaults()
         {
             var environment = new WebHostEnvironment();
+            var defaultWebRootPath = Path.Combine(environment.ContentRootPath, "wwwroot");
             var webRootPath = Path.GetTempPath();
 
             environment.WebRootPath = webRootPath;
@@ -119,10 +120,9 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(webRootPath, environment.WebRootPath);
             Assert.Equal(webRootPath, ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
 
-            // Setting WebRootPath to null no-ops
+            // Setting WebRootPath to fallsback to default
             environment.WebRootPath = null;
-            Assert.Equal(webRootPath, environment.WebRootPath);
-            Assert.Equal(webRootPath, ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
+            Assert.Equal(defaultWebRootPath, environment.WebRootPath);
 
             // Setting ContentRootPath to null falls back to current directory
             environment.ContentRootPath = null;

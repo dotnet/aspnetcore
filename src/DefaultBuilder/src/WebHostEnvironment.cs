@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Builder
         private string _contentRootPath = default!;
         private string _webRootPath = default!;
 
-        public WebHostEnvironment(Assembly? callingAssembly)
+        public WebHostEnvironment(Assembly? callingAssembly = null)
         {
             ContentRootPath = Directory.GetCurrentDirectory();
 
@@ -41,13 +41,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 StaticWebAssetsLoader.UseStaticWebAssets(this, new Configuration());
             }
-        }
-
-        // For testing
-        internal WebHostEnvironment()
-        {
-            ApplicationName = default!;
-            EnvironmentName = default!;
         }
 
         public void ApplyConfigurationSettings(IConfiguration configuration)
@@ -134,16 +127,13 @@ namespace Microsoft.AspNetCore.Builder
 
         public string WebRootPath
         {
-            get => _webRootPath;
+            get => ResolvePathToRoot(_webRootPath, ContentRootPath);
             set
             {
-                if (!string.IsNullOrEmpty(value))
+                _webRootPath = string.IsNullOrEmpty(value) ? "wwwroot" : value;
+                if (Directory.Exists(WebRootPath))
                 {
-                    _webRootPath = ResolvePathToRoot(value, ContentRootPath);
-                    if (Directory.Exists(_webRootPath))
-                    {
-                        _webRootFileProvider = new PhysicalFileProvider(_webRootPath);
-                    }
+                    _webRootFileProvider = new PhysicalFileProvider(WebRootPath);
                 }
             }
         }
