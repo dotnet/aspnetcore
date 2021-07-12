@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Sections;
 
-namespace Microsoft.AspNetCore.Components.Head
+namespace Microsoft.AspNetCore.Components.Sections
 {
     /// <summary>
     /// Renders content provided by <see cref="HeadContent"/> components.

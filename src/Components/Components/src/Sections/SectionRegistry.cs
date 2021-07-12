@@ -3,19 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Sections
 {
     internal class SectionRegistry
     {
-        private static readonly ConditionalWeakTable<Dispatcher, SectionRegistry> _registries = new();
-
         private readonly Dictionary<string, List<ISectionContentSubscriber>> _subscribersByName = new();
         private readonly Dictionary<string, List<ISectionContentProvider>> _providersByName = new();
-
-        public static SectionRegistry GetRegistry(RenderHandle renderHandle)
-            => _registries.GetOrCreateValue(renderHandle.Dispatcher);
 
         public void AddProvider(string name, ISectionContentProvider provider)
         {

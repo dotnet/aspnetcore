@@ -58,12 +58,22 @@ Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.CascadingTypeParameterAttribute(string! name) -> void
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.Name.get -> string!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetEventArgsType(ulong eventHandlerId) -> System.Type!
+Microsoft.AspNetCore.Components.Sections.HeadContent
+Microsoft.AspNetCore.Components.Sections.HeadContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Sections.HeadContent.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Sections.HeadContent.HeadContent() -> void
+Microsoft.AspNetCore.Components.Sections.HeadSection
+Microsoft.AspNetCore.Components.Sections.HeadSection.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Sections.HeadSection.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Sections.HeadSection.HeadSection() -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.SupplyParameterFromQueryAttribute() -> void
 abstract Microsoft.AspNetCore.Components.ErrorBoundaryBase.OnErrorAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.LayoutComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.Sections.HeadContent.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Sections.HeadSection.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, bool forceLoad) -> void

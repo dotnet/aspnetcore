@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// A <see cref="TagHelper"/> used for emitting deferred component output.
     /// </summary>
     [HtmlTargetElement(TagHelperName, TagStructure = TagStructure.WithoutEndTag)]
-    public class PrerenderOutputTagHelper : TagHelper
+    public class ComponentOutputTagHelper : TagHelper
     {
-        private const string TagHelperName = "prerender-output";
+        private const string TagHelperName = "component-output";
 
         /// <summary>
         /// Gets or sets the <see cref="Rendering.ViewContext"/> for the current request.
@@ -46,9 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (!prerenderCache.TryGetValue(Name, out var content))
             {
-                throw new InvalidOperationException(
-                    $"No component in a <{PrerenderSourceTagHelper.TagHelperName}> element " +
-                    $"had a 'name' attribute matching '{Name}'.");
+                throw new InvalidOperationException($"No component has an output name matching '{Name}'.");
             }
 
             output.TagName = null;

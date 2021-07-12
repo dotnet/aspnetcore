@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Sections
         void IComponent.Attach(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
-            _registry = SectionRegistry.GetRegistry(_renderHandle);
+            _registry = _renderHandle.Dispatcher.SectionRegistry;
         }
 
         Task IComponent.SetParametersAsync(ParameterView parameters)
