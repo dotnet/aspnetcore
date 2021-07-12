@@ -188,7 +188,7 @@ namespace RunTests
             {
                 // Run test discovery so we know if there are tests to run
                 var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"test {Options.Target} --list-tests",
+                    $"vstest {Options.Target} -lt",
                     environmentVariables: EnvironmentVariables,
                     cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
