@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="principal">The principal whose stamp should be validated.</param>
         /// <returns>The task object representing the asynchronous operation. The task will contain the <typeparamref name="TUser"/>
-        /// if the stamp matches the persisted value, otherwise it will return false.</returns>
+        /// if the stamp matches the persisted value, otherwise it will return null.</returns>
         public virtual async Task<TUser> ValidateSecurityStampAsync(ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="principal">The principal whose stamp should be validated.</param>
         /// <returns>The task object representing the asynchronous operation. The task will contain the <typeparamref name="TUser"/>
-        /// if the stamp matches the persisted value, otherwise it will return false.</returns>
+        /// if the stamp matches the persisted value, otherwise it will return null.</returns>
         public virtual async Task<TUser> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
         {
             if (principal == null || principal.Identity?.Name == null)
