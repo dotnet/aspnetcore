@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore
             });
         }
 
-        [Fact]
+        [Fact(Skip = "Skip until layout issues are resolved. See https://github.com/dotnet/aspnetcore/pull/34033")]
         public void FrameworkListListsContainsCorrectPaths()
         {
             if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))

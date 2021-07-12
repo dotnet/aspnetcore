@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Internal
         [Theory]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
-        public async Task Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde<TContext>(
+        public async Task Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
             string appRoot,
             string contentPath,
             string expectedPath)
