@@ -96,16 +96,17 @@ namespace Microsoft.AspNetCore.Tests
         public void RelativePathsAreMappedToFullPaths()
         {
             var environment = new WebHostEnvironment();
-            var relativeRootPath = "/some-relative-path";
-            var relativeSubPath = "/some-other-relative-path";
+            var relativeRootPath = "some-relative-path";
+            var relativeSubPath = "some-other-relative-path";
+            var fullContentRoot = Path.Combine(AppContext.BaseDirectory, relativeRootPath);
             
             // ContentRootPath is mapped relative to AppContext.BaseDirectory
             environment.ContentRootPath = relativeRootPath;
-            Assert.Equal(Path.Combine(AppContext.BaseDirectory, relativeRootPath), environment.ContentRootPath);
+            Assert.Equal(fullContentRoot, environment.ContentRootPath);
 
             // WebRootPath is mapped relative to ContentRootPath
             environment.WebRootPath = relativeSubPath;
-            Assert.Equal(Path.Combine(AppContext.BaseDirectory, relativeRootPath, relativeSubPath), environment.WebRootPath);
+            Assert.Equal(Path.Combine(fullContentRoot, relativeSubPath), environment.WebRootPath);
         }
 
         [Fact]
@@ -134,20 +135,19 @@ namespace Microsoft.AspNetCore.Tests
         public void SetContentRootAfterRelativeWebRoot()
         {
             var environment = new WebHostEnvironment();
-            var webRootPath = "/some-relative-path";
+            var webRootPath = "some-relative-path";
             var tempPath = Path.GetTempPath();
 
             environment.WebRootPath = webRootPath;
 
             Assert.Equal(Path.Combine(AppContext.BaseDirectory, webRootPath), environment.WebRootPath);
+            Assert.Equal(Directory.GetCurrentDirectory(), environment.ContentRootPath);
 
             // Setting the ContentRootPath after setting a relative WebRootPath
-            // does not modify the WebRootPath
             environment.ContentRootPath = tempPath;
 
             Assert.Equal(tempPath, environment.ContentRootPath);
-            Assert.Equal(Path.Combine(AppContext.BaseDirectory, webRootPath), environment.WebRootPath);
-            
+            Assert.Equal(Path.Combine(tempPath, webRootPath), environment.WebRootPath);
         }
 
         private class TestWebHostBuilder : IWebHostBuilder
