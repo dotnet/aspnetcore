@@ -49,10 +49,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public bool IsHotReloading => HotReloadFeature.IsSupported && (_renderer?.IsHotReloading ?? false);
 
-        /// <summary>
-        /// Gets whether the renderer has been disposed.
-        /// </summary>
-        public bool IsRendererDisposed => _renderer?.Disposed
+        internal bool IsRendererDisposed => _renderer?.Disposed
             ?? throw new InvalidOperationException("No renderer has been initialized.");
 
         /// <summary>

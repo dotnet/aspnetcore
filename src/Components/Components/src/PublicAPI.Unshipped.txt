@@ -41,7 +41,6 @@ Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions() -> void
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.init -> void
 Microsoft.AspNetCore.Components.RenderHandle.IsHotReloading.get -> bool
-Microsoft.AspNetCore.Components.RenderHandle.IsRendererDisposed.get -> bool
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose() -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

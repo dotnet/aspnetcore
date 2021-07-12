@@ -64,8 +64,6 @@ namespace Microsoft.AspNetCore.Components.Sections
             {
                 _registry.RemoveProvider(_registeredName, this);
             }
-
-            GC.SuppressFinalize(this);
         }
     }
 }
