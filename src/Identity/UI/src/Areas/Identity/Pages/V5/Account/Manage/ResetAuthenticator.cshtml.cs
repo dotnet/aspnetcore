@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal
 
     internal class ResetAuthenticatorModel<TUser> : ResetAuthenticatorModel where TUser : class
     {
-        UserManager<TUser> _userManager;
+        private readonly UserManager<TUser> _userManager;
         private readonly SignInManager<TUser> _signInManager;
-        ILogger<ResetAuthenticatorModel> _logger;
+        private readonly ILogger<ResetAuthenticatorModel> _logger;
 
         public ResetAuthenticatorModel(
             UserManager<TUser> userManager,
