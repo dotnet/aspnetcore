@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
             // during a batch, but if a scenario emerges we can add support.
             _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
-            if (HotReloadFeature.IsSupported)
+            if (TestableMetadataUpdate.IsSupported)
             {
                 _rootComponentsLatestParameters?.Remove(componentId);
             }
