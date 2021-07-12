@@ -1,15 +1,18 @@
-﻿@page
+﻿@page "deferred-component-content"
 @using BasicTestApp.RouterTest
 @using Components.TestServer
+
+<component output-name="app" type="typeof(HeadModification)" render-mode="ServerPrerendered" />
+<component output-name="head" type="typeof(HeadRoot)" render-mode="ServerPrerendered" />
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Prerendering tests</title>
     <base href="~/" />
+    <component-output name="head" />
 </head>
 <body>
-    <app><component type="typeof(TestRouterWithLazyAssembly)" render-mode="ServerPrerendered" /></app>
+    <app><component-output name="app" /></app>
 
     @*
         So that E2E tests can make assertions about both the prerendered and
