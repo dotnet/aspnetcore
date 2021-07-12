@@ -32,13 +32,12 @@ namespace RunTests
 
                 if (keepGoing)
                 {
-                    // TODO: This seems to be failing for an unknown reason, investigate it
-                    /*if (!await runner.CheckTestDiscoveryAsync())
+                    if (!await runner.CheckTestDiscoveryAsync())
                     {
                         Console.WriteLine("RunTest stopping due to test discovery failure.");
                         Environment.Exit(1);
                         return;
-                    }*/
+                    }
 
                     var exitCode = await runner.RunTestsAsync();
                     runner.UploadResults();
