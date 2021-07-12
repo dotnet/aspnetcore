@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         await OnFirstWrite(streamWriter, cancellationToken);
                     }
 
-                    await WriteMessageAsync(FormatMessage(message), streamWriter, cancellationToken);
+                    await WriteMessageAsync(message, streamWriter, cancellationToken);
                 }
             }
             finally
@@ -247,9 +247,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             return File.AppendText(fileName);
         }
-
-        // Virtual (format message, needed by w3c)
-        internal virtual string FormatMessage(string message) => message;
 
         private void RollFiles()
         {
