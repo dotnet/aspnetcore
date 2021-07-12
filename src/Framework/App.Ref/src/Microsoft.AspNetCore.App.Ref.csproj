@@ -164,8 +164,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Include="@(AspNetCoreReferenceAssemblyPath->WithMetadataValue('ExternallyResolved', 'true')->'%(RootDir)%(Directory)%(Filename).xml')"
           Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
 
-      <_AnalyzerContent Include="$(PkgMicrosoft_AspNetCore_Internal_Transport)\$(AnalyzersPackagePath)**\*.*" />
-      <RefPackContent Include="@(_AnalyzerContent)" PackagePath="$(AnalyzersPackagePath)%(RecursiveDir)" />
+      <RefPackContent Include="$(PkgMicrosoft_AspNetCore_Internal_Transport)\$(AnalyzersPackagePath)**\*.*" PackagePath="$(AnalyzersPackagePath)" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
