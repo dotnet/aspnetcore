@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly ILogger<Renderer> _logger;
         private readonly ComponentFactory _componentFactory;
         private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
+        private Task? _ongoingQuiescenceTask;
 
         private int _nextComponentId;
         private bool _isBatchInProgress;
@@ -259,7 +260,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
             // during a batch, but if a scenario emerges we can add support.
             _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
-            _rootComponentsLatestParameters?.Remove(componentId);
+            if (HotReloadFeature.IsSupported)
+            {
+                _rootComponentsLatestParameters?.Remove(componentId);
+            }
+
             ProcessRenderQueue();
         }
 
@@ -268,8 +273,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         /// <param name="exception">The <see cref="Exception"/>.</param>
         protected abstract void HandleException(Exception exception);
-
-        private Task? _ongoingQuiescenceTask;
 
         private async Task WaitForQuiescence()
         {
@@ -282,7 +285,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             try
             {
-                _ongoingQuiescenceTask ??= ProcessAsynchronousWork();
+                _ongoingQuiescenceTask = ProcessAsynchronousWork();
                 await _ongoingQuiescenceTask;
             }
             finally
