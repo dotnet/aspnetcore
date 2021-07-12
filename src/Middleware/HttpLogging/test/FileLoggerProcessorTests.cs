@@ -68,6 +68,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34284")]
         [Fact]
         public async Task RollsTextFiles()
         {
