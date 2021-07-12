@@ -1438,7 +1438,7 @@ namespace Microsoft.AspNetCore.Components
 
                 return FormatWithTypeConverter;
 
-                string FormatWithTypeConverter(T value, CultureInfo? culture)
+                string? FormatWithTypeConverter(T value, CultureInfo? culture)
                 {
                     // We intentionally close-over the TypeConverter to cache it. The TypeDescriptor infrastructure is slow.
                     return typeConverter.ConvertToString(context: null, culture ?? CultureInfo.CurrentCulture, value);
@@ -1619,6 +1619,11 @@ namespace Microsoft.AspNetCore.Components
                 bool ConvertWithTypeConverter(object? obj, CultureInfo? culture, out T value)
                 {
                     // We intentionally close-over the TypeConverter to cache it. The TypeDescriptor infrastructure is slow.
+                    if (obj == null)
+                    {
+                        value = default!;
+                        return true;
+                    }
                     var converted = typeConverter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
                     if (converted == null)
                     {

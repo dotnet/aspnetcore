@@ -259,7 +259,6 @@ namespace Microsoft.AspNetCore
                 }
 
                 services.AddRouting();
-                services.AddEndpointsApiExplorer();
             })
             .UseIIS()
             .UseIISIntegration();

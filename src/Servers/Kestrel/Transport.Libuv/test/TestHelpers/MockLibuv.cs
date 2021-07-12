@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 
         private readonly string _stackTrace;
 
-        unsafe public MockLibuv()
+        public unsafe MockLibuv()
             : base(onlyForTesting: true)
         {
             _stackTrace = Environment.StackTrace;
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             return 0;
         }
 
-        unsafe private int UvWrite(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)
+        private unsafe int UvWrite(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
             return OnWrite(handle, nbufs, status => cb(req.InternalGetHandle(), status));
         }

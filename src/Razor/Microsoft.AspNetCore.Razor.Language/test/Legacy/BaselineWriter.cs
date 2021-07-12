@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public static class BaselineWriter
     {
-        private static object baselineLock = new object();
+        private static readonly object baselineLock = new object();
 
         [Conditional("GENERATE_BASELINES")]
         public static void WriteBaseline(string baselineFile, string output)

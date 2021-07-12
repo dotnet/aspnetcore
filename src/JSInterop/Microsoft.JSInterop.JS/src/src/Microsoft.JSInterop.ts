@@ -10,8 +10,7 @@ export module DotNet {
   class JSObject {
     _cachedFunctions: Map<string, Function>;
 
-    constructor(private _jsObject: any)
-    {
+    constructor(private _jsObject: any) {
       this._cachedFunctions = new Map<string, Function>();
     }
 
@@ -142,28 +141,40 @@ export module DotNet {
   /**
    * Creates a JavaScript data reference that can be passed to .NET via interop calls.
    *
-   * @param arrayBufferView The ArrayBufferView used to create the JavaScript stream reference.
+   * @param streamReference The ArrayBufferView or Blob used to create the JavaScript stream reference.
    * @returns The JavaScript data reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
    */
-  export function createJSStreamReference(arrayBufferView: ArrayBufferView | any): any {
-    // Check if this is an ArrayBufferView, and if it has a valid byteLength for transfer
-    // using a JSStreamReference.
-    if (!(arrayBufferView.buffer instanceof ArrayBuffer)) {
-      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it is not have a 'buffer' property of type 'ArrayBuffer'.`);
-    } else if (arrayBufferView.byteLength === undefined) {
-      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}' as it doesn't have a byteLength.`);
+  export function createJSStreamReference(streamReference: ArrayBuffer | ArrayBufferView | Blob | any): any {
+    let length = -1;
+
+    // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
+    // ArrayBuffers' aren't directly readable.
+    if (streamReference instanceof ArrayBuffer) {
+      streamReference = new Uint8Array(streamReference);
+    }
+
+    if (streamReference instanceof Blob) {
+      length = streamReference.size;
+    } else if (streamReference.buffer instanceof ArrayBuffer) {
+      if (streamReference.byteLength === undefined) {
+        throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
+      }
+
+      length = streamReference.byteLength;
+    } else {
+      throw new Error('Supplied value is not a typed array or blob.');
     }
 
     const result: any = {
-      [jsStreamReferenceLengthKey]: arrayBufferView.byteLength,
+      [jsStreamReferenceLengthKey]: length,
     }
 
     try {
-      const jsObjectReference = createJSObjectReference(arrayBufferView);
+      const jsObjectReference = createJSObjectReference(streamReference);
       result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
     } catch {
-      throw new Error(`Cannot create a JSStreamReference from the value '${arrayBufferView}'.`);
+      throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
     }
 
     return result;

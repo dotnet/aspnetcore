@@ -215,10 +215,20 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="jsStreamReference"><see cref="IJSStreamReference"/> to produce a data stream for.</param>
         /// <param name="totalLength">Expected length of the incoming data stream.</param>
-        /// <param name="maxBufferSize">Amount of bytes to buffer before flushing.</param>
+        /// <param name="pauseIncomingBytesThreshold">
+        /// The number of unconsumed bytes to accept from JS before blocking.
+        /// Defaults to -1, which indicates use of the default <see cref="System.IO.Pipelines.PipeOptions.PauseWriterThreshold" />.
+        /// Avoid specifying an excessively large value because this could allow clients to exhaust memory.
+        /// A value of zero prevents JS from blocking, allowing .NET to receive an unlimited number of bytes.
+        /// </param>
+        /// <param name="resumeIncomingBytesThreshold">
+        /// The number of unflushed bytes at which point JS stops blocking.
+        /// Defaults to -1, which indicates use of the default <see cref="System.IO.Pipelines.PipeOptions.PauseWriterThreshold" />.
+        /// Must be less than the <paramref name="pauseIncomingBytesThreshold"/> to prevent thrashing at the limit.
+        /// </param>
         /// <param name="cancellationToken"><see cref="CancellationToken" /> for cancelling read.</param>
         /// <returns><see cref="Stream"/> for the data reference represented by <paramref name="jsStreamReference"/>.</returns>
-        protected internal virtual Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long maxBufferSize, CancellationToken cancellationToken)
+        protected internal virtual Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
         {
             // The reason it's virtual and not abstract is just for back-compat
 

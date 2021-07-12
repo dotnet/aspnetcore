@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal sealed class ComponentDirectiveVisitor : DirectiveVisitor
         {
             private readonly List<TagHelperDescriptor> _notFullyQualifiedComponents;
-            private string _filePath;
+            private readonly string _filePath;
             private RazorSourceDocument _source;
 
             public ComponentDirectiveVisitor(string filePath, IReadOnlyList<TagHelperDescriptor> tagHelpers, string currentNamespace)

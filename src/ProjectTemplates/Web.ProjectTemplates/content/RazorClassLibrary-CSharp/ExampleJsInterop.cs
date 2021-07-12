@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Company.RazorClassLibrary1

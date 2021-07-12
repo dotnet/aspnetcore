@@ -8,7 +8,7 @@ namespace ApplicationModelWebSite
 {
     public class ApplicationDescription : IApplicationModelConvention
     {
-        private string _description;
+        private readonly string _description;
 
         public ApplicationDescription(string description)
         {

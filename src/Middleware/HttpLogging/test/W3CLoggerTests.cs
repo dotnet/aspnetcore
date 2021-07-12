@@ -19,8 +19,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     public class W3CLoggerTests
     {
-
-        DateTime _timestampOne = new DateTime(2021, 01, 02, 03, 04, 05);
+        readonly DateTime _timestampOne = new DateTime(2021, 01, 02, 03, 04, 05);
 
         [Fact]
         public async Task WritesDateTime()

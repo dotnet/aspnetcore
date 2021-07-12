@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -138,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             await manager.RestoreStateAsync(store);
 
-            if (HotReloadFeature.IsSupported)
+            if (MetadataUpdater.IsSupported)
             {
                 await WebAssemblyHotReload.InitializeAsync();
             }

@@ -10,6 +10,7 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <BuildHelixPayload>false</BuildHelixPayload>
 
     <BaseOutputPath />
     <OutputPath />

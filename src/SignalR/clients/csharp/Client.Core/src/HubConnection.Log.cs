@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
     {
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             private static readonly Action<ILogger, string, int, Exception?> _preparingNonBlockingInvocation =
             LoggerMessage.Define<string, int>(LogLevel.Trace, new EventId(1, "PreparingNonBlockingInvocation"), "Preparing non-blocking invocation of '{Target}', with {ArgumentCount} argument(s).");
 
@@ -22,19 +24,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "RegisteringInvocation"), "Registering Invocation ID '{InvocationId}' for tracking.");
 
             private static readonly Action<ILogger, string, string, string, string, Exception?> _issuingInvocation =
-                LoggerMessage.Define<string, string, string, string>(LogLevel.Trace, new EventId(4, "IssuingInvocation"), "Issuing Invocation '{InvocationId}': {ReturnType} {MethodName}({Args}).", skipEnabledCheck: true);
+                LoggerMessage.Define<string, string, string, string>(LogLevel.Trace, new EventId(4, "IssuingInvocation"), "Issuing Invocation '{InvocationId}': {ReturnType} {MethodName}({Args}).", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string, string?, Exception?> _sendingMessage =
-                LoggerMessage.Define<string, string?>(LogLevel.Debug, new EventId(5, "SendingMessage"), "Sending {MessageType} message '{InvocationId}'.", skipEnabledCheck: true);
+                LoggerMessage.Define<string, string?>(LogLevel.Debug, new EventId(5, "SendingMessage"), "Sending {MessageType} message '{InvocationId}'.", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string, string?, Exception?> _messageSent =
-                LoggerMessage.Define<string, string?>(LogLevel.Debug, new EventId(6, "MessageSent"), "Sending {MessageType} message '{InvocationId}' completed.", skipEnabledCheck: true);
+                LoggerMessage.Define<string, string?>(LogLevel.Debug, new EventId(6, "MessageSent"), "Sending {MessageType} message '{InvocationId}' completed.", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string, Exception> _failedToSendInvocation =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(7, "FailedToSendInvocation"), "Sending Invocation '{InvocationId}' failed.");
 
             private static readonly Action<ILogger, string?, string, string, Exception?> _receivedInvocation =
-                LoggerMessage.Define<string?, string, string>(LogLevel.Trace, new EventId(8, "ReceivedInvocation"), "Received Invocation '{InvocationId}': {MethodName}({Args}).", skipEnabledCheck: true);
+                LoggerMessage.Define<string?, string, string>(LogLevel.Trace, new EventId(8, "ReceivedInvocation"), "Received Invocation '{InvocationId}': {MethodName}({Args}).", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string, Exception?> _droppedCompletionMessage =
                 LoggerMessage.Define<string>(LogLevel.Warning, new EventId(9, "DroppedCompletionMessage"), "Dropped unsolicited Completion message for invocation '{InvocationId}'.");
@@ -142,7 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(47, "ReceiveLoopStarting"), "Receive loop starting.");
 
             private static readonly Action<ILogger, double, Exception?> _startingServerTimeoutTimer =
-                LoggerMessage.Define<double>(LogLevel.Debug, new EventId(48, "StartingServerTimeoutTimer"), "Starting server timeout timer. Duration: {ServerTimeout:0.00}ms", skipEnabledCheck: true);
+                LoggerMessage.Define<double>(LogLevel.Debug, new EventId(48, "StartingServerTimeoutTimer"), "Starting server timeout timer. Duration: {ServerTimeout:0.00}ms", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, Exception?> _notUsingServerTimeout =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(49, "NotUsingServerTimeout"), "Not using server timeout because the transport inherently tracks server availability.");
@@ -175,10 +177,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(58, "RemovingHandlers"), "Removing handlers for client method '{MethodName}'.");
 
             private static readonly Action<ILogger, string, Exception?> _sendingMessageGeneric =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(59, "SendingMessageGeneric"), "Sending {MessageType} message.", skipEnabledCheck: true);
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(59, "SendingMessageGeneric"), "Sending {MessageType} message.", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string, Exception?> _messageSentGeneric =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(60, "MessageSentGeneric"), "Sending {MessageType} message completed.", skipEnabledCheck: true);
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(60, "MessageSentGeneric"), "Sending {MessageType} message completed.", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, Exception?> _acquiredConnectionLockForPing =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(61, "AcquiredConnectionLockForPing"), "Acquired the Connection Lock in order to ping the server.");
@@ -248,6 +250,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private static readonly Action<ILogger, Exception> _errorHandshakeCanceled =
                 LoggerMessage.Define(LogLevel.Error, new EventId(83, "ErrorHandshakeCanceled"), "The handshake was canceled by the client.");
+
+            private static readonly Action<ILogger, string, Exception?> _erroredStream =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(84, "ErroredStream"), "Client threw an error for stream '{StreamId}'.");
 
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
@@ -663,6 +668,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public static void ErrorHandshakeCanceled(ILogger logger, Exception exception)
             {
                 _errorHandshakeCanceled(logger, exception);
+            }
+
+            public static void ErroredStream(ILogger logger, string streamId, Exception exception)
+            {
+                _erroredStream(logger, streamId, exception);
             }
         }
     }

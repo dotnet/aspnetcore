@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private static readonly Action<ILogger, string, Exception?> _tagHelperComponentInitialized;
         private static readonly Action<ILogger, string, Exception?> _tagHelperComponentProcessed;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
 
         static MvcRazorLoggerExtensions()
         {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 LogLevel.Debug,
                 new EventId(2, "ViewCompilerEndCodeGeneration"),
                 "Code generation for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             _viewCompilerLocatedCompiledView = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -100,19 +101,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 LogLevel.Debug,
                 new EventId(2, "GeneratedCodeToAssemblyCompilationEnd"),
                 "Compilation of the generated code for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             _tagHelperComponentInitialized = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(2, "TagHelperComponentInitialized"),
                 "Tag helper component '{ComponentName}' initialized.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             _tagHelperComponentProcessed = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(3, "TagHelperComponentProcessed"),
                 "Tag helper component '{ComponentName}' processed.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
         }
 
         public static void ViewCompilerStartCodeGeneration(this ILogger logger, string filePath)

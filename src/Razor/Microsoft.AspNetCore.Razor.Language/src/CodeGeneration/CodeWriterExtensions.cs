@@ -586,9 +586,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public struct CSharpCodeWritingScope : IDisposable
         {
-            private CodeWriter _writer;
-            private bool _autoSpace;
-            private int _tabSize;
+            private readonly CodeWriter _writer;
+            private readonly bool _autoSpace;
+            private readonly int _tabSize;
             private int _startIndent;
 
             public CSharpCodeWritingScope(CodeWriter writer, bool autoSpace = true)

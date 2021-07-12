@@ -1013,8 +1013,8 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private class TestRouteTableBuilder
         {
-            IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
-            Type _handler = typeof(object);
+            readonly IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
+            readonly Type _handler = typeof(object);
 
             public TestRouteTableBuilder AddRoute(string template, Type handler = null)
             {

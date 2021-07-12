@@ -1,7 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -135,64 +134,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     Assert.Equal("key1", kvp.Key);
                     Assert.Equal(new[] { "error1", "error2" }, kvp.Value);
                 });
-        }
-
-        [Fact]
-        public void Write_Works()
-        {
-            // Arrange
-            var traceId = "|37dd3dd5-4a9619f953c40a16.";
-            var value = new ProblemDetails
-            {
-                Title = "Not found",
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-                Status = 404,
-                Detail = "Product not found",
-                Instance = "http://example.com/products/14",
-                Extensions =
-                {
-                    { "traceId", traceId },
-                    { "some-data", new[] { "value1", "value2" } }
-                }
-            };
-            var expected = $"{{\"type\":\"{JsonEncodedText.Encode(value.Type)}\",\"title\":\"{value.Title}\",\"status\":{value.Status},\"detail\":\"{value.Detail}\",\"instance\":\"{JsonEncodedText.Encode(value.Instance)}\",\"traceId\":\"{traceId}\",\"some-data\":[\"value1\",\"value2\"]}}";
-            var converter = new ProblemDetailsJsonConverter();
-            var stream = new MemoryStream();
-
-            // Act
-            using (var writer = new Utf8JsonWriter(stream))
-            {
-                converter.Write(writer, value, JsonSerializerOptions);
-            }
-
-            // Assert
-            var actual = Encoding.UTF8.GetString(stream.ToArray());
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void Write_WithSomeMissingContent_Works()
-        {
-            // Arrange
-            var value = new ProblemDetails
-            {
-                Title = "Not found",
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-                Status = 404,
-            };
-            var expected = $"{{\"type\":\"{JsonEncodedText.Encode(value.Type)}\",\"title\":\"{value.Title}\",\"status\":{value.Status}}}";
-            var converter = new ProblemDetailsJsonConverter();
-            var stream = new MemoryStream();
-
-            // Act
-            using (var writer = new Utf8JsonWriter(stream))
-            {
-                converter.Write(writer, value, JsonSerializerOptions);
-            }
-
-            // Assert
-            var actual = Encoding.UTF8.GetString(stream.ToArray());
-            Assert.Equal(expected, actual);
         }
     }
 }

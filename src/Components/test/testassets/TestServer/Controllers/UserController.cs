@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -13,7 +16,7 @@ namespace Components.TestServer.Controllers
         // to the client. It's up to the developer to choose what kind of authentication state
         // data is needed on the client so it can display suitable options in the UI.
         // In this class, we inform the client only about certain roles and certain other claims.
-        static string[] ExposedRoles = new[] { "IrrelevantRole", "TestRole" };
+        static readonly string[] ExposedRoles = new[] { "IrrelevantRole", "TestRole" };
 
         // GET api/user
         [HttpGet]

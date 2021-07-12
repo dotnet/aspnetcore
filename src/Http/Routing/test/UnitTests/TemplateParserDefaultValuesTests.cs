@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class TemplateParserDefaultValuesTests
     {
-        private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
+        private static readonly IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
         [Fact]
         public void InlineDefaultValueSpecified_InlineValueIsUsed()

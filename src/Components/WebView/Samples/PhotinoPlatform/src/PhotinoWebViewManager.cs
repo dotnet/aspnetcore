@@ -19,11 +19,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
         // because webview2 won't let you do top-level navigation to such a URL.
         // On Linux/Mac, we must use a custom scheme, because their webviews
         // don't have a way to intercept http:// scheme requests.
-        internal readonly static string BlazorAppScheme = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        internal static readonly string BlazorAppScheme = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? "http"
             : "app";
 
-        internal readonly static string AppBaseUri
+        internal static readonly string AppBaseUri
             = $"{BlazorAppScheme}://0.0.0.0/";
 
         public PhotinoWebViewManager(PhotinoWindow window, IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, string hostPageRelativePath)

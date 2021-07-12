@@ -6,7 +6,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
-    internal unsafe abstract class BCryptHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal abstract unsafe class BCryptHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         protected BCryptHandle()
             : base(ownsHandle: true)

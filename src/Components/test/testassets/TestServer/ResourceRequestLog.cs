@@ -8,7 +8,7 @@ namespace TestServer
 {
     public class ResourceRequestLog
     {
-        private List<string> _requestPaths = new List<string>();
+        private readonly List<string> _requestPaths = new List<string>();
 
         public IReadOnlyCollection<string> RequestPaths => _requestPaths;
 

@@ -236,12 +236,38 @@ namespace Test
         public void ComponentWithConstrainedTypeParameters()
         {
             // Arrange
+            var classes = @"
+public class Image
+{
+    public string url { get; set; }
+    public int id { get; set; }
+
+    public Image()
+    {
+        url = ""https://example.com/default.png"";
+        id = 1;
+    }
+}
+
+public interface ITag
+{
+    string description { get; set; }
+}
+
+public class Tag : ITag
+{
+    public string description { get; set; }
+}
+";
+
+            AdditionalSyntaxTrees.Add(Parse(classes));
 
             // Act
             var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
-@typeparam TItem1 where TItem1 : class
-@typeparam TItem2 where TItem2 : struct
+@typeparam TItem1 where TItem1 : Image
+@typeparam TItem2 where TItem2 : ITag
+@typeparam TItem3 where TItem3 : Image, new()
 
 <h1>Item1</h1>
 @foreach (var item2 in Items2)
@@ -250,9 +276,13 @@ namespace Test
     @ChildContent(item2);
     </p>
 }
+
+<p>Item3</p>
+
 @code {
     [Parameter] public TItem1 Item1 { get; set; }
     [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public TItem3 Item3 { get; set; }
     [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 }");
 
@@ -260,6 +290,23 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+
+            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+@using Test
+<TestComponent Item1=@item1 Items2=@items Item3=@item1>
+    <p>@context</p>
+</TestComponent>
+
+@code {
+    Image item1 = new Image() { id = 1, url=""https://example.com""};
+    static Tag tag1 = new Tag() { description = ""A description.""};
+    static Tag tag2 = new Tag() { description = ""Another description.""};
+    List<Tag> items = new List<Tag>() { tag1, tag2 };
+}");
+            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+            CompileToAssembly(useGenerated);
         }
 
         [Fact]

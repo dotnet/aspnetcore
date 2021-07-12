@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class MockLogger : ILogger
         {
-            private StringBuilder _logs = new();
+            private readonly StringBuilder _logs = new();
 
             public string Logs => _logs.ToString();
 

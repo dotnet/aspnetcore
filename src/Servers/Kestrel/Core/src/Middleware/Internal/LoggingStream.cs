@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return read;
         }
 
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             int read = await _inner.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
             Log("ReadAsync", new ReadOnlySpan<byte>(buffer, offset, read));

@@ -8,11 +8,13 @@ namespace Microsoft.AspNetCore.HostFiltering
 {
     internal static class LoggerExtensions
     {
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         private static readonly Action<ILogger, Exception?> _wildcardDetected =
             LoggerMessage.Define(LogLevel.Debug, new EventId(0, "WildcardDetected"), "Wildcard detected, all requests with hosts will be allowed.");
 
         private static readonly Action<ILogger, string, Exception?> _allowedHosts =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "AllowedHosts"), "Allowed hosts: {Hosts}", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "AllowedHosts"), "Allowed hosts: {Hosts}", SkipEnabledCheckLogOptions);
 
         private static readonly Action<ILogger, Exception?> _allHostsAllowed =
             LoggerMessage.Define(LogLevel.Trace, new EventId(2, "AllHostsAllowed"), "All hosts are allowed.");

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
         private IList<Condition>? _conditions;
         internal IList<UrlAction> _actions = new List<UrlAction>();
         private UrlMatch? _match;
-        private CookieActionFactory _cookieActionFactory = new CookieActionFactory();
+        private readonly CookieActionFactory _cookieActionFactory = new CookieActionFactory();
 
         private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
 

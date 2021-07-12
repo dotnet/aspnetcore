@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class FormMultipartSection
     {
-        private ContentDispositionHeaderValue _contentDispositionHeader;
+        private readonly ContentDispositionHeaderValue _contentDispositionHeader;
 
         /// <summary>
         /// Creates a new instance of the <see cref="FormMultipartSection"/> class

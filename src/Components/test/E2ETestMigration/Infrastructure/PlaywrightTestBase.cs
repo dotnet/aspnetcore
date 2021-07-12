@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
         public PlaywrightTestBase(ITestOutputHelper output) : base(output) { }
 
-        protected async override Task InitializeCoreAsync(TestContext context)
+        protected override async Task InitializeCoreAsync(TestContext context)
         {
             BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);

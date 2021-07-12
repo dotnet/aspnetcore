@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // Do NOT make this readonly, or MoveNext will not work
             private Dictionary<string, StringValues>.Enumerator _dictionaryEnumerator;
-            private bool _notEmpty;
+            private readonly bool _notEmpty;
 
             internal Enumerator(Dictionary<string, StringValues>.Enumerator dictionaryEnumerator)
             {

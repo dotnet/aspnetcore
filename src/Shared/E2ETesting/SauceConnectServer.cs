@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 {
     public class SauceConnectServer : IDisposable
     {
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         private Process _process;
         private string _sentinelPath;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static IMessageSink _diagnosticsMessageSink;
 
         // 2h
-        private static int SauceConnectProcessTimeout = 7200;
+        private const int SauceConnectProcessTimeout = 7200;
 
         public SauceConnectServer(IMessageSink diagnosticsMessageSink)
         {

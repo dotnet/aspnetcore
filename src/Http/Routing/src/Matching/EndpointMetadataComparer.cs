@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </summary>
     public sealed class EndpointMetadataComparer : IComparer<Endpoint>
     {
-        private IServiceProvider _services;
+        private readonly IServiceProvider _services;
         private IComparer<Endpoint>[]? _comparers;
 
         // This type is **INTENDED** for use in MatcherPolicy instances yet is also needs the MatcherPolicy instances.

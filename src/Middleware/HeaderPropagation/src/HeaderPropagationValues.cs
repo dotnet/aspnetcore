@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     /// </summary>
     public class HeaderPropagationValues
     {
-        private readonly static AsyncLocal<IDictionary<string, StringValues>?> _headers = new AsyncLocal<IDictionary<string, StringValues>?>();
+        private static readonly AsyncLocal<IDictionary<string, StringValues>?> _headers = new AsyncLocal<IDictionary<string, StringValues>?>();
 
         /// <summary>
         /// Gets or sets the headers values collected by the <see cref="HeaderPropagationMiddleware"/> from the current request

@@ -16,11 +16,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
     public class TestHttpMessageHandler : HttpMessageHandler
     {
-        private List<HttpRequestMessage> _receivedRequests = new List<HttpRequestMessage>();
+        private readonly List<HttpRequestMessage> _receivedRequests = new List<HttpRequestMessage>();
         private RequestDelegate _app;
         private readonly ILogger _logger;
 
-        private List<Func<RequestDelegate, RequestDelegate>> _middleware = new List<Func<RequestDelegate, RequestDelegate>>();
+        private readonly List<Func<RequestDelegate, RequestDelegate>> _middleware = new List<Func<RequestDelegate, RequestDelegate>>();
 
         public bool Disposed { get; private set; }
 

@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     // }
     internal class EndpointConfig
     {
-        private ConfigSectionClone _configSectionClone;
+        private readonly ConfigSectionClone _configSectionClone;
 
         public EndpointConfig(
             string name,

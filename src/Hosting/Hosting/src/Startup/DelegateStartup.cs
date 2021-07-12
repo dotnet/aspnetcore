@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Hosting
     /// </summary>
     public class DelegateStartup : StartupBase<IServiceCollection>
     {
-        private Action<IApplicationBuilder> _configureApp;
+        private readonly Action<IApplicationBuilder> _configureApp;
 
         /// <summary>
         /// Creates a new <see cref="DelegateStartup" /> instance.

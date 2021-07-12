@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
     /// <summary>
     /// Represents a handle to a BCrypt algorithm provider from which keys and hashes can be created.
     /// </summary>
-    internal unsafe sealed class BCryptAlgorithmHandle : BCryptHandle
+    internal sealed unsafe class BCryptAlgorithmHandle : BCryptHandle
     {
         // Called by P/Invoke when returning SafeHandles
         private BCryptAlgorithmHandle() { }

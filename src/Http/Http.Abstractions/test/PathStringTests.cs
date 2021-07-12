@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -217,7 +220,7 @@ namespace Microsoft.AspNetCore.Http
         public void PathStringConvertsOnlyToAndFromString()
         {
             var converter = TypeDescriptor.GetConverter(typeof(PathString));
-            PathString result = (PathString)converter.ConvertFromInvariantString("/foo");
+            PathString result = (PathString)converter.ConvertFromInvariantString("/foo")!;
             Assert.Equal("/foo", result.ToString());
             Assert.Equal("/foo", converter.ConvertTo(result, typeof(string)));
             Assert.True(converter.CanConvertFrom(typeof(string)));
@@ -235,6 +238,115 @@ namespace Microsoft.AspNetCore.Http
             string s1 = p1;
             PathString p2 = s1;
             Assert.Equal(p1, p2);
+        }
+
+        [Theory]
+        [InlineData("/a%2Fb")]
+        [InlineData("/a%2F")]
+        [InlineData("/%2fb")]
+        [InlineData("/a%2Fb/c%2Fd/e")]
+        public void StringFromUriComponentLeavesForwardSlashEscaped(string input)
+        {
+            var sut = PathString.FromUriComponent(input);
+            Assert.Equal(input, sut.Value);
+        }
+
+        [Theory]
+        [InlineData("/a%2Fb")]
+        [InlineData("/a%2F")]
+        [InlineData("/%2fb")]
+        [InlineData("/a%2Fb/c%2Fd/e")]
+        public void UriFromUriComponentLeavesForwardSlashEscaped(string input)
+        {
+            var uri = new Uri($"https://localhost:5001{input}");
+            var sut = PathString.FromUriComponent(uri);
+            Assert.Equal(input, sut.Value);
+        }
+
+        [Theory]
+        [InlineData("/a%20b", "/a b")]
+        [InlineData("/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a%20b",
+            "/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a b")]
+        public void StringFromUriComponentUnescapes(string input, string expected)
+        {
+            var sut = PathString.FromUriComponent(input);
+            Assert.Equal(expected, sut.Value);
+        }
+
+        [Theory]
+        [InlineData("/a%20b", "/a b")]
+        [InlineData("/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a%20b",
+    "/thisMustBeAVeryLongPath/SoLongThatItCouldActuallyBeLargerToTheStackAllocThresholdValue/PathsShorterToThisAllocateLessOnHeapByUsingStackAllocation/api/a b")]
+        public void UriFromUriComponentUnescapes(string input, string expected)
+        {
+            var uri = new Uri($"https://localhost:5001{input}");
+            var sut = PathString.FromUriComponent(uri);
+            Assert.Equal(expected, sut.Value);
+        }
+
+        [Theory]
+        [InlineData("/a%2Fb")]
+        [InlineData("/a%2F")]
+        [InlineData("/%2fb")]
+        [InlineData("/%2Fb%20c")]
+        [InlineData("/a%2Fb%20c")]
+        [InlineData("/a%20b")]
+        [InlineData("/a%2Fb/c%2Fd/e%20f")]
+        [InlineData("/%E4%BD%A0%E5%A5%BD")]
+        public void FromUriComponentToUriComponent(string input)
+        {
+            var sut = PathString.FromUriComponent(input);
+            Assert.Equal(input, sut.ToUriComponent());
+        }
+
+        [Theory]
+        [MemberData(nameof(CharsToUnescape))]
+        [InlineData("/%E4%BD%A0%E5%A5%BD", "/你好")]
+        public void FromUriComponentUnescapesAllExceptForwardSlash(string input, string expected)
+        {
+            var sut = PathString.FromUriComponent(input);
+            Assert.Equal(expected, sut.Value);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void ExercisingStringFromUriComponentOnStackAllocLimit(int offset)
+        {
+            var path = "/";
+            var testString = new string('a', PathString.StackAllocThreshold + offset - path.Length);
+            var sut = PathString.FromUriComponent(path + testString);
+            Assert.Equal(PathString.StackAllocThreshold + offset, sut.Value!.Length);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void ExercisingUriFromUriComponentOnStackAllocLimit(int offset)
+        {
+            var localhost = "https://localhost:5001/";
+            var testString = new string('a', PathString.StackAllocThreshold + offset);
+            var sut = PathString.FromUriComponent(new Uri(localhost + testString));
+            Assert.Equal(PathString.StackAllocThreshold + offset + 1, sut.Value!.Length);
+        }
+
+        public static IEnumerable<object[]> CharsToUnescape
+        {
+            get
+            {
+                foreach (var item in Enumerable.Range(1, 127))
+                {
+                    // %2F is '/' not escaped for paths
+                    if (item != 0x2f)
+                    {
+                        var hexEscapedValue = "%" + item.ToString("x2", CultureInfo.InvariantCulture);
+                        var expected = Uri.UnescapeDataString(hexEscapedValue);
+                        yield return new object[] { "/a" + hexEscapedValue, "/a" + expected };
+                    }
+                }
+            }
         }
     }
 }

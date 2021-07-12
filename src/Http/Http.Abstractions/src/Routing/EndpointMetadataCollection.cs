@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<object?>
         {
             // Intentionally not readonly to prevent defensive struct copies
-            private object[] _items;
+            private readonly object[] _items;
             private int _index;
 
             internal Enumerator(EndpointMetadataCollection collection)

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// </summary>
     internal class SimplifiedStringHashComparer : IEqualityComparer<string>
     {
-        public readonly static SimplifiedStringHashComparer Instance = new SimplifiedStringHashComparer();
+        public static readonly SimplifiedStringHashComparer Instance = new SimplifiedStringHashComparer();
 
         public bool Equals(string? x, string? y)
         {

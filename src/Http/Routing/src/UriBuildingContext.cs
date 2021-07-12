@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         // Holds the 'accepted' parts of the path.
         private readonly StringBuilder _path;
-        private StringBuilder _query;
+        private readonly StringBuilder _query;
 
         // Holds the 'optional' parts of the path. We need a secondary buffer to handle cases where an optional
         // segment is in the middle of the uri. We don't know if we need to write it out - if it's

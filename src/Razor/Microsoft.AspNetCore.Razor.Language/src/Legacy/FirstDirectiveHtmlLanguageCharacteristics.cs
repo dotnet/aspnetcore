@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
         }
 
-        public new static FirstDirectiveHtmlLanguageCharacteristics Instance => _instance;
+        public static new FirstDirectiveHtmlLanguageCharacteristics Instance => _instance;
 
         public override HtmlTokenizer CreateTokenizer(ITextDocument source) => new DirectiveHtmlTokenizer(source);
     }

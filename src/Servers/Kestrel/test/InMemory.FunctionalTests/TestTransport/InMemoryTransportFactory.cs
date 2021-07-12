@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 {
     internal class InMemoryTransportFactory : IConnectionListenerFactory, IConnectionListener
     {
-        private Channel<ConnectionContext> _acceptQueue = Channel.CreateUnbounded<ConnectionContext>();
+        private readonly Channel<ConnectionContext> _acceptQueue = Channel.CreateUnbounded<ConnectionContext>();
 
         public EndPoint EndPoint { get; set; }
 

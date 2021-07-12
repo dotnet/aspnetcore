@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public static readonly bool GenerateBaselines = false;
 
-        private static object writeLock = new object();
+        private static readonly object writeLock = new object();
 
         public static void UpdateOrVerify(Assembly assembly, string outputFile, string expectedContent, string responseContent, string token = null)
         {
