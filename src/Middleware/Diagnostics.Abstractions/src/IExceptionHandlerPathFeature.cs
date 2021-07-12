@@ -15,16 +15,17 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// The portion of the request path that identifies the requested resource. The value
         /// is un-escaped.
         /// </summary>
-        string? Path { get; }
+        new string? Path { get; }
+
 
         /// <summary>
         /// Gets the selected <see cref="Http.Endpoint"/> for the original request.
         /// </summary>
-        Endpoint? Endpoint => null;
+        new Endpoint? Endpoint => null;
 
         /// <summary>
         /// Gets the <see cref="RouteValueDictionary"/> associated with the original request.
         /// </summary>
-        RouteValueDictionary? RouteValues => null;
+        new RouteValueDictionary? RouteValues => null;
     }
 }
