@@ -203,9 +203,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_BatchCopyToLayoutTargetDir"
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
-          Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')">
+          Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(RecursiveDir)%(FileName)%(Extension)')">
     <Copy SourceFiles="@(RefPackContent)"
-          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
+          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(RecursiveDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(LayoutTargetDir)" />
   </Target>
@@ -218,9 +218,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_InstallTargetingPackIntoLocalDotNet"
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
-          Outputs="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')">
+          Outputs="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(RecursiveDir)%(FileName)%(Extension)')">
     <Copy SourceFiles="@(RefPackContent)"
-          DestinationFiles="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')"
+          DestinationFiles="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(RecursiveDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(LocalInstallationOutputPath)" />
   </Target>
