@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
             else
             {
-                var prerenderCache = PrerenderingHelpers.GetOrCreatePrerenderCache(ViewContext);
+                var prerenderCache = ComponentDeferredContentStore.GetOrCreateContentStore(ViewContext);
                 prerenderCache.Add(OutputName, result);
                 output.Content.SetHtmlContent(string.Empty);
             }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,14 +46,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <typeparam name="TComponent">The type of the component.</typeparam>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
         /// <param name="parameters">The parameters for the component.</param>
-        /// <param name="append">If <c>true</c> the child content of the root component will be appended to existing HTML content.</param>
+        /// <param name="appendContent">
+        /// If <c>true</c>, the child content of the root component will be appended to existing HTML content.
+        /// This is useful when treating the HTML <c>&lt;head&gt;</c> as a root component.
+        /// </param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
         /// <remarks>
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync<[DynamicallyAccessedMembers(Component)] TComponent>(string domElementSelector, ParameterView parameters, bool append) where TComponent : IComponent
-            => AddComponentAsync(typeof(TComponent), domElementSelector, parameters, append);
+        public Task AddComponentAsync<[DynamicallyAccessedMembers(Component)] TComponent>(string domElementSelector, ParameterView parameters, bool appendContent) where TComponent : IComponent
+            => AddComponentAsync(typeof(TComponent), domElementSelector, parameters, appendContent);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="WebAssemblyRenderer"/>,

@@ -77,8 +77,6 @@ namespace Microsoft.AspNetCore.Components.Sections
             {
                 _registry.Unsubscribe(_subscribedName, this);
             }
-
-            GC.SuppressFinalize(this);
         }
     }
 }

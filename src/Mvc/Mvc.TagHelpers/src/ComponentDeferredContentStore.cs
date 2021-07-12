@@ -7,18 +7,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
-    internal static class PrerenderingHelpers
+    internal static class ComponentDeferredContentStore
     {
-        private static readonly object PrerenderCacheKey = new();
+        private static readonly object ContentStoreKey = new();
 
-        internal const string PrerenderedNameName = "name";
-
-        internal static Dictionary<string, IHtmlContent> GetOrCreatePrerenderCache(ViewContext viewContext)
+        internal static Dictionary<string, IHtmlContent> GetOrCreateContentStore(ViewContext viewContext)
         {
-            if (!viewContext.Items.TryGetValue(PrerenderCacheKey, out var result))
+            if (!viewContext.Items.TryGetValue(ContentStoreKey, out var result))
             {
                 result = new Dictionary<string, IHtmlContent>();
-                viewContext.Items[PrerenderCacheKey] = result;
+                viewContext.Items[ContentStoreKey] = result;
             }
 
             return (Dictionary<string, IHtmlContent>)result;

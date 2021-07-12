@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Sections
         /// <summary>
         /// Gets or sets the content to be rendered in corresponding <see cref="SectionOutlet"/> instances.
         /// </summary>
-        [Parameter] public RenderFragment? ChildContent { get; set; } = default;
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
         RenderFragment? ISectionContentProvider.Content => ChildContent;
 

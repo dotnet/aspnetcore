@@ -110,12 +110,12 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
 
-  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId, append) => {
+  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId, appendContent) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
     } else {
-      attachRootComponentToLogicalElement(rendererId, element, componentId, append);
+      attachRootComponentToLogicalElement(rendererId, element, componentId, appendContent);
     }
   };
 

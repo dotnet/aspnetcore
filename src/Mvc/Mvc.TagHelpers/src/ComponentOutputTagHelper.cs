@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public class ComponentOutputTagHelper : TagHelper
     {
         private const string TagHelperName = "component-output";
+        private const string NameName = "name";
 
         /// <summary>
         /// Gets or sets the <see cref="Rendering.ViewContext"/> for the current request.
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <summary>
         /// Gets or sets the name used to identify the component whose content to emit.
         /// </summary>
-        [HtmlAttributeName(PrerenderingHelpers.PrerenderedNameName)]
+        [HtmlAttributeName(NameName)]
         public string Name { get; set; }
 
         /// <inheritdoc/>
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            var prerenderCache = PrerenderingHelpers.GetOrCreatePrerenderCache(ViewContext);
+            var prerenderCache = ComponentDeferredContentStore.GetOrCreateContentStore(ViewContext);
 
             if (!prerenderCache.TryGetValue(Name, out var content))
             {

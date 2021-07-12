@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.Sections
 {
-    internal class SectionRegistry
+    internal sealed class SectionRegistry
     {
         private readonly Dictionary<string, List<ISectionContentSubscriber>> _subscribersByName = new();
         private readonly Dictionary<string, List<ISectionContentProvider>> _providersByName = new();
