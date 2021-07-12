@@ -120,7 +120,9 @@ namespace Microsoft.AspNetCore.Builder
                 _contentRootPath = ResolvePathToRoot(value, AppContext.BaseDirectory);
                 if (Directory.Exists(_contentRootPath))
                 {
+                    /* Update both file providers if content root path changes */
                     _contentRootFileProvider = new PhysicalFileProvider(_contentRootPath);
+                    _webRootFileProvider = new PhysicalFileProvider(WebRootPath);
                 }
             }
         }
