@@ -98,7 +98,6 @@ namespace Microsoft.AspNetCore.Builder
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
 
-
         public IFileProvider ContentRootFileProvider
         {
             get => _contentRootFileProvider;
@@ -117,7 +116,9 @@ namespace Microsoft.AspNetCore.Builder
             get => _contentRootPath;
             set
             {
-                _contentRootPath = ResolvePathToRoot(value, AppContext.BaseDirectory);
+                _contentRootPath = string.IsNullOrEmpty(value) 
+                    ? Directory.GetCurrentDirectory()
+                    : ResolvePathToRoot(value, AppContext.BaseDirectory);
                 /* Update both file providers if content root path changes */
                 if (Directory.Exists(_contentRootPath))
                 {

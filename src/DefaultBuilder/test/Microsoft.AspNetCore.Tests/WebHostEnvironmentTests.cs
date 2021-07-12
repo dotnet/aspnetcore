@@ -88,8 +88,8 @@ namespace Microsoft.AspNetCore.Tests
             Assert.IsType<PhysicalFileProvider>(environment.ContentRootFileProvider);
             Assert.IsType<PhysicalFileProvider>(environment.WebRootFileProvider);
 
-            Assert.Equal(tempPath, ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
-            Assert.Equal(tempPath, ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
+            Assert.Equal(EnsureTrailingSlash(tempPath), ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
+            Assert.Equal(EnsureTrailingSlash(tempPath), ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
         }
 
         [Fact]
@@ -98,9 +98,9 @@ namespace Microsoft.AspNetCore.Tests
             var environment = new WebHostEnvironment();
             var relativeRootPath = "some-relative-path";
             var relativeSubPath = "some-other-relative-path";
-            var fullContentRoot = Path.Combine(Directory.GetCurrentDirectory(), relativeRootPath);
+            var fullContentRoot = Path.Combine(AppContext.BaseDirectory, relativeRootPath);
             
-            // ContentRootPath is mapped relative to Directory.GetCurrentDirectory()
+            // ContentRootPath is mapped relative to AppContext.BaseDirectory
             environment.ContentRootPath = relativeRootPath;
             Assert.Equal(fullContentRoot, environment.ContentRootPath);
 
@@ -119,16 +119,16 @@ namespace Microsoft.AspNetCore.Tests
             environment.WebRootPath = webRootPath;
 
             Assert.Equal(webRootPath, environment.WebRootPath);
-            Assert.Equal(webRootPath, ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
+            Assert.Equal(EnsureTrailingSlash(webRootPath), ((PhysicalFileProvider)environment.WebRootFileProvider).Root);
 
             // Setting WebRootPath to fallsback to default
             environment.WebRootPath = null;
             Assert.Equal(defaultWebRootPath, environment.WebRootPath);
 
-            // Setting ContentRootPath to null falls back to current directory
+            // Setting ContentRootPath to null falls back to CurrentDirectory
             environment.ContentRootPath = null;
-            Assert.Equal(AppContext.BaseDirectory, environment.ContentRootPath);
-            Assert.Equal(AppContext.BaseDirectory, ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
+            Assert.Equal(Directory.GetCurrentDirectory(), environment.ContentRootPath);
+            Assert.Equal(EnsureTrailingSlash(Directory.GetCurrentDirectory()), ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Tests
             environment.ContentRootPath = tempPath;
 
             Assert.Equal(tempPath, environment.ContentRootPath);
-            Assert.Equal(tempPath, ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
+            Assert.Equal(EnsureTrailingSlash(tempPath), ((PhysicalFileProvider)environment.ContentRootFileProvider).Root);
             Assert.Equal(Path.Combine(tempPath, webRootPath), environment.WebRootPath);
         }
 
@@ -203,5 +203,8 @@ namespace Microsoft.AspNetCore.Tests
                 return this;
             }
         }
+
+        private static string EnsureTrailingSlash(string path)
+            => path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
     }
 }
