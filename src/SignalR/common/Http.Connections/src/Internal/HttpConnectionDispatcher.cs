@@ -568,10 +568,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Setup the connection state from the http context
             connection.User = connection.HttpContext?.User;
 
-            if (options.EnableAuthenticationExpiration)
-            {
-                UpdateExpiration(connection, context);
-            }
+            UpdateExpiration(connection, context);
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
@@ -586,7 +583,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             if (authenticateResultFeature is not null)
             {
-                connection.AuthenticationExpiration = authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc;
+                connection.AuthenticationExpiration =
+                    authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
             }
         }
 

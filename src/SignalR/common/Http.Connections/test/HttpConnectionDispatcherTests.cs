@@ -2664,9 +2664,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var connection = manager.CreateConnection();
+                var options = new HttpConnectionDispatcherOptions() { CloseOnAuthenticationExpiration = true };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
-                connection.AuthenticationExpiration = DateTimeOffset.Now.AddMinutes(10);
                 var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection.ConnectionClosedRequested.Register(() => tcs.SetResult());
 
@@ -2674,7 +2674,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<HttpContextConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
                 var context = MakeRequest("/foo", connection, services);
 
                 // Initial poll will complete immediately
@@ -2752,7 +2751,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 });
             }, endpoints =>
             {
-                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.EnableAuthenticationExpiration = true);
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
 
                 endpoints.MapGet("/generatetoken", context =>
                 {
@@ -2819,7 +2818,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     .AddCookie();
             }, endpoints =>
             {
-                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.EnableAuthenticationExpiration = true);
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
 
                 endpoints.MapGet("/signin", async context =>
                 {
@@ -2914,7 +2913,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         });
                 }, endpoints =>
                 {
-                    endpoints.MapConnectionHandler<JwtConnectionHandler>("/foo", o => o.EnableAuthenticationExpiration = true);
+                    endpoints.MapConnectionHandler<JwtConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
 
                     endpoints.MapGet("/generatetoken", context =>
                     {
@@ -2970,61 +2969,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        public async Task AuthenticationExpirationNotSetByDefault()
+        public async Task AuthenticationExpirationSetToMaxValueByDefault()
         {
-            SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
-            JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
-
             using var host = CreateHost(services =>
             {
-                services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters =
-                        new TokenValidationParameters
-                        {
-                            LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
-                            ValidateAudience = false,
-                            ValidateIssuer = false,
-                            ValidateActor = false,
-                            ValidateLifetime = true,
-                            IssuerSigningKey = SecurityKey
-                        };
-
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context =>
-                        {
-                            var accessToken = context.Request.Query["access_token"];
-
-                            if (!string.IsNullOrEmpty(accessToken) &&
-                                (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
-                            {
-                                context.Token = context.Request.Query["access_token"];
-                            }
-                            return Task.CompletedTask;
-                        }
-                    };
-                });
+                services.AddAuthentication();
             }, endpoints =>
             {
-                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo");
-
-                endpoints.MapGet("/generatetoken", context =>
-                {
-                    return context.Response.WriteAsync(GenerateToken(context));
-                });
-
-                string GenerateToken(HttpContext httpContext)
-                {
-                    var claims = new[] { new Claim(ClaimTypes.NameIdentifier, httpContext.Request.Query["user"]) };
-                    var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
-                    var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.UtcNow.AddMinutes(1), signingCredentials: credentials);
-                    return JwtTokenHandler.WriteToken(token);
-                }
+                endpoints.MapConnectionHandler<TestConnectionHandler>("/foo");
             }, LoggerFactory);
 
             host.Start();
@@ -3032,22 +2984,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var manager = host.Services.GetRequiredService<HttpConnectionManager>();
             var url = host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
 
-            string token = "";
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri(url);
-
-                var response = await client.GetAsync("generatetoken?user=bob");
-                token = await response.Content.ReadAsStringAsync();
-            }
-
             url += "/foo";
             var stream = new MemoryStream();
             var connection = new HttpConnection(
                 new HttpConnectionOptions()
                 {
                     Url = new Uri(url),
-                    AccessTokenProvider = () => Task.FromResult(token),
                     DefaultTransferFormat = TransferFormat.Text,
                     HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream)
                 },
@@ -3059,7 +3001,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.Null(context.AuthenticationExpiration);
+            Assert.Equal(DateTimeOffset.MaxValue, context.AuthenticationExpiration);
 
             await connection.DisposeAsync();
         }

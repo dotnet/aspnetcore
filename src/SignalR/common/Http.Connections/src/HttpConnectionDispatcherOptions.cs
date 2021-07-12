@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// <remarks>
         /// Closed connections will miss messages sent while closed.
         /// </remarks>
-        public bool EnableAuthenticationExpiration { get; set; }
+        public bool CloseOnAuthenticationExpiration { get; set; }
 
         internal long TransportSendTimeoutTicks { get; private set; }
         internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
