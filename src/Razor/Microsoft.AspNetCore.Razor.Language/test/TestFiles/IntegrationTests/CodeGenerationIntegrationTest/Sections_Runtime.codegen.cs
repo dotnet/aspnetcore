@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
                 BeginWriteAttribute("class", " class=\"", 109, "\"", 128, 2);
                 WriteAttributeValue("", 117, "some", 117, 4, true);
 #nullable restore
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
+#line (8,21)-(8,28) 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 WriteAttributeValue(" ", 121, thing, 122, 6, false);
 
 #line default

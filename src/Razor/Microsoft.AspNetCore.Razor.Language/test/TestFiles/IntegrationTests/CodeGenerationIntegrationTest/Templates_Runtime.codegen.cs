@@ -63,7 +63,7 @@ Write(foo(""));
                 WriteLiteral("<p");
                 BeginWriteAttribute("class", " class=\"", 411, "\"", 424, 1);
 #nullable restore
-#line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
+#line (17,44)-(17,49) 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 WriteAttributeValue("", 419, item, 419, 5, false);
 
 #line default

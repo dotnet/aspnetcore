@@ -572,7 +572,7 @@ EndWriteAttribute();
             Assert.Equal(
 @"
 #nullable restore
-#line 1 ""test.cshtml""
+#line (1,28)-(1,35) 29 ""test.cshtml""
 WriteAttributeValue("" "", 27, false, 28, 6, false);
 
 #line default

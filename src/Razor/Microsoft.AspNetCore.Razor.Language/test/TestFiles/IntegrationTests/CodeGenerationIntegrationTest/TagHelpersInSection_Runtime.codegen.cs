@@ -88,7 +88,7 @@ WriteLiteral(DateTime.Now);
                 AddHtmlAttributeValue("", 188, "Current", 188, 7, true);
                 AddHtmlAttributeValue(" ", 195, "Time:", 196, 6, true);
 #nullable restore
-#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
+#line (9,96)-(9,110) 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
 AddHtmlAttributeValue(" ", 201, DateTime.Now, 202, 13, false);
 
 #line default

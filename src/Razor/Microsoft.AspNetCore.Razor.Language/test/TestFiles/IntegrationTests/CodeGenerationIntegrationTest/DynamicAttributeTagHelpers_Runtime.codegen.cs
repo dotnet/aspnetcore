@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 51, "prefix", 51, 6, true);
 #nullable restore
-#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
+#line (3,23)-(3,37) 31 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 13, false);
 
 #line default
@@ -133,7 +133,7 @@ WriteLiteral(DateTime.Now);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 206, "prefix", 206, 6, true);
 #nullable restore
-#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
+#line (7,59)-(7,73) 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 212, DateTime.Now, 213, 13, false);
 
 #line default
@@ -211,7 +211,7 @@ WriteLiteral(int.MaxValue);
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #nullable restore
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
+#line (10,17)-(10,31) 31 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 
 #line default
@@ -258,7 +258,7 @@ Write(false);
             }
             ), 362, 44, false);
 #nullable restore
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
+#line (10,76)-(10,90) 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 406, int.MaxValue, 407, 13, false);
 
 #line default
@@ -280,14 +280,14 @@ AddHtmlAttributeValue(" ", 406, int.MaxValue, 407, 13, false);
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 5, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #nullable restore
-#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
+#line (12,17)-(12,31) 31 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue("", 444, long.MinValue, 444, 14, false);
 
 #line default
 #line hidden
 #nullable disable
 #nullable restore
-#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
+#line (12,31)-(12,45) 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 458, DateTime.Now, 459, 13, false);
 
 #line default
@@ -296,7 +296,7 @@ AddHtmlAttributeValue(" ", 458, DateTime.Now, 459, 13, false);
             AddHtmlAttributeValue(" ", 472, "static", 473, 7, true);
             AddHtmlAttributeValue("    ", 479, "content", 483, 11, true);
 #nullable restore
-#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
+#line (12,63)-(12,77) 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 13, false);
 
 #line default

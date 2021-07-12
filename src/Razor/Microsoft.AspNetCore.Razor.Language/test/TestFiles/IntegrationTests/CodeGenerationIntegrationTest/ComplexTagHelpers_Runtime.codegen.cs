@@ -269,7 +269,7 @@ WriteLiteral(true ? "checkbox" : "anything");
             AddHtmlAttributeValue("", 197, "Current", 197, 7, true);
             AddHtmlAttributeValue(" ", 204, "Time:", 205, 6, true);
 #nullable restore
-#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line (9,31)-(9,45) 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 13, false);
 
 #line default
