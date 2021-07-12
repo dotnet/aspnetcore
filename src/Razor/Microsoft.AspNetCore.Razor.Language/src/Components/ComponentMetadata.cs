@@ -103,6 +103,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             public const string TypeParameterIsCascadingKey = "Components.TypeParameterIsCascading";
 
+            public const string TypeParameterConstraintsKey = "Component.TypeParameterConstraints";
+
             public const string NameMatchKey = "Components.NameMatch";
 
             public const string FullyQualifiedNameMatch = "Components.FullyQualifiedNameMatch";
