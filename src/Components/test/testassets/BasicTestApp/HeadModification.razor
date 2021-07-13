@@ -2,23 +2,23 @@
 
 <HeadContent>
     <title>@_title</title>
-    <meta name="description" content="@_description">
+    <meta id="meta-description" name="description" content="@_description">
 </HeadContent>
 
 <p>
     Title:
-    <input type="text" @bind-value="_title" />
+    <input id="input-title" type="text" @bind-value="_title" />
 </p>
 
 <p>
     Description:
-    <input type="text" @bind-value="_description" />
+    <input id="input-description" type="text" @bind-value="_description" />
 </p>
 
 <p>
-    Subpage:
+    Dynamic head content:
 
-    <select @onchange=OnSelectedIndexChanged>
+    <select id="select-dynamic-head-content" @onchange=OnSelectedIndexChanged>
         <option value="@(0)">None</option>
         @for (int i = 1; i < 3; i++)
         {
@@ -30,12 +30,12 @@
     {
         case 1:
             <HeadContent>
-                <title>Subpage 1</title>
+                <title>Overridden title 1</title>
             </HeadContent>
             break;
         case 2:
             <HeadContent>
-                <title>Subpage 2</title>
+                <title>Overridden title 2</title>
             </HeadContent>
             break;
         default:
