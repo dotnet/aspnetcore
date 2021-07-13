@@ -9,37 +9,37 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="dotnet-ef" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="5.0.7">
-      <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>f8a6198dad41e8ed584da6ff711837f3288f8a8d</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="5.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
+      <Sha>1af30fd9b4752ab36eff63d9bc75888d41c85657</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -93,9 +93,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.2">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -294,17 +294,17 @@
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.7">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>556582d964cc21b82a88d7154e915076f6f9008e</Sha>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.7-servicing.21255.8">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.8-servicing.21315.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>556582d964cc21b82a88d7154e915076f6f9008e</Sha>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.7-servicing.21255.8">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.8-servicing.21315.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>556582d964cc21b82a88d7154e915076f6f9008e</Sha>
+      <Sha>35964c9215613d66a687ebcb2d7fcd9496390ee7</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
