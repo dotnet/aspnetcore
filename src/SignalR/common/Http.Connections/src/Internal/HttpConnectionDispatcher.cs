@@ -10,6 +10,8 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
@@ -566,11 +568,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Setup the connection state from the http context
             connection.User = connection.HttpContext?.User;
 
+            UpdateExpiration(connection, context);
+
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
 
             return true;
+        }
+
+        private static void UpdateExpiration(HttpConnectionContext connection, HttpContext context)
+        {
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+
+            if (authenticateResultFeature is not null)
+            {
+                connection.AuthenticationExpiration =
+                    authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
+            }
         }
 
         private static void CloneUser(HttpContext newContext, HttpContext oldContext)
