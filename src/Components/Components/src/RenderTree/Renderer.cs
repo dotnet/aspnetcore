@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
         private readonly ComponentFactory _componentFactory;
-        private List<(ComponentState, ParameterView)>? _rootComponents;
+        private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
+        private Task? _ongoingQuiescenceTask;
 
         private int _nextComponentId;
         private bool _isBatchInProgress;
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             await Dispatcher.InvokeAsync(() =>
             {
-                if (_rootComponents is null)
+                if (_rootComponentsLatestParameters is null)
                 {
                     return;
                 }
@@ -142,9 +143,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 IsRenderingOnMetadataUpdate = true;
                 try
                 {
-                    foreach (var (componentState, initialParameters) in _rootComponents)
+                    foreach (var (componentId, parameters) in _rootComponentsLatestParameters)
                     {
-                        componentState.SetDirectParameters(initialParameters);
+                        var componentState = GetRequiredComponentState(componentId);
+                        componentState.SetDirectParameters(parameters);
                     }
                 }
                 finally
@@ -199,53 +201,71 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
-        /// Performs the first render for a root component, waiting for this component and all
-        /// children components to finish rendering in case there is any asynchronous work being
-        /// done by any of the components. After this, the root component
-        /// makes its own decisions about when to re-render, so there is no need to call
-        /// this more than once.
+        /// Supplies parameters for a root component, normally causing it to render. This can be
+        /// used to trigger the first render of a root component, or to update its parameters and
+        /// trigger a subsequent render. Note that components may also make their own decisions about
+        /// when to re-render, and may re-render at any time.
+        ///
+        /// The returned <see cref="Task"/> waits for this component and all descendant components to
+        /// finish rendering in case there is any asynchronous work being done by any of them.
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
-        /// <param name="initialParameters">The <see cref="ParameterView"/>with the initial parameters to use for rendering.</param>
+        /// <param name="initialParameters">The <see cref="ParameterView"/> with the initial or updated parameters to use for rendering.</param>
         /// <remarks>
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
         protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
-            if (Interlocked.CompareExchange(ref _pendingTasks, new List<Task>(), null) != null)
-            {
-                throw new InvalidOperationException("There is an ongoing rendering in progress.");
-            }
+            Dispatcher.AssertAccess();
 
-            // During the rendering process we keep a list of components performing work in _pendingTasks.
-            // _renderer.AddToPendingTasks will be called by ComponentState.SetDirectParameters to add the
-            // the Task produced by Component.SetParametersAsync to _pendingTasks in order to track the
-            // remaining work.
-            // During the synchronous rendering process we don't wait for the pending asynchronous
-            // work to finish as it will simply trigger new renders that will be handled afterwards.
-            // During the asynchronous rendering process we want to wait up until all components have
-            // finished rendering so that we can produce the complete output.
+            // Since this is a "render root" operation being invoked from outside the system, we start tracking
+            // any async tasks from this point until we reach quiescence. This allows external code such as prerendering
+            // to know when the renderer has some finished output. We don't track async tasks at other times
+            // because nobody would be waiting for quiescence at other times.
+            // Having a nonnull value for _pendingTasks is what signals that we should be capturing the async tasks.
+            _pendingTasks ??= new();
+
             var componentState = GetRequiredComponentState(componentId);
             if (TestableMetadataUpdate.IsSupported)
             {
-                // when we're doing hot-reload, stash away the parameters used while rendering root components.
+                // When we're doing hot-reload, stash away the parameters used while rendering root components.
                 // We'll use this to trigger re-renders on hot reload updates.
-                _rootComponents ??= new();
-                _rootComponents.Add((componentState, initialParameters.Clone()));
+                _rootComponentsLatestParameters ??= new();
+                _rootComponentsLatestParameters[componentId] = initialParameters.Clone();
             }
 
             componentState.SetDirectParameters(initialParameters);
 
-            try
+            await WaitForQuiescence();
+            Debug.Assert(_pendingTasks == null);
+        }
+
+        /// <summary>
+        /// Removes the specified component from the renderer, causing the component and its
+        /// descendants to be disposed.
+        /// </summary>
+        /// <param name="componentId">The ID of the root component.</param>
+        protected void RemoveRootComponent(int componentId)
+        {
+            Dispatcher.AssertAccess();
+
+            var rootComponentState = GetRequiredComponentState(componentId);
+            if (rootComponentState.ParentComponentState is not null)
             {
-                await ProcessAsynchronousWork();
-                Debug.Assert(_pendingTasks.Count == 0);
+                throw new InvalidOperationException("The specified component is not a root component");
             }
-            finally
+
+            // This assumes there isn't currently a batch in progress, and will throw if there is.
+            // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
+            // during a batch, but if a scenario emerges we can add support.
+            _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
+            if (TestableMetadataUpdate.IsSupported)
             {
-                _pendingTasks = null;
+                _rootComponentsLatestParameters?.Remove(componentId);
             }
+
+            ProcessRenderQueue();
         }
 
         /// <summary>
@@ -254,21 +274,43 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="exception">The <see cref="Exception"/>.</param>
         protected abstract void HandleException(Exception exception);
 
-        private async Task ProcessAsynchronousWork()
+        private async Task WaitForQuiescence()
         {
-            // Child components SetParametersAsync are stored in the queue of pending tasks,
-            // which might trigger further renders.
-            while (_pendingTasks.Count > 0)
+            // If there's already a loop waiting for quiescence, just join it
+            if (_ongoingQuiescenceTask is not null)
             {
-                // Create a Task that represents the remaining ongoing work for the rendering process
-                var pendingWork = Task.WhenAll(_pendingTasks);
+                await _ongoingQuiescenceTask;
+                return;
+            }
 
-                // Clear all pending work.
-                _pendingTasks.Clear();
+            try
+            {
+                _ongoingQuiescenceTask = ProcessAsynchronousWork();
+                await _ongoingQuiescenceTask;
+            }
+            finally
+            {
+                Debug.Assert(_pendingTasks.Count == 0);
+                _pendingTasks = null;
+                _ongoingQuiescenceTask = null;
+            }
 
-                // new work might be added before we check again as a result of waiting for all
-                // the child components to finish executing SetParametersAsync
-                await pendingWork;
+            async Task ProcessAsynchronousWork()
+            {
+                // Child components SetParametersAsync are stored in the queue of pending tasks,
+                // which might trigger further renders.
+                while (_pendingTasks.Count > 0)
+                {
+                    // Create a Task that represents the remaining ongoing work for the rendering process
+                    var pendingWork = Task.WhenAll(_pendingTasks);
+
+                    // Clear all pending work.
+                    _pendingTasks.Clear();
+
+                    // new work might be added before we check again as a result of waiting for all
+                    // the child components to finish executing SetParametersAsync
+                    await pendingWork;
+                }
             }
         }
 
@@ -544,7 +586,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (_batchBuilder.ComponentRenderQueue.Count == 0)
                 {
-                    return;
+                    if (_batchBuilder.ComponentDisposalQueue.Count == 0)
+                    {
+                        // Nothing to do
+                        return;
+                    }
+                    else
+                    {
+                        // Normally we process the disposal queue after each component rendering step,
+                        // but in this case disposal is the only pending action so far
+                        ProcessDisposalQueueInExistingBatch();
+                    }
                 }
 
                 // Process render queue until empty
@@ -714,9 +766,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 HandleExceptionViaErrorBoundary(renderFragmentException, componentState);
             }
 
-            List<Exception> exceptions = null;
-
             // Process disposal queue now in case it causes further component renders to be enqueued
+            ProcessDisposalQueueInExistingBatch();
+        }
+
+        private void ProcessDisposalQueueInExistingBatch()
+        {
+            List<Exception> exceptions = null;
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();

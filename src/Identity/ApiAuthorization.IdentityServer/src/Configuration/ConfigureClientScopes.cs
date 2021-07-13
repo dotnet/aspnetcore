@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

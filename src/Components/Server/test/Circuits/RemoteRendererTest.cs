@@ -208,12 +208,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
 
             // This produces the initial batch (id = 2)
-            await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterView.FromDictionary(new Dictionary<string, object>
-            {
-                [nameof(AutoParameterTestComponent.Content)] = initialContent,
-                [nameof(AutoParameterTestComponent.Trigger)] = trigger
-            }));
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<AutoParameterTestComponent>(
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    [nameof(AutoParameterTestComponent.Content)] = initialContent,
+                    [nameof(AutoParameterTestComponent.Trigger)] = trigger
+                })));
             trigger.Component.Content = (builder) =>
             {
                 builder.OpenElement(0, "offline element");
@@ -271,12 +271,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
 
             // This produces the initial batch (id = 2)
-            await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterView.FromDictionary(new Dictionary<string, object>
-            {
-                [nameof(AutoParameterTestComponent.Content)] = initialContent,
-                [nameof(AutoParameterTestComponent.Trigger)] = trigger
-            }));
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<AutoParameterTestComponent>(
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    [nameof(AutoParameterTestComponent.Content)] = initialContent,
+                    [nameof(AutoParameterTestComponent.Trigger)] = trigger
+                })));
             trigger.Component.Content = (builder) =>
             {
                 builder.OpenElement(0, "offline element");
@@ -334,12 +334,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             var trigger = new Trigger();
 
             // This produces the initial batch (id = 2)
-            await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterView.FromDictionary(new Dictionary<string, object>
-            {
-                [nameof(AutoParameterTestComponent.Content)] = initialContent,
-                [nameof(AutoParameterTestComponent.Trigger)] = trigger
-            }));
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<AutoParameterTestComponent>(
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    [nameof(AutoParameterTestComponent.Content)] = initialContent,
+                    [nameof(AutoParameterTestComponent.Trigger)] = trigger
+                })));
             trigger.Component.Content = (builder) =>
             {
                 builder.OpenElement(0, "offline element");
@@ -391,12 +391,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             var trigger = new Trigger();
 
             // This produces the initial batch (id = 2)
-            await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterView.FromDictionary(new Dictionary<string, object>
-            {
-                [nameof(AutoParameterTestComponent.Content)] = initialContent,
-                [nameof(AutoParameterTestComponent.Trigger)] = trigger
-            }));
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<AutoParameterTestComponent>(
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    [nameof(AutoParameterTestComponent.Content)] = initialContent,
+                    [nameof(AutoParameterTestComponent.Trigger)] = trigger
+                })));
             trigger.Component.Content = (builder) =>
             {
                 builder.OpenElement(0, "offline element");

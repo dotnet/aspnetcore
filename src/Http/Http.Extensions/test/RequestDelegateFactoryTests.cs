@@ -144,7 +144,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Fact]
         public async Task NonStaticMethodInfoOverloadWorksWithBasicReflection()
-
         {
             var methodInfo = typeof(TestNonStaticActionClass).GetMethod(
                 nameof(TestNonStaticActionClass.NonStaticTestAction),
@@ -1026,6 +1025,21 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 static Task<CustomResult> StaticTaskTestAction() => Task.FromResult(new CustomResult("Still not enough tests!"));
                 static ValueTask<CustomResult> StaticValueTaskTestAction() => ValueTask.FromResult(new CustomResult("Still not enough tests!"));
 
+                // Object return type where the object is IResult
+                static object StaticResultAsObject() => new CustomResult("Still not enough tests!");
+                static object StaticResultAsTaskObject() => Task.FromResult<object>(new CustomResult("Still not enough tests!"));
+                static object StaticResultAsValueTaskObject() => ValueTask.FromResult<object>(new CustomResult("Still not enough tests!"));
+
+                // Object return type where the object is Task<IResult>
+                static object StaticResultAsTaskIResult() => Task.FromResult<IResult>(new CustomResult("Still not enough tests!"));
+
+                // Object return type where the object is ValueTask<IResult>
+                static object StaticResultAsValueTaskIResult() => ValueTask.FromResult<IResult>(new CustomResult("Still not enough tests!"));
+
+                // Task<object> return type
+                static Task<object> StaticTaskOfIResultAsObject() => Task.FromResult<object>(new CustomResult("Still not enough tests!"));
+                static ValueTask<object> StaticValueTaskOfIResultAsObject() => ValueTask.FromResult<object>(new CustomResult("Still not enough tests!"));
+
                 return new List<object[]>
                 {
                     new object[] { (Func<CustomResult>)TestAction },
@@ -1034,6 +1048,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Func<CustomResult>)StaticTestAction},
                     new object[] { (Func<Task<CustomResult>>)StaticTaskTestAction},
                     new object[] { (Func<ValueTask<CustomResult>>)StaticValueTaskTestAction},
+
+                    new object[] { (Func<object>)StaticResultAsObject},
+                    new object[] { (Func<object>)StaticResultAsTaskObject},
+                    new object[] { (Func<object>)StaticResultAsValueTaskObject},
+
+                    new object[] { (Func<object>)StaticResultAsTaskIResult},
+                    new object[] { (Func<object>)StaticResultAsValueTaskIResult},
+
+                    new object[] { (Func<Task<object>>)StaticTaskOfIResultAsObject},
+                    new object[] { (Func<ValueTask<object>>)StaticValueTaskOfIResultAsObject},
                 };
             }
         }
@@ -1069,6 +1093,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 static Task<string> StaticTaskTestAction() => Task.FromResult("String Test");
                 static ValueTask<string> StaticValueTaskTestAction() => ValueTask.FromResult("String Test");
 
+                // Dynamic via object
+                static object StaticStringAsObjectTestAction() => "String Test";
+                static object StaticTaskStringAsObjectTestAction() => Task.FromResult("String Test");
+                static object StaticValueTaskStringAsObjectTestAction() => ValueTask.FromResult("String Test");
+
+                // Dynamic via Task<object>
+                static Task<object> StaticStringAsTaskObjectTestAction() => Task.FromResult<object>("String Test");
+
+                // Dynamic via ValueTask<object>
+                static ValueTask<object> StaticStringAsValueTaskObjectTestAction() => ValueTask.FromResult<object>("String Test");
+
                 return new List<object[]>
                 {
                     new object[] { (Func<string>)TestAction },
@@ -1077,6 +1112,15 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Func<string>)StaticTestAction },
                     new object[] { (Func<Task<string>>)StaticTaskTestAction },
                     new object[] { (Func<ValueTask<string>>)StaticValueTaskTestAction },
+
+                    new object[] { (Func<object>)StaticStringAsObjectTestAction },
+                    new object[] { (Func<object>)StaticTaskStringAsObjectTestAction },
+                    new object[] { (Func<object>)StaticValueTaskStringAsObjectTestAction },
+
+                    new object[] { (Func<Task<object>>)StaticStringAsTaskObjectTestAction },
+                    new object[] { (Func<ValueTask<object>>)StaticStringAsValueTaskObjectTestAction },
+
+
                 };
             }
         }
