@@ -116,9 +116,17 @@ namespace Microsoft.AspNetCore.Builder
             get => _contentRootPath;
             set
             {
-                _contentRootPath = string.IsNullOrEmpty(value) 
+                // No-op if the value setting does not change
+                var targetValue = string.IsNullOrEmpty(value)
                     ? Directory.GetCurrentDirectory()
                     : ResolvePathToRoot(value, AppContext.BaseDirectory);
+                if (targetValue == _contentRootPath)
+                {
+                    return;
+                }
+
+                _contentRootPath = targetValue;
+
                 /* Update both file providers if content root path changes */
                 if (Directory.Exists(_contentRootPath))
                 {
@@ -136,7 +144,14 @@ namespace Microsoft.AspNetCore.Builder
             get => ResolvePathToRoot(_webRootPath, ContentRootPath);
             set
             {
-                _webRootPath = string.IsNullOrEmpty(value) ? "wwwroot" : value;
+                // No-op if the value setting does not change
+                var targetValue = string.IsNullOrEmpty(value) ? "wwwroot" : value;
+                if (targetValue == _webRootPath)
+                {
+                    return;
+                }
+
+                _webRootPath = targetValue;
                 if (Directory.Exists(WebRootPath))
                 {
                     _webRootFileProvider = new PhysicalFileProvider(WebRootPath);
