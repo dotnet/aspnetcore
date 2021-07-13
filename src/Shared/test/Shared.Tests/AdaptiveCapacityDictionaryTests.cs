@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -98,6 +99,25 @@ namespace Microsoft.AspNetCore.Internal.Tests
                 kvp => { Assert.Equal("First Name", kvp.Key); Assert.Equal("James", kvp.Value); },
                 kvp => { Assert.Equal("Last Name", kvp.Key); Assert.Equal("Henrik", kvp.Value); },
                 kvp => { Assert.Equal("Middle Name", kvp.Key); Assert.Equal("Bob", kvp.Value); });
+        }
+
+        [Fact]
+        public void CreateWithCapacityOverDefaultLimit()
+        {
+            // The default threshold between array and dictionary is 10. If we created one over that limit it should go directly to a dictionary.
+            var dict = new AdaptiveCapacityDictionary<string, string>(capacity: 12, StringComparer.OrdinalIgnoreCase);
+
+            Assert.Null(dict._arrayStorage);
+            Assert.NotNull(dict._dictionaryStorage);
+
+            for (var i = 0; i < 12; i++)
+            {
+                dict[i.ToString(CultureInfo.InvariantCulture)] = i.ToString(CultureInfo.InvariantCulture);
+            }
+
+            Assert.Null(dict._arrayStorage);
+            Assert.NotNull(dict._dictionaryStorage);
+            Assert.Equal(12, dict.Count);
         }
 
         [Fact]

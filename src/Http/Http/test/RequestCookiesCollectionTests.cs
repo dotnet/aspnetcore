@@ -38,5 +38,13 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Equal(expectedKey, cookies.Keys.Single());
             Assert.Equal(expectedValue, cookies[expectedKey]);
         }
+
+        [Fact]
+        public void ParseManyCookies()
+        {
+            var cookies = RequestCookieCollection.Parse(new StringValues(new[] { "a=a", "b=b", "c=c", "d=d", "e=e", "f=f", "g=g", "h=h", "i=i", "j=j", "k=k", "l=l" }));
+
+            Assert.Equal(12, cookies.Count);
+        }
     }
 }

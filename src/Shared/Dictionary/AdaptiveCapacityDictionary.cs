@@ -77,7 +77,6 @@ namespace Microsoft.AspNetCore.Internal
             else
             {
                 _dictionaryStorage = new Dictionary<TKey, TValue>(capacity);
-                _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
             }
         }
 
@@ -95,6 +94,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
 
+            Debug.Assert(capacity <= DefaultArrayThreshold);
             _arrayStorage = new KeyValuePair<TKey, TValue>[capacity];
 
             foreach (var kvp in values)
