@@ -7,7 +7,7 @@ using System.Runtime.Versioning;
 namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
-    /// Repesents configurable options for <see cref="RemoteBrowserFileStream"/>.
+    /// Repesents configurable options for <see cref="BrowserFileStream"/> with Blazor Server.
     /// </summary>
     [UnsupportedOSPlatform("browser")]
     public class RemoteBrowserFileStreamOptions
@@ -23,11 +23,12 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Gets or sets the maximum internal buffer size for unread data sent over a SignalR circuit.
+        /// Default -1 represents the default Pipe pauseWriterThreshold in <see cref="System.IO.Pipelines.PipeOptions" />.
         /// <para>
         /// This only has an effect when using Blazor Server.
         /// </para>
         /// </summary>
-        public int MaxBufferSize { get; set; } = 1024 * 1024;
+        public int MaxBufferSize { get; set; } = -1;
 
         /// <summary>
         /// Gets or sets the time limit for fetching a segment of file data.

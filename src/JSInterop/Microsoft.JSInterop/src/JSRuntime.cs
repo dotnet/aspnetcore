@@ -220,11 +220,17 @@ namespace Microsoft.JSInterop
         /// Defaults to -1, which indicates use of the default <see cref="System.IO.Pipelines.PipeOptions.PauseWriterThreshold" />.
         /// Avoid specifying an excessively large value because this could allow clients to exhaust memory.
         /// A value of zero prevents JS from blocking, allowing .NET to receive an unlimited number of bytes.
+        /// <para>
+        /// This only has an effect when using Blazor Server.
+        /// </para>
         /// </param>
         /// <param name="resumeIncomingBytesThreshold">
         /// The number of unflushed bytes at which point JS stops blocking.
         /// Defaults to -1, which indicates use of the default <see cref="System.IO.Pipelines.PipeOptions.PauseWriterThreshold" />.
         /// Must be less than the <paramref name="pauseIncomingBytesThreshold"/> to prevent thrashing at the limit.
+        /// <para>
+        /// This only has an effect when using Blazor Server.
+        /// </para>
         /// </param>
         /// <param name="cancellationToken"><see cref="CancellationToken" /> for cancelling read.</param>
         /// <returns><see cref="Stream"/> for the data reference represented by <paramref name="jsStreamReference"/>.</returns>

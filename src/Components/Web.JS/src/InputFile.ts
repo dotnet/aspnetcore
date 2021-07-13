@@ -1,7 +1,6 @@
 export const InputFile = {
   init,
   toImageFile,
-  ensureChunkReadyForSharedMemoryInterop,
   readFileData,
 };
 
@@ -90,15 +89,6 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
   elem._blazorFilesById[result.id] = result;
 
   return result;
-}
-
-async function ensureChunkReadyForSharedMemoryInterop(elem: InputElement, fileId: number, sourceOffset: number, maxBytes: number): Promise<void> {
-  const file = getFileById(elem, fileId);
-  const chunkBlob = file.blob.slice(sourceOffset, Math.min(sourceOffset + maxBytes, file.blob.size));
-  const arrayBuffer = await chunkBlob.arrayBuffer();
-  const chunkByteArray = new Uint8Array(arrayBuffer);
-
-  file.chunk = chunkByteArray;
 }
 
 async function readFileData(elem: InputElement, fileId: number): Promise<Blob> {

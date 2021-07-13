@@ -14,8 +14,8 @@ import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { WasmInputFile } from './WasmInputFile';
 import { getNextChunk } from './StreamingInterop';
+import { InputFile } from './InputFile';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -44,7 +44,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
-  Blazor._internal.InputFile = WasmInputFile;
+  Blazor._internal.InputFile = InputFile;
 
   Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
     DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
