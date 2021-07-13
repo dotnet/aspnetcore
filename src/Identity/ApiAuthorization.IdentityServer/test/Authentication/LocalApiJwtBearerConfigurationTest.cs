@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Stores;
+using IdentityServer4.Configuration;
+using IdentityServer4.Stores;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

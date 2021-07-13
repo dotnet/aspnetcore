@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Duende.IdentityServer.Configuration;
+using IdentityServer4.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Duende.IdentityServer.Models;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.Extensions.Configuration;
