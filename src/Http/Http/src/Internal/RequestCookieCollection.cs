@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Http
                 return Empty;
             }
 
-            // Do not set the collection capacity based on StringValues.Count, the Cookie header is supposed to be a single combine value.
+            // Do not set the collection capacity based on StringValues.Count, the Cookie header is supposed to be a single combined value.
             var collection = new RequestCookieCollection();
             var store = collection.Store!;
 
