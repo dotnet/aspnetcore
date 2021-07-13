@@ -31,7 +31,7 @@ Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature
 ~Microsoft.AspNetCore.Diagnostics.ICompilationException.CompilationFailures.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.CompilationFailure>
 ~Microsoft.AspNetCore.Diagnostics.IDeveloperPageExceptionFilter.HandleExceptionAsync(Microsoft.AspNetCore.Diagnostics.ErrorContext errorContext, System.Func<Microsoft.AspNetCore.Diagnostics.ErrorContext, System.Threading.Tasks.Task> next) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature.Error.get -> System.Exception
-Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature.Path.get -> string
+~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature.Path.get -> string
 ~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.get -> string
 ~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.set -> void
 ~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.get -> string
