@@ -474,18 +474,25 @@ namespace Microsoft.AspNetCore.Http
 
     internal sealed class PathStringConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
             => sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
             => value is string @string
             ? PathString.ConvertFromString(@string)
             : base.ConvertFrom(context, culture, value);
 
-        public override object ConvertTo(ITypeDescriptorContext context,
-           CultureInfo culture, object value, Type destinationType)
-            => destinationType == typeof(string)
-            ? value.ToString() ?? string.Empty
-            : base.ConvertTo(context, culture, value, destinationType);
+        public override object? ConvertTo(ITypeDescriptorContext? context,
+           CultureInfo? culture, object? value, Type destinationType)
+        {
+            if (destinationType == null)
+            {
+                throw new ArgumentNullException(nameof(destinationType));
+            }
+
+            return destinationType == typeof(string)
+                ? value?.ToString() ?? string.Empty
+                : base.ConvertTo(context, culture, value, destinationType);
+        }
     }
 }

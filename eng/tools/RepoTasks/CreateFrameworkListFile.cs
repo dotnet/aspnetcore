@@ -50,7 +50,7 @@ namespace RepoTasks
                     FileVersion = FileUtilities.GetFileVersion(item.ItemSpec),
                     IsNative = item.GetMetadata("IsNativeImage") == "true",
                     IsSymbolFile = item.GetMetadata("IsSymbolFile") == "true",
-                    PackagePath = item.GetMetadata("PackagePath")
+                    PackagePath = GetPackagePath(item)
                 })
                 .Where(f =>
                     !f.IsSymbolFile &&
@@ -125,5 +125,17 @@ namespace RepoTasks
 
             return !Log.HasLoggedErrors;
         }
+        private static string GetPackagePath(ITaskItem item)
+        {
+            string packagePath = item.GetMetadata("PackagePath");
+
+            // replicate the logic used by PackTask https://github.com/NuGet/NuGet.Client/blob/f24bad0668193ce21a1db8cabd1ce95ba509c7f0/src/NuGet.Core/NuGet.Build.Tasks.Pack/PackTaskLogic.cs#L644-L647
+            string recursiveDir = item.GetMetadata("RecursiveDir");
+            recursiveDir = string.IsNullOrEmpty(recursiveDir) ? item.GetMetadata("NuGetRecursiveDir") : recursiveDir;
+
+            return string.IsNullOrEmpty(recursiveDir) ? packagePath :
+                Path.Combine(packagePath, recursiveDir);
+        }
     }
+
 }

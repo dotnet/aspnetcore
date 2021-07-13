@@ -1,16 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 #endif
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
 #endif
@@ -20,10 +12,10 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
 #endif
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+#if (OrganizationalAuth || IndividualB2CAuth)
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+#endif
 #if (MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif

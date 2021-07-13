@@ -137,11 +137,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             // EventId 2 BufferingAsyncEnumerable
 

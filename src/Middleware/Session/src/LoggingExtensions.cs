@@ -21,6 +21,8 @@ namespace Microsoft.Extensions.Logging
         private static readonly Action<ILogger, Exception?> _sessionRefreshCanceled;
         private static readonly Action<ILogger, Exception?> _sessionNotAvailable;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         static LoggingExtensions()
         {
             _errorClosingTheSession = LoggerMessage.Define(
@@ -32,24 +34,24 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Information,
                 formatString: "Accessing expired session, Key:{sessionKey}");
             _sessionStarted = LoggerMessage.Define<string, string>(
-                eventId: new EventId(3, "SessionStarted"),
                 logLevel: LogLevel.Information,
+                eventId: new EventId(3, "SessionStarted"),
                 formatString: "Session started; Key:{sessionKey}, Id:{sessionId}",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
             _sessionLoaded = LoggerMessage.Define<string, string, int>(
-                eventId: new EventId(4, "SessionLoaded"),
                 logLevel: LogLevel.Debug,
+                eventId: new EventId(4, "SessionLoaded"),
                 formatString: "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
             _sessionStored = LoggerMessage.Define<string, string, int>(
                 eventId: new EventId(5, "SessionStored"),
                 logLevel: LogLevel.Debug,
                 formatString: "Session stored; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
             _sessionCacheReadException = LoggerMessage.Define<string>(
-                eventId: new EventId(6, "SessionCacheReadException"),
                 logLevel: LogLevel.Error,
+                eventId: new EventId(6, "SessionCacheReadException"),
                 formatString: "Session cache read exception, Key:{sessionKey}",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
             _errorUnprotectingCookie = LoggerMessage.Define(
                 eventId: new EventId(7, "ErrorUnprotectingCookie"),
                 logLevel: LogLevel.Warning,

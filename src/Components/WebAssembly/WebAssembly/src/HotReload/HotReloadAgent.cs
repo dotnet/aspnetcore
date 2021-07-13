@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 
 namespace Microsoft.Extensions.HotReload
 {
@@ -196,7 +197,7 @@ namespace Microsoft.Extensions.HotReload
                     {
                         if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
                         {
-                            System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                            MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
                         }
                     }
 
@@ -227,7 +228,7 @@ namespace Microsoft.Extensions.HotReload
 
                 foreach (var item in deltas)
                 {
-                    System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                    MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
                 }
 
                 _log("Deltas applied.");

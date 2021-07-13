@@ -1,16 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Http.Extensions
 {
     public class ProblemDetailsJsonConverterTest
     {
-        private static JsonSerializerOptions JsonSerializerOptions => new JsonOptions().JsonSerializerOptions;
+        private static JsonSerializerOptions JsonSerializerOptions => new JsonOptions().SerializerOptions;
 
         [Fact]
         public void Read_ThrowsIfJsonIsIncomplete()

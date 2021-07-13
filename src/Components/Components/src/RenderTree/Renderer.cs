@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(componentActivator);
 
-            if (HotReloadFeature.IsSupported)
+            if (TestableMetadataUpdate.IsSupported)
             {
                 HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
             }
@@ -121,9 +121,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
 
         /// <summary>
-        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
+        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a (metadata update) hot-reload change.
         /// </summary>
-        internal bool IsHotReloading { get; private set; }
+        internal bool IsRenderingOnMetadataUpdate { get; private set; }
 
         private async void RenderRootComponentsOnHotReload()
         {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     return;
                 }
 
-                IsHotReloading = true;
+                IsRenderingOnMetadataUpdate = true;
                 try
                 {
                     foreach (var (componentState, initialParameters) in _rootComponents)
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
                 finally
                 {
-                    IsHotReloading = false;
+                    IsRenderingOnMetadataUpdate = false;
                 }
             });
         }
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // During the asynchronous rendering process we want to wait up until all components have
             // finished rendering so that we can produce the complete output.
             var componentState = GetRequiredComponentState(componentId);
-            if (HotReloadFeature.IsSupported)
+            if (TestableMetadataUpdate.IsSupported)
             {
                 // when we're doing hot-reload, stash away the parameters used while rendering root components.
                 // We'll use this to trigger re-renders on hot reload updates.
@@ -998,7 +998,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            if (HotReloadFeature.IsSupported)
+            if (TestableMetadataUpdate.IsSupported)
             {
                 HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
             }

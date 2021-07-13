@@ -404,6 +404,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 @namespace = string.IsNullOrEmpty(@namespace) ? "__Blazor" : "__Blazor." + @namespace;
                 @namespace += "." + documentNode.FindPrimaryClass().ClassName;
 
+                var genericTypeConstraints = node.Component.BoundAttributes
+                    .Where(t => t.Metadata.ContainsKey(ComponentMetadata.Component.TypeParameterConstraintsKey))
+                    .Select(t => t.Metadata[ComponentMetadata.Component.TypeParameterConstraintsKey]);
+
                 var typeInferenceNode = new ComponentTypeInferenceMethodIntermediateNode()
                 {
                     Component = node,
@@ -414,6 +418,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     FullTypeName = @namespace + ".TypeInference",
 
                     ReceivesCascadingGenericTypes = receivesCascadingGenericTypes,
+                    GenericTypeConstraints = genericTypeConstraints
                 };
 
                 node.TypeInferenceNode = typeInferenceNode;

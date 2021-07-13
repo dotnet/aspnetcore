@@ -51,7 +51,7 @@ namespace AspNetCore
             EndContext();
             BeginContext(61, 7, false);
             BeginContext(61, 7, false);
-#line 3 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
+#line (3,3)-(3,10) 6 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
 Write("Hello");
 
 #line default
@@ -127,7 +127,7 @@ __InputTagHelper.BarProp = DateTime.Now;
             EndContext();
             BeginContext(217, 29, false);
             BeginContext(217, 29, false);
-#line 9 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
+#line (9,2)-(9,6) 6 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
 Write(Foo(item => new global::Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     PushWriter(__razor_template_writer);
     BeginContext(222, 24, true);

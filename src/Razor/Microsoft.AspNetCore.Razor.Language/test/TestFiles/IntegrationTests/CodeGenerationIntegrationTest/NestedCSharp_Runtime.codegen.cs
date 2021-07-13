@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #nullable disable
             WriteLiteral("        <div>\r\n            ");
 #nullable restore
-#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml"
-       Write(result.SomeValue);
+#line (5,14)-(5,30) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml"
+Write(result.SomeValue);
 
 #line default
 #line hidden

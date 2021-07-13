@@ -146,8 +146,8 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
                     __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
                     BeginWriteTagHelperAttribute();
 #nullable restore
-#line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                                 WriteLiteral(checkbox);
+#line (17,47)-(17,55) 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+WriteLiteral(checkbox);
 
 #line default
 #line hidden
@@ -192,8 +192,8 @@ __TestNamespace_InputTagHelper2.Checked = true;
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
                 BeginWriteTagHelperAttribute();
 #nullable restore
-#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                  WriteLiteral(true ? "checkbox" : "anything");
+#line (18,32)-(18,62) 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+WriteLiteral(true ? "checkbox" : "anything");
 
 #line default
 #line hidden
@@ -269,7 +269,7 @@ __TestNamespace_InputTagHelper2.Checked = true;
             AddHtmlAttributeValue("", 197, "Current", 197, 7, true);
             AddHtmlAttributeValue(" ", 204, "Time:", 205, 6, true);
 #nullable restore
-#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line (9,31)-(9,45) 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 13, false);
 
 #line default
@@ -477,8 +477,8 @@ __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             WriteLiteral("\r\n        ");
 #nullable restore
-#line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-   Write(someMethod(item => new Template(async(__razor_template_writer) => {
+#line (35,10)-(35,21) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+Write(someMethod(item => new Template(async(__razor_template_writer) => {
     PushWriter(__razor_template_writer);
     __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
         __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             WriteLiteral("    <a href=\"Foo\" />\r\n    <p");
             BeginWriteAttribute("class", " class=\"", 74, "\"", 86, 1);
 #nullable restore
-#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+#line (5,15)-(5,19) 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
 WriteAttributeValue("", 82, cls, 82, 4, false);
 
 #line default
@@ -34,7 +34,7 @@ WriteAttributeValue("", 82, cls, 82, 4, false);
             BeginWriteAttribute("class", " class=\"", 98, "\"", 114, 2);
             WriteAttributeValue("", 106, "foo", 106, 3, true);
 #nullable restore
-#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+#line (6,18)-(6,23) 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
 WriteAttributeValue(" ", 109, cls, 110, 4, false);
 
 #line default
@@ -44,7 +44,7 @@ WriteAttributeValue(" ", 109, cls, 110, 4, false);
             WriteLiteral(" />\r\n    <p");
             BeginWriteAttribute("class", " class=\"", 126, "\"", 142, 2);
 #nullable restore
-#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+#line (7,15)-(7,19) 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
 WriteAttributeValue("", 134, cls, 134, 4, false);
 
 #line default
@@ -55,7 +55,7 @@ WriteAttributeValue("", 134, cls, 134, 4, false);
             WriteLiteral(" />\r\n    <input type=\"checkbox\"");
             BeginWriteAttribute("checked", " checked=\"", 174, "\"", 187, 1);
 #nullable restore
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+#line (8,37)-(8,40) 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
 WriteAttributeValue("", 184, ch, 184, 3, false);
 
 #line default
@@ -66,7 +66,7 @@ WriteAttributeValue("", 184, ch, 184, 3, false);
             BeginWriteAttribute("checked", " checked=\"", 219, "\"", 236, 2);
             WriteAttributeValue("", 229, "foo", 229, 3, true);
 #nullable restore
-#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+#line (9,40)-(9,44) 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
 WriteAttributeValue(" ", 232, ch, 233, 3, false);
 
 #line default
@@ -85,8 +85,8 @@ WriteAttributeValue(" ", 232, ch, 233, 3, false);
 #line hidden
 #nullable disable
 #nullable restore
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                            Write(cls);
+#line (10,35)-(10,38) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+Write(cls);
 
 #line default
 #line hidden
@@ -105,7 +105,7 @@ WriteAttributeValue(" ", 232, ch, 233, 3, false);
             WriteLiteral(" />\r\n    <a href=\"~/Foo\" />\r\n    <script");
             BeginWriteAttribute("src", " src=\"", 322, "\"", 373, 1);
 #nullable restore
-#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+#line (12,18)-(12,63) 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
 WriteAttributeValue("", 328, Url.Content("~/Scripts/jquery-1.6.2.min.js"), 328, 45, false);
 
 #line default
@@ -115,7 +115,7 @@ WriteAttributeValue("", 328, Url.Content("~/Scripts/jquery-1.6.2.min.js"), 328, 
             WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script");
             BeginWriteAttribute("src", " src=\"", 420, "\"", 487, 1);
 #nullable restore
-#line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
+#line (13,18)-(13,79) 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
 WriteAttributeValue("", 426, Url.Content("~/Scripts/modernizr-2.0.6-development-only.js"), 426, 61, false);
 
 #line default

@@ -8,29 +8,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     internal class SocketsTrace : ISocketsTrace
     {
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         // ConnectionRead: Reserved: 3
 
         private static readonly Action<ILogger, string, Exception?> _connectionPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionPause"), @"Connection id ""{ConnectionId}"" paused.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionPause"), @"Connection id ""{ConnectionId}"" paused.", SkipEnabledCheckLogOptions);
 
         private static readonly Action<ILogger, string, Exception?> _connectionResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "ConnectionResume"), @"Connection id ""{ConnectionId}"" resumed.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "ConnectionResume"), @"Connection id ""{ConnectionId}"" resumed.", SkipEnabledCheckLogOptions);
 
         private static readonly Action<ILogger, string, Exception?> _connectionReadFin =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "ConnectionReadFin"), @"Connection id ""{ConnectionId}"" received FIN.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "ConnectionReadFin"), @"Connection id ""{ConnectionId}"" received FIN.", SkipEnabledCheckLogOptions);
 
         private static readonly Action<ILogger, string, string, Exception?> _connectionWriteFin =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, "ConnectionWriteFin"), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", skipEnabledCheck: true);
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, "ConnectionWriteFin"), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", SkipEnabledCheckLogOptions);
 
         // ConnectionWrite: Reserved: 11
 
         // ConnectionWriteCallback: Reserved: 12
 
         private static readonly Action<ILogger, string, Exception?> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "ConnectionError"), @"Connection id ""{ConnectionId}"" communication error.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "ConnectionError"), @"Connection id ""{ConnectionId}"" communication error.", SkipEnabledCheckLogOptions);
 
         private static readonly Action<ILogger, string, Exception?> _connectionReset =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, "ConnectionReset"), @"Connection id ""{ConnectionId}"" reset.", skipEnabledCheck: true);
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, "ConnectionReset"), @"Connection id ""{ConnectionId}"" reset.", SkipEnabledCheckLogOptions);
 
         private readonly ILogger _logger;
 

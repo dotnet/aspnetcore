@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
+#if (GenerateApiOrGraph)
+using System.Net;
+#endif
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Authorization;
 #endif
-#if (GenerateApiOrGraph)
-using Microsoft.Extensions.Configuration;
-using Microsoft.Identity.Web;
-using System.Net;
-using System.Net.Http;
-#endif
+using Microsoft.AspNetCore.Mvc;
 #if (GenerateGraph)
 using Microsoft.Graph;
 #endif
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+#if (GenerateApiOrGraph)
+using Microsoft.Identity.Web;
+#endif
 using Company.WebApplication1.Models;
 
 namespace Company.WebApplication1.Controllers
