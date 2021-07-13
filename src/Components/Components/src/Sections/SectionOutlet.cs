@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Components.Sections
 {
     /// <summary>
@@ -47,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Sections
             {
                 if (_subscribedName is not null)
                 {
-                    _registry.Unsubscribe(_subscribedName, this);
+                    _registry.Unsubscribe(_subscribedName);
                 }
 
                 _registry.Subscribe(Name, this);
@@ -75,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Sections
         {
             if (_subscribedName is not null)
             {
-                _registry.Unsubscribe(_subscribedName, this);
+                _registry.Unsubscribe(_subscribedName);
             }
         }
     }

@@ -1,14 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Components.Sections
 {
     internal sealed class SectionRegistry
     {
-        private readonly Dictionary<string, List<ISectionContentSubscriber>> _subscribersByName = new();
+        private readonly Dictionary<string, ISectionContentSubscriber> _subscribersByName = new();
         private readonly Dictionary<string, List<ISectionContentProvider>> _providersByName = new();
 
         public void AddProvider(string name, ISectionContentProvider provider)
@@ -43,33 +40,30 @@ namespace Microsoft.AspNetCore.Components.Sections
                 // We just removed the most recently added provider, meaning we need to change
                 // the current content to that of second most recently added provider.
                 var content = GetCurrentProviderContentOrDefault(providers);
-                NotifyContentChangedForAllSubscribers(name, content);
+                NotifyContentChangedForSubscriber(name, content);
             }
         }
 
         public void Subscribe(string name, ISectionContentSubscriber subscriber)
         {
-            if (!_subscribersByName.TryGetValue(name, out var subscribers))
+            if (_subscribersByName.ContainsKey(name))
             {
-                subscribers = new List<ISectionContentSubscriber>();
-                _subscribersByName.Add(name, subscribers);
+                throw new InvalidOperationException($"There is already a subscriber to the content '{name}'.");
             }
 
             // Notify the new subscriber with any existing content.
             var content = GetCurrentProviderContentOrDefault(name);
             subscriber.ContentChanged(content);
 
-            subscribers.Add(subscriber);
+            _subscribersByName.Add(name, subscriber);
         }
 
-        public void Unsubscribe(string name, ISectionContentSubscriber subscriber)
+        public void Unsubscribe(string name)
         {
-            if (!_subscribersByName.TryGetValue(name, out var subscribers))
+            if (!_subscribersByName.Remove(name))
             {
-                throw new InvalidOperationException($"The subscriber is already unsubscribed.");
+                throw new InvalidOperationException($"The subscriber with name '{name}' is already unsubscribed.");
             }
-
-            subscribers.Remove(subscriber);
         }
 
         public void NotifyContentChanged(string name, ISectionContentProvider provider)
@@ -83,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Sections
             // most recently added provider changes.
             if (providers.Count != 0 && providers[^1] == provider)
             {
-                NotifyContentChangedForAllSubscribers(name, provider.Content);
+                NotifyContentChangedForSubscriber(name, provider.Content);
             }
         }
 
@@ -97,14 +91,11 @@ namespace Microsoft.AspNetCore.Components.Sections
                 ? GetCurrentProviderContentOrDefault(existingList)
                 : null;
 
-        private void NotifyContentChangedForAllSubscribers(string name, RenderFragment? content)
+        private void NotifyContentChangedForSubscriber(string name, RenderFragment? content)
         {
-            if (_subscribersByName.TryGetValue(name, out var existingList))
+            if (_subscribersByName.TryGetValue(name, out var subscriber))
             {
-                foreach (var subscriber in existingList)
-                {
-                    subscriber.ContentChanged(content);
-                }
+                subscriber.ContentChanged(content);
             }
         }
     }
