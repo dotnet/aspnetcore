@@ -653,7 +653,7 @@ namespace Microsoft.AspNetCore.Http
         // it is, we await if necessary then execute the result.
         // Then we check to see if it's Task<object> or ValueTask<object>. If it is, we await
         // if necessary and restart the cycle until we've reached a terminal state (unknown type).
-        // We currently don't handle Task<unknown> or ValueTask<unknown>. We can later if this
+        // We currently don't handle Task<unknown> or ValueTask<unknown>. We can support this later if this
         // ends up being a common scenario.
         private static async Task ExecuteObjectReturn(object? obj, HttpContext httpContext)
         {
