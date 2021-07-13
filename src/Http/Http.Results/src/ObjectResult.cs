@@ -53,12 +53,23 @@ namespace Microsoft.AspNetCore.Http.Result
                 httpContext.Response.StatusCode = statusCode;
             }
 
-            OnFormatting(httpContext);
+            ConfigureResponseHeaders(httpContext);
+
             if (Value is null)
             {
                 return Task.CompletedTask;
             }
+
+            OnFormatting(httpContext);
             return httpContext.Response.WriteAsJsonAsync(Value);
+        }
+
+        protected virtual void OnFormatting(HttpContext httpContext)
+        {
+        }
+
+        protected virtual void ConfigureResponseHeaders(HttpContext httpContext)
+        {
         }
 
         private void ApplyProblemDetailsDefaults(ProblemDetails problemDetails)
@@ -90,10 +101,6 @@ namespace Microsoft.AspNetCore.Http.Result
                 problemDetails.Title ??= defaults.Title;
                 problemDetails.Type ??= defaults.Type;
             }
-        }
-
-        protected virtual void OnFormatting(HttpContext httpContext)
-        {
         }
 
         private static partial class Log
