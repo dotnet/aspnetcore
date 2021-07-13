@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult Challenge(
             AuthenticationProperties? properties = null,
-            params string[] authenticationSchemes)
-            => new ChallengeResult { AuthenticationSchemes = authenticationSchemes, Properties = properties };
+            IList<string>? authenticationSchemes = null)
+            => new ChallengeResult { AuthenticationSchemes = authenticationSchemes ?? Array.Empty<string>(), Properties = properties };
 
         /// <summary>
         /// Creates a <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.ForbidAsync(HttpContext, string?, AuthenticationProperties?)"/>.
@@ -50,8 +50,8 @@ namespace Microsoft.AspNetCore.Http
         /// Some authentication schemes, such as cookies, will convert <see cref="StatusCodes.Status403Forbidden"/> to
         /// a redirect to show a login page.
         /// </remarks>
-        public static IResult Forbid(AuthenticationProperties? properties = null, params string[] authenticationSchemes)
-            => new ForbidResult { Properties = properties, AuthenticationSchemes = authenticationSchemes, };
+        public static IResult Forbid(AuthenticationProperties? properties = null, IList<string>? authenticationSchemes = null)
+            => new ForbidResult { Properties = properties, AuthenticationSchemes = authenticationSchemes ?? Array.Empty<string>(), };
 
         /// <summary>
         /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignInAsync(HttpContext, string?, ClaimsPrincipal, AuthenticationProperties?)" />.
@@ -72,8 +72,8 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
         /// <param name="authenticationSchemes">The authentication scheme to use for the sign-out operation.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult SignOut(AuthenticationProperties? properties = null, params string[] authenticationSchemes)
-            => new SignOutResult(authenticationSchemes, properties);
+        public static IResult SignOut(AuthenticationProperties? properties = null, IList<string>? authenticationSchemes = null)
+            => new SignOutResult(authenticationSchemes ?? Array.Empty<string>(), properties);
 
         /// <summary>
         /// Writes the <paramref name="content"/> string to the HTTP response.
@@ -147,15 +147,13 @@ namespace Microsoft.AspNetCore.Http
         /// <remarks>Callers should cache an instance of serializer settings to avoid
         /// recreating cached data with each call.</remarks>
         public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
-        {
-            return new JsonResult
+            => new JsonResult
             {
                 Value = data,
                 JsonSerializerOptions = options,
                 ContentType = contentType,
                 StatusCode = statusCode,
             };
-        }
 
         /// <summary>
         /// Writes the byte-array content to the response.
@@ -177,7 +175,7 @@ namespace Microsoft.AspNetCore.Http
         public static IResult File(
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             byte[] fileContents,
-            string contentType,
+            string? contentType = null,
             string? fileDownloadName = null,
             bool enableRangeProcessing = false,
             DateTimeOffset? lastModified = null,
@@ -208,7 +206,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult Bytes(
             byte[] contents,
-            string contentType,
+            string? contentType = null,
             string? fileDownloadName = null,
             bool enableRangeProcessing = false,
             DateTimeOffset? lastModified = null,
@@ -248,7 +246,7 @@ namespace Microsoft.AspNetCore.Http
         public static IResult File(
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             Stream fileStream,
-            string contentType,
+            string? contentType = null,
             string? fileDownloadName = null,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue? entityTag = null,
@@ -274,7 +272,7 @@ namespace Microsoft.AspNetCore.Http
         /// </para>
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> to write to the response.</param>
-        /// <param name="contentType">The <c>Content-Type</c> of the response.</param>
+        /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
         /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
         /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
@@ -287,7 +285,7 @@ namespace Microsoft.AspNetCore.Http
         /// </remarks>
         public static IResult Stream(
             Stream stream,
-            string contentType,
+            string? contentType = null,
             string? fileDownloadName = null,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue? entityTag = null,
@@ -320,7 +318,7 @@ namespace Microsoft.AspNetCore.Http
         public static IResult File(
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             string path,
-            string contentType,
+            string? contentType = null,
             string? fileDownloadName = null,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue? entityTag = null,
@@ -414,16 +412,9 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
         /// </summary>
-        /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult NotFound()
-            => new NotFoundResult();
-
-        /// <summary>
-        /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
-        /// </summary>
         /// <param name="value">The value to be included in the HTTP response body.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult NotFound(object? value)
+        public static IResult NotFound(object? value = null)
             => new NotFoundObjectResult(value);
 
         /// <summary>
@@ -436,31 +427,17 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
-        /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult BadRequest()
-            => new BadRequestResult();
-
-        /// <summary>
-        /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
-        /// </summary>
         /// <param name="error">An error object to be included in the HTTP response body.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult BadRequest(object? error)
+        public static IResult BadRequest(object? error = null)
             => new BadRequestObjectResult(error);
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
         /// </summary>
-        /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult Conflict()
-            => new ConflictResult();
-
-        /// <summary>
-        /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
-        /// </summary>
         /// <param name="error">An error object to be included in the HTTP response body.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult Conflict(object? error)
+        public static IResult Conflict(object? error = null)
             => new ConflictObjectResult(error);
 
         /// <summary>
@@ -473,31 +450,17 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status200OK"/> response.
         /// </summary>
-        /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult Ok()
-            => new OkResult();
-
-        /// <summary>
-        /// Produces a <see cref="StatusCodes.Status200OK"/> response.
-        /// </summary>
         /// <param name="value">The value to be included in the HTTP response body.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult Ok(object? value)
+        public static IResult Ok(object? value = null)
             => new OkObjectResult(value);
-
-        /// <summary>
-        /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
-        /// </summary>
-        /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult UnprocessableEntity()
-            => new UnprocessableEntityResult();
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
         /// </summary>
         /// <param name="error">An error object to be included in the HTTP response body.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult UnprocessableEntity(object? error)
+        public static IResult UnprocessableEntity(object? error = null)
             => new UnprocessableEntityObjectResult(error);
 
         /// <summary>

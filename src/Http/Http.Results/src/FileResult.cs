@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -17,14 +16,9 @@ namespace Microsoft.AspNetCore.Http.Result
         /// the provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        protected FileResult(string contentType)
+        protected FileResult(string? contentType)
         {
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
-
-            ContentType = contentType;
+            ContentType = contentType ?? "application/octet-stream";
         }
 
         /// <summary>
