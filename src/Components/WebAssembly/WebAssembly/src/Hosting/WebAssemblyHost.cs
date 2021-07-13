@@ -1,18 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Reflection.Metadata;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -42,10 +40,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private WebAssemblyRenderer? _renderer;
 
         internal WebAssemblyHost(
+            WebAssemblyHostBuilder builder,
             IServiceProvider services,
             AsyncServiceScope scope,
-            IConfiguration configuration,
-            RootComponentMappingCollection rootComponents,
             string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
@@ -53,8 +50,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             _services = services;
             _scope = scope;
-            _configuration = configuration;
-            _rootComponents = rootComponents;
+            _configuration = builder.Configuration;
+            _rootComponents = builder.RootComponents;
             _persistedState = persistedState;
         }
 
@@ -160,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     {
                         foreach (var rootComponent in rootComponents)
                         {
-                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Parameters, rootComponent.Selector);
                         }
 
                         initializationTcs.SetResult();

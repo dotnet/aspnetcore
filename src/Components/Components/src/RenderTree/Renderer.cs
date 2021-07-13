@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Having a nonnull value for _pendingTasks is what signals that we should be capturing the async tasks.
             _pendingTasks ??= new();
 
-            var componentState = GetRequiredComponentState(componentId);
+            var componentState = GetRequiredRootComponentState(componentId);
             if (TestableMetadataUpdate.IsSupported)
             {
                 // When we're doing hot-reload, stash away the parameters used while rendering root components.
@@ -254,11 +254,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             Dispatcher.AssertAccess();
 
-            var rootComponentState = GetRequiredComponentState(componentId);
-            if (rootComponentState.ParentComponentState is not null)
-            {
-                throw new InvalidOperationException("The specified component is not a root component");
-            }
+            // Asserts it's a root component
+            _ = GetRequiredRootComponentState(componentId);
 
             // This assumes there isn't currently a batch in progress, and will throw if there is.
             // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
@@ -560,6 +557,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
                 : null;
+
+        private ComponentState GetRequiredRootComponentState(int componentId)
+        {
+            var componentState = GetRequiredComponentState(componentId);
+            if (componentState.ParentComponentState is not null)
+            {
+                throw new InvalidOperationException("The specified component is not a root component");
+            }
+
+            return componentState;
+        }
 
         /// <summary>
         /// Processes pending renders requests from components if there are any.
