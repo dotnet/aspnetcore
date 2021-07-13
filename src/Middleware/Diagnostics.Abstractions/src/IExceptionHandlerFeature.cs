@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// The portion of the request path that identifies the requested resource. The value
         /// is un-escaped.
         /// </summary>
-        string? Path => null;
+        string Path => throw new NotSupportedException();
 
         /// <summary>
         /// Gets the selected <see cref="Http.Endpoint"/> for the original request.
