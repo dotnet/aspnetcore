@@ -86,8 +86,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 "Blazor._internal.attachRootComponentToElement",
                 domElementSelector,
                 componentId,
-                append,
-                _webAssemblyRendererId);
+                _webAssemblyRendererId,
+                append);
 
             return RenderRootComponentAsync(componentId, parameters);
         }
