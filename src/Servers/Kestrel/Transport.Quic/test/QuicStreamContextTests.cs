@@ -266,11 +266,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             ((IProtocolErrorCodeFeature)serverStream).Error = (long)Http3ErrorCode.InternalError;
             serverStream.Abort(new ConnectionAbortedException("Test message"));
 
-            // TODO - client isn't getting abort?
-            readCount = await clientStream.ReadAsync(buffer).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.ReadAsync(buffer).AsTask()).DefaultTimeout();
 
             // Assert
-            Assert.Equal(0, readCount);
+            Assert.Equal((long)Http3ErrorCode.InternalError, ex.ErrorCode);
 
             var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
             Assert.True(quicStreamContext.CanWrite);
