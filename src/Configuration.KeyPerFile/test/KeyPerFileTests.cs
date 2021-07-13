@@ -85,6 +85,27 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
         }
 
         [Fact]
+        public void LoadWithCustomSectionDelimiter()
+        {
+            var testFileProvider = new TestFileProvider(
+                new TestFile("Secret0--Secret1--Secret2--Key", "SecretValue2"),
+                new TestFile("Secret0--Secret1--Key", "SecretValue1"),
+                new TestFile("Secret0--Key", "SecretValue0"));
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.SectionDelimiter = "--";
+                })
+                .Build();
+
+            Assert.Equal("SecretValue0", config["Secret0:Key"]);
+            Assert.Equal("SecretValue1", config["Secret0:Secret1:Key"]);
+            Assert.Equal("SecretValue2", config["Secret0:Secret1:Secret2:Key"]);
+        }
+
+        [Fact]
         public void CanIgnoreFilesWithDefault()
         {
             var testFileProvider = new TestFileProvider(
