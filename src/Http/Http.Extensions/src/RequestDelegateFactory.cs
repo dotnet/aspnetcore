@@ -657,7 +657,37 @@ namespace Microsoft.AspNetCore.Http
         // ends up being a common scenario.
         private static async Task ExecuteObjectReturn(object? obj, HttpContext httpContext)
         {
-        start:
+            // See if we need to unwrap Task<object> or ValueTask<object>
+            if (obj is Task<object> taskObj)
+            {
+                obj = await taskObj;
+            }
+            else if (obj is ValueTask<object> valueTaskObj)
+            {
+                obj = await valueTaskObj;
+            }
+            else if (obj is Task<IResult?> task)
+            {
+                await ExecuteTaskResult(task, httpContext);
+                return;
+            }
+            else if (obj is ValueTask<IResult?> valueTask)
+            {
+                await ExecuteValueTaskResult(valueTask, httpContext);
+                return;
+            }
+            else if (obj is Task<string?> taskString)
+            {
+                await ExecuteTaskOfString(taskString, httpContext);
+                return;
+            }
+            else if (obj is ValueTask<string?> valueTaskString)
+            {
+                await ExecuteValueTaskOfString(valueTaskString, httpContext);
+                return;
+            }
+
+            // Terminal built ins
             if (obj is IResult result)
             {
                 await ExecuteResultWriteResponse(result, httpContext);
@@ -665,32 +695,6 @@ namespace Microsoft.AspNetCore.Http
             else if (obj is string stringValue)
             {
                 await httpContext.Response.WriteAsync(stringValue);
-            }
-            else if (obj is Task<IResult?> task)
-            {
-                await ExecuteTaskResult(task, httpContext);
-            }
-            else if (obj is ValueTask<IResult?> valueTask)
-            {
-                await ExecuteValueTaskResult(valueTask, httpContext);
-            }
-            else if (obj is Task<string?> taskString)
-            {
-                await ExecuteTaskOfString(taskString, httpContext);
-            }
-            else if (obj is ValueTask<string?> valueTaskString)
-            {
-                await ExecuteValueTaskOfString(valueTaskString, httpContext);
-            }
-            else if (obj is Task<object> taskObj)
-            {
-                obj = await taskObj;
-                goto start;
-            }
-            else if (obj is ValueTask<object> valueTaskObj)
-            {
-                obj = await valueTaskObj;
-                goto start;
             }
             else
             {
