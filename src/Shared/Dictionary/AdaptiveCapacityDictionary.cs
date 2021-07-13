@@ -81,29 +81,6 @@ namespace Microsoft.AspNetCore.Internal
         }
 
         /// <summary>
-        /// Creates a <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/> initialized with the specified <paramref name="values"/>.
-        /// </summary>
-        /// <param name="values">An object to initialize the dictionary. The value can be of type
-        /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/>
-        /// or an object with public properties as key-value pairs.
-        /// </param>
-        /// <remarks>This constructor is unoptimized and primarily used for tests.</remarks>
-        /// <param name="comparer">Equality comparison.</param>
-        /// <param name="capacity">Initial capacity.</param>
-        internal AdaptiveCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, int capacity, IEqualityComparer<TKey> comparer)
-        {
-            _comparer = comparer ?? EqualityComparer<TKey>.Default;
-
-            Debug.Assert(capacity <= DefaultArrayThreshold);
-            _arrayStorage = new KeyValuePair<TKey, TValue>[capacity];
-
-            foreach (var kvp in values)
-            {
-                Add(kvp.Key, kvp.Value);
-            }
-        }
-
-        /// <summary>
         /// Creates a <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/> initialized with the specified <paramref name="dict"/>.
         /// </summary>
         /// <param name="dict">A dictionary to use.
