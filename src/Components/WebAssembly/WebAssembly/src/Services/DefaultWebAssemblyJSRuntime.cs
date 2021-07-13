@@ -17,9 +17,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
     internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
-        internal int JSDataStreamNextInstanceId;
-        internal readonly Dictionary<long, BaseJSDataStream> JSDataStreamInstances = new();
-
         internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
@@ -100,6 +97,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 
         /// <inheritdoc />
         protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
-            => Task.FromResult<Stream>(DefaultJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
+            => Task.FromResult<Stream>(PullFromJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
     }
 }

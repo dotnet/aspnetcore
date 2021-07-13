@@ -15,7 +15,6 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { getNextChunk } from './StreamingInterop';
-import { InputFile } from './InputFile';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -44,8 +43,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
-  Blazor._internal.InputFile = InputFile;
-
   Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
     DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
   };
@@ -57,7 +54,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveByteArray = receiveByteArray;
   Blazor._internal.retrieveByteArray = retrieveByteArray;
-  Blazor._internal.getJSDataStreamChunk = getNextChunk;
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);

@@ -10,11 +10,12 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal sealed class RemoteJSDataStream : BaseJSDataStream
+    internal sealed class RemoteJSDataStream : Stream
     {
         private readonly RemoteJSRuntime _runtime;
         private readonly long _streamId;
         private readonly TimeSpan _jsInteropDefaultCallTimeout;
+        private readonly long _totalLength;
         private readonly CancellationToken _streamCancellationToken;
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
         {
-            if (!runtime.JSDataStreamInstances.TryGetValue(streamId, out var instance))
+            if (!runtime.RemoteJSDataStreamInstances.TryGetValue(streamId, out var instance))
             {
                 // There is no data stream with the given identifier. It may have already been disposed.
                 // We notify JS that the stream has been cancelled/disposed.
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Math.Min(maximumIncomingBytes, 50*1024) - 512 :
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
-            var streamId = runtime.JSDataStreamNextInstanceId++;
+            var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
             var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
@@ -66,18 +67,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             TimeSpan jsInteropDefaultCallTimeout,
             long pauseIncomingBytesThreshold,
             long resumeIncomingBytesThreshold,
-            CancellationToken cancellationToken) :
-            base(totalLength)
+            CancellationToken cancellationToken)
         {
             _runtime = runtime;
             _streamId = streamId;
             _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
+            _totalLength = totalLength;
             _streamCancellationToken = cancellationToken;
 
             _lastDataReceivedTime = DateTimeOffset.UtcNow;
             _ = ThrowOnTimeout();
 
-            _runtime.JSDataStreamInstances.Add(_streamId, this);
+            _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
             _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: pauseIncomingBytesThreshold, resumeWriterThreshold: resumeIncomingBytesThreshold));
             _pipeReaderStream = _pipe.Reader.AsStream();
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 if (chunk.Length == 0)
                 {
-                    throw new EndOfStreamException($"The incoming data chunk cannot be empty.");
+                    throw new EndOfStreamException("The incoming data chunk cannot be empty.");
                 }
 
                 _bytesRead += chunk.Length;
@@ -145,11 +146,34 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => _totalLength;
+
         public override long Position
         {
             get => _pipeReaderStream.Position;
             set => throw new NotSupportedException();
         }
+
+        public override void Flush()
+            => throw new NotSupportedException();
+
+        public override int Read(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException("Synchronous reads are not supported.");
+
+        public override long Seek(long offset, SeekOrigin origin)
+            => throw new NotSupportedException();
+
+        public override void SetLength(long value)
+            => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException();
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
@@ -186,7 +210,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
                 var timeoutException = new TimeoutException("Did not receive any data in the allotted time.");
                 await CompletePipeAndDisposeStream(timeoutException);
-                _runtime.RaiseUnhandledException(exception);
+                _runtime.RaiseUnhandledException(timeoutException);
             }
         }
 
@@ -210,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (disposing)
             {
-                _runtime.JSDataStreamInstances.Remove(_streamId);
+                _runtime.RemoteJSDataStreamInstances.Remove(_streamId);
             }
 
             _disposed = true;

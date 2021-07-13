@@ -5,7 +5,6 @@ import { internalFunctions as navigationManagerFunctions } from './Services/Navi
 import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
 import { sendBrowserEvent, sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
-import { InputFile } from './InputFile';
 import { getNextChunk } from './StreamingInterop';
 
 let started = false;
@@ -24,8 +23,6 @@ async function boot(): Promise<void> {
     sendByteArray: sendByteArray,
   });
 
-  Blazor._internal.InputFile = InputFile;
-  Blazor._internal.getJSDataStreamChunk = getNextChunk;
   navigationManagerFunctions.enableNavigationInterception();
   navigationManagerFunctions.listenForNavigationEvents(sendLocationChanged);
 

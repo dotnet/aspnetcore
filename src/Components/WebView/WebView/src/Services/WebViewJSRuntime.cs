@@ -52,6 +52,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
         }
 
         protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
-            => Task.FromResult<Stream>(DefaultJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
+            => Task.FromResult<Stream>(PullFromJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
     }
 }
