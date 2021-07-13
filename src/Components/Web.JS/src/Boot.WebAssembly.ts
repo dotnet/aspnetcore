@@ -113,7 +113,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId, appendContent) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
-      attachRootComponentToElement(selector, componentId, rendererId);
+      attachRootComponentToElement(selector, componentId, appendContent, rendererId);
     } else {
       attachRootComponentToLogicalElement(rendererId, element, componentId, appendContent);
     }
