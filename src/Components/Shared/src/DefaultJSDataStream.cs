@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Components
             long totalLength,
             CancellationToken cancellationToken = default)
         {
-            var webAssemblyJSDataStream = new DefaultJSDataStream(runtime, jsStreamReference, totalLength, cancellationToken);
-            return webAssemblyJSDataStream;
+            var jsDataStream = new DefaultJSDataStream(runtime, jsStreamReference, totalLength, cancellationToken);
+            return jsDataStream;
         }
 
         private DefaultJSDataStream(
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components
 
             var bytesReadMemoryBuffer = new Memory<byte>(bytesRead);
             bytesReadMemoryBuffer.CopyTo(buffer);
-            
+
             return bytesRead.Length;
         }
     }

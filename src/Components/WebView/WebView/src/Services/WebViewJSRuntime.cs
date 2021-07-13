@@ -14,9 +14,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 {
     internal class WebViewJSRuntime : JSRuntime
     {
-        internal int JSDataStreamNextInstanceId;
-        internal readonly Dictionary<long, BaseJSDataStream> JSDataStreamInstances = new();
-
         private IpcSender _ipcSender;
 
         public ElementReferenceContext ElementReferenceContext { get; }
@@ -56,10 +53,5 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
             => Task.FromResult<Stream>(DefaultJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
-
-        internal void RaiseUnhandledException(Exception ex)
-        {
-            _ipcSender.NotifyUnhandledException(ex);
-        }
     }
 }

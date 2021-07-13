@@ -38,19 +38,5 @@ namespace Microsoft.AspNetCore.Components
 
         public override void Write(byte[] buffer, int offset, int count)
             => throw new NotSupportedException();
-
-        protected static CancellationToken GetLinkedCancellationToken(CancellationToken a, CancellationToken b)
-        {
-            if (a.CanBeCanceled && b.CanBeCanceled)
-            {
-                return CancellationTokenSource.CreateLinkedTokenSource(a, b).Token;
-            }
-            else if (a.CanBeCanceled)
-            {
-                return a;
-            }
-
-            return b;
-        }
     }
 }

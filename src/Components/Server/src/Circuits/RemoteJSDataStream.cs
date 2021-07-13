@@ -163,6 +163,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return await _pipeReaderStream.ReadAsync(buffer, linkedCancellationToken);
         }
 
+        private static CancellationToken GetLinkedCancellationToken(CancellationToken a, CancellationToken b)
+        {
+            if (a.CanBeCanceled && b.CanBeCanceled)
+            {
+                return CancellationTokenSource.CreateLinkedTokenSource(a, b).Token;
+            }
+            else if (a.CanBeCanceled)
+            {
+                return a;
+            }
+
+            return b;
+        }
+
         private async Task ThrowOnTimeout()
         {
             await Task.Delay(_jsInteropDefaultCallTimeout);
@@ -172,19 +186,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
                 var timeoutException = new TimeoutException("Did not receive any data in the allotted time.");
                 await CompletePipeAndDisposeStream(timeoutException);
-                RaiseUnhandledException(timeoutException);
+                _runtime.RaiseUnhandledException(exception);
             }
-        }
-
-        private void RaiseUnhandledException(Exception exception)
-        {
-            _runtime.RaiseUnhandledException(exception);
-        }
-
-        private async Task CompletePipeAndDisposeStream(Exception? ex = null)
-        {
-            await _pipe.Writer.CompleteAsync(ex);
-            Dispose(true);
         }
 
         /// <summary>
@@ -195,6 +198,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         internal void InvalidateLastDataReceivedTimeForTimeout()
         {
             _lastDataReceivedTime = _lastDataReceivedTime.Subtract(_jsInteropDefaultCallTimeout);
+        }
+
+        private async Task CompletePipeAndDisposeStream(Exception? ex = null)
+        {
+            await _pipe.Writer.CompleteAsync(ex);
+            Dispose(true);
         }
 
         protected override void Dispose(bool disposing)
