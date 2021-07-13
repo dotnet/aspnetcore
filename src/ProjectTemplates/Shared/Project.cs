@@ -443,7 +443,7 @@ namespace Templates.Test.Helpers
                 var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
                 Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'.");
                 var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
-                File.Move(sourceFile, destination);
+                File.Move(sourceFile, destination, overwrite: true); // binlog will exist on retries
             }
         }
 

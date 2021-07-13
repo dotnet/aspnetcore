@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
                                          IConnectionInherentKeepAliveFeature,
-                                         IConnectionLifetimeFeature
+                                         IConnectionLifetimeFeature,
+                                         IConnectionLifetimeNotificationFeature
     {
         private readonly HttpConnectionDispatcherOptions _options;
 
@@ -43,6 +44,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private IDuplexPipe _application;
         private IDictionary<object, object?>? _items;
         private readonly CancellationTokenSource _connectionClosedTokenSource;
+        private readonly CancellationTokenSource _connectionCloseRequested;
 
         private CancellationTokenSource? _sendCts;
         private bool _activeSend;
@@ -87,9 +89,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
+            Features.Set<IConnectionLifetimeNotificationFeature>(this);
 
             _connectionClosedTokenSource = new CancellationTokenSource();
             ConnectionClosed = _connectionClosedTokenSource.Token;
+
+            _connectionCloseRequested = new CancellationTokenSource();
+            ConnectionClosedRequested = _connectionCloseRequested.Token;
+            AuthenticationExpiration = DateTimeOffset.MaxValue;
         }
 
         public CancellationTokenSource? Cancellation { get; set; }
@@ -103,6 +110,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
         internal AsyncServiceScope? ServiceScope { get; set; }
+
+        internal DateTimeOffset AuthenticationExpiration { get; set; }
+
+        internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
         public Task? TransportTask { get; set; }
 
@@ -175,6 +186,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public HttpContext? HttpContext { get; set; }
 
         public override CancellationToken ConnectionClosed { get; set; }
+
+        public CancellationToken ConnectionClosedRequested { get; set; }
 
         public override void Abort()
         {
@@ -599,6 +612,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 _activeSend = false;
             }
+        }
+
+        public void RequestClose()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
         }
 
         private static class Log

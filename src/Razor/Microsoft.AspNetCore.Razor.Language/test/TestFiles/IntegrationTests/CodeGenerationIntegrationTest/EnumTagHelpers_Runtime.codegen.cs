@@ -75,7 +75,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #nullable restore
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EnumTagHelpers.cshtml"
+#line (8,15)-(8,36) 31 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EnumTagHelpers.cshtml"
 AddHtmlAttributeValue("", 130, MyEnum.MySecondValue, 130, 21, false);
 
 #line default

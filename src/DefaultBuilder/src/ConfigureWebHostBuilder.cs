@@ -88,7 +88,6 @@ namespace Microsoft.AspNetCore.Builder
             else if (string.Equals(key, WebHostDefaults.ContentRootKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.ContentRootPath = value;
-                _environment.ResolveFileProviders(_configuration);
             }
             else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase))
             {
@@ -97,7 +96,6 @@ namespace Microsoft.AspNetCore.Builder
             else if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.WebRootPath = value;
-                _environment.ResolveFileProviders(_configuration);
             }
 
             return this;
