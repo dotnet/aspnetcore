@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -120,8 +117,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
             else
             {
-                var prerenderCache = ComponentDeferredContentStore.GetOrCreateContentStore(ViewContext);
-                prerenderCache.Add(OutputName, result);
+                var componentContentStore = ComponentDeferredContentStore.GetOrCreateContentStore(ViewContext);
+                componentContentStore.Add(OutputName, result);
                 output.Content.SetHtmlContent(string.Empty);
             }
         }

@@ -43,11 +43,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            var prerenderCache = ComponentDeferredContentStore.GetOrCreateContentStore(ViewContext);
+            var contentStore = ComponentDeferredContentStore.GetOrCreateContentStore(ViewContext);
 
-            if (!prerenderCache.TryGetValue(Name, out var content))
+            if (!contentStore.TryGetValue(Name, out var content))
             {
-                throw new InvalidOperationException($"No component has an output name matching '{Name}'.");
+                throw new InvalidOperationException(Resources.FormatComponentOutputTagHelper_NoMatchingName(Name));
             }
 
             output.TagName = null;

@@ -29,6 +29,18 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         }
 
         [Fact]
+        public void HeadContentsAreAppended()
+        {
+            Browser.MountTestComponent<HeadModification>();
+
+            // Wait until the head has been dynamically modified
+            Browser.Exists(By.Id("meta-description"));
+
+            // Ensure that the static head contents are untouched.
+            Browser.Exists(By.TagName("base"));
+        }
+
+        [Fact]
         public void MostRecentHeadContentTakesPriority()
         {
             Browser.MountTestComponent<HeadModification>();
