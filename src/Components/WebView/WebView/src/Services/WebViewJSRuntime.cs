@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
            _ipcSender.SendByteArray(id, data);
         }
 
-        protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
-            => await WebViewJSDataStream.CreateWebViewJSDataStreamAsync(this, jsStreamReference, totalLength, 1024 * 32, TimeSpan.FromMinutes(1), pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
+        protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
+            => Task.FromResult<Stream>(DefaultJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
 
         internal void RaiseUnhandledException(Exception ex)
         {

@@ -49,7 +49,7 @@ interface IBlazor {
     dotNetCriticalError?: any
     getSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
-    sendJSDataStreamUsingObjectReference?: (data: any, streamId: number, chunkSize: number, dotnetStreamReference: any) => void,
+    getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private int _byteArraysToBeRevivedTotalBytes;
 
         internal int JSDataStreamNextInstanceId;
-        internal readonly Dictionary<long, BaseJSDataStream> JSDataStreamInstances = new();
+        internal readonly Dictionary<long, RemoteJSDataStream> JSDataStreamInstances = new();
 
         public ElementReferenceContext ElementReferenceContext { get; }
 

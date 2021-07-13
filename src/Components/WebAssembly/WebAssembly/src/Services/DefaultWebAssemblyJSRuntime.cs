@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -10,7 +9,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
@@ -101,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         }
 
         /// <inheritdoc />
-        protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
-            => await WebAssemblyJSDataStream.CreateWebAssemblyJSDataStreamAsync(this, jsStreamReference, totalLength, chunkSize: 1024 * 32, defaultCallTimeout: TimeSpan.FromMinutes(1), pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
+        protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
+            => Task.FromResult<Stream>(DefaultJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
     }
 }
