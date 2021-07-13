@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo ExecuteValueTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskResultOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteValueResultTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteObjectReturnMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteObjectReturn), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
         private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
@@ -338,6 +339,21 @@ namespace Microsoft.AspNetCore.Http
             {
                 return Expression.Block(methodCall, CompletedTaskExpr);
             }
+            else if (returnType == typeof(object))
+            {
+                return Expression.Call(ExecuteObjectReturnMethod, methodCall, HttpContextExpr);
+            }
+            else if (returnType == typeof(ValueTask<object>))
+            {
+                // REVIEW: We can avoid this box if it becomes a performance issue
+                var box = Expression.TypeAs(methodCall, typeof(object));
+                return Expression.Call(ExecuteObjectReturnMethod, box, HttpContextExpr);
+            }
+            else if (returnType == typeof(Task<object>))
+            {
+                var convert = Expression.Convert(methodCall, typeof(object));
+                return Expression.Call(ExecuteObjectReturnMethod, convert, HttpContextExpr);
+            }
             else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
             {
                 if (returnType == typeof(Task))
@@ -632,6 +648,57 @@ namespace Microsoft.AspNetCore.Http
             return mc.Member;
         }
 
+        // The result of the method is null so we fallback to some runtime logic.
+        // First we check if the result is IResult, Task<IResult> or ValueTask<IResult>. If
+        // it is, we await if necessary then execute the result.
+        // Then we check to see if it's Task<object> or ValueTask<object>. If it is, we await
+        // if necessary and restart the cycle until we've reached a terminal state (unknown type).
+        // We currently don't handle Task<unknown> or ValueTask<unknown>. We can later if this
+        // ends up being a common scenario.
+        private static async Task ExecuteObjectReturn(object? obj, HttpContext httpContext)
+        {
+        start:
+            if (obj is IResult result)
+            {
+                await ExecuteResultWriteResponse(result, httpContext);
+            }
+            else if (obj is string stringValue)
+            {
+                await httpContext.Response.WriteAsync(stringValue);
+            }
+            else if (obj is Task<IResult?> task)
+            {
+                await ExecuteTaskResult(task, httpContext);
+            }
+            else if (obj is ValueTask<IResult?> valueTask)
+            {
+                await ExecuteValueTaskResult(valueTask, httpContext);
+            }
+            else if (obj is Task<string?> taskString)
+            {
+                await ExecuteTaskOfString(taskString, httpContext);
+            }
+            else if (obj is ValueTask<string?> valueTaskString)
+            {
+                await ExecuteValueTaskOfString(valueTaskString, httpContext);
+            }
+            else if (obj is Task<object> taskObj)
+            {
+                obj = await taskObj;
+                goto start;
+            }
+            else if (obj is ValueTask<object> valueTaskObj)
+            {
+                obj = await valueTaskObj;
+                goto start;
+            }
+            else
+            {
+                // Otherwise, we JSON serialize when we reach the terminal state
+                await httpContext.Response.WriteAsJsonAsync(obj);
+            }
+        }
+
         private static Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
         {
             EnsureRequestTaskNotNull(task);
@@ -715,12 +782,12 @@ namespace Microsoft.AspNetCore.Http
         {
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
             {
-                await EnsureRequestResultNotNull(await task)!.ExecuteAsync(httpContext);
+                await EnsureRequestResultNotNull(await task).ExecuteAsync(httpContext);
             }
 
             if (task.IsCompletedSuccessfully)
             {
-                return EnsureRequestResultNotNull(task.GetAwaiter().GetResult())!.ExecuteAsync(httpContext);
+                return EnsureRequestResultNotNull(task.GetAwaiter().GetResult()).ExecuteAsync(httpContext);
             }
 
             return ExecuteAwaited(task!, httpContext);
@@ -730,12 +797,12 @@ namespace Microsoft.AspNetCore.Http
         {
             EnsureRequestTaskOfNotNull(task);
 
-            await EnsureRequestResultNotNull(await task)!.ExecuteAsync(httpContext);
+            await EnsureRequestResultNotNull(await task).ExecuteAsync(httpContext);
         }
 
-        private static async Task ExecuteResultWriteResponse(IResult result, HttpContext httpContext)
+        private static async Task ExecuteResultWriteResponse(IResult? result, HttpContext httpContext)
         {
-            await EnsureRequestResultNotNull(result)!.ExecuteAsync(httpContext);
+            await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
         }
 
         private class FactoryContext
