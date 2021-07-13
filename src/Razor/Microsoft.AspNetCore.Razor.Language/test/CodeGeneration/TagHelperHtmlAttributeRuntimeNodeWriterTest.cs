@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             Assert.Equal(
 @"
 #nullable restore
-#line 1 ""test.cshtml""
+#line (1,28)-(1,35) 31 ""test.cshtml""
 AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
 
 #line default

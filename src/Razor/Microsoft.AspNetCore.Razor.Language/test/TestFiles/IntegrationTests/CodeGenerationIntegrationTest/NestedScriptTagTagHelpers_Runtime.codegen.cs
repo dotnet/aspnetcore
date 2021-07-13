@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
                 BeginWriteTagHelperAttribute();
                 WriteLiteral("2000 + ");
 #nullable restore
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
-                                            Write(ViewBag.DefaultInterval);
+#line (8,51)-(8,74) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
+Write(ViewBag.DefaultInterval);
 
 #line default
 #line hidden
