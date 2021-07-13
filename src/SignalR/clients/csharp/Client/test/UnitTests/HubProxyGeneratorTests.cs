@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             IAsyncEnumerable<int> StreamBidirectionalViaEnumerableWithToken(IAsyncEnumerable<float> reader, CancellationToken cancellationToken);
             ValueTask ReturnValueTask();
             ValueTask<int> ReturnGenericValueTask();
+            Task<int> ClientToServerStreamButAlsoReturnValue(ChannelReader<float> reader);
         }
 
         [Fact]

@@ -129,29 +129,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                         }
 
                         // Validate return type
-                        if (!methodSpec.Stream.HasFlag(StreamSpec.ServerToClient))
+                        if (!methodSpec.Stream.HasFlag(StreamSpec.ServerToClient) &&
+                            member.ReturnType is not INamedTypeSymbol {Name: "Task" or "ValueTask"})
                         {
-                            if (methodSpec.Stream.HasFlag(StreamSpec.ClientToServer) &&
-                                member.ReturnType is not INamedTypeSymbol {Arity: 0, Name: "Task" or "ValueTask"})
-                            {
-                                _context.ReportDiagnostic(Diagnostic.Create(
-                                    DiagnosticDescriptors.HubProxyUnsupportedReturnTypeStream,
+                            _context.ReportDiagnostic(Diagnostic.Create(
+                                    DiagnosticDescriptors.HubProxyUnsupportedReturnType,
                                     classSpec.CallSite,
                                     methodSpec.Name, member.ReturnType.Name));
-                                methodSpec.Support = SupportClassification.UnsupportedReturnType;
-                                methodSpec.SupportHint =
-                                    "Client to server streaming calls must return a Task or ValueTask";
-                            }
-                            else if (!methodSpec.Stream.HasFlag(StreamSpec.ClientToServer) &&
-                                     member.ReturnType is not INamedTypeSymbol {Name: "Task" or "ValueTask"})
-                            {
-                                _context.ReportDiagnostic(Diagnostic.Create(
-                                    DiagnosticDescriptors.HubProxyUnsupportedReturnTypeGeneral,
-                                    classSpec.CallSite,
-                                    methodSpec.Name, member.ReturnType.Name));
-                                methodSpec.Support = SupportClassification.UnsupportedReturnType;
-                                methodSpec.SupportHint = "Non-streaming calls must return a Task, ValueTask, Task<T> or ValueTask<T>";
-                            }
+                            methodSpec.Support = SupportClassification.UnsupportedReturnType;
+                            methodSpec.SupportHint = "Return type must be Task, ValueTask, Task<T> or ValueTask<T>";
                         }
 
                         classSpec.Methods.Add(methodSpec);

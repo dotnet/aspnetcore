@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
-        public static DiagnosticDescriptor HubProxyUnsupportedReturnTypeGeneral { get; } = new DiagnosticDescriptor(
+        public static DiagnosticDescriptor HubProxyUnsupportedReturnType { get; } = new DiagnosticDescriptor(
             id: "SSG0002",
             title: "Unsupported return type",
             messageFormat: "'{0}' has a return type of '{1}' but only Task, ValueTask, Task<T> and ValueTask<T> are supported for source generation.",
@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
 
-        public static DiagnosticDescriptor HubProxyUnsupportedReturnTypeStream { get; } = new DiagnosticDescriptor(
-            id: "SSG0003",
-            title: "Unsupported return type (streaming call)",
-            messageFormat: "'{0}' has a return type of '{1}' but only Task and ValueTask are supported for source generation of a client-to-server streaming method.",
+        public static DiagnosticDescriptor CallbackRegistrationUnsupportedReturnType { get; } = new DiagnosticDescriptor(
+            id: "SSG0100",
+            title: "Unsupported return type",
+            messageFormat: "'{0}' has a return type of '{1}' but only void, Task and ValueTask are supported for callback methods.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true);

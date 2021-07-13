@@ -154,14 +154,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerated
                     return $"StreamAsync<{methodSpec.InnerReturnTypeName}>";
                 }
 
-                if (methodSpec.Stream.HasFlag(StreamSpec.ClientToServer))
-                {
-                    return "SendAsync";
-                }
-
                 if (methodSpec.InnerReturnTypeName is not null)
                 {
                     return $"InvokeAsync<{methodSpec.InnerReturnTypeName}>";
+                }
+
+                if (methodSpec.Stream.HasFlag(StreamSpec.ClientToServer))
+                {
+                    return "SendAsync";
                 }
 
                 return "InvokeAsync";
