@@ -322,6 +322,7 @@ export class HttpConnection implements IConnection {
             const response = await this._httpClient.post(negotiateUrl, {
                 content: "",
                 headers: { ...headers, ...this._options.headers },
+                timeout: 100 * 1000,
                 withCredentials: this._options.withCredentials,
             });
 

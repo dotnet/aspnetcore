@@ -226,6 +226,47 @@ describe("LongPollingTransport", () => {
             expect(deleteUserHeader).toEqual("VALUE");
         });
     });
+
+    it("sets timeout on requests", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            const pollingPromiseSource = new PromiseSource();
+            const httpClient = new TestHttpClient()
+                .on("GET", async (r) => {
+                    expect(r.timeout).toEqual(100000);
+                    if (firstPoll) {
+                        firstPoll = false;
+                        return new HttpResponse(200);
+                    } else {
+                        await pollingPromiseSource.promise;
+                        return new HttpResponse(204);
+                    }
+                })
+                .on("POST", (r) => {
+                    expect(r.timeout).toEqual(100000);
+                    return new HttpResponse(200);
+                })
+                .on("DELETE", (r) => {
+                    expect(r.timeout).toEqual(100000);
+                    return new HttpResponse(202);
+                });
+
+            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, {});
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            await transport.send("test");
+
+            // Begin stopping transport
+            const stopPromise = transport.stop();
+
+            // Allow polling to complete
+            pollingPromiseSource.resolve();
+
+            // Wait for stop to complete
+            await stopPromise;
+        });
+    });
 });
 
 function makeClosedPromise(transport: LongPollingTransport): Promise<void> {
