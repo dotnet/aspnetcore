@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -78,6 +79,37 @@ namespace Sockets.BindTests
 
             Assert.NotNull(fileHandleSocket.LocalEndPoint);
             Assert.Equal(fileHandleSocket.LocalEndPoint, listenSocket.LocalEndPoint);
+        }
+
+        [Fact]
+        public async Task VerifySocketTransportCallsAcceptSocketAsync()
+        {
+            var wasCalled = false;
+
+            ValueTask<Socket> AcceptSocketAsync(Socket socket, CancellationToken cancellationToken)
+            {
+                wasCalled = true;
+                return socket.AcceptAsync(cancellationToken);
+            }
+
+            using var host = CreateWebHost(
+                new IPEndPoint(IPAddress.Loopback, 0),
+                options =>
+                {
+                    options.AcceptSocketAsync = AcceptSocketAsync;
+                }
+            );
+
+            await host.StartAsync();
+            using var client = new HttpClient();
+
+            var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
+            response.EnsureSuccessStatusCode();
+
+            await host.StopAsync();
+
+            Assert.True(wasCalled, $"Expected {nameof(SocketTransportOptions.AcceptSocketAsync)} to be called.");
+            await host.StopAsync();
         }
 
         public static IEnumerable<object[]> GetEndpoints()
