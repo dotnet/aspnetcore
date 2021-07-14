@@ -5,10 +5,12 @@
     <!-- We are a package that depends on the shared framework, this allows us to
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+    <!-- IdentityServer packages are not strong named -->
+    <NoWarn>CS8002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-      <!-- Remove the reference to Microsoft.AspNetCore.App from IdentityServer4 -->
+      <!-- Remove the reference to Microsoft.AspNetCore.App from Duende.IdentityServer -->
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
 
     <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />

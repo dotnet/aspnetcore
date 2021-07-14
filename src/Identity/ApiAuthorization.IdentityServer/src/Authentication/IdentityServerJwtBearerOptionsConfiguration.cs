@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using IdentityServer4.Extensions;
-using IdentityServer4.Stores;
+using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;

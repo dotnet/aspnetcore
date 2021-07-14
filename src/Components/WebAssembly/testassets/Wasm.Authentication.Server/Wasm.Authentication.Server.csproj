@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
+    <!-- IdentityServer packages are not signed -->
+    <NoWarn>CS8002</NoWarn>
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
