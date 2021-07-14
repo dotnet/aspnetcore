@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     internal class W3CLoggerProcessor : FileLoggerProcessor
     {
         private readonly W3CLoggingFields _loggingFields;
+        internal const string W3CSeparator = "#w3c#";
 
         public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
         {
@@ -30,6 +31,97 @@ namespace Microsoft.AspNetCore.HttpLogging
             await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
             await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationToken);
+        }
+
+        private async Task WriteFieldDirectiveMessage(StreamWriter streamWriter, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await streamWriter.WriteAsync("#Fields:".AsMemory(), cancellationToken);
+            if (_loggingFields.HasFlag(W3CLoggingFields.Date))
+            {
+                await streamWriter.WriteAsync(" date".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Time))
+            {
+                await streamWriter.WriteAsync(" time".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ClientIpAddress))
+            {
+                await streamWriter.WriteAsync(" c-ip".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UserName))
+            {
+                await streamWriter.WriteAsync("#Fields:".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ServerName))
+            {
+                await streamWriter.WriteAsync(" s-computername".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ServerIpAddress))
+            {
+                await streamWriter.WriteAsync(" s-ip".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ServerPort))
+            {
+                await streamWriter.WriteAsync(" s-port".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Method))
+            {
+                await streamWriter.WriteAsync(" cs-method".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UriStem))
+            {
+                await streamWriter.WriteAsync(" cs-uri-stem".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UriQuery))
+            {
+                await streamWriter.WriteAsync(" cs-uri-query".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
+            {
+                await streamWriter.WriteAsync(" sc-status".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
+            {
+                await streamWriter.WriteAsync(" time-taken".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
+            {
+                await streamWriter.WriteAsync(" cs-version".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Host))
+            {
+                await streamWriter.WriteAsync(" cs-host".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.UserAgent))
+            {
+                await streamWriter.WriteAsync(" cs(User-Agent)".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Cookie))
+            {
+                await streamWriter.WriteAsync(" cs(Cookie)".AsMemory(), cancellationToken);
+            }
+            if (_loggingFields.HasFlag(W3CLoggingFields.Referer))
+            {
+                await streamWriter.WriteAsync(" cs(Referer)".AsMemory(), cancellationToken);
+            }
+
+            await streamWriter.FlushAsync();
+        }
+
+        internal async Task WriteField(string messageField, StreamWriter streamWriter, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await streamWriter.WriteAsync(messageField.AsMemory(), cancellationToken);
+            await streamWriter.FlushAsync();
         }
 
         private string GetFieldsDirective()
@@ -113,10 +205,77 @@ namespace Microsoft.AspNetCore.HttpLogging
         internal override Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
         {
             OnWrite(message);
-            return base.WriteMessageAsync(message, streamWriter, cancellationToken);
+
+            if (message.IndexOf(W3CSeparator, 0, System.StringComparison.InvariantCulture) < 0)
+            {
+                return base.WriteMessageAsync(message, streamWriter, cancellationToken);
+            }
+
+            return WriteW3CMessageAsync(message, streamWriter, cancellationToken);
         }
 
         // Extensibility point for tests
         internal virtual void OnWrite(string message) { }
+
+        public void EnqueueMessage(string[] messages)
+        {
+            if (!_messageQueue.IsAddingCompleted)
+            {
+                try
+                {
+                    _messageQueue.Add(string.Join(W3CSeparator, messages));
+                    return;
+                }
+                catch (InvalidOperationException) { }
+            }
+        }
+
+        internal async Task WriteW3CMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var elements = message.Split(W3CSeparator, options: System.StringSplitOptions.None);
+            // Need to calculate TimeTaken now, if applicable
+            var date = elements[W3CLoggingMiddleware._dateIndex];
+            var time = elements[W3CLoggingMiddleware._timeIndex];
+            if (!string.IsNullOrEmpty(date) && !string.IsNullOrEmpty(time) && _loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
+            {
+                DateTime start = DateTime.ParseExact(date + time, "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture);
+                var elapsed = DateTime.UtcNow.Subtract(start);
+                elements[W3CLoggingMiddleware._timeTakenIndex] = elapsed.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
+            }
+
+            // 200 is around the length of an average cookie-less entry
+            var firstElement = true;
+            for (var i = 0; i < elements.Length; i++)
+            {
+                if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)))
+                {
+                    if (!firstElement)
+                    {
+                        await streamWriter.WriteAsync(' ');
+                    }
+                    else
+                    {
+                        firstElement = false;
+                    }
+                    // If the element was not logged, or was the empty string, we log it as a dash
+                    if (string.IsNullOrEmpty(elements[i]))
+                    {
+                        await streamWriter.WriteAsync('-');
+                    }
+                    else
+                    {
+                        await streamWriter.WriteAsync(elements[i].AsMemory(), cancellationToken);
+                    }
+                }
+            }
+
+
+            await streamWriter.FlushAsync();
+        }
     }
 }

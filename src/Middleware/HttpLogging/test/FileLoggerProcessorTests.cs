@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message one");
-                    fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
+                    fileName = SetW3CFileName(path, now, options, "0000"); 
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         if (!File.Exists(fileName))
                         {
                             var tomorrow = now.AddDays(1);
-                            fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.0000.txt"));
+                            fileName = SetW3CFileName(path, now, options, "0000");
                         }
                     }
                 }
@@ -88,8 +88,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     logger.EnqueueMessage("Message one");
                     logger.EnqueueMessage("Message two");
-                    fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
-                    fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"));
+                    fileName1 = SetW3CFileName(path, now, options, "0000");
+                    fileName2 = SetW3CFileName(path, now, options, "0001");
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
@@ -102,12 +102,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                         var tomorrow = now.AddDays(1);
                         if (!File.Exists(fileName1))
                         {
-                            fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.0000.txt"));
-                            fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.0001.txt"));
+                            fileName1 = SetW3CFileName(path, now, options, "0000");
+                            fileName2 = SetW3CFileName(path, now, options, "0001");
                         }
                         else if (!File.Exists(fileName2))
                         {
-                            fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.0000.txt"));
+                            fileName2 = SetW3CFileName(path, now, options, "0000");
                         }
                     }
                 }
@@ -147,14 +147,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0009.txt"));
+                    lastFileName = SetW3CFileName(path, now, options, "0009");
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
                         await WaitForFile(lastFileName).DefaultTimeout();
                         for (int i = 0; i < 6; i++)
                         {
-                            await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i:0000}.txt"))).DefaultTimeout();
+                            await WaitForRoll(SetW3CFileName(path, now, options, $"{i:0000}")).DefaultTimeout();
                         }
                     }
                     catch
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0002.txt"));
+                    var filePath = SetW3CFileName(path, now, options, "0002");
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(filePath).DefaultTimeout();
                 }
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage("Message");
                     }
-                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0005.txt"));
+                    var filePath = SetW3CFileName(path, now, options, "0005");
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(filePath).DefaultTimeout();
                 }
@@ -248,9 +248,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     logger.EnqueueMessage("Message");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt"))).DefaultTimeout();
-                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"))).DefaultTimeout();
-                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"))).DefaultTimeout();
+                    await WaitForFile(SetW3CFileName(path, now, options, "0006")).DefaultTimeout();
+                    await WaitForRoll(SetW3CFileName(path, now, options, "0000")).DefaultTimeout();
+                    await WaitForRoll(SetW3CFileName(path, now, options, "0001")).DefaultTimeout();
                 }
 
                 var actualFiles2 = new DirectoryInfo(path)
@@ -286,5 +286,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await Task.Delay(100);
             }
         }
+
+        private string SetW3CFileName(string path, DateTimeOffset date, W3CLoggerOptions options, string suffix)
+            => Path.Combine(path, FormattableString.Invariant($"{options.FileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{suffix}.txt"));
     }
 }
