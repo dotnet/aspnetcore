@@ -288,6 +288,8 @@ namespace Microsoft.AspNetCore.Hosting
             listenOptions.IsTls = true;
             listenOptions.Use(next =>
             {
+                // Set the list of protocols from listen options
+                callbackOptions.HttpProtocols = listenOptions.Protocols;
                 var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory);
                 return middleware.OnConnectionAsync;
             });

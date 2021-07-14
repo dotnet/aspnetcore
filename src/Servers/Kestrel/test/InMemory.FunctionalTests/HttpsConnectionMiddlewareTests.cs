@@ -794,6 +794,98 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
+        public async Task ServerOptionsSelectionCallback_SetsALPN()
+        {
+            static void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps((_, _, _, _) =>
+                    ValueTask.FromResult(new SslServerAuthenticationOptions()
+                    {
+                        ServerCertificate = _x509Certificate2,
+                    }), state: null);
+            }
+
+            await using var server = new TestServer(context => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            var stream = OpenSslStream(connection.Stream);
+            await stream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions()
+            {
+                // Use a random host name to avoid the TLS session resumption cache.
+                TargetHost = Guid.NewGuid().ToString(),
+                ApplicationProtocols = new() { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11, },
+            });
+            Assert.Equal(SslApplicationProtocol.Http2, stream.NegotiatedApplicationProtocol);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
+        public async Task TlsHandshakeCallbackOptionsOverload_SetsALPN()
+        {
+            static void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
+                {
+                    OnConnection = context =>
+                    {
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions()
+                        {
+                            ServerCertificate = _x509Certificate2,
+                        });
+                    }
+                });
+            }
+
+            await using var server = new TestServer(context => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            var stream = OpenSslStream(connection.Stream);
+            await stream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions()
+            {
+                // Use a random host name to avoid the TLS session resumption cache.
+                TargetHost = Guid.NewGuid().ToString(),
+                ApplicationProtocols = new() { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11, },
+            });
+            Assert.Equal(SslApplicationProtocol.Http2, stream.NegotiatedApplicationProtocol);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
+        public async Task TlsHandshakeCallbackOptionsOverload_EmptyAlpnList_DisablesAlpn()
+        {
+            static void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
+                {
+                    OnConnection = context =>
+                    {
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions()
+                        {
+                            ServerCertificate = _x509Certificate2,
+                            ApplicationProtocols = new(),
+                        });
+                    }
+                });
+            }
+
+            await using var server = new TestServer(context => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var connection = server.CreateConnection();
+            var stream = OpenSslStream(connection.Stream);
+            await stream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions()
+            {
+                // Use a random host name to avoid the TLS session resumption cache.
+                TargetHost = Guid.NewGuid().ToString(),
+                ApplicationProtocols = new() { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11, },
+            });
+            Assert.Equal(default, stream.NegotiatedApplicationProtocol);
+        }
+
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
         public async Task CanRenegotiateForClientCertificateOnPostIfDrained()
         {
