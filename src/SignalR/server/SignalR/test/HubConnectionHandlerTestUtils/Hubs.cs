@@ -1247,4 +1247,50 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Caller = caller;
         }
     }
+
+    public class Service1
+    { }
+    public class Service2
+    { }
+    public class Service3
+    { }
+
+    public class ServicesHub : TestHub
+    {
+        public bool SingleService(Service1 service)
+        {
+            return true;
+        }
+
+        public bool MultipleServices(Service1 service, Service2 service2, Service3 service3)
+        {
+            return true;
+        }
+
+        public async Task<int> ServicesAndParams(int value, Service1 service, ChannelReader<int> channelReader, Service2 service2, bool value2)
+        {
+            int total = 0;
+            while (await channelReader.WaitToReadAsync())
+            {
+                total += await channelReader.ReadAsync();
+            }
+            return total + value;
+        }
+
+        public async Task Stream(ChannelReader<int> channelReader)
+        {
+            while (await channelReader.WaitToReadAsync())
+            {
+                await channelReader.ReadAsync();
+            }
+        }
+    }
+
+    public class TooManyParamsHub : Hub
+    {
+        public void ManyParams(int a, string b, bool c, float d, string e, int f, int g, int h, int i, int j, int k,
+            int l, int m, int n, int o, int p, int q, int r, int s, int t, int u, int v, int w, int x, int y, int z,
+            int aa, int ab, int ac, int ad, int ae, int af, Service1 service)
+        { }
+    }
 }
