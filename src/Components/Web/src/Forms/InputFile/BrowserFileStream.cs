@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             IJSRuntime jsRuntime,
             ElementReference inputFileElement,
             BrowserFile file,
-            RemoteBrowserFileStreamOptions options,
             long maxAllowedSize,
             CancellationToken cancellationToken)
         {
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             _maxAllowedSize = maxAllowedSize;
             _openReadStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            OpenReadStreamTask = OpenReadStreamAsync(options, _openReadStreamCts.Token);
+            OpenReadStreamTask = OpenReadStreamAsync(_openReadStreamCts.Token);
         }
 
         public override bool CanRead => true;
@@ -87,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             return bytesRead;
         }
 
-        private async Task<Stream> OpenReadStreamAsync(RemoteBrowserFileStreamOptions options, CancellationToken cancellationToken)
+        private async Task<Stream> OpenReadStreamAsync(CancellationToken cancellationToken)
         {
             var dataReference = await _jsRuntime.InvokeAsync<IJSStreamReference>(
                 InputFileInterop.ReadFileData,

@@ -14,14 +14,14 @@ namespace Microsoft.AspNetCore.Components
     /// </Summary>
     internal sealed class PullFromJSDataStream : Stream
     {
-        private readonly JSRuntime _runtime;
+        private readonly IJSRuntime _runtime;
         private readonly IJSStreamReference _jsStreamReference;
         private readonly long _totalLength;
         private readonly CancellationToken _streamCancellationToken;
         private long _offset;
 
         public static PullFromJSDataStream CreateJSDataStream(
-            JSRuntime runtime,
+            IJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
             CancellationToken cancellationToken = default)
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         private PullFromJSDataStream(
-            JSRuntime runtime,
+            IJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
             CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components
 
         public override long Position
         {
-            get => _offset;
+            get => _offset + 1;
             set => throw new NotSupportedException();
         }
 
@@ -78,9 +78,19 @@ namespace Microsoft.AspNetCore.Components
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var bytesRead = await RequestDataFromJSAsync(buffer.Length);
+            ThrowIfCancellationRequested(cancellationToken);
             bytesRead.CopyTo(buffer);
 
             return bytesRead.Length;
+        }
+
+        private void ThrowIfCancellationRequested(CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested ||
+                _streamCancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
         }
 
         private async ValueTask<byte[]> RequestDataFromJSAsync(int numBytesToRead)

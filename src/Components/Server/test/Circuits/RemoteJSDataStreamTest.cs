@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         private static long GetStreamId(RemoteJSDataStream stream, RemoteJSRuntime runtime) =>
-            runtime.JSDataStreamInstances.FirstOrDefault(kvp => kvp.Value == stream).Key;
+            runtime.RemoteJSDataStreamInstances.FirstOrDefault(kvp => kvp.Value == stream).Key;
 
         class TestRemoteJSRuntime : RemoteJSRuntime, IJSRuntime
         {

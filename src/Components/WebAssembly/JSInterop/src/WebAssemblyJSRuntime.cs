@@ -110,6 +110,7 @@ namespace Microsoft.JSInterop.WebAssembly
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "IJSStreamReference is referenced in Microsoft.JSInterop.Infrastructure.JSStreamReferenceJsonConverter")]
         private IJSStreamReference DeserializeJSStreamReference(string serializedStreamReference)
         {
             var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);

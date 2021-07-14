@@ -27,9 +27,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
 
-        [Inject]
-        private IOptions<RemoteBrowserFileStreamOptions> Options { get; set; } = default!;
-
         /// <summary>
         /// Gets or sets the event callback that will be invoked when the collection of selected files changes.
         /// </summary>
@@ -82,7 +79,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         internal Stream OpenReadStream(BrowserFile file, long maxAllowedSize, CancellationToken cancellationToken)
-            => new BrowserFileStream(JSRuntime, _inputFileElement, file, Options.Value, maxAllowedSize, cancellationToken);
+            => new BrowserFileStream(
+                JSRuntime,
+                _inputFileElement,
+                file,
+                _jsUnmarshalledRuntime == null ? maxAllowedSize : long.MaxValue, // Don't enforce the maxAllowedSize for WASM (to preserve legacy behavior).
+                cancellationToken);
 
         internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
         {

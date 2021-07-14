@@ -11,7 +11,6 @@ interface BrowserFile {
   size: number;
   contentType: string;
   blob: Blob;
-  chunk: Uint8Array | undefined;
 }
 
 export interface InputElement extends HTMLInputElement {
@@ -41,7 +40,6 @@ function init(callbackWrapper: any, elem: InputElement): void {
         readPromise: undefined,
         arrayBuffer: undefined,
         blob: file,
-        chunk: undefined,
       };
 
       elem._blazorFilesById[result.id] = result;
@@ -83,7 +81,6 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     size: resizedImageBlob?.size || 0,
     contentType: format,
     blob: resizedImageBlob ? resizedImageBlob : originalFile.blob,
-    chunk: undefined,
   };
 
   elem._blazorFilesById[result.id] = result;
