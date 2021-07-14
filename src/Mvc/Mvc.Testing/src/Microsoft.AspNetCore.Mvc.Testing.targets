@@ -64,8 +64,17 @@
         Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
         Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.ResolvedFrom)', '.deps.json'))" />
     </ItemGroup>
+    
+    <PropertyGroup>
+        <_CreateHardLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)' == ''">false</_CreateHardLinksForMvcCopyDependencyFilesIfPossible>
+        <_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateSymbolicLinksMvcCopyDependencyFilesIfPossible)' == ''">false</_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible>
+    </PropertyGroup>
 
-    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutDir)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+    <Copy SourceFiles="%(DepsFilePaths.FullPath)"
+       DestinationFolder="$(OutDir)"
+       UseHardlinksIfPossible="$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)"
+       UseSymboliclinksIfPossible="$(_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible)"
+       Condition="Exists('%(DepsFilePaths.FullPath)')" />
   </Target>
 
 </Project>
