@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 logger ?? new NullScopeLogger(),
                 diagnosticListener ?? new NoopDiagnosticListener(),
                 activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
-                TextMapPropagator.Default,
+                DistributedContextPropagator.CreateDefaultPropagator(),
                 httpContextFactory.Object);
 
             return hostingApplication;

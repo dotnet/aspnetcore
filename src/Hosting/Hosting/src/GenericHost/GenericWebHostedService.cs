@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Hosting
                                      ILoggerFactory loggerFactory,
                                      DiagnosticListener diagnosticListener,
                                      ActivitySource activitySource,
-                                     TextMapPropagator propagator,
+                                     DistributedContextPropagator propagator,
                                      IHttpContextFactory httpContextFactory,
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Hosting
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
         public ActivitySource ActivitySource { get; }
-        public TextMapPropagator Propagator { get; }
+        public DistributedContextPropagator Propagator { get; }
         public IHttpContextFactory HttpContextFactory { get; }
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting
             ILogger logger,
             DiagnosticListener diagnosticSource,
             ActivitySource activitySource,
-            TextMapPropagator propagator,
+            DistributedContextPropagator propagator,
             IHttpContextFactory httpContextFactory)
         {
             _application = application;

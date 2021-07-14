@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Hosting
 
         private readonly ActivitySource _activitySource;
         private readonly DiagnosticListener _diagnosticListener;
-        private readonly TextMapPropagator _propagator;
+        private readonly DistributedContextPropagator _propagator;
         private readonly ILogger _logger;
 
         public HostingApplicationDiagnostics(
             ILogger logger,
             DiagnosticListener diagnosticListener,
             ActivitySource activitySource,
-            TextMapPropagator propagator)
+            DistributedContextPropagator propagator)
         {
             _logger = logger;
             _diagnosticListener = diagnosticListener;
@@ -283,21 +283,20 @@ namespace Microsoft.AspNetCore.Hosting
                 return null;
             }
             var headers = httpContext.Request.Headers;
-
-            _propagator.Extract(headers, static (object carrier, string fieldName, out string? value) =>
-            {
-                value = default;
-                var headers = ((IHeaderDictionary)carrier);
-                var values = headers[fieldName];
-                if (values.Count == 0)
+            _propagator.ExtractTraceIdAndState(headers,
+                static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
                 {
-                    return false;
-                }
-                value = values;
-                return true;
-            },
-
-            out string? requestId, out string? traceState);
+                    fieldValue = default;
+                    fieldValues = default;
+                    if (carrier is null)
+                    {
+                        return;
+                    }
+                    var headers = (IHeaderDictionary)carrier;
+                    fieldValue = headers[fieldName];
+                },
+                out var requestId,
+                out var traceState);
 
             if (requestId is not null)
             {
@@ -310,15 +309,19 @@ namespace Microsoft.AspNetCore.Hosting
             
             if (!string.IsNullOrEmpty(requestId))
             {
-                _propagator.Extract(headers, static (object carrier, string fieldName, out string? value) =>
+                var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
                 {
-                    var headers = ((IHeaderDictionary)carrier);
-                    value = headers[fieldName];
-                    return true;
-                }, out IEnumerable<KeyValuePair<string, string?>>? baggage);
+                    fieldValue = default;
+                    fieldValues = default;
+                    if (carrier is null)
+                    {
+                        return;
+                    }
+                    var headers = (IHeaderDictionary)carrier;
+                    fieldValue = headers[fieldName];
+                });
 
-                // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-                // An order could be important if baggage has two items with the same key (that is allowed by the contract)
+                // Order could be important if baggage has two items with the same key (that is allowed by the contract)
                 if (baggage is not null)
                 {
                     foreach (var baggageItem in baggage)
