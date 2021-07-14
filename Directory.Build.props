@@ -111,6 +111,7 @@
   <PropertyGroup>
     <!-- Ensure API docs are available. -->
     <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <NoWarn>$(NoWarn),0105</NoWarn>
 
     <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
     <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
