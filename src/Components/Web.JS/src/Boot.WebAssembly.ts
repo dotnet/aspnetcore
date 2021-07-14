@@ -14,7 +14,7 @@ import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { WasmInputFile } from './WasmInputFile';
+import { getNextChunk } from './StreamingInterop';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -42,8 +42,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       ));
     }
   });
-
-  Blazor._internal.InputFile = WasmInputFile;
 
   Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
     DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
@@ -160,6 +158,9 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
       case DotNet.JSCallResultType.JSObjectReference:
         return DotNet.createJSObjectReference(result).__jsObjectId;
       case DotNet.JSCallResultType.JSStreamReference:
+        const streamReference = DotNet.createJSStreamReference(result);
+        const resultJson = JSON.stringify(streamReference);
+        return BINDING.js_string_to_mono_string(resultJson);
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

@@ -94,9 +94,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             try
             {
-                _lastDataReceivedTime = DateTimeOffset.UtcNow;
-                _ = ThrowOnTimeout();
-
                 if (!string.IsNullOrEmpty(error))
                 {
                     throw new InvalidOperationException($"An error occurred while reading the remote stream: {error}");
@@ -111,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 if (chunk.Length == 0)
                 {
-                    throw new EndOfStreamException($"The incoming data chunk cannot be empty.");
+                    throw new EndOfStreamException("The incoming data chunk cannot be empty.");
                 }
 
                 _bytesRead += chunk.Length;
@@ -120,6 +117,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were sent.");
                 }
+
+                // Start timeout _after_ performing validations on data.
+                _lastDataReceivedTime = DateTimeOffset.UtcNow;
+                _ = ThrowOnTimeout();
 
                 await _pipe.Writer.WriteAsync(chunk, _streamCancellationToken);
 

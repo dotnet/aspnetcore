@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData\*.cs" LinkBase="WebEventData" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />

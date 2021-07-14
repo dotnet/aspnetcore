@@ -13,7 +13,6 @@ import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/Circuit
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { InputFile } from './InputFile';
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
 
 let renderingFailed = false;
@@ -29,7 +28,6 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   const options = resolveOptions(userOptions);
   const logger = new ConsoleLogger(options.logLevel);
   Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
-  Blazor._internal.InputFile = InputFile;
 
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
@@ -126,7 +124,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
-  Blazor._internal.sendJSDataStream = (data: ArrayBufferView, streamId: string, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
+  Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
 
   try {
     await connection.start();

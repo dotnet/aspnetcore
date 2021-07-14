@@ -158,7 +158,7 @@
 
         if (shouldSupportSyncInterop)
         {
-            InvokeInProcessJSInterop();
+            await InvokeInProcessJSInterop();
         }
 
         var byteArray = new byte[] { 1, 5, 7, 15, 35, 200 };
@@ -177,38 +177,23 @@
             ReturnValues["roundTripByteArrayWrapperObjectFromDotNet"] = ((IJSInProcessRuntime)JSRuntime).Invoke<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObject", byteArrayWrapperObject).ToString();
         }
 
-        // Streaming interop tests need to be run only for Blazor server
-        // As such, we set the results to the expected result for WASM
-        if (shouldSupportSyncInterop)
+        var dataReference = await JSRuntime.InvokeAsync<IJSStreamReference>("jsToDotNetStreamReturnValueAsync");
+        using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
+        await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueAsync", dataReferenceStream);
+
+        var dataWrapperReference = await JSRuntime.InvokeAsync<JSStreamReferenceWrapper>("jsToDotNetStreamWrapperObjectReturnValueAsync");
+        if (dataWrapperReference.StrVal != "SomeStr")
         {
-            // In the WASM case, setting the result to the expected result ensures the missing test case doesn't result in test failure.
-            ReturnValues["jsToDotNetStreamReturnValueAsync"] = "Success";
-            ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = "Success";
+            ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = $"StrVal did not match expected 'SomeStr', received {dataWrapperReference.StrVal}.";
+        }
+        else if (dataWrapperReference.IntVal != 5)
+        {
+            ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = $"IntVal did not match expected '5', received {dataWrapperReference.IntVal}.";
         }
         else
         {
-            // Proceed to run the actual blazor server streaming interop tests
-
-            // Test: jsToDotNetStreamReturnValueAsync
-            var dataReference = await JSRuntime.InvokeAsync<IJSStreamReference>("jsToDotNetStreamReturnValueAsync");
-            using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
-            await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueAsync", dataReferenceStream);
-
-            // Test: jsToDotNetStreamWrapperObjectReturnValueAsync
-            var dataWrapperReference = await JSRuntime.InvokeAsync<JSStreamReferenceWrapper>("jsToDotNetStreamWrapperObjectReturnValueAsync");
-            if (dataWrapperReference.StrVal != "SomeStr")
-            {
-                ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = $"StrVal did not match expected 'SomeStr', received {dataWrapperReference.StrVal}.";
-            }
-            else if (dataWrapperReference.IntVal != 5)
-            {
-                ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = $"IntVal did not match expected '5', received {dataWrapperReference.IntVal}.";
-            }
-            else
-            {
-                using var dataWrapperReferenceStream = await dataWrapperReference.JSStreamReferenceVal.OpenReadStreamAsync();
-                await ValidateStreamValuesAsync("jsToDotNetStreamWrapperObjectReturnValueAsync", dataWrapperReferenceStream);
-            }
+            using var dataWrapperReferenceStream = await dataWrapperReference.JSStreamReferenceVal.OpenReadStreamAsync();
+            await ValidateStreamValuesAsync("jsToDotNetStreamWrapperObjectReturnValueAsync", dataWrapperReferenceStream);
         }
 
         Invocations = invocations;
@@ -265,7 +250,7 @@
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
     }
 
-    public void InvokeInProcessJSInterop()
+    public async Task InvokeInProcessJSInterop()
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
@@ -288,6 +273,11 @@
             Message = "Sent from .NET",
             NumberField = 42,
         }).ToString();
+
+
+        var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
+        using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
+        await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
     }
 
     public class PassDotNetObjectByRefArgs
