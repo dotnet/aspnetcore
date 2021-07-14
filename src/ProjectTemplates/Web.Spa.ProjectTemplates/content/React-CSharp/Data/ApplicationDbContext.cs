@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Company.WebApplication1.Data;
-
-public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
+namespace Company.WebApplication1.Data
 {
-    public ApplicationDbContext(
-        DbContextOptions options,
-        IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
+    public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
     {
+        public ApplicationDbContext(
+            DbContextOptions options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
+        {
+        }
     }
 }
