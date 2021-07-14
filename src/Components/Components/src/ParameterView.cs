@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public readonly struct ParameterView
     {
-        private const string GeneratedParameterViewElementName = "__ARTIFICIAL_PARAMETER_VIEW";
+        internal const string GeneratedParameterViewElementName = "__ARTIFICIAL_PARAMETER_VIEW";
         private static readonly RenderTreeFrame[] _emptyFrames = new RenderTreeFrame[]
         {
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)

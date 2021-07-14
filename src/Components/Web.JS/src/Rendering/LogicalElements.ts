@@ -79,6 +79,16 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
   return element as unknown as LogicalElement;
 }
 
+export function disposeLogicalRootElement(rootElement: LogicalElement) {
+  if (getLogicalParent(rootElement)) {
+    throw new Error('The logical element is not a root');
+  }
+
+  delete rootElement[logicalChildrenPropname];
+  delete rootElement[logicalParentPropname];
+  delete rootElement[logicalEndSiblingPropname];
+}
+
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
   const containerElement = document.createComment('!');
   insertLogicalChild(containerElement, parent, childIndex);

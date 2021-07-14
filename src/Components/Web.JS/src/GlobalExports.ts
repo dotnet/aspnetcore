@@ -8,6 +8,8 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
+import { RootComponentsFunctions, setDynamicRootComponentManager } from './Rendering/DynamicRootComponents';
+import { DotNet } from '../../../JSInterop/Microsoft.JSInterop.JS/src/dist/Microsoft.JSInterop';
 
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
@@ -18,6 +20,7 @@ interface IBlazor {
   defaultReconnectionHandler?: DefaultReconnectionHandler;
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>);
   platform?: Platform;
+  rootComponents: typeof RootComponentsFunctions;
 
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any,
@@ -49,6 +52,7 @@ interface IBlazor {
     dotNetCriticalError?: any
     getSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: string, chunkSize: number) => void,
+    setDynamicRootComponentManager?: (instance: DotNet.DotNetObject) => void,
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
@@ -59,11 +63,13 @@ interface IBlazor {
 export const Blazor: IBlazor = {
   navigateTo,
   registerCustomEventType,
+  rootComponents: RootComponentsFunctions,
 
   _internal: {
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
     Virtualize,
+    setDynamicRootComponentManager,
   },
 };
 

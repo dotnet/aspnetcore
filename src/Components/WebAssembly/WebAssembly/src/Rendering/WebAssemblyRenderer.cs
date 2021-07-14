@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
@@ -40,33 +40,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
 
         /// <summary>
-        /// Attaches a new root component to the renderer,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of the component.</typeparam>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        /// <param name="parameters">The parameters for the component.</param>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
-        /// <remarks>
-        /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
-        /// want to await the rendering of the added component.
-        /// </remarks>
-        public Task AddComponentAsync<[DynamicallyAccessedMembers(Component)] TComponent>(string domElementSelector, ParameterView parameters) where TComponent : IComponent
-            => AddComponentAsync(typeof(TComponent), domElementSelector, parameters);
-
-        /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="WebAssemblyRenderer"/>,
-        /// causing it to be displayed in the specified DOM element.
+        /// Instantiates a root component and attaches it to the browser within the specified element.
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        /// <param name="parameters">The list of root component parameters.</param>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
+        /// <returns>The new component ID.</returns>
         /// <remarks>
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector, ParameterView parameters)
+        public int AddRootComponent([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -83,8 +66,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 componentId,
                 _webAssemblyRendererId);
 
-            return RenderRootComponentAsync(componentId, parameters);
+            return componentId;
         }
+
+        public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
+           => base.RenderRootComponentAsync(componentId, parameters);
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
@@ -143,6 +129,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 // This lets upstream code skip an expensive code path and avoids some allocations.
                 return Task.CompletedTask;
             }
+        }
+
+        public ValueTask InitializeDynamicRootComponentSupportAsync(DefaultDynamicRootComponentConfiguration configuration)
+        {
+            var interop = new DynamicRootComponentInterop(
+                configuration,
+                DefaultWebAssemblyJSRuntime.Instance,
+                GetRootComponentType,
+                AddRootComponent,
+                RenderRootComponentAsync,
+                RemoveRootComponent);
+            return interop.InitializeAsync();
         }
 
         /// <inheritdoc />

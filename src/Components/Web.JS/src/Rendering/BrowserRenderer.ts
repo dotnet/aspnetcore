@@ -1,6 +1,6 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, disposeLogicalRootElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const deferredValuePropname = '_blazorDeferredValue';
@@ -14,6 +14,7 @@ const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
 
+  private rootComponentIds = new Set<number>();
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
@@ -27,6 +28,7 @@ export class BrowserRenderer {
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
     this.attachComponentToElement(componentId, element);
+    this.rootComponentIds.add(componentId);
     rootComponentsPendingFirstRender[componentId] = element;
   }
 
@@ -61,6 +63,12 @@ export class BrowserRenderer {
   }
 
   public disposeComponent(componentId: number) {
+    if (this.rootComponentIds.delete(componentId)) {
+      // When disposing a root component, the container element won't be removed from the DOM (because there's
+      // no parent to remove that child), so we must clean our own state from the logical element
+      disposeLogicalRootElement(this.childComponentLocations[componentId]);
+    }
+
     delete this.childComponentLocations[componentId];
   }
 

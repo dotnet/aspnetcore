@@ -71,7 +71,6 @@ namespace Microsoft.AspNetCore.Components.WebView
             RenderBatch,
             Navigate,
             AttachToDocument,
-            DetachFromDocument,
             EndInvokeDotNet,
             NotifyUnhandledException,
             BeginInvokeJS,

@@ -40,7 +40,12 @@ Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.init -> void
 Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions() -> void
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.init -> void
+Microsoft.AspNetCore.Components.ParameterViewBuilder
+Microsoft.AspNetCore.Components.ParameterViewBuilder.Add(string! name, object? value) -> void
+Microsoft.AspNetCore.Components.ParameterViewBuilder.ParameterViewBuilder(int count) -> void
+Microsoft.AspNetCore.Components.ParameterViewBuilder.ToParameterView() -> Microsoft.AspNetCore.Components.ParameterView
 Microsoft.AspNetCore.Components.RenderHandle.IsRenderingOnMetadataUpdate.get -> bool
+Microsoft.AspNetCore.Components.RenderTree.Renderer.GetRootComponentType(int componentId) -> System.Type!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.RemoveRootComponent(int componentId) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose() -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool

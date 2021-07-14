@@ -20,10 +20,13 @@ Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.RouteData.get -> Microso
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.RouteData.set -> void
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.Selector.get -> string?
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.Selector.set -> void
+Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration
+Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration.DynamicRootComponentConfiguration() -> void
 Microsoft.AspNetCore.Components.Web.ErrorBoundary
 Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorBoundary() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
+abstract Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration.Register<TComponent>(string! name) -> void
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void

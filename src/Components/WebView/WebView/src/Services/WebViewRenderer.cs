@@ -1,10 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +10,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
     internal class WebViewRenderer : Renderer
     {
         private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
-        private readonly Dictionary<string, int> _componentIdBySelector = new();
         private readonly Dispatcher _dispatcher;
         private readonly IpcSender _ipcSender;
         private long nextRenderBatchId = 1;
@@ -28,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
         {
             _dispatcher = dispatcher;
             _ipcSender = ipcSender;
+
             ElementReferenceContext = elementReferenceContext;
         }
 
@@ -56,34 +53,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             return tcs.Task;
         }
 
-        public async Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
+        public int AddRootComponent(Type componentType, string domElementSelector)
         {
-            if (_componentIdBySelector.ContainsKey(selector))
-            {
-                throw new InvalidOperationException("A component is already associated with the given selector.");
-            }
-
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
 
-            _componentIdBySelector.Add(selector, componentId);
-            _ipcSender.AttachToDocument(componentId, selector);
+            _ipcSender.AttachToDocument(componentId, domElementSelector);
 
-            await RenderRootComponentAsync(componentId, parameters);
+            return componentId;
         }
 
-        public async Task RemoveRootComponentAsync(string selector)
-        {
-            if (!_componentIdBySelector.TryGetValue(selector, out var componentId))
-            {
-                throw new InvalidOperationException("Could not find a component Id associated with the given selector.");
-            }
+        public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
+           => base.RenderRootComponentAsync(componentId, parameters);
 
-            // TODO: The renderer needs an API to do trigger the disposal of the component tree.
-            await Task.CompletedTask;
-
-            _ipcSender.DetachFromDocument(componentId);
-        }
+        public new void RemoveRootComponent(int componentId)
+           => base.RemoveRootComponent(componentId);
 
         public void NotifyRenderCompleted(long batchId)
         {

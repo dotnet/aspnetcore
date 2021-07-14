@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHostBuilder
     {
+        private readonly DefaultDynamicRootComponentConfiguration _dynamicRootComponentConfiguration;
         private Func<IServiceProvider> _createServiceProvider;
         private RootComponentTypeCache? _rootComponentCache;
         private string? _persistedState;
@@ -57,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        internal WebAssemblyHostBuilder(IJSUnmarshalledRuntime jsRuntime)
+        internal WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime jsRuntime)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
@@ -66,6 +68,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
             Logging = new LoggingBuilder(Services);
+            _dynamicRootComponentConfiguration = new DefaultDynamicRootComponentConfiguration(
+                jsRuntime.ReadJsonSerializerOptions());
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntime);
@@ -188,6 +192,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public ILoggingBuilder Logging { get; }
 
         /// <summary>
+        /// Gets an object that holds options for allowing JavaScript to add root components dynamically.
+        /// </summary>
+        public DynamicRootComponentConfiguration DynamicRootComponents => _dynamicRootComponentConfiguration;
+
+        /// <summary>
         /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
         /// </summary>
         /// <param name="factory">The <see cref="IServiceProviderFactory{TBuilder}" />.</param>
@@ -236,7 +245,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
-            return new WebAssemblyHost(services, scope, Configuration, RootComponents, _persistedState);
+            return new WebAssemblyHost(this, services, scope, _persistedState);
         }
 
         internal void InitializeDefaultServices()

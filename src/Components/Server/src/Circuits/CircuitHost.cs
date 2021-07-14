@@ -1,14 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
@@ -118,7 +113,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     for (var i = 0; i < count; i++)
                     {
                         var (componentType, parameters, sequence) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
+                        var componentId = Renderer.AddRootComponent(componentType, sequence.ToString(CultureInfo.InvariantCulture));
+                        await Renderer.RenderRootComponentAsync(componentId, parameters);
                     }
 
                     // At this point all components have successfully produced an initial render and we can clear the contents of the component

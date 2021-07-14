@@ -1,11 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
@@ -13,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteRenderer : Microsoft.AspNetCore.Components.RenderTree.Renderer
+    internal class RemoteRenderer : Renderer
     {
         private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -50,13 +46,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-        /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <param name="componentType">The type of the component.</param>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public Task AddComponentAsync(Type componentType, string domElementSelector)
+        public int AddRootComponent(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -64,26 +54,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
             _ = CaptureAsyncExceptions(attachComponentTask);
 
-            return RenderRootComponentAsync(componentId);
+            return componentId;
         }
 
-        /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <param name="componentType">The type of the component.</param>
-        /// <param name="parameters">The parameters for the component.</param>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
-        {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
-            _ = CaptureAsyncExceptions(attachComponentTask);
-
-            return RenderRootComponentAsync(componentId, parameters);
-        }
+        internal new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
+           => base.RenderRootComponentAsync(componentId, parameters);
 
         protected override void ProcessPendingRender()
         {

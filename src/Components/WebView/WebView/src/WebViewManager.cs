@@ -1,11 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
@@ -96,7 +91,13 @@ namespace Microsoft.AspNetCore.Components.WebView
             // add it when the page attaches later.
             if (_currentPageContext != null)
             {
-                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters));
+                return Dispatcher.InvokeAsync(() =>
+                {
+                    rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
+                        componentType, selector);
+                    return _currentPageContext.Renderer.RenderRootComponentAsync(
+                        rootComponent.ComponentId.Value, rootComponent.Parameters);
+                });
             }
             else
             {
@@ -110,16 +111,16 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.</param>
         public Task RemoveRootComponentAsync(string selector)
         {
-            if (!_rootComponentsBySelector.Remove(selector))
+            if (!_rootComponentsBySelector.Remove(selector, out var rootComponent))
             {
                 throw new InvalidOperationException($"There is no root component with selector '{selector}'.");
             }
 
             // If the page is already attached, remove the root component from it now. Otherwise it's
             // enough to have updated the dictionary.
-            if (_currentPageContext != null)
+            if (_currentPageContext != null && rootComponent.ComponentId.HasValue)
             {
-                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.RemoveRootComponentAsync(selector));
+                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.RemoveRootComponent(rootComponent.ComponentId.Value));
             }
             else
             {
@@ -184,10 +185,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             // Add any root components that were registered before the page attached
             foreach (var (selector, rootComponent) in _rootComponentsBySelector)
             {
-                await _currentPageContext.Renderer.AddRootComponentAsync(
-                    rootComponent.ComponentType,
-                    selector,
-                    rootComponent.Parameters);
+                rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
+                    rootComponent.ComponentType, selector);
+                await _currentPageContext.Renderer.RenderRootComponentAsync(
+                    rootComponent.ComponentId.Value, rootComponent.Parameters);
             }
         }
 
@@ -197,7 +198,8 @@ namespace Microsoft.AspNetCore.Components.WebView
         record RootComponent
         {
             public Type ComponentType { get; init; }
-            public ParameterView Parameters { get; set; }
+            public ParameterView Parameters { get; init; }
+            public int? ComponentId { get; set; }
         }
 
         /// <summary>

@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Infrastructure.DynamicRootComponentInterop
+Microsoft.AspNetCore.Components.Infrastructure.DynamicRootComponentInterop.AddRootComponent(string! componentIdentifier, string! domElementSelector) -> int
+Microsoft.AspNetCore.Components.Infrastructure.DynamicRootComponentInterop.Dispose() -> void
+Microsoft.AspNetCore.Components.Infrastructure.DynamicRootComponentInterop.RemoveRootComponent(int componentId) -> void
+Microsoft.AspNetCore.Components.Infrastructure.DynamicRootComponentInterop.RenderRootComponentAsync(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.DynamicRootComponents.get -> Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string! key].get -> string?
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
