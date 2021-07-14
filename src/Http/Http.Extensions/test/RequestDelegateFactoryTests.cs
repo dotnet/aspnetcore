@@ -959,6 +959,61 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(httpContext.Response, httpResponseArgument);
         }
 
+        [Fact]
+        public async Task RequestDelegateSetContentTypeWhenNullAndReturnTypeIsString()
+        {
+            string Plaintext() => "Hello, World!";
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((Func<string>)Plaintext, new EmptyServiceProvider());
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(ContentTypeConstants.PlainTextContentTypeWithCharset, httpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task RequestDelegateSetContentTypeWhenNullAndReturnTypeIsGenericOfTypeTask()
+        {
+            async Task<string> Plaintext()
+            {
+                var sayHelloTask = Task.Run(() =>
+                {
+                    return "Hello World Again";
+                });
+
+               return await sayHelloTask;
+            }
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((Func<Task<string>>)Plaintext, new EmptyServiceProvider());
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(ContentTypeConstants.PlainTextContentTypeWithCharset, httpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task RequestDelegateSetContentTypeWhenNullAndReturnTypeIsGenericOfTypeValueTask()
+        {
+            async ValueTask<string> Plaintext()
+            {
+                var sayHelloTask = Task.Run(() =>
+                {
+                    return "Hello World Again";
+                });
+
+                return await sayHelloTask;
+            }
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((Func<ValueTask<string>>)Plaintext, new EmptyServiceProvider());
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(ContentTypeConstants.PlainTextContentTypeWithCharset, httpContext.Response.ContentType);
+        }
+
         public static IEnumerable<object[]> ComplexResult
         {
             get

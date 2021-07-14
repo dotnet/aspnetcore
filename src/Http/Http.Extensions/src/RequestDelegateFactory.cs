@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
         private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
         private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
+        private static readonly MemberExpression ContentTypeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.ContentType));
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
@@ -381,10 +382,10 @@ namespace Microsoft.AspNetCore.Http
                     // ExecuteTask<T>(action(..), httpContext);
                     else if (typeArg == typeof(string))
                     {
-                        return Expression.Call(
-                            ExecuteTaskOfStringMethod,
-                            methodCall,
-                            HttpContextExpr);
+                        var conditionalContentTypeExpr = HandleNullContentType();
+                        return Expression.Block(
+                                conditionalContentTypeExpr,
+                                Expression.Call(ExecuteTaskOfStringMethod, methodCall, HttpContextExpr));
                     }
                     else
                     {
@@ -409,10 +410,10 @@ namespace Microsoft.AspNetCore.Http
                     // ExecuteTask<T>(action(..), httpContext);
                     else if (typeArg == typeof(string))
                     {
-                        return Expression.Call(
-                            ExecuteValueTaskOfStringMethod,
-                            methodCall,
-                            HttpContextExpr);
+                        var conditionalContentTypeExpr = HandleNullContentType();
+                        return Expression.Block(
+                                conditionalContentTypeExpr,
+                                Expression.Call(ExecuteValueTaskOfStringMethod, methodCall, HttpContextExpr));
                     }
                     else
                     {
@@ -434,7 +435,12 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (returnType == typeof(string))
             {
-                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                var conditionalContentTypeExpr = HandleNullContentType();
+
+                return Expression.Block(
+                    conditionalContentTypeExpr,
+                    Expression.Call(StringResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None))
+                );
             }
             else if (returnType.IsValueType)
             {
@@ -445,6 +451,17 @@ namespace Microsoft.AspNetCore.Http
             {
                 return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
+        }
+
+        private static ConditionalExpression HandleNullContentType()
+        {
+            return Expression.IfThen(
+                   Expression.Equal(
+                     ContentTypeExpr,
+                     Expression.Constant(null)
+                 ),
+                 Expression.Assign(ContentTypeExpr, Expression.Constant(ContentTypeConstants.PlainTextContentTypeWithCharset))
+            );
         }
 
         private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegate(Expression responseWritingMethodCall, FactoryContext factoryContext)
