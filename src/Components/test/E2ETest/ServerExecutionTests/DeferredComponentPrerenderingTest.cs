@@ -11,7 +11,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
 {
-    [Collection("auth")] // Because auth uses cookies, this can't run in parallel with other auth tests
     public class DeferredComponentPrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<DeferredComponentContentStartup>>
     {
         public DeferredComponentPrerenderingTest(

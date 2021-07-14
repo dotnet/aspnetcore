@@ -1,13 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Components.Sections
 {
     /// <summary>
-    /// Provides content to <see cref="SectionOutlet"/> components with matching <c>Name</c>s.
+    /// Provides content to <see cref="SectionOutlet"/> components with matching <see cref="Name"/>.
     /// </summary>
     internal class SectionContent : ISectionContentProvider, IComponent, IDisposable
     {

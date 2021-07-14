@@ -6,7 +6,7 @@ import { attachToEventDelegator as attachNavigationManagerToEventDelegator } fro
 const deferredValuePropname = '_blazorDeferredValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
+const elementsToClearOnRootComponentRender: { [componentId: number]: LogicalElement } = {};
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
@@ -31,7 +31,7 @@ export class BrowserRenderer {
     // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
     // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
     if (!appendContent) {
-      rootComponentsPendingFirstRender[componentId] = element;
+      elementsToClearOnRootComponentRender[componentId] = element;
     }
   }
 
@@ -42,10 +42,10 @@ export class BrowserRenderer {
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
-    const rootElementToClear = rootComponentsPendingFirstRender[componentId];
+    const rootElementToClear = elementsToClearOnRootComponentRender[componentId];
     if (rootElementToClear) {
       const rootElementToClearEnd = getLogicalSiblingEnd(rootElementToClear);
-      delete rootComponentsPendingFirstRender[componentId];
+      delete elementsToClearOnRootComponentRender[componentId];
 
       if (!rootElementToClearEnd) {
         clearElement(rootElementToClear as unknown as Element);
