@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Duende.IdentityServer.EntityFramework.Entities;
-using Duende.IdentityServer.EntityFramework.Interfaces;
-using Duende.IdentityServer.Stores;
+using IdentityServer4.EntityFramework.Entities;
+using IdentityServer4.EntityFramework.Interfaces;
+using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -108,8 +108,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions
             public DbSet<PersistedGrant> PersistedGrants { get; set; }
 
             public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
-
-            public DbSet<Key> Keys { get; set; }
 
             public Task<int> SaveChangesAsync()
             {

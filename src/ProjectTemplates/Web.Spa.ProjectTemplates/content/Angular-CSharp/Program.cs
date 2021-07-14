@@ -23,7 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 #if (IndividualLocalAuth)
-var connectionString = Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 #if (UseLocalDB)
     options.UseSqlServer(connectionString));

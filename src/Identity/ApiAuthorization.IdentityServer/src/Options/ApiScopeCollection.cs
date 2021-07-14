@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Duende.IdentityServer.Models;
+using IdentityServer4.Models;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {

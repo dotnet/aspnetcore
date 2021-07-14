@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Duende.IdentityServer;
-using Duende.IdentityServer.Models;
+using IdentityServer4;
+using IdentityServer4.Models;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {

@@ -34,31 +34,31 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 {
                     switch (scope)
                     {
-                        case Duende.IdentityServer.IdentityServerConstants.StandardScopes.OpenId:
+                        case IdentityServer4.IdentityServerConstants.StandardScopes.OpenId:
                             options.IdentityResources.Add(IdentityResourceBuilder.OpenId()
                                 .AllowAllClients()
                                 .FromConfiguration()
                                 .Build());
                             break;
-                        case Duende.IdentityServer.IdentityServerConstants.StandardScopes.Profile:
+                        case IdentityServer4.IdentityServerConstants.StandardScopes.Profile:
                             options.IdentityResources.Add(IdentityResourceBuilder.Profile()
                                 .AllowAllClients()
                                 .FromConfiguration()
                                 .Build());
                             break;
-                        case Duende.IdentityServer.IdentityServerConstants.StandardScopes.Address:
+                        case IdentityServer4.IdentityServerConstants.StandardScopes.Address:
                             options.IdentityResources.Add(IdentityResourceBuilder.Address()
                                 .AllowAllClients()
                                 .FromConfiguration()
                                 .Build());
                             break;
-                        case Duende.IdentityServer.IdentityServerConstants.StandardScopes.Email:
+                        case IdentityServer4.IdentityServerConstants.StandardScopes.Email:
                             options.IdentityResources.Add(IdentityResourceBuilder.Email()
                                 .AllowAllClients()
                                 .FromConfiguration()
                                 .Build());
                             break;
-                        case Duende.IdentityServer.IdentityServerConstants.StandardScopes.Phone:
+                        case IdentityServer4.IdentityServerConstants.StandardScopes.Phone:
                             options.IdentityResources.Add(IdentityResourceBuilder.Phone()
                                 .AllowAllClients()
                                 .FromConfiguration()

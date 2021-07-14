@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Validation;
+using IdentityServer4.Models;
+using IdentityServer4.Validation;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
