@@ -3,13 +3,15 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>aspnet-ApiAuthSample-12ED8ECC-9EF1-4D31-87B4-1405B3198E5E</UserSecretsId>
+    <!-- IdentityServer packages are not strong named -->
+    <NoWarn>CS8002</NoWarn>
     <!-- We are a package that depends on the shared framework, this allows us to
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Remove the reference to Microsoft.AspNetCore.App from IdentityServer4 -->
+    <!-- Remove the reference to Microsoft.AspNetCore.App from Duende.IdentityServer -->
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
     <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
     <Reference Include="Microsoft.AspNetCore.CookiePolicy" />

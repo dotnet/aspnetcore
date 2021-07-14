@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// <summary>
         /// Builds the API resource.
         /// </summary>
-        /// <returns>The built <see cref="IdentityServer4.Models.ApiResource"/>.</returns>
+        /// <returns>The built <see cref="Duende.IdentityServer.Models.ApiResource"/>.</returns>
         public ApiResource Build()
         {
             if (_built)
