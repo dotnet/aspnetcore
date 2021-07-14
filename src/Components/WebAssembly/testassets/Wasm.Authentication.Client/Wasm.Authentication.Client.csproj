@@ -5,8 +5,6 @@
     <RazorLangVersion>3.0</RazorLangVersion>
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <FixupWebAssemblyHttpHandlerReference>true</FixupWebAssemblyHttpHandlerReference>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
