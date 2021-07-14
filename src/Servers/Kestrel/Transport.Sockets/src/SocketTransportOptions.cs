@@ -81,6 +81,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public Func<EndPoint, Socket> CreateBoundListenSocket { get; set; } = CreateDefaultBoundListenSocket;
 
         /// <summary>
+        /// A function used to accept a new <see cref="Socket"/> given a listening <see cref="Socket"/>.
+        /// </summary>
+        /// <remarks>
+        /// The listening <see cref="Socket"/> passed is the one created by a previous call to <see cref="CreateBoundListenSocket"/>.
+        ///
+        /// This property defaults to <see cref="DefaultAcceptSocketAsync"/>.
+        /// </remarks>
+        public Func<Socket, CancellationToken, ValueTask<Socket>> AcceptSocketAsync { get; set; } = DefaultAcceptSocketAsync;
+
+        /// <summary>
+        /// Accepts a new <see cref="Socket"/> from a listen <see cref="Socket"/> previously obtained from <see cref="CreateBoundListenSocket"/>.
+        /// </summary>
+        /// <param name="listenSocket">A listening <see cref="Socket"/>.</param>
+        /// <param name="cancellationToken">Indicates if the accept operation should be aborted.</param>
+        /// <returns>A newly accepted <see cref="Socket"/>.</returns>
+        public static ValueTask<Socket> DefaultAcceptSocketAsync(Socket listenSocket, CancellationToken cancellationToken)
+        => listenSocket.AcceptAsync(cancellationToken);
+
+        /// <summary>
         /// Creates a default instance of <see cref="Socket"/> for the given <see cref="EndPoint"/>
         /// that can be used by a connection listener to listen for inbound requests. <see cref="Socket.Bind"/>
         /// is called by this method.
