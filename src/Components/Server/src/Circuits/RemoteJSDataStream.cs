@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private readonly RemoteJSRuntime _runtime;
         private readonly long _streamId;
-        private readonly TimeSpan _jsInteropDefaultCallTimeout;
         private readonly long _totalLength;
+        private readonly TimeSpan _jsInteropDefaultCallTimeout;
         private readonly CancellationToken _streamCancellationToken;
         private readonly Stream _pipeReaderStream;
         private readonly Pipe _pipe;
@@ -71,8 +71,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             _runtime = runtime;
             _streamId = streamId;
-            _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _totalLength = totalLength;
+            _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _streamCancellationToken = cancellationToken;
 
             _lastDataReceivedTime = DateTimeOffset.UtcNow;

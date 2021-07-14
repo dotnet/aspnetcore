@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 JSRuntime,
                 _inputFileElement,
                 file,
-                _jsUnmarshalledRuntime == null ? maxAllowedSize : long.MaxValue, // Don't enforce the maxAllowedSize for WASM (to preserve legacy behavior).
+                maxAllowedSize,
                 cancellationToken);
 
         internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)

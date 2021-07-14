@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// This only has an effect when using Blazor Server.
         /// </para>
         /// </summary>
-        public int MaxBufferSize { get; set; } = -1;
+        public int MaxBufferSize { get; set; } = 1024 * 1024;
 
         /// <summary>
         /// Gets or sets the time limit for fetching a segment of file data.
