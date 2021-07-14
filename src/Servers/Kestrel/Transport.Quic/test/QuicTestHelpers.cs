@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
@@ -65,6 +66,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             features.Set(sslServerAuthenticationOptions);
 
             return features;
+        }
+
+        public static async ValueTask<MultiplexedConnectionContext> AcceptAndAddFeatureAsync(this IMultiplexedConnectionListener listener)
+        {
+            var connection = await listener.AcceptAsync();
+            connection.Features.Set<IConnectionHeartbeatFeature>(new TestConnectionHeartbeatFeature());
+            return connection;
+        }
+
+        private class TestConnectionHeartbeatFeature : IConnectionHeartbeatFeature
+        {
+            public void OnHeartbeat(Action<object> action, object state)
+            {
+            }
         }
 
         private static bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)

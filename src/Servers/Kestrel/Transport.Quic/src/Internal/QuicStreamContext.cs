@@ -159,8 +159,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 await sendTask;
 
                 CanReuse = _stream.CanRead && _stream.CanWrite
-                    && _transportPipeReader.IsCompleteSuccessfully
-                    && _transportPipeWriter.IsCompleteSuccessfully
+                    && _transportPipeReader.IsCompletedSuccessfully
+                    && _transportPipeWriter.IsCompletedSuccessfully
                     && !_clientAbort;
             }
             catch (Exception ex)

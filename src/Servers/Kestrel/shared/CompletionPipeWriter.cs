@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Connections
     {
         private readonly PipeWriter _inner;
 
-        public bool IsComplete { get; private set; }
+        public bool IsCompleted { get; private set; }
         public Exception? CompleteException { get; private set; }
-        public bool IsCompleteSuccessfully => IsComplete && CompleteException == null;
+        public bool IsCompletedSuccessfully => IsCompleted && CompleteException == null;
 
         public CompletionPipeWriter(PipeWriter inner)
         {
@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.Connections
 
         public override void Complete(Exception? exception = null)
         {
-            IsComplete = true;
+            IsCompleted = true;
             CompleteException = exception;
             _inner.Complete(exception);
         }
 
         public override ValueTask CompleteAsync(Exception? exception = null)
         {
-            IsComplete = true;
+            IsCompleted = true;
             CompleteException = exception;
             return _inner.CompleteAsync(exception);
         }

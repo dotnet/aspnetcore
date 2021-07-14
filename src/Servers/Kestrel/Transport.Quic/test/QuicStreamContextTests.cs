@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await clientConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await clientConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             var stream1 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             await using var clientStream = quicConnection.OpenBidirectionalStream();
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             await using var clientStream = quicConnection.OpenUnidirectionalStream();
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             await using var clientStream = quicConnection.OpenUnidirectionalStream();
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             var features = new FeatureCollection();
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             var features = new FeatureCollection();

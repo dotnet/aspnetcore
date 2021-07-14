@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             var acceptTask = serverConnection.AcceptAsync();
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             var acceptTask = serverConnection.AcceptAsync();
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
-            var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             // Act
             var acceptTask = quicConnection.AcceptStreamAsync();
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await clientConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             var testHeartbeatFeature = new TestHeartbeatFeature();
             serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await clientConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             var testHeartbeatFeature = new TestHeartbeatFeature();
             serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await clientConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             var testHeartbeatFeature = new TestHeartbeatFeature();
             serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await clientConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             var testHeartbeatFeature = new TestHeartbeatFeature();
             serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await clientConnection.ConnectAsync().DefaultTimeout();
 
-            await using var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             var testHeartbeatFeature = new TestHeartbeatFeature();
             serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await connectionListener.UnbindAsync().DefaultTimeout();
 
             // Assert
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => connectionListener.AcceptAsync().AsTask()).DefaultTimeout();
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => connectionListener.AcceptAndAddFeatureAsync().AsTask()).DefaultTimeout();
         }
 
         [ConditionalFact]
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
             // Act
-            var acceptTask = connectionListener.AcceptAsync().DefaultTimeout();
+            var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 

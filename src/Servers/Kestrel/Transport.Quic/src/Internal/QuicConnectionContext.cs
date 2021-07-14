@@ -179,10 +179,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                     // connections so initialize heartbeat the first time a stream is added to
                     // the connection's stream pool.
                     var heartbeatFeature = Features.Get<IConnectionHeartbeatFeature>();
-                    if (heartbeatFeature != null)
+                    if (heartbeatFeature == null)
                     {
-                        heartbeatFeature.OnHeartbeat(static state => ((QuicConnectionContext)state).RemoveExpiredStreams(), this);
+                        throw new InvalidOperationException($"Required {nameof(IConnectionHeartbeatFeature)} not found in connection features.");
                     }
+
+                    heartbeatFeature.OnHeartbeat(static state => ((QuicConnectionContext)state).RemoveExpiredStreams(), this);
 
                     // Set ticks for the first time. Ticks are then updated in heartbeat.
                     var now = _context.Options.SystemClock.UtcNow.Ticks;
