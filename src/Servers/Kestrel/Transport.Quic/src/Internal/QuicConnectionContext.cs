@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     internal class QuicConnectionContext : TransportMultiplexedConnection, IProtocolErrorCodeFeature
     {
         // Internal for testing.
-        internal QuicStreamStack StreamPool;
+        internal PooledStreamStack<QuicStreamContext> StreamPool;
 
         private bool _streamPoolHeartbeatInitialized;
         // Ticks updated once per-second in heartbeat event.
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
             Features.Set<IProtocolErrorCodeFeature>(this);
 
-            StreamPool = new QuicStreamStack(InitialStreamPoolSize);
+            StreamPool = new PooledStreamStack<QuicStreamContext>(InitialStreamPoolSize);
         }
 
         public override async ValueTask DisposeAsync()

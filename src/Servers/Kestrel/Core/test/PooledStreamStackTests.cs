@@ -2,23 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class Http2StreamStackTests
+    public class PooledStreamStackTests
     {
         [Fact]
         public void RemoveExpired_Empty_NoOp()
         {
-            var streams = new Http2StreamStack(10);
+            var streams = new PooledStreamStack<Http2Stream>(10);
 
             streams.RemoveExpired(100);
         }
@@ -26,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void RemoveExpired_NoneExpired_NoOp()
         {
-            var streams = new Http2StreamStack(10);
+            var streams = new PooledStreamStack<Http2Stream>(10);
             streams.Push(CreateStream(streamId: 1, expirationTicks: 200));
 
             streams.RemoveExpired(100);
@@ -38,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void RemoveExpired_OneExpired_ExpiredStreamRemoved()
         {
-            var streams = new Http2StreamStack(10);
+            var streams = new PooledStreamStack<Http2Stream>(10);
             streams.Push(CreateStream(streamId: 1, expirationTicks: 200));
 
             streams.RemoveExpired(300);
@@ -50,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void RemoveExpired_MultipleExpired_ExpiredStreamsRemoved()
         {
-            var streams = new Http2StreamStack(10);
+            var streams = new PooledStreamStack<Http2Stream>(10);
             streams.Push(CreateStream(streamId: 1, expirationTicks: 200));
             streams.Push(CreateStream(streamId: 2, expirationTicks: 250));
 
@@ -64,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void RemoveExpired_OneExpiredAndOneValid_ExpiredStreamRemoved()
         {
-            var streams = new Http2StreamStack(10);
+            var streams = new PooledStreamStack<Http2Stream>(10);
             streams.Push(CreateStream(streamId: 1, expirationTicks: 200));
             streams.Push(CreateStream(streamId: 2, expirationTicks: 400));
 
@@ -78,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void RemoveExpired_AllExpired_ExpiredStreamRemoved()
         {
-            var streams = new Http2StreamStack(5);
+            var streams = new PooledStreamStack<Http2Stream>(5);
             streams.Push(CreateStream(streamId: 1, expirationTicks: 200));
             streams.Push(CreateStream(streamId: 2, expirationTicks: 200));
             streams.Push(CreateStream(streamId: 3, expirationTicks: 200));

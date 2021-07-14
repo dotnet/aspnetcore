@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
+    internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IPooledStream
     {
         // Internal for testing.
         internal Task _processingTask = Task.CompletedTask;
@@ -307,8 +307,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // AbortWrite has been called for the stream.
                 // Possibily might also get here from connection closing.
                 // System.Net.Quic exception handling not finalized.
-
-                // TODO: Should this error be passed to the pipe?
                 unexpectedError = ex;
             }
             catch (Exception ex)
@@ -441,7 +439,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
-        internal void DisposeCore()
+        // Called when the stream is no longer reused.
+        public void DisposeCore()
         {
             _streamClosedTokenSource.Dispose();
         }

@@ -1,32 +1,38 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+#nullable enable
+
+namespace Microsoft.AspNetCore.Server.Kestrel
 {
+    internal interface IPooledStream
+    {
+        long PoolExpirationTicks { get; }
+        void DisposeCore();
+    }
+
     // See https://github.com/dotnet/runtime/blob/master/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
-    internal struct QuicStreamStack
+    internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
     {
         // Internal for testing
-        internal QuicStreamAsValueType[] _array;
+        internal StreamAsValueType[] _array;
         private int _size;
 
-        public QuicStreamStack(int size)
+        public PooledStreamStack(int size)
         {
-            _array = new QuicStreamAsValueType[size];
+            _array = new StreamAsValueType[size];
             _size = 0;
         }
 
         public int Count => _size;
 
-        public bool TryPop([NotNullWhen(true)] out QuicStreamContext? result)
+        public bool TryPop([NotNullWhen(true)] out TValue? result)
         {
             int size = _size - 1;
-            QuicStreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             if ((uint)size >= (uint)array.Length)
             {
@@ -40,10 +46,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             return true;
         }
 
-        public bool TryPeek([NotNullWhen(true)] out QuicStreamContext? result)
+        public bool TryPeek([NotNullWhen(true)] out TValue? result)
         {
             int size = _size - 1;
-            QuicStreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             if ((uint)size >= (uint)array.Length)
             {
@@ -56,10 +62,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         }
 
         // Pushes an item to the top of the stack.
-        public void Push(QuicStreamContext item)
+        public void Push(TValue item)
         {
             int size = _size;
-            QuicStreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             if ((uint)size < (uint)array.Length)
             {
@@ -74,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         // Non-inline from Stack.Push to improve its code quality as uncommon path
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void PushWithResize(QuicStreamContext item)
+        private void PushWithResize(TValue item)
         {
             Array.Resize(ref _array, 2 * _array.Length);
             _array[_size] = item;
@@ -84,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public void RemoveExpired(long now)
         {
             int size = _size;
-            QuicStreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             var removeCount = CalculateRemoveCount(now, size, array);
             if (removeCount == 0)
@@ -97,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             // Dispose removed streams
             for (var i = 0; i < removeCount; i++)
             {
-                QuicStreamContext stream = array[i];
+                TValue stream = array[i];
                 stream.DisposeCore();
             }
 
@@ -116,11 +122,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _size = newSize;
         }
 
-        private static int CalculateRemoveCount(long now, int size, QuicStreamAsValueType[] array)
+        private static int CalculateRemoveCount(long now, int size, StreamAsValueType[] array)
         {
             for (var i = 0; i < size; i++)
             {
-                QuicStreamContext stream = array[i];
+                TValue stream = array[i];
                 if (stream.PoolExpirationTicks >= now)
                 {
                     // Stream is still valid. All streams after this will have a later expiration.
@@ -133,12 +139,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             return size;
         }
 
-        internal readonly struct QuicStreamAsValueType
+        internal readonly struct StreamAsValueType
         {
-            private readonly QuicStreamContext _value;
-            private QuicStreamAsValueType(QuicStreamContext value) => _value = value;
-            public static implicit operator QuicStreamAsValueType(QuicStreamContext s) => new QuicStreamAsValueType(s);
-            public static implicit operator QuicStreamContext(QuicStreamAsValueType s) => s._value;
+            private readonly TValue _value;
+            private StreamAsValueType(TValue value) => _value = value;
+            public static implicit operator StreamAsValueType(TValue s) => new StreamAsValueType(s);
+            public static implicit operator TValue(StreamAsValueType s) => s._value;
         }
     }
 }
