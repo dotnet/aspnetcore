@@ -94,14 +94,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                         };
 
                         // Validate return type
-                        if (!(member.ReturnsVoid || member.ReturnType is INamedTypeSymbol {Arity: 0, Name: "Task" or "ValueTask"}))
+                        if (!(member.ReturnsVoid || member.ReturnType is INamedTypeSymbol {Arity: 0, Name: "Task"}))
                         {
                             _context.ReportDiagnostic(Diagnostic.Create(
                                 DiagnosticDescriptors.CallbackRegistrationUnsupportedReturnType,
                                 typeSpec.CallSite,
                                 methodSpec.Name, member.ReturnType.Name));
                             methodSpec.Support = SupportClassification.UnsupportedReturnType;
-                            methodSpec.SupportHint = "Return type must be void, Task or ValueTask";
+                            methodSpec.SupportHint = "Return type must be void or Task";
                         }
 
                         // Generate spec for each argument

@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             void SingleArg(int a);
             void ManyArgs(int a, float b);
             Task ReturnTask();
-            ValueTask ReturnValueTask();
         }
 
         private class MyClient : IMyClient
@@ -41,11 +40,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public Task ReturnTask()
             {
                 return Task.CompletedTask;
-            }
-
-            public ValueTask ReturnValueTask()
-            {
-                return ValueTask.CompletedTask;
             }
         }
 

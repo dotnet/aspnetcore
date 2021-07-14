@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
         public static DiagnosticDescriptor CallbackRegistrationUnsupportedReturnType { get; } = new DiagnosticDescriptor(
             id: "SSG0100",
             title: "Unsupported return type",
-            messageFormat: "'{0}' has a return type of '{1}' but only void, Task and ValueTask are supported for callback methods.",
+            messageFormat: "'{0}' has a return type of '{1}' but only void and Task are supported for callback methods.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
