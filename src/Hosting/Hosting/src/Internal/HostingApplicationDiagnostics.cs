@@ -286,38 +286,24 @@ namespace Microsoft.AspNetCore.Hosting
             _propagator.ExtractTraceIdAndState(headers,
                 static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
                 {
-                    fieldValue = default;
                     fieldValues = default;
-                    if (carrier is null)
-                    {
-                        return;
-                    }
-                    var headers = (IHeaderDictionary)carrier;
+                    var headers = (IHeaderDictionary)carrier!;
                     fieldValue = headers[fieldName];
                 },
                 out var requestId,
                 out var traceState);
-
-            if (requestId is not null)
-            {
-                activity.SetParentId(requestId);
-            }
-            if (traceState is not null)
-            {
-                activity.TraceStateString = traceState;
-            }
             
             if (!string.IsNullOrEmpty(requestId))
             {
+                activity.SetParentId(requestId);
+                if (!string.IsNullOrEmpty(traceState))
+                {
+                    activity.TraceStateString = traceState;
+                }
                 var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
                 {
-                    fieldValue = default;
                     fieldValues = default;
-                    if (carrier is null)
-                    {
-                        return;
-                    }
-                    var headers = (IHeaderDictionary)carrier;
+                    var headers = (IHeaderDictionary)carrier!;
                     fieldValue = headers[fieldName];
                 });
 
