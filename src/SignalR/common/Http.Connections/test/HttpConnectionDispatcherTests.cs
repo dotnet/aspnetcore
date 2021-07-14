@@ -504,7 +504,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             using (StartVerifiableLog())
             {
-                var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
+                var disconnectTimeout = TimeSpan.FromSeconds(5);
+                var manager = CreateConnectionManager(LoggerFactory, disconnectTimeout);
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.LongPolling;
@@ -550,7 +551,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await task.DefaultTimeout();
 
                     // We've been gone longer than the expiration time
-                    connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10));
+                    connection.LastSeenTick = Environment.TickCount64 - (long)disconnectTimeout.TotalMilliseconds - 1;
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete
@@ -2696,7 +2697,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 pollTask = dispatcher.ExecuteAsync(context, options, app);
 
                 // Set auth to an expired time
-                connection.AuthenticationExpiration = DateTimeOffset.Now.AddSeconds(-1);
+                connection.AuthenticationExpirationTick = Environment.TickCount64 - 1;
 
                 manager.Scan();
 
@@ -2800,8 +2801,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
-            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
+            Assert.True(context.AuthenticationExpirationTick > Environment.TickCount64);
+            Assert.True(context.AuthenticationExpirationTick < long.MaxValue);
 
             await connection.DisposeAsync();
         }
@@ -2862,8 +2863,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
-            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
+            Assert.True(context.AuthenticationExpirationTick > Environment.TickCount64);
+            Assert.True(context.AuthenticationExpirationTick < long.MaxValue);
 
             await connection.DisposeAsync();
         }
@@ -2962,8 +2963,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
-            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
+            Assert.True(context.AuthenticationExpirationTick > Environment.TickCount64);
+            Assert.True(context.AuthenticationExpirationTick < long.MaxValue);
 
             await connection.DisposeAsync();
         }
@@ -3001,7 +3002,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.Equal(DateTimeOffset.MaxValue, context.AuthenticationExpiration);
+            Assert.Equal(long.MaxValue, context.AuthenticationExpirationTick);
 
             await connection.DisposeAsync();
         }

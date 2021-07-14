@@ -1,17 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -29,14 +24,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly PeriodicTimer _nextHeartbeat;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
-        private readonly TimeSpan _disconnectTimeout;
+        private readonly long _disconnectTimeoutTicks;
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
-            _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
+            _disconnectTimeoutTicks = (long)(connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout).TotalMilliseconds;
 
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
@@ -143,12 +138,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 var connection = c.Value.Connection;
                 // Capture the connection state
-                var lastSeenUtc = connection.LastSeenUtcIfInactive;
+                var lastSeenTick = connection.LastSeenTickIfInactive;
 
-                var utcNow = DateTimeOffset.UtcNow;
+                var ticks = Environment.TickCount64;
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && lastSeenUtc.HasValue && (utcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
+                if (!Debugger.IsAttached && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeoutTicks)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
@@ -162,13 +157,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     if (!Debugger.IsAttached)
                     {
-                        connection.TryCancelSend(utcNow.Ticks);
+                        connection.TryCancelSend(ticks);
                     }
 
                     // Tick the heartbeat, if the connection is still active
                     connection.TickHeartbeat();
 
-                    if (connection.IsAuthenticationExpirationEnabled && connection.AuthenticationExpiration < utcNow &&
+                    if (connection.IsAuthenticationExpirationEnabled && connection.AuthenticationExpirationTick < ticks &&
                         !connection.ConnectionClosedRequested.IsCancellationRequested)
                     {
                         Log.AuthenticationExpired(_logger, connection.ConnectionId);

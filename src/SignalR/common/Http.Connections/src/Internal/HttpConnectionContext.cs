@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             ConnectionId = connectionId;
             ConnectionToken = connectionToken;
-            LastSeenUtc = DateTime.UtcNow;
+            LastSeenTick = Environment.TickCount64;
             _options = options;
 
             // The default behavior is that both formats are supported.
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             _connectionCloseRequested = new CancellationTokenSource();
             ConnectionClosedRequested = _connectionCloseRequested.Token;
-            AuthenticationExpiration = DateTimeOffset.MaxValue;
+            AuthenticationExpirationTick = long.MaxValue;
         }
 
         public CancellationTokenSource? Cancellation { get; set; }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
         internal AsyncServiceScope? ServiceScope { get; set; }
 
-        internal DateTimeOffset AuthenticationExpiration { get; set; }
+        internal long AuthenticationExpirationTick { get; set; }
 
         internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
@@ -121,15 +121,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public Task? ApplicationTask { get; set; }
 
-        public DateTime LastSeenUtc { get; set; }
+        public long LastSeenTick { get; set; }
 
-        public DateTime? LastSeenUtcIfInactive
+        public long? LastSeenTickIfInactive
         {
             get
             {
                 lock (_stateLock)
                 {
-                    return Status == HttpConnectionStatus.Inactive ? (DateTime?)LastSeenUtc : null;
+                    return Status == HttpConnectionStatus.Inactive ? LastSeenTick : null;
                 }
             }
         }
@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 if (Status == HttpConnectionStatus.Active)
                 {
                     Status = HttpConnectionStatus.Inactive;
-                    LastSeenUtc = DateTime.UtcNow;
+                    LastSeenTick = Environment.TickCount64;
                 }
             }
         }
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     _sendCts = new CancellationTokenSource();
                     SendingToken = _sendCts.Token;
                 }
-                _startedSendTime = DateTime.UtcNow.Ticks;
+                _startedSendTime = Environment.TickCount64;
                 _activeSend = true;
             }
         }
