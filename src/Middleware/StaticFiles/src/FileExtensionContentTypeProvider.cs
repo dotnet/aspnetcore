@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".mid", "audio/mid" },
                 { ".midi", "audio/mid" },
                 { ".mix", "application/octet-stream" },
+                { ".mjs", "text/javascript" },                
                 { ".mmf", "application/x-smaf" },
                 { ".mno", "text/xml" },
                 { ".mny", "application/x-msmoney" },
