@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly object _receiveMessageTimeoutLock = new object();
         private readonly ISystemClock _systemClock;
         private readonly CancellationTokenRegistration _closedRegistration;
+        private readonly CancellationTokenRegistration? _closedRequestedRegistration;
 
         private StreamTracker? _streamTracker;
         private long _lastSendTimeStamp;
@@ -69,7 +70,13 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = _connectionAbortedTokenSource.Token;
-            _closedRegistration = connectionContext.ConnectionClosed.Register((state) => ((HubConnectionContext)state!).Abort(), this);
+            _closedRegistration = connectionContext.ConnectionClosed.Register(static (state) => ((HubConnectionContext)state!).Abort(), this);
+
+            if (connectionContext.Features.Get<IConnectionLifetimeNotificationFeature>() is IConnectionLifetimeNotificationFeature lifetimeNotification)
+            {
+                // This feature is used by HttpConnectionManager to close the connection with a non-errored closed message on authentication expiration.
+                _closedRequestedRegistration = lifetimeNotification.ConnectionClosedRequested.Register(static (state) => ((HubConnectionContext)state!).AbortAllowReconnect(), this);
+            }
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
@@ -728,6 +735,7 @@ namespace Microsoft.AspNetCore.SignalR
         internal void Cleanup()
         {
             _closedRegistration.Dispose();
+            _closedRequestedRegistration?.Dispose();
 
             // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
             if (_streamTracker != null)

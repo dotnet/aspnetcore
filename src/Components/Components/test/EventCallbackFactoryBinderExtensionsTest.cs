@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Components
             var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
 
             // Act
-            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.InvariantCulture), });
+            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.CurrentCulture), });
 
             Assert.Equal(expectedValue, value);
             Assert.Equal(1, component.Count);
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.Components
             var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
 
             // Act
-            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.InvariantCulture), });
+            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.CurrentCulture), });
 
             Assert.Equal(expectedValue, value);
             Assert.Equal(1, component.Count);
@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Components
             var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
 
             // Act
-            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.InvariantCulture), });
+            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.CurrentCulture), });
 
             Assert.Equal(expectedValue, value);
             Assert.Equal(1, component.Count);
@@ -493,7 +493,7 @@ namespace Microsoft.AspNetCore.Components
             var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
 
             // Act
-            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.InvariantCulture), });
+            await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(CultureInfo.CurrentCulture), });
 
             Assert.Equal(expectedValue, value);
             Assert.Equal(1, component.Count);

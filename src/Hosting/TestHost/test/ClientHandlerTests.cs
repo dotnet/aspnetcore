@@ -25,6 +25,29 @@ namespace Microsoft.AspNetCore.TestHost
     public class ClientHandlerTests
     {
         [Fact]
+        public async Task SlashUrlEncodedDoesNotGetDecoded()
+        {
+            var handler = new ClientHandler(new PathString(), new InspectingApplication(features =>
+            {
+                Assert.True(features.Get<IHttpRequestLifetimeFeature>().RequestAborted.CanBeCanceled);
+                Assert.Equal(HttpProtocol.Http11, features.Get<IHttpRequestFeature>().Protocol);
+                Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
+                Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
+                Assert.Equal("/api/a%2Fb c", features.Get<IHttpRequestFeature>().Path);
+                Assert.NotNull(features.Get<IHttpRequestFeature>().Body);
+                Assert.NotNull(features.Get<IHttpRequestFeature>().Headers);
+                Assert.NotNull(features.Get<IHttpResponseFeature>().Headers);
+                Assert.NotNull(features.Get<IHttpResponseBodyFeature>().Stream);
+                Assert.Equal(200, features.Get<IHttpResponseFeature>().StatusCode);
+                Assert.Null(features.Get<IHttpResponseFeature>().ReasonPhrase);
+                Assert.Equal("example.com", features.Get<IHttpRequestFeature>().Headers["host"]);
+                Assert.NotNull(features.Get<IHttpRequestLifetimeFeature>());
+            }));
+            var httpClient = new HttpClient(handler);
+            await httpClient.GetAsync("https://example.com/api/a%2Fb%20c");
+        }
+
+        [Fact]
         public Task ExpectedKeysAreAvailable()
         {
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>

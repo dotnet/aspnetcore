@@ -49,6 +49,12 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         public int ReloadDelay { get; set; } = 250;
 
         /// <summary>
+        /// The delimiter used to separate individual keys in a path.
+        /// </summary>
+        /// <value>Default is <c>__</c>.</value>
+        public string SectionDelimiter { get; set; } = "__";
+
+        /// <summary>
         /// Builds the <see cref="KeyPerFileConfigurationProvider"/> for this source.
         /// </summary>
         /// <param name="builder">The <see cref="IConfigurationBuilder"/>.</param>

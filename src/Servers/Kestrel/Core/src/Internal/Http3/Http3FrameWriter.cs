@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         // Write headers to a buffer that can grow. Possible performance improvement
         // by writing directly to output writer (difficult as frame length is prefixed).
         private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
-        private Http3HeadersEnumerator _headersEnumerator = new();
+        private readonly Http3HeadersEnumerator _headersEnumerator = new();
         private int _headersTotalSize;
 
         private long _unflushedBytes;

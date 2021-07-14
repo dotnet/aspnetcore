@@ -18,7 +18,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />

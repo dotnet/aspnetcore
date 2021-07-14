@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2FrameWriterTests
     {
-        private MemoryPool<byte> _dirtyMemoryPool;
+        private readonly MemoryPool<byte> _dirtyMemoryPool;
 
         public Http2FrameWriterTests()
         {

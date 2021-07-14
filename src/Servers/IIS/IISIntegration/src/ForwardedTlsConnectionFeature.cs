@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private StringValues _header;
         private X509Certificate2? _certificate;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public ForwardedTlsConnectionFeature(ILogger logger, StringValues header)
         {

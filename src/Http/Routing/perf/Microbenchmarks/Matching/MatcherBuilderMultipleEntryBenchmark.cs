@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private abstract class TestMatcherPolicyBase : MatcherPolicy
         {
-            private int _order;
+            private readonly int _order;
 
             protected TestMatcherPolicyBase(int order)
             {

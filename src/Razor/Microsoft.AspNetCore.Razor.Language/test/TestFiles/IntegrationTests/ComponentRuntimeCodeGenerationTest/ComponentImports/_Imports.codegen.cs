@@ -28,15 +28,13 @@ using System.Reflection;
         #pragma warning disable 1998
         protected void Execute()
         {
-            __builder.AddContent(0, 
 #nullable restore
-#line 5 "x:\dir\subdir\Test\_Imports.razor"
- Foo
+#line (5,2)-(5,5) 24 "x:\dir\subdir\Test\_Imports.razor"
+__builder.AddContent(0, Foo);
 
 #line default
 #line hidden
 #nullable disable
-            );
         }
         #pragma warning restore 1998
     }

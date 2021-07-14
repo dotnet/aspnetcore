@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool Equals(RazorDiagnostic other);
 
-        public override abstract int GetHashCode();
+        public abstract override int GetHashCode();
 
         public static RazorDiagnostic Create(RazorDiagnosticDescriptor descriptor, SourceSpan span)
         {

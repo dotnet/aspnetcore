@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for routing requests to application logic and for generating links.
@@ -30,7 +30,6 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Microsoft.Extensions.Options" />
 

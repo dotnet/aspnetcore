@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
 {
     internal class CertificateForwardingFeature : ITlsConnectionFeature
     {
-        private ILogger _logger;
-        private StringValues _header;
-        private CertificateForwardingOptions _options;
+        private readonly ILogger _logger;
+        private readonly StringValues _header;
+        private readonly CertificateForwardingOptions _options;
         private X509Certificate2? _certificate;
 
         public CertificateForwardingFeature(ILogger logger, StringValues header, CertificateForwardingOptions options)

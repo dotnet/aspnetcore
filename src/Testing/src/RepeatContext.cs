@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class RepeatContext
     {
-        private static AsyncLocal<RepeatContext> _current = new AsyncLocal<RepeatContext>();
+        private static readonly AsyncLocal<RepeatContext> _current = new AsyncLocal<RepeatContext>();
 
         public static RepeatContext Current
         {

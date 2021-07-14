@@ -1,0 +1,48 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                MarkupElement - (0:0,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (4:0,4 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (4:0,4 [21] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Conditional statement
+                HtmlContent - (30:0,30 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (30:0,30 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                CSharpCode - (33:1,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (33:1,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - for (var i = 0; i < 10; i++)\n{\n    
+                MarkupElement - (70:3,4 [9] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    CSharpExpression - (74:3,8 [1] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (74:3,8 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - i
+                CSharpCode - (79:3,13 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (79:3,13 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n}
+                HtmlContent - (82:4,1 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (82:4,1 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                MarkupElement - (86:6,0 [37] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (90:6,4 [28] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (90:6,4 [28] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Statements inside code block
+                HtmlContent - (123:6,37 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (123:6,37 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                CSharpCode - (127:7,2 [56] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (127:7,2 [56] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - System.Console.WriteLine(1);System.Console.WriteLine(2);
+                HtmlContent - (186:8,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (186:8,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                MarkupElement - (188:9,0 [27] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (192:9,4 [18] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (192:9,4 [18] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Full-on code block
+                HtmlContent - (215:9,27 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (215:9,27 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (290:13,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (290:13,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (224:10,7 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+                LazyIntermediateToken - (224:10,7 [65] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    [Parameter]\n    public int IncrementAmount { get; set; }\n

@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed
 {
-    internal unsafe sealed class ManagedGenRandomImpl : IManagedGenRandom
+    internal sealed unsafe class ManagedGenRandomImpl : IManagedGenRandom
     {
 #if NETSTANDARD2_0 || NET461
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();

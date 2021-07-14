@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -38,66 +39,23 @@ namespace Microsoft.AspNetCore.Internal.Tests
             Assert.Null(dict._dictionaryStorage);
         }
 
-        public static KeyValuePair<string, object>[] IEnumerableKeyValuePairData
-        {
-            get
-            {
-                return new[]
-                {
-                    new KeyValuePair<string, object?>("Name", "James"),
-                    new KeyValuePair<string, object?>("Age", 30),
-                    new KeyValuePair<string, object?>("Address", new Address() { City = "Redmond", State = "WA" })
-                };
-            }
-        }
-
-        public static KeyValuePair<string, string>[] IEnumerableStringValuePairData
-        {
-            get
-            {
-                return new[]
-                {
-                    new KeyValuePair<string, string>("First Name", "James"),
-                    new KeyValuePair<string, string>("Last Name", "Henrik"),
-                    new KeyValuePair<string, string>("Middle Name", "Bob")
-                };
-            }
-        }
-
         [Fact]
-        public void CreateFromIEnumerableKeyValuePair_CopiesValues()
+        public void CreateWithCapacityOverDefaultLimit()
         {
-            // Arrange & Act
-            var dict = new AdaptiveCapacityDictionary<string, object?>(IEnumerableKeyValuePairData, capacity: IEnumerableKeyValuePairData.Length, EqualityComparer<string>.Default);
+            // The default threshold between array and dictionary is 10. If we created one over that limit it should go directly to a dictionary.
+            var dict = new AdaptiveCapacityDictionary<string, string>(capacity: 12, StringComparer.OrdinalIgnoreCase);
 
-            // Assert
-            Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Collection(
-                dict.OrderBy(kvp => kvp.Key),
-                kvp =>
-                {
-                    Assert.Equal("Address", kvp.Key);
-                    var address = Assert.IsType<Address>(kvp.Value);
-                    Assert.Equal("Redmond", address.City);
-                    Assert.Equal("WA", address.State);
-                },
-                kvp => { Assert.Equal("Age", kvp.Key); Assert.Equal(30, kvp.Value); },
-                kvp => { Assert.Equal("Name", kvp.Key); Assert.Equal("James", kvp.Value); });
-        }
+            Assert.Null(dict._arrayStorage);
+            Assert.NotNull(dict._dictionaryStorage);
 
-        [Fact]
-        public void CreateFromIEnumerableStringValuePair_CopiesValues()
-        {
-            // Arrange & Act
-            var dict = new AdaptiveCapacityDictionary<string, string>(IEnumerableStringValuePairData, capacity: 3, StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < 12; i++)
+            {
+                dict[i.ToString(CultureInfo.InvariantCulture)] = i.ToString(CultureInfo.InvariantCulture);
+            }
 
-            // Assert
-            Assert.IsType<KeyValuePair<string, string>[]>(dict._arrayStorage);
-            Assert.Collection(
-                dict.OrderBy(kvp => kvp.Key),
-                kvp => { Assert.Equal("First Name", kvp.Key); Assert.Equal("James", kvp.Value); },
-                kvp => { Assert.Equal("Last Name", kvp.Key); Assert.Equal("Henrik", kvp.Value); },
-                kvp => { Assert.Equal("Middle Name", kvp.Key); Assert.Equal("Bob", kvp.Value); });
+            Assert.Null(dict._arrayStorage);
+            Assert.NotNull(dict._dictionaryStorage);
+            Assert.Equal(12, dict.Count);
         }
 
         [Fact]
@@ -112,23 +70,6 @@ namespace Microsoft.AspNetCore.Internal.Tests
                 },
                 "key",
                 $"An element with the key 'Name' already exists in the {nameof(AdaptiveCapacityDictionary<string, object?>)}.");
-        }
-
-        [Fact]
-        public void CreateFromIEnumerableStringValuePair_ThrowsExceptionForDuplicateKey()
-        {
-            // Arrange
-            var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("name", "Billy"),
-                new KeyValuePair<string, string>("Name", "Joey"),
-            };
-
-            // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => new AdaptiveCapacityDictionary<string, string>(values, capacity: 3, StringComparer.OrdinalIgnoreCase),
-                "key",
-                $"An element with the key 'Name' already exists in the {nameof(AdaptiveCapacityDictionary<string, object>)}.");
         }
 
         [Fact]

@@ -15,27 +15,6 @@ namespace Microsoft.AspNetCore.Http.Result
         /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
         /// provided.
         /// </summary>
-        /// <param name="url">The local URL to redirect to.</param>
-        public RedirectResult(string url)
-            : this(url, permanent: false)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
-        /// provided.
-        /// </summary>
-        /// <param name="url">The URL to redirect to.</param>
-        /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-        public RedirectResult(string url, bool permanent)
-            : this(url, permanent, preserveMethod: false)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
-        /// provided.
-        /// </summary>
         /// <param name="url">The URL to redirect to.</param>
         /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
         /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>

@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.H
 
         public class TestLogger : ILogger
         {
-            private List<string> _messages = new List<string>();
+            private readonly List<string> _messages = new List<string>();
 
-            private object _sync = new object();
+            private readonly object _sync = new object();
 
             public IEnumerable<string> Messages
             {

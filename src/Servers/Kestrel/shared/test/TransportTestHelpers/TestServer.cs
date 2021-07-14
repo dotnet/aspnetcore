@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     /// </summary>
     internal class TestServer : IAsyncDisposable, IStartup
     {
-        private IHost _host;
+        private readonly IHost _host;
         private ListenOptions _listenOptions;
         private readonly RequestDelegate _app;
 

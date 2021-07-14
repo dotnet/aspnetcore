@@ -542,7 +542,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
             var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
             var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
-            if (!newParameters.DefinitelyEquals(oldParameters) || (HotReloadFeature.IsSupported && diffContext.Renderer.IsHotReloading))
+            if (!newParameters.DefinitelyEquals(oldParameters) || (TestableMetadataUpdate.IsSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate))
             {
                 componentState.SetDirectParameters(newParameters);
             }

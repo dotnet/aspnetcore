@@ -116,6 +116,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             writer.Write(")");
+
+            // Writes out a list of generic type constraints with indentation
+            // public void Foo<T, U>(T t, U u)
+            //      where T: new()
+            //      where U: Foo, notnull
+            foreach (var constraint in node.GenericTypeConstraints)
+            {
+                writer.WriteLine();
+                writer.Indent(writer.CurrentIndent + writer.TabSize);
+                writer.Write(constraint);
+                
+            }
+
             writer.WriteLine();
 
             writer.WriteLine("{");

@@ -93,7 +93,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public Action<ConnectionContext, SslServerAuthenticationOptions>? OnAuthenticate { get; set; }
 
         /// <summary>
-        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite. Defaults to 10 seconds.
+        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive
+        /// or <see cref="Timeout.InfiniteTimeSpan"/>. Defaults to 10 seconds.
         /// </summary>
         public TimeSpan HandshakeTimeout
         {

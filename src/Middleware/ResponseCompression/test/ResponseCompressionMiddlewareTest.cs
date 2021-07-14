@@ -1326,7 +1326,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
         private class NoSyncWrapperStream : Stream
         {
-            private Stream _body;
+            private readonly Stream _body;
 
             public NoSyncWrapperStream(Stream body)
             {

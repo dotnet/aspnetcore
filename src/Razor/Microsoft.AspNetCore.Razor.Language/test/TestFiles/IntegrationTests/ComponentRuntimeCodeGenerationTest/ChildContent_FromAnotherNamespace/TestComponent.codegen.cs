@@ -29,15 +29,13 @@ using AnotherTest;
             __builder.AddMarkupContent(3, "\r\n");
             __builder.OpenComponent<AnotherTest.FooterComponent>(4);
             __builder.AddAttribute(5, "Footer", (Microsoft.AspNetCore.Components.RenderFragment<System.DateTime>)((context) => (__builder2) => {
-                __builder2.AddContent(6, 
 #nullable restore
-#line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
-             context
+#line (7,14)-(7,21) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(6, context);
 
 #line default
 #line hidden
 #nullable disable
-                );
             }
             ));
             __builder.CloseComponent();
@@ -51,15 +49,13 @@ using AnotherTest;
             __builder.AddMarkupContent(11, "\r\n");
             __builder.OpenComponent<AnotherTest.FooterComponent>(12);
             __builder.AddAttribute(13, "Footer", (Microsoft.AspNetCore.Components.RenderFragment<System.DateTime>)((context) => (__builder2) => {
-                __builder2.AddContent(14, 
 #nullable restore
-#line 13 "x:\dir\subdir\Test\TestComponent.cshtml"
-             context
+#line (13,14)-(13,21) 26 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(14, context);
 
 #line default
 #line hidden
 #nullable disable
-                );
             }
             ));
             __builder.CloseComponent();

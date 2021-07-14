@@ -8,10 +8,10 @@
       "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
       "src\\Http\\Authentication.Abstractions\\src\\Microsoft.AspNetCore.Authentication.Abstractions.csproj",
       "src\\Http\\Authentication.Core\\src\\Microsoft.AspNetCore.Authentication.Core.csproj",
+      "src\\Http\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
-      "src\\Http\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
@@ -25,8 +25,8 @@
       "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
       "src\\Servers\\HttpSys\\test\\FunctionalTests\\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj",
       "src\\Servers\\HttpSys\\test\\Tests\\Microsoft.AspNetCore.Server.HttpSys.Tests.csproj",
-      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
+      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }

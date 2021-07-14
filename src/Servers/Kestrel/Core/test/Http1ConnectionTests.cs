@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly MemoryPool<byte> _pipelineFactory;
         private SequencePosition _consumed;
         private SequencePosition _examined;
-        private Mock<ITimeoutControl> _timeoutControl;
+        private readonly Mock<ITimeoutControl> _timeoutControl;
 
         public Http1ConnectionTests()
         {
@@ -1160,7 +1160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class RequestHeadersWrapper : IHeaderDictionary
         {
-            IHeaderDictionary _innerHeaders;
+            readonly IHeaderDictionary _innerHeaders;
 
             public RequestHeadersWrapper(IHeaderDictionary headers)
             {

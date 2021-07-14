@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressMetadataAttributes: false,
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false,
-                omitMinimizedComponentAttributeValues: false);
+                omitMinimizedComponentAttributeValues: false,
+                useEnhancedLinePragma: true);
         }
 
         public static RazorCodeGenerationOptions CreateDesignTimeDefault()
@@ -32,7 +33,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressMetadataAttributes: true,
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false,
-                omitMinimizedComponentAttributeValues: false);
+                omitMinimizedComponentAttributeValues: false,
+                useEnhancedLinePragma: true);
         }
 
         public static RazorCodeGenerationOptions Create(Action<RazorCodeGenerationOptionsBuilder> configure)
@@ -130,5 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Gets a value that determines if the components code writer may omit values for minimized attributes.
         /// </summary>
         public virtual bool OmitMinimizedComponentAttributeValues { get; }
+
+        public virtual bool UseEnhancedLinePragma { get; }
     }
 }

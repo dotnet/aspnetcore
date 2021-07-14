@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal class SafeNativeOverlapped : SafeHandle
     {
         internal static readonly SafeNativeOverlapped Zero = new SafeNativeOverlapped();
-        private ThreadPoolBoundHandle? _boundHandle;
+        private readonly ThreadPoolBoundHandle? _boundHandle;
 
         internal SafeNativeOverlapped()
             : base(IntPtr.Zero, true)

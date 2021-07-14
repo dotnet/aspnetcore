@@ -3,7 +3,7 @@
   <Sdk Name="Microsoft.DotNet.PackageValidation" Version="$(MicrosoftDotNetPackageValidationVersion)" />
 
   <PropertyGroup>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
 
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict;nullablePublicOnly</Features>

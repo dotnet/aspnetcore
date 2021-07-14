@@ -5,9 +5,6 @@ using System;
 using System.IO;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -259,34 +256,39 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
         {
-            // HttpsOptionsCallback is an internal delegate that is the ServerOptionsSelectionCallback, a ConnectionContext, and the ClientCertificateMode.
-            // Given that ConnectionContext will eventually be replaced by System.Net.Connections, it doesn't make much sense to make the HttpsOptionsCallback delegate public.
-            return listenOptions.UseHttps(GetTlsOptionsAsync, state, handshakeTimeout);
-
-            async ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> GetTlsOptionsAsync(
-                ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+            return listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
             {
-                var tlsOptions = await serverOptionsSelectionCallback(stream, clientHelloInfo, state, cancellationToken);
-                return new (tlsOptions, ClientCertificateMode.DelayCertificate);
-            }
+                OnConnection = context => serverOptionsSelectionCallback(context.SslStream, context.ClientHelloInfo, context.State, context.CancellationToken),
+                HandshakeTimeout = handshakeTimeout,
+                OnConnectionState = state,
+            });
         }
 
         /// <summary>
-        /// Configure Kestrel to use HTTPS.
+        /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+        /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
         /// </summary>
         /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
-        /// <param name="httpsOptionsCallback">Callback to configure HTTPS options.</param>
-        /// <param name="state">State for the <paramref name="httpsOptionsCallback"/>.</param>
-        /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
+        /// <param name="callbackOptions">Options for a per connection callback.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout)
+        public static ListenOptions UseHttps(this ListenOptions listenOptions, TlsHandshakeCallbackOptions callbackOptions)
         {
+            if (callbackOptions is null)
+            {
+                throw new ArgumentNullException(nameof(callbackOptions));
+            }
+
+            if (callbackOptions.OnConnection is null)
+            {
+                throw new ArgumentException($"{nameof(TlsHandshakeCallbackOptions.OnConnection)} must not be null.");
+            }
+
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
             listenOptions.IsTls = true;
             listenOptions.Use(next =>
             {
-                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, handshakeTimeout, loggerFactory);
+                var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory);
                 return middleware.OnConnectionAsync;
             });
 

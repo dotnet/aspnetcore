@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     public class TestableHtmlGenerator : DefaultHtmlGenerator
     {
-        private IDictionary<string, object> _validationAttributes;
+        private readonly IDictionary<string, object> _validationAttributes;
 
         public TestableHtmlGenerator(IModelMetadataProvider metadataProvider)
             : this(metadataProvider, Mock.Of<IUrlHelper>())

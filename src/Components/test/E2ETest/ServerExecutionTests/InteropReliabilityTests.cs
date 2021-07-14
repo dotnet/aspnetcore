@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        protected async override Task InitializeAsync()
+        protected override async Task InitializeAsync()
         {
             var rootUri = ServerFixture.RootUri;
             await ConnectAutomaticallyAndWait(new Uri(rootUri, "/subdir"));

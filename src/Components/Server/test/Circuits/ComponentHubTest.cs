@@ -1,26 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.JSInterop;
-using System.Security.Claims;
 using Moq;
 using Xunit;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -78,10 +74,17 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             var (mockClientProxy, hub) = InitializeComponentHub();
 
-            await hub.DispatchBrowserEvent("", "");
+            await hub.DispatchBrowserEvent(GetJsonElement());
 
             var errorMessage = "Circuit not initialized.";
             mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
+
+            static JsonElement GetJsonElement()
+            {
+                var utf8JsonBytes = JsonSerializer.SerializeToUtf8Bytes(new object[2]);
+                var jsonReader = new Utf8JsonReader(utf8JsonBytes);
+                return JsonElement.ParseValue(ref jsonReader);
+            }
         }
 
         [Fact]

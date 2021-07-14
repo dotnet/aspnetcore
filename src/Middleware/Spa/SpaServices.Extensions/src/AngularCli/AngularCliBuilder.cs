@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     [Obsolete("Prerendering is no longer supported out of box")]
     public class AngularCliBuilder : ISpaPrerendererBuilder
     {
-        private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
+        private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
 
         private readonly string _scriptName;
 

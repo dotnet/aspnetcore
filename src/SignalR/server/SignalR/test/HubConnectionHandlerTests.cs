@@ -18,6 +18,7 @@ using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -2249,6 +2250,48 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        private class TestConnectionLifetimeNotification : IConnectionLifetimeNotificationFeature
+        {
+            private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+            public CancellationToken ConnectionClosedRequested { get => _cts.Token; set => throw new NotImplementedException(); }
+
+            public void RequestClose()
+            {
+                _cts.Cancel();
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionLifetimeNotificationClosesConnectionWithReconnectAllowed()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    client.Connection.Features.Set<IConnectionLifetimeNotificationFeature>(new TestConnectionLifetimeNotification());
+
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.DefaultTimeout();
+
+                    client.Connection.Features.Get<IConnectionLifetimeNotificationFeature>().RequestClose();
+
+                    var close = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+
+                    Assert.True(close.AllowReconnect);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.DefaultTimeout();
+                }
+            }
+        }
+
         private class TestAuthHandler : IAuthorizationHandler
         {
             public Task HandleAsync(AuthorizationHandlerContext context)
@@ -2847,7 +2890,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             private readonly PipeReader _originalPipeReader;
             private TaskCompletionSource _waitForRead;
-            private object _lock = new object();
+            private readonly object _lock = new object();
 
             public PipeReaderWrapper(PipeReader pipeReader)
             {
@@ -4438,6 +4481,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task CanSendThroughIHubContext()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using var client = new TestClient();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+                IHubContext context = (IHubContext)serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
+                await context.Clients.All.SendAsync("Send", "test");
+
+                var message = await client.ReadAsync().DefaultTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(message);
+
+                Assert.Single(invocation.Arguments);
+                Assert.Equal("test", invocation.Arguments[0]);
+                Assert.Equal("Send", invocation.Target);
+            }
+        }
+
+        [Fact]
         public async Task ConnectionCloseCleansUploadStreams()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
@@ -4501,33 +4571,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task CanSendThroughIHubContext()
-        {
-            using (StartVerifiableLog())
-            {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-                using var client = new TestClient();
-
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                // Wait for a connection, or for the endpoint to fail.
-                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
-
-                IHubContext context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
-                await context.Clients.All.SendAsync("Send", "test");
-
-                var message = await client.ReadAsync().DefaultTimeout();
-                var invocation = Assert.IsType<InvocationMessage>(message);
-
-                Assert.Single(invocation.Arguments);
-                Assert.Equal("test", invocation.Arguments[0]);
-                Assert.Equal("Send", invocation.Target);
-            }
-        }
-
-        [Fact]
         public async Task CanSendThroughIHubContextBaseHub()
         {
             using (StartVerifiableLog())
@@ -4557,7 +4600,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;
-            private IServiceProvider _serviceProvider;
+            private readonly IServiceProvider _serviceProvider;
             public TaskCompletionSource ReleaseTask = new TaskCompletionSource();
             public TaskCompletionSource CreateTask = new TaskCompletionSource();
 

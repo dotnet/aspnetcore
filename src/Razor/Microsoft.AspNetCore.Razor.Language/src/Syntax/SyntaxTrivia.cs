@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public string Text => Green.Text;
 
-        internal override sealed SyntaxNode GetCachedSlot(int index)
+        internal sealed override SyntaxNode GetCachedSlot(int index)
         {
             throw new InvalidOperationException();
         }
 
-        internal override sealed SyntaxNode GetNodeSlot(int slot)
+        internal sealed override SyntaxNode GetNodeSlot(int slot)
         {
             throw new InvalidOperationException();
         }

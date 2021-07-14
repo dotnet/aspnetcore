@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     internal class IntermediateNodeFormatterBase : IntermediateNodeFormatter
     {
         private string _content;
-        private Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.Ordinal);
 
         protected FormatterContentMode ContentMode { get; set; }
 

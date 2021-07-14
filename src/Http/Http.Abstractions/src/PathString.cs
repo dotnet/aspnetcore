@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Abstractions;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.Http
     [TypeConverter(typeof(PathStringConverter))]
     public readonly struct PathString : IEquatable<PathString>
     {
+        internal const int StackAllocThreshold = 128;
+
         /// <summary>
         /// Represents the empty path. This field is read-only.
         /// </summary>
@@ -172,8 +175,16 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The resulting PathString</returns>
         public static PathString FromUriComponent(string uriComponent)
         {
-            // REVIEW: what is the exactly correct thing to do?
-            return new PathString(Uri.UnescapeDataString(uriComponent));
+            int position = uriComponent.IndexOf('%');
+            if (position == -1)
+            {
+                return new PathString(uriComponent);
+            }
+            Span<char> pathBuffer = uriComponent.Length <= StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length];
+            uriComponent.CopyTo(pathBuffer);
+            var length = UrlDecoder.DecodeInPlace(pathBuffer.Slice(position, uriComponent.Length - position));
+            pathBuffer = pathBuffer.Slice(0, position + length);
+            return new PathString(pathBuffer.ToString());
         }
 
         /// <summary>
@@ -187,9 +198,12 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(uri));
             }
-
-            // REVIEW: what is the exactly correct thing to do?
-            return new PathString("/" + uri.GetComponents(UriComponents.Path, UriFormat.Unescaped));
+            var uriComponent = uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
+            Span<char> pathBuffer = uriComponent.Length < StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length + 1];
+            pathBuffer[0] = '/';
+            var length = UrlDecoder.DecodeRequestLine(uriComponent.AsSpan(), pathBuffer.Slice(1));
+            pathBuffer = pathBuffer.Slice(0, length + 1);
+            return new PathString(pathBuffer.ToString());
         }
 
         /// <summary>
@@ -460,18 +474,25 @@ namespace Microsoft.AspNetCore.Http
 
     internal sealed class PathStringConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
             => sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
             => value is string @string
             ? PathString.ConvertFromString(@string)
             : base.ConvertFrom(context, culture, value);
 
-        public override object ConvertTo(ITypeDescriptorContext context,
-           CultureInfo culture, object value, Type destinationType)
-            => destinationType == typeof(string)
-            ? value.ToString() ?? string.Empty
-            : base.ConvertTo(context, culture, value, destinationType);
+        public override object? ConvertTo(ITypeDescriptorContext? context,
+           CultureInfo? culture, object? value, Type destinationType)
+        {
+            if (destinationType == null)
+            {
+                throw new ArgumentNullException(nameof(destinationType));
+            }
+
+            return destinationType == typeof(string)
+                ? value?.ToString() ?? string.Empty
+                : base.ConvertTo(context, culture, value, destinationType);
+        }
     }
 }

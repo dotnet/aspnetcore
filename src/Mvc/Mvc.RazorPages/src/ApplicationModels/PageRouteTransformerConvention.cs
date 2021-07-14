@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// </summary>
     public class PageRouteTransformerConvention : IPageRouteModelConvention
     {
-        private IOutboundParameterTransformer _parameterTransformer;
+        private readonly IOutboundParameterTransformer _parameterTransformer;
 
         /// <summary>
         /// Creates a new instance of <see cref="PageRouteTransformerConvention"/> with the specified <see cref="IOutboundParameterTransformer"/>.

@@ -12,7 +12,7 @@ namespace Microsoft.JSInterop.Infrastructure
 {
     public class DotNetDispatcherTest
     {
-        private readonly static string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
+        private static readonly string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
 
         [Fact]
         public void CannotInvokeWithEmptyAssemblyName()

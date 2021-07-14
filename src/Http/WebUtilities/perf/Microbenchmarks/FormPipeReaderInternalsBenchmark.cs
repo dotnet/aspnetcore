@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Microbenchmarks
     /// </summary>
     public class FormPipeReaderInternalsBenchmark
     {
-        private byte[] _singleUtf8 = Encoding.UTF8.GetBytes("foo=bar&baz=boo&haha=hehe&lol=temp");
-        private byte[] _firstUtf8 = Encoding.UTF8.GetBytes("foo=bar&baz=bo");
-        private byte[] _secondUtf8 = Encoding.UTF8.GetBytes("o&haha=hehe&lol=temp");
+        private readonly byte[] _singleUtf8 = Encoding.UTF8.GetBytes("foo=bar&baz=boo&haha=hehe&lol=temp");
+        private readonly byte[] _firstUtf8 = Encoding.UTF8.GetBytes("foo=bar&baz=bo");
+        private readonly byte[] _secondUtf8 = Encoding.UTF8.GetBytes("o&haha=hehe&lol=temp");
         private FormPipeReader _formPipeReader;
 
         [IterationSetup]

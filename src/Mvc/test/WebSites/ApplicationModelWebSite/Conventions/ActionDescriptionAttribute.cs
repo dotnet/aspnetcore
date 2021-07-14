@@ -9,7 +9,7 @@ namespace ApplicationModelWebSite
 {
     public class ActionDescriptionAttribute : Attribute, IActionModelConvention
     {
-        private object _value;
+        private readonly object _value;
 
         public ActionDescriptionAttribute(object value)
         {

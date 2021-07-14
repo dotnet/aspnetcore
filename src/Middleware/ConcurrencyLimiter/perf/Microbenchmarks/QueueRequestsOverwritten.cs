@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
     public class QueueRequestsOverwritten
     {
         private const int _numRejects = 5000;
-        private int _queueLength = 20;
+        private readonly int _queueLength = 20;
         private int _rejectionCount = 0;
-        private ManualResetEventSlim _mres = new ManualResetEventSlim();
+        private readonly ManualResetEventSlim _mres = new ManualResetEventSlim();
 
         private ConcurrencyLimiterMiddleware _middlewareQueue;
         private ConcurrencyLimiterMiddleware _middlewareStack;

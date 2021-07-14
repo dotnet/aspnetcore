@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsMultipleResponseFormatsFromMetadata()
+        public void AddsMultipleResponseFormatsFromMetadataWithPoco()
         {
             var apiDescription = GetApiDescription(
                 [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
@@ -204,6 +205,34 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             var badRequestResponseFormat = Assert.Single(badRequestResponseType.ApiResponseFormats);
             Assert.Equal("application/json", badRequestResponseFormat.MediaType);
+        }
+
+        [Fact]
+        public void AddsMultipleResponseFormatsFromMetadataWithIResult()
+        {
+            var apiDescription = GetApiDescription(
+                [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
+                [ProducesResponseType(StatusCodes.Status400BadRequest)]
+                () => Results.Ok(new InferredJsonClass()));
+
+            Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+            var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+            Assert.Equal(201, createdResponseType.StatusCode);
+            Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+            Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata.ModelType);
+
+            var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+            Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+            var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+            Assert.Equal(400, badRequestResponseType.StatusCode);
+            Assert.Equal(typeof(void), badRequestResponseType.Type);
+            Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata.ModelType);
+
+            Assert.Empty(badRequestResponseType.ApiResponseFormats);
         }
 
         [Fact]
@@ -253,6 +282,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((ClaimsPrincipal user) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
         }
 

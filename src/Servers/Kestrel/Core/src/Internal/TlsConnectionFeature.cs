@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _sslStream = sslStream;
         }
 
-        internal ClientCertificateMode ClientCertificateMode { get; set; }
+        internal bool AllowDelayedClientCertificateNegotation { get; set; }
 
         public X509Certificate2? ClientCertificate
         {
@@ -46,7 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 return _clientCert ??= ConvertToX509Certificate2(_sslStream.RemoteCertificate);
             }
-            set => _clientCert = value;
+            set
+            {
+                _clientCert = value;
+                _clientCertTask = Task.FromResult(value);
+            }
         }
 
         // Used for event source, not part of any of the feature interfaces.
@@ -110,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             if (ClientCertificate != null
-                || ClientCertificateMode != ClientCertificateMode.DelayCertificate
+                || !AllowDelayedClientCertificateNegotation
                 // Delayed client cert negotiation is not allowed on HTTP/2 (or HTTP/3, but that's implemented elsewhere).
                 || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
             {

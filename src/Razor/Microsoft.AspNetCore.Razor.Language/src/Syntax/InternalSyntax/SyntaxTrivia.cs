@@ -47,12 +47,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return 0;
         }
 
-        protected override sealed int GetSlotCount()
+        protected sealed override int GetSlotCount()
         {
             return 0;
         }
 
-        internal override sealed GreenNode GetSlot(int index)
+        internal sealed override GreenNode GetSlot(int index)
         {
             throw new InvalidOperationException();
         }

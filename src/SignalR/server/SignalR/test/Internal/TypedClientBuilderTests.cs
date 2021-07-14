@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
 
         private struct SendContext
         {
-            private TaskCompletionSource _tcs;
+            private readonly TaskCompletionSource _tcs;
 
             public string Method { get; }
             public object[] Arguments { get; }

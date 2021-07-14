@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http
         // A-Z, a-z, 0-9, ., 
         // -, %, [, ], : 
         // Above for IPV6
-        private static bool[] SafeHostStringChars = {
+        private static readonly bool[] SafeHostStringChars = {
             false, false, false, false, false, false, false, false,     // 0x00 - 0x07
             false, false, false, false, false, false, false, false,     // 0x08 - 0x0F
             false, false, false, false, false, false, false, false,     // 0x10 - 0x17

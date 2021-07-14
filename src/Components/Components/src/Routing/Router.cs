@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
 
-            if  (HotReloadFeature.IsSupported)
+            if (TestableMetadataUpdate.IsSupported)
             {
                 HotReloadManager.OnDeltaApplied += ClearRouteCaches;
             }
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
-            if (HotReloadFeature.IsSupported)
+            if (TestableMetadataUpdate.IsSupported)
             {
                 HotReloadManager.OnDeltaApplied -= ClearRouteCaches;
             }

@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public string SkipReason { get; set; } = "Test cannot run on this operating system.";
 
-        static private OperatingSystems GetCurrentOS()
+        private static OperatingSystems GetCurrentOS()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

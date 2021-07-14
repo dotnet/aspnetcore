@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Http.Result
         public RouteValueDictionary RouteValues { get; }
 
         /// <inheritdoc />
-        protected override void OnFormatting(HttpContext context)
+        protected override void ConfigureResponseHeaders(HttpContext context)
         {
             var linkGenerator = context.RequestServices.GetRequiredService<LinkGenerator>();
             var url = linkGenerator.GetUriByAddress(

@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Http
                     return StringValues.Empty;
                 }
 
-                if (TryGetValue(key, out StringValues value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Http
         public bool Contains(KeyValuePair<string, StringValues> item)
         {
             if (Store == null ||
-                !Store.TryGetValue(item.Key, out StringValues value) ||
+                !Store.TryGetValue(item.Key, out var value) ||
                 !StringValues.Equals(value, item.Value))
             {
                 return false;
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // Do NOT make this readonly, or MoveNext will not work
             private Dictionary<string, StringValues>.Enumerator _dictionaryEnumerator;
-            private bool _notEmpty;
+            private readonly bool _notEmpty;
 
             internal Enumerator(Dictionary<string, StringValues>.Enumerator dictionaryEnumerator)
             {

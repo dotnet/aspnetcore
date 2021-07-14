@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class HttpContextAccessor : IHttpContextAccessor
     {
-        private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
+        private static readonly AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
         /// <inheritdoc/>
         public HttpContext? HttpContext

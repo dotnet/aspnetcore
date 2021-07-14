@@ -10,7 +10,7 @@ namespace Microsoft.Net.Http.Headers
     {
         internal delegate int GetParsedValueLengthDelegate(StringSegment value, int startIndex, out T? parsedValue);
 
-        private GetParsedValueLengthDelegate _getParsedValueLength;
+        private readonly GetParsedValueLengthDelegate _getParsedValueLength;
 
         internal GenericHeaderParser(bool supportsMultipleValues, GetParsedValueLengthDelegate getParsedValueLength)
             : base(supportsMultipleValues)
