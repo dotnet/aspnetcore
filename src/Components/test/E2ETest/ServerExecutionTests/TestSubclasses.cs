@@ -115,4 +115,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
     }
+
+    public class ServerDelegateEventBindingTest : DelegateEventBindingTest
+    {
+        public ServerDelegateEventBindingTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
+
+    public class ServerTwoWayBindingTest : TwoWayBindingTest
+    {
+        public ServerTwoWayBindingTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
 }

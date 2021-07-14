@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var browserDescriptor = new WebEventDescriptor()
             {
                 BrowserRendererId = 0,
-                EventHandlerId = 1,
+                EventHandlerId = 99999,
                 EventName = "click",
             };
 
@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains(
                 Logs,
                 e => e.EventId.Name == "DispatchEventFailedToDispatchEvent" && e.LogLevel == LogLevel.Debug &&
-                     e.Exception is ArgumentException ae && ae.Message.Contains("There is no event handler associated with this event. EventId: '1'."));
+                     e.Exception is ArgumentException ae && ae.Message.Contains("There is no event handler associated with this event. EventId: '99999'."));
 
             // Taking any other action will fail because the circuit is disposed.
             await Client.ExpectCircuitErrorAndDisconnect(async () =>

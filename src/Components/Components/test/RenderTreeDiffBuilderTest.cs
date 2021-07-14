@@ -1258,6 +1258,199 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void AttributeDiff_WithClosure_SameValue()
+        {
+            // Arrange
+            var i = 1;
+
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var j = i;
+                builder.OpenElement(0, "My element");
+                builder.AddAttribute(1, "attr1", (Action)(() => Console.WriteLine(j)));
+                builder.CloseElement();
+            }
+
+            BuildRenderTree(oldTree);
+            BuildRenderTree(newTree);
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Empty(result.Edits);
+        }
+
+        [Fact]
+        public void AttributeDiff_WithClosure_DifferentValue()
+        {
+            // Arrange
+            var i = 1;
+
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var j = i;
+                builder.OpenElement(0, "My element");
+                builder.AddAttribute(1, "attr1", (Action)(() => Console.WriteLine(j)));
+                builder.CloseElement();
+            }
+
+            BuildRenderTree(oldTree);
+            i++;
+            BuildRenderTree(newTree);
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(
+                result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.SetAttribute, 0));
+        }
+
+        [Fact]
+        public void AttributeDiff_WithTwoClosures_SameValue()
+        {
+            // Arrange
+            var i = 1;
+
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var j = i;
+                builder.OpenElement(0, "My element");
+                builder.AddAttribute(1, "attr1", (Action)(() => Console.WriteLine(j)));
+                builder.AddAttribute(1, "attr2", (Action)(() => Console.WriteLine(j)));
+                builder.CloseElement();
+            }
+
+            BuildRenderTree(oldTree);
+            BuildRenderTree(newTree);
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Empty(result.Edits);
+        }
+
+        [Fact]
+        public void AttributeDiff_WithTwoClosures_DifferentValue()
+        {
+            // Arrange
+            var i = 1;
+
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var j = i;
+                builder.OpenElement(0, "My element");
+                builder.AddAttribute(1, "attr1", (Action)(() => Console.WriteLine(j)));
+                builder.AddAttribute(1, "attr2", (Action)(() => Console.WriteLine(j)));
+                builder.CloseElement();
+            }
+
+            BuildRenderTree(oldTree);
+            i++;
+            BuildRenderTree(newTree);
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(
+                result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.SetAttribute, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.SetAttribute, 0));
+        }
+
+        [Fact]
+        public void AttributeDiff_WithTwoClosures_DifferentValue_Constant()
+        {
+            // Arrange
+            var i = 1;
+            var c = 0;
+
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var j = i;
+                builder.OpenElement(0, "My element");
+                builder.AddAttribute(1, "attr1", (Action)(() => Console.WriteLine(j)));
+                builder.AddAttribute(1, "attr2", (Action)(() => Console.WriteLine(c)));
+                builder.CloseElement();
+            }
+
+            BuildRenderTree(oldTree);
+            i++;
+            BuildRenderTree(newTree);
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(
+                result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.SetAttribute, 0));
+        }
+
+        [Fact]
+        public void AttributeDiff_WithNestedClosure_SameValue()
+        {
+            // Arrange
+            var i = 1;
+
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var j = i;
+                builder.OpenElement(0, "My element");
+                builder.AddAttribute(1, "attr1", (Action)(() =>
+                {
+                    Action a = () => Console.WriteLine(j);
+                    a();
+                }));
+                builder.CloseElement();
+            }
+
+            BuildRenderTree(oldTree);
+            BuildRenderTree(newTree);
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Empty(result.Edits);
+        }
+
+        [Fact]
+        public void AttributeDiff_WithNestedClosure_DifferentValue()
+        {
+            // Arrange
+            var i = 1;
+
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var j = i;
+                builder.OpenElement(0, "My element");
+                builder.AddAttribute(1, "attr1", (Action)(() =>
+                {
+                    Action a = () => Console.WriteLine(j);
+                    a();
+                }));
+                builder.CloseElement();
+            }
+
+            BuildRenderTree(oldTree);
+            i++;
+            BuildRenderTree(newTree);
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(
+                result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.SetAttribute, 0));
+        }
+
+        [Fact]
         public void DiffsElementsHierarchically()
         {
             // Arrange

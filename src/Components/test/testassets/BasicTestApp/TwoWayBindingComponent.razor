@@ -1,0 +1,26 @@
+﻿<h3 id="two-way-binding">Two-way binding:</h3>
+
+<table>
+    @foreach (var item in items)
+    {
+        <tr>
+            <td><input id='@($"input-{item.Index}")' type="text" @bind-value="item.Name" />: <span id='@($"span-{item.Index}")' >@item.Name</span></td>
+        </tr>
+    }
+</table>
+<button id="addrow" @onclick="AddRow">Add Row</button>
+@code
+{
+    List<Something> items = new List<Something>();
+
+    void AddRow()
+    {
+        items.Add(new Something() { Index = items.Count, Name = "I'm a textbox inside a table row." });
+    }
+
+    public class Something
+    {
+        public int Index { get; set; }
+        public string Name { get; set; }
+    }
+}

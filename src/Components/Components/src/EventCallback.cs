@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -71,6 +72,32 @@ namespace Microsoft.AspNetCore.Components
         object? IEventCallback.UnpackForRenderTree()
         {
             return RequiresExplicitReceiver ? (object)this : Delegate;
+        }
+
+        internal static bool IsEquivalentForDiffing(ref EventCallback left, ref EventCallback right)
+        {           
+            if (left.Equals(right))
+            {
+                return true;
+            }
+
+            if (left.Delegate == null || right.Delegate == null)
+            {
+                return false;
+            }
+
+            // Normally an EventCallback is equal when its members are equal, i.e. Receiver and Delegate are equal.
+            // Now there is a special case, where the delegates can point to different closure instances but are equal anyway.
+            // We have to test for that. However, when the receivers differ (i.e. they point to a different component)
+            // and they are (or at least one is) explicit (i.e. they are not the same as the delegates targets,
+            // because then they could be closures again) we know that they are different.
+            if (left.Receiver != right.Receiver &&
+                (left.Receiver != left.Delegate!.Target || right.Receiver != right.Delegate!.Target))
+            {
+                return false;
+            }
+
+            return AttributeComparerForDiffing.IsEquivalentForDiffing(left.Delegate!, right.Delegate!);
         }
     }
 }

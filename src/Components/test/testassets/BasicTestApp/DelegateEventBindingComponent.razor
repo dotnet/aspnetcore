@@ -1,0 +1,31 @@
+﻿<h3 id="delegate-event-binding">On change:</h3>
+
+<table>
+    @foreach (var item in items)
+    {
+        <tr>
+            <td><input id='@($"input-{item.Index}")' type="text" value="@item.Name" @onchange='(e) => LastChangedValue = $"{item.Index}: {e.Value}"' /></td>
+        </tr>
+    }
+</table>
+<button id="addrow" @onclick="AddRow">Add Row</button>
+
+<div id="last-value">@LastChangedValue</div>
+
+@code
+{
+    List<Something> items = new List<Something>();
+
+    string LastChangedValue { get; set; }
+
+    void AddRow()
+    {
+        items.Add(new Something() { Index = items.Count, Name = "I'm a textbox inside a table row." });
+    }
+
+    public class Something
+    {
+        public int Index { get; set; }
+        public string Name { get; set; }
+    }
+}

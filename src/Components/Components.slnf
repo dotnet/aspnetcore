@@ -47,6 +47,7 @@
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",
       "src\\Components\\test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
+      "src\\Components\\test\\testassets\\LazyTestContentPackage\\LazyTestContentPackage.csproj",
       "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",

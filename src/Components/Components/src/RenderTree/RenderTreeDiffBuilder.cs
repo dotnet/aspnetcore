@@ -719,9 +719,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ref var oldFrame = ref oldTree[oldFrameIndex];
             ref var newFrame = ref newTree[newFrameIndex];
 
-            // Using Equals to account for string comparisons, nulls, etc.
-            var valueChanged = !Equals(oldFrame.AttributeValueField, newFrame.AttributeValueField);
-            if (valueChanged)
+            var isEquivalent = AttributeComparerForDiffing.IsEquivalentForDiffing(oldFrame.AttributeValueField, newFrame.AttributeValueField);
+
+            if (!isEquivalent)
             {
                 InitializeNewAttributeFrame(ref diffContext, ref newFrame);
                 var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
@@ -743,6 +743,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 newFrame = oldFrame;
             }
         }
+
 
         private static void InsertNewFrame(ref DiffContext diffContext, int newFrameIndex)
         {
