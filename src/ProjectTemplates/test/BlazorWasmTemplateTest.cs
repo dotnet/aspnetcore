@@ -121,12 +121,6 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", serverProject, migrationsResult));
             serverProject.AssertEmptyMigration("blazorwasm");
 
-            if (useLocalDb)
-            {
-                var dbUpdateResult = await serverProject.RunDotNetEfUpdateDatabaseAsync();
-                Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", serverProject, dbUpdateResult));
-            }
-
             return project;
         }
 
