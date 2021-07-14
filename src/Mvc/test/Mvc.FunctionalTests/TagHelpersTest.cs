@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Theory]
         [InlineData("Index")]
         [InlineData("About")]
+        [InlineData("GlobbingTagHelpers")]
         [InlineData("Help")]
         [InlineData("UnboundDynamicAttributes")]
         public async Task CanRenderViewsWithTagHelpers(string action)
@@ -61,11 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("GlobbingTagHelpers")]
         [InlineData("ViewComponentTagHelpers")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
-        public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action)
-            => CanRenderViewsWithTagHelpers(action);
+        public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action) => CanRenderViewsWithTagHelpers(action);
 
         [Fact]
         public async Task GivesCorrectCallstackForSyncronousCalls()

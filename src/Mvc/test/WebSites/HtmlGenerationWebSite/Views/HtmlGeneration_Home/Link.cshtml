@@ -10,13 +10,13 @@
     <link href="~/styles/site.css" rel="stylesheet" title="&lt;the title>" />
 
     <!-- Globbed link tag with existing file -->
-    <link asp-href-include="**/site.css" rel="stylesheet" title="&lt;the title>" />
+    <link asp-href-include="**/styles/site.css" rel="stylesheet" title="&lt;the title>" />
 
     <!-- Globbed link tag with comma separated pattern -->
     <link asp-href-include="~/styles/*.css, ~/styles/sub/*.css" rel="stylesheet" title="&lt;the title" />
 
     <!-- Globbed link tag with existing file and exclude -->
-    <link asp-href-include=" **/*.css" asp-href-exclude="**/site3*.css" rel="stylesheet" title='"the" title' />
+    <link asp-href-include=" **/styles/**/*.css" asp-href-exclude="**/site3*.css" rel="stylesheet" title='"the" title' />
 
     <!-- Globbed link tag missing include -->
     <link asp-href-exclude="**/site2.css" rel="stylesheet">
@@ -37,7 +37,7 @@
     <link href="~/styles/site.css" asp-href-include="**/site2.css" rel="stylesheet" />
 
     <!-- Globbed link tag with existing file and static href should dedupe -->
-    <link href="~/styles/site.css" asp-href-include="**/site.css" rel="stylesheet" />
+    <link href="~/styles/site.css" asp-href-include="**/styles/site.css" rel="stylesheet" />
 
     <!-- Fallback to static href -->
     <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
@@ -127,7 +127,7 @@
 
     <!-- Fallback to globbed href -->
     <link href="~/styles/site.min.css" rel="stylesheet" data-extra="test"
-          asp-fallback-href-include="**/site.css"
+          asp-fallback-href-include="**/styles/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
@@ -143,7 +143,7 @@
     <!-- Fallback to static and globbed href should dedupe -->
     <link href="~/styles/site.min.css" rel="stylesheet" data-extra="test"
           asp-fallback-href="~/styles/site.css"
-          asp-fallback-href-include="**/site.css"
+          asp-fallback-href-include="**/styles/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
@@ -151,7 +151,7 @@
     <!-- Fallback to static and globbed href with exclude -->
     <link href="~/styles/site.min.css" rel="stylesheet" data-extra="test"
           asp-fallback-href="~/styles/site.css"
-          asp-fallback-href-include="**/*.css"
+          asp-fallback-href-include="**/styles/**/*.css"
           asp-fallback-href-exclude="**/site3*.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
@@ -159,21 +159,21 @@
 
     <!-- Fallback from globbed href to globbed href -->
     <link asp-href-include="styles/site.min.css" rel="stylesheet" data-extra="test"
-          asp-fallback-href-include="**/site.css"
+          asp-fallback-href-include="**/styles/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
 
     <!-- Fallback from globbed href with exclude to globbed href -->
     <link asp-href-include="**/*.min.css" asp-href-exclude="**/site3.min.css" rel="stylesheet" data-extra="test"
-          asp-fallback-href-include="**/site.css"
+          asp-fallback-href-include="**/styles/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
 
     <!-- Fallback from globbed and static href to globbed href -->
     <link href="styles/site.min.css" asp-href-include="styles/site.css" rel="stylesheet" data-extra="test"
-          asp-fallback-href-include="**/site.css"
+          asp-fallback-href-include="**/styles/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
@@ -181,7 +181,7 @@
     <!-- Fallback from globbed and static href with exclude to globbed href -->
     <link href="styles/site.min.css" asp-href-include="**/*.min.css" asp-href-exclude="**/site3.min.css"
           rel="stylesheet" data-extra="test"
-          asp-fallback-href-include="**/site.css"
+          asp-fallback-href-include="**/styles/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden">
@@ -190,7 +190,7 @@
     <link href="styles/site.min.css" asp-href-include="**/*.min.css" asp-href-exclude="**/site3.min.css"
           rel="stylesheet" data-extra="test"
           asp-fallback-href="~/styles/site.css"
-          asp-fallback-href-include="**/*.css"
+          asp-fallback-href-include="**/styles/**/*.css"
           asp-fallback-href-exclude="**/site3*.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
@@ -232,7 +232,7 @@
     <link href="~/styles/site.css" rel="stylesheet" asp-append-version="true" />
 
     <!-- Globbed link tag with existing file and file version -->
-    <link asp-href-include="**/site.css" rel="stylesheet" asp-append-version="true" />
+    <link asp-href-include="**/styles/site.css" rel="stylesheet" asp-append-version="true" />
 
     <!-- Fallback with file version -->
     <link href="~/styles/site.min.css" rel="stylesheet" data-extra="test"
@@ -243,7 +243,7 @@
           asp-append-version="true">
 
     <!-- Globbed link tag with existing file, static href and file version -->
-    <link href="~/styles/site.css" asp-href-include="**/*.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/styles/site.css" asp-href-include="**/styles/**/*.css" rel="stylesheet" asp-append-version="true" />
 </head>
 <body>
 

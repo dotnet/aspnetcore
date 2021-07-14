@@ -51,7 +51,7 @@
     </script>
 
     <script src="~/blank.js"
-            asp-fallback-src-include="**/*.js"
+            asp-fallback-src-include="**/styles/**/*.js"
             asp-fallback-src-exclude="**/site3.js"
             asp-fallback-test="false">
         // Fallback to globbed src with exclude
@@ -104,7 +104,7 @@
     </script>
 
     <!-- Globbed script tag with existing file and exclude -->
-    <script asp-src-include="**/*.js" asp-src-exclude="**/site3.js">
+    <script asp-src-include="**/styles/**/*.js" asp-src-exclude="**/site3.js">
         // This comment shouldn't be emitted
     </script>
 
@@ -149,12 +149,12 @@
     </script>
 
     <!-- Globbed script tag with existing files and version -->
-    <script asp-src-include="**/*.js" asp-append-version="true">
+    <script asp-src-include="**/styles/**/*.js" asp-append-version="true">
         // This comment shouldn't be emitted
     </script>
 
     <!-- Globbed script tag with existing file, exclude and version -->
-    <script asp-src-include="**/*.js" asp-src-exclude="**/site3.js" asp-append-version="true">
+    <script asp-src-include="**/styles/**/*.js" asp-src-exclude="**/site3.js" asp-append-version="true">
         // This comment shouldn't be emitted
     </script>
 </body>

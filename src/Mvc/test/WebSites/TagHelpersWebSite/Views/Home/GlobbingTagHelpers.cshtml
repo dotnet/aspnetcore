@@ -10,10 +10,10 @@
     <!-- RazorClassLib folder wildcard -->
     <script asp-src-include="/_content/RazorPagesClassLibrary/**/file.js"></script>
     <!-- RazorClassLib deep wildcard -->
-    <script asp-src-include="/**/*.js"></script>
+    <script asp-src-include="/**/*.js" asp-src-exclude="/styles/**/*.js,/razorlib/*.js,/lib/**/*.js" ></script>
     <!-- RazorClassLib Exclude local -->
-    <script asp-src-exclude="/js/dist/*.js" asp-src-include="**/*.js"></script>
+    <script asp-src-exclude="/js/dist/*.js,/styles/**/*.js,/razorlib/*.js,/lib/**/*.js" asp-src-include="**/*.js"></script>
     <!-- local Exclude lib-->
-    <script asp-src-exclude="/_content/**/*.js" asp-src-include="**/*.js"></script>
+    <script asp-src-exclude="/_content/**/*.js,/styles/**/*.js,/razorlib/*.js,/lib/**/*.js" asp-src-include="**/*.js"></script>
 }
 Globbing
