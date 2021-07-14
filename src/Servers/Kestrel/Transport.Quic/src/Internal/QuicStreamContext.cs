@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public bool CanRead { get; private set; }
         public bool CanWrite { get; private set; }
 
-        public long StreamId => _stream.StreamId;
+        public long StreamId { get; private set; }
         public bool CanReuse { get; private set; }
 
         public void Initialize(QuicStream stream)
@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             CanRead = _stream.CanRead;
             CanWrite = _stream.CanWrite;
             Error = 0;
+            StreamId = _stream.StreamId;
             PoolExpirationTicks = 0;
 
             Transport = _originalTransport;
@@ -178,12 +179,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             catch (QuicStreamAbortedException ex)
             {
+                // Abort from peer.
                 _log.StreamAborted(this, ex);
 
                 // This could be ignored if _shutdownReason is already set.
                 error = new ConnectionResetException(ex.Message, ex);
 
                 _clientAbort = true;
+            }
+            catch (QuicOperationAbortedException ex)
+            {
+                // AbortRead has been called for the stream.
+                // Possibily might also get here from connection closing.
+                // System.Net.Quic exception handling not finalized.
+                error = ex;
             }
             catch (Exception ex)
             {
@@ -285,12 +294,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             catch (QuicStreamAbortedException ex)
             {
+                // Abort from peer.
                 _log.StreamAborted(this, ex);
 
                 // This could be ignored if _shutdownReason is already set.
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
 
                 _clientAbort = true;
+            }
+            catch (QuicOperationAbortedException ex)
+            {
+                // AbortWrite has been called for the stream.
+                // Possibily might also get here from connection closing.
+                // System.Net.Quic exception handling not finalized.
+
+                // TODO: Should this error be passed to the pipe?
+                unexpectedError = ex;
             }
             catch (Exception ex)
             {
@@ -384,7 +403,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                     _stream.Shutdown();
                 }
 
-                await _stream.ShutdownWriteCompleted();
+                try
+                {
+                    // TODO: Take cancellation token?
+                    await _stream.ShutdownCompleted();
+                }
+                catch (QuicOperationAbortedException)
+                {
+                    // AbortRead or AbortWrite has been called before
+                    // or during ShutdownCompleted.
+                }
             }
             catch (Exception ex)
             {
