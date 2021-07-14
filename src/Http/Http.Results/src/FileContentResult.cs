@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Result
         /// </summary>
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileContentResult(byte[] fileContents, string contentType)
+        public FileContentResult(byte[] fileContents, string? contentType)
             : base(contentType)
         {
             FileContents = fileContents;

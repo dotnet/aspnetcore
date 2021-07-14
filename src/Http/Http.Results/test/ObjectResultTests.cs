@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +14,24 @@ namespace Microsoft.AspNetCore.Http.Result
 {
     public class ObjectResultTests
     {
+        [Fact]
+        public async Task ObjectResult_ExecuteAsync_WithNullValue_Works()
+        {
+            // Arrange
+            var result = new ObjectResult(value: null, 411);
+
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = CreateServices(),
+            };
+
+            // Act
+            await result.ExecuteAsync(httpContext);
+
+            // Assert
+            Assert.Equal(411, httpContext.Response.StatusCode);
+        }
+
         [Fact]
         public async Task ObjectResult_ExecuteAsync_SetsStatusCode()
         {
