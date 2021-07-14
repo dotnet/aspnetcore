@@ -106,7 +106,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     return connection.send('OnLocationChanged', uri, intercepted);
   });
 
-  connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId));
+  connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId, false));
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', DotNet.jsCallDispatcher.endInvokeDotNetFromJS);
   connection.on('JS.ReceiveByteArray', DotNet.jsCallDispatcher.receiveByteArray);

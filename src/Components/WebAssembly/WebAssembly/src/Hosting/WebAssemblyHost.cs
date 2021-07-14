@@ -158,9 +158,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                     try
                     {
-                foreach (var rootComponent in rootComponents)
+                        foreach (var rootComponent in rootComponents)
                         {
-                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters, rootComponent.AppendContent);
                         }
 
                         initializationTcs.SetResult();

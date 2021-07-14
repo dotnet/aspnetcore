@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             ComponentType = componentType;
             Selector = selector;
             Parameters = ParameterView.Empty;
+            AppendContent = false;
         }
 
         /// <summary>
@@ -49,9 +50,27 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
         /// <param name="selector">The DOM element selector or registration id for the component.</param>
         /// <param name="parameters">The parameters to pass to the component.</param>
-        public RootComponentMapping([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters) : this(componentType, selector)
+        public RootComponentMapping([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters)
+            : this(componentType, selector)
         {
             Parameters = parameters;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="RootComponentMapping"/> with the provided <paramref name="componentType"/>
+        /// and <paramref name="selector"/>.
+        /// </summary>
+        /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
+        /// <param name="selector">The DOM element selector or registration id for the component.</param>
+        /// <param name="parameters">The parameters to pass to the component.</param>
+        /// <param name="appendContent">
+        /// If <c>true</c>, the child content of the root component will be appended to existing HTML content.
+        /// This is useful when treating the HTML <c>&lt;head&gt;</c> as a root component.
+        /// </param>
+        public RootComponentMapping([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters, bool appendContent)
+            : this(componentType, selector, parameters)
+        {
+            AppendContent = appendContent;
         }
 
         /// <summary>
@@ -69,5 +88,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// Gets the parameters to pass to the root component.
         /// </summary>
         public ParameterView Parameters { get; }
+
+        /// <summary>
+        /// Gets whether the child content of the root component will be appended to existing HTML content.
+        /// This is useful when treating the HTML <c>&lt;head&gt;</c> as a root component.
+        /// </summary>
+        public bool AppendContent { get; }
     }
 }

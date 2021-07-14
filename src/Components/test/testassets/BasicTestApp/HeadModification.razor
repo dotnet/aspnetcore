@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<HeadContent>
+    <title>@_title</title>
+    <meta id="meta-description" name="description" content="@_description">
+</HeadContent>
+
+<p>
+    Title:
+    <input id="input-title" type="text" @bind-value="_title" />
+</p>
+
+<p>
+    Description:
+    <input id="input-description" type="text" @bind-value="_description" />
+</p>
+
+<p>
+    Dynamic head content:
+
+    <select id="select-dynamic-head-content" @onchange=OnSelectedIndexChanged>
+        <option value="@(0)">None</option>
+        @for (int i = 1; i < 3; i++)
+        {
+            <option value="@i">@i</option>
+        }
+    </select>
+
+    @switch (_selectedIndex)
+    {
+        case 1:
+            <HeadContent>
+                <title>Overridden title 1</title>
+            </HeadContent>
+            break;
+        case 2:
+            <HeadContent>
+                <title>Overridden title 2</title>
+            </HeadContent>
+            break;
+        default:
+            break;
+    }
+</p>
+
+@code {
+    private string _title = "Modified title!";
+    private string _description = "Modified description!";
+
+    private int _selectedIndex;
+
+    private void OnSelectedIndexChanged(ChangeEventArgs e)
+    {
+        _selectedIndex = int.Parse(e.Value.ToString());
+    }
+}

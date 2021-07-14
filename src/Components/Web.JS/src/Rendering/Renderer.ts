@@ -11,16 +11,16 @@ interface BrowserRendererRegistry {
 const browserRenderers: BrowserRendererRegistry = {};
 let shouldResetScrollAfterNextBatch = false;
 
-export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number): void {
+export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number, appendContent: boolean): void {
   let browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
   }
 
-  browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement);
+  browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);
 }
 
-export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId?: number): void {
+export function attachRootComponentToElement(elementSelector: string, componentId: number, appendContent: boolean, browserRendererId?: number): void {
   const element = document.querySelector(elementSelector);
   if (!element) {
     throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
@@ -28,7 +28,7 @@ export function attachRootComponentToElement(elementSelector: string, componentI
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   // Only client-side Blazor supplies a browser renderer ID
-  attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId);
+  attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
 }
 
 export function getRendererer(browserRendererId: number) {

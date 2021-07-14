@@ -30,7 +30,7 @@ interface IBlazor {
     receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
     retrieveByteArray?: () => System_Object;
     getPersistedState?: () => System_String;
-    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any) => void;
+    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number,
       getId: (index) => number,

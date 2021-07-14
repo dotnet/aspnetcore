@@ -300,12 +300,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
             }
 
-            public bool Disposed { get; set; }
-
             protected override void Dispose(bool disposing)
             {
                 base.Dispose(disposing);
-                Disposed = true;
             }
         }
 

@@ -49,6 +49,9 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public bool IsRenderingOnMetadataUpdate => TestableMetadataUpdate.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
 
+        internal bool IsRendererDisposed => _renderer?.Disposed
+            ?? throw new InvalidOperationException("No renderer has been initialized.");
+
         /// <summary>
         /// Notifies the renderer that the component should be rendered.
         /// </summary>

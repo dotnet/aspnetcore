@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -21,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string ComponentParameterName = "params";
         private const string ComponentParameterPrefix = "param-";
         private const string ComponentTypeName = "type";
+        private const string ComponentOutputNameName = "output-name";
         private const string RenderModeName = "render-mode";
         private IDictionary<string, object> _parameters;
         private RenderMode? _renderMode;
@@ -45,6 +43,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
             set => _parameters = value;
         }
+
+        /// <summary>
+        /// Gets or sets the name used to identify this component in <c>&lt;prerender-output&gt;</c> elements.
+        /// </summary>
+        [HtmlAttributeName(ComponentOutputNameName)]
+        public string OutputName { get; set; }
 
         /// <summary>
         /// Gets or sets the component type. This value is required.
@@ -106,7 +110,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Reset the TagName. We don't want `component` to render.
             output.TagName = null;
-            output.Content.SetHtmlContent(result);
+
+            if (string.IsNullOrEmpty(OutputName))
+            {
+                output.Content.SetHtmlContent(result);
+            }
+            else
+            {
+                var componentContentStore = ComponentDeferredContentStore.GetOrCreateContentStore(ViewContext);
+                componentContentStore.Add(OutputName, result);
+                output.Content.SetHtmlContent(string.Empty);
+            }
         }
     }
 }

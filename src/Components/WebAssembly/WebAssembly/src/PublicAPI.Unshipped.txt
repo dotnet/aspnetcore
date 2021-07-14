@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.AppendContent.get -> bool
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.RootComponentMapping(System.Type! componentType, string! selector, Microsoft.AspNetCore.Components.ParameterView parameters, bool appendContent) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add(System.Type! componentType, string! selector, Microsoft.AspNetCore.Components.ParameterView parameters, bool appendContent) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add<TComponent>(string! selector, bool appendContent) -> void
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string! key].get -> string?
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
