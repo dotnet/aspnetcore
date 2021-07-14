@@ -195,7 +195,7 @@
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.8.0</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCssParserVersion>1.0.0-20200708.1</MicrosoftCssParserVersion>
-    <MicrosoftDotNetPackageValidationVersion>1.0.0-preview.7.21356.2</MicrosoftDotNetPackageValidationVersion>
+    <MicrosoftDotNetPackageValidationVersion>1.0.0-preview.7.21364.16</MicrosoftDotNetPackageValidationVersion>
     <MicrosoftIdentityModelLoggingVersion>6.10.0</MicrosoftIdentityModelLoggingVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>6.10.0</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
     <MicrosoftIdentityModelProtocolsWsFederationVersion>6.10.0</MicrosoftIdentityModelProtocolsWsFederationVersion>
