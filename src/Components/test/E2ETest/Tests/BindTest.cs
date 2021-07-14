@@ -611,6 +611,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // This tests what happens you put invalid (unconvertable) input in. This is separate from the
         // other tests because it requires type="text" - the other tests use type="number"
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34183")]
         public void CanBindTextbox_Decimal_InvalidInput()
         {
             var target = Browser.Exists(By.Id("textbox-decimal-invalid"));

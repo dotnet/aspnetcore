@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     /// </summary>
     internal class UvConnectRequest : UvRequest
     {
-        private readonly static LibuvFunctions.uv_connect_cb _uv_connect_cb = (req, status) => UvConnectCb(req, status);
+        private static readonly LibuvFunctions.uv_connect_cb _uv_connect_cb = (req, status) => UvConnectCb(req, status);
 
         private Action<UvConnectRequest, int, UvException, object> _callback;
         private object _state;

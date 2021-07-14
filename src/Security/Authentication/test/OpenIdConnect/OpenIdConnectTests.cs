@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     public class OpenIdConnectTests
     {
-        static string noncePrefix = "OpenIdConnect." + "Nonce.";
-        static string nonceDelimiter = ".";
+        static readonly string noncePrefix = "OpenIdConnect." + "Nonce.";
+        static readonly string nonceDelimiter = ".";
         const string DefaultHost = @"https://example.com";
 
         /// <summary>

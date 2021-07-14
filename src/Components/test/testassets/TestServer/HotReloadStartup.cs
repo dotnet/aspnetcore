@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +12,11 @@ namespace TestServer
 {
     public class HotReloadStartup
     {
+        public HotReloadStartup()
+        {
+            TestableMetadataUpdate.TestIsSupported = true;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();

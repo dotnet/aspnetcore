@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private string? _connectionId;
         private string? _traceIdentitfier;
         private X509Certificate2? _clientCert;
+        private Task<X509Certificate2?>? _clientCertTask;
         private ClaimsPrincipal? _user;
         private Stream _responseStream = default!;
         private PipeWriter? _pipeWriter;
@@ -318,15 +319,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (IsNotInitialized(Fields.ClientCertificate))
                 {
                     var method = Server.Options.ClientCertificateMethod;
-                    if (method == ClientCertificateMethod.AllowCertificate)
+                    if (method != ClientCertificateMethod.NoCertificate)
                     {
                         _clientCert = Request.ClientCertificate;
                     }
-                    else if (method == ClientCertificateMethod.AllowRenegotation)
-                    {
-                        _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync over async;
-                    }
-                    // else if (method == ClientCertificateMethod.NoCertificate) // No-op
 
                     SetInitialized(Fields.ClientCertificate);
                 }
@@ -335,29 +331,34 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set
             {
                 _clientCert = value;
+                _clientCertTask = Task.FromResult(value);
                 SetInitialized(Fields.ClientCertificate);
             }
         }
 
-        async Task<X509Certificate2?> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        Task<X509Certificate2?> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
-            if (IsNotInitialized(Fields.ClientCertificate))
+            if (_clientCertTask != null)
             {
-                var method = Server.Options.ClientCertificateMethod;
-                if (method != ClientCertificateMethod.NoCertificate)
-                {
-                    // Check if a cert was already available on the connection.
-                    _clientCert = Request.ClientCertificate;
-                }
-
-                if (_clientCert == null && method == ClientCertificateMethod.AllowRenegotation)
-                {
-                    _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
-                }
-
-                SetInitialized(Fields.ClientCertificate);
+                return _clientCertTask;
             }
-            return _clientCert;
+
+            var tlsFeature = (ITlsConnectionFeature)this;
+            var clientCert = tlsFeature.ClientCertificate; // Lazy initialized
+            if (clientCert != null
+                || Server.Options.ClientCertificateMethod != ClientCertificateMethod.AllowRenegotation
+                // Delayed client cert negotiation is not allowed on HTTP/2.
+                || Request.ProtocolVersion >= HttpVersion.Version20)
+            {
+                return _clientCertTask = Task.FromResult(clientCert);
+            }
+
+            return _clientCertTask = GetCertificateAsync(cancellationToken);
+
+            async Task<X509Certificate2?> GetCertificateAsync(CancellationToken cancellation)
+            {
+                return _clientCert = await Request.GetClientCertificateAsync(cancellation);
+            }
         }
 
         internal ITlsConnectionFeature? GetTlsConnectionFeature()

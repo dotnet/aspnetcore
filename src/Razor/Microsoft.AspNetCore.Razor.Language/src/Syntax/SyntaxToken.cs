@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public string Content => Green.Content;
 
-        internal override sealed SyntaxNode GetCachedSlot(int index)
+        internal sealed override SyntaxNode GetCachedSlot(int index)
         {
             throw new InvalidOperationException("Tokens can't have slots.");
         }
 
-        internal override sealed SyntaxNode GetNodeSlot(int slot)
+        internal sealed override SyntaxNode GetNodeSlot(int slot)
         {
             throw new InvalidOperationException("Tokens can't have slots.");
         }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Testing
     /// </remarks>
     public sealed class TestContext
     {
-        private Lazy<TestFileOutputContext> _files;
+        private readonly Lazy<TestFileOutputContext> _files;
 
         public TestContext(
             Type testClass,

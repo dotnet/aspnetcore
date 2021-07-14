@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #nullable disable
             WriteLiteral("    <p>This is item #");
 #nullable restore
-#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ImplicitExpression.cshtml"
-                Write(i);
+#line (2,23)-(2,24) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ImplicitExpression.cshtml"
+Write(i);
 
 #line default
 #line hidden

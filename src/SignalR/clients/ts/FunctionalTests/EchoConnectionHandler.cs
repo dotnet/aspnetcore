@@ -10,7 +10,7 @@ namespace FunctionalTests
 {
     public class EchoConnectionHandler : ConnectionHandler
     {
-        public async override Task OnConnectedAsync(ConnectionContext connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             var context = connection.GetHttpContext();
             // The 'withCredentials' tests wont send a cookie for cross-site requests

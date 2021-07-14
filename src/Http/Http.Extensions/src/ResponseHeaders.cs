@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         }
 
         /// <summary>
-        /// Gets or sets the <c>Last=Modified</c> header for an HTTP response.
+        /// Gets or sets the <c>Last-Modified</c> header for an HTTP response.
         /// </summary>
         public DateTimeOffset? LastModified
         {

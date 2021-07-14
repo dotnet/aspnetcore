@@ -30,6 +30,7 @@ namespace Microsoft.Net.Http.Headers
         private const string ModificationDateString = "modification-date";
         private const string ReadDateString = "read-date";
         private const string SizeString = "size";
+        private const int MaxStackAllocSizeBytes = 256;
         private static readonly char[] QuestionMark = new char[] { '?' };
         private static readonly char[] SingleQuote = new char[] { '\'' };
         private static readonly char[] EscapeChars = new char[] { '\\', '"' };
@@ -543,14 +544,17 @@ namespace Microsoft.Net.Http.Headers
 
         // Encode using MIME encoding
         // And adds surrounding quotes, Encoded data must always be quoted, the equals signs are invalid in tokens
+        [SkipLocalsInit]
         private string EncodeMimeWithQuotes(StringSegment input)
         {
             var requiredLength = MimePrefix.Length +
                 Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
                 MimeSuffix.Length;
-            Span<byte> buffer = requiredLength <= 256
-                ? (stackalloc byte[256]).Slice(0, requiredLength)
-                : new byte[requiredLength];
+            byte[]? bufferFromPool = null;
+            Span<byte> buffer = requiredLength <= MaxStackAllocSizeBytes
+                ? stackalloc byte[MaxStackAllocSizeBytes]
+                : bufferFromPool = ArrayPool<byte>.Shared.Rent(requiredLength);
+            buffer = buffer[..requiredLength];
 
             MimePrefix.CopyTo(buffer);
             var bufferContent = buffer.Slice(MimePrefix.Length);
@@ -560,7 +564,14 @@ namespace Microsoft.Net.Http.Headers
 
             MimeSuffix.CopyTo(bufferContent.Slice(base64ContentLength));
 
-            return Encoding.UTF8.GetString(buffer.Slice(0, MimePrefix.Length + base64ContentLength + MimeSuffix.Length));
+            var result = Encoding.UTF8.GetString(buffer.Slice(0, MimePrefix.Length + base64ContentLength + MimeSuffix.Length));
+
+            if (bufferFromPool is not null)
+            {
+                ArrayPool<byte>.Shared.Return(bufferFromPool);
+            }
+
+            return result;
         }
 
         // Attempt to decode MIME encoded strings
@@ -607,32 +618,60 @@ namespace Microsoft.Net.Http.Headers
 
         // Encode a string using RFC 5987 encoding
         // encoding'lang'PercentEncodedSpecials
+        [SkipLocalsInit]
         private static string Encode5987(StringSegment input)
         {
             var builder = new StringBuilder("UTF-8\'\'");
-            for (int i = 0; i < input.Length; i++)
+
+            var maxInputBytes = Encoding.UTF8.GetMaxByteCount(input.Length);
+            byte[]? bufferFromPool = null;
+            Span<byte> inputBytes = maxInputBytes <= MaxStackAllocSizeBytes
+                ? stackalloc byte[MaxStackAllocSizeBytes]
+                : bufferFromPool = ArrayPool<byte>.Shared.Rent(maxInputBytes);
+
+            var bytesWritten = Encoding.UTF8.GetBytes(input, inputBytes);
+            inputBytes = inputBytes[..bytesWritten];
+
+            int totalBytesConsumed = 0;
+            while (totalBytesConsumed < inputBytes.Length)
             {
-                var c = input[i];
-                // attr-char = ALPHA / DIGIT / "!" / "#" / "$" / "&" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
-                //      ; token except ( "*" / "'" / "%" )
-                if (c > 0x7F) // Encodes as multiple utf-8 bytes
+                if (inputBytes[totalBytesConsumed] <= 0x7F)
                 {
-                    var bytes = Encoding.UTF8.GetBytes(c.ToString());
-                    foreach (byte b in bytes)
+                    // This is an ASCII char. Let's handle it ourselves.
+
+                    char c = (char)inputBytes[totalBytesConsumed];
+                    if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
                     {
-                        HexEscape(builder, (char)b);
+                        HexEscape(builder, c);
                     }
-                }
-                else if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
-                {
-                    // ASCII - Only one encoded byte
-                    HexEscape(builder, c);
+                    else
+                    {
+                        builder.Append(c);
+                    }
+
+                    totalBytesConsumed++;
                 }
                 else
                 {
-                    builder.Append(c);
+                    // Non-ASCII, let's rely on Rune to decode it.
+
+                    Rune.DecodeFromUtf8(inputBytes.Slice(totalBytesConsumed), out Rune r, out int bytesConsumedForRune);
+                    Contract.Assert(!r.IsAscii, "We shouldn't have gotten here if the Rune is ASCII.");
+
+                    for (int i = 0; i < bytesConsumedForRune; i++)
+                    {
+                        HexEscape(builder, (char)inputBytes[totalBytesConsumed + i]);
+                    }
+
+                    totalBytesConsumed += bytesConsumedForRune;
                 }
             }
+
+            if (bufferFromPool is not null)
+            {
+                ArrayPool<byte>.Shared.Return(bufferFromPool);
+            }
+
             return builder.ToString();
         }
 

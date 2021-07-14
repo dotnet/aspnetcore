@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
 {
     internal readonly struct CascadingParameterState
     {
-        private readonly static ConcurrentDictionary<Type, ReflectedCascadingParameterInfo[]> _cachedInfos = new();
+        private static readonly ConcurrentDictionary<Type, ReflectedCascadingParameterInfo[]> _cachedInfos = new();
 
         public string LocalValueName { get; }
         public ICascadingValueComponent ValueSupplier { get; }

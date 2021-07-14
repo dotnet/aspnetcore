@@ -697,6 +697,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return;
             }
 
+            _state.AssertInConnectionLock();
+            // It's safe to access connectionState.UploadStreamToken as we still have the connection lock
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(connectionState.UploadStreamToken, cancellationToken);
+
             foreach (var kvp in readers)
             {
                 var reader = kvp.Value;
@@ -708,19 +712,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     _ = _sendIAsyncStreamItemsMethod
                         .MakeGenericMethod(reader.GetType().GetInterface("IAsyncEnumerable`1")!.GetGenericArguments())
-                        .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
+                        .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
                     continue;
                 }
                 _ = _sendStreamItemsMethod
                     .MakeGenericMethod(reader.GetType().GetGenericArguments())
-                    .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
+                    .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
             }
         }
 
         // this is called via reflection using the `_sendStreamItems` field
-        private Task SendStreamItems<T>(ConnectionState connectionState, string streamId, ChannelReader<T> reader, CancellationToken token)
+        private Task SendStreamItems<T>(ConnectionState connectionState, string streamId, ChannelReader<T> reader, CancellationTokenSource tokenSource)
         {
-            async Task ReadChannelStream(CancellationTokenSource tokenSource)
+            async Task ReadChannelStream()
             {
                 while (await reader.WaitToReadAsync(tokenSource.Token))
                 {
@@ -732,13 +736,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(connectionState, streamId, token, ReadChannelStream);
+            return CommonStreaming(connectionState, streamId, ReadChannelStream);
         }
 
         // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
-        private Task SendIAsyncEnumerableStreamItems<T>(ConnectionState connectionState, string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
+        private Task SendIAsyncEnumerableStreamItems<T>(ConnectionState connectionState, string streamId, IAsyncEnumerable<T> stream, CancellationTokenSource tokenSource)
         {
-            async Task ReadAsyncEnumerableStream(CancellationTokenSource tokenSource)
+            async Task ReadAsyncEnumerableStream()
             {
                 var streamValues = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
 
@@ -749,25 +753,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(connectionState, streamId, token, ReadAsyncEnumerableStream);
+            return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream);
         }
 
-        private async Task CommonStreaming(ConnectionState connectionState, string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
+        private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream)
         {
-            // It's safe to access connectionState.UploadStreamToken as we still have the connection lock
-            _state.AssertInConnectionLock();
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(connectionState.UploadStreamToken, token);
-
             Log.StartingStream(_logger, streamId);
             string? responseError = null;
             try
             {
-                await createAndConsumeStream(cts);
+                await createAndConsumeStream();
             }
             catch (OperationCanceledException)
             {
                 Log.CancelingStream(_logger, streamId);
-                responseError = $"Stream canceled by client.";
+                responseError = "Stream canceled by client.";
+            }
+            catch (Exception ex)
+            {
+                Log.ErroredStream(_logger, streamId, ex);
+                responseError = $"Stream errored by client: '{ex}'";
             }
 
             Log.CompletingStream(_logger, streamId);

@@ -28,9 +28,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class KestrelServerOptions
     {
         // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
-        internal static readonly Func<string, Encoding?> DefaultRequestHeaderEncodingSelector = _ => null;
+        internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
-        private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultRequestHeaderEncodingSelector;
+        private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
+
+        private Func<string, Encoding?> _responseHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
@@ -66,6 +68,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public bool AllowSynchronousIO { get; set; }
 
+        /// Gets or sets a value that controls how the `:scheme` field for HTTP/2 and HTTP/3 requests is validated.
+        /// <para>
+        /// If <c>false</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests must exactly match the transport (e.g. https for TLS
+        /// connections, http for non-TLS). If <c>true</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests can be set to alternate values
+        /// and this will be reflected by `HttpRequest.Scheme`. The Scheme must still be valid according to
+        /// https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1. Only enable this when working with a trusted proxy. This can be used in
+        /// scenarios such as proxies converting from alternate protocols. See https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3.
+        /// Applications that enable this should validate an expected scheme is provided before using it.
+        /// </para>
+        /// <remarks>
+        /// Defaults to <c>false</c>.
+        /// </remarks>
+        public bool AllowAlternateSchemes { get; set; }
+
         /// <summary>
         /// Gets or sets a value that controls whether the string values materialized
         /// will be reused across requests; if they match, or if the strings will always be reallocated.
@@ -91,6 +107,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             get => _requestHeaderEncodingSelector;
             set => _requestHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// Gets or sets a callback that returns the <see cref="Encoding"/> to encode the value for the specified response header
+        /// or trailer name, or <see langword="null"/> to use the default <see cref="ASCIIEncoding"/>.
+        /// </summary>
+        public Func<string, Encoding?> ResponseHeaderEncodingSelector
+        {
+            get => _responseHeaderEncodingSelector;
+            set => _responseHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>

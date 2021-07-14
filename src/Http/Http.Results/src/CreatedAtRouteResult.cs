@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Http.Result
         public RouteValueDictionary? RouteValues { get; set; }
 
         /// <inheritdoc />
-        protected override void OnFormatting(HttpContext context)
+        protected override void ConfigureResponseHeaders(HttpContext context)
         {
             var linkGenerator = context.RequestServices.GetRequiredService<LinkGenerator>();
             var url = linkGenerator.GetUriByRouteValues(

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Tests.TestFiles.ComponentInt
 {
     /*MMBaseClass*/class UsesRendererTypesInDeclarations : Renderer
     {
-        private Renderer /*MMField*/_field = null;
+        private readonly Renderer /*MMField*/_field = null;
 
         public UsesRendererTypesInDeclarations()
             /*MMInvocation*/: base(null, null)

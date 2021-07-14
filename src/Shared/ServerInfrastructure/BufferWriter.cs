@@ -14,7 +14,7 @@ namespace System.Buffers
         /// <summary>
         /// The underlying <see cref="IBufferWriter{T}"/>.
         /// </summary>
-        private T _output;
+        private readonly T _output;
 
         /// <summary>
         /// The result of the last call to <see cref="IBufferWriter{T}.GetSpan(int)"/>, less any bytes already "consumed" with <see cref="Advance(int)"/>.

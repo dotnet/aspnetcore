@@ -40,7 +40,8 @@ Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.init -> void
 Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions() -> void
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.init -> void
-Microsoft.AspNetCore.Components.RenderHandle.IsHotReloading.get -> bool
+Microsoft.AspNetCore.Components.RenderHandle.IsRenderingOnMetadataUpdate.get -> bool
+Microsoft.AspNetCore.Components.RenderTree.Renderer.RemoveRootComponent(int componentId) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose() -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
@@ -57,6 +58,10 @@ Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.CascadingTypeParameterAttribute(string! name) -> void
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.Name.get -> string!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetEventArgsType(ulong eventHandlerId) -> System.Type!
+Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute
+Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.SupplyParameterFromQueryAttribute() -> void
 abstract Microsoft.AspNetCore.Components.ErrorBoundaryBase.OnErrorAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.LayoutComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView

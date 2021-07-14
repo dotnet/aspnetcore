@@ -88,7 +88,6 @@ namespace Microsoft.AspNetCore.Internal
                 return (range: null, rangeLength: 0, serveBody: false);
             }
 
-
             response.ContentType = result.ContentType;
             SetContentDispositionHeader(httpContext, in result);
 

@@ -115,7 +115,7 @@ namespace RoutingWebSite
 
                 foreach (var kvp in kvps)
                 {
-                    var split = kvp.Split("=");
+                    var split = kvp.Replace("%2F", "/", StringComparison.OrdinalIgnoreCase).Split("=");
                     if (split.Length == 2)
                     {
                         results[split[0]] = split[1];

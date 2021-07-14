@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 {
     internal static class ContainerUtils
     {
-        private static Lazy<bool> _isContainer = new Lazy<bool>(IsProcessRunningInContainer);
+        private static readonly Lazy<bool> _isContainer = new Lazy<bool>(IsProcessRunningInContainer);
         private const string RunningInContainerVariableName = "DOTNET_RUNNING_IN_CONTAINER";
         private const string DeprecatedRunningInContainerVariableName = "DOTNET_RUNNING_IN_CONTAINERS";
 

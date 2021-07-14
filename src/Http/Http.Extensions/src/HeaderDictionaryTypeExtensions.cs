@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
+        private static readonly IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
         {
             { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
             { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Http
             { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
         };
 
-        private static IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
+        private static readonly IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
         {
             { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>(); })  },
             { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>(); })  },

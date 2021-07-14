@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal static class DefaultHubDispatcherLog
     {
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         private static readonly Action<ILogger, InvocationMessage, Exception?> _receivedHubInvocation =
             LoggerMessage.Define<InvocationMessage>(LogLevel.Debug, new EventId(1, "ReceivedHubInvocation"), "Received hub invocation: {InvocationMessage}.");
 
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(6, "StreamingResult"), "InvocationId {InvocationId}: Streaming result of type '{ResultType}'.");
 
         private static readonly Action<ILogger, string?, string, Exception?> _sendingResult =
-            LoggerMessage.Define<string?, string>(LogLevel.Trace, new EventId(7, "SendingResult"), "InvocationId {InvocationId}: Sending result of type '{ResultType}'.", skipEnabledCheck: true);
+            LoggerMessage.Define<string?, string>(LogLevel.Trace, new EventId(7, "SendingResult"), "InvocationId {InvocationId}: Sending result of type '{ResultType}'.", SkipEnabledCheckLogOptions);
 
         private static readonly Action<ILogger, string, Exception> _failedInvokingHubMethod =
             LoggerMessage.Define<string>(LogLevel.Error, new EventId(8, "FailedInvokingHubMethod"), "Failed to invoke hub method '{HubMethod}'.");

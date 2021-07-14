@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
-    internal unsafe static class SecretExtensions
+    internal static unsafe class SecretExtensions
     {
         /// <summary>
         /// Converts an <see cref="ISecret"/> to an &lt;masterKey&gt; element which is marked

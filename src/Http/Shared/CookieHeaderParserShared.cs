@@ -19,7 +19,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 return false;
             }
-            bool hasFoundValue = false;
+            var hasFoundValue = false;
 
             for (var i = 0; i < values.Count; i++)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.Net.Http.Headers
                 return supportsMultipleValues;
             }
 
-            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, supportsMultipleValues, out bool separatorFound);
+            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, supportsMultipleValues, out var separatorFound);
 
             if (separatorFound && !supportsMultipleValues)
             {
@@ -212,7 +212,7 @@ namespace Microsoft.Net.Http.Headers
                 offset++;
             }
 
-            int length = offset - startIndex;
+            var length = offset - startIndex;
             if (offset > startIndex)
             {
                 return input.Subsegment(startIndex, length);

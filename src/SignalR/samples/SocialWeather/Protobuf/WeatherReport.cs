@@ -20,7 +20,7 @@ namespace SocialWeather.Protobuf {
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static pbr::FileDescriptor descriptor;
+    private static readonly pbr::FileDescriptor descriptor;
 
     static WeatherReportReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(

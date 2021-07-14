@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 {
     public class TlsTests : LoggedTest
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]

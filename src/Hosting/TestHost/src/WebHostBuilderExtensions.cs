@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(servicesConfiguration));
             }
 
-            if (webHostBuilder.GetType().Name.Equals("GenericWebHostBuilder"))
+            if (webHostBuilder.GetType().Name.Equals("GenericWebHostBuilder", StringComparison.Ordinal))
             {
                 // Generic host doesn't need to do anything special here since there's only one container.
                 webHostBuilder.ConfigureServices(servicesConfiguration);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.TestHost
 
                 directoryInfo = directoryInfo.Parent;
             }
-            while (directoryInfo!.Parent != null);
+            while (directoryInfo is not null);
 
             throw new InvalidOperationException($"Solution root could not be located using application root {applicationBasePath}.");
         }

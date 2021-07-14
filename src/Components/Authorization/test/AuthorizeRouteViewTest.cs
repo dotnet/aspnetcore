@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
 {
     public class AuthorizeRouteViewTest
     {
-        private readonly static IReadOnlyDictionary<string, object> EmptyParametersDictionary = new Dictionary<string, object>();
+        private static readonly IReadOnlyDictionary<string, object> EmptyParametersDictionary = new Dictionary<string, object>();
         private readonly TestAuthenticationStateProvider _authenticationStateProvider;
         private readonly TestRenderer _renderer;
         private readonly RouteView _authorizeRouteViewComponent;
@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
             serviceCollection.AddSingleton<AuthenticationStateProvider>(_authenticationStateProvider);
             serviceCollection.AddSingleton<IAuthorizationPolicyProvider, TestAuthorizationPolicyProvider>();
             serviceCollection.AddSingleton<IAuthorizationService>(_testAuthorizationService);
+            serviceCollection.AddSingleton<NavigationManager, TestNavigationManager>();
 
             _renderer = new TestRenderer(serviceCollection.BuildServiceProvider());
             _authorizeRouteViewComponent = new AuthorizeRouteView();
@@ -423,6 +424,10 @@ namespace Microsoft.AspNetCore.Components.Authorization
                 }));
                 builder.CloseComponent();
             }
+        }
+
+        class TestNavigationManager : NavigationManager
+        {
         }
     }
 }

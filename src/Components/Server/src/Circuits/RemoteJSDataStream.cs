@@ -40,9 +40,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
-            long maxBufferSize,
             long maximumIncomingBytes,
             TimeSpan jsInteropDefaultCallTimeout,
+            long pauseIncomingBytesThreshold = -1,
+            long resumeIncomingBytesThreshold = -1,
             CancellationToken cancellationToken = default)
         {
             // Enforce minimum 1 kb, maximum 50 kb, SignalR message size.
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
             var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
-            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, maxBufferSize, jsInteropDefaultCallTimeout, cancellationToken);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
         }
@@ -63,8 +64,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             long streamId,
             long totalLength,
-            long maxBufferSize,
             TimeSpan jsInteropDefaultCallTimeout,
+            long pauseIncomingBytesThreshold,
+            long resumeIncomingBytesThreshold,
             CancellationToken cancellationToken)
         {
             _runtime = runtime;
@@ -78,9 +80,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
-            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize / 2));
+            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: pauseIncomingBytesThreshold, resumeWriterThreshold: resumeIncomingBytesThreshold));
             _pipeReaderStream = _pipe.Reader.AsStream();
+            PipeReader = _pipe.Reader;
         }
+
+        /// <summary>
+        /// Gets a <see cref="PipeReader"/> to directly read data sent by the JavaScript client.
+        /// </summary>
+        public PipeReader PipeReader { get; }
 
         private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
         {
@@ -199,13 +207,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (!_disposed && (DateTimeOffset.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
             {
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
-                var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");
+                var timeoutException = new TimeoutException("Did not receive any data in the allotted time.");
                 await CompletePipeAndDisposeStream(timeoutException);
                 _runtime.RaiseUnhandledException(timeoutException);
             }
         }
 
-        internal async Task CompletePipeAndDisposeStream(Exception? ex = null)
+        /// <summary>
+        /// For testing purposes only.
+        ///
+        /// Triggers the timeout on the next check.
+        /// </summary>
+        internal void InvalidateLastDataReceivedTimeForTimeout()
+        {
+            _lastDataReceivedTime = _lastDataReceivedTime.Subtract(_jsInteropDefaultCallTimeout);
+        }
+
+        private async Task CompletePipeAndDisposeStream(Exception? ex = null)
         {
             await _pipe.Writer.CompleteAsync(ex);
             Dispose(true);

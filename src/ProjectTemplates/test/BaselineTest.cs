@@ -79,8 +79,8 @@ namespace Templates.Test
             }
         }
 
+        // This test should generally not be quarantined as it only is checking that the expected files are on disk
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32406")]
         [MemberData(nameof(TemplateBaselines))]
         public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
         {

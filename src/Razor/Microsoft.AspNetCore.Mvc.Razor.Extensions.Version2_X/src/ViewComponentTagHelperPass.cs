@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
         private struct Context
         {
-            private Dictionary<TagHelperDescriptor, (string className, string fullyQualifiedName, string fieldName)> _tagHelpers;
+            private readonly Dictionary<TagHelperDescriptor, (string className, string fullyQualifiedName, string fieldName)> _tagHelpers;
 
             public Context(NamespaceDeclarationIntermediateNode @namespace, ClassDeclarationIntermediateNode @class)
             {

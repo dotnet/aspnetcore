@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 {
     public class RedisProtocolTests
     {
-        private static Dictionary<string, ProtocolTestData<int>> _ackTestData = new[]
+        private static readonly Dictionary<string, ProtocolTestData<int>> _ackTestData = new[]
         {
             CreateTestData("Zero", 0, 0x91, 0x00),
             CreateTestData("Fixnum", 42, 0x91, 0x2A),
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             Assert.Equal(testData.Encoded, encoded);
         }
 
-        private static Dictionary<string, ProtocolTestData<RedisGroupCommand>> _groupCommandTestData = new[]
+        private static readonly Dictionary<string, ProtocolTestData<RedisGroupCommand>> _groupCommandTestData = new[]
         {
             CreateTestData("GroupAdd", new RedisGroupCommand(42, "S", GroupAction.Add, "G", "C" ), 0x95, 0x2A, 0xA1, (byte)'S', 0x01, 0xA1, (byte)'G', 0xA1, (byte)'C'),
             CreateTestData("GroupRemove", new RedisGroupCommand(42, "S", GroupAction.Remove, "G", "C" ), 0x95, 0x2A, 0xA1, (byte)'S', 0x02, 0xA1, (byte)'G', 0xA1, (byte)'C'),
@@ -88,10 +88,10 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         }
 
         // The actual invocation message doesn't matter
-        private static InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
+        private static readonly InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
 
         // We use a func so we are guaranteed to get a new SerializedHubMessage for each test
-        private static Dictionary<string, ProtocolTestData<Func<RedisInvocation>>> _invocationTestData = new[]
+        private static readonly Dictionary<string, ProtocolTestData<Func<RedisInvocation>>> _invocationTestData = new[]
         {
             CreateTestData<Func<RedisInvocation>>(
                 "NoExcludedIds",

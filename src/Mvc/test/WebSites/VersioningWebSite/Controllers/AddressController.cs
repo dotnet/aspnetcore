@@ -10,7 +10,7 @@ namespace VersioningWebSite
     // Same template overlapping version sets disambiguated by order.
     public class AddressController : Controller
     {
-        private TestResponseGenerator _generator;
+        private readonly TestResponseGenerator _generator;
 
         public AddressController(TestResponseGenerator generator)
         {

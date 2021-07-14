@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Testing
 
             private class PassThroughPipeWriter : PipeWriter
             {
-                private PipeWriter _output;
+                private readonly PipeWriter _output;
 
                 public PassThroughPipeWriter(PipeWriter output)
                 {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Testing
 
             private class PassThroughPipeReader : PipeReader
             {
-                private PipeReader _input;
+                private readonly PipeReader _input;
 
                 public PassThroughPipeReader(PipeReader input)
                 {

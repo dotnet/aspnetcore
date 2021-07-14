@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Components.Reflection
 {
     internal static class ComponentProperties
     {
-        private const BindingFlags _bindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
+        internal const BindingFlags BindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
         // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
         // the same name. We don't give you a way to express this in code (would create duplicate properties),
         // and we don't have the ability to represent it in our data structures.
-        private readonly static ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
+        private static readonly ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
             = new ConcurrentDictionary<Type, WritersForType>();
 
         public static void ClearCache() => _cachedWritersByType.Clear();
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties([DynamicallyAccessedMembers(Component)] Type targetType)
-            => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
+            => MemberAssignment.GetPropertiesIncludingInherited(targetType, BindablePropertyFlags);
 
         [DoesNotReturn]
         private static void ThrowForUnknownIncomingParameterName([DynamicallyAccessedMembers(Component)] Type targetType,
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
         {
             // We know we're going to throw by this stage, so it doesn't matter that the following
             // reflection code will be slow. We're just trying to help developers see what they did wrong.
-            var propertyInfo = targetType.GetProperty(parameterName, _bindablePropertyFlags);
+            var propertyInfo = targetType.GetProperty(parameterName, BindablePropertyFlags);
             if (propertyInfo != null)
             {
                 if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) && !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)))
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
         private static void ThrowForMultipleCaptureUnmatchedValuesParameters([DynamicallyAccessedMembers(Component)] Type targetType)
         {
             var propertyNames = new List<string>();
-            foreach (var property in targetType.GetProperties(_bindablePropertyFlags))
+            foreach (var property in targetType.GetProperties(BindablePropertyFlags))
             {
                 if (property.GetCustomAttribute<ParameterAttribute>()?.CaptureUnmatchedValues == true)
                 {

@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         public class Writer : PipeWriter
         {
-            private Memory<byte> _memory = new byte[4096 * 4];
+            private readonly Memory<byte> _memory = new byte[4096 * 4];
 
             public override Memory<byte> GetMemory(int sizeHint = 0) => _memory;
 

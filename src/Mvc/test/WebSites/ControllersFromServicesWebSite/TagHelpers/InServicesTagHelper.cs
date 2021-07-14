@@ -9,7 +9,7 @@ namespace ControllersFromServicesWebSite.TagHelpers
     [HtmlTargetElement("InServices")]
     public class InServicesTagHelper : TagHelper
     {
-        private ValueService _value;
+        private readonly ValueService _value;
 
         public InServicesTagHelper(ValueService value)
         {

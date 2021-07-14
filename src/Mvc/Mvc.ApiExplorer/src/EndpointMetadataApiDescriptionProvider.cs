@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -170,6 +171,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                      parameter.ParameterType == typeof(HttpContext) ||
+                     parameter.ParameterType == typeof(HttpRequest) ||
+                     parameter.ParameterType == typeof(HttpResponse) ||
+                     parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
@@ -263,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         AddResponseContentTypes(apiResponseType.ApiResponseFormats, contentTypes);
                     }
-                    else if (CreateDefaultApiResponseFormat(responseType) is { } defaultResponseFormat)
+                    else if (CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
                     {
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }

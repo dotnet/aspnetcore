@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Indicates that there were no results produced during authentication.
         /// </summary>
         /// <returns>The result.</returns>
-        public new static HandleRequestResult NoResult()
+        public static new HandleRequestResult NoResult()
         {
             return new HandleRequestResult() { None = true };
         }

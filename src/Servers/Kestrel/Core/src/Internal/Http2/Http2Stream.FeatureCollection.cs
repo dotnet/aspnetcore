@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (ResponseTrailers == null)
                 {
-                    ResponseTrailers = new HttpResponseTrailers();
+                    ResponseTrailers = new HttpResponseTrailers(ServerOptions.ResponseHeaderEncodingSelector);
                     if (HasResponseCompleted)
                     {
                         ResponseTrailers.SetReadOnly();

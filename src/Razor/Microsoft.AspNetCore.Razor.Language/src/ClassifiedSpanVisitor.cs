@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class ClassifiedSpanVisitor : SyntaxWalker
     {
-        private RazorSourceDocument _source;
-        private List<ClassifiedSpanInternal> _spans;
+        private readonly RazorSourceDocument _source;
+        private readonly List<ClassifiedSpanInternal> _spans;
         private BlockKindInternal _currentBlockKind;
         private SyntaxNode _currentBlock;
 

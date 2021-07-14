@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal sealed class HttpServerSessionHandle : CriticalHandleZeroOrMinusOneIsInvalid
     {
         private int disposed;
-        private ulong serverSessionId;
+        private readonly ulong serverSessionId;
 
         internal HttpServerSessionHandle(ulong id)
             : base()

@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class ConnectionDispatcher<T> where T : BaseConnectionContext
     {
-        private static long _lastConnectionId = long.MinValue;
-
         private readonly ServiceContext _serviceContext;
         private readonly Func<T, Task> _connectionDelegate;
         private readonly TransportConnectionManager _transportConnectionManager;
@@ -54,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         }
 
                         // Add the connection to the connection manager before we queue it for execution
-                        var id = Interlocked.Increment(ref _lastConnectionId);
+                        var id = _transportConnectionManager.GetNewConnectionId();
                         var kestrelConnection = new KestrelConnection<T>(
                             id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log);
 

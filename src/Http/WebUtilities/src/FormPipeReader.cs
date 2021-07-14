@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
 
         // Used for other encodings
-        private byte[]? _otherEqualEncoding;
-        private byte[]? _otherAndEncoding;
+        private readonly byte[]? _otherEqualEncoding;
+        private readonly byte[]? _otherAndEncoding;
 
         private readonly PipeReader _pipeReader;
         private readonly Encoding _encoding;

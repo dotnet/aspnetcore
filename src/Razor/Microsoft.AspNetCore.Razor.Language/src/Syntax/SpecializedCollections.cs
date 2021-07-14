@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
             internal class List<T> : Collection<T>, IList<T>, IReadOnlyList<T>
             {
-                public static readonly new List<T> Instance = new List<T>();
+                public static new readonly List<T> Instance = new List<T>();
 
                 protected List()
                 {

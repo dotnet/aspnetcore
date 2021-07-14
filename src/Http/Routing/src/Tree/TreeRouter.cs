@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
     /// <summary>
     /// An <see cref="IRouter"/> implementation for attribute routing.
     /// </summary>
-    public class TreeRouter : IRouter
+    public partial class TreeRouter : IRouter
     {
         /// <summary>
         /// Key used by routing and action selection to match an attribute
@@ -211,7 +210,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                                 continue;
                             }
 
-                            _logger.RequestMatchedRoute(entry.RouteName, entry.RouteTemplate.TemplateText);
+                            Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
                             context.RouteData.Routers.Add(entry.Handler);
 
                             await entry.Handler.RouteAsync(context);
@@ -315,6 +314,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
             }
 
             return new VirtualPathData(this, path);
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Debug,
+                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'",
+                EventName = "RequestMatchedRoute")]
+            public static partial void RequestMatchedRoute(ILogger logger, string routeName, string routeTemplate);
         }
     }
 }
