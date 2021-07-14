@@ -62,9 +62,6 @@ namespace Microsoft.AspNetCore.Builder
             // Configuration changes made by ConfigureDefaults(args) were already picked up by the BootstrapHostBuilder,
             // so we ignore changes to config until ConfigureDefaults completes.
             _deferredHostBuilder.ConfigurationEnabled = true;
-            // Now that consuming code can start modifying Configuration, we need to automatically rebuild on modification.
-            // To this point, we've been manually calling Configuration.UpdateConfiguration() only when needed to reduce I/O.
-            Configuration.AutoUpdate = true;
         }
 
         /// <summary>
@@ -80,7 +77,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
         /// </summary>
-        public Configuration Configuration { get; } = new() { AutoUpdate = false };
+        public ConfigurationManager Configuration { get; } = new();
 
         /// <summary>
         /// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
