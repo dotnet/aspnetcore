@@ -149,17 +149,17 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("DataProtected")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsX509Certificate")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Use")
                         .HasMaxLength(450)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Version")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -211,6 +211,8 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Key");
+
+                    b.HasIndex("ConsumedTime");
 
                     b.HasIndex("Expiration");
 

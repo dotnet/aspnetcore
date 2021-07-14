@@ -219,6 +219,8 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
 
                     b.HasKey("Key");
 
+                    b.HasIndex("ConsumedTime");
+
                     b.HasIndex("Expiration");
 
                     b.HasIndex("SubjectId", "ClientId", "Type");

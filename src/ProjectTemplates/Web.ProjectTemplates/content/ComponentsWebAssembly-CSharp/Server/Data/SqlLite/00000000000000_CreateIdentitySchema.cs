@@ -74,8 +74,8 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Use = table.Column<string>(type: "TEXT", maxLength: 450, nullable: true),
                     Algorithm = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    IsX509Certificate = table.Column<bool>(type: "BIT", nullable: false),
-                    DataProtected = table.Column<bool>(type: "BIT", nullable: false),
+                    IsX509Certificate = table.Column<bool>(type: "INTEGER", nullable: false),
+                    DataProtected = table.Column<bool>(type: "INTEGER", nullable: false),
                     Data = table.Column<string>(type: "TEXT", maxLength: 50000, nullable: false)
                 },
                 constraints: table =>
