@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components
 
         public override long Position
         {
-            get => _offset + 1;
+            get => _offset;
             set => throw new NotSupportedException();
         }
 
@@ -99,10 +99,14 @@ namespace Microsoft.AspNetCore.Components
             var bytesRead = await _runtime.InvokeAsync<byte[]>("Blazor._internal.getJSDataStreamChunk", _jsStreamReference, _offset, numBytesToRead);
             if (bytesRead.Length != numBytesToRead)
             {
-                throw new EndOfStreamException($"Failed to read the requested number of bytes from the stream.");
+                throw new EndOfStreamException("Failed to read the requested number of bytes from the stream.");
             }
 
             _offset += bytesRead.Length;
+            if (_offset == _totalLength)
+            {
+                Dispose(true);
+            }
             return bytesRead;
         }
     }
