@@ -110,31 +110,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
         {
+            string result;
             if (ReferenceEquals(KestrelServerOptions.DefaultHeaderEncodingSelector, encodingSelector))
             {
-                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+                result = span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            }
+            else
+            {
+                var encoding = encodingSelector(name);
+
+                if (encoding is null)
+                {
+                    result = span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+                }
+                else
+                {
+                    if (ReferenceEquals(encoding, Encoding.Latin1))
+                    {
+                        result = span.GetLatin1StringNonNullCharacters();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            result = encoding.GetString(span);
+                        }
+                        catch (DecoderFallbackException ex)
+                        {
+                            throw new InvalidOperationException(ex.Message, ex);
+                        }
+                    }
+                }
             }
 
-            var encoding = encodingSelector(name);
-
-            if (encoding is null)
+            foreach (char c in result)
             {
-                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+                // Non-tab control characters are considered invalid
+                if (Char.IsControl(c) && c != '\u0009')
+                {
+                    throw new InvalidOperationException();
+                }
             }
 
-            if (ReferenceEquals(encoding, Encoding.Latin1))
-            {
-                return span.GetLatin1StringNonNullCharacters();
-            }
-
-            try
-            {
-                return encoding.GetString(span);
-            }
-            catch (DecoderFallbackException ex)
-            {
-                throw new InvalidOperationException(ex.Message, ex);
-            }
+            return result;
         }
 
         public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)
