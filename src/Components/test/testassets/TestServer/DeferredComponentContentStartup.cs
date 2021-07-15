@@ -42,7 +42,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapRazorPages();
-                    endpoints.MapFallbackToPage("/DeferredComponentContent");
+                    endpoints.MapFallbackToPage("/DeferredComponentContentHost");
                     endpoints.MapBlazorHub();
                 });
             });
