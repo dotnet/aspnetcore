@@ -100,17 +100,8 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 var req = context.Request;
 
-                if (request.Version == HttpVersion.Version20)
-                {
-                    // https://tools.ietf.org/html/rfc7540
-                    req.Protocol = HttpProtocol.Http2;
-                }
-                else
-                {
-                    req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
-                }
+                req.Protocol = HttpProtocol.GetHttpProtocol(request.Version);
                 req.Method = request.Method.ToString();
-
                 req.Scheme = request.RequestUri!.Scheme;
 
                 var canHaveBody = false;
