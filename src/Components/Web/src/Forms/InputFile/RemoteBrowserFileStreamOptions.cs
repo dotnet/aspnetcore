@@ -7,9 +7,10 @@ using System.Runtime.Versioning;
 namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
-    /// Repesents configurable options for <see cref="RemoteBrowserFileStream"/>.
+    /// Repesents configurable options for <see cref="BrowserFileStream"/> with Blazor Server.
     /// </summary>
     [UnsupportedOSPlatform("browser")]
+    [Obsolete("JSDataStream defaults are utilized instead of the options here.")]
     public class RemoteBrowserFileStreamOptions
     {
         /// <summary>
