@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var tlsFeature = (ITlsConnectionFeature)this;
             var clientCert = tlsFeature.ClientCertificate; // Lazy initialized
             if (clientCert != null
-                || Server.Options.ClientCertificateMethod != ClientCertificateMethod.AllowRenegotation
+                || Server.Options.ClientCertificateMethod != ClientCertificateMethod.AllowRenegotiation
                 // Delayed client cert negotiation is not allowed on HTTP/2.
                 || Request.ProtocolVersion >= HttpVersion.Version20)
             {
