@@ -36,7 +36,7 @@
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
     [string]$Edition = 'Enterprise',
-    [ValidateSet('Release', 'Preview', 'Preview')]
+    [ValidateSet('Release', 'Preview')]
     [string]$Channel = 'Release',
     [ValidateSet('2019', '2022')]
     [string]$Version = '2019',
