@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.NotNull(tls);
                 Assert.Null(tls.ClientCertificate);
                 var cert = await tls.GetClientCertificateAsync(CancellationToken.None);
-                if (clientCertificateMethod == ClientCertificateMethod.AllowRenegotation)
+                if (clientCertificateMethod == ClientCertificateMethod.AllowRenegotiation)
                 {
                     Assert.NotNull(cert);
                     Assert.NotNull(tls.ClientCertificate);
