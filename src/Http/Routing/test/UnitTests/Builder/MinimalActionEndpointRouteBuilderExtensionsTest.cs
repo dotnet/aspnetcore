@@ -7,8 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -58,7 +61,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapGet_BuildsEndpointWithCorrectMethod()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
-            _ = builder.MapGet("/", (Action)(() => { }));
+            _ = builder.MapGet("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -75,10 +78,56 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
+        public async Task MapGetWithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapGet("/{id}", (int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("GET", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("/{id} HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/{id}", routeEndpointBuilder.RoutePattern.RawText);
+
+            // Assert that we don't fallback to the query string
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "42"
+            });
+
+            await endpoint.RequestDelegate!(httpContext);
+
+            Assert.Null(httpContext.Items["input"]);
+        }
+
+        [Fact]
+        public void MapGetWithRouteParameter_ThrowsIfRouteParameterDoesNotExist()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/", ([FromRoute] int id) => { }));
+            Assert.Equal("id is not a route paramter.", ex.Message);
+        }
+
+        [Fact]
         public void MapPost_BuildsEndpointWithCorrectMethod()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
-            _ = builder.MapPost("/", (Action)(() => { }));
+            _ = builder.MapPost("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -98,7 +147,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapPut_BuildsEndpointWithCorrectMethod()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
-            _ = builder.MapPut("/", (Action)(() => { }));
+            _ = builder.MapPut("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -118,7 +167,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapDelete_BuildsEndpointWithCorrectMethod()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
-            _ = builder.MapDelete("/", (Action)(() => { }));
+            _ = builder.MapDelete("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -132,6 +181,11 @@ namespace Microsoft.AspNetCore.Builder
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
             Assert.Equal("/ HTTP: DELETE", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        class FromRoute : Attribute, IFromRouteMetadata
+        {
+            public string? Name { get; set; } 
         }
 
         private class HttpMethodAttribute : Attribute, IHttpMethodMetadata

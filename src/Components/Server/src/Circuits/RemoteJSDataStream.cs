@@ -40,22 +40,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             IJSStreamReference jsStreamReference,
             long totalLength,
-            long maximumIncomingBytes,
+            long signalRMaximumIncomingBytes,
             TimeSpan jsInteropDefaultCallTimeout,
-            long pauseIncomingBytesThreshold = -1,
-            long resumeIncomingBytesThreshold = -1,
             CancellationToken cancellationToken = default)
         {
             // Enforce minimum 1 kb, maximum 50 kb, SignalR message size.
             // We budget 512 bytes overhead for the transfer, thus leaving at least 512 bytes for data
             // transfer per chunk with a 1 kb message size.
             // Additionally, to maintain interactivity, we put an upper limit of 50 kb on the message size.
-            var chunkSize = maximumIncomingBytes > 1024 ?
-                Math.Min(maximumIncomingBytes, 50*1024) - 512 :
+            var chunkSize = signalRMaximumIncomingBytes > 1024 ?
+                Math.Min(signalRMaximumIncomingBytes, 50*1024) - 512 :
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
             var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
-            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, jsInteropDefaultCallTimeout, pauseIncomingBytesThreshold, resumeIncomingBytesThreshold, cancellationToken);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, jsInteropDefaultCallTimeout, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
         }
@@ -65,8 +63,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             long streamId,
             long totalLength,
             TimeSpan jsInteropDefaultCallTimeout,
-            long pauseIncomingBytesThreshold,
-            long resumeIncomingBytesThreshold,
             CancellationToken cancellationToken)
         {
             _runtime = runtime;
@@ -80,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
-            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold: pauseIncomingBytesThreshold, resumeWriterThreshold: resumeIncomingBytesThreshold));
+            _pipe = new Pipe();
             _pipeReaderStream = _pipe.Reader.AsStream();
             PipeReader = _pipe.Reader;
         }
@@ -94,9 +90,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             try
             {
-                _lastDataReceivedTime = DateTimeOffset.UtcNow;
-                _ = ThrowOnTimeout();
-
                 if (!string.IsNullOrEmpty(error))
                 {
                     throw new InvalidOperationException($"An error occurred while reading the remote stream: {error}");
@@ -111,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 if (chunk.Length == 0)
                 {
-                    throw new EndOfStreamException($"The incoming data chunk cannot be empty.");
+                    throw new EndOfStreamException("The incoming data chunk cannot be empty.");
                 }
 
                 _bytesRead += chunk.Length;
@@ -120,6 +113,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were sent.");
                 }
+
+                // Start timeout _after_ performing validations on data.
+                _lastDataReceivedTime = DateTimeOffset.UtcNow;
+                _ = ThrowOnTimeout();
 
                 await _pipe.Writer.WriteAsync(chunk, _streamCancellationToken);
 
