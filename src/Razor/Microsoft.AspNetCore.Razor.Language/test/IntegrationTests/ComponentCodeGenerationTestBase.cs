@@ -232,7 +232,6 @@ namespace Test
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32193")]
         public void ComponentWithConstrainedTypeParameters()
         {
             // Arrange
