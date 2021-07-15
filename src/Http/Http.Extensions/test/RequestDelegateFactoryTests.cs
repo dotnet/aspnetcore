@@ -1127,7 +1127,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(StringResult))]
-        public async Task RequestDelegateWritesStringReturnValueAsJsonResponseBody(Delegate @delegate)
+        public async Task RequestDelegateWritesStringReturnValueAndSetContentTypeWhenNull(Delegate @delegate)
         {
             var httpContext = new DefaultHttpContext();
             var responseBodyStream = new MemoryStream();
@@ -1140,6 +1140,21 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
 
             Assert.Equal("String Test", responseBody);
+            Assert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
+        }
+
+        [Theory]
+        [MemberData(nameof(StringResult))]
+        public async Task RequestDelegateWritesStringReturnDoNotChangeContentType(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Response.ContentType = "application/json; charset=utf-8";
+
+            var requestDelegate = RequestDelegateFactory.Create(@delegate, new EmptyServiceProvider());
+
+            await requestDelegate(httpContext);
+
+            Assert.NotEqual("text/plain; charset=utf-8", httpContext.Response.ContentType);
         }
 
         public static IEnumerable<object[]> IntResult

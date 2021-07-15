@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo ExecuteObjectReturnMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteObjectReturn), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
         private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
+        private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
         private static readonly MethodInfo LogParameterBindingFailureMethod = GetMethodInfo<Action<HttpContext, string, string, string>>((httpContext, parameterType, parameterName, sourceValue) =>
             Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue));
@@ -55,6 +55,8 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
+
+        private const string PlainTextContentTypeWithCharset = "text/plain; charset=utf-8";
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -434,7 +436,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (returnType == typeof(string))
             {
-                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpContextExpr, methodCall);
             }
             else if (returnType.IsValueType)
             {
@@ -694,6 +696,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (obj is string stringValue)
             {
+                SetContentType(httpContext);
                 await httpContext.Response.WriteAsync(stringValue);
             }
             else
@@ -722,8 +725,10 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
         {
-            EnsureRequestTaskNotNull(task);
 
+            SetContentType(httpContext);
+            EnsureRequestTaskNotNull(task);
+           
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -735,6 +740,14 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return ExecuteAwaited(task!, httpContext);
+        }
+
+        private static Task ExecuteWriteStringResponseAsync(HttpContext httpContext, string text)
+        {
+
+             SetContentType(httpContext);
+             return httpContext.Response.WriteAsync(text);
+    
         }
 
         private static Task ExecuteValueTask(ValueTask task)
@@ -769,6 +782,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
         {
+            SetContentType(httpContext);
+
             static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -872,6 +887,14 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return result;
+        }
+
+        private static void SetContentType(HttpContext httpContext)
+        {
+            if (httpContext.Response.ContentType == null)
+            {
+                httpContext.Response.ContentType = PlainTextContentTypeWithCharset;
+            }
         }
     }
 }
