@@ -15,7 +15,7 @@ Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.Negotiate = 8 -> Micro
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.None = 0 -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
 Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod.AllowCertificate = 1 -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
-Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod.AllowRenegotation = 2 -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
+Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod.AllowRenegotiation = 2 -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod.NoCertificate = 0 -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.DelegationRule
 Microsoft.AspNetCore.Server.HttpSys.DelegationRule.Dispose() -> void
