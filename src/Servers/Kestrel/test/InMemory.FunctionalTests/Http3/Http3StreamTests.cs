@@ -2844,5 +2844,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectReceiveEndOfStream();
         }
+
+        [Fact]
+        public async Task HEADERS_NoResponseBody_RequestEndsOnHeaders()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync(expectEnd: true);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+        }
     }
 }
