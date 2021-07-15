@@ -56,8 +56,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
 
-        private const string PlainTextContentTypeWithCharset = "text/plain; charset=utf-8";
-
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
         /// </summary>
@@ -744,10 +742,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteWriteStringResponseAsync(HttpContext httpContext, string text)
         {
-
              SetContentType(httpContext);
              return httpContext.Response.WriteAsync(text);
-    
         }
 
         private static Task ExecuteValueTask(ValueTask task)
@@ -891,10 +887,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static void SetContentType(HttpContext httpContext)
         {
-            if (httpContext.Response.ContentType == null)
-            {
-                httpContext.Response.ContentType = PlainTextContentTypeWithCharset;
-            }
+            httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
         }
     }
 }

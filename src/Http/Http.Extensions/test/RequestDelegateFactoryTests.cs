@@ -1154,7 +1154,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            Assert.NotEqual("text/plain; charset=utf-8", httpContext.Response.ContentType);
+            Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
         }
 
         public static IEnumerable<object[]> IntResult
