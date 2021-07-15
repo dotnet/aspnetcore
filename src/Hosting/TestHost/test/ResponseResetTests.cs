@@ -51,6 +51,22 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task ResetFeature_Http3_Present()
+        {
+            using var host = await CreateHost(httpContext =>
+            {
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                return Task.CompletedTask;
+            });
+
+            var client = host.GetTestServer().CreateClient();
+            client.DefaultRequestVersion = HttpVersion.Version30;
+            var response = await client.GetAsync("/");
+            response.EnsureSuccessStatusCode();
+        }
+
+        [Fact]
         public async Task ResetFeature_Reset_TriggersRequestAbortedToken()
         {
             var requestAborted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);

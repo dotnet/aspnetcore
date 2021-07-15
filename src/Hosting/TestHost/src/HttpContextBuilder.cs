@@ -99,7 +99,8 @@ namespace Microsoft.AspNetCore.TestHost
             async Task RunRequestAsync()
             {
                 // HTTP/2 specific features must be added after the request has been configured.
-                if (HttpProtocol.IsHttp2(_httpContext.Request.Protocol))
+                if (HttpProtocol.IsHttp2(_httpContext.Request.Protocol) ||
+                    HttpProtocol.IsHttp3(_httpContext.Request.Protocol))
                 {
                     _httpContext.Features.Set<IHttpResetFeature>(this);
                 }
