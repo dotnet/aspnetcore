@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Result
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(GetType());
-            Log.ObjectResultExecuting(logger, Value);
+            Log.ObjectResultExecuting(logger, Value, StatusCode);
 
             if (Value is ProblemDetails problemDetails)
             {
@@ -54,8 +53,23 @@ namespace Microsoft.AspNetCore.Http.Result
                 httpContext.Response.StatusCode = statusCode;
             }
 
+            ConfigureResponseHeaders(httpContext);
+
+            if (Value is null)
+            {
+                return Task.CompletedTask;
+            }
+
             OnFormatting(httpContext);
             return httpContext.Response.WriteAsJsonAsync(Value);
+        }
+
+        protected virtual void OnFormatting(HttpContext httpContext)
+        {
+        }
+
+        protected virtual void ConfigureResponseHeaders(HttpContext httpContext)
+        {
         }
 
         private void ApplyProblemDetailsDefaults(ProblemDetails problemDetails)
@@ -89,23 +103,29 @@ namespace Microsoft.AspNetCore.Http.Result
             }
         }
 
-        protected virtual void OnFormatting(HttpContext httpContext)
-        {
-        }
-
         private static partial class Log
         {
-            public static void ObjectResultExecuting(ILogger logger, object? value)
+            public static void ObjectResultExecuting(ILogger logger, object? value, int? statusCode)
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
-                    var valueType = value is null ? "null" : value.GetType().FullName!;
-                    ObjectResultExecuting(logger, valueType);
+                    if (value is null)
+                    {
+                        ObjectResultExecutingWithoutValue(logger, statusCode ?? StatusCodes.Status200OK);
+                    }
+                    else
+                    {
+                        var valueType = value.GetType().FullName!;
+                        ObjectResultExecuting(logger, valueType, statusCode ?? StatusCodes.Status200OK);
+                    }
                 }
             }
 
-            [LoggerMessage(1, LogLevel.Information, "Writing value of type '{Type}'.", EventName = "ObjectResultExecuting", SkipEnabledCheck = true)]
-            public static partial void ObjectResultExecuting(ILogger logger, string type);
+            [LoggerMessage(1, LogLevel.Information, "Writing value of type '{Type}' with status code '{StatusCode}'.", EventName = "ObjectResultExecuting", SkipEnabledCheck = true)]
+            private static partial void ObjectResultExecuting(ILogger logger, string type, int statusCode);
+
+            [LoggerMessage(2, LogLevel.Information, "Executing result with status code '{StatusCode}'.", EventName = "ObjectResultExecutingWithoutValue", SkipEnabledCheck = true)]
+            private static partial void ObjectResultExecutingWithoutValue(ILogger logger, int statusCode);
         }
     }
 }

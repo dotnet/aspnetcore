@@ -70,7 +70,9 @@ namespace Microsoft.AspNetCore.Http
             {
                 return Empty;
             }
-            var collection = new RequestCookieCollection(values.Count);
+
+            // Do not set the collection capacity based on StringValues.Count, the Cookie header is supposed to be a single combined value.
+            var collection = new RequestCookieCollection();
             var store = collection.Store!;
 
             if (CookieHeaderParserShared.TryParseValues(values, store, enableCookieNameEncoding, supportsMultipleValues: true))

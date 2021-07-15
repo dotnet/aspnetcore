@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 KeyValuePair.Create("Key1","value3")
             };
 
-            Assert.Equal(expectedBaggage, Activity.Current.Baggage);
+            Assert.Equal(expectedBaggage, Activity.Current.Baggage.ToArray());
         }
 
         [Fact]
@@ -552,6 +552,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 logger ?? new NullScopeLogger(),
                 diagnosticListener ?? new NoopDiagnosticListener(),
                 activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
+                DistributedContextPropagator.CreateDefaultPropagator(),
                 httpContextFactory.Object);
 
             return hostingApplication;

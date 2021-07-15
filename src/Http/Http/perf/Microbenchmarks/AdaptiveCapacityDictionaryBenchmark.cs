@@ -40,7 +40,11 @@ namespace Microsoft.AspNetCore.Http
 
             _smallCapDict = new AdaptiveCapacityDictionary<string, string>(capacity: 1, StringComparer.OrdinalIgnoreCase);
             _smallCapDictTen = new AdaptiveCapacityDictionary<string, string>(capacity: 10, StringComparer.OrdinalIgnoreCase);
-            _filledSmallDictionary = new AdaptiveCapacityDictionary<string, string>(_tenValues, capacity: 10, StringComparer.OrdinalIgnoreCase);
+            _filledSmallDictionary = new AdaptiveCapacityDictionary<string, string>(capacity: 10, StringComparer.OrdinalIgnoreCase);
+            foreach (var a in _tenValues)
+            {
+                _filledSmallDictionary[a.Key] = a.Value;
+            }
 
             _dict = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
             _dictTen = new Dictionary<string, string>(10, StringComparer.OrdinalIgnoreCase);

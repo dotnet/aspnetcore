@@ -1,13 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Result
 {
@@ -24,26 +20,8 @@ namespace Microsoft.AspNetCore.Http.Result
         /// </summary>
         /// <param name="fileStream">The stream with the file.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileStreamResult(Stream fileStream, string contentType)
-            : this(fileStream, MediaTypeHeaderValue.Parse(contentType))
-        {
-            if (fileStream == null)
-            {
-                throw new ArgumentNullException(nameof(fileStream));
-            }
-
-            FileStream = fileStream;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="FileStreamResult"/> instance with
-        /// the provided <paramref name="fileStream"/> and the
-        /// provided <paramref name="contentType"/>.
-        /// </summary>
-        /// <param name="fileStream">The stream with the file.</param>
-        /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileStreamResult(Stream fileStream, MediaTypeHeaderValue contentType)
-            : base(contentType.ToString())
+        public FileStreamResult(Stream fileStream, string? contentType)
+            : base(contentType)
         {
             if (fileStream == null)
             {
@@ -58,10 +36,10 @@ namespace Microsoft.AspNetCore.Http.Result
         /// </summary>
         public Stream FileStream { get; }
 
-        public Task ExecuteAsync(HttpContext httpContext)
+        public async Task ExecuteAsync(HttpContext httpContext)
         {
             var logger = httpContext.RequestServices.GetRequiredService<ILogger<FileStreamResult>>();
-            using (FileStream)
+            await using (FileStream)
             {
                 Log.ExecutingFileResult(logger, this);
 
@@ -90,12 +68,12 @@ namespace Microsoft.AspNetCore.Http.Result
 
                 if (!serveBody)
                 {
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 if (range != null && rangeLength == 0)
                 {
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 if (range != null)
@@ -103,7 +81,7 @@ namespace Microsoft.AspNetCore.Http.Result
                     FileResultHelper.Log.WritingRangeToBody(logger);
                 }
 
-                return FileResultHelper.WriteFileAsync(httpContext, FileStream, range, rangeLength);
+                await FileResultHelper.WriteFileAsync(httpContext, FileStream, range, rangeLength);
             }
         }
     }

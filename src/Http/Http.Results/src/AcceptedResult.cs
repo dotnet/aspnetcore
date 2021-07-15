@@ -58,13 +58,8 @@ namespace Microsoft.AspNetCore.Http.Result
         public string? Location { get; set; }
 
         /// <inheritdoc />
-        protected override void OnFormatting(HttpContext context)
+        protected override void ConfigureResponseHeaders(HttpContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (!string.IsNullOrEmpty(Location))
             {
                 context.Response.Headers.Location = Location;

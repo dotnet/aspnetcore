@@ -77,7 +77,7 @@ dotnet_diagnostic.CA1018.severity = warning
 dotnet_diagnostic.CA1047.severity = warning
 
 # CA1305: Specify IFormatProvider
-dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1305.severity = suggestion
 
 # CA1507: Use nameof to express symbol names
 dotnet_diagnostic.CA1507.severity = warning

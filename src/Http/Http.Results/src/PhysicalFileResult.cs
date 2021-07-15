@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,7 +19,7 @@ namespace Microsoft.AspNetCore.Http.Result
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public PhysicalFileResult(string fileName, string contentType)
+        public PhysicalFileResult(string fileName, string? contentType)
             : base(contentType)
         {
             FileName = fileName;

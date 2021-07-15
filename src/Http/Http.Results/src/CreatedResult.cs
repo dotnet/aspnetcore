@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Http.Result
         public string Location { get; init; }
 
         /// <inheritdoc />
-        protected override void OnFormatting(HttpContext context)
+        protected override void ConfigureResponseHeaders(HttpContext context)
         {
             context.Response.Headers.Location = Location;
         }
