@@ -133,6 +133,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public void Scan()
         {
+            var now = DateTimeOffset.UtcNow;
+
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
@@ -163,7 +165,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // Tick the heartbeat, if the connection is still active
                     connection.TickHeartbeat();
 
-                    if (connection.IsAuthenticationExpirationEnabled && connection.AuthenticationExpirationTick < ticks &&
+                    if (connection.IsAuthenticationExpirationEnabled && connection.AuthenticationExpiration < now &&
                         !connection.ConnectionClosedRequested.IsCancellationRequested)
                     {
                         Log.AuthenticationExpired(_logger, connection.ConnectionId);

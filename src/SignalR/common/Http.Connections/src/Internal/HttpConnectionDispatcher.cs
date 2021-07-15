@@ -583,10 +583,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             if (authenticateResultFeature is not null)
             {
-                // get the future Environment.TickCount64 value of when auth expires
-                var expiresTime = (authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue);
-                var expiresTick = (long)(expiresTime - DateTimeOffset.UtcNow).TotalMilliseconds + Environment.TickCount64;
-                connection.AuthenticationExpirationTick = expiresTick;
+                connection.AuthenticationExpiration =
+                    authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
             }
         }
 

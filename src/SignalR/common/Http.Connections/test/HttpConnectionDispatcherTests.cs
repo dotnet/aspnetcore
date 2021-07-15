@@ -2697,7 +2697,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 pollTask = dispatcher.ExecuteAsync(context, options, app);
 
                 // Set auth to an expired time
-                connection.AuthenticationExpirationTick = Environment.TickCount64 - 1;
+                connection.AuthenticationExpiration = DateTimeOffset.Now.AddSeconds(-1);
 
                 manager.Scan();
 
@@ -2801,8 +2801,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.True(context.AuthenticationExpirationTick > Environment.TickCount64);
-            Assert.True(context.AuthenticationExpirationTick < long.MaxValue);
+            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
+            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
 
             await connection.DisposeAsync();
         }
@@ -2863,8 +2863,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.True(context.AuthenticationExpirationTick > Environment.TickCount64);
-            Assert.True(context.AuthenticationExpirationTick < long.MaxValue);
+            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
+            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
 
             await connection.DisposeAsync();
         }
@@ -2963,8 +2963,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.True(context.AuthenticationExpirationTick > Environment.TickCount64);
-            Assert.True(context.AuthenticationExpirationTick < long.MaxValue);
+            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
+            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
 
             await connection.DisposeAsync();
         }
@@ -3002,7 +3002,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
 
-            Assert.Equal(long.MaxValue, context.AuthenticationExpirationTick);
+            Assert.Equal(DateTimeOffset.MaxValue, context.AuthenticationExpiration);
 
             await connection.DisposeAsync();
         }

@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             _connectionCloseRequested = new CancellationTokenSource();
             ConnectionClosedRequested = _connectionCloseRequested.Token;
-            AuthenticationExpirationTick = long.MaxValue;
+            AuthenticationExpiration = DateTimeOffset.MaxValue;
         }
 
         public CancellationTokenSource? Cancellation { get; set; }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
         internal AsyncServiceScope? ServiceScope { get; set; }
 
-        internal long AuthenticationExpirationTick { get; set; }
+        internal DateTimeOffset AuthenticationExpiration { get; set; }
 
         internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
