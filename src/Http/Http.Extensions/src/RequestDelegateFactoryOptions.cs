@@ -4,9 +4,9 @@
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Options for controlling the behavior 
+    /// Options for controlling the behavior of <see cref="RequestDelegate" /> when created using <see cref="RequestDelegateFactory" />.
     /// </summary>
-    public class RequestDelegateFactoryOptions
+    public sealed class RequestDelegateFactoryOptions
     {
         /// <summary>
         /// The <see cref="IServiceProvider"/> instance used to detect if handler parameters are services.
