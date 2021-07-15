@@ -349,25 +349,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 // ActionDescriptor.EndpointMetadata is an empty array by
                 // default so need to add the metadata into a new list.
-                var metadata = new List<object>(endpointMetadata.Count);
-
-                foreach (var item in endpointMetadata)
-                {
-                    if (item is not null)
-                    {
-                        metadata.Add(item);
-                    }
-                }
-
-                if (metadata.Count > 0)
-                {
-                    actionDescriptor.EndpointMetadata = metadata;
-                }
+                actionDescriptor.EndpointMetadata = new List<object>(endpointMetadata);
             }
         }
 
         // The CompilerGeneratedAttribute doesn't always get added so we also check if the type name starts with "<"
-        // For example,w "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
+        // For example, "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
         // REVIEW: Is there a better way to do this?
         private static bool IsCompilerGenerated(Type type) =>
             Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || type.Name.StartsWith('<');
