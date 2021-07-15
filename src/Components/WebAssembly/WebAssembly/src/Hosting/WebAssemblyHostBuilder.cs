@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -44,7 +45,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
             args ??= Array.Empty<string>();
-            var builder = new WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime.Instance);
+            var jsRuntime = DefaultWebAssemblyJSRuntime.Instance;
+            var builder = new WebAssemblyHostBuilder(
+                jsRuntime,
+                jsRuntime.ReadJsonSerializerOptions());
 
             WebAssemblyCultureProvider.Initialize();
 
@@ -58,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        internal WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime jsRuntime)
+        internal WebAssemblyHostBuilder(IJSUnmarshalledRuntime jsRuntime, JsonSerializerOptions jsonOptions)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
@@ -67,8 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
             Logging = new LoggingBuilder(Services);
-            _dynamicRootComponentConfiguration = new DynamicRootComponentConfiguration(
-                jsRuntime.ReadJsonSerializerOptions());
+            _dynamicRootComponentConfiguration = new DynamicRootComponentConfiguration(jsonOptions);
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntime);
