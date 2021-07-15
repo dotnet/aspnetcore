@@ -158,8 +158,20 @@ namespace Microsoft.AspNetCore.Builder
 
             const int defaultOrder = 0;
 
+            var routeParams = new List<string>(pattern.Parameters.Count);
+            foreach (var part in pattern.Parameters)
+            {
+                routeParams.Add(part.Name);
+            }
+
+            var options = new RequestDelegateFactoryOptions
+            {
+                ServiceProvider = endpoints.ServiceProvider,
+                RouteParameterNames = routeParams
+            };
+
             var builder = new RouteEndpointBuilder(
-                RequestDelegateFactory.Create(action, endpoints.ServiceProvider),
+                RequestDelegateFactory.Create(action, options),
                 pattern,
                 defaultOrder)
             {

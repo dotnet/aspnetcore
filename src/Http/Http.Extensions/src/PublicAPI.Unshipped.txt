@@ -157,6 +157,12 @@ Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.get -> System.Collec
 Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.set -> void
 Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetList<T>(string! name, System.Collections.Generic.IList<T>? values) -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactory
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RequestDelegateFactoryOptions() -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.get -> System.Collections.Generic.IEnumerable<string!>?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.init -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ServiceProvider.get -> System.IServiceProvider?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ServiceProvider.init -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
@@ -186,9 +192,8 @@ static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.AppendList<T>(th
 static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpRequest! request) -> Microsoft.AspNetCore.Http.Headers.RequestHeaders!
 static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse! response) -> Microsoft.AspNetCore.Http.Headers.ResponseHeaders!
 static Microsoft.AspNetCore.Http.HttpContextServerVariableExtensions.GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext! context, string! variableName) -> string?
-static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Delegate! action, System.IServiceProvider? serviceProvider) -> Microsoft.AspNetCore.Http.RequestDelegate!
-static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Reflection.MethodInfo! methodInfo, System.IServiceProvider? serviceProvider) -> Microsoft.AspNetCore.Http.RequestDelegate!
-static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Reflection.MethodInfo! methodInfo, System.IServiceProvider? serviceProvider, System.Func<Microsoft.AspNetCore.Http.HttpContext!, object!>! targetFactory) -> Microsoft.AspNetCore.Http.RequestDelegate!
+static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Delegate! action, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions? options = null) -> Microsoft.AspNetCore.Http.RequestDelegate!
+static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Reflection.MethodInfo! methodInfo, System.Func<Microsoft.AspNetCore.Http.HttpContext!, object!>? targetFactory = null, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions? options = null) -> Microsoft.AspNetCore.Http.RequestDelegate!
 static Microsoft.AspNetCore.Http.ResponseExtensions.Clear(this Microsoft.AspNetCore.Http.HttpResponse! response) -> void
 static Microsoft.AspNetCore.Http.ResponseExtensions.Redirect(this Microsoft.AspNetCore.Http.HttpResponse! response, string! location, bool permanent, bool preserveMethod) -> void
 static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, Microsoft.Extensions.FileProviders.IFileInfo! file, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
