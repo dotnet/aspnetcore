@@ -39,8 +39,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
+            IActionResultTypeMapper mapper)
+            : this(cache, modelMetadataProvider, tempDataFactory, mvcOptions, mvcViewOptions, selector, diagnosticListener, loggerFactory, mapper, null)
+        {
+        }
+
+        public PageRequestDelegateFactory(
+            PageActionInvokerCache cache,
+            IModelMetadataProvider modelMetadataProvider,
+            ITempDataDictionaryFactory tempDataFactory,
+            IOptions<MvcOptions> mvcOptions,
+            IOptions<MvcViewOptions> mvcViewOptions,
+            IPageHandlerMethodSelector selector,
+            DiagnosticListener diagnosticListener,
+            ILoggerFactory loggerFactory,
             IActionResultTypeMapper mapper,
-            IActionContextAccessor? actionContextAccessor = null)
+            IActionContextAccessor? actionContextAccessor)
         {
             _cache = cache;
             _valueProviderFactories = mvcOptions.Value.ValueProviderFactories.ToArray();
