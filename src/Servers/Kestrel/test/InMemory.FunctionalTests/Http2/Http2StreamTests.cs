@@ -967,13 +967,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
-            await InitializeConnectionAsync(_noopApplication);
+
+            var requestDelegateCalled = false;
+            await InitializeConnectionAsync(c =>
+            {
+                // Bad content-length + end stream means the request delegate
+                // is never called by the server.
+                requestDelegateCalled = true;
+                return Task.CompletedTask;
+            });
 
             await StartStreamAsync(1, headers, endStream: true);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.False(requestDelegateCalled);
         }
 
         [Fact]
