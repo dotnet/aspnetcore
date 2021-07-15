@@ -1,0 +1,71 @@
+﻿<h1>Dynamic root components</h1>
+
+<p>This shows that we can dynamically add root components using JavaScript.</p>
+
+<p id="message"></p>
+
+<p>
+    <button id="add-root-component" onclick="addRootComponent()">Add new root component</button>
+    <button id="remove-root-component" onclick="removeRootComponent()">Remove root component</button>
+</p>
+
+<p>
+    Increment amount: <input type="number" id="increment-amount" value="1" />
+    <button id="set-increment-amount" onclick="setIncrementAmount()">Set</button>
+</p>
+
+<p>
+    <button id="set-complex-params" onclick="setComplexParameters()">Set complex parameters</button>
+</p>
+
+
+<script suppress-error="BL9992">
+    let numAddedComponents = 0;
+    const addedComponents = [];
+    const jsObject = DotNet.createJSObjectReference({
+        getValue() {
+            return `You've added ${numAddedComponents} components.`;
+        },
+
+        willDispose() {
+            setMessage('Received call to willDispose');
+        }
+    });
+
+    async function addRootComponent() {
+        const containerElement = document.createElement('div');
+        containerElement.id = `root-container-${++numAddedComponents}`;
+        document.body.appendChild(containerElement);
+        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component');
+        addedComponents.push({ component, containerElement });
+        setMessage(`Added component in ${containerElement.id}. Set some parameters to trigger its first render.`);
+    }
+
+    function setIncrementAmount() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        const value = parseInt(document.getElementById('increment-amount').value);
+        component.setParameters({ incrementAmount: value });
+        setMessage(`Updated parameters on component in ${containerElement.id}`);
+    }
+
+    function setComplexParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        component.setParameters({
+            incrementAmount: 123,
+            showComplexParameters: true,
+            somePerson: { name: 'Bert', age: 123.456 },
+            someJSObject: jsObject
+        });
+    }
+
+    function removeRootComponent() {
+        // Treat it like a FIFO queue
+        const { component, containerElement } = addedComponents.shift();
+        setMessage(`Disposed component in ${containerElement.id}`);
+        component.dispose();
+    }
+
+    function setMessage(message) {
+        document.getElementById('message').textContent = message;
+    }
+</script>
