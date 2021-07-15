@@ -1197,7 +1197,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Response.ContentType = "application/json; charset=utf-8";
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate, new EmptyServiceProvider());
+            var requestDelegate = RequestDelegateFactory.Create(@delegate);
 
             await requestDelegate(httpContext);
 
