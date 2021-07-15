@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Gets or sets the maximum internal buffer size for unread data sent over a SignalR circuit.
-        /// Default -1 represents the default Pipe pauseWriterThreshold in <see cref="System.IO.Pipelines.PipeOptions" />.
         /// <para>
         /// This only has an effect when using Blazor Server.
         /// </para>

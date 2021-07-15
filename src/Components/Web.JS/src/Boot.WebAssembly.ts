@@ -14,7 +14,6 @@ import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { getNextChunk } from './StreamingInterop';
 
 declare var Module: EmscriptenModule;
 let started = false;

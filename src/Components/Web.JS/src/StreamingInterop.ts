@@ -13,7 +13,7 @@ async function getChunkFromBlob(data: Blob, position: number, nextChunkSize: num
     return nextChunkData;
 }
 
-function getChunkFromArrayBufferView(data: ArrayBufferView, position: number, nextChunkSize: number) {
+function getChunkFromArrayBufferView(data: ArrayBufferView, position: number, nextChunkSize: number): Uint8Array {
     const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
     return nextChunkData;
 }

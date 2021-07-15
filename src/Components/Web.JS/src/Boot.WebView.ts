@@ -5,7 +5,6 @@ import { internalFunctions as navigationManagerFunctions } from './Services/Navi
 import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
 import { sendBrowserEvent, sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
-import { getNextChunk } from './StreamingInterop';
 
 let started = false;
 
