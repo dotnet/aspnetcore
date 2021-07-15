@@ -486,6 +486,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34393")]
             public async Task ClientTimesoutWhenHandshakeResponseTakesTooLong()
             {
                 var handshakeTimeoutLogged = false;
