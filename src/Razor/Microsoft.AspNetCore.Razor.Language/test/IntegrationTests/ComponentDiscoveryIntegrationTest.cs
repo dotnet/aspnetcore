@@ -84,7 +84,6 @@ namespace Test.AnotherNamespace
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32592")]
         public void ComponentDiscovery_CanFindComponent_WithTypeParameter()
         {
             // Arrange
