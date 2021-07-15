@@ -66,10 +66,10 @@ $bootstrapper = "$intermedateDir\vsinstaller.exe"
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
 if ("$Version" -eq "2019") {
-    $vsversion = "16";
+    $vsversion = 16;
 }
 if ("$Version" -eq "2022") {
-    $vsversion = "17";
+    $vsversion = 17;
     $Channel = "Preview";
 }
 $channelUri = "https://aka.ms/vs/$vsversion/release"
@@ -94,7 +94,7 @@ if (-not $InstallPath) {
     $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (Test-Path $vsWhere)
     {
-        $installations = & $vsWhere -version '[16,18)' -format json -prerelease -products $productId | ConvertFrom-Json |Sort-Object -Descending -Property installationVersion, installDate
+        $installations = & $vsWhere -version "[$vsversion,$($vsversion+1)))" -format json -prerelease -products $productId | ConvertFrom-Json |Sort-Object -Descending -Property installationVersion, installDate
         foreach ($installation in $installations) {
             Write-Host "Found '$($installation.installationName)' in '$($installation.installationPath)', channel = '$($installation.channelId)'"
             if ($installation.channelId -eq $channelId) {
