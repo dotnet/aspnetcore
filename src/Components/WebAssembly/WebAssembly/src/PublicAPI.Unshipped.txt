@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.DynamicRootComponents.get -> Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string! key].get -> string?
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!

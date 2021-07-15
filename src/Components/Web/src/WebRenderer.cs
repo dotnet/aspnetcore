@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -45,5 +48,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="componentId">The component ID.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
         protected abstract void AttachRootComponentToBrowser(int componentId, string domElementSelector);
+
+        /// <summary>
+        /// Enables support for adding, updating, and removing root components from JavaScript.
+        /// </summary>
+        /// <param name="configuration">Configuration options.</param>
+        /// <returns>A task representing the completion of the operation.</returns>
+        protected ValueTask InitializeDynamicRootComponentSupportAsync(DynamicRootComponentConfiguration configuration)
+        {
+            var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
+            var interop = new DynamicRootComponentInterop(
+                configuration, this);
+            return interop.InitializeAsync(jsRuntime);
+        }
     }
 }

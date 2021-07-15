@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHostBuilder
     {
+        private readonly DynamicRootComponentConfiguration _dynamicRootComponentConfiguration;
         private Func<IServiceProvider> _createServiceProvider;
         private RootComponentTypeCache? _rootComponentCache;
         private string? _persistedState;
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        internal WebAssemblyHostBuilder(IJSUnmarshalledRuntime jsRuntime)
+        internal WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime jsRuntime)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
@@ -66,6 +67,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
             Logging = new LoggingBuilder(Services);
+            _dynamicRootComponentConfiguration = new DynamicRootComponentConfiguration(
+                jsRuntime.ReadJsonSerializerOptions());
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntime);
@@ -186,6 +189,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// Gets the logging builder for configuring logging services.
         /// </summary>
         public ILoggingBuilder Logging { get; }
+
+        /// <summary>
+        /// Gets an object that holds options for allowing JavaScript to add root components dynamically.
+        /// </summary>
+        public DynamicRootComponentConfiguration DynamicRootComponents => _dynamicRootComponentConfiguration;
 
         /// <summary>
         /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.

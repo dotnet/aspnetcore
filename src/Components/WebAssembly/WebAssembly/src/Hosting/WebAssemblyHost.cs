@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
         private readonly string? _persistedState;
+        private readonly DynamicRootComponentConfiguration _dynamicRootComponents;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
         //
@@ -53,6 +54,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _configuration = builder.Configuration;
             _rootComponents = builder.RootComponents;
             _persistedState = persistedState;
+            _dynamicRootComponents = builder.DynamicRootComponents;
         }
 
         /// <summary>
@@ -147,6 +149,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
+                await _renderer.InitializeDynamicRootComponentSupportAsync(_dynamicRootComponents);
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>

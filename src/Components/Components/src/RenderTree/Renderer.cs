@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
-        protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
+        protected internal async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
             Dispatcher.AssertAccess();
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// descendants to be disposed.
         /// </summary>
         /// <param name="componentId">The ID of the root component.</param>
-        protected void RemoveRootComponent(int componentId)
+        protected internal void RemoveRootComponent(int componentId)
         {
             Dispatcher.AssertAccess();
 
@@ -268,6 +268,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             ProcessRenderQueue();
         }
+
+        /// <summary>
+        /// Gets the type of the specified root component.
+        /// </summary>
+        /// <param name="componentId">The root component ID.</param>
+        /// <returns>The type of the component.</returns>
+        internal Type GetRootComponentType(int componentId)
+            => GetRequiredRootComponentState(componentId).Component.GetType();
 
         /// <summary>
         /// Allows derived types to handle exceptions during rendering. Defaults to rethrowing the original exception.

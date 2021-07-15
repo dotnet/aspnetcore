@@ -51,6 +51,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 _webAssemblyRendererId);
         }
 
+        public new ValueTask InitializeDynamicRootComponentSupportAsync(DynamicRootComponentConfiguration configuration)
+            => base.InitializeDynamicRootComponentSupportAsync(configuration);
+
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
