@@ -486,7 +486,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34393")]
             public async Task ClientTimesoutWhenHandshakeResponseTakesTooLong()
             {
                 var handshakeTimeoutLogged = false;
@@ -515,7 +514,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         hubConnection.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
 
-                        await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync()).DefaultTimeout();
+                        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => hubConnection.StartAsync()).DefaultTimeout();
                         Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
                     }
                     finally
