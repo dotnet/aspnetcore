@@ -694,7 +694,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (obj is string stringValue)
             {
-                SetContentType(httpContext);
+                SetPlaintextContentType(httpContext);
                 await httpContext.Response.WriteAsync(stringValue);
             }
             else
@@ -724,7 +724,7 @@ namespace Microsoft.AspNetCore.Http
         private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
         {
 
-            SetContentType(httpContext);
+            SetPlaintextContentType(httpContext);
             EnsureRequestTaskNotNull(task);
            
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
@@ -742,7 +742,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteWriteStringResponseAsync(HttpContext httpContext, string text)
         {
-             SetContentType(httpContext);
+             SetPlaintextContentType(httpContext);
              return httpContext.Response.WriteAsync(text);
         }
 
@@ -778,7 +778,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
         {
-            SetContentType(httpContext);
+            SetPlaintextContentType(httpContext);
 
             static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
             {
@@ -885,7 +885,7 @@ namespace Microsoft.AspNetCore.Http
             return result;
         }
 
-        private static void SetContentType(HttpContext httpContext)
+        private static void SetPlaintextContentType(HttpContext httpContext)
         {
             httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
         }
