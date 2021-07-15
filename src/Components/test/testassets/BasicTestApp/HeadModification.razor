@@ -1,9 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Components.Sections
 
 <HeadContent>
-    <title>@_title</title>
     <meta id="meta-description" name="description" content="@_description">
 </HeadContent>
+
+<PageTitle>@_title</PageTitle>
 
 <p>
     Title:
@@ -29,14 +30,10 @@
     @switch (_selectedIndex)
     {
         case 1:
-            <HeadContent>
-                <title>Overridden title 1</title>
-            </HeadContent>
+			<PageTitle>Overridden title 1</PageTitle>
             break;
         case 2:
-            <HeadContent>
-                <title>Overridden title 2</title>
-            </HeadContent>
+			<PageTitle>Overridden title 2</PageTitle>
             break;
         default:
             break;

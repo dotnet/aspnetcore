@@ -20,6 +20,18 @@ Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.RouteData.get -> Microso
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.RouteData.set -> void
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.Selector.get -> string?
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.Selector.set -> void
+Microsoft.AspNetCore.Components.Sections.HeadContent
+Microsoft.AspNetCore.Components.Sections.HeadContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Sections.HeadContent.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Sections.HeadContent.HeadContent() -> void
+Microsoft.AspNetCore.Components.Sections.HeadSection
+Microsoft.AspNetCore.Components.Sections.HeadSection.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Sections.HeadSection.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Sections.HeadSection.HeadSection() -> void
+Microsoft.AspNetCore.Components.Sections.PageTitle
+Microsoft.AspNetCore.Components.Sections.PageTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Sections.PageTitle.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Sections.PageTitle.PageTitle() -> void
 Microsoft.AspNetCore.Components.Web.ErrorBoundary
 Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorBoundary() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger

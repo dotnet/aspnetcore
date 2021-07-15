@@ -58,17 +58,17 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
 
             var inputDescription = Browser.FindElement(By.Id("input-description"));
             inputDescription.Clear();
-            inputDescription.SendKeys("This description will apply later.\n");
+            inputDescription.SendKeys("New description.\n");
 
             // Check that page medatada is overridden by the most recently attached head content
             Browser.Equal("Overridden title 1", () => Browser.Title);
-            Browser.DoesNotExist(By.Id("meta-description"));
+            Browser.Equal("New description.", GetPageDescription);
 
             selectElement.SelectByIndex(0);
 
             // Check that disposing the most recent head content falls back on the next most recent content
             Browser.Equal("This title will apply later.", () => Browser.Title);
-            Browser.Equal("This description will apply later.", GetPageDescription);
+            Browser.Equal("New description.", GetPageDescription);
 
             string GetPageDescription()
                 => Browser.FindElement(By.Id("meta-description"))?.GetAttribute("content");

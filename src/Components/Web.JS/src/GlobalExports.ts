@@ -1,6 +1,7 @@
 import { navigateTo, internalFunctions as navigationManagerInternalFunctions, NavigationOptions } from './Services/NavigationManager';
 import { domFunctions } from './DomWrapper';
 import { Virtualize } from './Virtualize';
+import { PageTitle } from './PageTitle';
 import { registerCustomEventType, EventTypeOptions } from './Rendering/Events/EventTypes';
 import { HubConnection } from '@microsoft/signalr';
 import { InputFile } from './InputFile';
@@ -24,6 +25,7 @@ interface IBlazor {
     navigationManager: typeof navigationManagerInternalFunctions | any,
     domWrapper: typeof domFunctions,
     Virtualize: typeof Virtualize,
+    PageTitle: typeof PageTitle,
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile,
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
@@ -66,6 +68,7 @@ export const Blazor: IBlazor = {
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
     Virtualize,
+    PageTitle,
     InputFile,
     getJSDataStreamChunk: getNextChunk,
   },

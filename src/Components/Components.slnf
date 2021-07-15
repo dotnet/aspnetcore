@@ -104,6 +104,7 @@
       "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
       "src\\Razor\\Razor\\src\\Microsoft.AspNetCore.Razor.csproj",
       "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
+      "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
       "src\\Security\\CookiePolicy\\src\\Microsoft.AspNetCore.CookiePolicy.csproj",

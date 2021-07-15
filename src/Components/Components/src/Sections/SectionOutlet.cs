@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Sections
         private string? _subscribedName;
         private RenderHandle _renderHandle;
         private SectionRegistry _registry = default!;
+        private RenderFragment? _content;
 
         /// <summary>
         /// Gets or sets the name that determines which <see cref="SectionContent"/> instances will provide
@@ -51,10 +52,18 @@ namespace Microsoft.AspNetCore.Components.Sections
                 _subscribedName = Name;
             }
 
+            RenderContent();
+
             return Task.CompletedTask;
         }
 
         void ISectionContentSubscriber.ContentChanged(RenderFragment? content)
+        {
+            _content = content;
+            RenderContent();
+        }
+
+        private void RenderContent()
         {
             // Here, we guard against rendering after the renderer has been disposed.
             // This can occur after prerendering or when the page is refreshed.
@@ -64,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Sections
                 return;
             }
 
-            _renderHandle.Render(content ?? ChildContent ?? _emptyRenderFragment);
+            _renderHandle.Render(_content ?? ChildContent ?? _emptyRenderFragment);
         }
 
         /// <inheritdoc/>
