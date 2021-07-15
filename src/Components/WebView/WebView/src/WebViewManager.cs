@@ -205,19 +205,15 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <summary>
         /// Disposes the current <see cref="WebViewManager"/> instance.
         /// </summary>
-        /// <param name="disposing"><c>true</c> when dispose was called explicitly; <c>false</c> when it is called as part of the finalizer.</param>
-        protected virtual async ValueTask DisposeAsync(bool disposing)
+        protected virtual async ValueTask DisposeAsyncCore()
         {
             if (!_disposed)
             {
                 _disposed = true;
 
-                if (disposing)
+                if (_currentPageContext != null)
                 {
-                    if (_currentPageContext != null)
-                    {
-                        await _currentPageContext.DisposeAsync();
-                    }
+                    await _currentPageContext.DisposeAsync();
                 }
             }
         }
@@ -227,7 +223,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             // Do not change this code. Put cleanup code in 'DisposeAsync(bool disposing)' method
             GC.SuppressFinalize(this);
-            await DisposeAsync(disposing: true);
+            await DisposeAsyncCore();
         }
     }
 }
