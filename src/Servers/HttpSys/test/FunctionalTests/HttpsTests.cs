@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalTheory]
         [InlineData(ClientCertificateMethod.NoCertificate)]
         [InlineData(ClientCertificateMethod.AllowCertificate)]
-        [InlineData(ClientCertificateMethod.AllowRenegotation)]
+        [InlineData(ClientCertificateMethod.AllowRenegotiation)]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent(ClientCertificateMethod clientCertificateMethod)
         {
             using (Utilities.CreateDynamicHttpsServer("", out var root, out var address, options =>
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalTheory]
         [InlineData(ClientCertificateMethod.NoCertificate)]
         [InlineData(ClientCertificateMethod.AllowCertificate)]
-        [InlineData(ClientCertificateMethod.AllowRenegotation)]
+        [InlineData(ClientCertificateMethod.AllowRenegotiation)]
         public async Task Https_ClientCertRequested_ClientCertPresent(ClientCertificateMethod clientCertificateMethod)
         {
             using (Utilities.CreateDynamicHttpsServer("", out var root, out var address, options =>
