@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace ComponentsWebAssembly_CSharp.Server.Models
+namespace ComponentsWebAssembly_CSharp.Server.Models;
+
+public class ApplicationUser : IdentityUser
 {
-    public class ApplicationUser : IdentityUser
-    {
-    }
 }
