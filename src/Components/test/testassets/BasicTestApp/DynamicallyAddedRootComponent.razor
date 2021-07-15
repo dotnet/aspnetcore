@@ -4,6 +4,8 @@
 <div class="dynamic-root-component" style="border: 1px dashed purple">
     <p>
         This is a Blazor component.
+    </p>
+    <p>
         Click count: <strong class="click-count">@clicks</strong>
         (will increment in steps of <strong class="increment-amount-value">@IncrementAmount</strong>)
     </p>
@@ -29,6 +31,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        await DynamicRootComponents.OnParametersSetAsyncAwaitTask;
+
         if (SomeJSObject is not null)
         {
             valueFromJS = await SomeJSObject.InvokeAsync<string>("getValue", null);
