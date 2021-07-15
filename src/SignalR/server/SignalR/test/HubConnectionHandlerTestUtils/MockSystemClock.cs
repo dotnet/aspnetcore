@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _nowTicks = NextLong(DateTimeOffset.MinValue.Ticks, DateTimeOffset.MaxValue.Ticks - TimeSpan.FromDays(1).Ticks);
         }
 
-        public long CurrentTick
+        public long CurrentTicks
         {
             get => _nowTicks;
             set

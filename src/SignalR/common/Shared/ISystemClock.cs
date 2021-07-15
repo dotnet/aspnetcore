@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Internal
         /// <summary>
         /// Retrieves ticks for the current system up time.
         /// </summary>
-        long CurrentTick { get; }
+        long CurrentTicks { get; }
     }
 }

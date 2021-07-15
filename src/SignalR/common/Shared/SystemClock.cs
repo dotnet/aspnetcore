@@ -9,6 +9,6 @@ namespace Microsoft.AspNetCore.Internal
     internal class SystemClock : ISystemClock
     {
         /// <inheritdoc />
-        public long CurrentTick => Environment.TickCount64;
+        public long CurrentTicks => Environment.TickCount64;
     }
 }

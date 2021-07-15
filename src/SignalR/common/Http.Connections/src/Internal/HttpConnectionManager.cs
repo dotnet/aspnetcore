@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 var connection = c.Value.Connection;
                 // Capture the connection state
-                var lastSeenTick = connection.LastSeenTickIfInactive;
+                var lastSeenTick = connection.LastSeenTicksIfInactive;
 
                 var ticks = Environment.TickCount64;
                 // Once the decision has been made to dispose we don't check the status again

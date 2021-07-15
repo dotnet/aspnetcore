@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             ConnectionId = connectionId;
             ConnectionToken = connectionToken;
-            LastSeenTick = Environment.TickCount64;
+            LastSeenTicks = Environment.TickCount64;
             _options = options;
 
             // The default behavior is that both formats are supported.
@@ -121,15 +121,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public Task? ApplicationTask { get; set; }
 
-        public long LastSeenTick { get; set; }
+        public long LastSeenTicks { get; set; }
 
-        public long? LastSeenTickIfInactive
+        public long? LastSeenTicksIfInactive
         {
             get
             {
                 lock (_stateLock)
                 {
-                    return Status == HttpConnectionStatus.Inactive ? LastSeenTick : null;
+                    return Status == HttpConnectionStatus.Inactive ? LastSeenTicks : null;
                 }
             }
         }
@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 if (Status == HttpConnectionStatus.Active)
                 {
                     Status = HttpConnectionStatus.Inactive;
-                    LastSeenTick = Environment.TickCount64;
+                    LastSeenTicks = Environment.TickCount64;
                 }
             }
         }

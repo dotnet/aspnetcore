@@ -2746,7 +2746,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var heartbeatCount = 5;
                     for (var i = 0; i < heartbeatCount; i++)
                     {
-                        clock.CurrentTick = clock.CurrentTick + intervalInMS + 1;
+                        clock.CurrentTicks = clock.CurrentTicks + intervalInMS + 1;
                         client.TickHeartbeat();
                     }
 
@@ -2808,7 +2808,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     // We go over the 100 ms timeout interval multiple times
                     for (var i = 0; i < 3; i++)
                     {
-                        clock.CurrentTick = clock.CurrentTick + timeoutInMS + 1;
+                        clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
                         client.TickHeartbeat();
                     }
 
@@ -2841,7 +2841,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await client.Connected.DefaultTimeout();
                     await client.SendHubMessageAsync(PingMessage.Instance);
 
-                    clock.CurrentTick = clock.CurrentTick + timeoutInMS + 1;
+                    clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
                     client.TickHeartbeat();
 
                     await connectionHandlerTask.DefaultTimeout();
@@ -2870,7 +2870,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     for (int i = 0; i < 10; i++)
                     {
-                        clock.CurrentTick = clock.CurrentTick + timeoutInMS - 1;
+                        clock.CurrentTicks = clock.CurrentTicks + timeoutInMS - 1;
                         client.TickHeartbeat();
                         await client.SendHubMessageAsync(PingMessage.Instance);
                     }

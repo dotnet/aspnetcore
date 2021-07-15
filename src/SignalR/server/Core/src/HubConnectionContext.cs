@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR
             HubCallerContext = new DefaultHubCallerContext(this);
 
             _systemClock = contextOptions.SystemClock ?? new SystemClock();
-            _lastSendTick = _systemClock.CurrentTick;
+            _lastSendTick = _systemClock.CurrentTicks;
 
             // We'll be avoiding using the semaphore when the limit is set to 1, so no need to allocate it
             var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void KeepAliveTick()
         {
-            var currentTime = _systemClock.CurrentTick;
+            var currentTime = _systemClock.CurrentTicks;
 
             // Implements the keep-alive tick behavior
             // Each tick, we check if the time since the last send is larger than the keep alive duration (in ticks).
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (_receivedMessageTimeoutEnabled)
                 {
-                    _receivedMessageElapsedTicks = _systemClock.CurrentTick - _receivedMessageTick;
+                    _receivedMessageElapsedTicks = _systemClock.CurrentTicks - _receivedMessageTick;
 
                     if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
                     {
@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.SignalR
             lock (_receiveMessageTimeoutLock)
             {
                 _receivedMessageTimeoutEnabled = true;
-                _receivedMessageTick = _systemClock.CurrentTick;
+                _receivedMessageTick = _systemClock.CurrentTicks;
             }
         }
 
