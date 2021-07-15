@@ -210,6 +210,8 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             if (!_disposed)
             {
+                _disposed = true;
+
                 if (disposing)
                 {
                     if (_currentPageContext != null)
@@ -217,18 +219,15 @@ namespace Microsoft.AspNetCore.Components.WebView
                         await _currentPageContext.DisposeAsync();
                     }
                 }
-
-                _disposed = true;
             }
         }
 
         /// <inheritdoc/>
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             // Do not change this code. Put cleanup code in 'DisposeAsync(bool disposing)' method
-            var task = DisposeAsync(disposing: true);
+            await DisposeAsync(disposing: true);
             GC.SuppressFinalize(this);
-            return task;
         }
     }
 }
