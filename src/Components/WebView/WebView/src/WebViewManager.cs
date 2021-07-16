@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     /// should subclass this to wire up the abstract and protected methods to the APIs of
     /// the platform's web view.
     /// </summary>
-    public abstract class WebViewManager : IDisposable
+    public abstract class WebViewManager : IAsyncDisposable
     {
         // These services are not DI services, because their lifetime isn't limited to a single
         // per-page-load scope. Instead, their lifetime matches the webview itself.
@@ -176,7 +175,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             // If there was some previous attached page, dispose all its resources. We're not eagerly disposing
             // page contexts when the user navigates away, because we don't get notified about that. We could
             // change this if any important reason emerges.
-            _currentPageContext?.Dispose();
+            if (_currentPageContext != null)
+            {
+                await _currentPageContext.DisposeAsync();
+            }
 
             var serviceScope = _provider.CreateAsyncScope();
             _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
@@ -203,26 +205,25 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <summary>
         /// Disposes the current <see cref="WebViewManager"/> instance.
         /// </summary>
-        /// <param name="disposing"><c>true</c> when dispose was called explicitly; <c>false</c> when it is called as part of the finalizer.</param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual async ValueTask DisposeAsyncCore()
         {
             if (!_disposed)
             {
-                if (disposing)
-                {
-                    _currentPageContext?.Dispose();
-                }
-
                 _disposed = true;
+
+                if (_currentPageContext != null)
+                {
+                    await _currentPageContext.DisposeAsync();
+                }
             }
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            // Do not change this code. Put cleanup code in 'DisposeAsync(bool disposing)' method
             GC.SuppressFinalize(this);
+            await DisposeAsyncCore();
         }
     }
 }
