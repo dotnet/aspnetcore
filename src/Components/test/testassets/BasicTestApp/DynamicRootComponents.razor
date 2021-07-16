@@ -17,6 +17,7 @@
 <p>
     <button id="set-complex-params" onclick="setComplexParameters()">Set complex parameters</button>
     <button id="set-invalid-params" onclick="setInvalidParameters()">Set invalid parameters</button>
+    <button id="set-catchall-params" onclick="setCatchAllParameters()">Set catch-all parameters</button>
 </p>
 
 <p>
@@ -80,6 +81,18 @@
         } catch (ex) {
             setMessage(`Error setting parameters: ${ex}`);
         }
+    }
+
+    function setCatchAllParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        component.setParameters({
+            stringVal: 'Hello',
+            wholeNumberVal: 1,
+            fractionalNumberVal: -123.456,
+            trueVal: true,
+            falseVal: false,
+            nullVal: null
+        });
     }
 
     function removeRootComponent() {
