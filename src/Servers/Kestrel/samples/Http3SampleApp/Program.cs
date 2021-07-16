@@ -14,6 +14,9 @@ namespace Http3SampleApp
     {
         public static void Main(string[] args)
         {
+            // Required to enable Quic.
+            AppContext.SetSwitch("System.Net.SocketsHttpHandler.Http3Support", true);
+
             var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
 
             var hostBuilder = new HostBuilder()
