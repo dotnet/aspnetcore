@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Web
                     switch (parametersReader.TokenType)
                     {
                         case JsonTokenType.Number:
-                            parameterValue = parametersReader.GetInt64();
+                            parameterValue = parametersReader.GetDouble();
                             break;
                         case JsonTokenType.String:
                             parameterValue = parametersReader.GetString();
