@@ -25,6 +25,7 @@ internal partial class HttpConnectionManager
     private readonly ILogger<HttpConnectionManager> _logger;
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
     private readonly long _disconnectTimeoutTicks;
+    private readonly ConnectionOptions _connectionOptions;
 
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
     {
@@ -175,8 +176,14 @@ internal partial class HttpConnectionManager
         }
     }
 
-    public void CloseConnections()
+    public async Task CloseConnections()
     {
+        if (ShutdownDelay != TimeSpan.Zero)
+        {
+            // Delay to let users react to application shutdown before we close the SignalR connections
+            await Task.Delay(ShutdownDelay);
+        }
+
         // Stop firing the timer
         _nextHeartbeat.Dispose();
 

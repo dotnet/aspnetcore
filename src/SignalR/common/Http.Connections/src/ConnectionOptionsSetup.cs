@@ -15,6 +15,8 @@ public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
     /// </summary>
     public static TimeSpan DefaultDisconectTimeout = TimeSpan.FromSeconds(15);
 
+    internal static readonly TimeSpan DefaultShutdownDelay = TimeSpan.FromSeconds(1);
+
     /// <summary>
     /// Sets default values for options if they have not been set yet.
     /// </summary>
@@ -24,6 +26,16 @@ public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
         if (options.DisconnectTimeout == null)
         {
             options.DisconnectTimeout = DefaultDisconectTimeout;
+
+            if (options.ShutdownDelay is null)
+            {
+                options.ShutdownDelay = DefaultShutdownDelay;
+            }
+
+            if (options.ShutdownDelay is null)
+            {
+                options.ShutdownDelay = DefaultShutdownDelay;
+            }
         }
     }
 }
