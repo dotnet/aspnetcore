@@ -28,7 +28,17 @@ export function attachRootComponentToElement(elementSelector: string, componentI
     throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
   }
 
-  const appendContent = pseudoSelector?.toLowerCase() === 'after';
+  let appendContent = false;
+
+  if (pseudoSelector !== undefined) {
+    switch (pseudoSelector.toLowerCase()) {
+      case 'after':
+        appendContent = true;
+        break;
+      default:
+        throw new Error(`Unknown pseudo-selector '${pseudoSelector}'.`);
+    }
+  }
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   // Only client-side Blazor supplies a browser renderer ID
