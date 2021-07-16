@@ -143,13 +143,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
             }
 
-            foreach (char c in result)
+            // Non-tab control characters are considered invalid
+            if (((ReadOnlySpan<char>)result).IndexOfAny('\u000A', '\u000D') != -1)
             {
-                // Non-tab control characters are considered invalid
-                if (Char.IsControl(c) && c != '\u0009')
-                {
-                    throw new InvalidOperationException();
-                }
+                throw new InvalidOperationException();
             }
 
             return result;
