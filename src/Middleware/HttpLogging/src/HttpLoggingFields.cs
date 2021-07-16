@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// For example:
         /// Query: ?index=1
         /// </p>
+        /// RequestQuery contents can contain private information
+        /// which may have regulatory concerns under GDPR
+        /// and other laws. RequestQuery should not be logged
+        /// unless logs are secure and access controlled
+        /// and the privacy impact assessed.
         /// </summary>
         RequestQuery = 0x2,
 
@@ -131,10 +136,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Flag for logging a collection of HTTP Request properties,
-        /// including <see cref="RequestPath"/>, <see cref="RequestQuery"/>, <see cref="RequestProtocol"/>,
+        /// including <see cref="RequestPath"/>, <see cref="RequestProtocol"/>,
         /// <see cref="RequestMethod"/>, and <see cref="RequestScheme"/>.
         /// </summary>
-        RequestProperties = RequestPath | RequestQuery | RequestProtocol | RequestMethod | RequestScheme,
+        RequestProperties = RequestPath | RequestProtocol | RequestMethod | RequestScheme,
 
         /// <summary>
         /// Flag for logging HTTP Request properties and headers.
