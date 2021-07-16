@@ -1,23 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/vs-2017.3.host",
-  "name": {
-    "text": "Blazor WebAssembly App",
-    "id": "1050"
-  },
-  "description": {
-    "text": "A project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template can be used for web apps with rich dynamic user interfaces (UIs).",
-    "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
-    "id": "1051"
-  },
   "order": 610,
   "icon": "icon.png",
-  "learnMoreLink": "https://github.com/dotnet/aspnetcore",
-  "uiFilters": [
-    "oneaspnet"
-  ],
-  "additionalWizardParameters": {
-    "$isMultiProjectTemplate$": "true"
-  },
   "supportedAuthentications": [
     {
       "auth": "None",
@@ -48,7 +32,6 @@
       "useHttps": true
     }
   ],
-  "excludeLaunchSettings": false,
   "disableHttpsSymbol": "NoHttps",
   "symbolInfo": [
     {
