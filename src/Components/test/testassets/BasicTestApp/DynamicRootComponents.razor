@@ -83,9 +83,9 @@
         }
     }
 
-    function setCatchAllParameters() {
+    async function setCatchAllParameters() {
         const { component, containerElement } = addedComponents[addedComponents.length - 1];
-        component.setParameters({
+        await component.setParameters({
             stringVal: 'Hello',
             wholeNumberVal: 1,
             fractionalNumberVal: -123.456,
@@ -93,6 +93,7 @@
             falseVal: false,
             nullVal: null
         });
+        setMessage(`Finished setting catchall parameters on component in ${containerElement.id}`);
     }
 
     function removeRootComponent() {
