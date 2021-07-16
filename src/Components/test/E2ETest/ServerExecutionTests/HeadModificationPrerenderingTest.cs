@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
 {
-    public class DeferredComponentPrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<DeferredComponentContentStartup>>
+    public class HeadModificationPrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<DeferredComponentContentStartup>>
     {
-        public DeferredComponentPrerenderingTest(
+        public HeadModificationPrerenderingTest(
             BrowserFixture browserFixture,
             BasicTestAppServerSiteFixture<DeferredComponentContentStartup> serverFixture,
             ITestOutputHelper output)
@@ -27,26 +27,26 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             Navigate("/deferred-component-content");
 
             // Check that page medatada was rendered correctly
-            Browser.Equal("Modified title!", () => Browser.Title);
+            Browser.Equal("Title 1", () => Browser.Title);
             Browser.Exists(By.Id("meta-description"));
 
             BeginInteractivity();
 
             // Check that page medatada has not changed
-            Browser.Equal("Modified title!", () => Browser.Title);
+            Browser.Equal("Title 1", () => Browser.Title);
             Browser.Exists(By.Id("meta-description"));
 
-            var inputTitle = Browser.FindElement(By.Id("input-title"));
-            inputTitle.Clear();
-            inputTitle.SendKeys("New title.\n");
+            var titleText1 = Browser.FindElement(By.Id("title-text-1"));
+            titleText1.Clear();
+            titleText1.SendKeys("Updated title 1\n");
 
-            var inputDescription = Browser.FindElement(By.Id("input-description"));
-            inputDescription.Clear();
-            inputDescription.SendKeys("New description.\n");
+            var descriptionText1 = Browser.FindElement(By.Id("description-text-1"));
+            descriptionText1.Clear();
+            descriptionText1.SendKeys("Updated description 1\n");
 
             // Check that head metadata can be changed after prerendering.
-            Browser.Equal("New title.", () => Browser.Title);
-            Browser.Equal("New description.", () => Browser.FindElement(By.Id("meta-description")).GetAttribute("content"));
+            Browser.Equal("Updated title 1", () => Browser.Title);
+            Browser.Equal("Updated description 1", () => Browser.FindElement(By.Id("meta-description")).GetAttribute("content"));
         }
 
         private void BeginInteractivity()

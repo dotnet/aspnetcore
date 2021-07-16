@@ -1,51 +1,61 @@
-﻿<HeadContent>
-    <meta id="meta-description" name="description" content="@_description">
-</HeadContent>
-
-<PageTitle>@_title</PageTitle>
+﻿<h3>Head modification</h3>
 
 <p>
-    Title:
-    <input id="input-title" type="text" @bind-value="_title" />
+	Title modification
+
+	@for (var i = 0; i < _titleEntries.Length; i++)
+	{
+		var index = i;
+		var titleEntry = _titleEntries[index];
+
+		<br />
+		<input id="title-checkbox-@(index + 1)" type="checkbox" @bind="titleEntry.Enabled" />
+		<input id="title-text-@(index + 1)" type="text" @bind="titleEntry.Content" />
+
+		@if (titleEntry.Enabled)
+		{
+			<PageTitle>@titleEntry.Content</PageTitle>
+		}
+	}
 </p>
 
 <p>
-    Description:
-    <input id="input-description" type="text" @bind-value="_description" />
-</p>
+	Description modification
 
-<p>
-    Dynamic head content:
+	@for (var i = 0; i < _descriptionEntries.Length; i++)
+	{
+		var index = i;
+		var descriptionEntry = _descriptionEntries[index];
 
-    <select id="select-dynamic-head-content" @onchange=OnSelectedIndexChanged>
-        <option value="@(0)">None</option>
-        @for (int i = 1; i < 3; i++)
-        {
-            <option value="@i">@i</option>
-        }
-    </select>
+		<br />
+		<input id="description-checkbox-@(index + 1)" type="checkbox" @bind="descriptionEntry.Enabled" />
+		<input id="description-text-@(index + 1)" type="text" @bind="descriptionEntry.Content" />
 
-    @switch (_selectedIndex)
-    {
-        case 1:
-			<PageTitle>Overridden title 1</PageTitle>
-            break;
-        case 2:
-			<PageTitle>Overridden title 2</PageTitle>
-            break;
-        default:
-            break;
-    }
+		@if (descriptionEntry.Enabled)
+		{
+			<HeadContent>
+				<meta id="meta-description" name="description" content="@descriptionEntry.Content">
+			</HeadContent>
+		}
+	}
 </p>
 
 @code {
-    private string _title = "Modified title!";
-    private string _description = "Modified description!";
+	private class CheckboxEntry
+	{
+		public string Content { get; set; }
+		public bool Enabled { get; set; }
+	}
 
-    private int _selectedIndex;
+	private readonly CheckboxEntry[] _titleEntries = new CheckboxEntry[]
+	{
+		new() { Content = "Title 1", Enabled = true },
+		new() { Content = "Title 2", Enabled = false }
+	};
 
-    private void OnSelectedIndexChanged(ChangeEventArgs e)
-    {
-        _selectedIndex = int.Parse(e.Value.ToString());
-    }
+	private readonly CheckboxEntry[] _descriptionEntries = new CheckboxEntry[]
+	{
+		new() { Content = "Description 1", Enabled = true },
+		new() { Content = "Description 2", Enabled = false }
+	};
 }
