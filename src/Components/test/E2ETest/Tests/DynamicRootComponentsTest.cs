@@ -37,8 +37,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var message = app.FindElement(By.Id("message"));
 
-
-
             // We can add root components
             app.FindElement(By.Id("add-root-component")).Click();
 
