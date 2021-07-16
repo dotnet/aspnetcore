@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Tests
             var changed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             monitor.OnChange(newOptions =>
             {
-                changed.SetResult(0);
+                changed.TrySetResult(0);
             });
 
             config["AllowedHosts"] = "NewHost";

@@ -177,9 +177,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             _hostBuilder.ConfigureHostConfiguration(builder =>
             {
-                // TODO: Use a ChainedConfigurationSource instead.
-                // See EnvironmentSpecificLoggingConfigurationSectionPassedToLoggerByDefault in WebApplicationFuncationalTests.
-
                 // All the sources in builder.Sources should be in Configuration.Sources
                 // already thanks to the BootstrapHostBuilder.
                 builder.Sources.Clear();
@@ -189,10 +186,7 @@ namespace Microsoft.AspNetCore.Builder
                     builder.Properties[key] = value;
                 }
 
-                foreach (var s in ((IConfigurationBuilder)Configuration).Sources)
-                {
-                    builder.Sources.Add(s);
-                }
+                builder.AddConfiguration(Configuration, shouldDisposeConfiguration: true);
             });
 
             genericWebHostBuilder.ConfigureServices((context, services) =>
