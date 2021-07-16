@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Net.Http.Headers;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SpaProxy
 {
@@ -25,10 +21,12 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         public SpaProxyLaunchManager(
             ILogger<SpaProxyLaunchManager> logger,
+            IHostApplicationLifetime appLifetime,
             IOptions<SpaDevelopmentServerOptions> options)
         {
             _options = options.Value;
             _logger = logger;
+            appLifetime.ApplicationStopping.Register(() => Dispose(true));
         }
 
         public void StartInBackground(CancellationToken cancellationToken)
@@ -199,7 +197,7 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            // We don't need to do anything here since Dispose will take care of cleaning up the process if necessary.
+            Dispose(true);
             return Task.CompletedTask;
         }
 
