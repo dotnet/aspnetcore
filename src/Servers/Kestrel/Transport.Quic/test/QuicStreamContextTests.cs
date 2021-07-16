@@ -269,5 +269,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             // Both send and receive loops have exited.
             await quicStreamContext._processingTask.DefaultTimeout();
         }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task StreamAbortFeature_AbortWrite_ClientReceivesAbort()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await quicConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            await using var clientStream = quicConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData).DefaultTimeout();
+
+            await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+
+            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+            var serverReadTask = serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).AsTask();
+
+            var streamAbortFeature = serverStream.Features.Get<IStreamAbortFeature>();
+
+            streamAbortFeature.AbortRead((long)Http3ErrorCode.InternalError, new ConnectionAbortedException("Test reason"));
+
+            // Assert
+
+            // Server writes data
+            await serverStream.Transport.Output.WriteAsync(TestData).DefaultTimeout();
+            // Server completes its output.
+            await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
+
+            // Client successfully reads data to end
+            var buffer = new byte[1024];
+            var readCount = await clientStream.ReadUntilEndAsync(buffer).DefaultTimeout();
+            Assert.Equal(TestData.Length, readCount);
+
+            // Client errors when writing
+            var clientEx = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.WriteAsync(buffer).AsTask()).DefaultTimeout();
+            Assert.Equal((long)Http3ErrorCode.InternalError, clientEx.ErrorCode);
+
+            // Server errors when reading
+            var serverEx = await Assert.ThrowsAsync<ConnectionAbortedException>(() => serverReadTask).DefaultTimeout();
+            Assert.Equal("Test reason", serverEx.Message);
+        }
     }
 }

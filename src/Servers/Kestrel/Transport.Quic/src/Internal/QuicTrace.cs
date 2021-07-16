@@ -154,6 +154,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
+        [LoggerMessage(12, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read side aborted by application because: ""{Reason}"".", SkipEnabledCheck = true)]
+        private static partial void StreamAbortRead(ILogger logger, string connectionId, string reason);
+
+        public void StreamAbortRead(QuicStreamContext streamContext, string reason)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamAbortRead(_logger, streamContext.ConnectionId, reason, null);
+            }
+        }
+
+        [LoggerMessage(13, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write side aborted by application because: ""{Reason}"".", SkipEnabledCheck = true)]
+        private static partial void StreamAbortWrite(ILogger logger, string connectionId, string reason);
+        
+        public void StreamAbortWrite(QuicStreamContext streamContext, string reason)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamAbortWrite(_logger, streamContext.ConnectionId, reason, null);
+            }
+        }
+        
         private static StreamType GetStreamType(QuicStreamContext streamContext) =>
             streamContext.CanRead && streamContext.CanWrite
                 ? StreamType.Bidirectional
