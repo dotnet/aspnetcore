@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -226,6 +227,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void InvalidHostHeadersRejected(string host)
         {
             Assert.False(HttpUtilities.IsHostHeaderValid(host));
+        }
+
+        public static TheoryData<Func<string, Encoding>> ExceptionThrownForCRLFData
+        {
+            get
+            {
+                return new TheoryData<Func<string, Encoding>> {
+                    KestrelServerOptions.DefaultHeaderEncodingSelector,
+                    str => null,
+                    str => Encoding.Latin1
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ExceptionThrownForCRLFData))]
+        private void ExceptionThrownForCRLF(Func<string, Encoding> selector)
+        {
+            byte[] encodedBytes = { 0x01, 0x0A, 0x0D };
+            Assert.Throws<InvalidOperationException>(() =>
+                HttpUtilities.GetRequestHeaderString(encodedBytes.AsSpan(), HeaderNames.Accept, selector));
         }
     }
 }
