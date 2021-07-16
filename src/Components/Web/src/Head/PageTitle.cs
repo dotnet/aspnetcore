@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Sections;
 
-namespace Microsoft.AspNetCore.Components.Sections
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
-    /// Enables rendering an HTML <c>&lt;title&gt;</c> to a <see cref="HeadSection"/> component.
+    /// Enables rendering an HTML <c>&lt;title&gt;</c> to a <see cref="HeadOutlet"/> component.
     /// </summary>
     public sealed class PageTitle : ComponentBase
     {
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Sections
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<SectionContent>(0);
-            builder.AddAttribute(1, nameof(SectionContent.Name), HeadSection.TitleSectionOutletName);
+            builder.AddAttribute(1, nameof(SectionContent.Name), HeadOutlet.TitleSectionOutletName);
             builder.AddAttribute(2, nameof(SectionContent.ChildContent), (RenderFragment)BuildTitleRenderTree);
             builder.CloseComponent();
         }

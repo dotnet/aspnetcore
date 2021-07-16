@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Sections
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Renders content provided by <see cref="HeadContent"/> components.
     /// </summary>
-    public sealed class HeadSection : ComponentBase
+    public sealed class HeadOutlet : ComponentBase
     {
         private const string GetAndRemoveExistingTitle = "Blazor._internal.PageTitle.getAndRemoveExistingTitle";
 

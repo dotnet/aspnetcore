@@ -168,7 +168,4 @@
   <data name="PersistComponentStateTagHelper_FailedToInferComponentPersistenceMode" xml:space="preserve">
     <value>The persistence mode could not be determined based on the rendered components. Specify a value using the '{0}' attribute.</value>
   </data>
-  <data name="ComponentOutputTagHelper_NoMatchingName" xml:space="preserve">
-    <value>No component has an output name matching '{0}'.</value>
-  </data>
 </root>

@@ -9,7 +9,7 @@ using System.Web;
 using BasicTestApp.AuthTest;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Sections;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -27,7 +27,7 @@ namespace BasicTestApp
             await SimulateErrorsIfNeededForTest();
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.RootComponents.Add<HeadSection>("head", appendContent: true);
+            builder.RootComponents.Add<HeadOutlet>("head", appendContent: true);
             builder.RootComponents.Add<Index>("root");
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

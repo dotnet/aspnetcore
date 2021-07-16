@@ -1,5 +1,5 @@
 ﻿@namespace BlazorServerApp.Pages
-@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.AspNetCore.Components.Web
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
@@ -10,7 +10,7 @@
     <base href="~/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
-    <component type="typeof(HeadSection)" render-mode="ServerPrerendered"/>
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered"/>
 </head>
 <body>
     @RenderBody()
