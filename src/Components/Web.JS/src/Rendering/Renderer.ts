@@ -21,23 +21,20 @@ export function attachRootComponentToLogicalElement(browserRendererId: number, l
 }
 
 export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId?: number): void {
-  const [selector, pseudoSelector] = elementSelector.split('::');
-
-  const element = document.querySelector(selector);
-  if (!element) {
-    throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
-  }
-
+  const afterElementSelector = '::after';
+  const beforeElementSelector = '::before';
   let appendContent = false;
 
-  if (pseudoSelector !== undefined) {
-    switch (pseudoSelector.toLowerCase()) {
-      case 'after':
-        appendContent = true;
-        break;
-      default:
-        throw new Error(`Unknown pseudo-selector '${pseudoSelector}'.`);
-    }
+  if (elementSelector.endsWith(afterElementSelector)) {
+    elementSelector = elementSelector.slice(0, -afterElementSelector.length);
+    appendContent = true;
+  } else if (elementSelector.endsWith(beforeElementSelector)) {
+    throw new Error(`The '${beforeElementSelector}' selector is not supported.`);
+  }
+
+  const element = document.querySelector(elementSelector);
+  if (!element) {
+    throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
   }
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
