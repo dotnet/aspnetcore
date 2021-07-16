@@ -21,11 +21,6 @@ namespace Microsoft.AspNetCore.Components.Sections
         /// </summary>
         [Parameter] public string Name { get; set; } = default!;
 
-        /// <summary>
-        /// The content to be rendered when no <see cref="SectionContent"/> instances are providing content.
-        /// </summary>
-        [Parameter] public RenderFragment? ChildContent { get; set; } = default;
-
         void IComponent.Attach(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
@@ -73,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Sections
                 return;
             }
 
-            _renderHandle.Render(_content ?? ChildContent ?? _emptyRenderFragment);
+            _renderHandle.Render(_content ?? _emptyRenderFragment);
         }
 
         /// <inheritdoc/>

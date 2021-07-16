@@ -22,12 +22,6 @@ namespace Microsoft.AspNetCore.Components.Web
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
 
-        /// <summary>
-        /// The content to be rendered when no <see cref="HeadContent"/> instances are providing content.
-        /// </summary>
-        [Parameter]
-        public RenderFragment? ChildContent { get; set; }
-
         /// <inheritdoc/>
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -44,18 +38,20 @@ namespace Microsoft.AspNetCore.Components.Web
             // Render the title content
             builder.OpenComponent<SectionOutlet>(0);
             builder.AddAttribute(1, nameof(SectionOutlet.Name), TitleSectionOutletName);
-
-            if (!string.IsNullOrEmpty(_defaultTitle))
-            {
-                builder.AddAttribute(2, nameof(SectionOutlet.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
-            }
-
             builder.CloseComponent();
 
+            // Render the default title if it exists
+            if (!string.IsNullOrEmpty(_defaultTitle))
+            {
+                builder.OpenComponent<SectionContent>(2);
+                builder.AddAttribute(3, nameof(SectionContent.Name), TitleSectionOutletName);
+                builder.AddAttribute(4, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
+                builder.CloseComponent();
+            }
+
             // Render the rest of the head metadata
-            builder.OpenComponent<SectionOutlet>(3);
-            builder.AddAttribute(4, nameof(SectionOutlet.Name), HeadSectionOutletName);
-            builder.AddAttribute(5, nameof(SectionOutlet.ChildContent), ChildContent);
+            builder.OpenComponent<SectionOutlet>(5);
+            builder.AddAttribute(6, nameof(SectionOutlet.Name), HeadSectionOutletName);
             builder.CloseComponent();
         }
 

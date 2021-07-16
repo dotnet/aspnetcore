@@ -27,8 +27,6 @@ Microsoft.AspNetCore.Components.Web.HeadContent.ChildContent.get -> Microsoft.As
 Microsoft.AspNetCore.Components.Web.HeadContent.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Web.HeadContent.HeadContent() -> void
 Microsoft.AspNetCore.Components.Web.HeadOutlet
-Microsoft.AspNetCore.Components.Web.HeadOutlet.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Microsoft.AspNetCore.Components.Web.HeadOutlet.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Web.HeadOutlet.HeadOutlet() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
