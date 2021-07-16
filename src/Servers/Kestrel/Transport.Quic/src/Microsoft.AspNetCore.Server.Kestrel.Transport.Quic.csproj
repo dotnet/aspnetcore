@@ -12,6 +12,9 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
+    <Compile Include="$(KestrelSharedSourceRoot)\PooledStreamStack.cs" Link="Internal\PooledStreamStack.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeReader.cs" Link="Internal\CompletionPipeReader.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeWriter.cs" Link="Internal\CompletionPipeWriter.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />

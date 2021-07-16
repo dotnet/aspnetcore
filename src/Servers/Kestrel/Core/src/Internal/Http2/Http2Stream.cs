@@ -20,7 +20,7 @@ using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable, IPooledStream
     {
         private Http2StreamContext _context = default!;
         private Http2OutputProducer _http2Output = default!;
@@ -675,5 +675,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             HttpRequestHeaders.Append(name, value);
         }
+
+        void IPooledStream.DisposeCore()
+        {
+            Dispose();
+        }
+
+        long IPooledStream.PoolExpirationTicks => DrainExpirationTicks;
     }
 }

@@ -1,31 +1,38 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+#nullable enable
+
+namespace Microsoft.AspNetCore.Server.Kestrel
 {
+    internal interface IPooledStream
+    {
+        long PoolExpirationTicks { get; }
+        void DisposeCore();
+    }
+
     // See https://github.com/dotnet/runtime/blob/master/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
-    internal struct Http2StreamStack
+    internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
     {
         // Internal for testing
-        internal Http2StreamAsValueType[] _array;
+        internal StreamAsValueType[] _array;
         private int _size;
 
-        public Http2StreamStack(int size)
+        public PooledStreamStack(int size)
         {
-            _array = new Http2StreamAsValueType[size];
+            _array = new StreamAsValueType[size];
             _size = 0;
         }
 
         public int Count => _size;
 
-        public bool TryPop([NotNullWhen(true)] out Http2Stream? result)
+        public bool TryPop([NotNullWhen(true)] out TValue? result)
         {
             int size = _size - 1;
-            Http2StreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             if ((uint)size >= (uint)array.Length)
             {
@@ -39,10 +46,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
-        public bool TryPeek([NotNullWhen(true)] out Http2Stream? result)
+        public bool TryPeek([NotNullWhen(true)] out TValue? result)
         {
             int size = _size - 1;
-            Http2StreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             if ((uint)size >= (uint)array.Length)
             {
@@ -55,10 +62,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         // Pushes an item to the top of the stack.
-        public void Push(Http2Stream item)
+        public void Push(TValue item)
         {
             int size = _size;
-            Http2StreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             if ((uint)size < (uint)array.Length)
             {
@@ -73,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         // Non-inline from Stack.Push to improve its code quality as uncommon path
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void PushWithResize(Http2Stream item)
+        private void PushWithResize(TValue item)
         {
             Array.Resize(ref _array, 2 * _array.Length);
             _array[_size] = item;
@@ -83,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public void RemoveExpired(long now)
         {
             int size = _size;
-            Http2StreamAsValueType[] array = _array;
+            StreamAsValueType[] array = _array;
 
             var removeCount = CalculateRemoveCount(now, size, array);
             if (removeCount == 0)
@@ -96,8 +103,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Dispose removed streams
             for (var i = 0; i < removeCount; i++)
             {
-                Http2Stream stream = array[i];
-                stream.Dispose();
+                TValue stream = array[i];
+                stream.DisposeCore();
             }
 
             // Move remaining streams
@@ -115,12 +122,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _size = newSize;
         }
 
-        private static int CalculateRemoveCount(long now, int size, Http2StreamAsValueType[] array)
+        private static int CalculateRemoveCount(long now, int size, StreamAsValueType[] array)
         {
             for (var i = 0; i < size; i++)
             {
-                Http2Stream stream = array[i];
-                if (stream.DrainExpirationTicks >= now)
+                TValue stream = array[i];
+                if (stream.PoolExpirationTicks >= now)
                 {
                     // Stream is still valid. All streams after this will have a later expiration.
                     // No reason to keep checking. Return count of streams to remove.
@@ -132,12 +139,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return size;
         }
 
-        internal readonly struct Http2StreamAsValueType
+        internal readonly struct StreamAsValueType
         {
-            private readonly Http2Stream _value;
-            private Http2StreamAsValueType(Http2Stream value) => _value = value;
-            public static implicit operator Http2StreamAsValueType(Http2Stream s) => new Http2StreamAsValueType(s);
-            public static implicit operator Http2Stream(Http2StreamAsValueType s) => s._value;
+            private readonly TValue _value;
+            private StreamAsValueType(TValue value) => _value = value;
+            public static implicit operator StreamAsValueType(TValue s) => new StreamAsValueType(s);
+            public static implicit operator TValue(StreamAsValueType s) => s._value;
         }
     }
 }

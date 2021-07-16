@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 {
@@ -42,7 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
-        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
-
+        internal ISystemClock SystemClock = new SystemClock();
     }
 }
