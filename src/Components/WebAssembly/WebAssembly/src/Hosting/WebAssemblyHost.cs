@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     {
                         foreach (var rootComponent in rootComponents)
                         {
-                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters, rootComponent.AppendContent);
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
                         }
 
                         initializationTcs.SetResult();

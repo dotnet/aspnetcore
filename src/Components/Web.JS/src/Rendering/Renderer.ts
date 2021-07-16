@@ -20,11 +20,15 @@ export function attachRootComponentToLogicalElement(browserRendererId: number, l
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);
 }
 
-export function attachRootComponentToElement(elementSelector: string, componentId: number, appendContent: boolean, browserRendererId?: number): void {
-  const element = document.querySelector(elementSelector);
+export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId?: number): void {
+  const [selector, pseudoSelector] = elementSelector.split('::');
+
+  const element = document.querySelector(selector);
   if (!element) {
     throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
   }
+
+  const appendContent = pseudoSelector?.toLowerCase() === 'after';
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   // Only client-side Blazor supplies a browser renderer ID
