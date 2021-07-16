@@ -86,16 +86,16 @@ std::wstring GetDateTime()
     time_t t = seconds.count();
     tm time;
     // convert time to utc
-    GMTIME(&time, &t);
+    gmtime_s(&time, &t);
 
-    wchar_t timeString[sizeof("2019-11-23T13:23:02.000Z")];
+    wchar_t timeString[sizeof(L"2019-11-23T13:23:02.000Z")];
 
     // format string to ISO8601 with additional space for 3 digits of millisecond precision
-    std::wcsftime(timeString, sizeof(timeString), "%FT%T.000Z", &time);
+    std::wcsftime(timeString, sizeof(timeString), L"%FT%T.000Z", &time);
 
     // add millisecond part
     // 5 = 3 digits of millisecond precision + 'Z' + null character ending
-    swprintf(timeString + sizeof(timeString) - 5, 5, "%03dZ", (int)milliseconds.count());
+    swprintf(timeString + sizeof(timeString) - 5, 5, L"%03dZ", (int)milliseconds.count());
     
     return std::wstring(timeString, sizeof(timeString));
 }
@@ -104,7 +104,7 @@ void FileRedirectionOutput::Append(const std::wstring& text)
 {
     if (m_file.is_open())
     {
-        text = GetDateTime() + ": "+ text;
+        text = GetDateTime() + L": " + text;
         auto multiByte = to_multi_byte_string(text, CP_UTF8);
 
         // Writing \r\n to an ostream will cause two new lines to be written rather
