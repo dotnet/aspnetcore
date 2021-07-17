@@ -136,8 +136,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         setting.OutputOptions,
                         waitForData: _options.WaitForDataBeforeAllocatingBuffer);
 
-                    connection.Start();
-
                     _settingsIndex = (_settingsIndex + 1) % _settingsCount;
 
                     return connection;
