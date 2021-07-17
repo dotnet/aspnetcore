@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
     public class HstsMiddlewareTests
     {
         [Fact]
-        public void HstsMiddleware_ArgumentNextIsNull_ThrowsArgumentNullException()
+        public void Ctor_ArgumentNextIsNull_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         }
 
         [Fact]
-        public void HstsMiddleware_ArgumentOptionsIsNull_ThrowsArgumentNullException()
+        public void Ctor_ArgumentOptionsIsNull_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         }
 
         [Fact]
-        public async Task Invoke_SetsHstsHeader()
+        public async Task Invoke_SetsHstsHeaderWithDefaultThirtyDaysMaxAge()
         {
             var middleware = new HstsMiddleware(innerHttpContext => Task.CompletedTask, new OptionsWrapper<HstsOptions>(new HstsOptions()));
 
