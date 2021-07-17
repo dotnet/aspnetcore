@@ -56,7 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             }
             if (sslServerAuthenticationOptions.ServerCertificate == null)
             {
-                throw new InvalidOperationException("SslServerAuthenticationOptions.ServerCertificate must be configured with a value.");
+                var message = $"{nameof(SslServerAuthenticationOptions)}.{nameof(SslServerAuthenticationOptions.ServerCertificate)} must be configured with a value.";
+                throw new InvalidOperationException(message);
             }
 
             var transport = new QuicConnectionListener(_options, _log, endpoint, sslServerAuthenticationOptions);

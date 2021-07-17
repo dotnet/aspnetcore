@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return maskArray;
         }
 
-        private unsafe static ulong GetAsciiStringAsLong(string str)
+        private static unsafe ulong GetAsciiStringAsLong(string str)
         {
             Debug.Assert(str.Length == sizeof(ulong), string.Format(CultureInfo.InvariantCulture, "String must be exactly {0} (ASCII) characters long.", sizeof(ulong)));
 

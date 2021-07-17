@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
         {
-            if (ReferenceEquals(KestrelServerOptions.DefaultRequestHeaderEncodingSelector, encodingSelector))
+            if (ReferenceEquals(KestrelServerOptions.DefaultHeaderEncodingSelector, encodingSelector))
             {
                 return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
             }

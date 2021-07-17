@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class FieldCssClassProvider
     {
-        internal readonly static FieldCssClassProvider Instance = new FieldCssClassProvider();
+        internal static readonly FieldCssClassProvider Instance = new FieldCssClassProvider();
 
         /// <summary>
         /// Gets a string that indicates the status of the specified field as a CSS class.

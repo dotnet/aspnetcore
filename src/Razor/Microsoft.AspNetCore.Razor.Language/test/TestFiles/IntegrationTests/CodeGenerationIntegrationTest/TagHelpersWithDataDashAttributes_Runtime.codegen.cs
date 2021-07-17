@@ -64,8 +64,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             __tagHelperExecutionContext.Add(__DivTagHelper);
             BeginWriteTagHelperAttribute();
 #nullable restore
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
-         Write(foo);
+#line (4,16)-(4,19) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
+Write(foo);
 
 #line default
 #line hidden
@@ -74,8 +74,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             __tagHelperExecutionContext.AddHtmlAttribute("data-one", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             BeginWriteTagHelperAttribute();
 #nullable restore
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
-                        Write(bar);
+#line (4,31)-(4,34) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
+Write(bar);
 
 #line default
 #line hidden
@@ -96,8 +96,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             EndWriteAttribute();
             WriteLiteral(" data-one=\"\" data-two= data-three=hello data-four=");
 #nullable restore
-#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
-                                                       Write(foo);
+#line (5,62)-(5,65) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
+Write(foo);
 
 #line default
 #line hidden

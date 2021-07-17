@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Owin
     /// </summary>
     public class WebSocketAcceptAdapter
     {
-        private IDictionary<string, object> _env;
-        private WebSocketAcceptAlt _accept;
+        private readonly IDictionary<string, object> _env;
+        private readonly WebSocketAcceptAlt _accept;
         private AppFunc _callback;
         private IDictionary<string, object> _options;
 

@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.Owin
     /// </summary>
     public class OwinWebSocketAcceptAdapter
     {
-        private WebSocketAccept _owinWebSocketAccept;
-        private TaskCompletionSource<int> _requestTcs = new TaskCompletionSource<int>();
-        private TaskCompletionSource<WebSocket> _acceptTcs = new TaskCompletionSource<WebSocket>();
-        private TaskCompletionSource<int> _upstreamWentAsync = new TaskCompletionSource<int>();
+        private readonly WebSocketAccept _owinWebSocketAccept;
+        private readonly TaskCompletionSource<int> _requestTcs = new TaskCompletionSource<int>();
+        private readonly TaskCompletionSource<WebSocket> _acceptTcs = new TaskCompletionSource<WebSocket>();
+        private readonly TaskCompletionSource<int> _upstreamWentAsync = new TaskCompletionSource<int>();
         private string _subProtocol;
 
         private OwinWebSocketAcceptAdapter(WebSocketAccept owinWebSocketAccept)

@@ -8,6 +8,7 @@
     <TestAssetOutputName>InProcessNewShimWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">

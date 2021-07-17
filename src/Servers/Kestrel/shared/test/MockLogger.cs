@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class MockLogger : ILogger
     {
-        private List<string> _messages = new List<string>();
+        private readonly List<string> _messages = new List<string>();
 
         public IDisposable BeginScope<TState>(TState state)
             => NullScope.Instance;

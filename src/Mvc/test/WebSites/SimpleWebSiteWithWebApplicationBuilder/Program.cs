@@ -21,7 +21,7 @@ app.MapGet("/many-results", (int id) =>
         return NotFound();
     }
 
-    return RedirectPermanent("/json");
+    return Redirect("/json", permanent: true);
 });
 
 app.Run();

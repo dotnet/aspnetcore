@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -499,7 +500,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.True(result.IsCompleted);
             }
 
-            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync()
+            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(bool expectEnd = false)
             {
                 var frame = new Http3FrameWithPayload();
 
@@ -519,6 +520,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         {
                             consumed = examined = framePayload.End;
                             frame.Payload = framePayload.ToArray();
+
+                            if (expectEnd)
+                            {
+                                if (!result.IsCompleted || buffer.Length > 0)
+                                {
+                                    throw new Exception("Reader didn't complete with frame");
+                                }
+                            }
+
                             return frame;
                         }
                         else
@@ -620,10 +630,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
-                var done = QPackHeaderWriter.BeginEncode(headers.GetEnumerator(), buffer.Span, ref headersTotalSize, out var length);
+                var done = QPackHeaderWriter.BeginEncode(GetHeadersEnumerator(headers),
+                    buffer.Span, ref headersTotalSize, out var length);
                 Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
+            }
+
+            internal Http3HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
+            {
+                var dictionary = headers
+                    .GroupBy(g => g.Key)
+                    .ToDictionary(g => g.Key, g => new StringValues(g.Select(values => values.Value).ToArray()));
+
+                var headersEnumerator = new Http3HeadersEnumerator();
+                headersEnumerator.Initialize(dictionary);
+                return headersEnumerator;
             }
 
             internal async Task SendHeadersPartialAsync()
@@ -644,9 +666,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await SendFrameAsync(frame, data, endStream);
             }
 
-            internal async Task<Dictionary<string, string>> ExpectHeadersAsync()
+            internal async Task<Dictionary<string, string>> ExpectHeadersAsync(bool expectEnd = false)
             {
-                var http3WithPayload = await ReceiveFrameAsync();
+                var http3WithPayload = await ReceiveFrameAsync(expectEnd);
                 Assert.Equal(Http3FrameType.Headers, http3WithPayload.Type);
 
                 _decodedHeaders.Clear();

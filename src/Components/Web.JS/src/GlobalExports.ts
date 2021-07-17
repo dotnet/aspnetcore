@@ -1,6 +1,7 @@
 import { navigateTo, internalFunctions as navigationManagerInternalFunctions, NavigationOptions } from './Services/NavigationManager';
 import { domFunctions } from './DomWrapper';
 import { Virtualize } from './Virtualize';
+import { PageTitle } from './PageTitle';
 import { registerCustomEventType, EventTypeOptions } from './Rendering/Events/EventTypes';
 import { HubConnection } from '@microsoft/signalr';
 import { InputFile } from './InputFile';
@@ -8,6 +9,7 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
+import { getNextChunk } from './StreamingInterop';
 
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
@@ -23,6 +25,7 @@ interface IBlazor {
     navigationManager: typeof navigationManagerInternalFunctions | any,
     domWrapper: typeof domFunctions,
     Virtualize: typeof Virtualize,
+    PageTitle: typeof PageTitle,
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile,
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
@@ -30,7 +33,7 @@ interface IBlazor {
     receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
     retrieveByteArray?: () => System_Object;
     getPersistedState?: () => System_String;
-    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any) => void;
+    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number,
       getId: (index) => number,
@@ -48,7 +51,8 @@ interface IBlazor {
     getLazyAssemblies?: any
     dotNetCriticalError?: any
     getSatelliteAssemblies?: any,
-    sendJSDataStream?: (data: any, streamId: string, chunkSize: number) => void,
+    sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
+    getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
@@ -64,6 +68,9 @@ export const Blazor: IBlazor = {
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
     Virtualize,
+    PageTitle,
+    InputFile,
+    getJSDataStreamChunk: getNextChunk,
   },
 };
 

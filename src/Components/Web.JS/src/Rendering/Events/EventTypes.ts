@@ -103,6 +103,12 @@ function parseChangeEvent(event: Event): ChangeEventArgs {
   if (isTimeBasedInput(element)) {
     const normalizedValue = normalizeTimeBasedValue(element);
     return { value: normalizedValue };
+  } else if (isMultipleSelectInput(element)) {
+    const selectElement = element as HTMLSelectElement;
+    const selectedValues = Array.from(selectElement.options)
+      .filter(option => option.selected)
+      .map(option => option.value);
+    return { value: selectedValues };
   } else {
     const targetIsCheckbox = isCheckbox(element);
     const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
@@ -243,6 +249,10 @@ function isTimeBasedInput(element: Element): element is HTMLInputElement {
   return timeBasedInputs.indexOf(element.getAttribute('type')!) !== -1;
 }
 
+function isMultipleSelectInput(element: Element): element is HTMLSelectElement {
+  return element instanceof HTMLSelectElement && element.type === 'select-multiple';
+}
+
 function normalizeTimeBasedValue(element: HTMLInputElement): string {
   const value = element.value;
   const type = element.type;
@@ -264,7 +274,7 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
 // The following interfaces must be kept in sync with the EventArgs C# classes
 
 interface ChangeEventArgs {
-  value: string | boolean;
+  value: string | boolean | string[];
 }
 
 interface DragEventArgs {

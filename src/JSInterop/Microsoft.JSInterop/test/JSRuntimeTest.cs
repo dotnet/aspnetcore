@@ -404,7 +404,7 @@ namespace Microsoft.JSInterop
             var dataReference = new JSStreamReference(runtime, 10, 10);
 
             // Act
-            var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await runtime.ReadJSDataAsStreamAsync(dataReference, 10, 10, CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await runtime.ReadJSDataAsStreamAsync(dataReference, 10, CancellationToken.None));
 
             // Assert
             Assert.Equal("The current JavaScript runtime does not support reading data streams.", exception.Message);

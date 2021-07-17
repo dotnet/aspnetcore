@@ -23,8 +23,9 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData\*.cs" LinkBase="WebEventData" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
@@ -33,7 +34,6 @@
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
     <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadFeature.cs" LinkBase="HotReload" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,10 +51,6 @@
   <ItemGroup>
     <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />
     <Content Include="build\$(DefaultNetCoreTargetFramework)\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
   </ItemGroup>
 
   <!-- blazor.webassembly.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->

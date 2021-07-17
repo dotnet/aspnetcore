@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         private PipeReader? _internalPipeReader;
         private Stream? _streamInstanceWhenWrapped;
-        private HttpContext _context;
+        private readonly HttpContext _context;
 
         /// <summary>
         /// Initializes a new instance of <see cref="IRequestBodyPipeFeature"/>.

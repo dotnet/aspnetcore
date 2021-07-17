@@ -1007,7 +1007,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class CustomReadOnlyCollection<T> : ICollection<T>
         {
-            private ICollection<T> _original;
+            private readonly ICollection<T> _original;
 
             public CustomReadOnlyCollection()
                 : this(new List<T>())

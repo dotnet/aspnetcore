@@ -22,7 +22,7 @@ namespace System.Buffers
 
         private readonly IMemoryOwner<byte> _memoryOwner;
         private MemoryHandle? _memoryHandle;
-        private Memory<byte> _memory;
+        private readonly Memory<byte> _memory;
 
         private readonly object _syncObj = new object();
         private bool _isDisposed;

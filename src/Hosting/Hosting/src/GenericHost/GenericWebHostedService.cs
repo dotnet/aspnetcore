@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -18,13 +19,14 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class GenericWebHostService : IHostedService
+    internal sealed partial class GenericWebHostService : IHostedService
     {
         public GenericWebHostService(IOptions<GenericWebHostServiceOptions> options,
                                      IServer server,
                                      ILoggerFactory loggerFactory,
                                      DiagnosticListener diagnosticListener,
                                      ActivitySource activitySource,
+                                     DistributedContextPropagator propagator,
                                      IHttpContextFactory httpContextFactory,
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
@@ -37,6 +39,7 @@ namespace Microsoft.AspNetCore.Hosting
             LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
             ActivitySource = activitySource;
+            Propagator = propagator;
             HttpContextFactory = httpContextFactory;
             ApplicationBuilderFactory = applicationBuilderFactory;
             StartupFilters = startupFilters;
@@ -51,6 +54,7 @@ namespace Microsoft.AspNetCore.Hosting
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
         public ActivitySource ActivitySource { get; }
+        public DistributedContextPropagator Propagator { get; }
         public IHttpContextFactory HttpContextFactory { get; }
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
@@ -114,7 +118,7 @@ namespace Microsoft.AspNetCore.Hosting
                 application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
             }
 
-            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, HttpContextFactory);
+            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory);
 
             await Server.StartAsync(httpApplication, cancellationToken);
 
@@ -122,7 +126,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var address in addresses)
                 {
-                    LifetimeLogger.ListeningOnAddress(address);
+                    Log.ListeningOnAddress(LifetimeLogger, address);
                 }
             }
 
@@ -130,7 +134,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var assembly in Options.WebHostOptions.GetFinalHostingStartupAssemblies())
                 {
-                    Logger.StartupAssemblyLoaded(assembly);
+                    Log.StartupAssemblyLoaded(Logger, assembly);
                 }
             }
 
@@ -153,6 +157,20 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 HostingEventSource.Log.HostStop();
             }
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(14, LogLevel.Information,
+                "Now listening on: {address}",
+                EventName = "ListeningOnAddress")]
+            public static partial void ListeningOnAddress(ILogger logger, string address);
+
+            [LoggerMessage(13, LogLevel.Debug,
+                "Loaded hosting startup assembly {assemblyName}",
+                EventName = "HostingStartupAssemblyLoaded",
+                SkipEnabledCheck = true)]
+            public static partial void StartupAssemblyLoaded(ILogger logger, string assemblyName);
         }
     }
 }

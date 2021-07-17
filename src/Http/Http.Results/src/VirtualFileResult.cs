@@ -1,16 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Result
 {
@@ -28,20 +24,8 @@ namespace Microsoft.AspNetCore.Http.Result
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public VirtualFileResult(string fileName, string contentType)
-            : this(fileName, MediaTypeHeaderValue.Parse(contentType))
-        {
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="VirtualFileResult"/> instance with
-        /// the provided <paramref name="fileName"/> and the
-        /// provided <paramref name="contentType"/>.
-        /// </summary>
-        /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
-        /// <param name="contentType">The Content-Type header of the response.</param>
-        public VirtualFileResult(string fileName, MediaTypeHeaderValue contentType)
-            : base(contentType.ToString())
+        public VirtualFileResult(string fileName, string? contentType)
+            : base(contentType)
         {
             FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }

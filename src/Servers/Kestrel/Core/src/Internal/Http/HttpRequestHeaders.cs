@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null)
         {
             ReuseHeaderValues = reuseHeaderValues;
-            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
         }
 
         public void OnHeadersComplete()
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [SkipLocalsInit]
-        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding? customEncoding)
+        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
         {
             if (_contentLength.HasValue)
             {
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // long.MaxValue = 9223372036854775807 (19 chars)
             Span<char> decodedChars = stackalloc char[20];
-            var numChars = customEncoding!.GetChars(value, decodedChars);
+            var numChars = customEncoding.GetChars(value, decodedChars);
             long parsed = -1;
 
             if (numChars > 19 ||

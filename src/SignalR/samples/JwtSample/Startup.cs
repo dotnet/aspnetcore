@@ -69,6 +69,7 @@ namespace JwtSample
             app.UseFileServer();
 
             app.UseRouting();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

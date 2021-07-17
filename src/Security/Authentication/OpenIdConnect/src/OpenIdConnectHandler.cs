@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Redirect user to the identity provider for sign out
         /// </summary>
         /// <returns>A task executing the sign out procedure</returns>
-        public async virtual Task SignOutAsync(AuthenticationProperties? properties)
+        public virtual async Task SignOutAsync(AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardSignOut);
             if (target != null)
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Response to the callback from OpenId provider after session ended.
         /// </summary>
         /// <returns>A task executing the callback procedure</returns>
-        protected async virtual Task<bool> HandleSignOutCallbackAsync()
+        protected virtual async Task<bool> HandleSignOutCallbackAsync()
         {
             var message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             AuthenticationProperties? properties = null;

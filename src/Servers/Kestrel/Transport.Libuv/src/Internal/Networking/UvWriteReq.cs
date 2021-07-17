@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private object _state;
         private const int BUFFER_COUNT = 4;
 
-        private LibuvAwaitable<UvWriteReq> _awaitable = new LibuvAwaitable<UvWriteReq>();
-        private List<GCHandle> _pins = new List<GCHandle>(BUFFER_COUNT + 1);
-        private List<MemoryHandle> _handles = new List<MemoryHandle>(BUFFER_COUNT + 1);
+        private readonly LibuvAwaitable<UvWriteReq> _awaitable = new LibuvAwaitable<UvWriteReq>();
+        private readonly List<GCHandle> _pins = new List<GCHandle>(BUFFER_COUNT + 1);
+        private readonly List<MemoryHandle> _handles = new List<MemoryHandle>(BUFFER_COUNT + 1);
 
         public UvWriteReq(ILibuvTrace logger) : base(logger)
         {

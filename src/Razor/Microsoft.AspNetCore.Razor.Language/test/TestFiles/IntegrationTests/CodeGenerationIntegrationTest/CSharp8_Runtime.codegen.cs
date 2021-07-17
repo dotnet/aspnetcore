@@ -47,7 +47,7 @@ using System.Collections.Generic;
 #nullable disable
             WriteLiteral("\r\n");
 #nullable restore
-#line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line (25,2)-(25,13) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 Write(words[1..2]);
 
 #line default
@@ -55,7 +55,7 @@ Write(words[1..2]);
 #nullable disable
             WriteLiteral("\r\n");
 #nullable restore
-#line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line (26,3)-(26,16) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 Write(words[^2..^0]);
 
 #line default
@@ -63,7 +63,7 @@ Write(words[^2..^0]);
 #nullable disable
             WriteLiteral("\r\n\r\n");
 #nullable restore
-#line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line (28,3)-(33,2) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 Write(testEnum switch
 {
     TestEnum.First => "The First!",
@@ -85,7 +85,7 @@ Write(testEnum switch
 #line hidden
 #nullable disable
 #nullable restore
-#line 37 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line (37,6)-(37,9) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 Write(val);
 
 #line default
@@ -101,7 +101,7 @@ Write(val);
 #nullable disable
             WriteLiteral("\r\n");
 #nullable restore
-#line 40 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line (40,2)-(40,14) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 Write(Person!.Name);
 
 #line default
@@ -109,7 +109,7 @@ Write(Person!.Name);
 #nullable disable
             WriteLiteral("\r\n");
 #nullable restore
-#line 41 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line (41,2)-(41,22) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 Write(People![0]!.Name![1]);
 
 #line default
@@ -117,7 +117,7 @@ Write(People![0]!.Name![1]);
 #nullable disable
             WriteLiteral("\r\n");
 #nullable restore
-#line 42 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line (42,2)-(42,23) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 Write(DoSomething!(Person!));
 
 #line default

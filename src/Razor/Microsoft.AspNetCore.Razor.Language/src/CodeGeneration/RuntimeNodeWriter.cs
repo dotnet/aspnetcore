@@ -58,8 +58,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
-                context.CodeWriter.WritePadding(WriteCSharpExpressionMethod.Length + 1, node.Source, context);
+                linePragmaScope = context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context, WriteCSharpExpressionMethod.Length + 1);
+                if (!context.Options.UseEnhancedLinePragma)
+                {
+                    context.CodeWriter.WritePadding(WriteCSharpExpressionMethod.Length + 1, node.Source, context);
+                }
             }
 
             context.CodeWriter.WriteStartMethodInvocation(WriteCSharpExpressionMethod);
@@ -200,14 +203,27 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
-            using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
+            var prefixLocation = node.Source.Value.AbsoluteIndex.ToString(CultureInfo.InvariantCulture);
+            var methodInvocationParenLength = 1;
+            var stringLiteralQuoteLength = 2;
+            var parameterSepLength = 2;
+            // Offset accounts for the length of the method, its arguments, and any
+            // additional characters like open parens and quoted strings
+            var offsetLength = WriteAttributeValueMethod.Length 
+                + methodInvocationParenLength
+                + node.Prefix.Length
+                + stringLiteralQuoteLength
+                + parameterSepLength
+                + prefixLocation.Length
+                + parameterSepLength;
+            using (context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context,  offsetLength))
             {
-                var prefixLocation = node.Source.Value.AbsoluteIndex;
+                
                 context.CodeWriter
                     .WriteStartMethodInvocation(WriteAttributeValueMethod)
                     .WriteStringLiteral(node.Prefix)
                     .WriteParameterSeparator()
-                    .Write(prefixLocation.ToString(CultureInfo.InvariantCulture))
+                    .Write(prefixLocation)
                     .WriteParameterSeparator();
 
                 for (var i = 0; i < node.Children.Count; i++)

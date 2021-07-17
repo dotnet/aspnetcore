@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public static class EditContextFieldClassExtensions
     {
-        private readonly static object FieldCssClassProviderKey = new object();
+        private static readonly object FieldCssClassProviderKey = new object();
 
         /// <summary>
         /// Gets a string that indicates the status of the specified field as a CSS class. This will include

@@ -23,6 +23,7 @@ namespace TestServer
                 ["Server authentication"] = (BuildWebHost<ServerAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["CORS (WASM)"] = (BuildWebHost<CorsStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
+                ["Deferred component content (Server-side)"] = (BuildWebHost<DeferredComponentContentStartup>(CreateAdditionalArgs(args)), "/deferred-component-content"),
                 ["Client-side with fallback"] = (BuildWebHost<StartupWithMapFallbackToClientSideBlazor>(CreateAdditionalArgs(args)), "/fallback"),
                 ["Multiple components (Server-side)"] = (BuildWebHost<MultipleComponents>(CreateAdditionalArgs(args)), "/multiple-components"),
                 ["Save state"] = (BuildWebHost<SaveState>(CreateAdditionalArgs(args)), "/save-state"),

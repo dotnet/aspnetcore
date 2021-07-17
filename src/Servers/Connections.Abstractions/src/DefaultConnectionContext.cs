@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Connections
                                             IConnectionLifetimeFeature,
                                             IConnectionEndPointFeature
     {
-        private CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         /// <summary>
         /// Creates the <see cref="DefaultConnectionContext"/> without Pipes to avoid upfront allocations.

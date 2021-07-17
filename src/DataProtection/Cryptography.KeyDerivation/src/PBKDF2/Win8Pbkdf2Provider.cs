@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
     /// <summary>
     /// A PBKDF2 provider which utilizes the Win8 API BCryptKeyDerivation.
     /// </summary>
-    internal unsafe sealed class Win8Pbkdf2Provider : IPbkdf2Provider
+    internal sealed unsafe class Win8Pbkdf2Provider : IPbkdf2Provider
     {
         public byte[] DeriveKey(string password, byte[] salt, KeyDerivationPrf prf, int iterationCount, int numBytesRequested)
         {

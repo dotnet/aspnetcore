@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         // Write headers to a buffer that can grow. Possible performance improvement
         // by writing directly to output writer (difficult as frame length is prefixed).
         private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
-        private IEnumerator<KeyValuePair<string, string>>? _headersEnumerator;
+        private readonly Http3HeadersEnumerator _headersEnumerator = new();
         private int _headersTotalSize;
 
         private long _unflushedBytes;
@@ -271,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _headersEnumerator = EnumerateHeaders(headers).GetEnumerator();
+                    _headersEnumerator.Initialize(headers);
                     _headersTotalSize = 0;
                     _headerEncodingBuffer.Clear();
 
@@ -280,9 +281,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     var done = QPackHeaderWriter.BeginEncode(_headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
-                catch (QPackEncodingException ex)
+                // Any exception from the QPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
                     _log.QPackEncodingError(_connectionId, streamId, ex);
+                    _connectionContext.Abort(new ConnectionAbortedException(ex.Message, ex));
                     _http3Stream.Abort(new ConnectionAbortedException(ex.Message, ex), Http3ErrorCode.InternalError);
                 }
 
@@ -314,7 +318,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal void WriteResponseHeaders(int statusCode, IHeaderDictionary headers)
+        internal void WriteResponseHeaders(int statusCode, HttpResponseHeaders headers)
         {
             lock (_writeLock)
             {
@@ -325,15 +329,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _headersEnumerator = EnumerateHeaders(headers).GetEnumerator();
+                    _headersEnumerator.Initialize(headers);
 
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
                     var done = QPackHeaderWriter.BeginEncode(statusCode, _headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
-                catch (QPackEncodingException ex)
+                // Any exception from the QPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
+                    _log.QPackEncodingError(_connectionId, _http3Stream.StreamId, ex);
+                    _connectionContext.Abort(new ConnectionAbortedException(ex.Message, ex));
                     _http3Stream.Abort(new ConnectionAbortedException(ex.Message, ex), Http3ErrorCode.InternalError);
                     throw new InvalidOperationException(ex.Message, ex); // Report the error to the user if this was the first write.
                 }
@@ -347,7 +355,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             while (!done)
             {
                 ValidateHeadersTotalSize();
-
                 var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
                 done = QPackHeaderWriter.Encode(_headersEnumerator!, buffer, ref _headersTotalSize, out payloadLength);
                 _headerEncodingBuffer.Advance(payloadLength);
@@ -402,17 +409,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 _completed = true;
                 _outputWriter.Complete();
-            }
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)
-        {
-            foreach (var header in headers)
-            {
-                foreach (var value in header.Value)
-                {
-                    yield return new KeyValuePair<string, string>(header.Key, value);
-                }
             }
         }
     }

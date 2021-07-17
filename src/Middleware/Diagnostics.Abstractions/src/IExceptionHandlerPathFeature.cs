@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// The portion of the request path that identifies the requested resource. The value
         /// is un-escaped.
         /// </summary>
-        string? Path { get; }
+        new string Path => ((IExceptionHandlerFeature)this).Path;
     }
 }

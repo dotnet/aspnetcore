@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Components
             {
             }
 
-            private Dispatcher _dispatcher = Dispatcher.CreateDefault();
+            private readonly Dispatcher _dispatcher = Dispatcher.CreateDefault();
 
             public override Dispatcher Dispatcher => _dispatcher;
 

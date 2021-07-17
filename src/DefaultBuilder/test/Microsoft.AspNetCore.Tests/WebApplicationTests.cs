@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
@@ -228,7 +227,7 @@ namespace Microsoft.AspNetCore.Tests
             var changed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             monitor.OnChange(newOptions =>
             {
-                changed.SetResult(0);
+                changed.TrySetResult(0);
             });
 
             config["AllowedHosts"] = "NewHost";
@@ -271,14 +270,6 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationCreate_RegistersApiExplorerForEndpoints()
-        {
-            var app = WebApplication.Create();
-            var apiDescriptionProvider = app.Services.GetService(typeof(IApiDescriptionProvider));
-            Assert.NotNull(apiDescriptionProvider);
-        }
-
-        [Fact]
         public void WebApplicationCreate_RegistersEventSourceLogger()
         {
             var listener = new TestEventListener();
@@ -311,6 +302,30 @@ namespace Microsoft.AspNetCore.Tests
             Assert.DoesNotContain(events, args =>
                 args.EventSource.Name == "Microsoft-Extensions-Logging" &&
                 args.Payload.OfType<string>().Any(p => p.Contains(guid)));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WebApplicationBuilder_CanSetWebRootPaths(bool useSetter)
+        {
+            var builder = WebApplication.CreateBuilder();
+            var webRootPath = "www";
+            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
+
+            if (useSetter)
+            {
+                builder.Environment.WebRootPath = webRootPath;
+            }
+            else
+            {
+                builder.WebHost.UseWebRoot(webRootPath);
+                Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
+            }
+
+            
+            var app = builder.Build();
+            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
         }
 
         private class TestEventListener : EventListener

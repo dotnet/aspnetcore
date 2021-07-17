@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> from.</param>
         /// <param name="user">The <typeparamref name="TUser"/> to check for the possibility of generating a two-factor authentication token.</param>
         /// <returns>True if the user has an authenticator key set, otherwise false.</returns>
-        public async virtual Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
+        public virtual async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
         {
             var key = await manager.GetAuthenticatorKeyAsync(user);
 

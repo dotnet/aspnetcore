@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class ConfigureWebHostBuilder : IWebHostBuilder
     {
         private readonly WebHostEnvironment _environment;
-        private readonly Configuration _configuration;
+        private readonly ConfigurationManager _configuration;
         private readonly Dictionary<string, string?> _settings = new(StringComparer.OrdinalIgnoreCase);
         private readonly IServiceCollection _services;
 
         private readonly WebHostBuilderContext _context;
 
-        internal ConfigureWebHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
+        internal ConfigureWebHostBuilder(ConfigurationManager configuration, WebHostEnvironment environment, IServiceCollection services)
         {
             _configuration = configuration;
             _environment = environment;
@@ -88,7 +88,6 @@ namespace Microsoft.AspNetCore.Builder
             else if (string.Equals(key, WebHostDefaults.ContentRootKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.ContentRootPath = value;
-                _environment.ResolveFileProviders(_configuration);
             }
             else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase))
             {
@@ -97,7 +96,6 @@ namespace Microsoft.AspNetCore.Builder
             else if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.WebRootPath = value;
-                _environment.ResolveFileProviders(_configuration);
             }
 
             return this;

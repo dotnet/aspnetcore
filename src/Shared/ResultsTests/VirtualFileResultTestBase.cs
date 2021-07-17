@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Internal
         [InlineData(8, 13, 6)]
         [InlineData(null, 4,  4)]
         [InlineData(8, null, 25)]
-        public async Task WriteFileAsync_WritesRangeRequested<TContext>(
+        public async Task WriteFileAsync_WritesRangeRequested(
             long? start,
             long? end,
             long contentLength)

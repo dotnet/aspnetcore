@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private const int MaxReadSize = 0x20000; // http.sys recommends we limit reads to 128k
 
-        private RequestContext _requestContext;
+        private readonly RequestContext _requestContext;
         private uint _dataChunkOffset;
         private int _dataChunkIndex;
         private long? _maxSize;

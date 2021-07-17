@@ -996,7 +996,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectTemplates", "Project
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ProjectTemplates", "src\ProjectTemplates\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj", "{5D3C520F-0CA7-4759-A563-40496545FA48}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\ProjectTemplates\Web.Spa.ProjectTemplates\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{C732CA83-EEBE-4DAB-B567-5A35640FE8CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\submodules\spa-templates\src\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{C732CA83-EEBE-4DAB-B567-5A35640FE8CD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Client.ItemTemplates", "src\ProjectTemplates\Web.Client.ItemTemplates\Microsoft.DotNet.Web.Client.ItemTemplates.csproj", "{4F2C221D-7D0B-46B3-9362-2D68F92ECF29}"
 EndProject

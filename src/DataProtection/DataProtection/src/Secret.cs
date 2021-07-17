@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <summary>
     /// Represents a secret value stored in memory.
     /// </summary>
-    public unsafe sealed class Secret : IDisposable, ISecret
+    public sealed unsafe class Secret : IDisposable, ISecret
     {
         // from wincrypt.h
         private const uint CRYPTPROTECTMEMORY_BLOCK_SIZE = 16;

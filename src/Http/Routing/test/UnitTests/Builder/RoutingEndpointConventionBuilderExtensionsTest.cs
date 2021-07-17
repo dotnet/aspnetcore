@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
-            private DefaultEndpointConventionBuilder _endpointConventionBuilder;
+            private readonly DefaultEndpointConventionBuilder _endpointConventionBuilder;
             public bool TestProperty { get; } = true;
 
             public TestEndpointConventionBuilder(DefaultEndpointConventionBuilder endpointConventionBuilder)

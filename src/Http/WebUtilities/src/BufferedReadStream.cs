@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <inheritdoc/>
-        public async override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             // Drain buffer
             if (_bufferCount > 0)

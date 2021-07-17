@@ -2164,6 +2164,13 @@ Microsoft.AspNetCore.Mvc.ModelBinderAttribute.Name.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int?
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> voidMicrosoft.AspNetCore.Mvc.ProblemDetails
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int?
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.get -> Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProducesAttribute.ProducesAttribute(System.Type type) -> void
@@ -2281,15 +2288,6 @@ Microsoft.AspNetCore.Mvc.PhysicalFileResult.FileName.get -> string!
 Microsoft.AspNetCore.Mvc.PhysicalFileResult.FileName.set -> void
 Microsoft.AspNetCore.Mvc.PhysicalFileResult.PhysicalFileResult(string! fileName, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> void
 Microsoft.AspNetCore.Mvc.PhysicalFileResult.PhysicalFileResult(string! fileName, string! contentType) -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>!
-Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
 Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.get -> Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection!
 Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.set -> void
 Microsoft.AspNetCore.Mvc.ProducesAttribute.ProducesAttribute(System.Type! type) -> void

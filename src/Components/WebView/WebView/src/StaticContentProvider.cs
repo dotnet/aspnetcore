@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly Uri _appBaseUri;
         private readonly string _hostPageRelativePath;
         private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
-        private static ManifestEmbeddedFileProvider _manifestProvider =
+        private static readonly ManifestEmbeddedFileProvider _manifestProvider =
             new ManifestEmbeddedFileProvider(typeof(StaticContentProvider).Assembly);
 
         public StaticContentProvider(IFileProvider fileProvider, Uri appBaseUri, string hostPageRelativePath)

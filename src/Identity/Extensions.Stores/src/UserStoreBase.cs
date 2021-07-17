@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>
         /// The <see cref="Task"/> for the asynchronous operation, containing the user, if any which matched the specified login provider and key.
         /// </returns>
-        public async virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
+        public virtual async Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();

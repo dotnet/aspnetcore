@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 });
         }
 
-        protected private ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions = null)
+        private protected ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions = null)
         {
             if (actions == null)
             {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return CreateDataSource(actions, endpointFactory);
         }
 
-        protected private abstract ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory);
+        private protected abstract ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory);
 
         private class UpperCaseParameterTransform : IOutboundParameterTransformer
         {

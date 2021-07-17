@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private readonly ILogger _logger;
 
-        private ServerSession? _serverSession;
+        private readonly ServerSession? _serverSession;
         private bool _disposed;
-        private bool _created;
+        private readonly bool _created;
 
         internal unsafe UrlGroup(ServerSession serverSession, ILogger logger)
         {

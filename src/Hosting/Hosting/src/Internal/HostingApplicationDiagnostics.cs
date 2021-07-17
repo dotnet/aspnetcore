@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -28,13 +28,19 @@ namespace Microsoft.AspNetCore.Hosting
 
         private readonly ActivitySource _activitySource;
         private readonly DiagnosticListener _diagnosticListener;
+        private readonly DistributedContextPropagator _propagator;
         private readonly ILogger _logger;
 
-        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener, ActivitySource activitySource)
+        public HostingApplicationDiagnostics(
+            ILogger logger,
+            DiagnosticListener diagnosticListener,
+            ActivitySource activitySource,
+            DistributedContextPropagator propagator)
         {
             _logger = logger;
             _diagnosticListener = diagnosticListener;
             _activitySource = activitySource;
+            _propagator = propagator;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,7 +93,7 @@ namespace Microsoft.AspNetCore.Hosting
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
-                context.Scope = _logger.RequestScope(httpContext);
+                context.Scope = Log.RequestScope(_logger, httpContext);
 
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
@@ -276,38 +282,37 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 return null;
             }
-
             var headers = httpContext.Request.Headers;
-            var requestId = headers.TraceParent;
-            if (requestId.Count == 0)
-            {
-                requestId = headers.RequestId;
-            }
-
-            if (!StringValues.IsNullOrEmpty(requestId))
+            _propagator.ExtractTraceIdAndState(headers,
+                static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+                {
+                    fieldValues = default;
+                    var headers = (IHeaderDictionary)carrier!;
+                    fieldValue = headers[fieldName];
+                },
+                out var requestId,
+                out var traceState);
+            
+            if (!string.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
-                var traceState = headers.TraceState;
-                if (traceState.Count > 0)
+                if (!string.IsNullOrEmpty(traceState))
                 {
                     activity.TraceStateString = traceState;
                 }
-
-                // We expect baggage to be empty by default
-                // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
-                if (baggage.Length == 0)
+                var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
                 {
-                    baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
-                }
+                    fieldValues = default;
+                    var headers = (IHeaderDictionary)carrier!;
+                    fieldValue = headers[fieldName];
+                });
 
-                // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-                // An order could be important if baggage has two items with the same key (that is allowed by the contract)
-                for (var i = baggage.Length - 1; i >= 0; i--)
+                // Order could be important if baggage has two items with the same key (that is allowed by the contract)
+                if (baggage is not null)
                 {
-                    if (NameValueHeaderValue.TryParse(baggage[i], out var baggageItem))
+                    foreach (var baggageItem in baggage)
                     {
-                        activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
+                        activity.AddBaggage(baggageItem.Key, baggageItem.Value);
                     }
                 }
             }
@@ -358,6 +363,76 @@ namespace Microsoft.AspNetCore.Hosting
             }
             _diagnosticListener.Write(ActivityStopKey, httpContext);
             activity.Stop();    // Resets Activity.Current (we want this after the Write)
+        }
+
+        private static class Log
+        {
+            public static IDisposable RequestScope(ILogger logger, HttpContext httpContext)
+            {
+                return logger.BeginScope(new HostingLogScope(httpContext));
+            }
+
+            private sealed class HostingLogScope : IReadOnlyList<KeyValuePair<string, object>>
+            {
+                private readonly string _path;
+                private readonly string _traceIdentifier;
+
+                private string? _cachedToString;
+
+                public int Count => 2;
+
+                public KeyValuePair<string, object> this[int index]
+                {
+                    get
+                    {
+                        if (index == 0)
+                        {
+                            return new KeyValuePair<string, object>("RequestId", _traceIdentifier);
+                        }
+                        else if (index == 1)
+                        {
+                            return new KeyValuePair<string, object>("RequestPath", _path);
+                        }
+
+                        throw new ArgumentOutOfRangeException(nameof(index));
+                    }
+                }
+
+                public HostingLogScope(HttpContext httpContext)
+                {
+                    _traceIdentifier = httpContext.TraceIdentifier;
+                    _path = (httpContext.Request.PathBase.HasValue
+                             ? httpContext.Request.PathBase + httpContext.Request.Path
+                             : httpContext.Request.Path).ToString();
+                }
+
+                public override string ToString()
+                {
+                    if (_cachedToString == null)
+                    {
+                        _cachedToString = string.Format(
+                            CultureInfo.InvariantCulture,
+                            "RequestPath:{0} RequestId:{1}",
+                            _path,
+                            _traceIdentifier);
+                    }
+
+                    return _cachedToString;
+                }
+
+                public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+                {
+                    for (var i = 0; i < Count; ++i)
+                    {
+                        yield return this[i];
+                    }
+                }
+
+                IEnumerator IEnumerable.GetEnumerator()
+                {
+                    return GetEnumerator();
+                }
+            }
         }
     }
 }

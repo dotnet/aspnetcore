@@ -20,7 +20,7 @@ using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable, IPooledStream
     {
         private Http2StreamContext _context = default!;
         private Http2OutputProducer _http2Output = default!;
@@ -240,17 +240,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // ":scheme" is not restricted to "http" and "https" schemed URIs.  A
             // proxy or gateway can translate requests for non - HTTP schemes,
             // enabling the use of HTTP to interact with non - HTTP services.
-
-            // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
-            // - For now we'll restrict it to http/s and require it match the transport.
-            // - We'll need to find some concrete scenarios to warrant unblocking this.
+            // A common example is TLS termination.
             var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
             if (!ReferenceEquals(headerScheme, Scheme) &&
                 !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
-                ResetAndAbort(new ConnectionAbortedException(
-                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
-                return false;
+                if (!ServerOptions.AllowAlternateSchemes || !Uri.CheckSchemeName(headerScheme))
+                {
+                    ResetAndAbort(new ConnectionAbortedException(
+                        CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
+                    return false;
+                }
+
+                Scheme = headerScheme;
             }
 
             // :path (and query) - Required
@@ -673,5 +675,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             HttpRequestHeaders.Append(name, value);
         }
+
+        void IPooledStream.DisposeCore()
+        {
+            Dispose();
+        }
+
+        long IPooledStream.PoolExpirationTicks => DrainExpirationTicks;
     }
 }

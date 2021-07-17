@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async static Task ReadAsync_Memory_ReadAllCharactersAtOnce()
+        public static async Task ReadAsync_Memory_ReadAllCharactersAtOnce()
         {
             // Arrange
             var reader = CreateReader();
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async static Task ReadAsync_Memory_WithMoreDataThanInternalBufferSize()
+        public static async Task ReadAsync_Memory_WithMoreDataThanInternalBufferSize()
         {
             // Arrange
             var reader = CreateReader(10);

@@ -16,7 +16,7 @@ using Microsoft.Win32.SafeHandles;
 namespace Microsoft.AspNetCore.Cryptography
 {
     [SuppressUnmanagedCodeSecurity]
-    internal unsafe static class UnsafeNativeMethods
+    internal static unsafe class UnsafeNativeMethods
     {
         private const string BCRYPT_LIB = "bcrypt.dll";
         private static readonly Lazy<SafeLibraryHandle> _lazyBCryptLibHandle = GetLazyLibraryHandle(BCRYPT_LIB);

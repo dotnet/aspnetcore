@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -121,6 +122,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
+            AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
+
             return apiDescription;
         }
 
@@ -168,6 +171,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                      parameter.ParameterType == typeof(HttpContext) ||
+                     parameter.ParameterType == typeof(HttpRequest) ||
+                     parameter.ParameterType == typeof(HttpResponse) ||
+                     parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
@@ -261,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         AddResponseContentTypes(apiResponseType.ApiResponseFormats, contentTypes);
                     }
-                    else if (CreateDefaultApiResponseFormat(responseType) is { } defaultResponseFormat)
+                    else if (CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
                     {
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }
@@ -335,8 +341,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
+        private static void AddActionDescriptorEndpointMetadata(
+            ActionDescriptor actionDescriptor,
+            EndpointMetadataCollection endpointMetadata)
+        {
+            if (endpointMetadata.Count > 0)
+            {
+                // ActionDescriptor.EndpointMetadata is an empty array by
+                // default so need to add the metadata into a new list.
+                actionDescriptor.EndpointMetadata = new List<object>(endpointMetadata);
+            }
+        }
+
         // The CompilerGeneratedAttribute doesn't always get added so we also check if the type name starts with "<"
-        // For example,w "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
+        // For example, "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
         // REVIEW: Is there a better way to do this?
         private static bool IsCompilerGenerated(Type type) =>
             Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || type.Name.StartsWith('<');

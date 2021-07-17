@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        protected async override Task InitializeAsync()
+        protected override async Task InitializeAsync()
         {
             var rootUri = ServerFixture.RootUri;
             await ConnectAutomaticallyAndWait(new Uri(rootUri, "/subdir"));
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
                 "DispatchBrowserEvent",
                 eventDescriptor,
-                "{sadfadsf]"));
+                default(JsonElement)));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -128,7 +128,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal("Received an acknowledgement for batch with id '1846' when the last batch produced was '4'.", entry.Exception.Message);
         }
 
-        private string Serialize<T>(T browserEventDescriptor) =>
-            JsonSerializer.Serialize(browserEventDescriptor, TestJsonSerializerOptionsProvider.Options);
+        private JsonElement Serialize<T>(T browserEventDescriptor)
+        {
+            var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(browserEventDescriptor, TestJsonSerializerOptionsProvider.Options);
+            var jsonDocument = JsonDocument.Parse(jsonBytes);
+
+            return jsonDocument.RootElement;
+        }
     }
 }

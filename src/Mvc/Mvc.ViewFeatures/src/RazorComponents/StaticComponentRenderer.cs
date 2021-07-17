@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     internal class StaticComponentRenderer
     {
         private Task _initialized;
-        private HtmlRenderer _renderer;
-        private object _lock = new();
+        private readonly HtmlRenderer _renderer;
+        private readonly object _lock = new();
 
         public StaticComponentRenderer(HtmlRenderer renderer)
         {

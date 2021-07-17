@@ -10,8 +10,8 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections =
             new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>(StringComparer.Ordinal);
-        private readonly TimerAwaitable _nextHeartbeat;
+        private readonly PeriodicTimer _nextHeartbeat;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
         private readonly TimeSpan _disconnectTimeout;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
-            _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
+            _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
             _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
 
             // Register these last as the callbacks could run immediately
@@ -45,8 +45,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public void Start()
         {
-            _nextHeartbeat.Start();
-
             // Start the timer loop
             _ = ExecuteTimerLoop();
         }
@@ -122,7 +120,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             using (_nextHeartbeat)
             {
                 // The TimerAwaitable will return true until Stop is called
-                while (await _nextHeartbeat)
+                while (await _nextHeartbeat.WaitForNextTickAsync())
                 {
                     try
                     {
@@ -169,6 +167,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                     // Tick the heartbeat, if the connection is still active
                     connection.TickHeartbeat();
+
+                    if (connection.IsAuthenticationExpirationEnabled && connection.AuthenticationExpiration < utcNow &&
+                        !connection.ConnectionClosedRequested.IsCancellationRequested)
+                    {
+                        Log.AuthenticationExpired(_logger, connection.ConnectionId);
+                        connection.RequestClose();
+                    }
                 }
             }
         }
@@ -176,7 +181,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public void CloseConnections()
         {
             // Stop firing the timer
-            _nextHeartbeat.Stop();
+            _nextHeartbeat.Dispose();
 
             var tasks = new List<Task>(_connections.Count);
 

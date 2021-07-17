@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Http
 
         private class TestSession : ISession
         {
-            private Dictionary<string, byte[]> _store
+            private readonly Dictionary<string, byte[]> _store
                 = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
             public string Id { get; set; }

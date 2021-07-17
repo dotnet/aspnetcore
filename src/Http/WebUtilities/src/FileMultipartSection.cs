@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class FileMultipartSection
     {
-        private ContentDispositionHeaderValue _contentDispositionHeader;
+        private readonly ContentDispositionHeaderValue _contentDispositionHeader;
 
         /// <summary>
         /// Creates a new instance of the <see cref="FileMultipartSection"/> class

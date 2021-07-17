@@ -305,7 +305,7 @@ export class HttpConnection implements IConnection {
     }
 
     private async _getNegotiationResponse(url: string): Promise<INegotiateResponse> {
-        const headers = {};
+        const headers: {[k: string]: string} = {};
         if (this._accessTokenFactory) {
             const token = await this._accessTokenFactory();
             if (token) {

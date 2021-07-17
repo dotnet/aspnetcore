@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private class MockResponseCookieCollection : IResponseCookies, IEnumerable<CookieInfo>
         {
-            private Dictionary<string, CookieInfo> _cookies = new Dictionary<string, CookieInfo>(StringComparer.OrdinalIgnoreCase);
+            private readonly Dictionary<string, CookieInfo> _cookies = new Dictionary<string, CookieInfo>(StringComparer.OrdinalIgnoreCase);
 
             public int Count
             {

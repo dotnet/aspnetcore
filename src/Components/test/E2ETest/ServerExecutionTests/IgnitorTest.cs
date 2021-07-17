@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        protected async virtual Task DisposeAsync()
+        protected virtual async Task DisposeAsync()
         {
             if (TestSink != null)
             {

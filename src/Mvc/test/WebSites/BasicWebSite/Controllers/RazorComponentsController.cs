@@ -8,7 +8,7 @@ namespace BasicWebSite.Controllers
 {
     public class RazorComponentsController : Controller
     {
-        private static WeatherRow[] _weatherData = new[]
+        private static readonly WeatherRow[] _weatherData = new[]
         {
                 new WeatherRow
                 {

@@ -115,7 +115,7 @@ using System;
 
             var node = new CSharpExpressionIntermediateNode()
             {
-                Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
+                Source = new SourceSpan("test.cshtml", 0, 0, 0, 3, 0, 3),
             };
             var builder = IntermediateNodeBuilder.Create(node);
             builder.Add(new IntermediateToken()
@@ -132,7 +132,7 @@ using System;
             Assert.Equal(
 @"
 #nullable restore
-#line 1 ""test.cshtml""
+#line (1,1)-(1,4) 5 ""test.cshtml""
 Test(i++);
 
 #line default
@@ -194,7 +194,7 @@ Test(i++);
 
             var node = new CSharpExpressionIntermediateNode()
             {
-                Source = new SourceSpan("test.cshtml", 8, 0, 8, 3),
+                Source = new SourceSpan("test.cshtml", 8, 0, 8, 3, 0, 11),
             };
             var builder = IntermediateNodeBuilder.Create(node);
             builder.Add(new IntermediateToken()
@@ -217,8 +217,8 @@ Test(i++);
             Assert.Equal(
 @"
 #nullable restore
-#line 1 ""test.cshtml""
-   Test(iRender Children
+#line (1,9)-(1,12) 5 ""test.cshtml""
+Test(iRender Children
 ++);
 
 #line default
@@ -572,7 +572,7 @@ EndWriteAttribute();
             Assert.Equal(
 @"
 #nullable restore
-#line 1 ""test.cshtml""
+#line (1,28)-(1,35) 29 ""test.cshtml""
 WriteAttributeValue("" "", 27, false, 28, 6, false);
 
 #line default

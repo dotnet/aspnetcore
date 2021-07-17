@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     /// <summary>
     /// Represents a handle to a Windows module (DLL).
     /// </summary>
-    internal unsafe sealed class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal sealed unsafe class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         // Called by P/Invoke when returning SafeHandles
         private SafeLibraryHandle()

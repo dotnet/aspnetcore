@@ -11,17 +11,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 {
     public class KnownStringsBenchmark
     {
-        static byte[] _methodConnect = Encoding.ASCII.GetBytes("CONNECT ");
-        static byte[] _methodDelete = Encoding.ASCII.GetBytes("DELETE \0");
-        static byte[] _methodGet = Encoding.ASCII.GetBytes("GET ");
-        static byte[] _methodHead = Encoding.ASCII.GetBytes("HEAD \0\0\0");
-        static byte[] _methodPatch = Encoding.ASCII.GetBytes("PATCH \0\0");
-        static byte[] _methodPost = Encoding.ASCII.GetBytes("POST \0\0\0");
-        static byte[] _methodPut = Encoding.ASCII.GetBytes("PUT \0\0\0\0");
-        static byte[] _methodOptions = Encoding.ASCII.GetBytes("OPTIONS ");
-        static byte[] _methodTrace = Encoding.ASCII.GetBytes("TRACE \0\0");
+        static readonly byte[] _methodConnect = Encoding.ASCII.GetBytes("CONNECT ");
+        static readonly byte[] _methodDelete = Encoding.ASCII.GetBytes("DELETE \0");
+        static readonly byte[] _methodGet = Encoding.ASCII.GetBytes("GET ");
+        static readonly byte[] _methodHead = Encoding.ASCII.GetBytes("HEAD \0\0\0");
+        static readonly byte[] _methodPatch = Encoding.ASCII.GetBytes("PATCH \0\0");
+        static readonly byte[] _methodPost = Encoding.ASCII.GetBytes("POST \0\0\0");
+        static readonly byte[] _methodPut = Encoding.ASCII.GetBytes("PUT \0\0\0\0");
+        static readonly byte[] _methodOptions = Encoding.ASCII.GetBytes("OPTIONS ");
+        static readonly byte[] _methodTrace = Encoding.ASCII.GetBytes("TRACE \0\0");
 
-        static byte[] _version = Encoding.UTF8.GetBytes("HTTP/1.1\r\n");
+        static readonly byte[] _version = Encoding.UTF8.GetBytes("HTTP/1.1\r\n");
         const int loops = 1000;
 
         [Benchmark(OperationsPerInvoke = loops * 10)]

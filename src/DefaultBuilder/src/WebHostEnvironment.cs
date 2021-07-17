@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
@@ -15,15 +16,19 @@ namespace Microsoft.AspNetCore.Builder
     {
         private static readonly NullFileProvider NullFileProvider = new();
 
-        public WebHostEnvironment(Assembly? callingAssembly)
+        private IFileProvider _contentRootFileProvider = NullFileProvider;
+        private IFileProvider _webRootFileProvider = NullFileProvider;
+        // ContentRootPath and WebRootPath are set to default! on
+        // initialization to match the behavior in HostingEnvironment.
+        private string _contentRootPath = default!;
+        private string _webRootPath = default!;
+
+        public WebHostEnvironment(Assembly? callingAssembly = null)
         {
             ContentRootPath = Directory.GetCurrentDirectory();
 
             ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty;
             EnvironmentName = Environments.Production;
-
-            // This feels wrong, but HostingEnvironment also sets WebRoot to "default!".
-            WebRootPath = default!;
 
             // Default to /wwwroot if it exists.
             var wwwroot = Path.Combine(ContentRootPath, "wwwroot");
@@ -31,28 +36,16 @@ namespace Microsoft.AspNetCore.Builder
             {
                 WebRootPath = wwwroot;
             }
-
-            ContentRootFileProvider = NullFileProvider;
-            WebRootFileProvider = NullFileProvider;
-
-            ResolveFileProviders(new Configuration());
-        }
-
-        // For testing
-        internal WebHostEnvironment()
-        {
-            ApplicationName = default!;
-            EnvironmentName = default!;
-            ContentRootPath = default!;
-            WebRootPath = default!;
-            ContentRootFileProvider = default!;
-            WebRootFileProvider = default!;
         }
 
         public void ApplyConfigurationSettings(IConfiguration configuration)
         {
             ReadConfigurationSettings(configuration);
-            ResolveFileProviders(configuration);
+
+            if (this.IsDevelopment())
+            {
+                StaticWebAssetsLoader.UseStaticWebAssets(this, configuration);
+            }
         }
 
         internal void ReadConfigurationSettings(IConfiguration configuration)
@@ -80,39 +73,86 @@ namespace Microsoft.AspNetCore.Builder
         {
             destination.ApplicationName = ApplicationName;
             destination.EnvironmentName = EnvironmentName;
-
             destination.ContentRootPath = ContentRootPath;
-            destination.ContentRootFileProvider = ContentRootFileProvider;
-
             destination.WebRootPath = WebRootPath;
-            destination.WebRootFileProvider = WebRootFileProvider;
-        }
-
-        public void ResolveFileProviders(IConfiguration configuration)
-        {
-            if (Directory.Exists(ContentRootPath))
-            {
-                ContentRootFileProvider = new PhysicalFileProvider(ContentRootPath);
-            }
-
-            if (Directory.Exists(WebRootPath))
-            {
-                WebRootFileProvider = new PhysicalFileProvider(WebRootPath);
-            }
-
-            if (this.IsDevelopment())
-            {
-                StaticWebAssetsLoader.UseStaticWebAssets(this, configuration);
-            }
         }
 
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
 
-        public IFileProvider ContentRootFileProvider { get; set; }
-        public string ContentRootPath { get; set; }
+        public IFileProvider ContentRootFileProvider
+        {
+            get => _contentRootFileProvider;
+            set => _contentRootFileProvider = value;
+        }
 
-        public IFileProvider WebRootFileProvider { get; set; }
-        public string WebRootPath { get; set; }
+        public IFileProvider WebRootFileProvider
+        {
+            get => _webRootFileProvider;
+            set => _webRootFileProvider = value;
+        }
+
+        public string ContentRootPath
+        {
+            get => _contentRootPath;
+            set
+            {
+                // No-op if the value setting does not change
+                var targetValue = string.IsNullOrEmpty(value)
+                    ? Directory.GetCurrentDirectory()
+                    : ResolvePathToRoot(value, AppContext.BaseDirectory);
+                if (targetValue == _contentRootPath)
+                {
+                    return;
+                }
+
+                _contentRootPath = targetValue;
+
+                /* Update both file providers if content root path changes */
+                if (Directory.Exists(_contentRootPath))
+                {
+                    _contentRootFileProvider = new PhysicalFileProvider(_contentRootPath);
+                }
+                if (Directory.Exists(WebRootPath))
+                {
+                    _webRootFileProvider = new PhysicalFileProvider(WebRootPath);
+                }
+            }
+        }
+
+        public string WebRootPath
+        {
+            get => ResolvePathToRoot(_webRootPath, ContentRootPath);
+            set
+            {
+                // No-op if the value setting does not change
+                var targetValue = string.IsNullOrEmpty(value) ? "wwwroot" : value;
+                if (targetValue == _webRootPath)
+                {
+                    return;
+                }
+
+                _webRootPath = targetValue;
+                if (Directory.Exists(WebRootPath))
+                {
+                    _webRootFileProvider = new PhysicalFileProvider(WebRootPath);
+                }
+            }
+        }
+
+        private string ResolvePathToRoot(string relativePath, string basePath)
+        {
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return Path.GetFullPath(basePath);
+            }
+
+            if (Path.IsPathRooted(relativePath))
+            {
+                return relativePath;
+            }
+
+            return Path.Combine(Path.GetFullPath(basePath), relativePath);
+        }
     }
 }

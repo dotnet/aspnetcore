@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         private class LazyPerson
         {
-            private string _string;
+            private readonly string _string;
 
             public LazyPerson(string input)
             {

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers.Testing
 {
     internal class CaseSensitiveTagHelperAttributeComparer : IEqualityComparer<TagHelperAttribute>
     {
-        public readonly static CaseSensitiveTagHelperAttributeComparer Default =
+        public static readonly CaseSensitiveTagHelperAttributeComparer Default =
             new CaseSensitiveTagHelperAttributeComparer();
 
         private CaseSensitiveTagHelperAttributeComparer()

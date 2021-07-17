@@ -25,7 +25,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <!-- Required for S.T.J source generation -->
     <Reference Include="System.Text.Json" PrivateAssets="All" />
-    
+
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
 
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
@@ -58,7 +58,7 @@
 
     <Compile Include="..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
-    <Compile Include="..\..\Shared\src\WebEventData.cs" />
+    <Compile Include="..\..\Shared\src\WebEventData\*.cs" LinkBase="WebEventData" />
 
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />

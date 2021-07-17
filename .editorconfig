@@ -77,7 +77,7 @@ dotnet_diagnostic.CA1018.severity = warning
 dotnet_diagnostic.CA1047.severity = warning
 
 # CA1305: Specify IFormatProvider
-dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1305.severity = suggestion
 
 # CA1507: Use nameof to express symbol names
 dotnet_diagnostic.CA1507.severity = warning
@@ -195,6 +195,7 @@ dotnet_diagnostic.CA2208.severity = warning
 dotnet_diagnostic.IDE0035.severity = warning
 
 # IDE0036: Order modifiers
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 dotnet_diagnostic.IDE0036.severity = warning
 
 # IDE0043: Format string contains invalid placeholder
@@ -204,7 +205,7 @@ dotnet_diagnostic.IDE0043.severity = warning
 dotnet_diagnostic.IDE0044.severity = warning
 
 # IDE0073: File header
-dotnet_diagnostic.IDE0073.severity = warning
+dotnet_diagnostic.IDE0073.severity = suggestion
 file_header_template = Copyright (c) .NET Foundation. All rights reserved.\nLicensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 [**/{test,samples,perf}/**.{cs,vb}]

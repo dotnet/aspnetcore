@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Http
 
         public class ResponseFeature : IHttpResponseFeature
         {
-            private List<(Func<object, Task>, object)> _callbacks = new();
+            private readonly List<(Func<object, Task>, object)> _callbacks = new();
             public int StatusCode { get; set; }
             public string ReasonPhrase { get; set; }
             public IHeaderDictionary Headers { get; set; }

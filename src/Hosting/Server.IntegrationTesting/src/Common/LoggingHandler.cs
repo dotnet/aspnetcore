@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     internal class LoggingHandler : DelegatingHandler
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public LoggingHandler(ILoggerFactory loggerFactory, HttpMessageHandler innerHandler) : base(innerHandler)
         {

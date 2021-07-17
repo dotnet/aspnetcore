@@ -984,7 +984,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         class BlobTokenValidator : ISecurityTokenValidator
         {
-            private Action<string> _tokenValidator;
+            private readonly Action<string> _tokenValidator;
 
             public BlobTokenValidator(string authenticationScheme)
             {
