@@ -371,7 +371,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             app = GetApplication();
             appExitCode = app.Execute(new[] { "add", "url", DifferentUrl, "--output-file", outputFile});
             Assert.Equal(1, appExitCode);
-            Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), $"Should have aborted to avoid conflicts");
+            Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), "Should have aborted to avoid conflicts");
 
             // csproj contents
             using (var csprojStream = new FileInfo(project.Project.Path).OpenRead())

@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 // This is an error condition attempting to initialize the circuit in a way that would fail.
                 // We can reject this and terminate the connection.
                 Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, $"The uris provided are invalid.");
+                await NotifyClientError(Clients.Caller, "The uris provided are invalid.");
                 Context.Abort();
                 return null;
             }
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Server
             if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
             {
                 Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, $"The list of component records is not valid.");
+                await NotifyClientError(Clients.Caller, "The list of component records is not valid.");
                 Context.Abort();
                 return null;
             }

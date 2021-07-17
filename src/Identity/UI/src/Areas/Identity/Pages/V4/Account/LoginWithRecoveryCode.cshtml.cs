@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
-                throw new InvalidOperationException($"Unable to load two-factor authentication user.");
+                throw new InvalidOperationException("Unable to load two-factor authentication user.");
             }
 
             ReturnUrl = returnUrl;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
-                throw new InvalidOperationException($"Unable to load two-factor authentication user.");
+                throw new InvalidOperationException("Unable to load two-factor authentication user.");
             }
 
             var recoveryCode = Input.RecoveryCode.Replace(" ", string.Empty);

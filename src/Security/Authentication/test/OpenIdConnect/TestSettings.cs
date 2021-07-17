@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             if (errors.Any())
             {
                 var buf = new StringBuilder();
-                buf.AppendLine($"The challenge form post is not valid.");
+                buf.AppendLine("The challenge form post is not valid.");
                 // buf.AppendLine();
 
                 foreach (var error in errors)
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             if (errors.Any())
             {
                 var buf = new StringBuilder();
-                buf.AppendLine($"The signout form post is not valid.");
+                buf.AppendLine("The signout form post is not valid.");
                 // buf.AppendLine();
 
                 foreach (var error in errors)
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             if (errors.Any())
             {
                 var buf = new StringBuilder();
-                buf.AppendLine($"The redirect uri is not valid.");
+                buf.AppendLine("The redirect uri is not valid.");
                 buf.AppendLine(redirectUri.AbsoluteUri);
 
                 foreach (var error in errors)

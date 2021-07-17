@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (header == null || !header.IsFormDisposition())
             {
-                throw new ArgumentException($"Argument must be a form section", nameof(section));
+                throw new ArgumentException("Argument must be a form section", nameof(section));
             }
 
             Section = section;

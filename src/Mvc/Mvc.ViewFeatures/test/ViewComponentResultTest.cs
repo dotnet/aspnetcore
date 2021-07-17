@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var actionContext = new ActionContext(new DefaultHttpContext() { RequestServices = Mock.Of<IServiceProvider>(), }, new RouteData(), new ActionDescriptor());
             var expected =
-                $"Unable to find the required services. Please add all the required services by calling " +
+                "Unable to find the required services. Please add all the required services by calling " +
                 $"'IServiceCollection.AddControllersWithViews()' inside the call to 'ConfigureServices(...)' " +
-                $"in the application startup code.";
+                "in the application startup code.";
 
             var viewResult = new ViewComponentResult();
 

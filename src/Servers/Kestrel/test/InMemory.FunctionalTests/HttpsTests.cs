@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     {
                         try
                         {
-                            await httpContext.Response.WriteAsync($"hello, world", ct);
+                            await httpContext.Response.WriteAsync("hello, world", ct);
                             await Task.Delay(1000, ct);
                         }
                         catch (TaskCanceledException)
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     httpContext.Abort();
                     try
                     {
-                        await httpContext.Response.WriteAsync($"hello, world");
+                        await httpContext.Response.WriteAsync("hello, world");
                         tcs.SetResult();
                     }
                     catch (Exception ex)

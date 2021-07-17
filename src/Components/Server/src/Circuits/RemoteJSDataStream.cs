@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 if (chunk.Length == 0)
                 {
-                    throw new EndOfStreamException($"The incoming data chunk cannot be empty.");
+                    throw new EndOfStreamException("The incoming data chunk cannot be empty.");
                 }
 
                 _bytesRead += chunk.Length;

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (keys.Length != values.Length)
             {
-                throw new XunitException($"Keys and Values must be the same length.");
+                throw new XunitException("Keys and Values must be the same length.");
             }
 
             var zipped = keys.Zip(values, (k, v) => new KeyValuePair<string, object>(k, v));
