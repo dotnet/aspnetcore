@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void ComponentsDoNotHaveLayoutAttributeByDefault()
         {
             // Arrange/Act
-            var component = CompileToComponent($"Hello");
+            var component = CompileToComponent("Hello");
 
             // Assert
             Assert.Null(component.GetType().GetCustomAttribute<LayoutAttribute>());
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var testComponentTypeName = FullTypeName<TestLayout>();
             var component = CompileToComponent(
                 $"@layout {testComponentTypeName}\n" +
-                $"Hello");
+                "Hello");
 
             // Assert
             var layoutAttribute = component.GetType().GetCustomAttribute<LayoutAttribute>();
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var testInterfaceTypeName = FullTypeName<ITestInterface>();
             var component = CompileToComponent(
                 $"@implements {testInterfaceTypeName}\n" +
-                $"Hello");
+                "Hello");
 
             // Assert
             Assert.IsAssignableFrom<ITestInterface>(component);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var component = CompileToComponent(
                 $"@implements {testInterfaceTypeName}\n" +
                 $"@implements {testInterfaceTypeName2}\n" +
-                $"Hello");
+                "Hello");
 
             // Assert
             Assert.IsAssignableFrom<ITestInterface>(component);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var testBaseClassTypeName = FullTypeName<TestBaseClass>();
             var component = CompileToComponent(
                 $"@inherits {testBaseClassTypeName}" + Environment.NewLine +
-                $"Hello");
+                "Hello");
 
             // Assert
             Assert.IsAssignableFrom<TestBaseClass>(component);

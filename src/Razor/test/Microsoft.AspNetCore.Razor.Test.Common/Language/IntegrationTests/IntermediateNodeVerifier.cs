@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 if (!string.Equals(expectedName, actualName))
                 {
-                    var message = $"Node names are not equal.";
+                    var message = "Node names are not equal.";
                     throw new IntermediateNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
                 }
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 if (!string.Equals(expectedLocation, actualLocation))
                 {
-                    var message = $"Locations are not equal.";
+                    var message = "Locations are not equal.";
                     throw new IntermediateNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
                 }
 
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 if (!string.Equals(expectedContent, actualContent))
                 {
-                    var message = $"Contents are not equal.";
+                    var message = "Contents are not equal.";
                     throw new IntermediateNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
                 }
 

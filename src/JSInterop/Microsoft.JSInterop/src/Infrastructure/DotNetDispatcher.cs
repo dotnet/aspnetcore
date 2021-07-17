@@ -375,7 +375,7 @@ namespace Microsoft.JSInterop.Infrastructure
                     {
                         throw new InvalidOperationException($"The type {type.Name} contains more than one " +
                             $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
-                            $"type must have different identifiers. You can pass a custom identifier as a parameter to " +
+                            "type must have different identifiers. You can pass a custom identifier as a parameter to " +
                             $"the [JSInvokable] attribute.");
                     }
 

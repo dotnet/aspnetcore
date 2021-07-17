@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Components.Reflection
         {
             if (property.SetMethod == null)
             {
-                throw new InvalidOperationException($"Cannot provide a value for property " +
+                throw new InvalidOperationException("Cannot provide a value for property " +
                     $"'{property.Name}' on type '{targetType.FullName}' because the property " +
-                    $"has no setter.");
+                    "has no setter.");
             }
 
             var setMethod = property.SetMethod;

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (section.Body is null)
             {
-                throw new ArgumentException($"Multipart section must have a body to be read.", nameof(section));
+                throw new ArgumentException("Multipart section must have a body to be read.", nameof(section));
             }
 
             MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);

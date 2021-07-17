@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         $"Failed to update the route pattern '{resolvedRoutePattern.RawText}' with required route values. " +
                         $"This can occur when the route pattern contains parameters with reserved names such as: {formattedRouteKeys} " +
                         $"and also uses route constraints such as '{{action:int}}'. " +
-                        $"To fix this error, choose a different parameter name.");
+                        "To fix this error, choose a different parameter name.");
                 }
 
                 var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, action.AttributeRouteInfo.Order)

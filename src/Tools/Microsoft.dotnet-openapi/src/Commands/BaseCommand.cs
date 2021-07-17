@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var muxer = DotNetMuxer.MuxerPathOrDefault();
             if (string.IsNullOrEmpty(muxer))
             {
-                throw new ArgumentException($"dotnet was not found on the path.");
+                throw new ArgumentException("dotnet was not found on the path.");
             }
 
             var startInfo = new ProcessStartInfo
@@ -582,7 +582,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             }
             catch (Exception ex)
             {
-                await Error.WriteLineAsync($"Downloading failed.");
+                await Error.WriteLineAsync("Downloading failed.");
                 await Error.WriteLineAsync(ex.ToString());
                 if (reachedCopy)
                 {

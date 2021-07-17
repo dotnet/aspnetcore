@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             get
             {
-                return $"This test is skipped on CI";
+                return "This test is skipped on CI";
             }
         }
 

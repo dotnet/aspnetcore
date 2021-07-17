@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         public RemoveCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
         {
-            _sourceProjectArg = Argument(SourceArgName, $"The OpenAPI reference to remove. Must represent a reference which is already in this project", multipleValues: true);
+            _sourceProjectArg = Argument(SourceArgName, "The OpenAPI reference to remove. Must represent a reference which is already in this project", multipleValues: true);
         }
 
         internal readonly CommandArgument _sourceProjectArg;
