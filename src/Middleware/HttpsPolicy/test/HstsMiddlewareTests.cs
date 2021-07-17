@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 {
     public class HstsMiddlewareTests
     {
-#region Unit tests
         [Fact]
         public void HstsMiddleware_ArgumentNextIsNull_ThrowsArgumentNullException()
         {
@@ -51,15 +50,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             context.Request.Host = new HostString("example.com");
             context.Request.Scheme = "https";
 
-            await using (context.Response.Body = new MemoryStream())
-            {
-                await middleware.Invoke(context);
-
-                context.Response.Body.Seek(0, SeekOrigin.Begin);
-
-                using var streamReader = new StreamReader(context.Response.Body);
-                _ = await streamReader.ReadToEndAsync();
-            }
+            await middleware.Invoke(context);
 
             Assert.Equal("max-age=2592000", context.Response.Headers[HeaderNames.StrictTransportSecurity].FirstOrDefault());
         }
@@ -86,15 +77,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             context.Request.Host = new HostString("example.com");
             context.Request.Scheme = "https";
 
-            await using (context.Response.Body = new MemoryStream())
-            {
-                await middleware.Invoke(context);
-
-                context.Response.Body.Seek(0, SeekOrigin.Begin);
-
-                using var streamReader = new StreamReader(context.Response.Body);
-                _ = await streamReader.ReadToEndAsync();
-            }
+            await middleware.Invoke(context);
 
             Assert.Equal(expected, context.Response.Headers[HeaderNames.StrictTransportSecurity].FirstOrDefault());
         }
@@ -121,15 +104,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             context.Request.Host = new HostString("example.com");
             context.Request.Scheme = "http";
 
-            await using (context.Response.Body = new MemoryStream())
-            {
-                await middleware.Invoke(context);
-
-                context.Response.Body.Seek(0, SeekOrigin.Begin);
-
-                using var streamReader = new StreamReader(context.Response.Body);
-                _ = await streamReader.ReadToEndAsync();
-            }
+            await middleware.Invoke(context);
 
             Assert.Null(context.Response.Headers[HeaderNames.StrictTransportSecurity].FirstOrDefault());
         }
@@ -146,21 +121,11 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             context.Request.Host = new HostString(hostName);
             context.Request.Scheme = "https";
 
-            await using (context.Response.Body = new MemoryStream())
-            {
-                await middleware.Invoke(context);
-
-                context.Response.Body.Seek(0, SeekOrigin.Begin);
-
-                using var streamReader = new StreamReader(context.Response.Body);
-                _ = await streamReader.ReadToEndAsync();
-            }
+            await middleware.Invoke(context);
 
             Assert.Null(context.Response.Headers[HeaderNames.StrictTransportSecurity].FirstOrDefault());
         }
-#endregion // Unit tests
 
-#region Integration tests
         [Fact]
         public async Task SetOptionsWithDefault_SetsMaxAgeToCorrectValue()
         {
@@ -542,6 +507,5 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             Assert.Equal(LogLevel.Trace, message.LogLevel);
             Assert.Equal("Adding HSTS header to response.", message.State.ToString());
         }
-#endregion // Integration tests
     }
 }
