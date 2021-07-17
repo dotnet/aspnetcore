@@ -626,7 +626,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await manager.HasPasswordAsync(user));
             IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"),
                 "User already has a password set.");
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User already has a password.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, "User already has a password.");
         }
 
         /// <summary>
@@ -830,7 +830,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
             var result = await manager.ChangePasswordAsync(user, "bogus", "newpassword");
             IdentityResultAssert.IsFailure(result, "Incorrect password.");
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Change password failed for user.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, "Change password failed for user.");
         }
 
         /// <summary>
@@ -907,7 +907,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
             var result = await manager.AddLoginAsync(user, login);
             IdentityResultAssert.IsFailure(result, _errorDescriber.LoginAlreadyAssociated());
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"AddLogin for user failed because it was already associated with another user.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, "AddLogin for user failed because it was already associated with another user.");
         }
 
         // Email tests

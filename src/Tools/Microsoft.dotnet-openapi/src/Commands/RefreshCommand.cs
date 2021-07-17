@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         public RefreshCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
         {
-            _sourceFileArg = Argument(SourceURLArgName, $"The OpenAPI reference to refresh.");
+            _sourceFileArg = Argument(SourceURLArgName, "The OpenAPI reference to refresh.");
         }
 
         internal readonly CommandArgument _sourceFileArg;
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceURLArgName);
             if (!IsUrl(sourceFile))
             {
-                throw new ArgumentException($"'dotnet openapi refresh' must be given a URL");
+                throw new ArgumentException("'dotnet openapi refresh' must be given a URL");
             }
 
             return true;

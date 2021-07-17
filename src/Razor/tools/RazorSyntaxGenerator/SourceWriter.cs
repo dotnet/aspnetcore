@@ -388,7 +388,7 @@ namespace RazorSyntaxGenerator
                 case "bool":
                     return "WriteBoolean";
                 default:
-                    throw new InvalidOperationException($"Type 'type' not supported for object reader serialization.");
+                    throw new InvalidOperationException("Type 'type' not supported for object reader serialization.");
             }
         }
 
@@ -399,7 +399,7 @@ namespace RazorSyntaxGenerator
                 case "bool":
                     return "ReadBoolean";
                 default:
-                    throw new InvalidOperationException($"Type 'type' not supported for object reader serialization.");
+                    throw new InvalidOperationException("Type 'type' not supported for object reader serialization.");
             }
         }
 

@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
             var optionProject = app.Option("-p|--project <PROJECT>", "Path to project. Defaults to searching the current directory.",
                 CommandOptionType.SingleValue, inherited: true);
 
-            var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", $"The project configuration to use. Defaults to 'Debug'.",
+            var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", "The project configuration to use. Defaults to 'Debug'.",
                 CommandOptionType.SingleValue, inherited: true);
 
             // the escape hatch if project evaluation fails, or if users want to alter a secret store other than the one

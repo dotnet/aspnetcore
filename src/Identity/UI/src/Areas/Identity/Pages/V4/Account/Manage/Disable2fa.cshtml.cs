@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
             var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
             if (!disable2faResult.Succeeded)
             {
-                throw new InvalidOperationException($"Unexpected error occurred disabling 2FA.");
+                throw new InvalidOperationException("Unexpected error occurred disabling 2FA.");
             }
 
             _logger.LogInformation(LoggerEventIds.TwoFADisabled, "User has disabled 2fa.");

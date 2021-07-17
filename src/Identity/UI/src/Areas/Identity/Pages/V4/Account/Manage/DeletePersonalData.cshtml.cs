@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
             var userId = await _userManager.GetUserIdAsync(user);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException($"Unexpected error occurred deleting user.");
+                throw new InvalidOperationException("Unexpected error occurred deleting user.");
             }
 
             await _signInManager.SignOutAsync();

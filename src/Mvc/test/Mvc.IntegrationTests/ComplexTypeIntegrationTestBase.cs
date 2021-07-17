@@ -3545,9 +3545,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var expectedMessage = $"Model binding system exceeded " +
                 $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (32). Reduce the " +
                 $"potential nesting of '{typeof(LoopyModel)}'. For example, this type may have a property with a " +
-                $"model binder that always succeeds. See the " +
+                "model binder that always succeeds. See the " +
                 $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} documentation for more " +
-                $"information.";
+                "information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",

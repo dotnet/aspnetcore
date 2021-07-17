@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             : base(parent, CommandName, httpClient)
         {
             _codeGeneratorOption = Option("-c|--code-generator", "The code generator to use. Defaults to 'NSwagCSharp'.", CommandOptionType.SingleValue);
-            _sourceProjectArg = Argument(SourceProjectArgName, $"The OpenAPI project to add. This must be the path to project file(s) containing OpenAPI endpoints", multipleValues: true);
+            _sourceProjectArg = Argument(SourceProjectArgName, "The OpenAPI project to add. This must be the path to project file(s) containing OpenAPI endpoints", multipleValues: true);
         }
 
         internal readonly CommandArgument _sourceProjectArg;

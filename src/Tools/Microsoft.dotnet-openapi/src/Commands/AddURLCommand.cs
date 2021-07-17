@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
         {
             _codeGeneratorOption = Option("-c|--code-generator", "The code generator to use. Defaults to 'NSwagCSharp'.", CommandOptionType.SingleValue);
             _outputFileOption = Option(OutputFileName, "The destination to download the remote OpenAPI file to.", CommandOptionType.SingleValue);
-            _sourceFileArg = Argument(SourceUrlArgName, $"The OpenAPI file to add. This must be a URL to a remote OpenAPI file.", multipleValues: true);
+            _sourceFileArg = Argument(SourceUrlArgName, "The OpenAPI file to add. This must be a URL to a remote OpenAPI file.", multipleValues: true);
         }
 
         internal readonly CommandOption _outputFileOption;

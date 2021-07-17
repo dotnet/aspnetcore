@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (header is null || !header.IsFileDisposition())
             {
-                throw new ArgumentException($"Argument must be a file section", nameof(section));
+                throw new ArgumentException("Argument must be a file section", nameof(section));
             }
 
             Section = section;

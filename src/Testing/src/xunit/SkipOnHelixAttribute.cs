@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             get
             {
-                return $"This test is skipped on helix";
+                return "This test is skipped on helix";
             }
         }
 
