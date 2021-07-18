@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
         private bool _connectionClosed;
         private readonly bool _waitForData;
-        private bool _connectionStarted;
+        private int _connectionStarted;
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
@@ -86,12 +86,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private void EnsureStarted()
         {
-            if (_connectionStarted)
+            if (_connectionStarted == 1 || Interlocked.CompareExchange(ref _connectionStarted, 1, 0) == 1)
             {
                 return;
             }
-
-            _connectionStarted = true;
 
             // Offload these to avoid potentially blocking the first read/write/flush
             _receivingTask = Task.Run(DoReceive);

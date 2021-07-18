@@ -47,7 +47,7 @@ namespace Sockets.FunctionalTests
                 .ConfigureServices(AddTestLogging);
 
             using var host = builder.Build();
-            using var client = new System.Net.Http.HttpClient();
+            using var client = new HttpClient();
 
             await host.StartAsync();
 
@@ -58,7 +58,7 @@ namespace Sockets.FunctionalTests
         }
 
         [Fact]
-        public async Task CanReadFromSocketSocketsFeatureInConnectionMiddleware()
+        public async Task CanReadAndWriteFromSocketSocketsFeatureInConnectionMiddleware()
         {
             var builder = TransportSelector.GetHostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
