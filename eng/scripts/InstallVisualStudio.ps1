@@ -94,7 +94,7 @@ if (-not $InstallPath) {
     $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (Test-Path $vsWhere)
     {
-        $installations = & $vsWhere -version "[$vsversion,$($vsversion+1)))" -format json -prerelease -products $productId | ConvertFrom-Json |Sort-Object -Descending -Property installationVersion, installDate
+        $installations = & $vsWhere -version "[$vsversion,$($vsversion+1))" -format json -prerelease -products $productId | ConvertFrom-Json |Sort-Object -Descending -Property installationVersion, installDate
         foreach ($installation in $installations) {
             Write-Host "Found '$($installation.installationName)' in '$($installation.installationPath)', channel = '$($installation.channelId)'"
             if ($installation.channelId -eq $channelId) {
