@@ -1197,11 +1197,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3)
             {
                 // TODO: Perf. Avoid allocating enumerator and property's LINQ.
+                // https://github.com/dotnet/aspnetcore/issues/34468
                 foreach (var option in ServerOptions.ListenOptions)
                 {
                     if ((option.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
                         // TODO: Perf. Create string once instead of per-request.
+                        // https://github.com/dotnet/aspnetcore/issues/34468
                         responseHeaders.HeaderAltSvc = $"h3=\":{option.IPEndPoint!.Port}\"; ma=84600";
                         break;
                     }
