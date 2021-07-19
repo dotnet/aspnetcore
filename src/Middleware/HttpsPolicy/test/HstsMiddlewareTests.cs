@@ -42,20 +42,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         }
 
         [Fact]
-        public async Task Invoke_SetsHstsHeaderWithDefaultThirtyDaysMaxAge()
-        {
-            var middleware = new HstsMiddleware(innerHttpContext => Task.CompletedTask, new OptionsWrapper<HstsOptions>(new HstsOptions()));
-
-            var context = new DefaultHttpContext();
-            context.Request.Host = new HostString("example.com");
-            context.Request.Scheme = "https";
-
-            await middleware.Invoke(context);
-
-            Assert.Equal("max-age=2592000", context.Response.Headers[HeaderNames.StrictTransportSecurity].FirstOrDefault());
-        }
-
-        [Fact]
         public async Task SetOptionsWithDefault_SetsMaxAgeToCorrectValue()
         {
             using var host = new HostBuilder()
