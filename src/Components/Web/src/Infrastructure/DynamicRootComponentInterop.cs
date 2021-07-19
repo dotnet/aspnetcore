@@ -64,7 +64,6 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Dynamic root components must be registered via DynamicRootComponentConfiguration.Register, which will preserve the component and parameter types.")]
         [JSInvokable]
         public int AddRootComponent(string componentIdentifier, string domElementSelector)
         {
@@ -79,7 +78,6 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Dynamic root components must be registered via DynamicRootComponentConfiguration.Register, which will preserve the component and parameter types.")]
         [JSInvokable]
         public void SetRootComponentParameters(int componentId, int parameterCount, byte[] parametersJsonUtf8)
         {

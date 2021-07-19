@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
@@ -36,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
 
-        public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
+        public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, ParameterView parameters, string domElementSelector)
         {
             var componentId = AddRootComponent(componentType, domElementSelector);
             return RenderRootComponentAsync(componentId, parameters);
