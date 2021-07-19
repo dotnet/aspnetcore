@@ -9,6 +9,30 @@
 #include <time.h>
 #include <cwchar>
 
+std::wstring GetDateTime()
+{
+    std::chrono::milliseconds milliseconds =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(milliseconds);
+    milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(milliseconds - seconds);
+
+    time_t t = seconds.count();
+    tm time;
+    // convert time to utc
+    gmtime_s(&time, &t);
+
+    wchar_t timeString[sizeof("2019-11-23T13:23:02.000Z")];
+
+    // format string to ISO8601 with additional space for 3 digits of millisecond precision
+    std::wcsftime(timeString, sizeof(timeString) / sizeof(wchar_t), L"%FT%T.000Z", &time);
+
+    // add millisecond part
+    // 5 = 3 digits of millisecond precision + 'Z' + null character ending
+    swprintf(timeString + (sizeof(timeString) / sizeof(wchar_t)) - 5, 5, L"%03dZ", (int)milliseconds.count());
+
+    return std::wstring(timeString);
+}
+
 AggregateRedirectionOutput::AggregateRedirectionOutput(std::shared_ptr<RedirectionOutput> outputA, std::shared_ptr<RedirectionOutput> outputB, std::shared_ptr<RedirectionOutput> outputC) noexcept(true):
     m_outputA(std::move(outputA)), m_outputB(std::move(outputB)), m_outputC(std::move(outputC))
 {
@@ -16,17 +40,18 @@ AggregateRedirectionOutput::AggregateRedirectionOutput(std::shared_ptr<Redirecti
 
 void AggregateRedirectionOutput::Append(const std::wstring& text)
 {
+    std::wstring out = GetDateTime() + L": " + text;
     if (m_outputA != nullptr)
     {
-        m_outputA->Append(text);
+        m_outputA->Append(out);
     }
     if (m_outputB != nullptr)
     {
-        m_outputB->Append(text);
+        m_outputB->Append(out);
     }
     if (m_outputC != nullptr)
     {
-        m_outputC->Append(text);
+        m_outputC->Append(out);
     }
 }
 
@@ -76,35 +101,10 @@ FileRedirectionOutput::FileRedirectionOutput(const std::wstring& applicationPath
     }
 }
 
-std::wstring GetDateTime()
-{
-    std::chrono::milliseconds milliseconds =
-                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-                std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(milliseconds);
-                milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(milliseconds - seconds);
-
-    time_t t = seconds.count();
-    tm time;
-    // convert time to utc
-    gmtime_s(&time, &t);
-
-    wchar_t timeString[sizeof(L"2019-11-23T13:23:02.000Z")];
-
-    // format string to ISO8601 with additional space for 3 digits of millisecond precision
-    std::wcsftime(timeString, sizeof(timeString), L"%FT%T.000Z", &time);
-
-    // add millisecond part
-    // 5 = 3 digits of millisecond precision + 'Z' + null character ending
-    swprintf(timeString + sizeof(timeString) - 5, 5, L"%03dZ", (int)milliseconds.count());
-    
-    return std::wstring(timeString, sizeof(timeString));
-}
-
 void FileRedirectionOutput::Append(const std::wstring& text)
 {
     if (m_file.is_open())
     {
-        text = GetDateTime() + L": " + text;
         auto multiByte = to_multi_byte_string(text, CP_UTF8);
 
         // Writing \r\n to an ostream will cause two new lines to be written rather
