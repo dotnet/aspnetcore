@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 {
     /// <summary>
     /// Provides JavaScript-callable interop methods that can add, update, or remove dynamic

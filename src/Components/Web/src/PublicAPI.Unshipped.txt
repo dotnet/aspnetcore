@@ -27,11 +27,6 @@ Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.Selector.set -> void
 Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration
 Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration.DynamicRootComponentConfiguration(System.Text.Json.JsonSerializerOptions! jsonOptions) -> void
 Microsoft.AspNetCore.Components.Web.DynamicRootComponentConfiguration.Register<TComponent>(string! name) -> void
-Microsoft.AspNetCore.Components.Web.DynamicRootComponentInterop
-Microsoft.AspNetCore.Components.Web.DynamicRootComponentInterop.AddRootComponent(string! componentIdentifier, string! domElementSelector) -> int
-Microsoft.AspNetCore.Components.Web.DynamicRootComponentInterop.Dispose() -> void
-Microsoft.AspNetCore.Components.Web.DynamicRootComponentInterop.RemoveRootComponent(int componentId) -> void
-Microsoft.AspNetCore.Components.Web.DynamicRootComponentInterop.RenderRootComponentAsync(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.ErrorBoundary
 Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorBoundary() -> void
 Microsoft.AspNetCore.Components.Web.HeadContent
@@ -42,6 +37,11 @@ Microsoft.AspNetCore.Components.Web.HeadOutlet
 Microsoft.AspNetCore.Components.Web.HeadOutlet.HeadOutlet() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop
+Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.AddRootComponent(string! componentIdentifier, string! domElementSelector) -> int
+Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.Dispose() -> void
+Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.RemoveRootComponent(int componentId) -> void
+Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.RenderRootComponentAsync(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.PageTitle
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.set -> void
