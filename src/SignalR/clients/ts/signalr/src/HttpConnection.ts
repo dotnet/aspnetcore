@@ -81,6 +81,7 @@ export class HttpConnection implements IConnection {
         } else {
             throw new Error("withCredentials option was not a 'boolean' or 'undefined' value");
         }
+        options.defaultHttpTimeoutInMilliseconds = options.defaultHttpTimeoutInMilliseconds === undefined ? 100 * 1000 : options.defaultHttpTimeoutInMilliseconds;
 
         let webSocketModule: any = null;
         let eventSourceModule: any = null;
@@ -322,7 +323,7 @@ export class HttpConnection implements IConnection {
             const response = await this._httpClient.post(negotiateUrl, {
                 content: "",
                 headers: { ...headers, ...this._options.headers },
-                timeout: 100 * 1000,
+                timeout: this._options.defaultHttpTimeoutInMilliseconds,
                 withCredentials: this._options.withCredentials,
             });
 
@@ -417,14 +418,14 @@ export class HttpConnection implements IConnection {
                 if (!this._options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent || false, this._options.WebSocket, this._options.headers || {});
+                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!, this._options.WebSocket, this._options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent || false, this._options.EventSource, this._options.withCredentials!, this._options.headers || {});
+                return new ServerSentEventsTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options);
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent || false, this._options.withCredentials!, this._options.headers || {});
+                return new LongPollingTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options);
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }
