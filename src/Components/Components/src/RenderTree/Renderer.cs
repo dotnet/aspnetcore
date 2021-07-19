@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable warnings
@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
-        private Task? _disposeTask;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -956,9 +955,30 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Releases all resources currently used by this <see cref="Renderer"/> instance.
         /// </summary>
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing) => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Releases all resources currently used by this <see cref="Renderer"/> instance.
+        /// </summary>
+        public void Dispose()
         {
+            Dispose(disposing: true);
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            if (Disposed)
+            {
+                return;
+            }
+
             Disposed = true;
+
+            if (TestableMetadataUpdate.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            }
 
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
@@ -1012,7 +1032,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             if (asyncDisposables?.Count >= 1)
             {
-                _disposeTask = HandleAsyncExceptions(asyncDisposables);
+                await HandleAsyncExceptions(asyncDisposables);
             }
 
             async Task HandleAsyncExceptions(List<Task> tasks)
@@ -1043,45 +1063,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 else if (exceptions?.Count == 1)
                 {
                     HandleException(exceptions[0]);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Releases all resources currently used by this <see cref="Renderer"/> instance.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-        }
-
-        /// <inheritdoc />
-        public async ValueTask DisposeAsync()
-        {
-            if (TestableMetadataUpdate.IsSupported)
-            {
-                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
-            }
-
-            if (Disposed)
-            {
-                return;
-            }
-
-            if (_disposeTask != null)
-            {
-                await _disposeTask;
-            }
-            else
-            {
-                Dispose();
-                if (_disposeTask != null)
-                {
-                    await _disposeTask;
-                }
-                else
-                {
-                    await default(ValueTask);
                 }
             }
         }
