@@ -4,6 +4,7 @@ import '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
+import { getAndRemovePendingRootComponentContainer } from './DynamicRootComponents';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -32,7 +33,8 @@ export function attachRootComponentToElement(elementSelector: string, componentI
     throw new Error(`The '${beforeElementSelector}' selector is not supported.`);
   }
 
-  const element = document.querySelector(elementSelector);
+  const element = getAndRemovePendingRootComponentContainer(elementSelector)
+    || document.querySelector(elementSelector);
   if (!element) {
     throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
   }

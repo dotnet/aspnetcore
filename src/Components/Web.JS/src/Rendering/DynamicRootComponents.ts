@@ -1,37 +1,41 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 
+const pendingRootComponentContainerNamePrefix = '__bl-dynamic-root:';
+const pendingRootComponentContainers = new Map<string, Element>();
+let nextPendingDynamicRootComponentIdentifier = 0;
+
 type ComponentParameters = object | null | undefined;
-const blazorDynamicRootComponentAttributeName = 'bl-dynamic-root';
 const textEncoder = new TextEncoder();
 
 let manager: DotNet.DotNetObject | undefined;
-let nextDynamicRootComponentSelector = 0;
 
 // These are the public APIs at Blazor.rootComponents.*
 export const RootComponentsFunctions = {
     async add(toElement: Element, componentIdentifier: FunctionStringCallback, initialParameters: ComponentParameters): Promise<DynamicRootComponent> {
-        // Attaching a selector like below assumes the element is within the document. If we need to support
-        // rendering into nonattached elements, we can add that, but it's possible that other aspects of the
-        // JS-side code will make assumptions about rendering only happening into document-attached nodes.
-        // For now, limiting it to elements within the document.
-        if (!toElement.isConnected) {
-            throw new Error('The element is not connected to the DOM.');
-        }
-
         if (!initialParameters) {
             throw new Error('initialParameters must be an object, even if empty.');
         }
 
-        const selectorValue = (++nextDynamicRootComponentSelector).toString();
-        toElement.setAttribute(blazorDynamicRootComponentAttributeName, selectorValue);
-        const selector = `[${blazorDynamicRootComponentAttributeName}='${selectorValue}']`;
+        // Track the container so we can use it when the component gets attached to the document via a selector
+        const containerIdentifier = pendingRootComponentContainerNamePrefix + (++nextPendingDynamicRootComponentIdentifier).toString();
+        pendingRootComponentContainers.set(containerIdentifier, toElement);
+
+        // Instruct .NET to add and render the new root component
         const componentId = await getRequiredManager().invokeMethodAsync<number>(
-            'AddRootComponent', componentIdentifier, selector);
+            'AddRootComponent', componentIdentifier, containerIdentifier);
         const component = new DynamicRootComponent(componentId);
         await component.setParameters(initialParameters);
         return component;
     }
 };
+
+export function getAndRemovePendingRootComponentContainer(containerIdentifier: string): Element | undefined {
+    const container = pendingRootComponentContainers.get(containerIdentifier);
+    if (container) {
+        pendingRootComponentContainers.delete(containerIdentifier);
+        return container;
+    }
+}
 
 class DynamicRootComponent {
     private _componentId: number | null;
