@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
             }
 
-            // Non-tab control characters are considered invalid
-            if (((ReadOnlySpan<char>)result).IndexOfAny('\u000A', '\u000D') != -1)
+            // New Line characters (CR, LF) are considered invalid at this point.
+            if (((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n') >= 0)
             {
                 throw new InvalidOperationException();
             }
