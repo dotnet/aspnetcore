@@ -22,10 +22,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web" />
-  </ItemGroup>
-
   <!--
     These references exist only in the .nuspec files and baseline checks are not aware of them. Keep suppressions
     in sync with the two .nuspec files:
