@@ -1375,6 +1375,8 @@ public class HubConnection implements AutoCloseable {
                 public void run() {
                     try {
                         if (System.currentTimeMillis() > nextServerTimeout.get()) {
+                            // cleanup the timer so it stops triggering
+                            pingTimer.cancel();
                             stop("Server timeout elapsed without receiving a message from the server.");
                             return;
                         }
