@@ -232,8 +232,7 @@
                           $(RepoRoot)src\WebEncoders\**\src\*.csproj;
                           $(RepoRoot)src\HealthChecks\**\src\*.csproj;
                           $(RepoRoot)src\Testing\**\src\*.csproj;
-                          $(RepoRoot)src\Extensions\**\*.csproj;
-                          $(RepoRoot)src\WebEncoders\**\src\*.csproj;						  
+                          $(RepoRoot)src\Extensions\**\src\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
