@@ -117,7 +117,9 @@ namespace Sockets.FunctionalTests
             await host.StopAsync();
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanDuplicateAndCloseSocketFeatureInConnectionMiddleware()
         {
             var builder = TransportSelector.GetHostBuilder()
