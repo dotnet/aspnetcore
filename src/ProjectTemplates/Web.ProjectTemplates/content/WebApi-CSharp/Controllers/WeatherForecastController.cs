@@ -23,7 +23,7 @@ namespace Company.WebApplication1.Controllers;
 [ApiController]
 [Route("[controller]")]
 #if (OrganizationalAuth || IndividualB2CAuth)
-[RequiredScope(scopeRequiredByApi)]
+[RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
 #endif
 public class WeatherForecastController : ControllerBase
 {
@@ -33,11 +33,6 @@ public class WeatherForecastController : ControllerBase
     };
 
     private readonly ILogger<WeatherForecastController> _logger;
-#if (OrganizationalAuth || IndividualB2CAuth)
-
-    // The Web API will only accept tokens 1) for users, and 2) having the "api-scope" scope for this API
-    static readonly string[] scopeRequiredByApi = new string[] { "api-scope" };
-#endif
 
 #if (GenerateApi)
     private readonly IDownstreamWebApi _downstreamWebApi;
