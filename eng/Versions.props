@@ -235,7 +235,7 @@
     <IdentityServer4StorageVersion>4.1.0</IdentityServer4StorageVersion>
     <IdentityServer4EntityFrameworkStorageVersion>4.1.0</IdentityServer4EntityFrameworkStorageVersion>
     <MessagePackVersion>2.1.90</MessagePackVersion>
-    <MicrosoftIdentityWebVersion>1.1.0</MicrosoftIdentityWebVersion>
+    <MicrosoftIdentityWebVersion>1.14.1</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebMicrosoftGraphVersion>1.1.0</MicrosoftIdentityWebMicrosoftGraphVersion>
     <MicrosoftIdentityWebUIVersion>1.1.0</MicrosoftIdentityWebUIVersion>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>

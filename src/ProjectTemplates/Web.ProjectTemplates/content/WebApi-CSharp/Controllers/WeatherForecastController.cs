@@ -1,4 +1,4 @@
-﻿#if (GenerateApi)
+#if (GenerateApi)
 using System.Net.Http;
 #endif
 #if (!NoAuth)
@@ -22,6 +22,9 @@ namespace Company.WebApplication1.Controllers;
 #endif
 [ApiController]
 [Route("[controller]")]
+#if (OrganizationalAuth || IndividualB2CAuth)
+[RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
+#endif
 public class WeatherForecastController : ControllerBase
 {
     private static readonly string[] Summaries = new[]
@@ -30,11 +33,6 @@ public class WeatherForecastController : ControllerBase
     };
 
     private readonly ILogger<WeatherForecastController> _logger;
-#if (OrganizationalAuth || IndividualB2CAuth)
-
-    // The Web API will only accept tokens 1) for users, and 2) having the "api-scope" scope for this API
-    static readonly string[] scopeRequiredByApi = new string[] { "api-scope" };
-#endif
 
 #if (GenerateApi)
     private readonly IDownstreamWebApi _downstreamWebApi;
@@ -49,8 +47,6 @@ public class WeatherForecastController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
-        HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
-
         using var response = await _downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
@@ -85,7 +81,6 @@ public class WeatherForecastController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
-        HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
         var user = await _graphServiceClient.Me.Request().GetAsync();
 
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
@@ -105,10 +100,6 @@ public class WeatherForecastController : ControllerBase
     [HttpGet]
     public IEnumerable<WeatherForecast> Get()
     {
-#if (OrganizationalAuth || IndividualB2CAuth)
-        HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
-
-#endif
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
             Date = DateTime.Now.AddDays(index),
