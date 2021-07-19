@@ -49,7 +49,6 @@ export class HubConnection {
     private _handshakeResolver!: (value?: PromiseLike<{}>) => void;
     private _handshakeRejecter!: (reason?: any) => void;
     private _stopDuringStartError?: Error;
-    private _lockResolver!: (value?: PromiseLike<{}>) => void;
 
     private _connectionState: HubConnectionState;
     // connectionStarted is tracked independently from connectionState, so we can check if the
@@ -68,7 +67,7 @@ export class HubConnection {
 
     private _freezeEventListener = () =>
     {
-        this._logger.log(LogLevel.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost.");
+        this._logger.log(LogLevel.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://docs.microsoft.com/aspnet/core/signalr/javascript-client#browser-sleeping-tab");
     };
 
     /** The server timeout in milliseconds.
@@ -182,22 +181,8 @@ export class HubConnection {
 
             if (Platform.isBrowser) {
                 if (document) {
+                    // Log when the browser freezes the tab so users know why their connection unexpectedly stopped working
                     document.addEventListener("freeze", this._freezeEventListener);
-                }
-
-                // Chrome and Edge currently support Web Locks, it's also experimental, so let's be safe and check if the APIs exist
-                // https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API
-                // This should prevent the browsers from sleeping the tab which would close the connection unexpectedly
-                if (navigator && (navigator as any).locks && (navigator as any).locks.request) {
-                    const promise = new Promise((res) => {
-                        this._lockResolver = res;
-                    });
-
-                    // Use a 'shared' lock so multiple tabs to the same site can used the same lock
-                    (navigator as any).locks.request('signalr_client_lock', { mode: "shared" }, () => {
-                        // Keep lock until promise is resolved
-                        return promise;
-                    });
                 }
             }
 
@@ -749,9 +734,6 @@ export class HubConnection {
             this._connectionStarted = false;
 
             if (Platform.isBrowser) {
-                if (this._lockResolver) {
-                    this._lockResolver();
-                }
                 if (document) {
                     document.removeEventListener("freeze", this._freezeEventListener);
                 }
