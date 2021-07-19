@@ -158,16 +158,8 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 
         private bool TryGetComponentParameterType(Type componentType, string parameterName, out Type parameterType)
         {
-            // The parameter name comes from untrusted input, and we don't want to hash arbitrarily long
-            // strings. This restriction is both to limit the impact of hostile input and to guide developers
-            // to pick parameter names that will keep the costs low.
-            if (parameterName.Length > 50)
-            {
-                throw new ArgumentException($"The parameter '{parameterName}' cannot be used dynamically because its name is too long.");
-            }
-
-            var cache = ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
-            return cache.ParameterTypes.TryGetValue(parameterName, out parameterType!);
+            var cacheForComponent = ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
+            return cacheForComponent.ParameterTypes.TryGetValue(parameterName, out parameterType!);
         }
 
         private readonly struct ParameterTypeCache
