@@ -18,6 +18,10 @@ export const RootComponentsFunctions = {
             throw new Error('The element is not connected to the DOM.');
         }
 
+        if (!initialParameters) {
+            throw new Error('initialParameters must be an object, even if empty.');
+        }
+
         const selectorValue = (++nextDynamicRootComponentSelector).toString();
         toElement.setAttribute(blazorDynamicRootComponentAttributeName, selectorValue);
         const selector = `[${blazorDynamicRootComponentAttributeName}='${selectorValue}']`;
