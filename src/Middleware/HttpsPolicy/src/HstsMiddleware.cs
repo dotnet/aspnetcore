@@ -88,11 +88,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy
 
         private bool IsHostExcluded(string host)
         {
-            if (_excludedHosts == null)
-            {
-                return false;
-            }
-
             for (var i = 0; i < _excludedHosts.Count; i++)
             {
                 if (string.Equals(host, _excludedHosts[i], StringComparison.OrdinalIgnoreCase))
@@ -100,6 +95,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                     return true;
                 }
             }
+
             return false;
         }
     }

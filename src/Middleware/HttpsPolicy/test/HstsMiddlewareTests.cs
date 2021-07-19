@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -22,6 +23,24 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 {
     public class HstsMiddlewareTests
     {
+        [Fact]
+        public void Ctor_ArgumentNextIsNull_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                _ = new HstsMiddleware(next: null, options: new OptionsWrapper<HstsOptions>(new HstsOptions()));
+            });
+        }
+
+        [Fact]
+        public void Ctor_ArgumentOptionsIsNull_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                _ = new HstsMiddleware(innerHttpContext => Task.CompletedTask, options: null);
+            });
+        }
+
         [Fact]
         public async Task SetOptionsWithDefault_SetsMaxAgeToCorrectValue()
         {
