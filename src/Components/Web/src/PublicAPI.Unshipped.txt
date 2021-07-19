@@ -41,7 +41,7 @@ Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop
 Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.AddRootComponent(string! componentIdentifier, string! domElementSelector) -> int
 Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.Dispose() -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.RemoveRootComponent(int componentId) -> void
-Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.RenderRootComponentAsync(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.SetRootComponentParameters(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> void
 Microsoft.AspNetCore.Components.Web.PageTitle
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.set -> void

@@ -1,5 +1,6 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 
+type ComponentParameters = object | null | undefined;
 const blazorDynamicRootComponentAttributeName = 'bl-dynamic-root';
 const textEncoder = new TextEncoder();
 
@@ -8,7 +9,7 @@ let nextDynamicRootComponentSelector = 0;
 
 // These are the public APIs at Blazor.rootComponents.*
 export const RootComponentsFunctions = {
-    async add(toElement: Element, componentIdentifier: FunctionStringCallback): Promise<DynamicRootComponent> {
+    async add(toElement: Element, componentIdentifier: FunctionStringCallback, initialParameters: ComponentParameters): Promise<DynamicRootComponent> {
         // Attaching a selector like below assumes the element is within the document. If we need to support
         // rendering into nonattached elements, we can add that, but it's possible that other aspects of the
         // JS-side code will make assumptions about rendering only happening into document-attached nodes.
@@ -22,7 +23,9 @@ export const RootComponentsFunctions = {
         const selector = `[${blazorDynamicRootComponentAttributeName}='${selectorValue}']`;
         const componentId = await getRequiredManager().invokeMethodAsync<number>(
             'AddRootComponent', componentIdentifier, selector);
-        return new DynamicRootComponent(componentId);
+        const component = new DynamicRootComponent(componentId);
+        await component.setParameters(initialParameters);
+        return component;
     }
 };
 
@@ -33,7 +36,7 @@ class DynamicRootComponent {
         this._componentId = componentId;
     }
 
-    setParameters(parameters: object | null | undefined) {
+    setParameters(parameters: ComponentParameters) {
         parameters = parameters || {};
         const parameterCount = Object.keys(parameters).length;
 
@@ -42,7 +45,7 @@ class DynamicRootComponent {
         const parametersJson = JSON.stringify(parameters);
         const parametersUtf8 = textEncoder.encode(parametersJson);
 
-        return getRequiredManager().invokeMethodAsync('RenderRootComponentAsync', this._componentId, parameterCount, parametersUtf8);
+        return getRequiredManager().invokeMethodAsync('SetRootComponentParameters', this._componentId, parameterCount, parametersUtf8);
     }
 
     async dispose() {

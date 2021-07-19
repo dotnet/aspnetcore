@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable]
-        public Task RenderRootComponentAsync(int componentId, int parameterCount, byte[] parametersJsonUtf8)
+        public void SetRootComponentParameters(int componentId, int parameterCount, byte[] parametersJsonUtf8)
         {
             // In case the client misreports the number of parameters, impose bounds so we know the amount
             // of work done is limited to a fixed, low amount.
@@ -137,7 +137,12 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 parametersReader.Read();
             }
 
-            return _renderer.RenderRootComponentAsync(componentId, parameterViewBuilder.ToParameterView());
+            // This call gets back a task that represents the renderer reaching quiescence, but is not
+            // used for async errors (there's a separate channel for errors, because renderer errors can
+            // happen at any time due to component code). We don't want to expose quiescence info here
+            // because there isn't a clear scenario for it, and it would lock down more implementation
+            // details than we want. So, the task is not relevant to us, and we can safely discard it.
+            _ = _renderer.RenderRootComponentAsync(componentId, parameterViewBuilder.ToParameterView());
         }
 
         /// <summary>
