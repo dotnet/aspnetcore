@@ -1,6 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using Xunit;
@@ -37,8 +39,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 CallsOfManyArgs.Add((a, b));
             }
 
+            public int CallsOfReturnTask;
             public Task ReturnTask()
             {
+                CallsOfReturnTask += 1;
                 return Task.CompletedTask;
             }
         }
@@ -78,6 +82,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     It.IsAny<Func<object[], object, Task>>(),
                     It.IsAny<object>()))
                 .Returns(manyArgsReg);
+            var returnTaskReg = new Disposable();
+            mockConn
+                .Setup(x => x.On(
+                    "ReturnTask",
+                    Array.Empty<Type>(),
+                    It.IsAny<Func<object[], object, Task>>(),
+                    It.IsAny<object>()))
+                .Returns(returnTaskReg);
             var conn = mockConn.Object;
             var myClient = new MyClient();
 
@@ -89,6 +101,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Assert.False(noArgReg.IsDisposed);
             Assert.False(singleArgReg.IsDisposed);
             Assert.False(manyArgsReg.IsDisposed);
+            Assert.False(returnTaskReg.IsDisposed);
         }
 
         [Fact]
@@ -120,6 +133,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     It.IsAny<Func<object[], object, Task>>(),
                     It.IsAny<object>()))
                 .Returns(manyArgsReg);
+            var returnTaskReg = new Disposable();
+            mockConn
+                .Setup(x => x.On(
+                    "ReturnTask",
+                    Array.Empty<Type>(),
+                    It.IsAny<Func<object[], object, Task>>(),
+                    It.IsAny<object>()))
+                .Returns(returnTaskReg);
             var conn = mockConn.Object;
             var myClient = new MyClient();
             var registration = conn.RegisterCallbackProvider<IMyClient>(myClient);
@@ -131,6 +152,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Assert.True(noArgReg.IsDisposed);
             Assert.True(singleArgReg.IsDisposed);
             Assert.True(manyArgsReg.IsDisposed);
+            Assert.True(returnTaskReg.IsDisposed);
         }
 
         [Fact]
@@ -186,6 +208,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         manyArgsState = state;
                     })
                 .Returns(manyArgsReg);
+            var returnTaskReg = new Disposable();
+            Func<object[], object, Task> returnTaskFunc = null;
+            object returnTaskState = null;
+            mockConn
+                .Setup(x => x.On(
+                    "ReturnTask",
+                    Array.Empty<Type>(),
+                    It.IsAny<Func<object[], object, Task>>(),
+                    It.IsAny<object>()))
+                .Callback(
+                    (string methodName, Type[] parameterTypes, Func<object[], object, Task> handler, object state) =>
+                    {
+                        returnTaskFunc = handler;
+                        returnTaskState = state;
+                    })
+                .Returns(returnTaskReg);
             var conn = mockConn.Object;
             var myClient = new MyClient();
             var registration = conn.RegisterCallbackProvider<IMyClient>(myClient);
@@ -204,6 +242,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await singleArgFunc(new object[]{10, 5.5f}, manyArgsState);
             Assert.Single(myClient.CallsOfManyArgs);
             Assert.Equal((10, 5.5f), myClient.CallsOfManyArgs[0]);
+
+            Assert.NotNull(returnTaskFunc);
+            await returnTaskFunc(Array.Empty<object>(), returnTaskState);
+            Assert.Equal(1, myClient.CallsOfReturnTask);
         }
     }
 }

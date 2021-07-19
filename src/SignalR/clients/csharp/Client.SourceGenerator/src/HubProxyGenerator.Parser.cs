@@ -1,7 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -18,8 +19,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 _context = context;
             }
 
+            /// <param name="syntaxList">A filtered list of candidates</param>
             public SourceGenerationSpec Parse(List<MemberAccessExpressionSyntax> syntaxList)
             {
+                // Source generation spec will be populated by type specs for each hub type.
+                // Type specs themselves are populated by method specs which are populated by argument specs.
+                // Source generation spec is then used by emitter to actually generate source.
                 var sourceGenerationSpec = new SourceGenerationSpec();
                 var compilation = _context.Compilation;
 
@@ -27,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 var iHubConnectionType =
                     compilation.GetTypeByMetadataName("Microsoft.AspNetCore.SignalR.Client.IHubConnection");
 
-                // Go thru candidates and filter
+                // Go thru candidates and filter further
                 foreach (var memberAccess in syntaxList)
                 {
                     var expressionModel = compilation.GetSemanticModel(memberAccess.Expression.SyntaxTree);
@@ -43,11 +48,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                         continue;
                     }
 
-                    var proxyType = ((GenericNameSyntax) memberAccess.Name).TypeArgumentList.Arguments[0];
+                    var proxyType = ((GenericNameSyntax)memberAccess.Name).TypeArgumentList.Arguments[0];
 
                     // Filter based on argument symbol
                     var argumentModel = compilation.GetSemanticModel(proxyType.SyntaxTree);
-                    if (argumentModel.GetSymbolInfo(proxyType).Symbol is not ITypeSymbol {IsAbstract: true} symbol)
+                    if (argumentModel.GetSymbolInfo(proxyType).Symbol is not ITypeSymbol { IsAbstract: true } symbol)
                     {
                         // T in GetProxy<T> must be an interface
                         _context.ReportDiagnostic(Diagnostic.Create(
@@ -72,32 +77,33 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
                     var members = hubSymbol.GetMembers()
                         .Where(member => member.Kind == SymbolKind.Method)
-                        .Select(member => (IMethodSymbol) member)
+                        .Select(member => (IMethodSymbol)member)
                         .Concat(hubSymbol.AllInterfaces.SelectMany(x => x
                             .GetMembers()
                             .Where(member => member.Kind == SymbolKind.Method)
-                            .Select(member => (IMethodSymbol) member)));
+                            .Select(member => (IMethodSymbol)member)));
 
                     // Generate spec for each method
                     foreach (var member in members)
                     {
                         var methodSpec = new MethodSpec
                         {
-                            Name = member.Name, FullyQualifiedReturnTypeName = member.ReturnType.ToString()
+                            Name = member.Name,
+                            FullyQualifiedReturnTypeName = member.ReturnType.ToString()
                         };
 
-                        if (member.ReturnType is INamedTypeSymbol {Arity: 1} rtype)
+                        if (member.ReturnType is INamedTypeSymbol { Arity: 1 } rtype)
                         {
                             methodSpec.InnerReturnTypeName = rtype.TypeArguments[0].ToString();
                         }
 
-                        if (member.ReturnType is INamedTypeSymbol {Arity: 1, Name: "Task"} a
-                            && a.TypeArguments[0] is INamedTypeSymbol {Arity: 1, Name: "ChannelReader"} b)
+                        if (member.ReturnType is INamedTypeSymbol { Arity: 1, Name: "Task" } a
+                            && a.TypeArguments[0] is INamedTypeSymbol { Arity: 1, Name: "ChannelReader" } b)
                         {
                             methodSpec.Stream = StreamSpec.ServerToClient & ~StreamSpec.AsyncEnumerable;
                             methodSpec.InnerReturnTypeName = b.TypeArguments[0].ToString();
                         }
-                        else if (member.ReturnType is INamedTypeSymbol {Arity: 1, Name: "IAsyncEnumerable"} c)
+                        else if (member.ReturnType is INamedTypeSymbol { Arity: 1, Name: "IAsyncEnumerable" } c)
                         {
                             methodSpec.Stream = StreamSpec.ServerToClient | StreamSpec.AsyncEnumerable;
                             methodSpec.InnerReturnTypeName = c.TypeArguments[0].ToString();
@@ -112,17 +118,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                         {
                             var argumentSpec = new ArgumentSpec
                             {
-                                Name = parameter.Name, FullyQualifiedTypeName = parameter.Type.ToString()
+                                Name = parameter.Name,
+                                FullyQualifiedTypeName = parameter.Type.ToString()
                             };
 
                             methodSpec.Arguments.Add(argumentSpec);
 
                             switch (parameter.Type)
                             {
-                                case INamedTypeSymbol {Arity: 1, Name: "ChannelReader"}:
+                                case INamedTypeSymbol { Arity: 1, Name: "ChannelReader" }:
                                     methodSpec.Stream |= StreamSpec.ClientToServer;
                                     break;
-                                case INamedTypeSymbol {Arity: 1, Name: "IAsyncEnumerable"}:
+                                case INamedTypeSymbol { Arity: 1, Name: "IAsyncEnumerable" }:
                                     methodSpec.Stream |= StreamSpec.ClientToServer;
                                     break;
                             }
@@ -130,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
                         // Validate return type
                         if (!methodSpec.Stream.HasFlag(StreamSpec.ServerToClient) &&
-                            member.ReturnType is not INamedTypeSymbol {Name: "Task" or "ValueTask"})
+                            member.ReturnType is not INamedTypeSymbol { Name: "Task" or "ValueTask" })
                         {
                             _context.ReportDiagnostic(Diagnostic.Create(
                                     DiagnosticDescriptors.HubProxyUnsupportedReturnType,

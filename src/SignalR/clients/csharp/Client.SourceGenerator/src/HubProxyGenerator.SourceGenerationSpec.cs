@@ -1,6 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
@@ -32,7 +34,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             public string? SupportHint;
             public StreamSpec Stream;
             public string? InnerReturnTypeName;
-            public bool IsReturnTypeValueTask => FullyQualifiedReturnTypeName.StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal);
+            public bool IsReturnTypeValueTask => FullyQualifiedReturnTypeName
+                .StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal);
         }
 
         [Flags]
@@ -48,9 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
         public enum SupportClassification
         {
             Supported,
-            UnsupportedReturnType,
-            MultipleClientToServerStreams,
-            StreamTypeMismatch
+            UnsupportedReturnType
         }
 
         public class ArgumentSpec

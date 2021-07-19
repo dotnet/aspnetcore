@@ -1,10 +1,9 @@
-using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 {
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             }
 
             var parser = new Parser(context);
-            var spec = parser.Parse(((SyntaxReceiver) context.SyntaxReceiver).Candidates);
+            var spec = parser.Parse(((SyntaxReceiver)context.SyntaxReceiver).Candidates);
             var emitter = new Emitter(context, spec);
             emitter.Emit();
         }
@@ -37,15 +36,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
                 if (syntaxNode is MemberAccessExpressionSyntax
-                {
-                    Name:
                     {
-                        Identifier:
+                        Name:
                         {
-                            ValueText: "RegisterCallbackProvider"
+                            Identifier:
+                            {
+                                ValueText: "RegisterCallbackProvider"
+                            }
                         }
-                    }
-                } registrationCall)
+                    } registrationCall)
                 {
                     Candidates.Add(registrationCall);
                 }
