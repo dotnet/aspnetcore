@@ -1602,9 +1602,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Features", "Features", "{17F28812-983E-4415-A55D-842DD7EC6887}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features", "src\Http\Features\src\Microsoft.Extensions.Features.csproj", "{A07D3B13-388B-444F-9E37-DDC0787C4690}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features", "src\Extensions\Features\src\Microsoft.Extensions.Features.csproj", "{A07D3B13-388B-444F-9E37-DDC0787C4690}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features.Tests", "src\Http\Features\test\Microsoft.Extensions.Features.Tests.csproj", "{09FFBC53-3EFF-45C4-9822-5D66089CD6AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features.Tests", "src\Extensions\Features\test\Microsoft.Extensions.Features.Tests.csproj", "{09FFBC53-3EFF-45C4-9822-5D66089CD6AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Migration.E2ETests", "src\Components\test\E2ETestMigration\Microsoft.AspNetCore.Components.Migration.E2ETests.csproj", "{A1D02CE6-1077-410A-81CB-D4BD500FD765}"
 EndProject

@@ -192,6 +192,7 @@
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\submodules\spa-templates\src\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
+                          $(RepoRoot)src\Extensions\**\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -230,6 +231,7 @@
                           $(RepoRoot)src\WebEncoders\**\src\*.csproj;
                           $(RepoRoot)src\HealthChecks\**\src\*.csproj;
                           $(RepoRoot)src\Testing\**\src\*.csproj;
+                          $(RepoRoot)src\Extensions\**\src\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
