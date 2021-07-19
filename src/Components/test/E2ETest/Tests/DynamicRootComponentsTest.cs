@@ -37,15 +37,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var message = app.FindElement(By.Id("message"));
 
-            // We can add root components
+            // We can add root components with initial parameters
             app.FindElement(By.Id("add-root-component")).Click();
 
-            // They don't render until they receive parameters
+            // They render and work
             var dynamicRootContainer = Browser.FindElement(By.Id("root-container-1"));
-            Browser.Empty(() => dynamicRootContainer.FindElements(By.CssSelector("*")));
-
-            // They do render when they do receive parameters
-            app.FindElement(By.Id("set-increment-amount")).Click();
             Browser.Equal("0", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
             dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
             dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
@@ -69,8 +65,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Create the initial component
             app.FindElement(By.Id("add-root-component")).Click();
-            var setIncrementAmount = app.FindElement(By.Id("set-increment-amount"));
-            setIncrementAmount.Click();
             var dynamicRootContainer = Browser.FindElement(By.Id("root-container-1"));
             var incrementButton = dynamicRootContainer.FindElement(By.ClassName("increment"));
             var clickCount = dynamicRootContainer.FindElement(By.ClassName("click-count"));
@@ -81,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var incrementAmount = app.FindElement(By.Id("increment-amount"));
             incrementAmount.Clear();
             incrementAmount.SendKeys("4");
-            setIncrementAmount.Click();
+            app.FindElement(By.Id("set-increment-amount")).Click();
             incrementButton.Click();
             Browser.Equal("5", () => clickCount.Text);
         }
@@ -164,47 +158,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     Assert.Equal("nullVal", param.FindElement(By.ClassName("unmatched-value-name")).Text);
                     Assert.Equal("null", param.FindElement(By.ClassName("unmatched-value-type")).Text);
                 });
-        }
-
-        [Fact]
-        public void CanObserveQuiescenceFromSetParametersCall()
-        {
-            app.FindElement(By.Id("add-root-component")).Click();
-            app.FindElement(By.Id("onparametersset-pause")).Click();
-            app.FindElement(By.Id("set-increment-amount")).Click();
-
-            // Although it's done its initial synchronous render, the OnParametersSetAsync code returned
-            // an incomplete task so we're still waiting
-            var dynamicRootContainer = Browser.FindElement(By.Id("root-container-1"));
-            var message = app.FindElement(By.Id("message"));
-            Browser.Equal("0", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
-            Browser.Equal("Calling setParameters on component in root-container-1...", () => message.Text);
-
-            // When the task completes, the promise resolves
-            Browser.FindElement(By.Id("onparametersset-success")).Click();
-            Browser.Equal("Updated parameters on component in root-container-1", () => message.Text);
-        }
-
-        [Fact]
-        public void CanObserveQuiescenceFromSetParametersCallWithException()
-        {
-            app.FindElement(By.Id("add-root-component")).Click();
-            app.FindElement(By.Id("onparametersset-pause")).Click();
-            app.FindElement(By.Id("set-increment-amount")).Click();
-
-            // Although it's done its initial synchronous render, the OnParametersSetAsync code returned
-            // an incomplete task so we're still waiting
-            var dynamicRootContainer = Browser.FindElement(By.Id("root-container-1"));
-            var message = app.FindElement(By.Id("message"));
-            Browser.Equal("0", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
-            Browser.Equal("Calling setParameters on component in root-container-1...", () => message.Text);
-
-            // If the task completes with an exception, the promise still succeeds (because component
-            // rendering errors are always reported out of band, since rendering exceptions can occur
-            // at any time). The error is reported via the blazor-error-ui elemeent.
-            Browser.FindElement(By.Id("onparametersset-failure")).Click();
-            Browser.Equal("Updated parameters on component in root-container-1", () => message.Text);
-            Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
         }
     }
 }

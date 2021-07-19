@@ -20,14 +20,6 @@
     <button id="set-catchall-params" onclick="setCatchAllParameters()">Set catch-all parameters</button>
 </p>
 
-<p>
-    <button id="onparametersset-pause" @onclick="@OnParametersSetAsyncPause">Pause next OnParametersSetAsync</button>
-    <button id="onparametersset-success" @onclick="@OnParametersSetAsyncSuccess">Complete as success</button>
-    <button id="onparametersset-failure" @onclick="@OnParametersSetAsyncFailure">Complete as exception</button>
-
-    Task status: @OnParametersSetAsyncAwaitTask.Status
-</p>
-
 <script suppress-error="BL9992">
     let numAddedComponents = 0;
     const addedComponents = [];
@@ -45,9 +37,9 @@
         const containerElement = document.createElement('div');
         containerElement.id = `root-container-${++numAddedComponents}`;
         document.body.appendChild(containerElement);
-        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component');
+        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component', { incrementAmount: 1 });
         addedComponents.push({ component, containerElement });
-        setMessage(`Added component in ${containerElement.id}. Set some parameters to trigger its first render.`);
+        setMessage(`Added component in ${containerElement.id}`);
     }
 
     async function setIncrementAmount() {
@@ -107,24 +99,3 @@
         document.getElementById('message').textContent = message;
     }
 </script>
-
-@code {
-    private TaskCompletionSource OnParametersSetAsyncAwaitTaskCompletionSource;
-    public static Task OnParametersSetAsyncAwaitTask { get; private set; } = Task.CompletedTask;
-
-    void OnParametersSetAsyncPause()
-    {
-        OnParametersSetAsyncAwaitTaskCompletionSource = new();
-        OnParametersSetAsyncAwaitTask = OnParametersSetAsyncAwaitTaskCompletionSource.Task;
-    }
-
-    void OnParametersSetAsyncSuccess()
-    {
-        OnParametersSetAsyncAwaitTaskCompletionSource.SetResult();
-    }
-
-    void OnParametersSetAsyncFailure()
-    {
-        OnParametersSetAsyncAwaitTaskCompletionSource.SetException(new InvalidTimeZoneException());
-    }
-}

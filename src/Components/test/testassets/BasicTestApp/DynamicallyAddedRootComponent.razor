@@ -49,8 +49,7 @@
     int clicks;
     string valueFromJS;
 
-    [Parameter] public int IncrementAmount { get; set; } = 1;
-
+    [Parameter] public int IncrementAmount { get; set; }
     [Parameter] public bool ShowComplexParameters { get; set; }
     [Parameter] public Person SomePerson { get; set; }
     [Parameter] public IJSObjectReference SomeJSObject { get; set; }
@@ -59,8 +58,6 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        await DynamicRootComponents.OnParametersSetAsyncAwaitTask;
-
         if (SomeJSObject is not null)
         {
             valueFromJS = await SomeJSObject.InvokeAsync<string>("getValue", null);
