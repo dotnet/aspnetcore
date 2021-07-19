@@ -270,6 +270,52 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void WebApplication_CanResolveDefaultServicesFromServiceCollection()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            // Add the service collection to the service collection
+            builder.Services.AddSingleton(builder.Services);
+
+            var app = builder.Build();
+
+            var env0 = app.Services.GetRequiredService<IHostEnvironment>();
+
+            var env1 = app.Services.GetRequiredService<IServiceCollection>().BuildServiceProvider().GetRequiredService<IHostEnvironment>();
+
+            Assert.Equal(env0.ApplicationName, env1.ApplicationName);
+            Assert.Equal(env0.EnvironmentName, env1.EnvironmentName);
+            Assert.Equal(env0.ContentRootPath, env1.ContentRootPath);
+        }
+
+        [Fact]
+        public void WebApplication_CanResolveDefaultServicesFromServiceCollectionInCorrectOrder()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            // Add the service collection to the service collection
+            builder.Services.AddSingleton(builder.Services);
+
+            // We're overriding the default IHostLifetime so that we can test the order in which it's resolved.
+            // This should override the default IHostLifetime.
+            builder.Services.AddSingleton<IHostLifetime, CustomHostLifetime>();
+
+            var app = builder.Build();
+
+            var hostLifetime0 = app.Services.GetRequiredService<IHostLifetime>();
+            var childServiceProvider = app.Services.GetRequiredService<IServiceCollection>().BuildServiceProvider();
+            var hostLifetime1 = childServiceProvider.GetRequiredService<IHostLifetime>();
+
+            var hostLifetimes0 = app.Services.GetServices<IHostLifetime>().ToArray();
+            var hostLifetimes1 = childServiceProvider.GetServices<IHostLifetime>().ToArray();
+
+            Assert.IsType<CustomHostLifetime>(hostLifetime0);
+            Assert.IsType<CustomHostLifetime>(hostLifetime1);
+
+            Assert.Equal(hostLifetimes1.Length, hostLifetimes0.Length);
+        }
+
+        [Fact]
         public void WebApplicationCreate_RegistersEventSourceLogger()
         {
             var listener = new TestEventListener();
@@ -326,6 +372,19 @@ namespace Microsoft.AspNetCore.Tests
             
             var app = builder.Build();
             Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
+        }
+
+        private class CustomHostLifetime : IHostLifetime
+        {
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task WaitForStartAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestEventListener : EventListener

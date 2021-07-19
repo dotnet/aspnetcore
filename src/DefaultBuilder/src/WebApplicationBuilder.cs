@@ -205,6 +205,16 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     services.Add(s);
                 }
+
+                // Add any services to the user visible service collection so that they are observable
+                // just in case users capture the Services property. Orchard does this to get a "blueprint"
+                // of the service collection. The order needs to be preserved here so we clear the original
+                // collection and add all of the services in order.
+                Services.Clear();
+                foreach (var s in services)
+                {
+                    Services.Add(s);
+                }
             });
 
             genericWebHostBuilder.Configure(ConfigureApplication);
