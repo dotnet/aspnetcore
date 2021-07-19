@@ -117,7 +117,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             httpContext.Request.Scheme = "http";
             httpContext.Request.Path = new PathString("/foo");
             httpContext.Request.PathBase = new PathString("/foo");
-            httpContext.Request.QueryString = new QueryString("?foo");
             httpContext.Request.Headers["Connection"] = "keep-alive";
             httpContext.Request.ContentType = "text/plain";
             httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
@@ -128,7 +127,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("QueryString: ?foo"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
         }
@@ -160,7 +158,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             httpContext.Request.Scheme = "http";
             httpContext.Request.Path = new PathString("/foo");
             httpContext.Request.PathBase = new PathString("/foo");
-            httpContext.Request.QueryString = new QueryString("?foo");
             httpContext.Request.Headers["Connection"] = "keep-alive";
             httpContext.Request.ContentType = "text/plain";
             httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
@@ -171,7 +168,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("QueryString: ?foo"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
         }
@@ -203,7 +199,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             httpContext.Request.Scheme = "http";
             httpContext.Request.Path = new PathString("/foo");
             httpContext.Request.PathBase = new PathString("/foo");
-            httpContext.Request.QueryString = new QueryString("?foo");
             httpContext.Request.Headers["Connection"] = "keep-alive";
             httpContext.Request.ContentType = "text/plain";
             httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
@@ -214,7 +209,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("QueryString: ?foo"));
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
         }
