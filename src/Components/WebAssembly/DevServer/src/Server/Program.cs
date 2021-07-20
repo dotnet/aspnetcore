@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
                 {
                     var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).First();
                     var applicationDirectory = Path.GetDirectoryName(applicationPath)!;
-                    var name = Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml");
+                    var name = Path.ChangeExtension(applicationPath, ".staticwebassets.runtime.json");
+                    name = !File.Exists(name) ? Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml") : name;
 
                     var inMemoryConfiguration = new Dictionary<string, string>
                     {
