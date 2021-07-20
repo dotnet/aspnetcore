@@ -1677,6 +1677,56 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(isInvalid ? 400 : 200, httpContext.Response.StatusCode);
         }
 
+        public static IEnumerable<object?[]> AllowEmptyData
+        {
+            get
+            {
+                string disallowEmptyAndNonOptional([FromBody(AllowEmpty = false)] Todo todo) => $"{todo}";
+                string allowEmptyAndNonOptional([FromBody(AllowEmpty = true)] Todo todo) => $"{todo}";
+                string allowEmptyAndOptional([FromBody(AllowEmpty = true)] Todo? todo = null) => $"{todo}";
+                string disallowEmptyAndOptional([FromBody(AllowEmpty = false)] Todo? todo = null) => $"{todo}";
+
+                return new List<object?[]>
+                {
+                    new object?[] { (Func<Todo, string>)disallowEmptyAndNonOptional, false },
+                    new object?[] { (Func<Todo, string>)allowEmptyAndNonOptional, true },
+                    new object?[] { (Func<Todo, string>)allowEmptyAndOptional, true },
+                    new object?[] { (Func<Todo, string>)disallowEmptyAndOptional, true }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AllowEmptyData))]
+        public async Task AllowEmptyOverridesOptionality(Delegate @delegate, bool allowsEmptyRequest)
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+
+            await requestDelegate(httpContext);
+
+            var logs = TestSink.Writes.ToArray();
+            
+            if (!allowsEmptyRequest)
+            {
+                Assert.Equal(400, httpContext.Response.StatusCode);
+                var log = Assert.Single(logs);
+                Assert.Equal(LogLevel.Debug, log.LogLevel);
+                Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
+                Assert.Equal(@"Required parameter ""Todo todo"" was not provided.", log.Message);
+            }
+            else
+            {
+                Assert.Equal(200, httpContext.Response.StatusCode);
+                Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            }           
+        }
+
         [Fact]
         public async Task RequestDelegateHandlesRequiredAmbiguousValueFromBody()
         {

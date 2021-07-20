@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
+        private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -279,6 +280,8 @@ namespace Microsoft.AspNetCore.Http
                     else
                     {
                         // Then try to resolve it as an optional service and fallback to a body otherwise
+                        // Note: if the parameter provides a default value that value will be parsed
+                        // as part of the body, not as the service instance
                         return Expression.Coalesce(
                             Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr),
                             BindParameterFromBody(parameter, allowEmpty: false, factoryContext));
@@ -553,9 +556,17 @@ namespace Microsoft.AspNetCore.Http
 
                 if (!isOptional)
                 {
+                    // The following is produced if the parameter is required:
+                    //
+                    // tempSourceString = httpContext.RouteValue["param1"] ?? httpContext.Query["param1"];
+                    // if (tempSourceString == null)
+                    // {
+                    //      wasTryParseFailure = true;
+                    //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");
+                    // }
                     var checkRequiredStringParameterBlock = Expression.Block(
                         Expression.Assign(TempSourceStringExpr, valueExpression),
-                        Expression.IfThen(Expression.Not(TempSourceStringNotNullExpr),
+                        Expression.IfThen(TempSourceStringNullExpr,
                             Expression.Block(
                                 Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
                                 Expression.Call(LogRequiredParameterNotProvidedMethod, 
@@ -574,6 +585,12 @@ namespace Microsoft.AspNetCore.Http
                     return Expression.Block(Expression.Assign(TempSourceStringExpr, valueExpression));
                 }
 
+                // The following is produced if the parameter is optional. Note that we convert the
+                // default value to the target ParameterType to address scenarios where the user is
+                // is setting null as the default value in a context where nullability is disabled.
+                //
+                // tempSourceString = httpContext.RouteValue["param1"] ?? httpContext.Query["param1"];
+                // tempSourceString != null ? tempSourceString : Convert("3", Int32)
                 return Expression.Block(
                     Expression.Assign(TempSourceStringExpr, valueExpression),
                     Expression.Condition(TempSourceStringNotNullExpr,
@@ -646,9 +663,16 @@ namespace Microsoft.AspNetCore.Http
 
             var tryParseCall = tryParseMethodCall(parsedValue);
 
-            // If the parameter is required, fail to parse and log an error
+            // The following code is generated if the parameter is required and
+            // the method should not be matched.
+            //
+            // if (tempSourceString == null)
+            // {
+            //      wasTryParseFailure = true;
+            //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");    
+            // }
             var checkRequiredParaseableParameterBlock = Expression.Block(
-                Expression.IfThen(Expression.Not(TempSourceStringNotNullExpr),
+                Expression.IfThen(TempSourceStringNullExpr,
                     Expression.Block(
                         Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
                         Expression.Call(LogRequiredParameterNotProvidedMethod,
@@ -675,6 +699,7 @@ namespace Microsoft.AspNetCore.Http
                 ? Expression.Block(
                     // tempSourceString = httpContext.RequestValue["id"];
                     Expression.Assign(TempSourceStringExpr, valueExpression),
+                    // if (tempSourceString == null) { ... } only produced when parameter is required
                     checkRequiredParaseableParameterBlock,
                     // if (tempSourceString != null) { ... }
                     ifNotNullTryParse) 
@@ -714,8 +739,17 @@ namespace Microsoft.AspNetCore.Http
 
             var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
-            if (!isOptional && !allowEmpty)
+            if (!factoryContext.AllowEmptyRequestBody)
             {
+                // If the parameter is required or the user has not explicitly
+                // set allowBody to be empty then validate that it is required.
+                //
+                // ToDo body_local = Convert(bodyValue, ToDo);
+                // if (body_local == null)
+                // {
+                //      wasTryParseFailure = true;
+                //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body")
+                // }
                 var checkRequiredBodyBlock = Expression.Block(
                     Expression.Assign(argument, Expression.Convert(BodyValueExpr, parameter.ParameterType)),
                     Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
@@ -738,6 +772,7 @@ namespace Microsoft.AspNetCore.Http
                     parameter.ParameterType);
             }
 
+            // Convert(bodyValue, Todo)
             return Expression.Convert(BodyValueExpr, parameter.ParameterType); 
         }
 
