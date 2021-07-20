@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
     /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
     /// </remarks>
-    public partial class HubConnection : IHubConnection, IAsyncDisposable
+    public partial class HubConnection : IAsyncDisposable
     {
         /// <summary>
         /// The default timeout which specifies how long to wait for a message before closing the connection. Default is 30 seconds.
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for registering a handler. Using an <see cref="HubConnectionExtensions"/> <c>On</c> extension method is recommended.
         /// </remarks>
-        public IDisposable On(string methodName, Type[] parameterTypes, Func<object?[], object, Task> handler, object state)
+        public virtual IDisposable On(string methodName, Type[] parameterTypes, Func<object?[], object, Task> handler, object state)
         {
             Log.RegisteringHandler(_logger, methodName);
 
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a streaming hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>StreamAsChannelAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task<ChannelReader<object?>> StreamAsChannelCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
+        public virtual async Task<ChannelReader<object?>> StreamAsChannelCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>InvokeAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task<object?> InvokeCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
+        public virtual async Task<object?> InvokeCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>SendAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task SendCoreAsync(string methodName, object?[] args, CancellationToken cancellationToken = default)
+        public virtual async Task SendCoreAsync(string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(string methodName, object?[] args, CancellationToken cancellationToken = default)
+        public virtual IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             var cts = cancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken) : new CancellationTokenSource();
             var stream = CastIAsyncEnumerable<TResult>(methodName, args, cts);

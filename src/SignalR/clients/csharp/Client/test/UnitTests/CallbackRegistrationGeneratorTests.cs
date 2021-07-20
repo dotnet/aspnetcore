@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void RegistersCallbackProvider()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             var noArgReg = new Disposable();
             mockConn
                 .Setup(x => x.On(
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void UnregistersCallbackProvider()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             var noArgReg = new Disposable();
             mockConn
                 .Setup(x => x.On(
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task CallbacksGetTriggered()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             var noArgReg = new Disposable();
             Func<object[], object, Task> noArgFunc = null;
             object noArgState = null;

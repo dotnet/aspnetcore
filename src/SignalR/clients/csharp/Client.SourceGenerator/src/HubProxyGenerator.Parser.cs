@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
                 var hubSymbols = new Dictionary<string, (ITypeSymbol, MemberAccessExpressionSyntax)>();
                 var iHubConnectionType =
-                    compilation.GetTypeByMetadataName("Microsoft.AspNetCore.SignalR.Client.IHubConnection");
+                    compilation.GetTypeByMetadataName("Microsoft.AspNetCore.SignalR.Client.HubConnection");
 
                 // Go thru candidates and filter further
                 foreach (var memberAccess in syntaxList)
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                          !typeInfo.Type.AllInterfaces.Any(x =>
                              SymbolEqualityComparer.Default.Equals(x, iHubConnectionType))))
                     {
-                        // Member access is not acting on IHubConnection or a type implementing it; as such we will skip
+                        // Member access is not acting on HubConnection or a type implementing it; as such we will skip
                         continue;
                     }
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                         continue;
                     }
 
-                    // Receiver is a IHubConnection and argument is abstract so save argument symbol for generation
+                    // Receiver is a HubConnection and argument is abstract so save argument symbol for generation
                     hubSymbols[symbol.Name] = (symbol, memberAccess);
                 }
 

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {{
     public static partial class HubConnectionExtensionsGenerated
     {{
-        public static THub GetProxy<THub>(this IHubConnection connection)
+        public static THub GetProxy<THub>(this HubConnection connection)
         {{
 {getProxyBody.ToString()}
             throw new System.ArgumentException(nameof(THub));
@@ -135,8 +135,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerated
 {{
     public sealed class {classSpec.ClassTypeName} : {classSpec.FullyQualifiedInterfaceTypeName}
     {{
-        private readonly IHubConnection connection;
-        public {classSpec.ClassTypeName}(IHubConnection connection)
+        private readonly HubConnection connection;
+        public {classSpec.ClassTypeName}(HubConnection connection)
         {{
             this.connection = connection;
         }}

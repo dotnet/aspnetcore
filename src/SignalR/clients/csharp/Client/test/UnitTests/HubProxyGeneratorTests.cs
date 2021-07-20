@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task GetNothing()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.InvokeCoreAsync(
                     nameof(IMyHub.GetNothing),
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task GetScalar()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.InvokeCoreAsync(
                     nameof(IMyHub.GetScalar),
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task GetCollection()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.InvokeCoreAsync(
                     nameof(IMyHub.GetCollection),
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task SetScalar()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.InvokeCoreAsync(
                     nameof(IMyHub.SetScalar),
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             // Arrange
             var arg = new List<int>() {20};
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.InvokeCoreAsync(
                     nameof(IMyHub.SetCollection),
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var asyncEnumerable = channelForEnumerable.Reader.ReadAllAsync();
             var cts = new CancellationTokenSource();
             var token = cts.Token;
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.StreamAsChannelCoreAsync(
                     nameof(IMyHub.StreamToClientViaChannel),
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var channelReader = channel.Reader;
             var channelForEnumerable = Channel.CreateUnbounded<int>();
             var asyncEnumerable = channelForEnumerable.Reader.ReadAllAsync();
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.SendCoreAsync(
                     nameof(IMyHub.StreamFromClientViaChannel),
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var retEnumerable = retChannelForEnumerable.Reader.ReadAllAsync();
             var cts = new CancellationTokenSource();
             var token = cts.Token;
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.StreamAsChannelCoreAsync(
                     nameof(IMyHub.StreamBidirectionalViaChannel),
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task ReturnValueTask()
         {
             // Arrange
-            var mockConn = new Mock<IHubConnection>(MockBehavior.Strict);
+            var mockConn = MockHubConnection.Get();
             mockConn
                 .Setup(x => x.InvokeCoreAsync(
                     nameof(IMyHub.ReturnValueTask),
