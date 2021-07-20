@@ -112,6 +112,8 @@ namespace Microsoft.AspNetCore.Builder
         {
             Debug.Assert(_builtApplication is not null);
 
+            var implicitRouting = false;
+
             // The endpoints were already added on the outside
             if (_builtApplication.DataSources.Count > 0)
             {
@@ -121,26 +123,30 @@ namespace Microsoft.AspNetCore.Builder
                 // destination.Run(source)
                 // destination.UseEndpoints()
 
+                // Copy endpoints to the IEndpointRouteBuilder created by an explicit call to UseRouting() if possible.
                 var targetRouteBuilder = _builtApplication.RouteBuilder;
 
                 if (targetRouteBuilder is null)
                 {
+                    // The app defined endpoints without calling UseRouting() explicitly, so call UseRouting() implicitly.
                     app.UseRouting();
 
-                    // Copy the route data sources over to the destination pipeline, this should be available since we just called
-                    // UseRouting()
+                    // An implicitly created IEndpointRouteBuilder was addeded to app.Properties by the UseRouting() call above.
                     targetRouteBuilder = (IEndpointRouteBuilder)app.Properties[WebApplication.EndpointRouteBuilder]!;
+                    implicitRouting = true;
+                }
+                else
+                {
+                    // UseRouting() was called explicitely, but we may still need to call UseEndpoints() implicitely at the end of
+                    // the pipeline.
+                    _builtApplication.UseEndpoints(_ => { });
                 }
 
-                // Since we register routes into the source pipeline's route builder directly,
-                // we need to copy the data sources
+                // Copy the endpoints to the explicitly or implicitly created IEndopintRouteBuilder.
                 foreach (var ds in _builtApplication.DataSources)
                 {
                     targetRouteBuilder.DataSources.Add(ds);
                 }
-
-                // We then implicitly call UseEndpoints at the end of the pipeline
-                _builtApplication.UseEndpoints(_ => { });
             }
 
             // Wire the source pipeline to run in the destination pipeline
@@ -149,6 +155,14 @@ namespace Microsoft.AspNetCore.Builder
                 _builtApplication.Run(next);
                 return _builtApplication.BuildRequestDelegate();
             });
+
+            // Implicitly call UseEndpoints() at the end of the pipeline if UseRouting() was called implicitly.
+            // We could add this to the end of _buildApplication instead if UseEndpoints() was not so picky about
+            // being called with the same IApplicationBluilder instance as UseRouting().
+            if (implicitRouting)
+            {
+                app.UseEndpoints(_ => { });
+            }
 
             // Copy the properties to the destination app builder
             foreach (var item in _builtApplication.Properties)
