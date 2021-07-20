@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 _webAssemblyRendererId);
         }
 
-        public new ValueTask InitializeJSComponentSupportAsync(JSComponentConfiguration configuration, JsonSerializerOptions jsonOptions)
+        public new ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
             => base.InitializeJSComponentSupportAsync(configuration, jsonOptions);
 
         /// <inheritdoc />

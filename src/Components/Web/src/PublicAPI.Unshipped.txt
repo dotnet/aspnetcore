@@ -16,7 +16,7 @@ Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.set -> void
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWith, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer.AddRootComponent(System.Type! componentType, string! domElementSelector) -> int
-Microsoft.AspNetCore.Components.RenderTree.WebRenderer.InitializeJSComponentSupportAsync(Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfiguration! configuration, System.Text.Json.JsonSerializerOptions! jsonOptions) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.RenderTree.WebRenderer.InitializeJSComponentSupportAsync(Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfigurationStore! configuration, System.Text.Json.JsonSerializerOptions! jsonOptions) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WebRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.FocusOnNavigate() -> void
@@ -35,15 +35,15 @@ Microsoft.AspNetCore.Components.Web.HeadOutlet.HeadOutlet() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration
+Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration.RegisterForJavaScript<TComponent>(string! identifier) -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.Dispose() -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.SetRootComponentParameters(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> void
-Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfiguration
-Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfiguration.Add(string! identifier, System.Type! componentType) -> void
-Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfiguration.JSComponentConfiguration() -> void
+Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfigurationStore
+Microsoft.AspNetCore.Components.Web.JSComponents.JSComponentConfigurationStore.JSComponentConfigurationStore() -> void
 Microsoft.AspNetCore.Components.Web.PageTitle
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.set -> void

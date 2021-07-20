@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="jsonOptions">Options used for JSON serialization.</param>
         /// <returns>A task representing the completion of the operation.</returns>
         protected ValueTask InitializeJSComponentSupportAsync(
-            JSComponentConfiguration configuration,
+            JSComponentConfigurationStore configuration,
             JsonSerializerOptions jsonOptions)
         {
             var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();

@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         // This can't be publicly constructable because having a reference to it gives access to the
         // `protected internal` APIs on the renderer you pass in and bypasses the encapsulation.
         internal JSComponentInterop(
-            JSComponentConfiguration configuration,
+            JSComponentConfigurationStore configuration,
             WebRenderer renderer,
             JsonSerializerOptions jsonOptions)
         {

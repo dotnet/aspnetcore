@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Web.JSComponents
     /// This type is not normally used directly from application code. In most cases, applications should
     /// call methods on the <see cref="IJSComponentConfiguration" /> on their application host builder.
     /// </summary>
-    public class JSComponentConfiguration
+    public class JSComponentConfigurationStore
     {
         internal Dictionary<string, Type> JsComponentTypesByIdentifier { get; } = new (StringComparer.Ordinal);
 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Web.JSComponents
         /// </summary>
         /// <param name="identifier">A unique identifier.</param>
         /// <param name="componentType">The type of the component.</param>
-        public void Add(string identifier, Type componentType)
+        internal void Add(string identifier, Type componentType)
             => JsComponentTypesByIdentifier.Add(identifier, componentType);
     }
 }

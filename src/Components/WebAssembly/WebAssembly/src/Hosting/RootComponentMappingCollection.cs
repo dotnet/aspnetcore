@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public class RootComponentMappingCollection : Collection<RootComponentMapping>, IJSComponentConfiguration
     {
-        internal JSComponentConfiguration JsComponents { get; } = new JSComponentConfiguration();
+        /// <inheritdoc />
+        public JSComponentConfigurationStore JSComponents { get; } = new JSComponentConfigurationStore();
 
         /// <summary>
         /// Adds a component mapping to the collection.
@@ -80,9 +81,5 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 Add(item);
             }
         }
-
-        /// <inheritdoc />
-        public void RegisterForJavaScript<TComponent>(string identifier) where TComponent : IComponent
-            => JsComponents.Add(identifier, typeof(TComponent));
     }
 }
