@@ -80,7 +80,7 @@ namespace Templates.Test
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
             => BlazorWasmHostedTemplate_IndividualAuth_Works(true);
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
             => BlazorWasmHostedTemplate_IndividualAuth_Works(false);
