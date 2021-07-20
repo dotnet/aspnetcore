@@ -526,7 +526,7 @@
     {
       "id": "open-file",
       "condition": "(IndividualLocalAuth && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "description": "Opens Program.cs in the editor",
+      "description": "Opens Readme.txt in the editor",
       "manualInstructions": [],
       "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
       "args": {
