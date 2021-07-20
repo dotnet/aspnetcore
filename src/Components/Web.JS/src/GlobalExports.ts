@@ -1,6 +1,7 @@
 import { navigateTo, internalFunctions as navigationManagerInternalFunctions, NavigationOptions } from './Services/NavigationManager';
 import { domFunctions } from './DomWrapper';
 import { Virtualize } from './Virtualize';
+import { PageTitle } from './PageTitle';
 import { registerCustomEventType, EventTypeOptions } from './Rendering/Events/EventTypes';
 import { HubConnection } from '@microsoft/signalr';
 import { InputFile } from './InputFile';
@@ -24,6 +25,7 @@ interface IBlazor {
     navigationManager: typeof navigationManagerInternalFunctions | any,
     domWrapper: typeof domFunctions,
     Virtualize: typeof Virtualize,
+    PageTitle: typeof PageTitle,
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile,
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
@@ -31,7 +33,7 @@ interface IBlazor {
     receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
     retrieveByteArray?: () => System_Object;
     getPersistedState?: () => System_String;
-    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any) => void;
+    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number,
       getId: (index) => number,
@@ -66,6 +68,7 @@ export const Blazor: IBlazor = {
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
     Virtualize,
+    PageTitle,
     InputFile,
     getJSDataStreamChunk: getNextChunk,
   },

@@ -112,7 +112,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
     } else {
-      attachRootComponentToLogicalElement(rendererId, element, componentId);
+      attachRootComponentToLogicalElement(rendererId, element, componentId, false);
     }
   };
 
