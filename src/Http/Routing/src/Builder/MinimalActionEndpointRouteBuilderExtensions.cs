@@ -205,5 +205,86 @@ namespace Microsoft.AspNetCore.Builder
 
             return new MinimalActionEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
         }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will match
+        /// requests for non-file-names with the lowest possible priority.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="MapFallback(IEndpointRouteBuilder, Delegate)"/> is intended to handle cases where URL path of
+        /// the request does not contain a file name, and no other endpoint has matched. This is convenient for routing
+        /// requests for dynamic content to a SPA framework, while also allowing requests for non-existent files to
+        /// result in an HTTP 404.
+        /// </para>
+        /// <para>
+        /// <see cref="MapFallback(IEndpointRouteBuilder, Delegate)"/> registers an endpoint using the pattern
+        /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
+        /// </para>
+        /// </remarks>
+        public static MinimalActionEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate action)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            return endpoints.MapFallback("{*path:nonfile}", action);
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will match
+        /// the provided pattern with the lowest possible priority.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="MapFallback(IEndpointRouteBuilder, string, Delegate)"/> is intended to handle cases where no
+        /// other endpoint has matched. This is convenient for routing requests to a SPA framework.
+        /// </para>
+        /// <para>
+        /// The order of the registered endpoint will be <c>int.MaxValue</c>.
+        /// </para>
+        /// <para>
+        /// This overload will use the provided <paramref name="pattern"/> verbatim. Use the <c>:nonfile</c> route constraint
+        /// to exclude requests for static files.
+        /// </para>
+        /// </remarks>
+        public static MinimalActionEndpointConventionBuilder MapFallback(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate action)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (pattern == null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            var conventionBuilder = endpoints.Map(pattern, action);
+            conventionBuilder.WithDisplayName("Fallback " + pattern);
+            conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
+            return conventionBuilder;
+        }
     }
 }
