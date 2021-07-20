@@ -203,12 +203,12 @@ namespace Interop.FunctionalTests.Http3
                 // Assert
                 var hasWriteLog = TestSink.Writes.Any(
                     w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.LoggingConnectionMiddleware" &&
-                    w.Message.StartsWith("WriteAsync"));
+                    w.Message.StartsWith("WriteAsync", StringComparison.Ordinal));
                 Assert.True(hasWriteLog);
 
                 var hasReadLog = TestSink.Writes.Any(
                     w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.LoggingConnectionMiddleware" &&
-                    w.Message.StartsWith("ReadAsync"));
+                    w.Message.StartsWith("ReadAsync", StringComparison.Ordinal));
                 Assert.True(hasReadLog);
 
                 await host.StopAsync();
