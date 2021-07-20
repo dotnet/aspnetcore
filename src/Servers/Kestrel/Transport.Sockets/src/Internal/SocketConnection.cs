@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
         private bool _connectionClosed;
         private readonly bool _waitForData;
+        private int _connectionStarted;
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
@@ -67,12 +68,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
-            // Set the transport and connection id
-            Transport = _originalTransport = pair.Transport;
+            _originalTransport = pair.Transport;
             Application = pair.Application;
+
+            Transport = new SocketDuplexPipe(this);
 
             InitiaizeFeatures();
         }
+
+        public IDuplexPipe InnerTransport => _originalTransport;
 
         public PipeWriter Input => Application.Output;
 
@@ -80,18 +84,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override MemoryPool<byte> MemoryPool { get; }
 
-        public void Start()
+        private void EnsureStarted()
         {
-            try
+            if (_connectionStarted == 1 || Interlocked.CompareExchange(ref _connectionStarted, 1, 0) == 1)
             {
-                // Spawn send and receive logic
-                _receivingTask = DoReceive();
-                _sendingTask = DoSend();
+                return;
             }
-            catch (Exception ex)
-            {
-                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
-            }
+
+            // Offload these to avoid potentially blocking the first read/write/flush
+            _receivingTask = Task.Run(DoReceive);
+            _sendingTask = Task.Run(DoSend);
         }
 
         public override void Abort(ConnectionAbortedException abortReason)
@@ -106,6 +108,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
         public override async ValueTask DisposeAsync()
         {
+            // Just in case we haven't started the connection, start it here so we can clean up properly.
+            EnsureStarted();
+
             _originalTransport.Input.Complete();
             _originalTransport.Output.Complete();
 
@@ -125,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (Exception ex)
             {
-                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
+                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.");
             }
             finally
             {
