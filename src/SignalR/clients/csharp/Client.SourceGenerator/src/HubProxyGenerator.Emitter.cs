@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     getProxyBody.Append($@"
             if(typeof(THub) == typeof({fqIntfTypeName}))
             {{
-                return (THub) ({fqIntfTypeName}) new {fqClassTypeName}(conn);
+                return (THub) ({fqIntfTypeName}) new {fqClassTypeName}(connection);
             }}");
                 }
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {{
     public static partial class HubConnectionExtensionsGenerated
     {{
-        public static THub GetProxy<THub>(this IHubConnection conn)
+        public static THub GetProxy<THub>(this IHubConnection connection)
         {{
 {getProxyBody.ToString()}
             throw new System.ArgumentException(nameof(THub));
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         }
 
                         // Bake it all together
-                        body = $"return {prefix}this.conn.{specificCall}(\"{methodSpec.Name}\"{callArgs}){suffix};";
+                        body = $"return {prefix}this.connection.{specificCall}(\"{methodSpec.Name}\"{callArgs}){suffix};";
                     }
 
                     var method = $@"
@@ -135,10 +135,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerated
 {{
     public sealed class {classSpec.ClassTypeName} : {classSpec.FullyQualifiedInterfaceTypeName}
     {{
-        private readonly IHubConnection conn;
-        public {classSpec.ClassTypeName}(IHubConnection conn)
+        private readonly IHubConnection connection;
+        public {classSpec.ClassTypeName}(IHubConnection connection)
         {{
-            this.conn = conn;
+            this.connection = connection;
         }}
 {methods.ToString()}
     }}

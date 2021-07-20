@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     registerProviderBody.AppendLine($@"
             if(typeof(T) == typeof({fqtn}))
             {{
-                return (System.IDisposable) new CallbackProviderRegistration({methodName}(conn, ({fqtn}) provider));
+                return (System.IDisposable) new CallbackProviderRegistration({methodName}(connection, ({fqtn}) provider));
             }}");
                 }
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {{
     public static partial class HubConnectionExtensionsGenerated
     {{
-        public static System.IDisposable RegisterCallbackProvider<T>(this IHubConnection conn, T provider)
+        public static System.IDisposable RegisterCallbackProvider<T>(this IHubConnection connection, T provider)
         {{
 {registerProviderBody.ToString()}
             throw new System.ArgumentException(nameof(T));
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {{
     public static partial class HubConnectionExtensionsGenerated
     {{
-        private static System.IDisposable[] register{typeSpec.TypeName}(IHubConnection conn, {typeSpec.FullyQualifiedTypeName} provider)
+        private static System.IDisposable[] register{typeSpec.TypeName}(IHubConnection connection, {typeSpec.FullyQualifiedTypeName} provider)
         {{
             var registrations = new System.IDisposable[{typeSpec.Methods.Count}];");
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
 
                     var lambda = $"{lambaParams} => provider.{member.Name}{lambaParams}";
-                    var call = $"conn.On{genericArgs}(\"{member.Name}\", {lambda})";
+                    var call = $"connection.On{genericArgs}(\"{member.Name}\", {lambda})";
 
                     registrationMethodBody.AppendLine($@"
             registrations[{i}] = {call};");
