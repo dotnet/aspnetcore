@@ -488,6 +488,94 @@ namespace Microsoft.AspNetCore.Components
             return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
         }
 
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? FormatValue(DateOnly value, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format: null, culture);
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="format">The format to use. Provided to <see cref="DateOnly.ToString(string, IFormatProvider)"/>.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? FormatValue(DateOnly value, string format, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format, culture);
+
+        private static string? FormatDateOnlyValueCore(DateOnly value, string? format, CultureInfo? culture)
+        {
+            if (format != null)
+            {
+                // We convert to a DateTime so formatting doesn't throw if the format includes time information
+                return value.ToDateTime(TimeOnly.MinValue).ToString(format, culture ?? CultureInfo.CurrentCulture);
+            }
+
+            return value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        private static string? FormatDateOnlyValueCore(DateOnly value, CultureInfo? culture)
+        {
+            return value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? FormatValue(DateOnly? value, CultureInfo? culture = null) => FormatNullableDateOnlyValueCore(value, format: null, culture);
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="format">The format to use. Provided to <see cref="DateOnly.ToString(string, IFormatProvider)"/>.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static string? FormatValue(DateOnly? value, string format, CultureInfo? culture = null) => FormatNullableDateOnlyValueCore(value, format, culture);
+
+        private static string? FormatNullableDateOnlyValueCore(DateOnly? value, string? format, CultureInfo? culture)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            if (format != null)
+            {
+                // We convert to a DateTime so formatting doesn't throw if the format includes time information
+                return value.Value.ToDateTime(TimeOnly.MinValue).ToString(format, culture ?? CultureInfo.CurrentCulture);
+            }
+
+            return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        private static string? FormatNullableDateOnlyValueCore(DateOnly? value, CultureInfo? culture)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
         private static string? FormatEnumValueCore<T>(T value, CultureInfo? culture)
         {
             if (value == null)
@@ -1215,6 +1303,47 @@ namespace Microsoft.AspNetCore.Components
             return false;
         }
 
+        internal static BindParser<DateOnly> ConvertToDateOnly = ConvertToDateOnlyCore;
+        internal static BindParserWithFormat<DateOnly> ConvertToDateOnlyWithFormat = ConvertToDateOnlyCore;
+        internal static BindParser<DateOnly?> ConvertToNullableDateOnly = ConvertToNullableDateOnlyCore;
+        internal static BindParserWithFormat<DateOnly?> ConvertToNullableDateOnlyWithFormat = ConvertToNullableDateOnlyCore;
+
+        private static bool ConvertToDateOnlyCore(object? obj, CultureInfo? culture, out DateOnly value)
+        {
+            return ConvertToDateOnlyCore(obj, culture, format: null, out value);
+        }
+
+        private static bool ConvertToDateOnlyCore(object? obj, CultureInfo? culture, string? format, out DateOnly value)
+        {
+            // We first convert to a DateTime so conversion doesn't fail if time information is included
+            if (ConvertToDateTimeCore(obj, culture, format, out var dateTime))
+            {
+                value = DateOnly.FromDateTime(dateTime);
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
+        private static bool ConvertToNullableDateOnlyCore(object? obj, CultureInfo? culture, out DateOnly? value)
+        {
+            return ConvertToNullableDateOnlyCore(obj, culture, format: null, out value);
+        }
+
+        private static bool ConvertToNullableDateOnlyCore(object? obj, CultureInfo? culture, string? format, out DateOnly? value)
+        {
+            // We first convert to a DateTime so conversion doesn't fail if time information is included
+            if (ConvertToDateTimeCore(obj, culture, format, out var dateTime))
+            {
+                value = DateOnly.FromDateTime(dateTime);
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
         private static bool ConvertToEnum<T>(object? obj, CultureInfo? culture, out T value) where T : struct, Enum
         {
             var text = (string?)obj;
@@ -1373,6 +1502,14 @@ namespace Microsoft.AspNetCore.Components
                     else if (typeof(T) == typeof(DateTimeOffset?))
                     {
                         formatter = (BindFormatter<DateTimeOffset?>)FormatNullableDateTimeOffsetValueCore;
+                    }
+                    else if (typeof(T) == typeof(DateOnly))
+                    {
+                        formatter = (BindFormatter<DateOnly>)FormatDateOnlyValueCore;
+                    }
+                    else if (typeof(T) == typeof(DateOnly?))
+                    {
+                        formatter = (BindFormatter<DateOnly?>)FormatNullableDateOnlyValueCore;
                     }
                     else if (typeof(T).IsEnum || Nullable.GetUnderlyingType(typeof(T)) is Type { IsEnum: true } innerType)
                     {
@@ -1543,6 +1680,14 @@ namespace Microsoft.AspNetCore.Components
                     else if (typeof(T) == typeof(DateTimeOffset?))
                     {
                         parser = ConvertToNullableDateTime;
+                    }
+                    else if (typeof(T) == typeof(DateOnly))
+                    {
+                        parser = ConvertToDateOnly;
+                    }
+                    else if (typeof(T) == typeof(DateOnly?))
+                    {
+                        parser = ConvertToNullableDateOnly;
                     }
                     else if (typeof(T).IsEnum)
                     {
