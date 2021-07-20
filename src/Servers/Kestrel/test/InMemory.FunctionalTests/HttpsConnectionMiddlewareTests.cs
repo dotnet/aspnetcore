@@ -794,6 +794,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
         public async Task ServerOptionsSelectionCallback_SetsALPN()
         {
@@ -821,6 +822,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
         public async Task TlsHandshakeCallbackOptionsOverload_SetsALPN()
         {
