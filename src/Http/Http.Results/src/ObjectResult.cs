@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Result
         /// <summary>
         /// Gets the value for the <c>Content-Type</c> header.
         /// </summary>
-        public string? ContentType { get; init; }
+        public string? ContentType { get; set; }
 
         public Task ExecuteAsync(HttpContext httpContext)
         {
