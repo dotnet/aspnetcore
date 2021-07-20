@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class WebApplicationBuilder
     {
+        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+
         private readonly HostBuilder _hostBuilder = new();
         private readonly ConfigureHostBuilder _deferredHostBuilder;
         private readonly ConfigureWebHostBuilder _deferredWebHostBuilder;
@@ -124,7 +126,7 @@ namespace Microsoft.AspNetCore.Builder
                 // destination.UseEndpoints()
 
                 // Copy endpoints to the IEndpointRouteBuilder created by an explicit call to UseRouting() if possible.
-                var targetRouteBuilder = _builtApplication.RouteBuilder;
+                var targetRouteBuilder = GetEndpointRouteBuilder(_builtApplication);
 
                 if (targetRouteBuilder is null)
                 {
@@ -132,13 +134,13 @@ namespace Microsoft.AspNetCore.Builder
                     app.UseRouting();
 
                     // An implicitly created IEndpointRouteBuilder was addeded to app.Properties by the UseRouting() call above.
-                    targetRouteBuilder = (IEndpointRouteBuilder)app.Properties[WebApplication.EndpointRouteBuilder]!;
+                    targetRouteBuilder = GetEndpointRouteBuilder(app)!;
                     implicitRouting = true;
                 }
                 else
                 {
-                    // UseRouting() was called explicitely, but we may still need to call UseEndpoints() implicitely at the end of
-                    // the pipeline.
+                    // UseRouting() was called explicitely, but we may still need to call UseEndpoints() implicitely at
+                    // the end of the pipeline.
                     _builtApplication.UseEndpoints(_ => { });
                 }
 
@@ -220,6 +222,12 @@ namespace Microsoft.AspNetCore.Builder
             _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
 
             _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
+        }
+
+        private static IEndpointRouteBuilder? GetEndpointRouteBuilder(IApplicationBuilder app)
+        {
+            app.Properties.TryGetValue(EndpointRouteBuilderKey, out var value);
+            return (IEndpointRouteBuilder?)value;
         }
 
         private class LoggingBuilder : ILoggingBuilder
