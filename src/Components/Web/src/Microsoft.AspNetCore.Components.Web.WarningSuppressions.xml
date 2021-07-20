@@ -5,19 +5,19 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.SetRootComponentParameters(System.Int32,System.Int32,System.Byte[])</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.SetRootComponentParameters(System.Int32,System.Int32,System.Byte[])</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2062</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.AddRootComponent(System.String,System.String)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(System.String,System.String)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2067</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Web.Infrastructure.DynamicRootComponentInterop.ParameterTypeCache.#ctor(System.Type)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.ParameterTypeCache.#ctor(System.Type)</property>
     </attribute>
   </assembly>
 </linker>
