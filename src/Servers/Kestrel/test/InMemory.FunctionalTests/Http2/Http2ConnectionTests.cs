@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -13,7 +14,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -208,6 +211,123 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
+        private class ResponseTrailersWrapper : IHeaderDictionary
+        {
+            readonly IHeaderDictionary _innerHeaders;
+
+            public ResponseTrailersWrapper(IHeaderDictionary headers)
+            {
+                _innerHeaders = headers;
+            }
+
+            public StringValues this[string key] { get => _innerHeaders[key]; set => _innerHeaders[key] = value; }
+            public long? ContentLength { get => _innerHeaders.ContentLength; set => _innerHeaders.ContentLength = value; }
+            public ICollection<string> Keys => _innerHeaders.Keys;
+            public ICollection<StringValues> Values => _innerHeaders.Values;
+            public int Count => _innerHeaders.Count;
+            public bool IsReadOnly => _innerHeaders.IsReadOnly;
+            public void Add(string key, StringValues value) => _innerHeaders.Add(key, value);
+            public void Add(KeyValuePair<string, StringValues> item) => _innerHeaders.Add(item);
+            public void Clear() => _innerHeaders.Clear();
+            public bool Contains(KeyValuePair<string, StringValues> item) => _innerHeaders.Contains(item);
+            public bool ContainsKey(string key) => _innerHeaders.ContainsKey(key);
+            public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex) => _innerHeaders.CopyTo(array, arrayIndex);
+            public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator() => _innerHeaders.GetEnumerator();
+            public bool Remove(string key) => _innerHeaders.Remove(key);
+            public bool Remove(KeyValuePair<string, StringValues> item) => _innerHeaders.Remove(item);
+            public bool TryGetValue(string key, out StringValues value) => _innerHeaders.TryGetValue(key, out value);
+            IEnumerator IEnumerable.GetEnumerator() => _innerHeaders.GetEnumerator();
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_MultipleStreams_Reset()
+        {
+            IEnumerable<KeyValuePair<string, string>> requestHeaders = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+            };
+
+            var requestCount = 0;
+            await InitializeConnectionAsync(context =>
+            {
+                requestCount++;
+
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                IHeaderDictionary trailers;
+                if (requestCount == 1)
+                {
+                    trailers = new ResponseTrailersWrapper(trailersFeature.Trailers);
+                    trailersFeature.Trailers = trailers;
+                }
+                else
+                {
+                    trailers = trailersFeature.Trailers;
+                }
+                trailers["trailer-" + requestCount] = "true";
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, requestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 36,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 16,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("true", _decodedHeaders["trailer-1"]);
+
+            _decodedHeaders.Clear();
+
+            // Ping will trigger the stream to be returned to the pool so we can assert it
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Stream has been returned to the pool
+            Assert.Equal(1, _connection.StreamPool.Count);
+
+            await StartStreamAsync(3, requestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 6,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 3);
+
+            trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 16,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("true", _decodedHeaders["trailer-2"]);
+
+            _decodedHeaders.Clear();
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
+
         [Fact]
         public async Task StreamPool_SingleStream_ReturnedToPool()
         {
@@ -304,9 +424,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
             TaskCompletionSource appDelegateTcs = null;
+            object persistedState = null;
+            var requestCount = 0;
 
             await InitializeConnectionAsync(async context =>
             {
+                requestCount++;
+                var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
+                if (persistentStateCollection.TryGetValue("Counter", out var value))
+                {
+                    persistedState = value;
+                }
+                persistentStateCollection["Counter"] = requestCount;
                 await appDelegateTcs.Task;
             });
 
@@ -330,6 +459,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
             Assert.Equal(stream, pooledStream);
 
+            // First request has no persisted state
+            Assert.Null(persistedState);
+
             appDelegateTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
 
@@ -347,6 +479,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await PingUntilStreamPooled(expectedCount: 1).DefaultTimeout();
             Assert.True(_connection.StreamPool.TryPeek(out pooledStream));
             Assert.Equal(stream, pooledStream);
+
+            // State persisted on first request was available on the second request
+            Assert.Equal(1, (int)persistedState);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 

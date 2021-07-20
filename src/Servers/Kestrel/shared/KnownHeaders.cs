@@ -768,7 +768,7 @@ namespace CodeGenerator
                     offset += header.BytesCount;
                 }
             }
-            return $@"// Copyright (c) .NET Foundation. All rights reserved.
+            var s = $@"// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1337,6 +1337,9 @@ $@"        private void Clear(long bitsToClear)
         }}
     }}
 ")}}}";
+
+            // Temporary workaround for https://github.com/dotnet/runtime/issues/55688
+            return s.Replace("{{", "{").Replace("}}", "}");
         }
 
         private static string GetHeaderLookup()

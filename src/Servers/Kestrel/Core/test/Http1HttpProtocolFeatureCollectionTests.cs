@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -123,6 +124,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection[typeof(IHttpBodyControlFeature)] = CreateHttp1Connection();
             _collection[typeof(IRouteValuesFeature)] = CreateHttp1Connection();
             _collection[typeof(IEndpointFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpUpgradeFeature)] = CreateHttp1Connection();
+            _collection[typeof(IPersistentStateFeature)] = CreateHttp1Connection();
 
             CompareGenericGetterToIndexer();
 
@@ -147,6 +150,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection.Set<IHttpBodyControlFeature>(CreateHttp1Connection());
             _collection.Set<IRouteValuesFeature>(CreateHttp1Connection());
             _collection.Set<IEndpointFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpUpgradeFeature>(CreateHttp1Connection());
+            _collection.Set<IPersistentStateFeature>(CreateHttp1Connection());
 
             CompareGenericGetterToIndexer();
 
@@ -190,13 +195,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private int EachHttpProtocolFeatureSetAndUnique()
         {
-            int featureCount = 0;
+            var featureCount = 0;
             foreach (var item in _collection)
             {
-                Type type = item.Key;
+                var type = item.Key;
                 if (type.IsAssignableFrom(typeof(HttpProtocol)))
                 {
-                    Assert.Equal(1, _collection.Count(kv => ReferenceEquals(kv.Value, item.Value)));
+                    var matches = _collection.Where(kv => ReferenceEquals(kv.Value, item.Value)).ToList();
+                    try
+                    {
+                        Assert.Single(matches);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error for feature {type}.", ex);
+                    }
 
                     featureCount++;
                 }

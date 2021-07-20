@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -403,7 +404,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 // TODO: Race condition in QUIC library.
                 // Delay between sending streams to avoid
                 // https://github.com/dotnet/runtime/issues/55249
-                await Task.Delay(50);
+                await Task.Delay(100);
                 streamTasks.Add(SendStream(requestState));
             }
 
@@ -449,6 +450,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 await quicStreamContext._processingTask.DefaultTimeout();
                 await quicStreamContext.DisposeAsync();
             }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task PersistentState_StreamsReused_StatePersisted()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            var clientStream1 = clientConnection.OpenBidirectionalStream();
+            await clientStream1.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream1 = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult1 = await serverStream1.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream1.Transport.Input.AdvanceTo(readResult1.Buffer.End);
+
+            serverStream1.Features.Get<IPersistentStateFeature>().State["test"] = true;
+
+            // Input should be completed.
+            readResult1 = await serverStream1.Transport.Input.ReadAsync();
+            Assert.True(readResult1.IsCompleted);
+
+            // Complete reading and writing.
+            await serverStream1.Transport.Input.CompleteAsync();
+            await serverStream1.Transport.Output.CompleteAsync();
+
+            var quicStreamContext1 = Assert.IsType<QuicStreamContext>(serverStream1);
+            await quicStreamContext1._processingTask.DefaultTimeout();
+            await quicStreamContext1.DisposeAsync();
+
+            var clientStream2 = clientConnection.OpenBidirectionalStream();
+            await clientStream2.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream2 = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult2 = await serverStream2.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream2.Transport.Input.AdvanceTo(readResult2.Buffer.End);
+
+            object state = serverStream2.Features.Get<IPersistentStateFeature>().State["test"];
+
+            // Input should be completed.
+            readResult2 = await serverStream2.Transport.Input.ReadAsync();
+            Assert.True(readResult2.IsCompleted);
+
+            // Complete reading and writing.
+            await serverStream2.Transport.Input.CompleteAsync();
+            await serverStream2.Transport.Output.CompleteAsync();
+
+            var quicStreamContext2 = Assert.IsType<QuicStreamContext>(serverStream2);
+            await quicStreamContext2._processingTask.DefaultTimeout();
+            await quicStreamContext2.DisposeAsync();
+
+            Assert.Same(quicStreamContext1, quicStreamContext2);
+
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+
+            Assert.Equal(true, state);
         }
 
         private record RequestState(

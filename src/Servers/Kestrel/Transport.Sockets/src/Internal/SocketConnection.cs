@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             Transport = new SocketDuplexPipe(this);
 
-            InitiaizeFeatures();
+            InitializeFeatures();
         }
 
         public IDuplexPipe InnerTransport => _originalTransport;
