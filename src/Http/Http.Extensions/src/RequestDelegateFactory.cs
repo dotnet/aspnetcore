@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static partial class RequestDelegateFactory
     {
-        private static readonly NullabilityInfoContext nullabilityContext = new NullabilityInfoContext();
+        private static readonly NullabilityInfoContext NullabilityContext = new NullabilityInfoContext();
 
         private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Http
             else
             {
 
-                var nullability = nullabilityContext.Create(parameter);
+                var nullability = NullabilityContext.Create(parameter);
                 var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
                 if (factoryContext.ServiceProviderIsService is IServiceProviderIsService serviceProviderIsService)
                 {
@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromService(ParameterInfo parameter)
         {
-            var nullability = nullabilityContext.Create(parameter);
+            var nullability = NullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
 
             return isOptional
@@ -547,13 +547,13 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, FactoryContext factoryContext)
         {
-            var nullability = nullabilityContext.Create(parameter);
+            var nullability = NullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+
+            var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
             if (parameter.ParameterType == typeof(string))
             {
-                factoryContext.UsingTempSourceString = true;
-
                 if (!isOptional)
                 {
                     // The following is produced if the parameter is required:
@@ -565,8 +565,8 @@ namespace Microsoft.AspNetCore.Http
                     //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");
                     // }
                     var checkRequiredStringParameterBlock = Expression.Block(
-                        Expression.Assign(TempSourceStringExpr, valueExpression),
-                        Expression.IfThen(TempSourceStringNullExpr,
+                        Expression.Assign(argument, valueExpression),
+                        Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
                             Expression.Block(
                                 Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
                                 Expression.Call(LogRequiredParameterNotProvidedMethod, 
@@ -575,26 +575,25 @@ namespace Microsoft.AspNetCore.Http
                         )
                     );
 
-                    factoryContext.TryParseParams.Add((TempSourceStringExpr, checkRequiredStringParameterBlock));
-                    return Expression.Block(TempSourceStringExpr);
+                    factoryContext.TryParseParams.Add((argument, checkRequiredStringParameterBlock));
+                    return argument;
                 }
 
                 // Allow nullable parameters that don't have a default value
                 if (nullability.ReadState == NullabilityState.Nullable && !parameter.HasDefaultValue)
                 {
-                    return Expression.Block(Expression.Assign(TempSourceStringExpr, valueExpression));
+                    return valueExpression;
                 }
 
                 // The following is produced if the parameter is optional. Note that we convert the
                 // default value to the target ParameterType to address scenarios where the user is
                 // is setting null as the default value in a context where nullability is disabled.
                 //
-                // tempSourceString = httpContext.RouteValue["param1"] ?? httpContext.Query["param1"];
-                // tempSourceString != null ? tempSourceString : Convert("3", Int32)
+                // param1_local = httpContext.RouteValue["param1"] ?? httpContext.Query["param1"];
+                // param1_local != null ? param1_local : Convert(null, Int32)
                 return Expression.Block(
-                    Expression.Assign(TempSourceStringExpr, valueExpression),
-                    Expression.Condition(TempSourceStringNotNullExpr,
-                        TempSourceStringExpr,
+                    Expression.Condition(Expression.NotEqual(valueExpression, Expression.Constant(null)),
+                        valueExpression,
                         Expression.Convert(Expression.Constant(parameter.DefaultValue), parameter.ParameterType)));
             }
 
@@ -647,8 +646,6 @@ namespace Microsoft.AspNetCore.Http
             // {
             //     param2_local = 42;
             // }
-
-            var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
             // If the parameter is nullable, create a "parsedValue" local to TryParse into since we cannot the parameter directly.
             var parsedValue = isNotNullable ? argument : Expression.Variable(nonNullableParameterType, "parsedValue");
@@ -731,12 +728,13 @@ namespace Microsoft.AspNetCore.Http
                 throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
             }
 
-            var nullability = nullabilityContext.Create(parameter);
+            var nullability = NullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
 
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
 
+            var convertedBodyValue = Expression.Convert(BodyValueExpr, parameter.ParameterType);
             var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
             if (!factoryContext.AllowEmptyRequestBody)
@@ -744,15 +742,16 @@ namespace Microsoft.AspNetCore.Http
                 // If the parameter is required or the user has not explicitly
                 // set allowBody to be empty then validate that it is required.
                 //
-                // ToDo body_local = Convert(bodyValue, ToDo);
+                // Todo body_local = Convert(bodyValue, ToDo);
                 // if (body_local == null)
                 // {
                 //      wasTryParseFailure = true;
-                //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body")
+                //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body");
                 // }
                 var checkRequiredBodyBlock = Expression.Block(
-                    Expression.Assign(argument, Expression.Convert(BodyValueExpr, parameter.ParameterType)),
-                    Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
+                    Expression.Assign(argument, convertedBodyValue),
+                    Expression.IfThen(
+                    Expression.Equal(argument, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
                             Expression.Call(LogRequiredParameterNotProvidedMethod, 
@@ -773,7 +772,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // Convert(bodyValue, Todo)
-            return Expression.Convert(BodyValueExpr, parameter.ParameterType); 
+            return convertedBodyValue;
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
