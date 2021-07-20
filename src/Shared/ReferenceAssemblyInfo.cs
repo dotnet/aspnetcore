@@ -1,7 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-// Reference assemblies should have the ReferenceAssemblyAttribute. 
+// Reference assemblies should have the ReferenceAssemblyAttribute.
 [assembly:System.Runtime.CompilerServices.ReferenceAssembly]
 
 // Reference assemblies should have the 0x70 flag which prevents them from loading.

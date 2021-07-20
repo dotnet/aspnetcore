@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await frameWriter.WriteSettingsAsync(settings.GetNonProtocolDefaults());
 
-            // variable length ints make it so the results isn't know without knowing the values 
+            // variable length ints make it so the results isn't know without knowing the values
             var payload = await pipe.Reader.ReadForLengthAsync(5);
 
             Assert.Equal(new byte[] { 0x04, 0x05, 0x06, 0x80, 0x00 }, payload.ToArray());
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await frameWriter.WriteSettingsAsync(settings.GetNonProtocolDefaults());
 
-            // variable length ints make it so the results isn't know without knowing the values 
+            // variable length ints make it so the results isn't know without knowing the values
             var payload = await pipe.Reader.ReadForLengthAsync(10);
 
             Assert.Equal(new byte[] { 0x04, 0x08, 0x01, 0x44, 0xD2, 0x06, 0x80, 0x08, 0xAA, 0x52 }, payload.ToArray());

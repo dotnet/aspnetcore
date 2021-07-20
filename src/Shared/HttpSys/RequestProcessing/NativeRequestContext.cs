@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             // virtual x64/x86 machines which were accepted by HttpReceiveHttpRequest without errors. In
             // these cases the buffer alignment may cause reading values at invalid offset. Setting buffer
             // alignment to 0 for now.
-            // 
+            //
             // _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
             _bufferAlignment = 0;
 

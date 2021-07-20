@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -229,7 +229,7 @@ namespace Microsoft.Net.Http.Headers
             cacheControl1.NoCacheHeaders.Add("PLACEHOLDER1");
             CompareHashCodes(cacheControl1, cacheControl2, true);
 
-            // Since NoCache and Private generate different hash codes, even if NoCacheHeaders and PrivateHeaders 
+            // Since NoCache and Private generate different hash codes, even if NoCacheHeaders and PrivateHeaders
             // have the same values, the hash code will be different.
             cacheControl3.Private = true;
             cacheControl3.PrivateHeaders.Add("PLACEHOLDER2");

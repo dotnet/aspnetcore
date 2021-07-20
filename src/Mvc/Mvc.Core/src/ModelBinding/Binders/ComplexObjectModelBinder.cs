@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // Only record types are allowed to have a BoundConstructor. Binding a record type requires
                 // instantiating the type. This means we'll ignore a previously assigned bindingContext.Model value.
                 // This behaior is identical to input formatting with S.T.Json and Json.NET.
- 
+
                 var values = new object[boundConstructor.BoundConstructorParameters!.Count];
                 var (attemptedParameterBinding, parameterBindingSucceeded) = await BindParametersAsync(
                     bindingContext,
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             for (var i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
-                
+
                 var fieldName = parameter.BinderModelName ?? parameter.ParameterName!;
                 var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="requestHeaders">The <see cref="RequestHeaders"/> associated with the given <paramref name="context"/>.</param>
         /// <param name="length">The total length of the file representation requested.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <returns>A boolean value which represents if the <paramref name="requestHeaders"/> contain a single valid 
-        /// range request. A <see cref="RangeItemHeaderValue"/> which represents the normalized form of the 
+        /// <returns>A boolean value which represents if the <paramref name="requestHeaders"/> contain a single valid
+        /// range request. A <see cref="RangeItemHeaderValue"/> which represents the normalized form of the
         /// range parsed from the <paramref name="requestHeaders"/> or <c>null</c> if it cannot be normalized.</returns>
-        /// <remark>If the Range header exists but cannot be parsed correctly, or if the provided length is 0, then the range request cannot be satisfied (status 416). 
+        /// <remark>If the Range header exists but cannot be parsed correctly, or if the provided length is 0, then the range request cannot be satisfied (status 416).
         /// This results in (<c>true</c>,<c>null</c>) return values.</remark>
         public static (bool isRangeRequest, RangeItemHeaderValue? range) ParseRange(
             HttpContext context,
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Internal
 
                 // The spec allows for multiple ranges but we choose not to support them because the client may request
                 // very strange ranges (e.g. each byte separately, overlapping ranges, etc.) that could negatively
-                // impact the server. Ignore the header and serve the response normally.               
+                // impact the server. Ignore the header and serve the response normally.
                 return (false, null);
             }
 

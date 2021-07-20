@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -31,49 +31,49 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// a legal file name for the current operating system.
     /// </para>
     /// <para>
-    /// <list type="bullet">  
-    ///     <listheader>  
-    ///         <term>Examples of route values that will be matched as non-file-names</term>  
-    ///         <description>description</description>  
-    ///     </listheader>  
-    ///     <item>  
-    ///         <term><c>/a/b/c</c></term>  
-    ///         <description>Final segment does not contain a <c>.</c>.</description>  
+    /// <list type="bullet">
+    ///     <listheader>
+    ///         <term>Examples of route values that will be matched as non-file-names</term>
+    ///         <description>description</description>
+    ///     </listheader>
+    ///     <item>
+    ///         <term><c>/a/b/c</c></term>
+    ///         <description>Final segment does not contain a <c>.</c>.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>/a/b.d/c</c></term>  
-    ///         <description>Final segment does not contain a <c>.</c>.</description>  
+    ///     <item>
+    ///         <term><c>/a/b.d/c</c></term>
+    ///         <description>Final segment does not contain a <c>.</c>.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>/a/b.d/c/</c></term>  
-    ///         <description>Final segment is empty.</description>  
+    ///     <item>
+    ///         <term><c>/a/b.d/c/</c></term>
+    ///         <description>Final segment is empty.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c></c></term>  
-    ///         <description>Value is empty</description>  
+    ///     <item>
+    ///         <term><c></c></term>
+    ///         <description>Value is empty</description>
     ///     </item>
     /// </list>
-    /// <list type="bullet">  
-    ///     <listheader>  
-    ///         <term>Examples of route values that will be rejected as file names</term>  
-    ///         <description>description</description>  
-    ///     </listheader>  
-    ///     <item>  
-    ///         <term><c>/a/b/c.txt</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
+    /// <list type="bullet">
+    ///     <listheader>
+    ///         <term>Examples of route values that will be rejected as file names</term>
+    ///         <description>description</description>
+    ///     </listheader>
+    ///     <item>
+    ///         <term><c>/a/b/c.txt</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>/hello.world.txt</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
+    ///     <item>
+    ///         <term><c>/hello.world.txt</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>hello.world.txt</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
+    ///     <item>
+    ///         <term><c>hello.world.txt</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>.gitignore</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
-    ///     </item> 
+    ///     <item>
+    ///         <term><c>.gitignore</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
+    ///     </item>
     /// </list>
     /// </para>
     /// </remarks>

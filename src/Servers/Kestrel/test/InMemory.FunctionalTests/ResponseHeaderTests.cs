@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 context.Response.ContentLength = 11;
                 return context.Response.WriteAsync("Hello World");
             }, testContext);
-            
+
             using var connection = server.CreateConnection(Encoding.UTF8);
             await connection.Send(
                 "GET / HTTP/1.1",

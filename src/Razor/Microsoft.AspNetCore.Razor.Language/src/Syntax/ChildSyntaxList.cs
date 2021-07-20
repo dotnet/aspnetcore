@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         /// Returns the first child in the list.
         /// </summary>
         /// <returns>The first child in the list.</returns>
-        /// <exception cref="System.InvalidOperationException">The list is empty.</exception>    
+        /// <exception cref="System.InvalidOperationException">The list is empty.</exception>
         public SyntaxNode First()
         {
             if (Any())
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         /// Returns the last child in the list.
         /// </summary>
         /// <returns>The last child in the list.</returns>
-        /// <exception cref="System.InvalidOperationException">The list is empty.</exception>    
+        /// <exception cref="System.InvalidOperationException">The list is empty.</exception>
         public SyntaxNode Last()
         {
             if (Any())
