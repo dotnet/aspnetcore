@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.rxjava3.core.Single;
@@ -126,7 +126,7 @@ public class LongPollingTransportTest {
         assertTrue(onReceivedRan.get());
     }
 
-    @Ignore("https://github.com/dotnet/aspnetcore/issues/34563")
+    @Disabled("https://github.com/dotnet/aspnetcore/issues/34563")
     @Test
     public void LongPollingTransportOnReceiveGetsCalled() {
         AtomicInteger requestCount = new AtomicInteger();
