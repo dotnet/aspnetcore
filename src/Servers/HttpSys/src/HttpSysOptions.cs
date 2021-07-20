@@ -229,6 +229,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </remarks>
         public bool UnsafePreferInlineScheduling { get; set; }
 
+        /// <summary>
+        /// Configures request headers to use Latin1 encoding.
+        /// </summary>
+        public bool UseLatin1RequestHeaders { get; set; }
+
         // Not called when attaching to an existing queue.
         internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
         {
