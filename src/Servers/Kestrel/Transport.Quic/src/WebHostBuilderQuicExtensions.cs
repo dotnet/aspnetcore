@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (!QuicImplementationProviders.Default.IsSupported)
             {
-                throw new NotSupportedException("Quic is not supported or enabled on this platform.");
+                throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
             }
             return hostBuilder.ConfigureServices(services =>
             {
