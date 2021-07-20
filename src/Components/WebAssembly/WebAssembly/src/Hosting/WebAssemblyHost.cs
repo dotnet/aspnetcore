@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
 
-                await _renderer.InitializeJSComponentSupportAsync(_rootComponents.JsComponents, _jsonOptions);
+                await _renderer.InitializeJSComponentSupportAsync(_rootComponents.JSComponents, _jsonOptions);
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
