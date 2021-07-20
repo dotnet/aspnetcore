@@ -10,6 +10,12 @@ namespace Microsoft.AspNetCore.Components.Web
     /// </summary>
     public class JSComponentConfigurationStore
     {
+        // Everything's internal here, and can only be operated upon via the extension methods on
+        // IJSComponentConfiguration. This is so that, in the future, we can add any additional
+        // configuration APIs (as further extension methods) and/or storage (as internal members here)
+        // without needing any changes on the downstream code that implements IJSComponentConfiguration,
+        // and without exposing any of the configuration storage across layers.
+
         internal Dictionary<string, Type> JsComponentTypesByIdentifier { get; } = new (StringComparer.Ordinal);
 
         /// <summary>
