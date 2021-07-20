@@ -183,9 +183,43 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
+        [Fact]
+        public void MapFallback_BuildsEndpointWithLowestRouteOrder()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapFallback("/", () => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("Fallback /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+            Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
+        }
+
+        [Fact]
+        public void MapFallbackWithoutPath_BuildsEndpointWithLowestRouteOrder()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapFallback(() => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("Fallback {*path:nonfile}", routeEndpointBuilder.DisplayName);
+            Assert.Equal("{*path:nonfile}", routeEndpointBuilder.RoutePattern.RawText);
+            Assert.Single(routeEndpointBuilder.RoutePattern.Parameters);
+            Assert.True(routeEndpointBuilder.RoutePattern.Parameters[0].IsCatchAll);
+            Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
+        }
+
         class FromRoute : Attribute, IFromRouteMetadata
         {
-            public string? Name { get; set; } 
+            public string? Name { get; set; }
         }
 
         private class HttpMethodAttribute : Attribute, IHttpMethodMetadata
