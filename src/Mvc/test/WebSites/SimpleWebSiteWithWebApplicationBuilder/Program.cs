@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Builder;
 using static Microsoft.AspNetCore.Http.Results;
 
 var app = WebApplication.Create(args);
@@ -24,7 +23,8 @@ app.MapGet("/many-results", (int id) =>
     return Redirect("/json", permanent: true);
 });
 
-app.Run();
+app.MapGet("/problem", () => Results.Problem("Some problem"));
 
+app.Run();
 
 record Person(string Name, int Age);
