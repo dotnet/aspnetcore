@@ -47,10 +47,6 @@
     {
       "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Shared/ComponentsWebAssembly-CSharp.Shared.csproj"
-    },
-    {
-      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "Shared/ComponentsWebAssembly-CSharp.Shared.csproj"
     }
   ],
   "shortName": "blazorwasm",
