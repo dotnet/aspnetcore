@@ -96,5 +96,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             await response.AssertStatusCodeAsync(HttpStatusCode.MovedPermanently);
             Assert.Equal("/json", response.Headers.Location.ToString());
         }
+
+        [Fact]
+        public async Task ActionReturningProblemDetails_ConfiguresContentType()
+        {
+            // Act
+            var response = await Client.GetAsync("/problem");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.InternalServerError);
+            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.ToString());
+        }
     }
 }

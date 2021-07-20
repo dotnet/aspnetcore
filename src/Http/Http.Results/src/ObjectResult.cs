@@ -37,6 +37,11 @@ namespace Microsoft.AspNetCore.Http.Result
         /// </summary>
         public int? StatusCode { get; set; }
 
+        /// <summary>
+        /// Gets the value for the <c>Content-Type</c> header.
+        /// </summary>
+        public string? ContentType { get; init; }
+
         public Task ExecuteAsync(HttpContext httpContext)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
@@ -61,7 +66,7 @@ namespace Microsoft.AspNetCore.Http.Result
             }
 
             OnFormatting(httpContext);
-            return httpContext.Response.WriteAsJsonAsync(Value);
+            return httpContext.Response.WriteAsJsonAsync(Value, Value.GetType(), options: null, contentType: ContentType);
         }
 
         protected virtual void OnFormatting(HttpContext httpContext)

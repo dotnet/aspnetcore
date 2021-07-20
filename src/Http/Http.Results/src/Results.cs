@@ -479,14 +479,19 @@ namespace Microsoft.AspNetCore.Http
             string? title = null,
             string? type = null)
         {
-            return new ObjectResult(new ProblemDetails
+            var problemDetails = new ProblemDetails
             {
                 Detail = detail,
                 Instance = instance,
                 Status = statusCode,
                 Title = title,
                 Type = type
-            });
+            };
+
+            return new ObjectResult(problemDetails)
+            {
+                ContentType = "application/problem+json",
+            };
         }
 
         /// <summary>
@@ -517,7 +522,10 @@ namespace Microsoft.AspNetCore.Http
                 Status = statusCode,
             };
 
-            return new ObjectResult(problemDetails);
+            return new ObjectResult(problemDetails)
+            {
+                ContentType = "application/problem+json",
+            };
         }
 
         /// <summary>

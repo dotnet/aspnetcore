@@ -89,10 +89,10 @@
 *REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.GetString(this Microsoft.AspNetCore.Http.ISession session, string key) -> string
 *REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.SetInt32(this Microsoft.AspNetCore.Http.ISession session, string key, int value) -> void
 *REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.SetString(this Microsoft.AspNetCore.Http.ISession session, string key, string value) -> void
-Microsoft.AspNetCore.Http.Extensions.HttpValidationProblemDetails
-Microsoft.AspNetCore.Http.Extensions.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
-Microsoft.AspNetCore.Http.Extensions.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
-Microsoft.AspNetCore.Http.Extensions.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
 Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Add(string! key, System.Collections.Generic.IEnumerable<string!>! values) -> void
 Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Add(string! key, string! value) -> void
 Microsoft.AspNetCore.Http.Extensions.QueryBuilder.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, string!>>!
