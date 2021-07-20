@@ -36,19 +36,11 @@
   ],
   "ports": [
     {
-      "name": "kestrelHttpPort",
+      "name": "HttpPort",
       "useHttps": false
     },
     {
-      "name": "kestrelHttpsPort",
-      "useHttps": true
-    },
-    {
-      "name": "iisHttpPort",
-      "useHttps": false
-    },
-    {
-      "name": "iisHttpsPort",
+      "name": "HttpsPort",
       "useHttps": true
     }
   ],
