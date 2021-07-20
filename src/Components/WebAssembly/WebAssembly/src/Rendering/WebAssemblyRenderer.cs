@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.JSComponents;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
@@ -53,8 +55,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 _webAssemblyRendererId);
         }
 
-        public new ValueTask InitializeDynamicRootComponentSupportAsync(DynamicRootComponentConfiguration configuration)
-            => base.InitializeDynamicRootComponentSupportAsync(configuration);
+        public new ValueTask InitializeJSComponentSupportAsync(JSComponentConfiguration configuration, JsonSerializerOptions jsonOptions)
+            => base.InitializeJSComponentSupportAsync(configuration, jsonOptions);
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)

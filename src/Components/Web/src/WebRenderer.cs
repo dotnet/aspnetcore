@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.AspNetCore.Components.Web.JSComponents;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -53,13 +55,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Enables support for adding, updating, and removing root components from JavaScript.
         /// </summary>
-        /// <param name="configuration">Configuration options.</param>
+        /// <param name="configuration">Configuration options for the JS components.</param>
+        /// <param name="jsonOptions">Options used for JSON serialization.</param>
         /// <returns>A task representing the completion of the operation.</returns>
-        protected ValueTask InitializeDynamicRootComponentSupportAsync(DynamicRootComponentConfiguration configuration)
+        protected ValueTask InitializeJSComponentSupportAsync(
+            JSComponentConfiguration configuration,
+            JsonSerializerOptions jsonOptions)
         {
             var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-            var interop = new DynamicRootComponentInterop(
-                configuration, this);
+            var interop = new JSComponentInterop(
+                configuration, this, jsonOptions);
             return interop.InitializeAsync(jsRuntime);
         }
     }

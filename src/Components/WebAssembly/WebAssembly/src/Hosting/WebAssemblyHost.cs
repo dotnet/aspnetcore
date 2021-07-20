@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection.Metadata;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
         private readonly string? _persistedState;
-        private readonly DynamicRootComponentConfiguration _dynamicRootComponents;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
         //
@@ -44,7 +45,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             WebAssemblyHostBuilder builder,
             IServiceProvider services,
             AsyncServiceScope scope,
-            string? persistedState)
+            string? persistedState,
+            JsonSerializerOptions jsonOptions)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
             GC.KeepAlive(typeof(JSInteropMethods));
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _configuration = builder.Configuration;
             _rootComponents = builder.RootComponents;
             _persistedState = persistedState;
-            _dynamicRootComponents = builder.DynamicRootComponents;
+            _jsonOptions = jsonOptions;
         }
 
         /// <summary>
@@ -149,7 +151,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
-                await _renderer.InitializeDynamicRootComponentSupportAsync(_dynamicRootComponents);
+
+                await _renderer.InitializeJSComponentSupportAsync(_rootComponents.JsComponents, _jsonOptions);
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>

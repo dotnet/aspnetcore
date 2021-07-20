@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHostBuilder
     {
-        private readonly DynamicRootComponentConfiguration _dynamicRootComponentConfiguration;
+        private readonly JsonSerializerOptions _jsonOptions;
         private Func<IServiceProvider> _createServiceProvider;
         private RootComponentTypeCache? _rootComponentCache;
         private string? _persistedState;
@@ -67,11 +67,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
             // less opinionated.
+            _jsonOptions = jsonOptions;
             Configuration = new WebAssemblyHostConfiguration();
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
             Logging = new LoggingBuilder(Services);
-            _dynamicRootComponentConfiguration = new DynamicRootComponentConfiguration(jsonOptions);
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntime);
@@ -194,11 +194,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public ILoggingBuilder Logging { get; }
 
         /// <summary>
-        /// Gets an object that holds options for allowing JavaScript to add root components dynamically.
-        /// </summary>
-        public DynamicRootComponentConfiguration DynamicRootComponents => _dynamicRootComponentConfiguration;
-
-        /// <summary>
         /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
         /// </summary>
         /// <param name="factory">The <see cref="IServiceProviderFactory{TBuilder}" />.</param>
@@ -247,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
-            return new WebAssemblyHost(this, services, scope, _persistedState);
+            return new WebAssemblyHost(this, services, scope, _persistedState, _jsonOptions);
         }
 
         internal void InitializeDefaultServices()

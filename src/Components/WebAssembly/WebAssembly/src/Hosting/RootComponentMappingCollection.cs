@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.JSComponents;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -12,8 +14,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// <summary>
     /// Defines a collection of <see cref="RootComponentMapping"/> items.
     /// </summary>
-    public class RootComponentMappingCollection : Collection<RootComponentMapping>
+    public class RootComponentMappingCollection : Collection<RootComponentMapping>, IJSComponentConfiguration
     {
+        internal JSComponentConfiguration JsComponents { get; } = new JSComponentConfiguration();
+
         /// <summary>
         /// Adds a component mapping to the collection.
         /// </summary>
@@ -76,5 +80,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 Add(item);
             }
         }
+
+        /// <inheritdoc />
+        public void RegisterForJavaScript<TComponent>(string identifier) where TComponent : IComponent
+            => JsComponents.Add(identifier, typeof(TComponent));
     }
 }

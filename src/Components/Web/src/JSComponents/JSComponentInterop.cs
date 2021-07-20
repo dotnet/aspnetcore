@@ -3,13 +3,13 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web.JSComponents;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Infrastructure
@@ -19,11 +19,11 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
     /// root components. This is intended for framework use only and should not be called
     /// directly from application code.
     /// </summary>
-    public class DynamicRootComponentInterop : IDisposable
+    public class JSComponentInterop : IDisposable
     {
         private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
 
-        static DynamicRootComponentInterop()
+        static JSComponentInterop()
         {
             if (MetadataUpdater.IsSupported)
             {
@@ -32,23 +32,24 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         }
 
         private const int MaxParameters = 100;
-        private readonly DotNetObjectReference<DynamicRootComponentInterop> _selfReference;
-        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly DotNetObjectReference<JSComponentInterop> _selfReference;
         private readonly Dictionary<string, Type> _allowedComponentTypes;
         private readonly WebRenderer _renderer;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         // This can't be publicly constructable because having a reference to it gives access to the
         // `protected internal` APIs on the renderer you pass in and bypasses the encapsulation.
-        internal DynamicRootComponentInterop(
-            DynamicRootComponentConfiguration configurationBuilder,
-            WebRenderer renderer)
+        internal JSComponentInterop(
+            JSComponentConfiguration configuration,
+            WebRenderer renderer,
+            JsonSerializerOptions jsonOptions)
         {
             _selfReference = DotNetObjectReference.Create(this);
-            _jsonOptions = configurationBuilder.JsonOptions;
             _renderer = renderer;
+            _jsonOptions = jsonOptions;
 
             // Snapshot the config to ensure it's not mutated later
-            _allowedComponentTypes = new(configurationBuilder.AllowedComponentsByIdentifier, StringComparer.Ordinal);
+            _allowedComponentTypes = new(configuration.JsComponentTypesByIdentifier, StringComparer.Ordinal);
         }
 
         internal async ValueTask InitializeAsync(IJSRuntime jsRuntime)
@@ -65,11 +66,11 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable]
-        public int AddRootComponent(string componentIdentifier, string domElementSelector)
+        public int AddRootComponent(string identifier, string domElementSelector)
         {
-            if (!_allowedComponentTypes.TryGetValue(componentIdentifier, out var componentType))
+            if (!_allowedComponentTypes.TryGetValue(identifier, out var componentType))
             {
-                throw new ArgumentException($"There is no registered dynamic root component with identifier '{componentIdentifier}'.");
+                throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
             }
 
             return _renderer.AddRootComponent(componentType, domElementSelector);
