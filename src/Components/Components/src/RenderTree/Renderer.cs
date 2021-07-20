@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
+        private Task? _disposeTask;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -955,26 +956,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Releases all resources currently used by this <see cref="Renderer"/> instance.
         /// </summary>
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
-        protected virtual void Dispose(bool disposing) => DisposeAsync().AsTask().GetAwaiter().GetResult();
-
-        /// <summary>
-        /// Releases all resources currently used by this <see cref="Renderer"/> instance.
-        /// </summary>
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
-            Dispose(disposing: true);
-        }
-
-        /// <inheritdoc />
-        public async ValueTask DisposeAsync()
-        {
-            if (Disposed)
-            {
-                return;
-            }
-
             Disposed = true;
-
+            
             if (TestableMetadataUpdate.IsSupported)
             {
                 HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
@@ -1032,7 +1017,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             if (asyncDisposables?.Count >= 1)
             {
-                await HandleAsyncExceptions(asyncDisposables);
+                _disposeTask = HandleAsyncExceptions(asyncDisposables);
             }
 
             async Task HandleAsyncExceptions(List<Task> tasks)
@@ -1063,6 +1048,40 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 else if (exceptions?.Count == 1)
                 {
                     HandleException(exceptions[0]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Releases all resources currently used by this <see cref="Renderer"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            if (Disposed)
+            {
+                return;
+            }
+
+            if (_disposeTask != null)
+            {
+                await _disposeTask;
+            }
+            else
+            {
+                Dispose();
+                if (_disposeTask != null)
+                {
+                    await _disposeTask;
+                }
+                else
+                {
+                    await default(ValueTask);
                 }
             }
         }
