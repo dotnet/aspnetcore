@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
@@ -36,13 +37,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 {
                     store.Open(OpenFlags.ReadOnly);
                     storeCertificates = store.Certificates;
-                    var foundCertificates = storeCertificates.Find(X509FindType.FindBySubjectName, subject, !allowInvalid);
-                    foundCertificate = foundCertificates
+                    var foundCertificates = storeCertificates.Find(X509FindType.FindBySubjectName, subject, !allowInvalid)
                         .OfType<X509Certificate2>()
                         .Where(IsCertificateAllowedForServerAuth)
                         .Where(DoesCertificateHaveAnAccessiblePrivateKey)
                         .OrderByDescending(certificate => certificate.NotAfter)
-                        .FirstOrDefault();
+                        .ToList();
+
+                    // First, try to find exact match for subject
+                    foundCertificate = foundCertificates.FirstOrDefault(c => c.GetNameInfo(X509NameType.SimpleName, true)
+                                                                              .Equals(subject, StringComparison.InvariantCultureIgnoreCase));
+
+                    // If no exact match for subject, fallback to substring
+                    if (foundCertificate == null)
+                    {
+                        foundCertificate = foundCertificates.FirstOrDefault();
+                    }
 
                     if (foundCertificate == null)
                     {
