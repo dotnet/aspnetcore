@@ -165,7 +165,57 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
-        private IHostBuilder CreateHttp3HostBuilder(RequestDelegate requestDelegate)
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_ConnectionLoggingConfigured_OutputToLogs()
+        {
+            // Arrange
+            var builder = CreateHttp3HostBuilder(
+                context =>
+                {
+                    return Task.CompletedTask;
+                },
+                kestrel =>
+                {
+                    kestrel.ListenLocalhost(5001, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps();
+                        listenOptions.UseConnectionLogging();
+                    });
+                });
+
+            using (var host = builder.Build())
+            using (var client = new HttpClient())
+            {
+                await host.StartAsync();
+
+                var port = 5001;
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response1 = await client.SendAsync(request1);
+                response1.EnsureSuccessStatusCode();
+
+                // Assert
+                var hasWriteLog = TestSink.Writes.Any(
+                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.LoggingConnectionMiddleware" &&
+                    w.Message.StartsWith("WriteAsync", StringComparison.Ordinal));
+                Assert.True(hasWriteLog);
+
+                var hasReadLog = TestSink.Writes.Any(
+                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.LoggingConnectionMiddleware" &&
+                    w.Message.StartsWith("ReadAsync", StringComparison.Ordinal));
+                Assert.True(hasReadLog);
+
+                await host.StopAsync();
+            }
+        }
+
+        private IHostBuilder CreateHttp3HostBuilder(RequestDelegate requestDelegate, Action<KestrelServerOptions> configureKestrel = null)
         {
             return GetHostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -173,12 +223,19 @@ namespace Interop.FunctionalTests.Http3
                     webHostBuilder
                         .UseKestrel(o =>
                         {
-                            o.ConfigureEndpointDefaults(listenOptions =>
+                            if (configureKestrel == null)
                             {
-                                listenOptions.Protocols = HttpProtocols.Http3;
-                            });
+                                o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                                {
+                                    listenOptions.Protocols = HttpProtocols.Http3;
+                                    listenOptions.UseHttps();
+                                });
+                            }
+                            else
+                            {
+                                configureKestrel(o);
+                            }
                         })
-                        .UseUrls("https://127.0.0.1:0")
                         .Configure(app =>
                         {
                             app.Run(requestDelegate);
