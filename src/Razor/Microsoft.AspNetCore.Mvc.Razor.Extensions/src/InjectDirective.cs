@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder =>
             {
                 builder
-                    .AddTypeToken(Resources.InjectDirective_TypeToken_Name, Resources.InjectDirective_TypeToken_Description)
-                    .AddMemberToken(Resources.InjectDirective_MemberToken_Name, Resources.InjectDirective_MemberToken_Description);
+                    .AddTypeToken(RazorExtensionsResources.InjectDirective_TypeToken_Name, RazorExtensionsResources.InjectDirective_TypeToken_Description)
+                    .AddMemberToken(RazorExtensionsResources.InjectDirective_MemberToken_Name, RazorExtensionsResources.InjectDirective_MemberToken_Description);
 
                 builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
-                builder.Description = Resources.InjectDirective_Description;
+                builder.Description = RazorExtensionsResources.InjectDirective_Description;
             });
 
         public static RazorProjectEngineBuilder Register(RazorProjectEngineBuilder builder)
