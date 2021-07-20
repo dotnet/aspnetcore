@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private bool _initialized;
 
         public RequestContext(HttpSysListener server, uint? bufferSize, ulong requestId)
-            : base(server.MemoryPool, bufferSize, requestId)
+            : base(server.MemoryPool, bufferSize, requestId, server.Options.UseLatin1RequestHeaders)
         {
             Server = server;
             AllowSynchronousIO = server.Options.AllowSynchronousIO;
