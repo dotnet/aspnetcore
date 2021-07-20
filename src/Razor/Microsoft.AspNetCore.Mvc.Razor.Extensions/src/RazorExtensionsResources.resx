@@ -174,4 +174,19 @@
   <data name="PageDirective_RouteToken_Name" xml:space="preserve">
     <value>RouteTemplate</value>
   </data>
+  <data name="ViewComponent_AmbiguousMethods" xml:space="preserve">
+    <value>View component '{0}' must have exactly one public method named '{1}' or '{2}'.</value>
+  </data>
+  <data name="ViewComponent_AsyncMethod_ShouldReturnTask" xml:space="preserve">
+    <value>Method '{0}' of view component '{1}' should be declared to return {2}&amp;lt;T&amp;gt;.</value>
+  </data>
+  <data name="ViewComponent_CannotFindMethod" xml:space="preserve">
+    <value>Could not find an '{0}' or '{1}' method for the view component '{2}'.</value>
+  </data>
+  <data name="ViewComponent_SyncMethod_CannotReturnTask" xml:space="preserve">
+    <value>Method '{0}' of view component '{1}' cannot return a {2}.</value>
+  </data>
+  <data name="ViewComponent_SyncMethod_ShouldReturnValue" xml:space="preserve">
+    <value>Method '{0}' of view component '{1}' should be declared to return a value.</value>
+  </data>
 </root>

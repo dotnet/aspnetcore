@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddOptionalStringToken(Resources.PageDirective_RouteToken_Name, Resources.PageDirective_RouteToken_Description);
+                builder.AddOptionalStringToken(RazorExtensionsResources.PageDirective_RouteToken_Name, RazorExtensionsResources.PageDirective_RouteToken_Description);
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
-                builder.Description = Resources.PageDirective_Description;
+                builder.Description = RazorExtensionsResources.PageDirective_Description;
             });
 
         private PageDirective(string routeTemplate, IntermediateNode directiveNode)
