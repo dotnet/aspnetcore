@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             if (!QuicImplementationProviders.Default.IsSupported)
             {
-                throw new NotSupportedException("Quic is not supported or enabled on this platform.");
+                throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
             }
 
             if (options.Alpn == null)
