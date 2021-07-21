@@ -49,6 +49,9 @@ namespace Microsoft.AspNetCore.Builder
 
             // Add default services
             _deferredHostBuilder.ConfigureDefaults(args);
+
+            // Enable changes here because we need to pick up configuration sources added by the generic web host
+            _deferredHostBuilder.ConfigurationEnabled = true;
             _deferredHostBuilder.ConfigureWebHostDefaults(configure: _ => { });
 
             // This is important because GenericWebHostBuilder does the following and we want to preserve the WebHostBuilderContext:
@@ -58,10 +61,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 _hostBuilder.Properties[key] = value;
             }
-
-            // Configuration changes made by ConfigureDefaults(args) were already picked up by the BootstrapHostBuilder,
-            // so we ignore changes to config until ConfigureDefaults completes.
-            _deferredHostBuilder.ConfigurationEnabled = true;
         }
 
         /// <summary>
@@ -220,7 +219,6 @@ namespace Microsoft.AspNetCore.Builder
             genericWebHostBuilder.Configure(ConfigureApplication);
 
             _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
-            _deferredWebHostBuilder.ApplySettings(genericWebHostBuilder);
 
             _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
         }

@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly WebHostEnvironment _environment;
         private readonly ConfigurationManager _configuration;
-        private readonly Dictionary<string, string?> _settings = new(StringComparer.OrdinalIgnoreCase);
         private readonly IServiceCollection _services;
 
         private readonly WebHostBuilderContext _context;
@@ -66,14 +65,13 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public string? GetSetting(string key)
         {
-            _settings.TryGetValue(key, out var value);
-            return value;
+            return _configuration[key];
         }
 
         /// <inheritdoc />
         public IWebHostBuilder UseSetting(string key, string? value)
         {
-            _settings[key] = value;
+            _configuration[key] = value;
 
             // All properties on IWebHostEnvironment are non-nullable.
             if (value is null)
@@ -99,14 +97,6 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return this;
-        }
-
-        internal void ApplySettings(IWebHostBuilder webHostBuilder)
-        {
-            foreach (var (key, value) in _settings)
-            {
-                webHostBuilder.UseSetting(key, value);
-            }
         }
     }
 }
