@@ -36,21 +36,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 {
                     store.Open(OpenFlags.ReadOnly);
                     storeCertificates = store.Certificates;
-                    var foundCertificates = storeCertificates.Find(X509FindType.FindBySubjectName, subject, !allowInvalid)
+                    foreach (var certificate in storeCertificates.Find(X509FindType.FindBySubjectName, subject, !allowInvalid)
                         .OfType<X509Certificate2>()
                         .Where(IsCertificateAllowedForServerAuth)
                         .Where(DoesCertificateHaveAnAccessiblePrivateKey)
-                        .OrderByDescending(certificate => certificate.NotAfter)
-                        .ToList();
-
-                    // First, try to find exact match for subject
-                    foundCertificate = foundCertificates.FirstOrDefault(c => c.GetNameInfo(X509NameType.SimpleName, true)
-                                                                              .Equals(subject, StringComparison.InvariantCultureIgnoreCase));
-
-                    // If no exact match for subject, fallback to substring
-                    if (foundCertificate == null)
+                        .OrderByDescending(certificate => certificate.NotAfter))
                     {
-                        foundCertificate = foundCertificates.FirstOrDefault();
+                        foundCertificate = certificate;
+
+                        if (foundCertificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            break;
+                        }
                     }
 
                     if (foundCertificate == null)
