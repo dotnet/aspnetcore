@@ -197,6 +197,26 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void WebApplicationBuilderWebHostUseSettingCanBeReadByConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            builder.WebHost.UseSetting("A", "value");
+            builder.WebHost.UseSetting("B", "another");
+
+            Assert.Equal("value", builder.WebHost.GetSetting("A"));
+            Assert.Equal("another", builder.WebHost.GetSetting("B"));
+
+            var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["A"]);
+            Assert.Equal("another", app.Configuration["B"]);
+
+            Assert.Equal("value", builder.Configuration["A"]);
+            Assert.Equal("another", builder.Configuration["B"]);
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();
@@ -369,7 +389,7 @@ namespace Microsoft.AspNetCore.Tests
                 Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
             }
 
-            
+
             var app = builder.Build();
             Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
         }
