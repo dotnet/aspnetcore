@@ -43,16 +43,22 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             _applicationStoppingToken = applicationLifetime.ApplicationStopping;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context.Request.Path.StartsWithSegments(_pathPrefix) || _pathPrefixIsRoot)
             {
-                var didProxyRequest = await SpaProxy.PerformProxyRequest(
-                    context, _httpClient, _baseUriTask, _applicationStoppingToken, proxy404s: false);
-                if (didProxyRequest)
-                {
-                    return;
-                }
+                return InvokeCore(context);
+            }
+            return _next.Invoke(context);
+        }
+
+        private async Task InvokeCore(HttpContext context)
+        {
+            var didProxyRequest = await SpaProxy.PerformProxyRequest(
+                context, _httpClient, _baseUriTask, _applicationStoppingToken, proxy404s: false);
+            if (didProxyRequest)
+            {
+                return;
             }
 
             // Not a request we can proxy

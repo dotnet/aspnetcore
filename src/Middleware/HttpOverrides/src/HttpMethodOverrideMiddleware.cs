@@ -41,29 +41,35 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// Executes the middleware.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (HttpMethods.IsPost(context.Request.Method))
             {
-                if (_options.FormFieldName != null)
+                return InvokeCore(context);
+            }
+            return _next(context);
+        }
+
+        private async Task InvokeCore(HttpContext context)
+        {
+            if (_options.FormFieldName != null)
+            {
+                if (context.Request.HasFormContentType)
                 {
-                    if (context.Request.HasFormContentType)
+                    var form = await context.Request.ReadFormAsync();
+                    var methodType = form[_options.FormFieldName];
+                    if (!string.IsNullOrEmpty(methodType))
                     {
-                        var form = await context.Request.ReadFormAsync();
-                        var methodType = form[_options.FormFieldName];
-                        if (!string.IsNullOrEmpty(methodType))
-                        {
-                            context.Request.Method = methodType;
-                        }
+                        context.Request.Method = methodType;
                     }
                 }
-                else
+            }
+            else
+            {
+                var xHttpMethodOverrideValue = context.Request.Headers[xHttpMethodOverride];
+                if (!string.IsNullOrEmpty(xHttpMethodOverrideValue))
                 {
-                    var xHttpMethodOverrideValue = context.Request.Headers[xHttpMethodOverride];
-                    if (!string.IsNullOrEmpty(xHttpMethodOverrideValue))
-                    {
-                        context.Request.Method = xHttpMethodOverrideValue;
-                    }
+                    context.Request.Method = xHttpMethodOverrideValue;
                 }
             }
             await _next(context);
