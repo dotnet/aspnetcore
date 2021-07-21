@@ -48,6 +48,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task UnauthorizedHttpStatusResponse()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+                context.Response.StatusCode = 401;
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("401", responseHeaders[HeaderNames.Status]);
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
         public async Task EmptyMethod_Reset()
         {
             var headers = new[]

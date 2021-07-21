@@ -4106,7 +4106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"HTTP/1.1 200 OK",
                         "Content-Length: 0",
                         $"Date: {server.Context.DateHeaderValue}",
-                        @"Alt-Svc: h3-29="":1""; ma=84600",
+                        @"Alt-Svc: h3="":1""; ma=84600",
                         "",
                         "");
                 }
