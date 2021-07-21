@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -15,7 +14,13 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputDate<TValue> : InputBase<TValue>
     {
-        private const string DateFormat = "yyyy-MM-dd"; // Compatible with HTML date inputs
+        private const string DateFormat = "yyyy-MM-dd";                     // Compatible with HTML 'date' inputs
+        private const string DateTimeLocalFormat = "yyyy-MM-ddTHH:mm:ss";   // Compatible with HTML 'datetime-local' inputs
+        private const string MonthFormat = "yyyy-MM";                       // Compatible with HTML 'month' inputs
+        private const string TimeFormat = "HH:mm:ss";                       // Compatible with HTML 'time' inputs
+
+        private string _typeAttributeValue = default!;
+        private string _format = default!;
 
         /// <summary>
         /// Gets or sets the error message used when displaying an a parsing error.
@@ -31,11 +36,30 @@ namespace Microsoft.AspNetCore.Components.Forms
         [DisallowNull] public ElementReference? Element { get; protected set; }
 
         /// <inheritdoc />
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            _typeAttributeValue = parameters.TryGetValue<string>("type", out var typeAttributeValue)
+                ? typeAttributeValue
+                : "date";
+
+            _format = _typeAttributeValue switch
+            {
+                "date" => DateFormat,
+                "datetime-local" => DateTimeLocalFormat,
+                "month" => MonthFormat,
+                "time" => TimeFormat,
+                _ => throw new InvalidOperationException($"Unsupported 'type' attribute value '{_typeAttributeValue}'.")
+            };
+
+            return base.SetParametersAsync(parameters);
+        }
+
+        /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "type", "date");
+            builder.AddAttribute(2, "type", _typeAttributeValue);
             builder.AddAttribute(3, "class", CssClass);
             builder.AddAttribute(4, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
@@ -45,17 +69,14 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <inheritdoc />
         protected override string FormatValueAsString(TValue? value)
-        {
-            switch (value)
+            => value switch
             {
-                case DateTime dateTimeValue:
-                    return BindConverter.FormatValue(dateTimeValue, DateFormat, CultureInfo.InvariantCulture);
-                case DateTimeOffset dateTimeOffsetValue:
-                    return BindConverter.FormatValue(dateTimeOffsetValue, DateFormat, CultureInfo.InvariantCulture);
-                default:
-                    return string.Empty; // Handles null for Nullable<DateTime>, etc.
-            }
-        }
+                DateTime dateTimeValue => BindConverter.FormatValue(dateTimeValue, _format, CultureInfo.InvariantCulture),
+                DateTimeOffset dateTimeOffsetValue => BindConverter.FormatValue(dateTimeOffsetValue, _format, CultureInfo.InvariantCulture),
+                DateOnly dateOnlyValue => BindConverter.FormatValue(dateOnlyValue, _format, CultureInfo.InvariantCulture),
+                TimeOnly timeOnlyValue => BindConverter.FormatValue(timeOnlyValue, _format, CultureInfo.InvariantCulture),
+                _ => string.Empty, // Handles null for Nullable<DateTime>, etc.
+            };
 
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -72,6 +93,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             else if (targetType == typeof(DateTimeOffset))
             {
                 success = TryParseDateTimeOffset(value, out result);
+            }
+            else if (targetType == typeof(DateOnly))
+            {
+                success = TryParseDateOnly(value, out result);
+            }
+            else if (targetType == typeof(TimeOnly))
+            {
+                success = TryParseTimeOnly(value, out result);
             }
             else
             {
@@ -91,9 +120,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        private static bool TryParseDateTime(string? value, [MaybeNullWhen(false)] out TValue result)
+        private bool TryParseDateTime(string? value, [MaybeNullWhen(false)] out TValue result)
         {
-            var success = BindConverter.TryConvertToDateTime(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
+            var success = BindConverter.TryConvertToDateTime(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
             if (success)
             {
                 result = (TValue)(object)parsedValue;
@@ -106,9 +135,39 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        private static bool TryParseDateTimeOffset(string? value, [MaybeNullWhen(false)] out TValue result)
+        private bool TryParseDateTimeOffset(string? value, [MaybeNullWhen(false)] out TValue result)
         {
-            var success = BindConverter.TryConvertToDateTimeOffset(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
+            var success = BindConverter.TryConvertToDateTimeOffset(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
+            if (success)
+            {
+                result = (TValue)(object)parsedValue;
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        private bool TryParseDateOnly(string? value, [MaybeNullWhen(false)] out TValue result)
+        {
+            var success = BindConverter.TryConvertToDateOnly(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
+            if (success)
+            {
+                result = (TValue)(object)parsedValue;
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        private bool TryParseTimeOnly(string? value, [MaybeNullWhen(false)] out TValue result)
+        {
+            var success = BindConverter.TryConvertToTimeOnly(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
             if (success)
             {
                 result = (TValue)(object)parsedValue;

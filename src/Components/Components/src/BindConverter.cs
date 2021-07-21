@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Components
         /// </param>
         /// <returns>The formatted value.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-        public static string? FormatValue(DateOnly value, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format: null, culture);
+        public static string FormatValue(DateOnly value, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format: null, culture);
 
         /// <summary>
         /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
@@ -509,9 +509,9 @@ namespace Microsoft.AspNetCore.Components
         /// </param>
         /// <returns>The formatted value.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-        public static string? FormatValue(DateOnly value, string format, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format, culture);
+        public static string FormatValue(DateOnly value, string format, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format, culture);
 
-        private static string? FormatDateOnlyValueCore(DateOnly value, string? format, CultureInfo? culture)
+        private static string FormatDateOnlyValueCore(DateOnly value, string? format, CultureInfo? culture)
         {
             if (format != null)
             {
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Components
             return value.ToString(culture ?? CultureInfo.CurrentCulture);
         }
 
-        private static string? FormatDateOnlyValueCore(DateOnly value, CultureInfo? culture)
+        private static string FormatDateOnlyValueCore(DateOnly value, CultureInfo? culture)
         {
             return value.ToString(culture ?? CultureInfo.CurrentCulture);
         }
@@ -585,7 +585,7 @@ namespace Microsoft.AspNetCore.Components
         /// </param>
         /// <returns>The formatted value.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-        public static string? FormatValue(TimeOnly value, CultureInfo? culture = null) => FormatTimeOnlyValueCore(value, format: null, culture);
+        public static string FormatValue(TimeOnly value, CultureInfo? culture = null) => FormatTimeOnlyValueCore(value, format: null, culture);
 
         /// <summary>
         /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
@@ -597,9 +597,9 @@ namespace Microsoft.AspNetCore.Components
         /// </param>
         /// <returns>The formatted value.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-        public static string? FormatValue(TimeOnly value, string format, CultureInfo? culture = null) => FormatTimeOnlyValueCore(value, format, culture);
+        public static string FormatValue(TimeOnly value, string format, CultureInfo? culture = null) => FormatTimeOnlyValueCore(value, format, culture);
 
-        private static string? FormatTimeOnlyValueCore(TimeOnly value, string? format, CultureInfo? culture)
+        private static string FormatTimeOnlyValueCore(TimeOnly value, string? format, CultureInfo? culture)
         {
             if (format != null)
             {
@@ -610,7 +610,7 @@ namespace Microsoft.AspNetCore.Components
             return value.ToString(culture ?? CultureInfo.CurrentCulture);
         }
 
-        private static string? FormatTimeOnlyValueCore(TimeOnly value, CultureInfo? culture)
+        private static string FormatTimeOnlyValueCore(TimeOnly value, CultureInfo? culture)
         {
             return value.ToString(culture ?? CultureInfo.CurrentCulture);
         }
@@ -1391,6 +1391,56 @@ namespace Microsoft.AspNetCore.Components
             return false;
         }
 
+        /// <summary>
+        /// Attempts to convert a value to a <see cref="System.DateOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToDateOnly(object? obj, CultureInfo? culture, out DateOnly value)
+        {
+            return ConvertToDateOnlyCore(obj, culture, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a <see cref="System.DateOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="format">The format string to use in conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToDateOnly(object? obj, CultureInfo? culture, string format, out DateOnly value)
+        {
+            return ConvertToDateOnlyCore(obj, culture, format, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a nullable <see cref="System.DateOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToNullableDateOnly(object? obj, CultureInfo? culture, out DateOnly? value)
+        {
+            return ConvertToNullableDateOnlyCore(obj, culture, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a nullable <see cref="System.DateOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="format">The format string to use in conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToNullableDateOnly(object? obj, CultureInfo? culture, string format, out DateOnly? value)
+        {
+            return ConvertToNullableDateOnlyCore(obj, culture, format, out value);
+        }
+
         internal static BindParser<DateOnly> ConvertToDateOnly = ConvertToDateOnlyCore;
         internal static BindParserWithFormat<DateOnly> ConvertToDateOnlyWithFormat = ConvertToDateOnlyCore;
         internal static BindParser<DateOnly?> ConvertToNullableDateOnly = ConvertToNullableDateOnlyCore;
@@ -1430,6 +1480,56 @@ namespace Microsoft.AspNetCore.Components
 
             value = default;
             return false;
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a <see cref="System.TimeOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToTimeOnly(object? obj, CultureInfo? culture, out TimeOnly value)
+        {
+            return ConvertToTimeOnlyCore(obj, culture, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a <see cref="System.TimeOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="format">The format string to use in conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToTimeOnly(object? obj, CultureInfo? culture, string format, out TimeOnly value)
+        {
+            return ConvertToTimeOnlyCore(obj, culture, format, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a nullable <see cref="System.TimeOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToNullableTimeOnly(object? obj, CultureInfo? culture, out TimeOnly? value)
+        {
+            return ConvertToNullableTimeOnlyCore(obj, culture, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a nullable <see cref="System.TimeOnly"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="format">The format string to use in conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToNullableTimeOnly(object? obj, CultureInfo? culture, string format, out TimeOnly? value)
+        {
+            return ConvertToNullableTimeOnlyCore(obj, culture, format, out value);
         }
 
         internal static BindParser<TimeOnly> ConvertToTimeOnly = ConvertToTimeOnlyCore;

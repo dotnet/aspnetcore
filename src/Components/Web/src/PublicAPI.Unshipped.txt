@@ -34,6 +34,7 @@ Microsoft.AspNetCore.Components.Web.PageTitle
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Web.PageTitle.PageTitle() -> void
+override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
