@@ -84,13 +84,13 @@ namespace Microsoft.AspNetCore.Builder
         public ILoggingBuilder Logging { get; }
 
         /// <summary>
-        /// An <see cref="IHostBuilder"/> for configuring server specific properties, but not building.
+        /// An <see cref="IWebHostBuilder"/> for configuring server specific properties, but not building.
         /// To build after configuration, call <see cref="Build"/>.
         /// </summary>
         public ConfigureWebHostBuilder WebHost { get; }
 
         /// <summary>
-        /// An <see cref="IWebHostBuilder"/> for configuring host specific properties, but not building.
+        /// An <see cref="IHostBuilder"/> for configuring host specific properties, but not building.
         /// To build after configuration, call <see cref="Build"/>.
         /// </summary>
         public ConfigureHostBuilder Host { get; }
