@@ -24,7 +24,7 @@ Some projects in this repository (like SignalR Java Client) require JDK installa
 1. After installation define a new environment variable named `JAVA_HOME` pointing to the root of the latest JDK installation (for Windows it will be something like `c:\Program Files\Java\jdk-12`).
 1. Add the `%JAVA_HOME%\bin` directory to the `PATH` environment variable
 
-`Web.Spa.ProjectTemplates`folder contains the Single Page Application templates, including Anuglar, React. Those are brought in by a submodule from the dotnet/spa-templates repo.**
+Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj contains the Single Page Application templates, including Anuglar, React. **This is brought in by a submodule from the dotnet/spa-templates repo.**
 
 To build the ProjectTemplates, use one of:
 
