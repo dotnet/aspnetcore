@@ -6,6 +6,9 @@
 
     <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
 
+    <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
     
