@@ -35,20 +35,13 @@ namespace Microsoft.AspNetCore.Builder
         /// Allows JavaScript to add root components dynamically.
         /// </summary>
         /// <param name="configuration">Options specifying which root components may be added from JavaScript.</param>
-        /// <param name="defaultMaxInstancesPerType">The maximum number of component instances per type that may be added by JavaScript.</param>
         /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
         public ComponentEndpointConventionBuilder WithJSComponents(
-            Action<IJSComponentConfiguration> configuration, int defaultMaxInstancesPerType)
+            Action<IJSComponentConfiguration> configuration)
         {
-            var jsComponents = new CircuitJSComponentConfiguration
-            {
-                DefaultMaxInstancesPerType = defaultMaxInstancesPerType
-            };
-
+            var jsComponents = new CircuitJSComponentConfiguration();
             configuration(jsComponents);
-
             jsComponents.AddToEndpointMetadata(_hubEndpoint);
-
             return this;
         }
     }

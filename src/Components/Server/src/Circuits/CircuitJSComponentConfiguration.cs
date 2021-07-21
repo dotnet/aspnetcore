@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         public JSComponentConfigurationStore JSComponents { get; } = new();
 
-        public int DefaultMaxInstancesPerType { get; init; }
-
         public void AddToEndpointMetadata(IEndpointConventionBuilder conventionBuilder)
         {
             conventionBuilder.Add(endpointBuilder => endpointBuilder.Metadata.Add(this));
