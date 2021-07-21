@@ -14,9 +14,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    // Note that this tests the <DynamicComponent> component, not dynamic *root* components.
-    // See DynamicRootComponentsTest.cs for tests about dynamic root components.
-
     public class DynamicComponentRenderingTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         private IWebElement app;

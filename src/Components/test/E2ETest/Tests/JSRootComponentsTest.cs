@@ -11,14 +11,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    // Note that this tests dynamic *root* components, not the <DynamicComponent> component.
-    // See DynamicComponentRenderingTest.cs for tests about <DynamicComponent>.
-
-    public class DynamicRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+    public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         private IWebElement app;
 
-        public DynamicRootComponentsTest(
+        public JSRootComponentsTest(
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
@@ -29,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: false);
-            app = Browser.MountTestComponent<DynamicRootComponents>();
+            app = Browser.MountTestComponent<JavaScriptRootComponents>();
         }
 
         [Fact]
