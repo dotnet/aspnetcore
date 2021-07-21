@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Components.Web
                 MetaKey = true,
                 OffsetX = 8.2,
                 OffsetY = 7.1,
+                PageX = 5.6,
+                PageY = 7.8,
                 ScreenX = 0.1,
                 ScreenY = 4.4,
                 ShiftKey = false,
@@ -49,6 +51,8 @@ namespace Microsoft.AspNetCore.Components.Web
             Assert.Equal(expected.MetaKey, actual.MetaKey);
             Assert.Equal(expected.OffsetX, actual.OffsetX);
             Assert.Equal(expected.OffsetY, actual.OffsetY);
+            Assert.Equal(expected.PageX, actual.PageX);
+            Assert.Equal(expected.PageY, actual.PageY);
             Assert.Equal(expected.ScreenX, actual.ScreenX);
             Assert.Equal(expected.ScreenY, actual.ScreenY);
             Assert.Equal(expected.ShiftKey, actual.ShiftKey);
