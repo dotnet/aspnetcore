@@ -668,11 +668,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [MemberData(nameof(FromBodyActions))]
         public async Task RequestDelegatePopulatesFromBodyParameter(Delegate action)
         {
-            // while (!System.Diagnostics.Debugger.IsAttached)
-            // {
-            //     System.Console.WriteLine($"Waiting to attach on ${Environment.ProcessId}");
-            //     System.Threading.Thread.Sleep(1000);
-            // }
             Todo originalTodo = new()
             {
                 Name = "Write more tests!"
@@ -686,6 +681,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = stream.Length.ToString();
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
             var jsonOptions = new JsonOptions();
             jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
@@ -717,6 +713,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(LoggerFactory);
@@ -793,6 +790,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Length"] = "1";
             httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(ioException);
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var requestDelegate = RequestDelegateFactory.Create(TestAction);
@@ -826,7 +824,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "1";
             httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(invalidDataException);
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var requestDelegate = RequestDelegateFactory.Create(TestAction);
@@ -1550,6 +1550,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 httpContext.Request.Body = stream;
                 httpContext.Request.Headers["Content-Type"] = "application/json";
                 httpContext.Request.ContentLength = stream.Length;
+                httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
             }
 
             var jsonOptions = new JsonOptions();
@@ -1946,6 +1947,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 _requestAbortedCts.Cancel();
             }
+        }
+
+        private class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
+        {
+            public RequestBodyDetectionFeature(bool canHaveBody)
+            {
+                CanHaveBody = canHaveBody;
+            }
+
+            public bool CanHaveBody { get; }
         }
     }
 }

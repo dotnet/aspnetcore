@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -487,7 +488,8 @@ namespace Microsoft.AspNetCore.Http
             {
                 object? bodyValue = defaultBodyValue;
 
-                if (httpContext.Request.ContentLength != 0 && httpContext.Request.HasJsonContentType())
+                var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+                if (feature?.CanHaveBody == true)
                 {
                     try
                     {
