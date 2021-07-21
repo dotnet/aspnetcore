@@ -42,6 +42,8 @@ Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.Timeouts.get -> Microsoft.Asp
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UnsafePreferInlineScheduling.get -> bool
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UnsafePreferInlineScheduling.set -> void
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UrlPrefixes.get -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection!
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UseLatin1RequestHeaders.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UseLatin1RequestHeaders.set -> void
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestDelegationFeature.DelegateRequest(Microsoft.AspNetCore.Server.HttpSys.DelegationRule! destination) -> void
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestInfoFeature.RequestInfo.get -> System.Collections.Generic.IReadOnlyDictionary<int, System.ReadOnlyMemory<byte>>!
 Microsoft.AspNetCore.Server.HttpSys.IServerDelegationFeature.CreateDelegationRule(string! queueName, string! urlPrefix) -> Microsoft.AspNetCore.Server.HttpSys.DelegationRule!
