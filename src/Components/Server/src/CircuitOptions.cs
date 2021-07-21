@@ -76,5 +76,10 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <value>
         /// Defaults to <c>10</c>.</value>
         public int MaxBufferedUnacknowledgedRenderBatches { get; set; } = 10;
+
+        /// <summary>
+        /// Gets or sets the maximum number of root components added from JavaScript.
+        /// </summary>
+        public int MaxJSRootComponents { get; set; } = 100;
     }
 }

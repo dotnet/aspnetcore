@@ -1,2 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder.WithJSComponents(System.Action<Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration!>! configuration) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
+Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxJSRootComponents.get -> int
+Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxJSRootComponents.set -> void
+Microsoft.AspNetCore.Components.Server.Circuits.CircuitJSComponentInterop
+override Microsoft.AspNetCore.Components.Server.Circuits.CircuitJSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
+override Microsoft.AspNetCore.Components.Server.Circuits.CircuitJSComponentInterop.RemoveRootComponent(int componentId) -> void

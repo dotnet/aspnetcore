@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -311,8 +313,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public new ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configurationStore, JsonSerializerOptions jsonOptions)
-            => base.InitializeJSComponentSupportAsync(configurationStore, jsonOptions);
+        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
+        {
+            var interop = new CircuitJSComponentInterop(configuration, jsonOptions, _options);
+            return InitializeJSComponentSupportAsync(interop);
+        }
 
         internal readonly struct UnacknowledgedRenderBatch
         {
