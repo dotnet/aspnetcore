@@ -11,7 +11,6 @@ The following contains a description of each sub-directory in the `ProjectTempla
 - `Web.Client.ItemTemplates`: Contains the Web Client-Side File templates, includes things like less, scss, and typescript
 - `Web.ItemTemplates`: Contains the Web File templates, includes things like: protobuf, razor component, razor page, view import and start pages
 - `Web.ProjectTemplates`: Contains the ASP.NET Core Web Template pack, including Blazor Server, WASM, Empty, Grpc, Razor Class Library, RazorPages, MVC, WebApi.
-- `Web.Spa.ProjectTemplates`: Contains the Single Page Application templates for ASP.NET Core, including Anuglar, React, ReactRedux.
 - `migrations`: Contains migration related scripts.
 - `scripts`: Contains a collection of scripts that help running tests locally that avoid having to install the templates to the machine.
 - `test`: Contains the end to end template tests.
@@ -24,6 +23,8 @@ Some projects in this repository (like SignalR Java Client) require JDK installa
 1. If you don't have the JDK installed, you can find it from https://www.oracle.com/technetwork/java/javase/downloads/index.html
 1. After installation define a new environment variable named `JAVA_HOME` pointing to the root of the latest JDK installation (for Windows it will be something like `c:\Program Files\Java\jdk-12`).
 1. Add the `%JAVA_HOME%\bin` directory to the `PATH` environment variable
+
+Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj contains the Single Page Application templates, including Anuglar, React. **This is brought in by a submodule from the dotnet/spa-templates repo.**
 
 To build the ProjectTemplates, use one of:
 
