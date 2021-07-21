@@ -142,7 +142,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
             => HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34599")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
         {
             await HtmlGenerationWebSite_GeneratesExpectedResults("Image", antiforgeryPath: null);
