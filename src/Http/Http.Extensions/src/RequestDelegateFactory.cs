@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Http
                 if (factoryContext.ServiceProviderIsService is IServiceProviderIsService serviceProviderIsService)
                 {
                     // If the parameter is optional
-                    if (!isOptional)
+                    if (isOptional)
                     {
                         // Then try to resolve it as an optional service and fallback to a body otherwise
                         // Note: if the parameter provides a default value that value will be parsed
