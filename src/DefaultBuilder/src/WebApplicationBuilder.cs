@@ -112,6 +112,11 @@ namespace Microsoft.AspNetCore.Builder
         {
             Debug.Assert(_builtApplication is not null);
 
+            if (Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
             // The endpoints were already added on the outside
             if (_builtApplication.DataSources.Count > 0)
             {
