@@ -25,7 +25,10 @@ namespace TestServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor(options =>
+            {
+                options.MaxJSRootComponents = 5; // To make it easier to test
+            });
             services.AddSingleton<ResourceRequestLog>();
 
             // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
@@ -63,7 +66,11 @@ namespace TestServer
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapBlazorHub();
+                    endpoints.MapBlazorHub().WithJSComponents(rootComponents =>
+                    {
+                        rootComponents.RegisterForJavaScript<BasicTestApp.DynamicallyAddedRootComponent>("my-dynamic-root-component");
+                    });
+
                     endpoints.MapControllerRoute("mvc", "{controller}/{action}");
                     endpoints.MapFallbackToPage("/_ServerHost");
                 });

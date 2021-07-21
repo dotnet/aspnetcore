@@ -2,7 +2,7 @@ import { internalFunctions as navigationManagerFunctions } from '../../Services/
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
 import { ServerComponentDescriptor } from '../../Services/ComponentDescriptorDiscovery';
 import { HubConnectionState } from '@microsoft/signalr';
-import { getAndRemovePendingRootComponentContainer } from '../../Rendering/DynamicRootComponents';
+import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 
 export class CircuitDescriptor {
   public circuitId?: string;
