@@ -137,7 +137,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34599")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
         {
             await HtmlGenerationWebSite_GeneratesExpectedResults("Image", antiforgeryPath: null);
