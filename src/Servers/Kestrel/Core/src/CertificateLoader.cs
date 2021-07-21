@@ -42,10 +42,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                         .Where(DoesCertificateHaveAnAccessiblePrivateKey)
                         .OrderByDescending(certificate => certificate.NotAfter))
                     {
-                        foundCertificate = certificate;
-
-                        if (foundCertificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+                        // Pick the first one as a fallback to substring default
+                        if (foundCertificate == null)
                         {
+                            foundCertificate = certificate;
+                        }
+
+                        if (certificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            foundCertificate = certificate;
                             break;
                         }
                     }
