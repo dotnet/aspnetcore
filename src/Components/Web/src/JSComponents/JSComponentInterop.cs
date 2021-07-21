@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
     /// root components. This is intended for framework use only and should not be called
     /// directly from application code.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class JSComponentInterop : IDisposable
     {
         private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
@@ -33,32 +35,45 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         private const int MaxParameters = 100;
         private readonly DotNetObjectReference<JSComponentInterop> _selfReference;
         private readonly Dictionary<string, Type> _allowedComponentTypes;
-        private readonly WebRenderer _renderer;
         private readonly JsonSerializerOptions _jsonOptions;
+        private WebRenderer? _renderer;
 
-        // This can't be publicly constructable because having a reference to it gives access to the
-        // `protected internal` APIs on the renderer you pass in and bypasses the encapsulation.
-        internal JSComponentInterop(
+        private WebRenderer Renderer => _renderer
+            ?? throw new InvalidOperationException("This instance is not initialized.");
+
+        /// <summary>
+        /// Constructs an instance of <see cref="JSComponentInterop" />. This is only intended
+        /// for use from framework code and should not be used directly from application code.
+        /// </summary>
+        /// <param name="configuration">The <see cref="JSComponentConfigurationStore" /></param>
+        /// <param name="jsonOptions">The <see cref="JsonSerializerOptions" /></param>
+        public JSComponentInterop(
             JSComponentConfigurationStore configuration,
-            WebRenderer renderer,
             JsonSerializerOptions jsonOptions)
         {
             _selfReference = DotNetObjectReference.Create(this);
-            _renderer = renderer;
             _jsonOptions = jsonOptions;
 
             // Snapshot the config to ensure it's not mutated later
             _allowedComponentTypes = new(configuration.JsComponentTypesByIdentifier, StringComparer.Ordinal);
         }
 
-        internal async ValueTask InitializeAsync(IJSRuntime jsRuntime)
+        // This has to be internal and only called by WebRenderer (through a protected API) because,
+        // by attaching a WebRenderer instance, you become able to call its protected internal APIs
+        // such as AddRootComponent etc. and hence bypass the encapsulation. There should not be any
+        // other way to attach a renderer to this instance.
+        internal async ValueTask InitializeAsync(IJSRuntime jsRuntime, WebRenderer renderer)
         {
-            if (_allowedComponentTypes.Count > 0)
+            if (_allowedComponentTypes.Count == 0)
             {
-                await jsRuntime.InvokeVoidAsync(
-                    "Blazor._internal.setDynamicRootComponentManager",
-                    _selfReference);
+                return;
             }
+
+            _renderer = renderer;
+
+            await jsRuntime.InvokeVoidAsync(
+                "Blazor._internal.setDynamicRootComponentManager",
+                _selfReference);
         }
 
         /// <summary>
@@ -72,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
             }
 
-            return _renderer.AddRootComponent(componentType, domElementSelector);
+            return Renderer.AddRootComponent(componentType, domElementSelector);
         }
 
         /// <summary>
@@ -88,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 throw new ArgumentOutOfRangeException($"{nameof(parameterCount)} must be between 0 and {MaxParameters}.");
             }
 
-            var componentType = _renderer.GetRootComponentType(componentId);
+            var componentType = Renderer.GetRootComponentType(componentId);
             var parameterViewBuilder = new ParameterViewBuilder(parameterCount);
 
             var parametersReader = new Utf8JsonReader(parametersJsonUtf8);
@@ -143,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
             // happen at any time due to component code). We don't want to expose quiescence info here
             // because there isn't a clear scenario for it, and it would lock down more implementation
             // details than we want. So, the task is not relevant to us, and we can safely discard it.
-            _ = _renderer.RenderRootComponentAsync(componentId, parameterViewBuilder.ToParameterView());
+            _ = Renderer.RenderRootComponentAsync(componentId, parameterViewBuilder.ToParameterView());
         }
 
         /// <summary>
@@ -151,7 +166,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// </summary>
         [JSInvokable]
         public void RemoveRootComponent(int componentId)
-            => _renderer.RemoveRootComponent(componentId);
+            => Renderer.RemoveRootComponent(componentId);
 
         /// <inheritdoc />
         public void Dispose()

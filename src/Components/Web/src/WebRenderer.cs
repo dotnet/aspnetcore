@@ -54,17 +54,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Enables support for adding, updating, and removing root components from JavaScript.
         /// </summary>
-        /// <param name="configuration">Configuration options for the JS components.</param>
-        /// <param name="jsonOptions">Options used for JSON serialization.</param>
+        /// <param name="interop">The object that provides JS-callable methods for adding, updating, and removing root components.</param>
         /// <returns>A task representing the completion of the operation.</returns>
-        protected ValueTask InitializeJSComponentSupportAsync(
-            JSComponentConfigurationStore configuration,
-            JsonSerializerOptions jsonOptions)
+        protected ValueTask InitializeJSComponentSupportAsync(JSComponentInterop interop)
         {
             var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-            var interop = new JSComponentInterop(
-                configuration, this, jsonOptions);
-            return interop.InitializeAsync(jsRuntime);
+            return interop.InitializeAsync(jsRuntime, this);
         }
     }
 }

@@ -17,7 +17,7 @@ Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.set -> void
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWith, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer.AddRootComponent(System.Type! componentType, string! domElementSelector) -> int
-Microsoft.AspNetCore.Components.RenderTree.WebRenderer.InitializeJSComponentSupportAsync(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! configuration, System.Text.Json.JsonSerializerOptions! jsonOptions) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.RenderTree.WebRenderer.InitializeJSComponentSupportAsync(Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop! interop) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WebRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.FocusOnNavigate() -> void
@@ -40,6 +40,7 @@ Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration.JSComponents.get -
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.Dispose() -> void
+Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.JSComponentInterop(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! configuration, System.Text.Json.JsonSerializerOptions! jsonOptions) -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.SetRootComponentParameters(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> void
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore
