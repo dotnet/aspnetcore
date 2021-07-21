@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             };
 
             options._middleware.AddRange(_middleware);
+            options._multiplexedMiddleware.AddRange(_multiplexedMiddleware);
             return options;
         }
     }

@@ -50,7 +50,8 @@ namespace CodeGenerator
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
                 "IHttpRequestBodyDetectionFeature",
-                "IHttpResetFeature"
+                "IHttpResetFeature",
+                "IPersistentStateFeature"
             };
 
             var allFeatures = alwaysFeatures
@@ -80,6 +81,7 @@ namespace CodeGenerator
             };
 
             var usings = $@"
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;";

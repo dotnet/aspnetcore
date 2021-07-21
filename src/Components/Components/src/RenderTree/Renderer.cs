@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable warnings
@@ -959,6 +959,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         protected virtual void Dispose(bool disposing)
         {
             Disposed = true;
+            
+            if (TestableMetadataUpdate.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            }
 
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
@@ -1058,11 +1063,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            if (TestableMetadataUpdate.IsSupported)
-            {
-                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
-            }
-
             if (Disposed)
             {
                 return;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddTypeToken(Resources.ModelDirective_TypeToken_Name, Resources.ModelDirective_TypeToken_Description);
+                builder.AddTypeToken(RazorExtensionsResources.ModelDirective_TypeToken_Name, RazorExtensionsResources.ModelDirective_TypeToken_Description);
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
-                builder.Description = Resources.ModelDirective_Description;
+                builder.Description = RazorExtensionsResources.ModelDirective_Description;
             });
 
         public static RazorProjectEngineBuilder Register(RazorProjectEngineBuilder builder)

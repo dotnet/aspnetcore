@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {

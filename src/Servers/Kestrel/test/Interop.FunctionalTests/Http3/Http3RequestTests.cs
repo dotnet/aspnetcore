@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -54,41 +55,24 @@ namespace Interop.FunctionalTests.Http3
         public async Task POST_ServerCompletsWithoutReadingRequestBody_ClientGetsResponse()
         {
             // Arrange
-            var builder = GetHostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = CreateHttp3HostBuilder(async context =>
+            {
+                var body = context.Request.Body;
+
+                var data = new List<byte>();
+                var buffer = new byte[1024];
+                var readCount = 0;
+                while ((readCount = await body.ReadAsync(buffer).DefaultTimeout()) != -1)
                 {
-                    webHostBuilder
-                        .UseKestrel(o =>
-                        {
-                            o.ConfigureEndpointDefaults(listenOptions =>
-                            {
-                                listenOptions.Protocols = HttpProtocols.Http3;
-                            });
-                        })
-                        .UseUrls("https://127.0.0.1:0")
-                        .Configure(app =>
-                        {
-                            app.Run(async context =>
-                            {
-                                var body = context.Request.Body;
+                    data.AddRange(buffer.AsMemory(0, readCount).ToArray());
+                    if (data.Count == TestData.Length)
+                    {
+                        break;
+                    }
+                }
 
-                                var data = new List<byte>();
-                                var buffer = new byte[1024];
-                                var readCount = 0;
-                                while ((readCount = await body.ReadAsync(buffer).DefaultTimeout()) != -1)
-                                {
-                                    data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                                    if (data.Count == TestData.Length)
-                                    {
-                                        break;
-                                    }
-                                }
-
-                                await context.Response.Body.WriteAsync(buffer.AsMemory(0, TestData.Length));
-                            });
-                        });
-                })
-                .ConfigureServices(AddTestLogging);
+                await context.Response.Body.WriteAsync(buffer.AsMemory(0, TestData.Length));
+            });
 
             using (var host = builder.Build())
             using (var client = new HttpClient())
@@ -122,6 +106,142 @@ namespace Interop.FunctionalTests.Http3
 
                 await host.StopAsync();
             }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_MultipleRequestsInSequence_ReusedState()
+        {
+            // Arrange
+            object persistedState = null;
+            var requestCount = 0;
+
+            var builder = CreateHttp3HostBuilder(context =>
+            {
+                requestCount++;
+                var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
+                if (persistentStateCollection.TryGetValue("Counter", out var value))
+                {
+                    persistedState = value;
+                }
+                persistentStateCollection["Counter"] = requestCount;
+
+                return Task.CompletedTask;
+            });
+
+            using (var host = builder.Build())
+            using (var client = new HttpClient())
+            {
+                await host.StartAsync();
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response1 = await client.SendAsync(request1);
+                response1.EnsureSuccessStatusCode();
+                var firstRequestState = persistedState;
+
+                // Delay to ensure the stream has enough time to return to pool
+                await Task.Delay(100);
+
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.Version = HttpVersion.Version30;
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response2 = await client.SendAsync(request2);
+                response2.EnsureSuccessStatusCode();
+                var secondRequestState = persistedState;
+
+                // Assert
+                // First request has no persisted state
+                Assert.Null(firstRequestState);
+
+                // State persisted on first request was available on the second request
+                Assert.Equal(1, secondRequestState);
+
+                await host.StopAsync();
+            }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_ConnectionLoggingConfigured_OutputToLogs()
+        {
+            // Arrange
+            var builder = CreateHttp3HostBuilder(
+                context =>
+                {
+                    return Task.CompletedTask;
+                },
+                kestrel =>
+                {
+                    kestrel.ListenLocalhost(5001, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps();
+                        listenOptions.UseConnectionLogging();
+                    });
+                });
+
+            using (var host = builder.Build())
+            using (var client = new HttpClient())
+            {
+                await host.StartAsync();
+
+                var port = 5001;
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response1 = await client.SendAsync(request1);
+                response1.EnsureSuccessStatusCode();
+
+                // Assert
+                var hasWriteLog = TestSink.Writes.Any(
+                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.LoggingConnectionMiddleware" &&
+                    w.Message.StartsWith("WriteAsync", StringComparison.Ordinal));
+                Assert.True(hasWriteLog);
+
+                var hasReadLog = TestSink.Writes.Any(
+                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.LoggingConnectionMiddleware" &&
+                    w.Message.StartsWith("ReadAsync", StringComparison.Ordinal));
+                Assert.True(hasReadLog);
+
+                await host.StopAsync();
+            }
+        }
+
+        private IHostBuilder CreateHttp3HostBuilder(RequestDelegate requestDelegate, Action<KestrelServerOptions> configureKestrel = null)
+        {
+            return GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel(o =>
+                        {
+                            if (configureKestrel == null)
+                            {
+                                o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                                {
+                                    listenOptions.Protocols = HttpProtocols.Http3;
+                                    listenOptions.UseHttps();
+                                });
+                            }
+                            else
+                            {
+                                configureKestrel(o);
+                            }
+                        })
+                        .Configure(app =>
+                        {
+                            app.Run(requestDelegate);
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
         }
 
         public static IHostBuilder GetHostBuilder(long? maxReadBufferSize = null)

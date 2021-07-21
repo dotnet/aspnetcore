@@ -119,6 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _currentIHttp2StreamIdFeature = this;
             _currentIHttpResponseTrailersFeature = this;
             _currentIHttpResetFeature = this;
+            _currentIPersistentStateFeature = this;
         }
 
         protected override void OnRequestProcessingEnded()

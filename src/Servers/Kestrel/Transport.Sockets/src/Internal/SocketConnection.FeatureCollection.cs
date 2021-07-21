@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     {
         public Socket Socket => _socket;
 
-        private void InitiaizeFeatures()
+        private void InitializeFeatures()
         {
             _currentIConnectionSocketFeature = this;
         }

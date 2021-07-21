@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web;
 #if (!NoAuth && Hosted)
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 #endif
@@ -10,6 +11,7 @@ using ComponentsWebAssembly_CSharp;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
 #if (!Hosted || NoAuth)
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
