@@ -164,7 +164,7 @@
 
         public DateOnly VisitMonth { get; set; } = new DateOnly(DateTime.Now.Year, 1, 1);
 
-        public DateTime AppointmentDateAndTime { get; set; } = DateTime.Now;
+        public DateTime AppointmentDateAndTime { get; set; } = DateTime.Today;
 
         [Required, Range(typeof(bool), "true", "true", ErrorMessage = "Must accept terms")]
         public bool AcceptsTerms { get; set; }

@@ -234,6 +234,12 @@
     <input id="textbox-dateonly-format-invalid-mirror" @bind="textboxDateOnlyFormatInvalidValue" readonly />
 </p>
 <p>
+    Nullable DateOnly (format):
+    <input id="textbox-nullable-dateonly-format" @bind="textboxNullableDateOnlyFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-dateonly-format-value">@textboxNullableDateOnlyFormatValue</span>
+    <input id="textbox-nullable-dateonly-format-mirror" @bind="textboxNullableDateOnlyFormatValue" readonly />
+</p>
+<p>
     TimeOnly
     <input id="textbox-timeonly" @bind="textboxTimeOnlyValue" type="text" />
     <span id="textbox-timeonly-value">@textboxTimeOnlyValue</span>
@@ -509,6 +515,7 @@
     DateOnly? textboxNullableDateOnlyInvalidValue = null;
     DateOnly textboxDateOnlyFormatValue = new DateOnly(1985, 3, 4);
     DateOnly textboxDateOnlyFormatInvalidValue = new DateOnly(1985, 3, 4);
+    DateOnly? textboxNullableDateOnlyFormatValue = null;
 
     DateOnly dateTimeLocalTextboxDateOnlyValue = new DateOnly(1985, 3, 4);
     DateOnly? dateTimeLocalTextboxNullableDateOnlyValue = null;

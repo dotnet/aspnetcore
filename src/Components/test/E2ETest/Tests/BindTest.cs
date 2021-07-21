@@ -840,6 +840,64 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
         // Blazor have different formatting behaviour by default.
         [Fact]
+        public void CanBindTextboxDateOnly()
+        {
+            var target = Browser.Exists(By.Id("textbox-dateonly"));
+            var boundValue = Browser.Exists(By.Id("textbox-dateonly-value"));
+            var mirrorValue = Browser.Exists(By.Id("textbox-dateonly-mirror"));
+            var expected = new DateOnly(1985, 3, 4);
+            Assert.Equal(expected, DateOnly.Parse(target.GetAttribute("value"), CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Clear textbox; value updates to 01/01/0001 because that's the default
+            target.Clear();
+            expected = default;
+            Browser.Equal(expected, () => DateOnly.Parse(target.GetAttribute("value"), CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01/02/2000\t");
+            expected = new DateOnly(2000, 1, 2);
+            Browser.Equal(expected, () => DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateOnly()
+        {
+            var target = Browser.Exists(By.Id("textbox-nullable-dateonly"));
+            var boundValue = Browser.Exists(By.Id("textbox-nullable-dateonly-value"));
+            var mirrorValue = Browser.Exists(By.Id("textbox-nullable-dateonly-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            var expected = new DateOnly(2000, 1, 2);
+            target.SendKeys("01/02/2000\t");
+            Browser.Equal(expected, () => DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("\t");
+            Browser.Equal(string.Empty, () => boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
         public void CanBindTextboxDateTimeWithFormat()
         {
             var target = Browser.Exists(By.Id("textbox-datetime-format"));
@@ -949,6 +1007,65 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var expected = new DateTimeOffset(new DateTime(DateTime.Now.Year, 1, 2), TimeSpan.FromHours(0));
             Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text, CultureInfo.InvariantCulture).DateTime);
             Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture).DateTime);
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("\t");
+            Browser.Equal(string.Empty, () => boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateOnlyWithFormat()
+        {
+            var target = Browser.Exists(By.Id("textbox-dateonly-format"));
+            var boundValue = Browser.Exists(By.Id("textbox-dateonly-format-value"));
+            var mirrorValue = Browser.Exists(By.Id("textbox-dateonly-format-mirror"));
+            var expected = new DateOnly(1985, 3, 4);
+            Assert.Equal("03-04", target.GetAttribute("value"));
+            Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Clear textbox; value updates to the default
+            target.Clear();
+            target.SendKeys("\t");
+            expected = default;
+            Browser.Equal("01-01", () => target.GetAttribute("value"));
+            Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01-02\t");
+            expected = new DateOnly(DateTime.Now.Year, 1, 2);
+            Browser.Equal(expected, () => DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateOnlyWithFormat()
+        {
+            var target = Browser.Exists(By.Id("textbox-nullable-dateonly-format"));
+            var boundValue = Browser.Exists(By.Id("textbox-nullable-dateonly-format-value"));
+            var mirrorValue = Browser.Exists(By.Id("textbox-nullable-dateonly-format-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys("01-02\t");
+            var expected = new DateOnly(DateTime.Now.Year, 1, 2);
+            Browser.Equal(expected, () => DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
@@ -1097,6 +1214,73 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             expected = new DateTime(DateTime.Now.Year, 5, 6);
             Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text, CultureInfo.InvariantCulture).DateTime);
             Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture).DateTime);
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateOnly_InvalidValue()
+        {
+            var target = Browser.Exists(By.Id("textbox-nullable-dateonly-invalid"));
+            var boundValue = Browser.Exists(By.Id("textbox-nullable-dateonly-invalid-value"));
+            var mirrorValue = Browser.Exists(By.Id("textbox-nullable-dateonly-invalid-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            var expected = new DateOnly(2000, 1, 2);
+            target.SendKeys("01/02/2000 00:00:00\t");
+            Browser.Equal(expected, () => DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06X");
+            Browser.Equal("05/06X", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal(expected, () => DateOnly.Parse(target.GetAttribute("value"), CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Now change it to something valid
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06\t");
+            expected = new DateOnly(DateTime.Now.Year, 5, 6);
+            Browser.Equal(expected, () => DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateOnlyWithFormat_InvalidValue()
+        {
+            var target = Browser.Exists(By.Id("textbox-dateonly-format-invalid"));
+            var boundValue = Browser.Exists(By.Id("textbox-dateonly-format-invalid-value"));
+            var mirrorValue = Browser.Exists(By.Id("textbox-dateonly-format-invalid-mirror"));
+            var expected = new DateOnly(1985, 3, 4);
+            Assert.Equal("03-04", target.GetAttribute("value"));
+            Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06");
+            Browser.Equal("05/06", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal("03-04", () => target.GetAttribute("value"));
+            Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+            // Now change it to something valid
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05-06\t");
+            expected = new DateOnly(DateTime.Now.Year, 5, 6);
+            Browser.Equal(expected, () => DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+            Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetAttribute("value"), CultureInfo.InvariantCulture));
         }
 
         // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side

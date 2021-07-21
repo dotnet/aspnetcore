@@ -186,6 +186,62 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void FormatValue_DateOnly()
+        {
+            // Arrange
+            var value = DateOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString(CultureInfo.CurrentCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_DateOnly_Format()
+        {
+            // Arrange
+            var value = DateOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString("MM-yyyy", CultureInfo.InvariantCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value, "MM-yyyy", CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_TimeOnly()
+        {
+            // Arrange
+            var value = TimeOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString(CultureInfo.CurrentCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_TimeOnly_Format()
+        {
+            // Arrange
+            var value = TimeOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString("HH:mm", CultureInfo.InvariantCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value, "HH:mm", CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void FormatValue_Enum()
         {
             // Arrange
