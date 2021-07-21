@@ -96,9 +96,9 @@
       <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\*.dll" />
       <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\RuntimeList.xml" />
     </ItemGroup>
-    <Copy SourceFiles="@(_appRuntimeFiles)"
+    <Copy Condition="Exists('$(OutputPath)\SharedFx.Unzip')" SourceFiles="@(_appRuntimeFiles)"
         DestinationFolder="$(OutputPath)\SharedFx.Layout\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
-    <Copy SourceFiles="$(OutputPath)\SharedFx.Unzip\Microsoft.AspNetCore.App.versions.txt"
+    <Copy Condition="Exists('$(OutputPath)\SharedFx.Unzip')" SourceFiles="$(OutputPath)\SharedFx.Unzip\Microsoft.AspNetCore.App.versions.txt"
         DestinationFiles="$(OutputPath)\SharedFx.Layout\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)\.version" />
 
     <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg')"
@@ -109,7 +109,7 @@
       DestinationFile="$(OutputPath)\SharedFx.Layout.zip" Overwrite="true" />
 
     <ItemGroup>
-      <HelixCorrelationPayload Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
+      <HelixCorrelationPayload Condition="Exists('$(OutputPath)\SharedFx.Layout.zip')" Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
     </ItemGroup>
   </Target>
 
