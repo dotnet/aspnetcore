@@ -1637,50 +1637,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        public static IEnumerable<object?[]> ImplicitServiceParamOptionalityData
-        {
-            get
-            {
-                string requiredImplicitService(MyService name) => $"Hello {name}!";
-                string defaultValueImplicitServiceParam(MyService? name = null) => $"Hello {name}!";
-                string nullableImplicitServiceParam(MyService? name) => $"Hello {name}!";
-
-                return new List<object?[]>
-                {
-                    new object?[] { (Func<MyService, string>)requiredImplicitService, false, true},
-                    new object?[] { (Func<MyService, string>)requiredImplicitService, true, false},
-
-                    new object?[] { (Func<MyService, string>)defaultValueImplicitServiceParam, false, false},
-                    new object?[] { (Func<MyService, string>)defaultValueImplicitServiceParam, true, false},
-
-                    new object?[] { (Func<MyService?, string>)nullableImplicitServiceParam, false, false},
-                    new object?[] { (Func<MyService?, string>)nullableImplicitServiceParam, true, false}
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ImplicitServiceParamOptionalityData))]
-        public async Task RequestDelegateHandlesImplicitServiceParamOptionality(Delegate @delegate, bool hasService, bool isInvalid)
-        {
-            var httpContext = new DefaultHttpContext();
-
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(LoggerFactory);
-            if (hasService)
-            {
-                var service = new MyService();
-                serviceCollection.AddSingleton(service);
-            }
-            var services = serviceCollection.BuildServiceProvider();
-            httpContext.RequestServices = services;
-            RequestDelegateFactoryOptions options = new() { ServiceProvider = services };
-
-            var requestDelegate = RequestDelegateFactory.Create(@delegate, options);
-
-            await requestDelegate(httpContext);
-            Assert.Equal(isInvalid ? 400 : 200, httpContext.Response.StatusCode);
-        }
 
         public static IEnumerable<object?[]> AllowEmptyData
         {
@@ -1730,67 +1686,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 Assert.Equal(200, httpContext.Response.StatusCode);
                 Assert.False(httpContext.RequestAborted.IsCancellationRequested);
             }           
-        }
-
-        [Fact]
-        public async Task RequestDelegateHandlesRequiredAmbiguousValueFromBody()
-        {
-            var invoked = false;
-            void TestAction(Todo todo)
-            {
-                invoked = true;
-            }
-
-            var httpContext = new DefaultHttpContext();
-
-            httpContext.Request.Headers["Content-Type"] = "application/json";
-
-            var todo = new Todo() { Name = "Default Todo" };
-            var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(todo);
-            var stream = new MemoryStream(requestBodyBytes);
-            httpContext.Request.Body = stream;
-            httpContext.Request.ContentLength = stream.Length;
-
-            var jsonOptions = new JsonOptions();
-            jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
-
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(LoggerFactory);
-            serviceCollection.AddSingleton(Options.Create(jsonOptions));
-            var services = serviceCollection.BuildServiceProvider();
-            httpContext.RequestServices = services;
-
-            var requestDelegate = RequestDelegateFactory.Create(TestAction, new() { ServiceProvider = services });
-
-            await requestDelegate(httpContext);
-            Assert.Equal(200, httpContext.Response.StatusCode);
-            Assert.True(invoked);
-        }
-
-        [Fact]
-        public async Task RequestDelegateHandlesRequiredAmbiguousValueFromService()
-        {
-            var invoked = false;
-            void TestAction(Todo todo)
-            {
-                invoked = true;
-            }
-
-            var httpContext = new DefaultHttpContext();
-
-            var todo = new Todo() { Name = "Default Todo" };
-
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(LoggerFactory);
-            serviceCollection.AddSingleton(todo);
-            var services = serviceCollection.BuildServiceProvider();
-            httpContext.RequestServices = services;
-
-            var requestDelegate = RequestDelegateFactory.Create(TestAction, new() { ServiceProvider = services });
-
-            await requestDelegate(httpContext);
-            Assert.Equal(200, httpContext.Response.StatusCode);
-            Assert.True(invoked);
         }
 
 #nullable disable

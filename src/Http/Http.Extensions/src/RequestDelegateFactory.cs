@@ -263,27 +263,11 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                var nullability = NullabilityContext.Create(parameter);
-                var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
                 if (factoryContext.ServiceProviderIsService is IServiceProviderIsService serviceProviderIsService)
                 {
-                    // If the parameter is optional
-                    if (isOptional)
+                    if (serviceProviderIsService.IsService(parameter.ParameterType))
                     {
-                        // Then try to resolve it as an optional service and fallback to a body otherwise
-                        // Note: if the parameter provides a default value that value will be parsed
-                        // as part of the body, not as the service instance
-                        return Expression.Coalesce(
-                            Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr),
-                            BindParameterFromBody(parameter, allowEmpty: false, factoryContext));
-                    }
-                    // If the parameter is required
-                    else
-                    {
-                        // And we are able to resolve a service for it
-                        return serviceProviderIsService.IsService(parameter.ParameterType)
-                            ? Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr) // Then get it from the DI
-                            : BindParameterFromBody(parameter, allowEmpty: false, factoryContext); // Otherwise try to find it in the body
+                        return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr) ;
                     }
                 }
 
