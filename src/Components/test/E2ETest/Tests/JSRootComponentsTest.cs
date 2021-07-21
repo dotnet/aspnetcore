@@ -29,16 +29,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             app = Browser.MountTestComponent<JavaScriptRootComponents>();
         }
 
-        [Fact]
-        public void CanAddAndDisposeRootComponents()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void CanAddAndDisposeRootComponents(bool intoBlazorUi)
         {
             var message = app.FindElement(By.Id("message"));
 
             // We can add root components with initial parameters
-            app.FindElement(By.Id("add-root-component")).Click();
+            var buttonId = intoBlazorUi ? "add-root-component-inside-blazor" : "add-root-component";
+            app.FindElement(By.Id(buttonId)).Click();
 
             // They render and work
-            var dynamicRootContainer = Browser.FindElement(By.Id("root-container-1"));
+            var containerId = intoBlazorUi ? "container-rendered-by-blazor" : "root-container-1";
+            var dynamicRootContainer = Browser.FindElement(By.Id(containerId));
             Browser.Equal("0", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
             dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
             dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
@@ -46,15 +50,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // We can dispose the root component
             app.FindElement(By.Id("remove-root-component")).Click();
-            Browser.Equal("Disposed component in root-container-1", () => message.Text);
+            Browser.Equal($"Disposed component in {containerId}", () => message.Text);
 
-            // Although it's disposed from the Blazor component hierarchy, the inert DOM elements remain
-            // in the document since it's up to the JS developer to remove them if (and only if) they want
-            Browser.Equal("2", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
+            // It's gone from the UI
+            Browser.Equal(string.Empty, () => dynamicRootContainer.Text);
+            Browser.Empty(() => dynamicRootContainer.FindElements(By.CssSelector("*")));
 
-            // Since it's not part of the Blazor component hierarchy, it no longer reacts to events
+            AssertGlobalErrorState(false);
+        }
+
+        [Fact]
+        public void CanAddAndRemoveMultipleRootComponentsToTheSameElement()
+        {
+            // Add, remove, re-add, all to the same element
+            app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
+            app.FindElement(By.Id("remove-root-component")).Click();
+            app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
+
+            // It functions
+            var dynamicRootContainer = Browser.FindElement(By.Id("container-rendered-by-blazor"));
+            Browser.Equal("0", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
+            dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
             dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
             Browser.Equal("2", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
+
+            AssertGlobalErrorState(false);
+        }
+
+        [Fact]
+        public void CanAddMultipleRootComponentsToTheSameElementAtTheSameTime()
+        {
+            // Try adding a second without removing the first
+            app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
+            app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
+
+            AssertGlobalErrorState(true);
         }
 
         [Fact]
@@ -155,6 +185,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     Assert.Equal("nullVal", param.FindElement(By.ClassName("unmatched-value-name")).Text);
                     Assert.Equal("null", param.FindElement(By.ClassName("unmatched-value-type")).Text);
                 });
+        }
+
+        void AssertGlobalErrorState(bool hasGlobalError)
+        {
+            var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));
+            Assert.Equal(hasGlobalError ? "block" : "none", globalErrorUi.GetCssValue("display"));
         }
     }
 }

@@ -10,7 +10,7 @@ import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
 import { getNextChunk } from './StreamingInterop';
-import { RootComponentsFunctions, setDynamicRootComponentManager } from './Rendering/DynamicRootComponents';
+import { RootComponentsFunctions, setDynamicRootComponentManager } from './Rendering/JSRootComponents';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 
 interface IBlazor {

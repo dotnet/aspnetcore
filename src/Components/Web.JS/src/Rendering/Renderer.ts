@@ -4,7 +4,7 @@ import '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
-import { getAndRemovePendingRootComponentContainer } from './DynamicRootComponents';
+import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
