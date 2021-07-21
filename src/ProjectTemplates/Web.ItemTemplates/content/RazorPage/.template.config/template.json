@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.RazorPage",
-  "precedence": "100",
-  "identity": "Microsoft.AspNetCore.Mvc.RazorPage",
+  "precedence": "600",
+  "identity": "Microsoft.AspNetCore.Mvc.RazorPage.6.0",
   "shortName": "page",
   "sourceName": "Index",
   "primaryOutputs": [
@@ -45,6 +45,19 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the template.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net6.0",
+          "description": "Target net6.0"
+        }
+      ],
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "HostIdentifier": {
       "type": "bind",
