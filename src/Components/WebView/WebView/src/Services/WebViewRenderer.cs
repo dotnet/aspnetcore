@@ -58,6 +58,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             _ipcSender.AttachToDocument(componentId, domElementSelector);
         }
 
+        public new int AddRootComponent(Type componentType, string domElementSelector)
+           => base.AddRootComponent(componentType, domElementSelector);
+
         public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
            => base.RenderRootComponentAsync(componentId, parameters);
 

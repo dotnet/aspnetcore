@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
         /// <returns>The new component ID.</returns>
-        public int AddRootComponent([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector)
+        protected internal int AddRootComponent([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
