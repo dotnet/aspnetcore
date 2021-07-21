@@ -269,6 +269,12 @@
     <span id="textbox-timeonly-format-invalid-value">@textboxTimeOnlyFormatInvalidValue</span>
     <input id="textbox-timeonly-format-invalid-mirror" @bind="textboxTimeOnlyFormatInvalidValue" readonly />
 </p>
+<p>
+    Nullable TimeOnly (format):
+    <input id="textbox-nullable-timeonly-format" @bind="textboxNullableTimeOnlyFormatValue" type="text" @bind:format="HH:mm:ss" />
+    <span id="textbox-nullable-timeonly-format-value">@textboxNullableTimeOnlyFormatValue</span>
+    <input id="textbox-nullable-timeonly-format-mirror" @bind="textboxNullableTimeOnlyFormatValue" readonly />
+</p>
 
 <h2>Text Area</h2>
 <p>
@@ -443,14 +449,14 @@
 <p>
     TimeOnly:
     <input id="time-step-textbox-timeonly" @bind="timeStepTextboxTimeOnlyValue" type="time" step="1" />
-    <span id="time-step-textbox-timeonly-value">@timeStepTextboxTimeOnlyValue</span>
-    <input id="time-step-textbox-timeonly-mirror" @bind="timeStepTextboxTimeOnlyValue" readonly />
+    <span id="time-step-textbox-timeonly-value">@timeStepTextboxTimeOnlyValue.ToLongTimeString()</span>
+    <input id="time-step-textbox-timeonly-mirror" @bind="timeStepTextboxTimeOnlyValue" @bind:format="HH:mm:ss" readonly />
 </p>
 <p>
     Nullable TimeOnly:
     <input id="time-step-textbox-nullable-timeonly" @bind-value="timeStepTextboxNullableTimeOnlyValue" type="time" step="1" />
-    <span id="time-step-textbox-nullable-timeonly-value">@timeStepTextboxNullableTimeOnlyValue</span>
-    <input id="time-step-textbox-nullable-timeonly-mirror" @bind="timeStepTextboxNullableTimeOnlyValue" readonly />
+    <span id="time-step-textbox-nullable-timeonly-value">@timeStepTextboxNullableTimeOnlyValue?.ToLongTimeString()</span>
+    <input id="time-step-textbox-nullable-timeonly-mirror" @bind="timeStepTextboxNullableTimeOnlyValue" @bind:format="HH:mm:ss" readonly />
 </p>
 
 @code {
@@ -523,16 +529,17 @@
     DateOnly monthTextboxDateOnlyValue = new DateOnly(1985, 3, 4);
     DateOnly? monthTextboxNullableDateOnlyValue = null;
 
-    TimeOnly textboxTimeOnlyValue = new TimeOnly(8, 5, 30);
+    TimeOnly textboxTimeOnlyValue = new TimeOnly(8, 5);
     TimeOnly? textboxNullableTimeOnlyValue = null;
     TimeOnly? textboxNullableTimeOnlyInvalidValue = null;
-    TimeOnly textboxTimeOnlyFormatValue = new TimeOnly(8, 5, 30);
-    TimeOnly textboxTimeOnlyFormatInvalidValue = new TimeOnly(8, 5, 30);
+    TimeOnly textboxTimeOnlyFormatValue = new TimeOnly(8, 5);
+    TimeOnly textboxTimeOnlyFormatInvalidValue = new TimeOnly(8, 5);
+    TimeOnly? textboxNullableTimeOnlyFormatValue = null;
 
-    TimeOnly dateTimeLocalTextboxTimeOnlyValue = new TimeOnly(8, 5, 30);
+    TimeOnly dateTimeLocalTextboxTimeOnlyValue = new TimeOnly(8, 5);
     TimeOnly? dateTimeLocalTextboxNullableTimeOnlyValue = null;
 
-    TimeOnly timeTextboxTimeOnlyValue = new TimeOnly(8, 5, 30);
+    TimeOnly timeTextboxTimeOnlyValue = new TimeOnly(8, 5);
     TimeOnly? timeTextboxNullableTimeOnlyValue = null;
     TimeOnly timeStepTextboxTimeOnlyValue = new TimeOnly(8, 5, 30);
     TimeOnly? timeStepTextboxNullableTimeOnlyValue = null;
