@@ -550,13 +550,13 @@ namespace Test
     {
         [Parameter] public RenderFragment Header { get; set; }
     }
-}
+} 
 "));
             var generated = CompileToCSharp(@"
 <ComponentWithNullableRenderFragment Header=""@Header"" />
 @code {
 	[Parameter] public RenderFragment Header { get; set; }
-}
+}            
 ");
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
