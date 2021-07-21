@@ -17,6 +17,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />

@@ -3,10 +3,12 @@
   <PropertyGroup>
     <Description>Quic transport for the ASP.NET Core Kestrel cross-platform web server.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS1591;CS0436;$(NoWarn)</NoWarn><!-- Conflicts between internal and public Quic APIs -->
+    <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
