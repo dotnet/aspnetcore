@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder.WithJSComponents(System.Action<Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration!>! configuration, int defaultMaxInstancesPerType) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!

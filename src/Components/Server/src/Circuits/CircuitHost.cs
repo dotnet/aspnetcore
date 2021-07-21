@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CancellationToken cancellationToken)
+        public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CircuitJSComponentConfiguration? jsComponentConfiguration, CancellationToken cancellationToken)
         {
             Log.InitializationStarted(_logger);
 
@@ -104,6 +104,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                     await OnCircuitOpenedAsync(cancellationToken);
                     await OnConnectionUpAsync(cancellationToken);
+
+                    // From this point onwards, JavaScript code can add root components if configured
+                    if (jsComponentConfiguration is not null)
+                    {
+                        await Renderer.InitializeJSComponentSupportAsync(
+                            jsComponentConfiguration.JSComponents,
+                            JSRuntime.ReadJsonSerializerOptions());
+                    }
 
                     // We add the root components *after* the circuit is flagged as open.
                     // That's because AddComponentAsync waits for quiescence, which can take

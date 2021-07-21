@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -27,6 +29,27 @@ namespace Microsoft.AspNetCore.Builder
         {
             _hubEndpoint.Add(convention);
             _disconnectEndpoint.Add(convention);
+        }
+
+        /// <summary>
+        /// Allows JavaScript to add root components dynamically.
+        /// </summary>
+        /// <param name="configuration">Options specifying which root components may be added from JavaScript.</param>
+        /// <param name="defaultMaxInstancesPerType">The maximum number of component instances per type that may be added by JavaScript.</param>
+        /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
+        public ComponentEndpointConventionBuilder WithJSComponents(
+            Action<IJSComponentConfiguration> configuration, int defaultMaxInstancesPerType)
+        {
+            var jsComponents = new CircuitJSComponentConfiguration
+            {
+                DefaultMaxInstancesPerType = defaultMaxInstancesPerType
+            };
+
+            configuration(jsComponents);
+
+            jsComponents.AddToEndpointMetadata(_hubEndpoint);
+
+            return this;
         }
     }
 }
