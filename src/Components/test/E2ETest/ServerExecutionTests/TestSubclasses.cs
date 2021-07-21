@@ -115,12 +115,4 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
     }
-
-    public class ServerJSRootComponentsTest : JSRootComponentsTest
-    {
-        public ServerJSRootComponentsTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
-        {
-        }
-    }
 }

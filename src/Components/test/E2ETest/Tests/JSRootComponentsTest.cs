@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
-        private IWebElement app;
+        protected IWebElement app;
 
         public JSRootComponentsTest(
             BrowserFixture browserFixture,
