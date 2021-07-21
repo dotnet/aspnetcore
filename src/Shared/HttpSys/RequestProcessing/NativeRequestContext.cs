@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private bool PermanentlyPinned => _permanentlyPinned;
 
         // To be used by HttpSys
-        internal NativeRequestContext(MemoryPool<byte> memoryPool, uint? bufferSize, ulong requestId)
+        internal NativeRequestContext(MemoryPool<byte> memoryPool, uint? bufferSize, ulong requestId, bool useLatin1)
         {
             // TODO:
             // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
 
             RequestId = requestId;
+            _useLatin1 = useLatin1;
         }
 
         // To be used by IIS Integration.
