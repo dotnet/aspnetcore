@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public void LoadFromStoreCert_FindBySubjectNameMatchExact()
+        public void LoadFromStoreCert_MatchExact()
         {
             var initialCertCount = ListCertificates(StoreName.My, StoreLocation.CurrentUser).Count;
             IList<X509Certificate2> certificates = null;
@@ -86,7 +86,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(initialCertCount + generatedCertificates.Count, certificates.Count);
 
                 var foundCertificate = CertificateLoader.LoadFromStoreCert("temp_name", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
-
                 Assert.Equal("temp_name", foundCertificate.GetNameInfo(X509NameType.SimpleName, true));
             }
             finally
@@ -102,6 +101,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     }
                 }
             }
+        }
+
+        [Fact]
+        public void LoadFromStoreCert_FallbackToSubstring()
+        {
+            var initialCertCount = ListCertificates(StoreName.My, StoreLocation.CurrentUser).Count;
+            IList<X509Certificate2> certificates = null;
+
+            try
+            {
+                var generatedCertificates = new HashSet<X509Certificate2>() {
+                    GenerateCertificate("temp_substr_name"),
+                };
+
+                foreach (var cert in generatedCertificates)
+                {
+                    CertificateManager.Instance.SaveCertificate(cert);
+                }
+
+                certificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser);
+
+                Assert.Equal(initialCertCount + generatedCertificates.Count, certificates.Count);
+
+                var foundCertificate = CertificateLoader.LoadFromStoreCert("substr", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
+                Assert.Equal("temp_substr_name", foundCertificate.GetNameInfo(X509NameType.SimpleName, true));
+            }
+            finally
+            {
+                if (certificates != null)
+                {
+                    foreach (var cert in certificates)
+                    {
+                        if (cert.Subject.Contains("temp"))
+                        {
+                            CertificateManager.Instance.RemoveCertificate(cert, CertificateManager.RemoveLocations.Local);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void LoadFromStoreCert_NotFound()
+        {
+            Assert.Throws<InvalidOperationException>(() => CertificateLoader.LoadFromStoreCert("NonExistent", StoreName.My.ToString(), StoreLocation.CurrentUser, true));
         }
 
         private IList<X509Certificate2> ListCertificates(StoreName storeName, StoreLocation storeLocation)
