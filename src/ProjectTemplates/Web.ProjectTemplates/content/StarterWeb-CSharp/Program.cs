@@ -95,14 +95,15 @@ builder.Services.AddRazorPages()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+#if (IndividualLocalAuth)
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
     app.UseMigrationsEndPoint();
-#endif
 }
 else
+#else
+if (!app.Environment.IsDevelopment())
+#endif
 {
     app.UseExceptionHandler("/Home/Error");
 #if (RequiresHttps)
