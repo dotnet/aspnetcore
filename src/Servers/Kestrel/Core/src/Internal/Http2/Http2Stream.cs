@@ -664,7 +664,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // HPack append will return false if the index is not a known request header.
             // For example, someone could send the index of "Server" (a response header) in the request.
             // If that happens then fallback to using Append with the name bytes.
-            if (!HttpRequestHeaders.TryHPackAppend(index, value))
+            if (!HttpRequestHeaders.TryHPackAppend(index, value, true))
             {
                 AppendHeader(name, value);
             }
@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void AppendHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            HttpRequestHeaders.Append(name, value);
+            HttpRequestHeaders.Append(name, value, true);
         }
     }
 }

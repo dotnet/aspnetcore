@@ -517,11 +517,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public virtual void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public virtual void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars = false)
         {
             IncrementRequestHeadersCount();
 
-            HttpRequestHeaders.Append(name, value);
+            HttpRequestHeaders.Append(name, value, checkForNewlineChars);
         }
 
         public virtual void OnHeader(int index, bool indexOnly, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
