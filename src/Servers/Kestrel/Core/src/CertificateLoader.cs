@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                         .Where(DoesCertificateHaveAnAccessiblePrivateKey)
                         .OrderByDescending(certificate => certificate.NotAfter))
                     {
-                        // Pick the first one as a fallback to substring default                        
+                        // Pick the first one if there's no exact match as a fallback to substring default.
                         foundCertificate ??= certificate;
 
                         if (certificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
