@@ -23,14 +23,14 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light navbar-toggleable-sm bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom box-shadow mb-3">
+            <div class="container">
                 <a class="navbar-brand" href="~/">@Environment.ApplicationName</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                <div class="collapse navbar-collapse">
                     @{
                         var result = Engine.FindView(ViewContext, "_LoginPartial", isMainPage: false);
                     }
@@ -56,7 +56,7 @@
         </main>
     </div>
     <footer class="footer border-top pl-3 text-muted">
-        <div class="container-fluid">
+        <div class="container">
         &copy; @DateTime.Now.Year - @Environment.ApplicationName
             @{
                 var foundPrivacy = Url.Page("/Privacy", new { area = "" });
