@@ -11,7 +11,9 @@ using Microsoft.Identity.Web;
 #if (EnableOpenAPI)
 using Microsoft.OpenApi.Models;
 #endif
+#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph || EnableOpenAPI)
 
+#endif
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

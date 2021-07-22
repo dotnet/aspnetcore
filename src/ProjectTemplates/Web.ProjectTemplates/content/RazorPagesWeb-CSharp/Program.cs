@@ -25,7 +25,9 @@ using Graph = Microsoft.Graph;
 #if (IndividualLocalAuth)
 using Company.WebApplication1.Data;
 #endif
+#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth || MultiOrgAuth || GenerateGraph)
 
+#endif
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
