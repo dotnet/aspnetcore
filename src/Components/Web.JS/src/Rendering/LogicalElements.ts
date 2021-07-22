@@ -79,6 +79,13 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
   return element as unknown as LogicalElement;
 }
 
+export function emptyLogicalElement(element: LogicalElement) {
+  const childrenArray = getLogicalChildrenArray(element);
+  while (childrenArray.length) {
+    removeLogicalChild(element, 0);
+  }
+}
+
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
   const containerElement = document.createComment('!');
   insertLogicalChild(containerElement, parent, childIndex);

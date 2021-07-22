@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -228,6 +229,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// overall throughput worse if requests take long to process.
         /// </remarks>
         public bool UnsafePreferInlineScheduling { get; set; }
+
+        /// <summary>
+        /// Configures request headers to use <see cref="Encoding.Latin1"/> encoding.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to `false`, in which case <see cref="Encoding.UTF8"/> will be used. />.
+        /// </remarks>
+        public bool UseLatin1RequestHeaders { get; set; }
 
         // Not called when attaching to an existing queue.
         internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)

@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "Customer", "/Customer/HtmlGeneration_Customer" },
                     { "Index", null },
                     { "Product", null },
+                    { "Link", null },
+                    { "Script", null },
                     // Testing attribute values with boolean and null values
                     { "AttributesWithBooleanValues", null },
                     // Testing SelectTagHelper with Html.BeginForm
@@ -134,13 +136,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 }
             }
         }
-
-        [ConditionalTheory]
-        [InlineData("Link", null)]
-        [InlineData("Script", null)]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
-        public Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
-            => HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
 
         [Fact]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
