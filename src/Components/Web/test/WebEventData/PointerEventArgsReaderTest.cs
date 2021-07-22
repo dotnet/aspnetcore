@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.Components.Web
                 MetaKey = true,
                 OffsetX = 8.2,
                 OffsetY = 7.1,
+                PageX = 5.6,
+                PageY = 7.8,
                 ScreenX = 0.1,
                 ScreenY = 4.4,
                 ShiftKey = true,

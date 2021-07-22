@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Components.Web
                 DeltaZ = 9.1,
                 OffsetX = 7.2,
                 OffsetY = 1.2,
+                PageX = 5.6,
+                PageY = 7.8,
                 ScreenX = 3.56,
                 ScreenY = 8.32,
             };
