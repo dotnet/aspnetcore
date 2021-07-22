@@ -1,19 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Components.Web;
+
 namespace Microsoft.AspNetCore.Components.WebView.Photino
 {
     /// <summary>
     /// Configures root components for a <see cref="BlazorWindow"/>.
     /// </summary>
-    public sealed class BlazorWindowRootComponents
+    public sealed class BlazorWindowRootComponents : IJSComponentConfiguration
     {
         private readonly PhotinoWebViewManager _manager;
 
         internal BlazorWindowRootComponents(PhotinoWebViewManager manager)
         {
             _manager = manager;
+            JSComponents = manager.JSComponentConfiguration;
         }
+
+        /// <inheritdoc />
+        public JSComponentConfigurationStore JSComponents { get; }
 
         /// <summary>
         /// Adds a root component to the window.
