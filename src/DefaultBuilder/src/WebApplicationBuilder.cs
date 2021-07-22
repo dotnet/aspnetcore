@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             Debug.Assert(_builtApplication is not null);
 
-            if (Environment.IsDevelopment())
+            if (context.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
