@@ -224,6 +224,8 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     clientY: event.clientY,
     offsetX: event.offsetX,
     offsetY: event.offsetY,
+    pageX: event.pageX,
+    pageY: event.pageY,
     button: event.button,
     buttons: event.buttons,
     ctrlKey: event.ctrlKey,
@@ -334,6 +336,8 @@ interface MouseEventArgs {
   clientY: number;
   offsetX: number;
   offsetY: number;
+  pageX: number;
+  pageY: number;
   button: number;
   buttons: number;
   ctrlKey: boolean;
