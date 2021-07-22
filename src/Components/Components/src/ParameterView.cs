@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public readonly struct ParameterView
     {
-        private const string GeneratedParameterViewElementName = "__ARTIFICIAL_PARAMETER_VIEW";
         private static readonly RenderTreeFrame[] _emptyFrames = new RenderTreeFrame[]
         {
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
@@ -236,17 +235,13 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>A <see cref="ParameterView"/>.</returns>
         public static ParameterView FromDictionary(IDictionary<string, object?> parameters)
         {
-            var frames = new RenderTreeFrame[parameters.Count + 1];
-            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName);
-            frames[0].ElementSubtreeLengthField = frames.Length;
-
-            var i = 0;
+            var builder = new ParameterViewBuilder(parameters.Count);
             foreach (var kvp in parameters)
             {
-                frames[++i] = RenderTreeFrame.Attribute(i, kvp.Key, kvp.Value);
+                builder.Add(kvp.Key, kvp.Value);
             }
 
-            return new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
+            return builder.ToParameterView();
         }
 
         /// <summary>

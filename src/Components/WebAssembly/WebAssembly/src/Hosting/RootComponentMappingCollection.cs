@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Web;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -12,8 +13,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// <summary>
     /// Defines a collection of <see cref="RootComponentMapping"/> items.
     /// </summary>
-    public class RootComponentMappingCollection : Collection<RootComponentMapping>
+    public class RootComponentMappingCollection : Collection<RootComponentMapping>, IJSComponentConfiguration
     {
+        /// <inheritdoc />
+        public JSComponentConfigurationStore JSComponents { get; } = new JSComponentConfigurationStore();
+
         /// <summary>
         /// Adds a component mapping to the collection.
         /// </summary>
