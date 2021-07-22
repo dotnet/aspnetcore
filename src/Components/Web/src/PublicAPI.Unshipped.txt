@@ -4,6 +4,13 @@ Microsoft.AspNetCore.Components.Forms.InputCheckbox.Element.get -> Microsoft.Asp
 Microsoft.AspNetCore.Components.Forms.InputCheckbox.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.Element.set -> void
+Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.Type.get -> Microsoft.AspNetCore.Components.Forms.InputDateType
+Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.Type.set -> void
+Microsoft.AspNetCore.Components.Forms.InputDateType
+Microsoft.AspNetCore.Components.Forms.InputDateType.Date = 0 -> Microsoft.AspNetCore.Components.Forms.InputDateType
+Microsoft.AspNetCore.Components.Forms.InputDateType.DateTimeLocal = 1 -> Microsoft.AspNetCore.Components.Forms.InputDateType
+Microsoft.AspNetCore.Components.Forms.InputDateType.Month = 2 -> Microsoft.AspNetCore.Components.Forms.InputDateType
+Microsoft.AspNetCore.Components.Forms.InputDateType.Time = 3 -> Microsoft.AspNetCore.Components.Forms.InputDateType
 Microsoft.AspNetCore.Components.Forms.InputFile.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputFile.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
@@ -49,7 +56,7 @@ Microsoft.AspNetCore.Components.Web.PageTitle
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Web.PageTitle.PageTitle() -> void
-override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.OnParametersSet() -> void
 abstract Microsoft.AspNetCore.Components.RenderTree.WebRenderer.AttachRootComponentToBrowser(int componentId, string! domElementSelector) -> void
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnParametersSet() -> void

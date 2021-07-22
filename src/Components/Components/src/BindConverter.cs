@@ -1912,11 +1912,11 @@ namespace Microsoft.AspNetCore.Components
                     }
                     else if (typeof(T) == typeof(DateTimeOffset))
                     {
-                        parser = ConvertToDateTime;
+                        parser = ConvertToDateTimeOffset;
                     }
                     else if (typeof(T) == typeof(DateTimeOffset?))
                     {
-                        parser = ConvertToNullableDateTime;
+                        parser = ConvertToNullableDateTimeOffset;
                     }
                     else if (typeof(T) == typeof(DateOnly))
                     {

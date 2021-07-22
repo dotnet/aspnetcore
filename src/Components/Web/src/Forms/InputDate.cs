@@ -21,11 +21,17 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private string _typeAttributeValue = default!;
         private string _format = default!;
+        private string _parsingErrorMessage = default!;
+
+        /// <summary>
+        /// Gets or sets the type of HTML input to be rendered.
+        /// </summary>
+        [Parameter] public InputDateType Type { get; set; } = InputDateType.Date;
 
         /// <summary>
         /// Gets or sets the error message used when displaying an a parsing error.
         /// </summary>
-        [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a date.";
+        [Parameter] public string ParsingErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the associated <see cref="ElementReference"/>.
@@ -35,23 +41,37 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [DisallowNull] public ElementReference? Element { get; protected set; }
 
-        /// <inheritdoc />
-        public override Task SetParametersAsync(ParameterView parameters)
+        /// <summary>
+        /// Constructs an instance of <see cref="InputDate{TValue}"/>
+        /// </summary>
+        public InputDate()
         {
-            _typeAttributeValue = parameters.TryGetValue<string>("type", out var typeAttributeValue)
-                ? typeAttributeValue
-                : "date";
+            var type = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
-            _format = _typeAttributeValue switch
+            if (type != typeof(DateTime) &&
+                type != typeof(DateTimeOffset) &&
+                type != typeof(DateOnly) &&
+                type != typeof(TimeOnly))
             {
-                "date" => DateFormat,
-                "datetime-local" => DateTimeLocalFormat,
-                "month" => MonthFormat,
-                "time" => TimeFormat,
-                _ => throw new InvalidOperationException($"Unsupported 'type' attribute value '{_typeAttributeValue}'.")
+                throw new InvalidOperationException($"Unsupported {GetType()} type param '{type}'.");
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void OnParametersSet()
+        {
+            (_typeAttributeValue, _format, var formatDescription) = Type switch
+            {
+                InputDateType.Date => ("date", DateFormat, "date"),
+                InputDateType.DateTimeLocal => ("datetime-local", DateTimeLocalFormat, "date and time"),
+                InputDateType.Month => ("month", MonthFormat, "year and month"),
+                InputDateType.Time => ("time", TimeFormat, "time"),
+                _ => throw new InvalidOperationException($"Unsupported {nameof(InputDateType)} '{Type}'.")
             };
 
-            return base.SetParametersAsync(parameters);
+            _parsingErrorMessage = string.IsNullOrEmpty(ParsingErrorMessage)
+                ? $"The {{0}} field must be a {formatDescription}."
+                : ParsingErrorMessage;
         }
 
         /// <inheritdoc />
@@ -81,33 +101,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
-            // Unwrap nullable types. We don't have to deal with receiving empty values for nullable
-            // types here, because the underlying InputBase already covers that.
-            var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
-
-            bool success;
-            if (targetType == typeof(DateTime))
-            {
-                success = TryParseDateTime(value, out result);
-            }
-            else if (targetType == typeof(DateTimeOffset))
-            {
-                success = TryParseDateTimeOffset(value, out result);
-            }
-            else if (targetType == typeof(DateOnly))
-            {
-                success = TryParseDateOnly(value, out result);
-            }
-            else if (targetType == typeof(TimeOnly))
-            {
-                success = TryParseTimeOnly(value, out result);
-            }
-            else
-            {
-                throw new InvalidOperationException($"The type '{targetType}' is not a supported date type.");
-            }
-
-            if (success)
+            if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
             {
                 Debug.Assert(result != null);
                 validationErrorMessage = null;
@@ -115,67 +109,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else
             {
-                validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
-                return false;
-            }
-        }
-
-        private bool TryParseDateTime(string? value, [MaybeNullWhen(false)] out TValue result)
-        {
-            var success = BindConverter.TryConvertToDateTime(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
-            if (success)
-            {
-                result = (TValue)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        private bool TryParseDateTimeOffset(string? value, [MaybeNullWhen(false)] out TValue result)
-        {
-            var success = BindConverter.TryConvertToDateTimeOffset(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
-            if (success)
-            {
-                result = (TValue)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        private bool TryParseDateOnly(string? value, [MaybeNullWhen(false)] out TValue result)
-        {
-            var success = BindConverter.TryConvertToDateOnly(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
-            if (success)
-            {
-                result = (TValue)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        private bool TryParseTimeOnly(string? value, [MaybeNullWhen(false)] out TValue result)
-        {
-            var success = BindConverter.TryConvertToTimeOnly(value, CultureInfo.InvariantCulture, _format, out var parsedValue);
-            if (success)
-            {
-                result = (TValue)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
+                validationErrorMessage = string.Format(CultureInfo.InvariantCulture, _parsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
                 return false;
             }
         }

@@ -34,13 +34,13 @@
         Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
     </p>
     <p class="departure-time">
-        Departure time: <InputDate type="time" @bind-Value="person.DepartureTime" placeholder="Enter the time" />
+        Departure time: <InputDate Type="InputDateType.Time" @bind-Value="person.DepartureTime" placeholder="Enter the time" />
     </p>
     <p class="visit-month">
-        Month of visit: <InputDate type="month" @bind-Value="person.VisitMonth" placeholder="Enter the month of your visit" />
+        Month of visit: <InputDate Type="InputDateType.Month" @bind-Value="person.VisitMonth" placeholder="Enter the month of your visit" />
     </p>
     <p class="appointment-date-time">
-        Appointment date and time: <InputDate type="datetime-local" @bind-Value="person.AppointmentDateAndTime" placeholder="Enter the appointment date and time" />
+        Appointment date and time: <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="person.AppointmentDateAndTime" placeholder="Enter the appointment date and time" />
     </p>
     <p class="ticket-class">
         Ticket class:
