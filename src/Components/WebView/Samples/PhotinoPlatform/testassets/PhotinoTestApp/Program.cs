@@ -27,7 +27,7 @@ namespace PhotinoTestApp
                 mainWindow.Photino.OpenAlertWindow("Fatal exception", error.ExceptionObject.ToString());
             };
 
-            mainWindow.AddRootComponent<BasicTestApp.Index>("root");
+            mainWindow.RootComponents.Add<BasicTestApp.Index>("root");
 
             mainWindow.Run();
         }
