@@ -20,6 +20,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// <summary>
         /// Loads a certificate from the certificate store.
         /// </summary>
+        /// <remarks>
+        /// Exact subject match is loaded if present, otherwise best matching certificate with the subject name that contains supplied subject.
+        /// Subject comparison is case-insensitive.
+        /// </remarks>
         /// <param name="subject">The certificate subject.</param>
         /// <param name="storeName">The certificate store name.</param>
         /// <param name="storeLocation">The certificate store location.</param>
