@@ -35,6 +35,10 @@ Microsoft.AspNetCore.Components.Web.HeadOutlet
 Microsoft.AspNetCore.Components.Web.HeadOutlet.HeadOutlet() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.set -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageY.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageY.set -> void
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop
