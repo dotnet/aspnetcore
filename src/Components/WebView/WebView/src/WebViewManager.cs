@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private static Uri EnsureTrailingSlash(Uri uri)
             => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
 
-        record RootComponent
+        private class RootComponent
         {
             public Type ComponentType { get; init; }
             public ParameterView Parameters { get; init; }
