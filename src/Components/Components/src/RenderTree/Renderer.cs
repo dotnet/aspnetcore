@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
-        protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
+        protected internal async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
             Dispatcher.AssertAccess();
 
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Having a nonnull value for _pendingTasks is what signals that we should be capturing the async tasks.
             _pendingTasks ??= new();
 
-            var componentState = GetRequiredComponentState(componentId);
+            var componentState = GetRequiredRootComponentState(componentId);
             if (TestableMetadataUpdate.IsSupported)
             {
                 // When we're doing hot-reload, stash away the parameters used while rendering root components.
@@ -250,15 +250,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// descendants to be disposed.
         /// </summary>
         /// <param name="componentId">The ID of the root component.</param>
-        protected void RemoveRootComponent(int componentId)
+        protected internal void RemoveRootComponent(int componentId)
         {
             Dispatcher.AssertAccess();
 
-            var rootComponentState = GetRequiredComponentState(componentId);
-            if (rootComponentState.ParentComponentState is not null)
-            {
-                throw new InvalidOperationException("The specified component is not a root component");
-            }
+            // Asserts it's a root component
+            _ = GetRequiredRootComponentState(componentId);
 
             // This assumes there isn't currently a batch in progress, and will throw if there is.
             // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
@@ -271,6 +268,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             ProcessRenderQueue();
         }
+
+        /// <summary>
+        /// Gets the type of the specified root component.
+        /// </summary>
+        /// <param name="componentId">The root component ID.</param>
+        /// <returns>The type of the component.</returns>
+        internal Type GetRootComponentType(int componentId)
+            => GetRequiredRootComponentState(componentId).Component.GetType();
 
         /// <summary>
         /// Allows derived types to handle exceptions during rendering. Defaults to rethrowing the original exception.
@@ -560,6 +565,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
                 : null;
+
+        private ComponentState GetRequiredRootComponentState(int componentId)
+        {
+            var componentState = GetRequiredComponentState(componentId);
+            if (componentState.ParentComponentState is not null)
+            {
+                throw new InvalidOperationException("The specified component is not a root component");
+            }
+
+            return componentState;
+        }
 
         /// <summary>
         /// Processes pending renders requests from components if there are any.

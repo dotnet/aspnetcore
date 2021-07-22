@@ -10,6 +10,8 @@ import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
 import { getNextChunk } from './StreamingInterop';
+import { RootComponentsFunctions, setDynamicRootComponentManager } from './Rendering/JSRootComponents';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
@@ -20,6 +22,7 @@ interface IBlazor {
   defaultReconnectionHandler?: DefaultReconnectionHandler;
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>);
   platform?: Platform;
+  rootComponents: typeof RootComponentsFunctions;
 
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any,
@@ -53,6 +56,7 @@ interface IBlazor {
     getSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
+    setDynamicRootComponentManager?: (instance: DotNet.DotNetObject) => void,
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
@@ -63,6 +67,7 @@ interface IBlazor {
 export const Blazor: IBlazor = {
   navigateTo,
   registerCustomEventType,
+  rootComponents: RootComponentsFunctions,
 
   _internal: {
     navigationManager: navigationManagerInternalFunctions,
@@ -71,6 +76,7 @@ export const Blazor: IBlazor = {
     PageTitle,
     InputFile,
     getJSDataStreamChunk: getNextChunk,
+    setDynamicRootComponentManager,
   },
 };
 
