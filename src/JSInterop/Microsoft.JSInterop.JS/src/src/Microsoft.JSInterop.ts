@@ -431,7 +431,7 @@ export module DotNet {
     delete cachedJSObjectsById[id];
   }
 
-  class DotNetObject {
+  export class DotNetObject {
     constructor(private _id: number) {
     }
 

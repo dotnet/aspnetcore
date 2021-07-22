@@ -1,0 +1,85 @@
+﻿@using Microsoft.JSInterop
+@implements IAsyncDisposable
+
+<div class="dynamic-root-component" style="border: 1px dashed purple">
+    <p>
+        This is a Blazor component.
+    </p>
+    <p>
+        Click count: <strong class="click-count">@clicks</strong>
+        (will increment in steps of <strong class="increment-amount-value">@IncrementAmount</strong>)
+    </p>
+
+    <button class="increment" @onclick="Increment">Increment</button>
+
+    @if (ShowComplexParameters)
+    {
+        <p class="person-info">Person is @SomePerson.Name, age @SomePerson.Age</p>
+        <p class="value-from-js">Value from JS object reference: @valueFromJS</p>
+    }
+
+    @if (UnmatchedValues is not null)
+    {
+        <p>
+            Unmatched values:
+            <ul>
+                @foreach (var (name, value) in UnmatchedValues)
+                {
+                    <li class="unmatched-value">
+                        Name: <strong class="unmatched-value-name">@name</strong>;
+                        @if (value is not null)
+                        {
+                            <text>
+                                Type: <strong class="unmatched-value-type">@value.GetType().Name</strong>;
+                                Value: <strong class="unmatched-value-value">@value</strong>;
+                            </text>
+                        }
+                        else
+                        {
+                            <text>Type: <strong class="unmatched-value-type">null</strong>;</text>
+                        }
+                    </li>
+                }
+            </ul>
+        </p>
+    }
+</div>
+
+@code {
+    int clicks;
+    string valueFromJS;
+
+    [Parameter] public int IncrementAmount { get; set; }
+    [Parameter] public bool ShowComplexParameters { get; set; }
+    [Parameter] public Person SomePerson { get; set; }
+    [Parameter] public IJSObjectReference SomeJSObject { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (SomeJSObject is not null)
+        {
+            valueFromJS = await SomeJSObject.InvokeAsync<string>("getValue", null);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (SomeJSObject is not null)
+        {
+            await SomeJSObject.InvokeVoidAsync("willDispose", null);
+        }
+    }
+
+    void Increment()
+    {
+        clicks += IncrementAmount;
+    }
+
+    public class Person
+    {
+        public string Name { get; set; }
+        public decimal Age { get; set; }
+    }
+}
