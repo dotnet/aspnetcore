@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Web
     /// This type is not normally used directly from application code. In most cases, applications should
     /// call methods on the <see cref="IJSComponentConfiguration" /> on their application host builder.
     /// </summary>
-    public class JSComponentConfigurationStore
+    public sealed class JSComponentConfigurationStore
     {
         // Everything's internal here, and can only be operated upon via the extension methods on
         // IJSComponentConfiguration. This is so that, in the future, we can add any additional
