@@ -45,32 +45,32 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             if (HttpMethods.IsPost(context.Request.Method))
             {
-                return InvokeCore(context);
+                if (_options.FormFieldName != null)
+                {
+                    if (context.Request.HasFormContentType)
+                    {
+                        return InvokeCore(context);
+                    }
+                }
+                else
+                {
+                    var xHttpMethodOverrideValue = context.Request.Headers[xHttpMethodOverride];
+                    if (!string.IsNullOrEmpty(xHttpMethodOverrideValue))
+                    {
+                        context.Request.Method = xHttpMethodOverrideValue;
+                    }
+                }
             }
             return _next(context);
         }
 
         private async Task InvokeCore(HttpContext context)
         {
-            if (_options.FormFieldName != null)
+            var form = await context.Request.ReadFormAsync();
+            var methodType = form[_options.FormFieldName!];
+            if (!string.IsNullOrEmpty(methodType))
             {
-                if (context.Request.HasFormContentType)
-                {
-                    var form = await context.Request.ReadFormAsync();
-                    var methodType = form[_options.FormFieldName];
-                    if (!string.IsNullOrEmpty(methodType))
-                    {
-                        context.Request.Method = methodType;
-                    }
-                }
-            }
-            else
-            {
-                var xHttpMethodOverrideValue = context.Request.Headers[xHttpMethodOverride];
-                if (!string.IsNullOrEmpty(xHttpMethodOverrideValue))
-                {
-                    context.Request.Method = xHttpMethodOverrideValue;
-                }
+                context.Request.Method = methodType;
             }
             await _next(context);
         }
