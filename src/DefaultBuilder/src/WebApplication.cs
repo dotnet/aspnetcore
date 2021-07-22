@@ -1,11 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -24,8 +20,6 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
     {
-        internal const string EndpointRouteBuilder = "__EndpointRouteBuilder";
-
         private readonly IHost _host;
         private readonly List<EndpointDataSource> _dataSources = new();
 
@@ -81,15 +75,6 @@ namespace Microsoft.AspNetCore.Builder
 
         internal ICollection<EndpointDataSource> DataSources => _dataSources;
         ICollection<EndpointDataSource> IEndpointRouteBuilder.DataSources => DataSources;
-
-        internal IEndpointRouteBuilder RouteBuilder
-        {
-            get
-            {
-                Properties.TryGetValue(EndpointRouteBuilder, out var value);
-                return (IEndpointRouteBuilder)value!;
-            }
-        }
 
         internal ApplicationBuilder ApplicationBuilder { get; }
 
