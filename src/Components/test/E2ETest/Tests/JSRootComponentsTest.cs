@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanAddMultipleRootComponentsToTheSameElementAtTheSameTime()
+        public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
         {
             // Try adding a second without removing the first
             app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
