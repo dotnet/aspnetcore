@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
@@ -211,6 +213,64 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationCanObserveConfigurationChangesMadeInBuild()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "A", "A" },
+                        { "B", "B" },
+                    });
+                });
+
+                hostBuilder.ConfigureAppConfiguration(config =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "C", "C" },
+                        { "D", "D" },
+                    });
+                });
+
+                hostBuilder.ConfigureWebHost(builder =>
+                {
+                    builder.UseSetting("E", "E");
+
+                    builder.ConfigureAppConfiguration(config =>
+                    {
+                        config.AddInMemoryCollection(new Dictionary<string, string>()
+                        {
+                            { "F", "F" },
+                        });
+                    });
+                });
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            await using var app = builder.Build();
+
+            Assert.Equal("A", app.Configuration["A"]);
+            Assert.Equal("B", app.Configuration["B"]);
+            Assert.Equal("C", app.Configuration["C"]);
+            Assert.Equal("D", app.Configuration["D"]);
+            Assert.Equal("E", app.Configuration["E"]);
+            Assert.Equal("F", app.Configuration["F"]);
+
+            Assert.Equal("A", builder.Configuration["A"]);
+            Assert.Equal("B", builder.Configuration["B"]);
+            Assert.Equal("C", builder.Configuration["C"]);
+            Assert.Equal("D", builder.Configuration["D"]);
+            Assert.Equal("E", builder.Configuration["E"]);
+            Assert.Equal("F", builder.Configuration["F"]);
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();
@@ -298,6 +358,34 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(env0.ApplicationName, env1.ApplicationName);
             Assert.Equal(env0.EnvironmentName, env1.EnvironmentName);
             Assert.Equal(env0.ContentRootPath, env1.ContentRootPath);
+        }
+
+        [Fact]
+        public async Task WebApplication_CanResolveServicesAddedAfterBuildFromServiceCollection()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IService, Service>();
+                });
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            // Add the service collection to the service collection
+            builder.Services.AddSingleton(builder.Services);
+
+            await using var app = builder.Build();
+
+            var service0 = app.Services.GetRequiredService<IService>();
+
+            var service1 = app.Services.GetRequiredService<IServiceCollection>().BuildServiceProvider().GetRequiredService<IService>();
+
+            Assert.IsType<Service>(service0);
+            Assert.IsType<Service>(service1);
         }
 
         [Fact]
@@ -443,6 +531,68 @@ namespace Microsoft.AspNetCore.Tests
 
             var terminalResult = await client.GetAsync("http://localhost/undefined");
             Assert.Equal(418, (int)terminalResult.StatusCode);
+        }
+
+        private class Service : IService { }
+        private interface IService { }
+
+        private sealed class HostingListener : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>, IDisposable
+        {
+            private readonly Action<IHostBuilder> _configure;
+            private static readonly AsyncLocal<HostingListener> _currentListener = new();
+            private readonly IDisposable _subscription0;
+            private IDisposable _subscription1;
+
+            public HostingListener(Action<IHostBuilder> configure)
+            {
+                _configure = configure;
+
+                _subscription0 = DiagnosticListener.AllListeners.Subscribe(this);
+
+                _currentListener.Value = this;
+            }
+
+            public void OnCompleted()
+            {
+
+            }
+
+            public void OnError(Exception error)
+            {
+
+            }
+
+            public void OnNext(DiagnosticListener value)
+            {
+                if (_currentListener.Value != this)
+                {
+                    // Ignore events that aren't for this listener
+                    return;
+                }
+
+                if (value.Name == "Microsoft.Extensions.Hosting")
+                {
+                    _subscription1 = value.Subscribe(this);
+                }
+            }
+
+            public void OnNext(KeyValuePair<string, object> value)
+            {
+                if (value.Key == "HostBuilding")
+                {
+                    _configure?.Invoke((IHostBuilder)value.Value);
+                }
+            }
+
+            public void Dispose()
+            {
+                // Undo this here just in case the code unwinds synchronously since that doesn't revert
+                // the execution context to the original state. Only async methods do that on exit.
+                _currentListener.Value = null;
+
+                _subscription0.Dispose();
+                _subscription1?.Dispose();
+            }
         }
 
         private class CustomHostLifetime : IHostLifetime
