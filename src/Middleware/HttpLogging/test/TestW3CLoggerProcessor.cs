@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private TaskCompletionSource _tcs;
         private bool _hasWritten;
         private readonly object _writeCountLock = new object();
+        private string _internalMessage;
 
         public TestW3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
         {
@@ -32,8 +33,17 @@ namespace Microsoft.AspNetCore.HttpLogging
             return StreamWriter.Null;
         }
 
-        internal override void OnWrite(string message)
+        internal override void OnWriteLine(string message)
         {
+            // Add the previous message formatted
+            if (!string.IsNullOrWhiteSpace(_internalMessage))
+            {
+                Lines.Add(_internalMessage);
+
+                // reset the internal message
+                _internalMessage = string.Empty;
+            }
+
             Lines.Add(message);
             lock (_writeCountLock)
             {
@@ -42,6 +52,18 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     _tcs.SetResult();
                 }
+            }
+        }
+
+        internal override void OnWrite(string message)
+        {
+            if (string.IsNullOrWhiteSpace(_internalMessage))
+            {
+                _internalMessage = message;
+            }
+            else
+            {
+                _internalMessage = string.Concat(_internalMessage, message);
             }
         }
 

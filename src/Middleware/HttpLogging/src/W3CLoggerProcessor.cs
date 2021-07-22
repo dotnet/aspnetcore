@@ -204,10 +204,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         // For testing
         internal override Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
         {
-            OnWrite(message);
-
             if (message.IndexOf(W3CSeparator, 0, System.StringComparison.InvariantCulture) < 0)
             {
+                OnWriteLine(message);
                 return base.WriteMessageAsync(message, streamWriter, cancellationToken);
             }
 
@@ -215,6 +214,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         // Extensibility point for tests
+        internal virtual void OnWriteLine(string message) { }
+
+        // for tests
         internal virtual void OnWrite(string message) { }
 
         public void EnqueueMessage(string[] messages)
@@ -256,6 +258,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     if (!firstElement)
                     {
+                        OnWrite(" ");
                         await streamWriter.WriteAsync(' ');
                     }
                     else
@@ -265,16 +268,18 @@ namespace Microsoft.AspNetCore.HttpLogging
                     // If the element was not logged, or was the empty string, we log it as a dash
                     if (string.IsNullOrEmpty(elements[i]))
                     {
+                        OnWrite("-");
                         await streamWriter.WriteAsync('-');
                     }
                     else
                     {
+                        OnWrite(elements[i]);
                         await streamWriter.WriteAsync(elements[i].AsMemory(), cancellationToken);
                     }
                 }
             }
 
-
+            OnWriteLine(string.Empty);
             await streamWriter.FlushAsync();
         }
     }
