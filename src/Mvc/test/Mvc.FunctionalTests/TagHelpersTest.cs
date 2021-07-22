@@ -64,8 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("GlobbingTagHelpers")]
         [InlineData("ViewComponentTagHelpers")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
-        public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action)
-            => CanRenderViewsWithTagHelpers(action);
+        public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action) => CanRenderViewsWithTagHelpers(action);
 
         [Fact]
         public async Task GivesCorrectCallstackForSyncronousCalls()
