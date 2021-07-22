@@ -8,6 +8,18 @@ using SignalRSamples.Hubs;
 
 namespace SignalRSamples;
 
+public class ShutdownNotification
+{
+    private CancellationTokenSource _cts = new();
+
+    public CancellationToken Token => _cts.Token;
+
+    public void Cancel()
+    {
+        _cts.Cancel();
+    }
+}
+
 public class Startup
 {
     private readonly JsonWriterOptions _jsonWriterOptions = new JsonWriterOptions { Indented = true };
@@ -16,6 +28,8 @@ public class Startup
     // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
     public void ConfigureServices(IServiceCollection services)
     {
+        var sn = new ShutdownNotification();
+        services.AddSingleton(sn);
         services.AddConnections();
 
         services.AddSignalR()

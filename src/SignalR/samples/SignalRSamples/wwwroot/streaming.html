@@ -96,7 +96,7 @@
                 let id = invocationCounter;
                 invocationCounter += 1;
                 addLine('resultsList', 'running ' + method + '(' + id + ') ...');
-                connection.stream(method, 10, (Math.random() * 5) * 200).subscribe({
+                connection.stream(method, 10, Math.round((Math.random() * 5) * 200)).subscribe({
                     closed: false,
                     next: function (item) {
                         addLine('resultsList', method + '(' + id + '): ' + item);

@@ -27,6 +27,8 @@ internal partial class HttpConnectionManager
     private readonly long _disconnectTimeoutTicks;
     private readonly ConnectionOptions _connectionOptions;
 
+    internal Func<Task>? ShutdownDelay => _connectionOptions.ShutdownCallback;
+
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
     {
         _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
@@ -39,11 +41,6 @@ internal partial class HttpConnectionManager
         appLifetime.ApplicationStopping.Register(() => CloseConnections());
     }
 
-    public void Start()
-    {
-        // Start the timer loop
-        _ = ExecuteTimerLoop();
-    }
 
     internal bool TryGetConnection(string id, [NotNullWhen(true)] out HttpConnectionContext? connection)
     {
@@ -178,10 +175,12 @@ internal partial class HttpConnectionManager
 
     public async Task CloseConnections()
     {
-        if (ShutdownDelay != TimeSpan.Zero)
+        if (ShutdownDelay is not null)
         {
             // Delay to let users react to application shutdown before we close the SignalR connections
-            await Task.Delay(ShutdownDelay);
+            // Review: dispatch (to avoid any sync-over-async operations) and Task.WhenAny(userTask, Task.Delay())?
+            // or just let them do whatever and the server can close connections
+            await ShutdownDelay();
         }
 
         // Stop firing the timer

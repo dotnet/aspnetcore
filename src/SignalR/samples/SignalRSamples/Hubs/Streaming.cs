@@ -11,10 +11,20 @@ public class Streaming : Hub
 {
     public async IAsyncEnumerable<int> AsyncEnumerableCounter(int count, double delay)
     {
-        for (var i = 0; i < count; i++)
+        private readonly ShutdownNotification _sn;
+
+        public Streaming(ShutdownNotification sn)
         {
-            yield return i;
-            await Task.Delay((int)delay);
+            _sn = sn;
+        }
+
+        public async IAsyncEnumerable<int> AsyncEnumerableCounter(int count, double delay)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                yield return i;
+                await Task.Delay((int)delay, _sn.Token);
+            }
         }
     }
 
@@ -35,11 +45,19 @@ public class Streaming : Hub
         {
             for (var i = 0; i < count; i++)
             {
-                await channel.Writer.WriteAsync(i);
-                await Task.Delay(delay);
+                try
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        await channel.Writer.WriteAsync(i, _sn.Token);
+                        await Task.Delay(delay, _sn.Token);
+                    }
+                }
+                finally
+                {
+                    channel.Writer.TryComplete();
+                }
             }
-
-            channel.Writer.TryComplete();
         });
 
         return channel.Reader;
