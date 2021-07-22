@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// An input component for editing date values.
     /// Supported types are <see cref="DateTime"/> and <see cref="DateTimeOffset"/>.
     /// </summary>
-    public class InputDate<TValue> : InputBase<TValue>
+    public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
     {
         private const string DateFormat = "yyyy-MM-dd";                     // Compatible with HTML 'date' inputs
         private const string DateTimeLocalFormat = "yyyy-MM-ddTHH:mm:ss";   // Compatible with HTML 'datetime-local' inputs
