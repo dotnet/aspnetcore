@@ -8,15 +8,7 @@
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-
-    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
-    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
-
-    <ResolveStaticWebAssetsInputsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
-      _UpdatedIdentityUIStaticWebAssets;
-    </ResolveStaticWebAssetsInputsDependsOn>
-
+    <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
     <Nullable>disable</Nullable>
   </PropertyGroup>
@@ -24,9 +16,6 @@
   <ItemGroup>
     <Content Remove="@(Content)" />
     <Content Include="wwwroot\**\*" Pack="true" />
-    <None Include="build\*" Pack="true" PackagePath="build\" />
-    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
-    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,30 +32,6 @@
 
       <RazorGenerate Include="@(_RazorGenerate)" Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="_UpdatedIdentityUIStaticWebAssets">
-
-    <ItemGroup>
-      <_V4Content Include="wwwroot\V4\**" />
-
-      <StaticWebAsset Remove="@(_V4Content->'%(FullPath)')" />
-
-      <StaticWebAsset Include="@(_V4Content->'%(FullPath)')">
-        <SourceType>Discovered</SourceType>
-        <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V4'))</ContentRoot>
-        <BasePath>/Identity</BasePath>
-        <AssetKind>All</AssetKind>
-        <AssetMode>All</AssetMode>
-        <AssetRole>Primary</AssetRole>
-        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
-        <OriginalItemSpec>@(_V4Content->'%(Identity)')</OriginalItemSpec>
-      </StaticWebAsset>
-    </ItemGroup>
-
   </Target>
 
 </Project>
