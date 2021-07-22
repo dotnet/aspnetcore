@@ -137,17 +137,20 @@ namespace Microsoft.AspNetCore.Builder
                     targetRouteBuilder = GetEndpointRouteBuilder(app)!;
                     implicitRouting = true;
                 }
-                else
-                {
-                    // UseRouting() was called explicitely, but we may still need to call UseEndpoints() implicitely at
-                    // the end of the pipeline.
-                    _builtApplication.UseEndpoints(_ => { });
-                }
 
                 // Copy the endpoints to the explicitly or implicitly created IEndopintRouteBuilder.
                 foreach (var ds in _builtApplication.DataSources)
                 {
                     targetRouteBuilder.DataSources.Add(ds);
+                }
+
+                // UseEndpoints consumes the DataSources immediately to populate CompositeEndpointDataSource via RouteOptions,
+                // so it must be called after we copy the endpoints.
+                if (!implicitRouting)
+                {
+                    // UseRouting() was called explicitely, but we may still need to call UseEndpoints() implicitely at
+                    // the end of the pipeline.
+                    _builtApplication.UseEndpoints(_ => { });
                 }
             }
 

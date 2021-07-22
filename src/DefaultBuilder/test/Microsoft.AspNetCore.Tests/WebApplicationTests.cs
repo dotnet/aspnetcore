@@ -351,6 +351,12 @@ namespace Microsoft.AspNetCore.Tests
 
             await app.StartAsync();
 
+            var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
+
+            var newEndpoint = Assert.Single(endpointDataSource.Endpoints);
+            var newRouteEndpoint = Assert.IsType<RouteEndpoint>(newEndpoint);
+            Assert.Equal("/new", newRouteEndpoint.RoutePattern.RawText);
+
             var client = app.GetTestClient();
 
             var oldResult = await client.GetAsync("http://localhost/old");
