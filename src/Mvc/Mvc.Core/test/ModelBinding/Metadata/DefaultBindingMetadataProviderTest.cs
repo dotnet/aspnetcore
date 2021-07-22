@@ -798,6 +798,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Null(result);
         }
 
+        [Fact]
+        public void GetBoundConstructor_ReturnsPrimaryConstructor_ForRecordTypeInherited()
+        {
+            // Arrange
+            var type = typeof(Model);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Collection(
+                result.GetParameters(),
+                p => Assert.Equal("Name", p.Name),
+                p => Assert.Equal("Value", p.Name));
+        }
+
+        public record BaseModel(int Value);
+        public record Model(string Name, int Value) : BaseModel(Value);
+
         private record RecordTypeWithConformingSynthesizedConstructor
         {
             public RecordTypeWithConformingSynthesizedConstructor(string Name, int Age)
