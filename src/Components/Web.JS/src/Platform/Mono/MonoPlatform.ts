@@ -68,7 +68,9 @@ export const monoPlatform: Platform = {
   toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
     const dataPtr = getArrayDataPointer(array);
     const length = getValueI32(dataPtr);
-    return new Uint8Array(Module.HEAPU8.buffer, dataPtr + 4, length);
+    const uint8Array = new Uint8Array(length);
+    uint8Array.set(Module.HEAPU8.subarray(dataPtr + 4, dataPtr + 4 + length));
+    return uint8Array;
   },
 
   getArrayLength: function getArrayLength(array: System_Array<any>): number {
