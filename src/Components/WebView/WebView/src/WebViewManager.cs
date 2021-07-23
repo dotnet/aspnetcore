@@ -189,14 +189,18 @@ namespace Microsoft.AspNetCore.Components.WebView
             var serviceScope = _provider.CreateAsyncScope();
             _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
 
-            // Add any root components that were registered before the page attached
+            // Add any root components that were registered before the page attached. We don't await any of the
+            // returned render tasks so that the components can be processed in parallel.
             foreach (var (selector, rootComponent) in _rootComponentsBySelector)
             {
                 rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
                     rootComponent.ComponentType, selector);
-                await _currentPageContext.Renderer.RenderRootComponentAsync(
+                _= _currentPageContext.Renderer.RenderRootComponentAsync(
                     rootComponent.ComponentId.Value, rootComponent.Parameters);
             }
+
+            // Now we wait for all components to finish rendering.
+            await _currentPageContext.Renderer.WaitForQuiescence();
         }
 
         private static Uri EnsureTrailingSlash(Uri uri)
