@@ -299,43 +299,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         public static bool GetKnownVersion(this ReadOnlySpan<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            knownVersion = GetKnownVersionAndConfirmCR(span);
-            if (knownVersion != HttpVersion.Unknown)
+            if (span.Length > sizeof(ulong) && span[sizeof(ulong)] == (byte)'\r')
             {
-                length = sizeof(ulong);
-                return true;
+                knownVersion = GetKnownVersion(span);
+                if (knownVersion != HttpVersion.Unknown)
+                {
+                    length = sizeof(ulong);
+                    return true;
+                }
             }
 
+            knownVersion = HttpVersion.Unknown;
             length = 0;
             return false;
         }
 
         /// <summary>
-        /// Checks 9 bytes from <paramref name="location"/>  correspond to a known HTTP version.
+        /// Checks 8 bytes from <paramref name="span"/>  correspond to a known HTTP version.
         /// </summary>
         /// <remarks>
         /// A "known HTTP version" Is is either HTTP/1.0 or HTTP/1.1.
         /// Since those fit in 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
         /// in that format, it can be checked against the known versions.
-        /// The Known versions will be checked with the required '\r'.
         /// To optimize performance the HTTP/1.1 will be checked first.
         /// </remarks>
-        /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
+        /// <returns>the HTTP version if the input matches a known string, <c>Unknown</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static HttpVersion GetKnownVersionAndConfirmCR(this ReadOnlySpan<byte> location)
+        internal static HttpVersion GetKnownVersion(this ReadOnlySpan<byte> span)
         {
-            if (location.Length < sizeof(ulong))
+            if (BinaryPrimitives.TryReadUInt64LittleEndian(span, out var version))
             {
-                return HttpVersion.Unknown;
-            }
-            else
-            {
-                var version = BinaryPrimitives.ReadUInt64LittleEndian(location);
-                if (sizeof(ulong) >= (uint)location.Length || location[sizeof(ulong)] != (byte)'\r')
-                {
-                    return HttpVersion.Unknown;
-                }
-                else if (version == _http11VersionLong)
+                if (version == _http11VersionLong)
                 {
                     return HttpVersion.Http11;
                 }
@@ -344,7 +338,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     return HttpVersion.Http10;
                 }
             }
-
             return HttpVersion.Unknown;
         }
 
