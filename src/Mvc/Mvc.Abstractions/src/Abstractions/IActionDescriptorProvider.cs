@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Mvc.Abstractions
 {
@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// On application initialization, MVC invokes all registered instances of <see cref="IActionDescriptorProvider"/> to 
-    /// perform <see cref="ActionDescriptor" /> discovery. 
-    /// <see cref="IActionDescriptorProvider"/> instances are invoked in the ascending sort order of <see cref="Order"/>.  
+    /// On application initialization, MVC invokes all registered instances of <see cref="IActionDescriptorProvider"/> to
+    /// perform <see cref="ActionDescriptor" /> discovery.
+    /// <see cref="IActionDescriptorProvider"/> instances are invoked in the ascending sort order of <see cref="Order"/>.
     /// </para>
     /// <para>
     /// Each provider has its <see cref="OnProvidersExecuting"/> method
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
     /// </para>
     /// <para>
     /// As providers are called in a predefined sequence, each provider has a chance to observe and decorate the
-    /// result of the providers that have already run. 
+    /// result of the providers that have already run.
     /// </para>
     /// </remarks>
     public interface IActionDescriptorProvider
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         int Order { get; }
 
         /// <summary>
-        /// Called to execute the provider. 
+        /// Called to execute the provider.
         /// <see cref="Order"/> for details on the order of execution of <see cref="OnProvidersExecuting(ActionDescriptorProviderContext)"/>.
         /// </summary>
         /// <param name="context">The <see cref="ActionDescriptorProviderContext"/>.</param>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// API conventions to be applied to an assembly containing MVC controllers or a single controller.
     /// <para>
-    /// API conventions are used to influence the output of ApiExplorer. 
+    /// API conventions are used to influence the output of ApiExplorer.
     /// Conventions must be static types. Methods in a convention are
     /// matched to an action method using rules specified by <see cref="ApiConventionNameMatchAttribute" />
     /// that may be applied to a method name or its parameters and <see cref="ApiConventionTypeMatchAttribute"/>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes an <see cref="ApiConventionTypeAttribute"/> instance using <paramref name="conventionType"/>.
         /// </summary>
         /// <param name="conventionType">
-        /// The <see cref="Type"/> of the convention. 
+        /// The <see cref="Type"/> of the convention.
         /// <para>
         /// Conventions must be static types. Methods in a convention are
         /// matched to an action method using rules specified by <see cref="ApiConventionNameMatchAttribute" />

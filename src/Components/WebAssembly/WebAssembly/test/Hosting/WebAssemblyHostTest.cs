@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -14,13 +15,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
     public class WebAssemblyHostTest
     {
+        private static readonly JsonSerializerOptions JsonOptions = new();
+
         // This won't happen in the product code, but we need to be able to safely call RunAsync
         // to be able to test a few of the other details.
         [Fact]
         public async Task RunAsync_CanExitBasedOnCancellationToken()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
             var host = builder.Build();
             var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -39,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task RunAsync_CallingTwiceCausesException()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
             var host = builder.Build();
             var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -60,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
             builder.Services.AddSingleton<DisposableService>();
             var host = builder.Build();
             var cultureProvider = new TestSatelliteResourcesLoader();

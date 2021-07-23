@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             return IsSpacingTokenIncludingNewLines(token) || token.Kind == SyntaxKind.CSharpComment;
         };
-        
+
         protected TokenizerBackedParser(LanguageCharacteristics<TTokenizer> language, ParserContext context)
             : base(context)
         {
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal bool NextIs(SyntaxKind type)
         {
-            // Duplicated logic with NextIs(Func...) to prevent allocation 
+            // Duplicated logic with NextIs(Func...) to prevent allocation
             var cur = CurrentToken;
             var result = false;
             if (NextToken())

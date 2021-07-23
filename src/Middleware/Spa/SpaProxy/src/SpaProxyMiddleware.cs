@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -45,29 +45,31 @@ namespace Microsoft.AspNetCore.SpaProxy
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context.Request.Path.Equals(new Uri(_options.Value.ServerUrl).LocalPath))
             {
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
-                if (!await _spaProxyLaunchManager.IsSpaProxyRunning(context.RequestAborted))
-                {
-                    _spaProxyLaunchManager.StartInBackground(_hostLifetime.ApplicationStopping);
-                    _logger.LogInformation("SPA proxy is not ready. Returning temporary landing page.");
-                    context.Response.ContentType = "text/html";
+                return InvokeCore(context);
+            }
+            return _next(context);
+        }
 
-                    await using var writer = new StreamWriter(context.Response.Body, Encoding.UTF8);
-                    await writer.WriteAsync(GenerateSpaLaunchPage(_options.Value));
-                }
-                else
-                {
-                    _logger.LogInformation($"SPA proxy is ready. Redirecting to {_options.Value.ServerUrl}.");
-                    context.Response.Redirect(_options.Value.ServerUrl);
-                }
+        private async Task InvokeCore(HttpContext context)
+        {
+            context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
+            if (!await _spaProxyLaunchManager.IsSpaProxyRunning(context.RequestAborted))
+            {
+                _spaProxyLaunchManager.StartInBackground(_hostLifetime.ApplicationStopping);
+                _logger.LogInformation("SPA proxy is not ready. Returning temporary landing page.");
+                context.Response.ContentType = "text/html";
+
+                await using var writer = new StreamWriter(context.Response.Body, Encoding.UTF8);
+                await writer.WriteAsync(GenerateSpaLaunchPage(_options.Value));
             }
             else
             {
-                await _next(context);
+                _logger.LogInformation($"SPA proxy is ready. Redirecting to {_options.Value.ServerUrl}.");
+                context.Response.Redirect(_options.Value.ServerUrl);
             }
 
             string GenerateSpaLaunchPage(SpaDevelopmentServerOptions options)

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.CodeAnalysis;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Analyzers
         //
         // To be slightly less brittle, we don't look at the exact symbols and instead just look
         // at method names in here. We're NOT worried about false negatives, because all of these
-        // cases contain words like SignalR or Hub. 
+        // cases contain words like SignalR or Hub.
         public static bool IsSignalRConfigureMethodGesture(IMethodSymbol symbol)
         {
             if (symbol == null)

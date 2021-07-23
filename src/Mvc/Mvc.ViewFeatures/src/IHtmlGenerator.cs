@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Html;
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value"></param>
         /// <param name="format"></param>
-        /// <param name="htmlAttributes"> 
+        /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an

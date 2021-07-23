@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -224,8 +224,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Inline request processing instead of dispatching to the threadpool.
         /// </summary>
         /// <remarks>
-        /// Enabling this setting will run application code on the IO thread to reduce request processing latency. 
-        /// However, this will limit parallel request processing to <see cref="MaxAccepts"/>. This setting can make 
+        /// Enabling this setting will run application code on the IO thread to reduce request processing latency.
+        /// However, this will limit parallel request processing to <see cref="MaxAccepts"/>. This setting can make
         /// overall throughput worse if requests take long to process.
         /// </remarks>
         public bool UnsafePreferInlineScheduling { get; set; }

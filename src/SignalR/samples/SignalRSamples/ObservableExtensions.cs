@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Reactive.Linq;
@@ -16,7 +16,7 @@ namespace SignalRSamples
             int? maxBufferSize = null
         )
         {
-            // This sample shows adapting an observable to a ChannelReader without 
+            // This sample shows adapting an observable to a ChannelReader without
             // back pressure, if the connection is slower than the producer, memory will
             // start to increase.
 

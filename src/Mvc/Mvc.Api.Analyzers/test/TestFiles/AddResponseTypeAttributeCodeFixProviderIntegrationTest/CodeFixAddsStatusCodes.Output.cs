@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_
 {

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var parameterSepLength = 2;
             // Offset accounts for the length of the method, its arguments, and any
             // additional characters like open parens and quoted strings
-            var offsetLength = WriteAttributeValueMethod.Length 
+            var offsetLength = WriteAttributeValueMethod.Length
                 + methodInvocationParenLength
                 + node.Prefix.Length
                 + stringLiteralQuoteLength
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 + parameterSepLength;
             using (context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context,  offsetLength))
             {
-                
+
                 context.CodeWriter
                     .WriteStartMethodInvocation(WriteAttributeValueMethod)
                     .WriteStringLiteral(node.Prefix)
@@ -367,13 +367,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     if (charactersRemaining > 1)
                     {
                         // Take one less character this iteration. We're attempting to split inbetween a surrogate pair.
-                        // This can happen when something like an emoji sits on the barrier between splits; if we were to 
+                        // This can happen when something like an emoji sits on the barrier between splits; if we were to
                         // split the emoji we'd end up with invalid bytes in our output.
                         charactersToSubstring--;
                     }
                     else
                     {
-                        // The user has an invalid file with a partial surrogate a the splitting point. 
+                        // The user has an invalid file with a partial surrogate a the splitting point.
                         // We'll let the invalid character flow but we'll explode later on.
                     }
                 }

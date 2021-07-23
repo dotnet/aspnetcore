@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="code">The two factor authentication code to validate.</param>
         /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
-        /// <param name="rememberClient">Flag indicating whether the current browser should be remember, suppressing all further 
+        /// <param name="rememberClient">Flag indicating whether the current browser should be remember, suppressing all further
         /// two factor authentication prompts.</param>
         /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
         /// for the sign-in attempt.</returns>
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="provider">The two factor authentication provider to validate the code against.</param>
         /// <param name="code">The two factor authentication code to validate.</param>
         /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
-        /// <param name="rememberClient">Flag indicating whether the current browser should be remember, suppressing all further 
+        /// <param name="rememberClient">Flag indicating whether the current browser should be remember, suppressing all further
         /// two factor authentication prompts.</param>
         /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
         /// for the sign-in attempt.</returns>
@@ -630,9 +630,9 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Gets a collection of <see cref="AuthenticationScheme"/>s for the known external login providers.		
-        /// </summary>		
-        /// <returns>A collection of <see cref="AuthenticationScheme"/>s for the known external login providers.</returns>		
+        /// Gets a collection of <see cref="AuthenticationScheme"/>s for the known external login providers.
+        /// </summary>
+        /// <returns>A collection of <see cref="AuthenticationScheme"/>s for the known external login providers.</returns>
         public virtual async Task<IEnumerable<AuthenticationScheme>> GetExternalAuthenticationSchemesAsync()
         {
             var schemes = await _schemes.GetAllSchemesAsync();
@@ -763,7 +763,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             return new ClaimsPrincipal(rememberBrowserIdentity);
         }
-        
+
         private async Task<bool> IsTfaEnabled(TUser user)
             => UserManager.SupportsUserTwoFactor &&
             await UserManager.GetTwoFactorEnabledAsync(user) &&

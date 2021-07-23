@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.Web
         private static readonly JsonEncodedText ClientY = JsonEncodedText.Encode("clientY");
         private static readonly JsonEncodedText OffsetX = JsonEncodedText.Encode("offsetX");
         private static readonly JsonEncodedText OffsetY = JsonEncodedText.Encode("offsetY");
+        private static readonly JsonEncodedText PageX = JsonEncodedText.Encode("pageX");
+        private static readonly JsonEncodedText PageY = JsonEncodedText.Encode("pageY");
         private static readonly JsonEncodedText Button = JsonEncodedText.Encode("button");
         private static readonly JsonEncodedText Buttons = JsonEncodedText.Encode("buttons");
         private static readonly JsonEncodedText CtrlKey = JsonEncodedText.Encode("ctrlKey");
@@ -63,6 +65,14 @@ namespace Microsoft.AspNetCore.Components.Web
             else if (property.NameEquals(OffsetY.EncodedUtf8Bytes))
             {
                 eventArgs.OffsetY = property.Value.GetDouble();
+            }
+            else if (property.NameEquals(PageX.EncodedUtf8Bytes))
+            {
+                eventArgs.PageX = property.Value.GetDouble();
+            }
+            else if (property.NameEquals(PageY.EncodedUtf8Bytes))
+            {
+                eventArgs.PageY = property.Value.GetDouble();
             }
             else if (property.NameEquals(Button.EncodedUtf8Bytes))
             {

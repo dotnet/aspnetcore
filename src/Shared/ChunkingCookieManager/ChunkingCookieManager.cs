@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Internal
 
                 var keyValuePairs = new KeyValuePair<string, string>[cookieChunkCount + 1];
                 keyValuePairs[0] = KeyValuePair.Create(key, ChunkCountPrefix + cookieChunkCount.ToString(CultureInfo.InvariantCulture));
-                
+
                 var offset = 0;
                 for (var chunkId = 1; chunkId <= cookieChunkCount; chunkId++)
                 {
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Internal
                     keyValuePairs[chunkId] = KeyValuePair.Create(string.Concat(key, ChunkKeySuffix, chunkId.ToString(CultureInfo.InvariantCulture)), segment);
                 }
 
-                responseCookies.Append(keyValuePairs, options);    
+                responseCookies.Append(keyValuePairs, options);
             }
         }
 
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Internal
 
             var keyValuePairs = new KeyValuePair<string, string>[chunks + 1];
             keyValuePairs[0] = KeyValuePair.Create(key, string.Empty);
-            
+
             for (var i = 1; i <= chunks; i++)
             {
                 keyValuePairs[i] = KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty);

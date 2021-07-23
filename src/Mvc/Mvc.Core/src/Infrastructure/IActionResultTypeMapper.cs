@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// for request processing.
     /// </summary>
     /// <remarks>
-    /// The default implementation of this service handles the conversion of 
+    /// The default implementation of this service handles the conversion of
     /// <see cref="ActionResult{TValue}"/> to an <see cref="IActionResult"/> during request
     /// processing as well as the mapping of <see cref="ActionResult{TValue}"/> to <c>TValue</c>
     /// during API Explorer processing.
