@@ -375,17 +375,8 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
                                 continue;
                             }
                         }
-
-                        return result;
                     }
                 }
-            }
-
-            if (candidate != null)
-            {
-                // we didn't find a match, nor a match on the patterns, but at least we matched the segments against the tree
-                // on the manifest, so this indicates it is a folder.
-                return new StaticWebAssetsDirectoryInfo(segments.Length == 0 ? "" : segments[^1]);
             }
 
             return new NotFoundFileInfo(subpath);
