@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Razor.Language;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             InjectDirective.Register(builder);
             ModelDirective.Register(builder);
             PageDirective.Register(builder);
-            
+
             SectionDirective.Register(builder);
 
             builder.Features.Add(new DefaultTagHelperDescriptorProvider());
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new ModelExpressionPass());
             builder.Features.Add(new PagesPropertyInjectionPass());
             builder.Features.Add(new ViewComponentTagHelperPass());
-            
+
             builder.Features.Add(new RazorPageDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
             builder.Features.Add(new MvcViewDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
 

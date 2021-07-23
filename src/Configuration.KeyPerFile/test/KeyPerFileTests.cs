@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -77,6 +77,27 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
 
             var config = new ConfigurationBuilder()
                 .AddKeyPerFile(o => o.FileProvider = testFileProvider)
+                .Build();
+
+            Assert.Equal("SecretValue0", config["Secret0:Key"]);
+            Assert.Equal("SecretValue1", config["Secret0:Secret1:Key"]);
+            Assert.Equal("SecretValue2", config["Secret0:Secret1:Secret2:Key"]);
+        }
+
+        [Fact]
+        public void LoadWithCustomSectionDelimiter()
+        {
+            var testFileProvider = new TestFileProvider(
+                new TestFile("Secret0--Secret1--Secret2--Key", "SecretValue2"),
+                new TestFile("Secret0--Secret1--Key", "SecretValue1"),
+                new TestFile("Secret0--Key", "SecretValue0"));
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.SectionDelimiter = "--";
+                })
                 .Build();
 
             Assert.Equal("SecretValue0", config["Secret0:Key"]);

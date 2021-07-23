@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo ExecuteObjectReturnMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteObjectReturn), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
         private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
+        private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
         private static readonly MethodInfo LogParameterBindingFailureMethod = GetMethodInfo<Action<HttpContext, string, string, string>>((httpContext, parameterType, parameterName, sourceValue) =>
             Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue));
@@ -60,9 +60,11 @@ namespace Microsoft.AspNetCore.Http
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
         /// </summary>
         /// <param name="action">A request handler with any number of custom parameters that often produces a response with its return value.</param>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> instance used to detect which parameters are services.</param>
+        /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
-        public static RequestDelegate Create(Delegate action, IServiceProvider? serviceProvider)
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        public static RequestDelegate Create(Delegate action, RequestDelegateFactoryOptions? options = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (action is null)
             {
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Http
                 null => null,
             };
 
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, serviceProvider, targetExpression);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, options, targetExpression);
 
             return httpContext =>
             {
@@ -86,50 +88,41 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
         /// </summary>
-        /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> instance used to detect which parameters are services.</param>
-        /// <returns>The <see cref="RequestDelegate"/>.</returns>
-        public static RequestDelegate Create(MethodInfo methodInfo, IServiceProvider? serviceProvider)
-        {
-            if (methodInfo is null)
-            {
-                throw new ArgumentNullException(nameof(methodInfo));
-            }
-
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, serviceProvider, targetExpression: null);
-
-            return httpContext =>
-            {
-                return targetableRequestDelegate(null, httpContext);
-            };
-        }
-
-        /// <summary>
-        /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
-        /// </summary>
         /// <param name="methodInfo">A request handler with any number of custom parameters that often produces a response with its return value.</param>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> instance used to detect which parameters are services.</param>
         /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
+        /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
-        public static RequestDelegate Create(MethodInfo methodInfo, IServiceProvider? serviceProvider, Func<HttpContext, object> targetFactory)
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        public static RequestDelegate Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (methodInfo is null)
             {
                 throw new ArgumentNullException(nameof(methodInfo));
-            }
-
-            if (targetFactory is null)
-            {
-                throw new ArgumentNullException(nameof(targetFactory));
             }
 
             if (methodInfo.DeclaringType is null)
             {
-                throw new ArgumentException($"A {nameof(targetFactory)} was provided, but {nameof(methodInfo)} does not have a Declaring type.");
+                throw new ArgumentException($"{nameof(methodInfo)} does not have a declaring type.");
+            }
+
+            if (targetFactory is null)
+            {
+                if (methodInfo.IsStatic)
+                {
+                    var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, targetExpression: null);
+
+                    return httpContext =>
+                    {
+                        return untargetableRequestDelegate(null, httpContext);
+                    };
+                }
+
+                targetFactory = context => Activator.CreateInstance(methodInfo.DeclaringType)!;
             }
 
             var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, serviceProvider, targetExpression);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, targetExpression);
 
             return httpContext =>
             {
@@ -137,7 +130,7 @@ namespace Microsoft.AspNetCore.Http
             };
         }
 
-        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, IServiceProvider? serviceProvider, Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, Expression? targetExpression)
         {
             // Non void return type
 
@@ -157,8 +150,13 @@ namespace Microsoft.AspNetCore.Http
 
             var factoryContext = new FactoryContext()
             {
-                ServiceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>()
+                ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
             };
+
+            if (options?.RouteParameterNames is { } routeParameterNames)
+            {
+                factoryContext.RouteParameters = new(routeParameterNames);
+            }
 
             var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
@@ -202,6 +200,11 @@ namespace Microsoft.AspNetCore.Http
 
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
+                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name))
+                {
+                    throw new InvalidOperationException($"{parameter.Name} is not a route paramter.");
+                }
+
                 return BindParameterFromProperty(parameter, RouteValuesExpr, routeAttribute.Name ?? parameter.Name, factoryContext);
             }
             else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
@@ -242,6 +245,13 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
+                // We're in the fallback case and we have a parameter and route parameter match so don't fallback
+                // to query string in this case
+                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name))
+                {
+                    return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
+                }
+
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
             else
@@ -434,7 +444,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (returnType == typeof(string))
             {
-                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpContextExpr, methodCall);
             }
             else if (returnType.IsValueType)
             {
@@ -694,6 +704,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (obj is string stringValue)
             {
+                SetPlaintextContentType(httpContext);
                 await httpContext.Response.WriteAsync(stringValue);
             }
             else
@@ -722,6 +733,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
         {
+
+            SetPlaintextContentType(httpContext);
             EnsureRequestTaskNotNull(task);
 
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
@@ -735,6 +748,12 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return ExecuteAwaited(task!, httpContext);
+        }
+
+        private static Task ExecuteWriteStringResponseAsync(HttpContext httpContext, string text)
+        {
+             SetPlaintextContentType(httpContext);
+             return httpContext.Response.WriteAsync(text);
         }
 
         private static Task ExecuteValueTask(ValueTask task)
@@ -769,6 +788,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
         {
+            SetPlaintextContentType(httpContext);
+
             static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
             {
                 await httpContext.Response.WriteAsync(await task);
@@ -814,6 +835,7 @@ namespace Microsoft.AspNetCore.Http
             public Type? JsonRequestBodyType { get; set; }
             public bool AllowEmptyRequestBody { get; set; }
             public IServiceProviderIsService? ServiceProviderIsService { get; init; }
+            public List<string>? RouteParameters { get; set; }
 
             public bool UsingTempSourceString { get; set; }
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();
@@ -872,6 +894,11 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return result;
+        }
+
+        private static void SetPlaintextContentType(HttpContext httpContext)
+        {
+            httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
         }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -768,8 +768,8 @@ namespace CodeGenerator
                     offset += header.BytesCount;
                 }
             }
-            return $@"// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+            var s = $@"// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -1256,7 +1256,7 @@ $@"        private void Clear(long bitsToClear)
             else
             {{
                 // The header was not one of the ""known"" headers.
-                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
+                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
                 // this method with rep stosd, which is slower than necessary.
                 nameStr = name.GetHeaderName();
                 var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
@@ -1337,6 +1337,9 @@ $@"        private void Clear(long bitsToClear)
         }}
     }}
 ")}}}";
+
+            // Temporary workaround for https://github.com/dotnet/runtime/issues/55688
+            return s.Replace("{{", "{").Replace("}}", "}");
         }
 
         private static string GetHeaderLookup()

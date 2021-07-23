@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -36,16 +36,12 @@ namespace Microsoft.AspNetCore.Builder
             {
                 WebRootPath = wwwroot;
             }
-
-            if (this.IsDevelopment())
-            {
-                StaticWebAssetsLoader.UseStaticWebAssets(this, new Configuration());
-            }
         }
 
         public void ApplyConfigurationSettings(IConfiguration configuration)
         {
             ReadConfigurationSettings(configuration);
+
             if (this.IsDevelopment())
             {
                 StaticWebAssetsLoader.UseStaticWebAssets(this, configuration);
@@ -81,20 +77,6 @@ namespace Microsoft.AspNetCore.Builder
             destination.WebRootPath = WebRootPath;
         }
 
-        public void ResolveFileProviders(IConfiguration configuration)
-        {
-            if (Directory.Exists(ContentRootPath))
-            {
-                ContentRootFileProvider = new PhysicalFileProvider(ContentRootPath);
-            }
-
-            if (Directory.Exists(WebRootPath))
-            {
-                WebRootFileProvider = new PhysicalFileProvider(WebRootPath);
-            }
-
-        }
-
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
 
@@ -109,7 +91,6 @@ namespace Microsoft.AspNetCore.Builder
             get => _webRootFileProvider;
             set => _webRootFileProvider = value;
         }
-
 
         public string ContentRootPath
         {

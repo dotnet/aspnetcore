@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
@@ -11,7 +11,7 @@ public final class CompletionMessage extends HubMessage {
     private final String invocationId;
     private final Object result;
     private final String error;
-    
+
     public CompletionMessage(Map<String, String> headers, String invocationId, Object result, String error) {
         if (headers != null && !headers.isEmpty()) {
             this.headers = headers;
@@ -23,7 +23,7 @@ public final class CompletionMessage extends HubMessage {
         this.result = result;
         this.error = error;
     }
-    
+
     public Map<String, String> getHeaders() {
         return headers;
     }

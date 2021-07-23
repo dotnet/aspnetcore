@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 KeyValuePair.Create("Key1","value3")
             };
 
-            Assert.Equal(expectedBaggage, Activity.Current.Baggage);
+            Assert.Equal(expectedBaggage, Activity.Current.Baggage.ToArray());
         }
 
         [Fact]
@@ -552,6 +552,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 logger ?? new NullScopeLogger(),
                 diagnosticListener ?? new NoopDiagnosticListener(),
                 activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
+                DistributedContextPropagator.CreateDefaultPropagator(),
                 httpContextFactory.Object);
 
             return hostingApplication;

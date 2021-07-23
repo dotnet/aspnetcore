@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         // The following fields are only set by TlsHandshakeCallbackOptions ctor.
         private readonly Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>>? _tlsCallbackOptions;
         private readonly object? _tlsCallbackOptionsState;
+        private readonly HttpProtocols _httpProtocols;
 
         // Pool for cancellation tokens that cancel the handshake
         private readonly CancellationTokenSourcePool _ctsPool = new();
@@ -127,6 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             _tlsCallbackOptions = tlsCallbackOptions.OnConnection;
             _tlsCallbackOptionsState = tlsCallbackOptions.OnConnectionState;
+            _httpProtocols = ValidateAndNormalizeHttpProtocols(tlsCallbackOptions.HttpProtocols, _logger);
             _sslStreamFactory = s => new SslStream(s);
         }
 
@@ -434,6 +436,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var sslOptions = await middleware._tlsCallbackOptions!(callbackContext);
             feature.AllowDelayedClientCertificateNegotation = callbackContext.AllowDelayedClientCertificateNegotation;
 
+            // The callback didn't set ALPN so we will.
+            if (sslOptions.ApplicationProtocols == null)
+            {
+                ConfigureAlpn(sslOptions, middleware._httpProtocols);
+            }
             KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
 
             return sslOptions;

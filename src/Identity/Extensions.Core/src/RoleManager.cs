@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>An IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore{TRole}"/>.</value>
         /// <exception cref="NotSupportedException">Thrown if the persistence store is not an <see cref="IQueryableRoleStore{TRole}"/>.</exception>
         /// <remarks>
-        /// Callers to this property should use <see cref="SupportsQueryableRoles"/> to ensure the backing role store supports 
+        /// Callers to this property should use <see cref="SupportsQueryableRoles"/> to ensure the backing role store supports
         /// returning an IQueryable list of roles.
         /// </remarks>
         public virtual IQueryable<TRole> Roles
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="roleId">The role ID whose role should be returned.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the role 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the role
         /// associated with the specified <paramref name="roleId"/>
         /// </returns>
         public virtual Task<TRole> FindByIdAsync(string roleId)
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="role">The role whose name should be retrieved.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the name of the 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the name of the
         /// specified <paramref name="role"/>.
         /// </returns>
         public virtual Task<string> GetRoleNameAsync(TRole role)
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="role">The role whose ID should be retrieved.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the ID of the 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the ID of the
         /// specified <paramref name="role"/>.
         /// </returns>
         public virtual Task<string> GetRoleIdAsync(TRole role)
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="roleName">The name of the role to be returned.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the role 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the role
         /// associated with the specified <paramref name="roleName"/>
         /// </returns>
         public virtual Task<TRole> FindByNameAsync(string roleName)

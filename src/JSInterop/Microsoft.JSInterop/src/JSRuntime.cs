@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -215,20 +215,9 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="jsStreamReference"><see cref="IJSStreamReference"/> to produce a data stream for.</param>
         /// <param name="totalLength">Expected length of the incoming data stream.</param>
-        /// <param name="pauseIncomingBytesThreshold">
-        /// The number of unconsumed bytes to accept from JS before blocking.
-        /// Defaults to -1, which indicates use of the default <see cref="System.IO.Pipelines.PipeOptions.PauseWriterThreshold" />.
-        /// Avoid specifying an excessively large value because this could allow clients to exhaust memory.
-        /// A value of zero prevents JS from blocking, allowing .NET to receive an unlimited number of bytes.
-        /// </param>
-        /// <param name="resumeIncomingBytesThreshold">
-        /// The number of unflushed bytes at which point JS stops blocking.
-        /// Defaults to -1, which indicates use of the default <see cref="System.IO.Pipelines.PipeOptions.PauseWriterThreshold" />.
-        /// Must be less than the <paramref name="pauseIncomingBytesThreshold"/> to prevent thrashing at the limit.
-        /// </param>
         /// <param name="cancellationToken"><see cref="CancellationToken" /> for cancelling read.</param>
         /// <returns><see cref="Stream"/> for the data reference represented by <paramref name="jsStreamReference"/>.</returns>
-        protected internal virtual Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, long pauseIncomingBytesThreshold = -1, long resumeIncomingBytesThreshold = -1, CancellationToken cancellationToken = default)
+        protected internal virtual Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
         {
             // The reason it's virtual and not abstract is just for back-compat
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -375,12 +375,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_ThrowsOn1025Items_AtTopLevel()
         {
             // Arrange
-            var expectedMessage = $"Collection bound to 'parameter' exceeded " +
+            var expectedMessage = "Collection bound to 'parameter' exceeded " +
                 $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
                 $"safeguard against incorrect model binders and models. Address issues in " +
                 $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
                 $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
-                $"documentation for more information.";
+                "documentation for more information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",

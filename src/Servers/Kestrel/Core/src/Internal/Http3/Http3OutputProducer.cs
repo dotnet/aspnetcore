@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -305,11 +305,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return;
                 }
 
-                if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
-                {
-                    // TODO figure out something to do here.
-                }
-
                 _frameWriter.WriteResponseHeaders(statusCode, responseHeaders);
             }
         }
@@ -362,9 +357,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
 
                         // Headers have already been written and there is no other content to write
-                        // TODO complete something here.
-                        flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
+
+                        // Need to complete framewriter immediately as CompleteAsync could be called
+                        // in the app delegate and we don't want to wait for the app delegate to
+                        // finish before sending response.
                         await _frameWriter.CompleteAsync();
+                        flushResult = default;
                     }
                     else
                     {

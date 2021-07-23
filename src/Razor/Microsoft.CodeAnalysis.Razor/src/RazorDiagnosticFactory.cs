@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Razor.Language;
 
@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         // Razor.Language starts at 0, 1000, 2000, 3000. Therefore, we should offset by 500 to ensure we can easily
         // maintain this list of diagnostic descriptors in conjunction with the one in Razor.Language.
-         
+
         #region General Errors
 
         // General Errors ID Offset = 500
@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidAttributeNameNullOrEmpty =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3500",
-                () => Resources.TagHelper_InvalidAttributeNameNotNullOrEmpty,
+                () => CodeAnalysisResources.TagHelper_InvalidAttributeNameNotNullOrEmpty,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidAttributeNameNullOrEmpty(string tagHelperDisplayName, string propertyDisplayName)
         {
@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidAttributePrefixNotNull =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3501",
-                () => Resources.TagHelper_InvalidAttributePrefixNotNull,
+                () => CodeAnalysisResources.TagHelper_InvalidAttributePrefixNotNull,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidAttributePrefixNotNull(string tagHelperDisplayName, string propertyDisplayName)
         {
@@ -74,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidAttributePrefixNull =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3502",
-                () => Resources.TagHelper_InvalidAttributePrefixNull,
+                () => CodeAnalysisResources.TagHelper_InvalidAttributePrefixNull,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidAttributePrefixNull(string tagHelperDisplayName, string propertyDisplayName)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidRequiredAttributeCharacter =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3503",
-                () => Resources.TagHelper_InvalidRequiredAttributeCharacter,
+                () => CodeAnalysisResources.TagHelper_InvalidRequiredAttributeCharacter,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidRequiredAttributeCharacter(char invalidCharacter, string requiredAttributes)
         {
@@ -109,7 +109,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_PartialRequiredAttributeOperator =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3504",
-                () => Resources.TagHelper_PartialRequiredAttributeOperator,
+                () => CodeAnalysisResources.TagHelper_PartialRequiredAttributeOperator,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_PartialRequiredAttributeOperator(char partialOperator, string requiredAttributes)
         {
@@ -125,7 +125,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidRequiredAttributeOperator =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3505",
-                () => Resources.TagHelper_InvalidRequiredAttributeOperator,
+                () => CodeAnalysisResources.TagHelper_InvalidRequiredAttributeOperator,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidRequiredAttributeOperator(char invalidOperator, string requiredAttributes)
         {
@@ -141,7 +141,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidRequiredAttributeMismatchedQuotes =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3506",
-                () => Resources.TagHelper_InvalidRequiredAttributeMismatchedQuotes,
+                () => CodeAnalysisResources.TagHelper_InvalidRequiredAttributeMismatchedQuotes,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidRequiredAttributeMismatchedQuotes(char quote, string requiredAttributes)
         {
@@ -157,7 +157,7 @@ namespace Microsoft.CodeAnalysis.Razor
         internal static readonly RazorDiagnosticDescriptor TagHelper_CouldNotFindMatchingEndBrace =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3507",
-                () => Resources.TagHelper_CouldNotFindMatchingEndBrace,
+                () => CodeAnalysisResources.TagHelper_CouldNotFindMatchingEndBrace,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_CouldNotFindMatchingEndBrace(string requiredAttributes)
         {

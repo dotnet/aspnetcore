@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var actionContext = new ActionContext(new DefaultHttpContext() { RequestServices = Mock.Of<IServiceProvider>(), }, new RouteData(), new ActionDescriptor());
             var expected =
-                $"Unable to find the required services. Please add all the required services by calling " +
+                "Unable to find the required services. Please add all the required services by calling " +
                 $"'IServiceCollection.AddControllersWithViews()' inside the call to 'ConfigureServices(...)' " +
-                $"in the application startup code.";
+                "in the application startup code.";
 
             var viewResult = new ViewComponentResult();
 

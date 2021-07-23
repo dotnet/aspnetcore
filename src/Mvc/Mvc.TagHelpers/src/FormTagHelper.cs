@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 TagBuilder tagBuilder = null;
                 if (!routeableParametersProvided &&
                     _routeValues == null &&
-                    // Antiforgery will sometime be set globally via TagHelper Initializers, verify it was provided in the cshtml. 
+                    // Antiforgery will sometime be set globally via TagHelper Initializers, verify it was provided in the cshtml.
                     !context.AllAttributes.ContainsName(AntiforgeryAttributeName))
                 {
                     // A <form> tag that doesn't utilize asp-* attributes. Let it flow to the output.

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         public RemoveCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
         {
-            _sourceProjectArg = Argument(SourceArgName, $"The OpenAPI reference to remove. Must represent a reference which is already in this project", multipleValues: true);
+            _sourceProjectArg = Argument(SourceArgName, "The OpenAPI reference to remove. Must represent a reference which is already in this project", multipleValues: true);
         }
 
         internal readonly CommandArgument _sourceProjectArg;

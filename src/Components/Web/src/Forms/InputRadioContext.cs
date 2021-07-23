@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets the name of the input radio group.
         /// </summary>
-        public string GroupName { get; } 
+        public string GroupName { get; }
 
         /// <summary>
         /// Gets the current selected value in the input radio group.

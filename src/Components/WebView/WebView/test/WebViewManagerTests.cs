@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -78,6 +78,23 @@ namespace Microsoft.AspNetCore.Components.WebView
         }
 
         [Fact]
+        public async Task CanDisposeWebViewManagerWithAsyncDisposableServices()
+        {
+            // Arrange
+            var services = RegisterTestServices()
+                .AddTestBlazorWebView()
+                .AddScoped<AsyncDisposableService>()
+                .BuildServiceProvider();
+            var fileProvider = new TestFileProvider();
+            var webViewManager = new TestWebViewManager(services, fileProvider);
+            await webViewManager.AddRootComponentAsync(typeof(MyComponentUsingScopedAsyncDisposableService), "#app", ParameterView.Empty);
+            webViewManager.ReceiveAttachPageMessage();
+
+            // Act
+            await webViewManager.DisposeAsync();
+        }
+
+        [Fact]
         public async Task AddRootComponentsWithExistingSelector_Throws()
         {
             // Arrange
@@ -122,6 +139,30 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
+        private class MyComponentUsingScopedAsyncDisposableService : IComponent
+        {
+            private RenderHandle _handle;
+
+            public void Attach(RenderHandle renderHandle)
+            {
+                _handle = renderHandle;
+            }
+
+            [Inject] public AsyncDisposableService MyAsyncDisposableService { get; set; }
+
+            public Task SetParametersAsync(ParameterView parameters)
+            {
+                _handle.Render(builder =>
+                {
+                    builder.OpenElement(0, "p");
+                    builder.AddContent(1, "Hello world!");
+                    builder.CloseElement();
+                });
+
+                return Task.CompletedTask;
+            }
+        }
+
         private class SingletonService
         {
             public List<ScopedService> Services { get; } = new();
@@ -145,6 +186,11 @@ namespace Microsoft.AspNetCore.Components.WebView
             {
                 Disposed = true;
             }
+        }
+
+        public class AsyncDisposableService : IAsyncDisposable
+        {
+            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
         }
     }
 }

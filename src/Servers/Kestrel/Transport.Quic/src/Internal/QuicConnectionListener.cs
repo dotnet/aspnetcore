@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +26,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
         {
+            if (!QuicImplementationProviders.Default.IsSupported)
+            {
+                throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
+            }
+
             if (options.Alpn == null)
             {
                 throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
@@ -41,8 +46,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
+            quicListenerOptions.MaxBidirectionalStreams = options.MaxBidirectionalStreamCount;
+            quicListenerOptions.MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount;
 
-            _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
+            _listener = new QuicListener(quicListenerOptions);
 
             // Listener endpoint will resolve an ephemeral port, e.g. 127.0.0.1:0, into the actual port.
             EndPoint = _listener.ListenEndPoint;

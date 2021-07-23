@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "order": 200,
+  "icon": "ide/WebAPI.png",
+  "supportsDocker": true,
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    },
+    {
+      "auth": "Individual",
+      "authenticationType": "IndividualAuth",
+      "b2cAuthenticationOptions": "CloudExisting"
+    },
+    {
+      "auth": "SingleOrg",
+      "authenticationType": "OrgAuth",
+      "orgAuthenticationOptions": "SSO"
+    },
+    {
+      "auth": "Windows",
+      "authenticationType": "WindowsAuth"
+    }
+  ],
+  "ports": [
+    {
+      "name": "HttpPort",
+      "useHttps": false
+    },
+    {
+      "name": "HttpsPort",
+      "useHttps": true
+    }
+  ],
+  "symbolInfo": [
+    {
+      "id": "DisableOpenAPI",
+      "name": {
+        "text": "Enable _OpenAPI support"
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
+    }
+  ],
+  "disableHttpsSymbol": "NoHttps"
+}

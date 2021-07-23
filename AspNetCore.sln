@@ -996,7 +996,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectTemplates", "Project
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ProjectTemplates", "src\ProjectTemplates\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj", "{5D3C520F-0CA7-4759-A563-40496545FA48}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\ProjectTemplates\Web.Spa.ProjectTemplates\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{C732CA83-EEBE-4DAB-B567-5A35640FE8CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\submodules\spa-templates\src\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{C732CA83-EEBE-4DAB-B567-5A35640FE8CD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Client.ItemTemplates", "src\ProjectTemplates\Web.Client.ItemTemplates\Microsoft.DotNet.Web.Client.ItemTemplates.csproj", "{4F2C221D-7D0B-46B3-9362-2D68F92ECF29}"
 EndProject
@@ -1602,9 +1602,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Features", "Features", "{17F28812-983E-4415-A55D-842DD7EC6887}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features", "src\Http\Features\src\Microsoft.Extensions.Features.csproj", "{A07D3B13-388B-444F-9E37-DDC0787C4690}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features", "src\Extensions\Features\src\Microsoft.Extensions.Features.csproj", "{A07D3B13-388B-444F-9E37-DDC0787C4690}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features.Tests", "src\Http\Features\test\Microsoft.Extensions.Features.Tests.csproj", "{09FFBC53-3EFF-45C4-9822-5D66089CD6AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Features.Tests", "src\Extensions\Features\test\Microsoft.Extensions.Features.Tests.csproj", "{09FFBC53-3EFF-45C4-9822-5D66089CD6AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Migration.E2ETests", "src\Components\test\E2ETestMigration\Microsoft.AspNetCore.Components.Migration.E2ETests.csproj", "{A1D02CE6-1077-410A-81CB-D4BD500FD765}"
 EndProject
@@ -1633,6 +1633,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Results.Tests", "src\Http\Http.Results\test\Microsoft.AspNetCore.Http.Results.Tests.csproj", "{F599EAA6-399F-4A91-9B1F-D311305B43D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logging.W3C.Sample", "src\Middleware\HttpLogging\samples\Logging.W3C.Sample\Logging.W3C.Sample.csproj", "{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Internal.SourceGenerator.Transport", "src\Razor\Microsoft.AspNetCore.Razor.Internal.SourceGenerator.Transport\Microsoft.AspNetCore.Razor.Internal.SourceGenerator.Transport.csproj", "{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -7789,6 +7791,18 @@ Global
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x64.Build.0 = Release|Any CPU
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x86.ActiveCfg = Release|Any CPU
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85}.Release|x86.Build.0 = Release|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Debug|x64.Build.0 = Debug|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Debug|x86.Build.0 = Debug|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Release|x64.ActiveCfg = Release|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Release|x64.Build.0 = Release|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Release|x86.ActiveCfg = Release|Any CPU
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -8598,6 +8612,7 @@ Global
 		{092EA9F6-84D4-41EF-A618-BDA50A0E10A8} = {323C3EB6-1D15-4B3D-918D-699D7F64DED9}
 		{F599EAA6-399F-4A91-9B1F-D311305B43D9} = {323C3EB6-1D15-4B3D-918D-699D7F64DED9}
 		{17459B97-1AA3-4154-83D3-C6BDC9FA3F85} = {022B4B80-E813-4256-8034-11A68146F4EF}
+		{247E7B6F-FBA2-41A9-BA03-C7C4DF28091C} = {B27FBAC2-ADA3-4A05-B232-64011B6B2DA3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

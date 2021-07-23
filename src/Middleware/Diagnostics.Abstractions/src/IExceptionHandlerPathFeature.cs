@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// The portion of the request path that identifies the requested resource. The value
         /// is un-escaped.
         /// </summary>
-        string? Path { get; }
+        new string Path => ((IExceptionHandlerFeature)this).Path;
     }
 }

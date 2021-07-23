@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -225,14 +225,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
         }
 
-        private static string GetContentRootFromFile(string file)
+        private static string? GetContentRootFromFile(string file)
         {
             var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file))!;
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
 
+            // If the `ContentRoot` is not provided in the app manifest, then return null
+            // and fallback to setting the content root relative to the entrypoint's assembly.
             if (!data.TryGetValue(key, out var contentRoot))
             {
-                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
+                return null;
             }
 
             return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;

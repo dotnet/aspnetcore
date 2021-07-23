@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,8 +39,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
+            IActionResultTypeMapper mapper)
+            : this(cache, modelMetadataProvider, tempDataFactory, mvcOptions, mvcViewOptions, selector, diagnosticListener, loggerFactory, mapper, null)
+        {
+        }
+
+        public PageRequestDelegateFactory(
+            PageActionInvokerCache cache,
+            IModelMetadataProvider modelMetadataProvider,
+            ITempDataDictionaryFactory tempDataFactory,
+            IOptions<MvcOptions> mvcOptions,
+            IOptions<MvcViewOptions> mvcViewOptions,
+            IPageHandlerMethodSelector selector,
+            DiagnosticListener diagnosticListener,
+            ILoggerFactory loggerFactory,
             IActionResultTypeMapper mapper,
-            IActionContextAccessor? actionContextAccessor = null)
+            IActionContextAccessor? actionContextAccessor)
         {
             _cache = cache;
             _valueProviderFactories = mvcOptions.Value.ValueProviderFactories.ToArray();

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -48,6 +48,9 @@ namespace Microsoft.AspNetCore.Components
         /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a metadata update (hot-reload) change.
         /// </summary>
         public bool IsRenderingOnMetadataUpdate => TestableMetadataUpdate.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
+
+        internal bool IsRendererDisposed => _renderer?.Disposed
+            ?? throw new InvalidOperationException("No renderer has been initialized.");
 
         /// <summary>
         /// Notifies the renderer that the component should be rendered.

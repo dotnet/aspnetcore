@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -246,6 +246,87 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Empty is valid, because it's nullable
             expiryDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
             Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
+            Browser.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputDateInteractsWithEditContext_TimeInput()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var departureTimeInput = appElement.FindElement(By.ClassName("departure-time")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            Browser.Equal("valid", () => departureTimeInput.GetAttribute("class"));
+            departureTimeInput.SendKeys("06:43\t");
+            Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
+
+            // Can become invalid
+            ApplyInvalidInputDateValue(".departure-time input", "01:234:56");
+            Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
+
+            // Empty is invalid, because it's not nullable
+            departureTimeInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
+
+            departureTimeInput.SendKeys("07201\t");
+            Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
+            Browser.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputDateInteractsWithEditContext_MonthInput()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var visitMonthInput = appElement.FindElement(By.ClassName("visit-month")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            Browser.Equal("valid", () => visitMonthInput.GetAttribute("class"));
+            visitMonthInput.SendKeys("03\t2005\t");
+            Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
+
+            // Can become invalid
+            ApplyInvalidInputDateValue(".visit-month input", "05/1992");
+            Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
+
+            // Empty is invalid, because it's not nullable
+            visitMonthInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t");
+            Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
+
+            visitMonthInput.SendKeys("05\t2007\t");
+            Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
+            Browser.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputDateInteractsWithEditContext_DateTimeLocalInput()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var appointmentInput = appElement.FindElement(By.ClassName("appointment-date-time")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            Browser.Equal("valid", () => appointmentInput.GetAttribute("class"));
+            appointmentInput.SendKeys("01\t02\t1988\t0523\t1");
+            Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
+
+            // Can become invalid
+            ApplyInvalidInputDateValue(".appointment-date-time input", "1234/567/89 33:44 FM");
+            Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
+
+            // Empty is invalid, because it's not nullable
+            appointmentInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
+
+            appointmentInput.SendKeys("01234567\t11551\t");
+            Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }
 

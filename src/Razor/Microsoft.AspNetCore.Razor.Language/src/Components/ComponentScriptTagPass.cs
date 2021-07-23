@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         // We allow you to suppress this error like:
                         // <script suppress-error="BL9992" />
                         var attribute = node.Children[i] as HtmlAttributeIntermediateNode;
-                        if (attribute != null && 
+                        if (attribute != null &&
                             attribute.AttributeName == "suppress-error" &&
                             attribute.Children.Count == 1 &&
                             attribute.Children[0] is HtmlAttributeValueIntermediateNode value &&
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             return;
                         }
                     }
-                    
+
                     var diagnostic = ComponentDiagnosticFactory.Create_DisallowedScriptTag(node.Source);
                     node.Diagnostics.Add(diagnostic);
                 }

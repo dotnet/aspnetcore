@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             : base(parent, CommandName, httpClient)
         {
             _codeGeneratorOption = Option("-c|--code-generator", "The code generator to use. Defaults to 'NSwagCSharp'.", CommandOptionType.SingleValue);
-            _sourceProjectArg = Argument(SourceProjectArgName, $"The OpenAPI project to add. This must be the path to project file(s) containing OpenAPI endpoints", multipleValues: true);
+            _sourceProjectArg = Argument(SourceProjectArgName, "The OpenAPI project to add. This must be the path to project file(s) containing OpenAPI endpoints", multipleValues: true);
         }
 
         internal readonly CommandArgument _sourceProjectArg;

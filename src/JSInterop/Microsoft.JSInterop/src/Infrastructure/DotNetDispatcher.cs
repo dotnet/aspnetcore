@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -375,7 +375,7 @@ namespace Microsoft.JSInterop.Infrastructure
                     {
                         throw new InvalidOperationException($"The type {type.Name} contains more than one " +
                             $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
-                            $"type must have different identifiers. You can pass a custom identifier as a parameter to " +
+                            "type must have different identifiers. You can pass a custom identifier as a parameter to " +
                             $"the [JSInvokable] attribute.");
                     }
 

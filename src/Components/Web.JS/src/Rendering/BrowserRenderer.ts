@@ -1,12 +1,12 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const deferredValuePropname = '_blazorDeferredValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
+const elementsToClearOnRootComponentRender: { [componentId: number]: LogicalElement } = {};
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
@@ -14,6 +14,7 @@ const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
 
+  private rootComponentIds = new Set<number>();
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
@@ -25,9 +26,15 @@ export class BrowserRenderer {
     attachNavigationManagerToEventDelegator(this.eventDelegator);
   }
 
-  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
+  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
     this.attachComponentToElement(componentId, element);
-    rootComponentsPendingFirstRender[componentId] = element;
+    this.rootComponentIds.add(componentId);
+
+    // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
+    // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
+    if (!appendContent) {
+      elementsToClearOnRootComponentRender[componentId] = element;
+    }
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
@@ -37,10 +44,10 @@ export class BrowserRenderer {
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
-    const rootElementToClear = rootComponentsPendingFirstRender[componentId];
+    const rootElementToClear = elementsToClearOnRootComponentRender[componentId];
     if (rootElementToClear) {
       const rootElementToClearEnd = getLogicalSiblingEnd(rootElementToClear);
-      delete rootComponentsPendingFirstRender[componentId];
+      delete elementsToClearOnRootComponentRender[componentId];
 
       if (!rootElementToClearEnd) {
         clearElement(rootElementToClear as unknown as Element);
@@ -61,6 +68,13 @@ export class BrowserRenderer {
   }
 
   public disposeComponent(componentId: number) {
+    if (this.rootComponentIds.delete(componentId)) {
+      // When disposing a root component, the container element won't be removed from the DOM (because there's
+      // no parent to remove that child), so we empty it to restore it to the state it was in before the root
+      // component was added.
+      emptyLogicalElement(this.childComponentLocations[componentId]);
+    }
+
     delete this.childComponentLocations[componentId];
   }
 

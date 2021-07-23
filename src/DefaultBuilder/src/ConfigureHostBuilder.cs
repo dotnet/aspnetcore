@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -21,12 +21,12 @@ namespace Microsoft.AspNetCore.Builder
         public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
         private readonly WebHostEnvironment _environment;
-        private readonly Configuration _configuration;
+        private readonly ConfigurationManager _configuration;
         private readonly IServiceCollection _services;
 
         private readonly HostBuilderContext _context;
 
-        internal ConfigureHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
+        internal ConfigureHostBuilder(ConfigurationManager configuration, WebHostEnvironment environment, IServiceCollection services)
         {
             _configuration = configuration;
             _environment = environment;

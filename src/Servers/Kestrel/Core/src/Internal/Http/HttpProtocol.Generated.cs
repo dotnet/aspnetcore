@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
         internal protected IHttpMinResponseDataRateFeature? _currentIHttpMinResponseDataRateFeature;
         internal protected IHttpResetFeature? _currentIHttpResetFeature;
+        internal protected IPersistentStateFeature? _currentIPersistentStateFeature;
 
         private int _featureRevision;
 
@@ -99,6 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpMinRequestBodyDataRateFeature = null;
             _currentIHttpMinResponseDataRateFeature = null;
             _currentIHttpResetFeature = null;
+            _currentIPersistentStateFeature = null;
         }
 
         // Internal for testing
@@ -286,6 +289,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpResetFeature;
                 }
+                else if (key == typeof(IPersistentStateFeature))
+                {
+                    feature = _currentIPersistentStateFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -413,6 +420,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttpResetFeature))
                 {
                     _currentIHttpResetFeature = (IHttpResetFeature?)value;
+                }
+                else if (key == typeof(IPersistentStateFeature))
+                {
+                    _currentIPersistentStateFeature = (IPersistentStateFeature?)value;
                 }
                 else
                 {
@@ -543,6 +554,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpResetFeature))
             {
                 feature = Unsafe.As<IHttpResetFeature?, TFeature?>(ref _currentIHttpResetFeature);
+            }
+            else if (typeof(TFeature) == typeof(IPersistentStateFeature))
+            {
+                feature = Unsafe.As<IPersistentStateFeature?, TFeature?>(ref _currentIPersistentStateFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -680,6 +695,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpResetFeature = Unsafe.As<TFeature?, IHttpResetFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IPersistentStateFeature))
+            {
+                _currentIPersistentStateFeature = Unsafe.As<TFeature?, IPersistentStateFeature?>(ref feature);
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -803,6 +822,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpResetFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpResetFeature), _currentIHttpResetFeature);
+            }
+            if (_currentIPersistentStateFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IPersistentStateFeature), _currentIPersistentStateFeature);
             }
 
             if (MaybeExtra != null)

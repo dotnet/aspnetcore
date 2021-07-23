@@ -6,10 +6,10 @@
   version "0.0.0"
   uid ""
 
-"@msgpack/msgpack@^2.4.0":
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-2.6.3.tgz#e0e3cdac43500624ee5a0f2f2503351d5862e46c"
-  integrity sha512-dSJ1TBB9Hreienm5SFVbpKIcRRekQNULxvbmDVXQwRCZWYCIxZ23X+FlFWkg1LmGG+DIQZXH+2IW01QwxofT/g==
+"@msgpack/msgpack@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-2.7.0.tgz#3a0fbe4e0406f6576895f990857e19da97376f18"
+  integrity sha512-mlRYq9FSsOd4m+3wZWatemn3hGFZPWNJ4JQOdrir4rrMK2PyIk26idKBoUWrqF3HJJHl+5GpRU+M0wEruJwecg==
 
 abort-controller@^3.0.0:
   version "3.0.0"

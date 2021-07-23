@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
         /// <returns>A task that represents the execution of this middleware.</returns>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context == null)
             {
@@ -55,32 +55,32 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 
             if (context.Request.Path.StartsWithSegments(_options.PathMatch, out var matchedPath, out var remainingPath))
             {
-                var path = context.Request.Path;
-                var pathBase = context.Request.PathBase;
-
                 if (!_options.PreserveMatchedPathSegment)
                 {
-                    // Update the path
-                    context.Request.PathBase = pathBase.Add(matchedPath);
-                    context.Request.Path = remainingPath;
+                    return InvokeCore(context, matchedPath, remainingPath);
                 }
-
-                try
-                {
-                    await _options.Branch!(context);
-                }
-                finally
-                {
-                    if (!_options.PreserveMatchedPathSegment)
-                    {
-                        context.Request.PathBase = pathBase;
-                        context.Request.Path = path;
-                    }
-                }
+                return _options.Branch!(context);
             }
-            else
+            return _next(context);
+        }
+
+        private async Task InvokeCore(HttpContext context, string matchedPath, string remainingPath)
+        {
+            var path = context.Request.Path;
+            var pathBase = context.Request.PathBase;
+
+            // Update the path
+            context.Request.PathBase = pathBase.Add(matchedPath);
+            context.Request.Path = remainingPath;
+
+            try
             {
-                await _next(context);
+                await _options.Branch!(context);
+            }
+            finally
+            {
+                context.Request.PathBase = pathBase;
+                context.Request.Path = path;
             }
         }
     }

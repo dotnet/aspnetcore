@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Razor
             };
             var compilation = CSharpCompilation.Create("Test", references: references);
 
-            // Act 
+            // Act
             var result = CompilationTagHelperFeature.IsValidCompilation(compilation);
 
             // Assert
@@ -39,7 +39,7 @@ namespace Microsoft.CodeAnalysis.Razor
             };
             var compilation = CSharpCompilation.Create("Test", references: references);
 
-            // Act 
+            // Act
             var result = CompilationTagHelperFeature.IsValidCompilation(compilation);
 
             // Assert
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Razor
             };
             var compilation = CSharpCompilation.Create("Test", references: references);
 
-            // Act 
+            // Act
             var result = CompilationTagHelperFeature.IsValidCompilation(compilation);
 
             // Assert
@@ -84,7 +84,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var feature = engine.EngineFeatures.OfType<CompilationTagHelperFeature>().First();
 
-            // Act 
+            // Act
             var result = feature.GetDescriptors();
 
             // Assert
@@ -118,8 +118,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 });
 
             var feature = engine.EngineFeatures.OfType<CompilationTagHelperFeature>().First();
-            
-            // Act 
+
+            // Act
             var result = feature.GetDescriptors();
 
             // Assert

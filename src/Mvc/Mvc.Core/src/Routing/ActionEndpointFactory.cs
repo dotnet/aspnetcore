@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 
 using System;
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         $"Failed to update the route pattern '{resolvedRoutePattern.RawText}' with required route values. " +
                         $"This can occur when the route pattern contains parameters with reserved names such as: {formattedRouteKeys} " +
                         $"and also uses route constraints such as '{{action:int}}'. " +
-                        $"To fix this error, choose a different parameter name.");
+                        "To fix this error, choose a different parameter name.");
                 }
 
                 var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, action.AttributeRouteInfo.Order)

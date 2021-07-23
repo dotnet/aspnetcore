@@ -9,7 +9,7 @@
     "prepare": "selenium-standalone install --config ../../Shared/E2ETesting/selenium-config.json"
   },
   "author": "",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "dependencies": {
     "selenium-standalone": "^6.17.0"
   }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
@@ -95,6 +95,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.MovedPermanently);
             Assert.Equal("/json", response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task ActionReturningProblemDetails_ConfiguresContentType()
+        {
+            // Act
+            var response = await Client.GetAsync("/problem");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.InternalServerError);
+            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.ToString());
         }
     }
 }

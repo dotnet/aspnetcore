@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
     /// <summary>
     /// Represents a <see cref="SyntaxNode"/> visitor that visits only the single SyntaxNode
-    /// passed into its Visit method and produces 
+    /// passed into its Visit method and produces
     /// a value of the type specified by the <typeparamref name="TResult"/> parameter.
     /// </summary>
     /// <typeparam name="TResult">

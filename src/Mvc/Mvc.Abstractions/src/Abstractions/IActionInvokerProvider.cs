@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Mvc.Abstractions
 {
@@ -11,17 +11,17 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
     /// <para>
     /// <see cref="IActionInvokerProvider"/> instances form a pipeline that results in the creation of an
     /// <see cref="IActionInvoker"/>. The <see cref="IActionInvokerProvider"/> instances are ordered by
-    /// an ascending sort of the <see cref="Order"/>.  
+    /// an ascending sort of the <see cref="Order"/>.
     /// </para>
     /// <para>
     /// To create an <see cref="IActionInvoker"/>, each provider has its <see cref="OnProvidersExecuting"/> method
     /// called in sequence and given the same instance of <see cref="ActionInvokerProviderContext"/>. Then each
     /// provider has its <see cref="OnProvidersExecuted"/> method called in the reverse order. The result is
-    /// the value of <see cref="ActionInvokerProviderContext.Result"/>.  
+    /// the value of <see cref="ActionInvokerProviderContext.Result"/>.
     /// </para>
     /// <para>
     /// As providers are called in a predefined sequence, each provider has a chance to observe and decorate the
-    /// result of the providers that have already run. 
+    /// result of the providers that have already run.
     /// </para>
     /// </remarks>
     public interface IActionInvokerProvider
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         int Order { get; }
 
         /// <summary>
-        /// Called to execute the provider. 
+        /// Called to execute the provider.
         /// </summary>
         /// <param name="context">The <see cref="ActionInvokerProviderContext"/>.</param>
         void OnProvidersExecuting(ActionInvokerProviderContext context);

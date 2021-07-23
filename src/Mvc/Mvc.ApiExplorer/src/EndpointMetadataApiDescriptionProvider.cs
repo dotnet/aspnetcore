@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -121,6 +121,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
+
+            AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
 
             return apiDescription;
         }
@@ -339,8 +341,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
+        private static void AddActionDescriptorEndpointMetadata(
+            ActionDescriptor actionDescriptor,
+            EndpointMetadataCollection endpointMetadata)
+        {
+            if (endpointMetadata.Count > 0)
+            {
+                // ActionDescriptor.EndpointMetadata is an empty array by
+                // default so need to add the metadata into a new list.
+                actionDescriptor.EndpointMetadata = new List<object>(endpointMetadata);
+            }
+        }
+
         // The CompilerGeneratedAttribute doesn't always get added so we also check if the type name starts with "<"
-        // For example,w "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
+        // For example, "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
         // REVIEW: Is there a better way to do this?
         private static bool IsCompilerGenerated(Type type) =>
             Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || type.Name.StartsWith('<');

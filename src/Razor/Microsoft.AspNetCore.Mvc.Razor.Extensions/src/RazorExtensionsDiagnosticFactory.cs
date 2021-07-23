@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static readonly RazorDiagnosticDescriptor ViewComponent_CannotFindMethod =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3900",
-                () => ViewComponentResources.ViewComponent_CannotFindMethod,
+                () => RazorExtensionsResources.ViewComponent_CannotFindMethod,
                 RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreateViewComponent_CannotFindMethod(string tagHelperType)
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static readonly RazorDiagnosticDescriptor ViewComponent_AmbiguousMethods =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3901",
-                () => ViewComponentResources.ViewComponent_AmbiguousMethods,
+                () => RazorExtensionsResources.ViewComponent_AmbiguousMethods,
                 RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreateViewComponent_AmbiguousMethods(string tagHelperType)
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static readonly RazorDiagnosticDescriptor ViewComponent_AsyncMethod_ShouldReturnTask =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3902",
-                () => ViewComponentResources.ViewComponent_AsyncMethod_ShouldReturnTask,
+                () => RazorExtensionsResources.ViewComponent_AsyncMethod_ShouldReturnTask,
                 RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreateViewComponent_AsyncMethod_ShouldReturnTask(string tagHelperType)
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static readonly RazorDiagnosticDescriptor ViewComponent_SyncMethod_ShouldReturnValue =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3903",
-                () => ViewComponentResources.ViewComponent_SyncMethod_ShouldReturnValue,
+                () => RazorExtensionsResources.ViewComponent_SyncMethod_ShouldReturnValue,
                 RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreateViewComponent_SyncMethod_ShouldReturnValue(string tagHelperType)
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static readonly RazorDiagnosticDescriptor ViewComponent_SyncMethod_CannotReturnTask =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3904",
-                () => ViewComponentResources.ViewComponent_SyncMethod_CannotReturnTask,
+                () => RazorExtensionsResources.ViewComponent_SyncMethod_CannotReturnTask,
                 RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreateViewComponent_SyncMethod_CannotReturnTask(string tagHelperType)
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static readonly RazorDiagnosticDescriptor PageDirective_CannotBeImported =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3905",
-                () => Resources.PageDirectiveCannotBeImported,
+                () => RazorExtensionsResources.PageDirectiveCannotBeImported,
                 RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreatePageDirective_CannotBeImported(SourceSpan source)
@@ -117,14 +117,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static readonly RazorDiagnosticDescriptor PageDirective_MustExistAtTheTopOfFile =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3906",
-                () => Resources.PageDirectiveMustExistAtTheTopOfFile,
+                () => RazorExtensionsResources.PageDirectiveMustExistAtTheTopOfFile,
                 RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreatePageDirective_MustExistAtTheTopOfFile(SourceSpan source)
         {
-            var fileName = Path.GetFileName(source.FilePath);
             var diagnostic = RazorDiagnostic.Create(PageDirective_MustExistAtTheTopOfFile, source, PageDirective.Directive.Directive);
-
             return diagnostic;
         }
     }

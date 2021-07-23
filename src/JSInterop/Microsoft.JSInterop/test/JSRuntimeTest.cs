@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -404,7 +404,7 @@ namespace Microsoft.JSInterop
             var dataReference = new JSStreamReference(runtime, 10, 10);
 
             // Act
-            var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await runtime.ReadJSDataAsStreamAsync(dataReference, 10, 10, 10, CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await runtime.ReadJSDataAsStreamAsync(dataReference, 10, CancellationToken.None));
 
             // Assert
             Assert.Equal("The current JavaScript runtime does not support reading data streams.", exception.Message);

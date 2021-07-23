@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore
                 "Microsoft.AspNetCore.Server.IISIntegration",
                 "Microsoft.AspNetCore.Server.Kestrel",
                 "Microsoft.AspNetCore.Server.Kestrel.Core",
+                "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic",
                 "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets",
                 "Microsoft.AspNetCore.Session",
                 "Microsoft.AspNetCore.SignalR",
@@ -223,6 +224,7 @@ namespace Microsoft.AspNetCore
                 { "Microsoft.AspNetCore.Server.IISIntegration", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Server.Kestrel", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Server.Kestrel.Core", "6.0.0.0" },
+                { "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Session", "6.0.0.0" },
                 { "Microsoft.AspNetCore.SignalR", "6.0.0.0" },

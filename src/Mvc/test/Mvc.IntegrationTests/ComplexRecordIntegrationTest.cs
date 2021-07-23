@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -3307,12 +3307,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ModelBindingSystem_ThrowsOn33Binders()
         {
             // Arrange
-            var expectedMessage = $"Model binding system exceeded " +
+            var expectedMessage = "Model binding system exceeded " +
                 $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (32). Reduce the " +
                 $"potential nesting of '{typeof(LoopyModel)}'. For example, this type may have a property with a " +
-                $"model binder that always succeeds. See the " +
+                "model binder that always succeeds. See the " +
                 $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} documentation for more " +
-                $"information.";
+                "information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -4151,7 +4151,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.Equal(0, modelState.ErrorCount);
             Assert.Equal(2, modelState.Count);
-            
+
             Assert.Single(modelState, m => m.Key == "Age");
             Assert.Single(modelState, m => m.Key == "Name");
         }
@@ -4195,7 +4195,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.False(modelState.IsValid);
             Assert.Equal(1, modelState.ErrorCount);
-            
+
             Assert.Equal(2, modelState.Count);
             var entry = Assert.Single(modelState, m => m.Key == "Age");
             Assert.Empty(entry.Value.Errors);

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Registers a class configuration delegate that gets invoked during code generation.
         /// </summary>
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
-        /// <param name="configureClass"><see cref="Action"/> invoked to configure 
+        /// <param name="configureClass"><see cref="Action"/> invoked to configure
         /// <see cref="ClassDeclarationIntermediateNode"/> during code generation.</param>
         /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
         public static RazorProjectEngineBuilder ConfigureClass(
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            
+
             builder.Features.Add(new AdditionalImportsProjectFeature(imports));
 
             return builder;

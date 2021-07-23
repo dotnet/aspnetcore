@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// For example:
         /// Query: ?index=1
         /// </p>
+        /// RequestQuery contents can contain private information
+        /// which may have regulatory concerns under GDPR
+        /// and other laws. RequestQuery should not be logged
+        /// unless logs are secure and access controlled
+        /// and the privacy impact assessed.
         /// </summary>
         RequestQuery = 0x2,
 
@@ -131,10 +136,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Flag for logging a collection of HTTP Request properties,
-        /// including <see cref="RequestPath"/>, <see cref="RequestQuery"/>, <see cref="RequestProtocol"/>,
+        /// including <see cref="RequestPath"/>, <see cref="RequestProtocol"/>,
         /// <see cref="RequestMethod"/>, and <see cref="RequestScheme"/>.
         /// </summary>
-        RequestProperties = RequestPath | RequestQuery | RequestProtocol | RequestMethod | RequestScheme,
+        RequestProperties = RequestPath | RequestProtocol | RequestMethod | RequestScheme,
 
         /// <summary>
         /// Flag for logging HTTP Request properties and headers.

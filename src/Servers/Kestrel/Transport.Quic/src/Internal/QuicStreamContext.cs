@@ -1,8 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net.Quic;
 using System.Threading;
@@ -14,34 +16,37 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
+    internal partial class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IPooledStream
     {
         // Internal for testing.
         internal Task _processingTask = Task.CompletedTask;
 
-        private readonly QuicStream _stream;
+        private QuicStream _stream = default!;
         private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
+        private readonly Pipe _inputPipe;
+        private readonly Pipe _outputPipe;
         private readonly IDuplexPipe _originalTransport;
-        private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
+        private readonly IDuplexPipe _originalApplication;
+        private readonly CompletionPipeReader _transportPipeReader;
+        private readonly CompletionPipeWriter _transportPipeWriter;
         private readonly IQuicTrace _log;
+        private CancellationTokenSource _streamClosedTokenSource = default!;
         private string? _connectionId;
         private const int MinAllocBufferSize = 4096;
         private volatile Exception? _shutdownReason;
         private bool _streamClosed;
-        private bool _aborted;
-        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _serverAborted;
+        private bool _clientAbort;
+        private TaskCompletionSource _waitForConnectionClosedTcs = default!;
         private readonly object _shutdownLock = new object();
 
-        public QuicStreamContext(QuicStream stream, QuicConnectionContext connection, QuicTransportContext context)
+        public QuicStreamContext(QuicConnectionContext connection, QuicTransportContext context)
         {
-            _stream = stream;
             _connection = connection;
             _context = context;
             _log = context.Log;
             MemoryPool = connection.MemoryPool;
-
-            ConnectionClosed = _streamClosedTokenSource.Token;
 
             var maxReadBufferSize = context.Options.MaxReadBufferSize ?? 0;
             var maxWriteBufferSize = context.Options.MaxWriteBufferSize ?? 0;
@@ -50,29 +55,74 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
             var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
 
-            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+            _inputPipe = new Pipe(inputOptions);
+            _outputPipe = new Pipe(outputOptions);
 
-            Features.Set<IStreamDirectionFeature>(this);
-            Features.Set<IProtocolErrorCodeFeature>(this);
-            Features.Set<IStreamIdFeature>(this);
+            _transportPipeReader = new CompletionPipeReader(_inputPipe.Reader);
+            _transportPipeWriter = new CompletionPipeWriter(_outputPipe.Writer);
 
-            // TODO populate the ITlsConnectionFeature (requires client certs).
-            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
-            CanRead = stream.CanRead;
-            CanWrite = stream.CanWrite;
-
-            Transport = _originalTransport = pair.Transport;
-            Application = pair.Application;
+            _originalApplication = new DuplexPipe(_outputPipe.Reader, _inputPipe.Writer);
+            _originalTransport = new DuplexPipe(_transportPipeReader, _transportPipeWriter);
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
-        public PipeWriter Input => Application.Output;
-        public PipeReader Output => Application.Input;
+        private PipeWriter Input => Application.Output;
+        private PipeReader Output => Application.Input;
 
-        public bool CanRead { get; }
-        public bool CanWrite { get; }
+        public bool CanRead { get; private set; }
+        public bool CanWrite { get; private set; }
 
-        public long StreamId => _stream.StreamId;
+        public long StreamId { get; private set; }
+        public bool CanReuse { get; private set; }
+
+        public void Initialize(QuicStream stream)
+        {
+            Debug.Assert(_stream == null);
+
+            _stream = stream;
+
+            if (!(_streamClosedTokenSource?.TryReset() ?? false))
+            {
+                _streamClosedTokenSource = new CancellationTokenSource();
+            }
+
+            ConnectionClosed = _streamClosedTokenSource.Token;
+
+            // TODO - add to generated features
+            Features.Set<IStreamDirectionFeature>(this);
+            Features.Set<IProtocolErrorCodeFeature>(this);
+            Features.Set<IStreamIdFeature>(this);
+            // TODO populate the ITlsConnectionFeature (requires client certs).
+            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
+
+            InitializeFeatures();
+
+            CanRead = _stream.CanRead;
+            CanWrite = _stream.CanWrite;
+            Error = 0;
+            StreamId = _stream.StreamId;
+            PoolExpirationTicks = 0;
+
+            Transport = _originalTransport;
+            Application = _originalApplication;
+
+            _connectionId = null;
+            _shutdownReason = null;
+            _streamClosed = false;
+            _serverAborted = false;
+            _clientAbort = false;
+            // TODO - resetable TCS
+            _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // Only reset pipes if the stream has been reused.
+            if (CanReuse)
+            {
+                _inputPipe.Reset();
+                _outputPipe.Reset();
+            }
+
+            CanReuse = false;
+        }
 
         public override string ConnectionId
         {
@@ -82,8 +132,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public long Error { get; set; }
 
+        public long PoolExpirationTicks { get; set; }
+
         public void Start()
         {
+            Debug.Assert(_processingTask.IsCompletedSuccessfully);
+
             _processingTask = StartAsync();
         }
 
@@ -109,6 +163,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // Now wait for both to complete
                 await receiveTask;
                 await sendTask;
+
+                CanReuse = _stream.CanRead && _stream.CanWrite
+                    && _transportPipeReader.IsCompletedSuccessfully
+                    && _transportPipeWriter.IsCompletedSuccessfully
+                    && !_clientAbort;
             }
             catch (Exception ex)
             {
@@ -124,12 +183,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 await ProcessReceives();
             }
-            catch (QuicException ex)
+            catch (QuicStreamAbortedException ex)
             {
+                // Abort from peer.
+                _log.StreamAborted(this, ex);
+
                 // This could be ignored if _shutdownReason is already set.
                 error = new ConnectionResetException(ex.Message, ex);
 
-                _log.StreamAbort(this, error.Message);
+                _clientAbort = true;
+            }
+            catch (QuicOperationAbortedException ex)
+            {
+                // AbortRead has been called for the stream.
+                // Possibily might also get here from connection closing.
+                // System.Net.Quic exception handling not finalized.
+                error = ex;
             }
             catch (Exception ex)
             {
@@ -229,9 +298,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 await ProcessSends();
             }
-            catch (QuicException ex)
+            catch (QuicStreamAbortedException ex)
             {
+                // Abort from peer.
+                _log.StreamAborted(this, ex);
+
+                // This could be ignored if _shutdownReason is already set.
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
+
+                _clientAbort = true;
+            }
+            catch (QuicOperationAbortedException ex)
+            {
+                // AbortWrite has been called for the stream.
+                // Possibily might also get here from connection closing.
+                // System.Net.Quic exception handling not finalized.
+                unexpectedError = ex;
             }
             catch (Exception ex)
             {
@@ -244,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 await ShutdownWrite(shutdownReason);
 
                 // Complete the output after disposing the stream
-                Output.Complete(unexpectedError);
+                Output.Complete(unexpectedError ?? shutdownReason);
 
                 // Cancel any pending flushes so that the input loop is un-paused
                 Input.CancelPendingFlush();
@@ -287,12 +369,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             // This abort is called twice, make sure that doesn't happen.
             // Don't call _stream.Shutdown and _stream.Abort at the same time.
-            if (_aborted)
+            if (_serverAborted)
             {
                 return;
             }
 
-            _aborted = true;
+            _serverAborted = true;
 
             _log.StreamAbort(this, abortReason.Message);
 
@@ -319,13 +401,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 lock (_shutdownLock)
                 {
                     // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
-                    _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
+                    _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
                     _log.StreamShutdownWrite(this, _shutdownReason.Message);
 
                     _stream.Shutdown();
                 }
 
-                await _stream.ShutdownWriteCompleted();
+                try
+                {
+                    // TODO: Take cancellation token?
+                    await _stream.ShutdownCompleted();
+                }
+                catch (QuicOperationAbortedException)
+                {
+                    // AbortRead or AbortWrite has been called before
+                    // or during ShutdownCompleted.
+                }
             }
             catch (Exception ex)
             {
@@ -342,7 +433,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             await _processingTask;
 
             _stream.Dispose();
+            _stream = null!;
 
+            if (!_connection.TryReturnStream(this))
+            {
+                // Dispose when one of:
+                // - Stream is not bidirection
+                // - Stream didn't complete gracefully
+                // - Pool is full
+                DisposeCore();
+            }
+        }
+
+        // Called when the stream is no longer reused.
+        public void DisposeCore()
+        {
             _streamClosedTokenSource.Dispose();
         }
     }

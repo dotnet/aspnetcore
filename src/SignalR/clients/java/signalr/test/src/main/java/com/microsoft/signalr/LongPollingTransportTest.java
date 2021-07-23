@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.rxjava3.core.Single;
@@ -125,6 +126,7 @@ public class LongPollingTransportTest {
         assertTrue(onReceivedRan.get());
     }
 
+    @Disabled("https://github.com/dotnet/aspnetcore/issues/34563")
     @Test
     public void LongPollingTransportOnReceiveGetsCalled() {
         AtomicInteger requestCount = new AtomicInteger();

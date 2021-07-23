@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Internal for testing
         internal readonly Http2KeepAlive? _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
-        internal Http2StreamStack StreamPool;
+        internal PooledStreamStack<Http2Stream> StreamPool;
         // Max tracked streams is double max concurrent streams.
         // If a small MaxConcurrentStreams value is configured then still track at least to 100 streams
         // to support clients that send a burst of streams while the connection is being established.
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
 
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
-            StreamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
+            StreamPool = new PooledStreamStack<Http2Stream>(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
 
             _inputTask = ReadInputAsync();
         }

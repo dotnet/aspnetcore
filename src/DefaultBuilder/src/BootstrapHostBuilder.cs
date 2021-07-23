@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting
     // This exists solely to bootstrap the configuration
     internal class BootstrapHostBuilder : IHostBuilder
     {
-        private readonly Configuration _configuration;
+        private readonly ConfigurationManager _configuration;
         private readonly WebHostEnvironment _environment;
 
         private readonly HostBuilderContext _hostContext;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
 
-        public BootstrapHostBuilder(Configuration configuration, WebHostEnvironment webHostEnvironment)
+        public BootstrapHostBuilder(ConfigurationManager configuration, WebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
             _environment = webHostEnvironment;
@@ -95,7 +95,6 @@ namespace Microsoft.AspNetCore.Hosting
 
             // Configuration doesn't auto-update during the bootstrap phase to reduce I/O,
             // but we do need to update between host and app configuration so the right environment is used.
-            _configuration.Update();
             _environment.ApplyConfigurationSettings(_configuration);
 
             foreach (var configureAppAction in _configureAppActions)
@@ -103,7 +102,6 @@ namespace Microsoft.AspNetCore.Hosting
                 configureAppAction(_hostContext, _configuration);
             }
 
-            _configuration.Update();
             _environment.ApplyConfigurationSettings(_configuration);
         }
     }

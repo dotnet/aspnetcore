@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Tests
             var relativeRootPath = "some-relative-path";
             var relativeSubPath = "some-other-relative-path";
             var fullContentRoot = Path.Combine(AppContext.BaseDirectory, relativeRootPath);
-            
+
             // ContentRootPath is mapped relative to AppContext.BaseDirectory
             environment.ContentRootPath = relativeRootPath;
             Assert.Equal(fullContentRoot, environment.ContentRootPath);

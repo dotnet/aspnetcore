@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -323,9 +323,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!Context.DesignTimeMode)
             {
                 // We want to accept the whitespace and newline at the end of the markup.
-                // E.g, 
+                // E.g,
                 // @{
-                //     <div>Foo</div>|   
+                //     <div>Foo</div>|
                 // |}
                 // Except in two cases,
                 // 1. Design time
@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
             {
                 var attributeBuilder = pooledResult.Builder;
-                
+
                 // Parse the contents of a tag like attributes.
                 ParseAttributes(attributeBuilder);
                 attributes = attributeBuilder.ToList();

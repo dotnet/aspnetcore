@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 // On each request, we create a separate startup task with its own timeout. That way, even if
                 // the first request times out, subsequent requests could still work.
                 var timeout = spaBuilder.Options.StartupTimeout;
-                var port = await portTask.WithTimeout(timeout, $"The create-react-app server did not start listening for requests " +
+                var port = await portTask.WithTimeout(timeout, "The create-react-app server did not start listening for requests " +
                     $"within the timeout period of {timeout.TotalSeconds} seconds. " +
-                    $"Check the log output for error information.");
+                    "Check the log output for error information.");
 
                 // Everything we proxy is hardcoded to target http://localhost because:
                 // - the requests are always from the local machine (we're not accepting remote
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 {
                     throw new InvalidOperationException(
                         $"The {pkgManagerCommand} script '{scriptName}' exited without indicating that the " +
-                        $"create-react-app server was listening for requests. The error output was: " +
+                        "create-react-app server was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }
             }

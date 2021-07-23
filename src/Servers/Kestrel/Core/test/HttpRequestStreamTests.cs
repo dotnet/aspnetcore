@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
             pipeReader.StartAcceptingReads(null);
             pipeReader.StopAcceptingReads();
-            // Validation for CopyToAsync occurs in an async method in ReadOnlyPipeStream. 
+            // Validation for CopyToAsync occurs in an async method in ReadOnlyPipeStream.
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => { await stream.CopyToAsync(Mock.Of<Stream>()); });
         }
 

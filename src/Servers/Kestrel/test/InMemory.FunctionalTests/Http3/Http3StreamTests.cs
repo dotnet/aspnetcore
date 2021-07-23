@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -45,6 +45,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+        }
+
+        [Fact]
+        public async Task UnauthorizedHttpStatusResponse()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+                context.Response.StatusCode = 401;
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("401", responseHeaders[HeaderNames.Status]);
+
+            await requestStream.ExpectReceiveEndOfStream();
         }
 
         [Fact]
@@ -2843,6 +2868,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
             await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task HEADERS_NoResponseBody_RequestEndsOnHeaders()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                return Task.CompletedTask;
+            });
+
+            await requestStream.SendHeadersAsync(headers);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync(expectEnd: true);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
         }
     }
 }

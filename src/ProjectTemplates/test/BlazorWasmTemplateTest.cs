@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -74,13 +74,14 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
             => BlazorWasmHostedTemplate_IndividualAuth_Works(true);
 
-        [Fact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
             => BlazorWasmHostedTemplate_IndividualAuth_Works(false);
 
@@ -120,12 +121,6 @@ namespace Templates.Test
             var migrationsResult = await serverProject.RunDotNetEfCreateMigrationAsync("blazorwasm");
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", serverProject, migrationsResult));
             serverProject.AssertEmptyMigration("blazorwasm");
-
-            if (useLocalDb)
-            {
-                var dbUpdateResult = await serverProject.RunDotNetEfUpdateDatabaseAsync();
-                Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", serverProject, dbUpdateResult));
-            }
 
             return project;
         }

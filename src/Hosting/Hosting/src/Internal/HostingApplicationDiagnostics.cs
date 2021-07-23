@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -7,12 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -31,13 +28,19 @@ namespace Microsoft.AspNetCore.Hosting
 
         private readonly ActivitySource _activitySource;
         private readonly DiagnosticListener _diagnosticListener;
+        private readonly DistributedContextPropagator _propagator;
         private readonly ILogger _logger;
 
-        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener, ActivitySource activitySource)
+        public HostingApplicationDiagnostics(
+            ILogger logger,
+            DiagnosticListener diagnosticListener,
+            ActivitySource activitySource,
+            DistributedContextPropagator propagator)
         {
             _logger = logger;
             _diagnosticListener = diagnosticListener;
             _activitySource = activitySource;
+            _propagator = propagator;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -279,38 +282,39 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 return null;
             }
-
             var headers = httpContext.Request.Headers;
-            var requestId = headers.TraceParent;
-            if (requestId.Count == 0)
-            {
-                requestId = headers.RequestId;
-            }
+            _propagator.ExtractTraceIdAndState(headers,
+                static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+                {
+                    fieldValues = default;
+                    var headers = (IHeaderDictionary)carrier!;
+                    fieldValue = headers[fieldName];
+                },
+                out var requestId,
+                out var traceState);
 
-            if (!StringValues.IsNullOrEmpty(requestId))
+            if (!string.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
-                var traceState = headers.TraceState;
-                if (traceState.Count > 0)
+                if (!string.IsNullOrEmpty(traceState))
                 {
                     activity.TraceStateString = traceState;
                 }
-
-                // We expect baggage to be empty by default
-                // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
-                if (baggage.Length == 0)
+                var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
                 {
-                    baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
-                }
+                    fieldValues = default;
+                    var headers = (IHeaderDictionary)carrier!;
+                    fieldValue = headers[fieldName];
+                });
 
                 // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-                // An order could be important if baggage has two items with the same key (that is allowed by the contract)
-                for (var i = baggage.Length - 1; i >= 0; i--)
+                // By contract, the propagator has already reversed the order of items so we need not reverse it again 
+                // Order could be important if baggage has two items with the same key (that is allowed by the contract)
+                if (baggage is not null)
                 {
-                    if (NameValueHeaderValue.TryParse(baggage[i], out var baggageItem))
+                    foreach (var baggageItem in baggage)
                     {
-                        activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
+                        activity.AddBaggage(baggageItem.Key, baggageItem.Value);
                     }
                 }
             }

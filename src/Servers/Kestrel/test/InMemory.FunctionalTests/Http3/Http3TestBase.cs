@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -500,7 +500,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.True(result.IsCompleted);
             }
 
-            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync()
+            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(bool expectEnd = false)
             {
                 var frame = new Http3FrameWithPayload();
 
@@ -520,6 +520,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         {
                             consumed = examined = framePayload.End;
                             frame.Payload = framePayload.ToArray();
+
+                            if (expectEnd)
+                            {
+                                if (!result.IsCompleted || buffer.Length > 0)
+                                {
+                                    throw new Exception("Reader didn't complete with frame");
+                                }
+                            }
+
                             return frame;
                         }
                         else
@@ -657,9 +666,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await SendFrameAsync(frame, data, endStream);
             }
 
-            internal async Task<Dictionary<string, string>> ExpectHeadersAsync()
+            internal async Task<Dictionary<string, string>> ExpectHeadersAsync(bool expectEnd = false)
             {
-                var http3WithPayload = await ReceiveFrameAsync();
+                var http3WithPayload = await ReceiveFrameAsync(expectEnd);
                 Assert.Equal(Http3FrameType.Headers, http3WithPayload.Type);
 
                 _decodedHeaders.Clear();

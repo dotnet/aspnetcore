@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.Versioning;
@@ -7,9 +7,10 @@ using System.Runtime.Versioning;
 namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
-    /// Repesents configurable options for <see cref="RemoteBrowserFileStream"/>.
+    /// Repesents configurable options for <see cref="BrowserFileStream"/> with Blazor Server.
     /// </summary>
     [UnsupportedOSPlatform("browser")]
+    [Obsolete("JSDataStream defaults are utilized instead of the options here.")]
     public class RemoteBrowserFileStreamOptions
     {
         /// <summary>

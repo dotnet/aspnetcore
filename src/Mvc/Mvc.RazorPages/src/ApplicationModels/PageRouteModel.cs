@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IDictionary<string, string> RouteValues { get; }
 
         /// <summary>
-        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform 
+        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform
         /// built-in route parameters such as <c>action</c>, <c>controller</c>, and <c>area</c> as well as
         /// additional parameters specified by <see cref="RouteValues"/> into static segments in the route template.
         /// </summary>

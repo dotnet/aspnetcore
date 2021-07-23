@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -371,7 +371,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             app = GetApplication();
             appExitCode = app.Execute(new[] { "add", "url", DifferentUrl, "--output-file", outputFile});
             Assert.Equal(1, appExitCode);
-            Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), $"Should have aborted to avoid conflicts");
+            Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), "Should have aborted to avoid conflicts");
 
             // csproj contents
             using (var csprojStream = new FileInfo(project.Project.Path).OpenRead())

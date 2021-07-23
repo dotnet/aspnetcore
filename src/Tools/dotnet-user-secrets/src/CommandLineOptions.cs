@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
             var optionProject = app.Option("-p|--project <PROJECT>", "Path to project. Defaults to searching the current directory.",
                 CommandOptionType.SingleValue, inherited: true);
 
-            var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", $"The project configuration to use. Defaults to 'Debug'.",
+            var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", "The project configuration to use. Defaults to 'Debug'.",
                 CommandOptionType.SingleValue, inherited: true);
 
             // the escape hatch if project evaluation fails, or if users want to alter a secret store other than the one

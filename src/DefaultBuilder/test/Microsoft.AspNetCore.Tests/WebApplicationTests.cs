@@ -1,14 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -197,6 +191,26 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void WebApplicationBuilderWebHostUseSettingCanBeReadByConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            builder.WebHost.UseSetting("A", "value");
+            builder.WebHost.UseSetting("B", "another");
+
+            Assert.Equal("value", builder.WebHost.GetSetting("A"));
+            Assert.Equal("another", builder.WebHost.GetSetting("B"));
+
+            var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["A"]);
+            Assert.Equal("another", app.Configuration["B"]);
+
+            Assert.Equal("value", builder.Configuration["A"]);
+            Assert.Equal("another", builder.Configuration["B"]);
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();
@@ -227,7 +241,7 @@ namespace Microsoft.AspNetCore.Tests
             var changed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             monitor.OnChange(newOptions =>
             {
-                changed.SetResult(0);
+                changed.TrySetResult(0);
             });
 
             config["AllowedHosts"] = "NewHost";
@@ -242,10 +256,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
-            builder.Configuration.AddInMemoryCollection(new[]
-            {
-                new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
-            });
+            builder.Configuration["FORWARDEDHEADERS_ENABLED"] = "true";
             await using var app = builder.Build();
 
             app.Run(context =>
@@ -255,6 +266,7 @@ namespace Microsoft.AspNetCore.Tests
             });
 
             await app.StartAsync();
+
             var client = app.GetTestClient();
             client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
             var result = await client.GetAsync("http://localhost/");
@@ -267,6 +279,90 @@ namespace Microsoft.AspNetCore.Tests
             var app = WebApplication.Create();
             var linkGenerator = app.Services.GetService(typeof(LinkGenerator));
             Assert.NotNull(linkGenerator);
+        }
+
+        [Fact]
+        public void WebApplication_CanResolveDefaultServicesFromServiceCollection()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            // Add the service collection to the service collection
+            builder.Services.AddSingleton(builder.Services);
+
+            var app = builder.Build();
+
+            var env0 = app.Services.GetRequiredService<IHostEnvironment>();
+
+            var env1 = app.Services.GetRequiredService<IServiceCollection>().BuildServiceProvider().GetRequiredService<IHostEnvironment>();
+
+            Assert.Equal(env0.ApplicationName, env1.ApplicationName);
+            Assert.Equal(env0.EnvironmentName, env1.EnvironmentName);
+            Assert.Equal(env0.ContentRootPath, env1.ContentRootPath);
+        }
+
+        [Fact]
+        public void WebApplication_CanResolveDefaultServicesFromServiceCollectionInCorrectOrder()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            // Add the service collection to the service collection
+            builder.Services.AddSingleton(builder.Services);
+
+            // We're overriding the default IHostLifetime so that we can test the order in which it's resolved.
+            // This should override the default IHostLifetime.
+            builder.Services.AddSingleton<IHostLifetime, CustomHostLifetime>();
+
+            var app = builder.Build();
+
+            var hostLifetime0 = app.Services.GetRequiredService<IHostLifetime>();
+            var childServiceProvider = app.Services.GetRequiredService<IServiceCollection>().BuildServiceProvider();
+            var hostLifetime1 = childServiceProvider.GetRequiredService<IHostLifetime>();
+
+            var hostLifetimes0 = app.Services.GetServices<IHostLifetime>().ToArray();
+            var hostLifetimes1 = childServiceProvider.GetServices<IHostLifetime>().ToArray();
+
+            Assert.IsType<CustomHostLifetime>(hostLifetime0);
+            Assert.IsType<CustomHostLifetime>(hostLifetime1);
+
+            Assert.Equal(hostLifetimes1.Length, hostLifetimes0.Length);
+        }
+
+        [Fact]
+        public async Task WebApplication_CanCallUseRoutingWithouUseEndpoints()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/new", () => "new");
+
+            // Rewrite "/old" to "/new" before matching routes
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path == "/old")
+                {
+                    context.Request.Path = "/new";
+                }
+
+                return next(context);
+            });
+
+            app.UseRouting();
+
+            await app.StartAsync();
+
+            var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
+
+            var newEndpoint = Assert.Single(endpointDataSource.Endpoints);
+            var newRouteEndpoint = Assert.IsType<RouteEndpoint>(newEndpoint);
+            Assert.Equal("/new", newRouteEndpoint.RoutePattern.RawText);
+
+            var client = app.GetTestClient();
+
+            var oldResult = await client.GetAsync("http://localhost/old");
+            oldResult.EnsureSuccessStatusCode();
+
+            Assert.Equal("new", await oldResult.Content.ReadAsStringAsync());
         }
 
         [Fact]
@@ -323,9 +419,43 @@ namespace Microsoft.AspNetCore.Tests
                 Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
             }
 
-            
+
             var app = builder.Build();
             Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
+        }
+
+        [Fact]
+        public async Task WebApplicationBuilder_StartupFilterCanAddTerminalMiddleware()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IStartupFilter, TerminalMiddlewareStartupFilter>();
+            await using var app = builder.Build();
+
+            app.MapGet("/defined", () => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var definedResult = await client.GetAsync("http://localhost/defined");
+            definedResult.EnsureSuccessStatusCode();
+
+            var terminalResult = await client.GetAsync("http://localhost/undefined");
+            Assert.Equal(418, (int)terminalResult.StatusCode);
+        }
+
+        private class CustomHostLifetime : IHostLifetime
+        {
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task WaitForStartAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestEventListener : EventListener
@@ -424,6 +554,22 @@ namespace Microsoft.AspNetCore.Tests
             {
                 public ICollection<string> Addresses { get; set; }
                 public bool PreferHostingUrls { get; set; }
+            }
+        }
+
+        private class TerminalMiddlewareStartupFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    next(app);
+                    app.Run(context =>
+                    {
+                        context.Response.StatusCode = 418; // I'm a teapot
+                        return Task.CompletedTask;
+                    });
+                };
             }
         }
     }
