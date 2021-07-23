@@ -115,28 +115,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Consume space
             offset++;
 
-            // If offset has overshot length, end of query string wasn't not found
-            if ((uint)offset > (uint)requestLine.Length)
+            // Version + CR is 9 bytes which should take us to .Length
+            // LF should have been dropped prior to method call
+            if ((uint)offset + 9 != (uint)requestLine.Length || requestLine[offset + sizeof(ulong)] != ByteCR)
             {
                 RejectRequestLine(requestLine);
             }
 
             // Version
             var remaining = requestLine.Slice(offset);
-            var httpVersion = remaining.GetKnownVersionAndConfirmCR();
+            var httpVersion = remaining.GetKnownVersion();
             versionAndMethod.Version = httpVersion;
             if (httpVersion == HttpVersion.Unknown)
             {
-                // HTTP version is unsupported or incorrectly terminated.
-                RejectUnknownVersion(offset, requestLine);
-            }
-
-            // Version + CR is 8 bytes; adding 9 should take us to .Length
-            offset += 9;
-            // LF should have been dropped prior to method call, so offset should now be length
-            if ((uint)offset != (uint)requestLine.Length)
-            {
-                RejectRequestLine(requestLine);
+                // HTTP version is unsupported.
+                RejectUnknownVersion(remaining);
             }
 
             // We need to reinterpret from ReadOnlySpan into Span to allow path mutation for
@@ -465,11 +458,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestHeader, headerLine);
 
         [StackTraceHidden]
-        private void RejectUnknownVersion(int offset, ReadOnlySpan<byte> requestLine)
-            // If CR before LF, reject and log entire line
-            => throw (((uint)offset >= (uint)requestLine.Length || requestLine[offset] == ByteCR || requestLine[^1] != ByteCR) ?
-            GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine) :
-            GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, requestLine[offset..^1]));
+        private void RejectUnknownVersion(ReadOnlySpan<byte> version)
+            => throw GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, version[..^1]);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, ReadOnlySpan<byte> headerLine)
