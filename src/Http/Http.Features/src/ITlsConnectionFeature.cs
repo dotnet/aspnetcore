@@ -21,5 +21,10 @@ namespace Microsoft.AspNetCore.Http.Features
         /// Asynchronously retrieves the client certificate, if any.
         /// </summary>
         Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the hostname presented by the client during the TLS handshake.
+        /// </summary>
+        public string? HostName { get => null; }
     }
 }

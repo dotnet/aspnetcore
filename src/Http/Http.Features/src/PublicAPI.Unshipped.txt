@@ -37,6 +37,7 @@
 *REMOVED*static readonly Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Default -> Microsoft.AspNetCore.Http.Features.FeatureReference<T>
 *REMOVED*virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string?
+Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.HostName.get -> string?
 Microsoft.AspNetCore.Http.IHeaderDictionary.Accept.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.Http.IHeaderDictionary.Accept.set -> void
 Microsoft.AspNetCore.Http.IHeaderDictionary.AcceptCharset.get -> Microsoft.Extensions.Primitives.StringValues
