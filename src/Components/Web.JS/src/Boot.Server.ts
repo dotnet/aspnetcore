@@ -130,7 +130,10 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     await connection.start();
   } catch (ex) {
     unhandledError(connection, ex, logger);
-    showUnavailableTransportErrorMessage(ex);
+
+    if (ex.message.includes('UnsupportedTransportWebSocketsError')) {
+      showErrorNotification('Unable to connect, please ensure you are using an updated browser and WebSockets are available.');
+    }
   }
 
   DotNet.attachDispatcher({
@@ -163,19 +166,4 @@ Blazor.start = boot;
 
 if (shouldAutoStart()) {
   boot();
-}
-
-function showUnavailableTransportErrorMessage(ex: Error) {
-  const unableToConnectTransportMessage = "Unable to connect to the server with any of the available transports.";
-  if (!ex.message.startsWith(unableToConnectTransportMessage)) {
-    return;
-  }
-
-  if (ex.message.includes(`'WebSockets' is not supported in your environment.`)) {
-    showErrorNotification('Unable to connect, please ensure you are using an updated browser and WebSockets are available.');
-  } if (ex.message.includes(`'${HttpTransportType[HttpTransportType.WebSockets]}' is disabled by the client.`)) {
-    showErrorNotification('Unable to connect, please enable WebSockets on the client.');
-  } else if (ex.message.includes(`'${HttpTransportType[HttpTransportType.LongPolling]}' is disabled by the client.`)) {
-    showErrorNotification('Unable to connect, please enable LongPolling on the client.');
-  }
 }

@@ -447,7 +447,9 @@ export class HttpConnection implements IConnection {
                     if ((transport === HttpTransportType.WebSockets && !this._options.WebSocket) ||
                         (transport === HttpTransportType.ServerSentEvents && !this._options.EventSource)) {
                         this._logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
-                        return new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
+                        const unsupportedTransportError = new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
+                        unsupportedTransportError.name = `UnsupportedTransport${HttpTransportType[transport]}Error`;
+                        return unsupportedTransportError;
                     } else {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
