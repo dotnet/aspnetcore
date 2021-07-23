@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// </summary>
         /// <param name="context">The context for the current request.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public virtual async Task Invoke(HttpContext context)
+        public virtual Task Invoke(HttpContext context)
         {
             if (context == null)
             {
@@ -68,38 +68,40 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (context.Request.Path.Equals(_options.Path))
             {
-                _logger.RequestPathMatched(context.Request.Path);
-
-                var db = await GetDbContext(context, _logger);
-
-                if (db != null)
-                {
-                    var dbName = db.GetType().FullName!;
-                    try
-                    {
-                        _logger.ApplyingMigrations(dbName);
-
-                        await db.Database.MigrateAsync();
-
-                        context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-                        context.Response.Headers.Add("Pragma", new[] { "no-cache" });
-                        context.Response.Headers.Add("Cache-Control", new[] { "no-cache,no-store" });
-
-                        _logger.MigrationsApplied(dbName);
-                    }
-                    catch (Exception ex)
-                    {
-                        var message = Strings.FormatMigrationsEndPointMiddleware_Exception(dbName) + ex;
-
-                        _logger.MigrationsEndPointMiddlewareException(dbName, ex);
-
-                        throw new InvalidOperationException(message, ex);
-                    }
-                }
+                return InvokeCore(context);
             }
-            else
+            return _next(context);
+        }
+
+        private async Task InvokeCore(HttpContext context)
+        {
+            _logger.RequestPathMatched(context.Request.Path);
+
+            var db = await GetDbContext(context, _logger);
+
+            if (db != null)
             {
-                await _next(context);
+                var dbName = db.GetType().FullName!;
+                try
+                {
+                    _logger.ApplyingMigrations(dbName);
+
+                    await db.Database.MigrateAsync();
+
+                    context.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                    context.Response.Headers.Add("Pragma", new[] { "no-cache" });
+                    context.Response.Headers.Add("Cache-Control", new[] { "no-cache,no-store" });
+
+                    _logger.MigrationsApplied(dbName);
+                }
+                catch (Exception ex)
+                {
+                    var message = Strings.FormatMigrationsEndPointMiddleware_Exception(dbName) + ex;
+
+                    _logger.MigrationsEndPointMiddlewareException(dbName, ex);
+
+                    throw new InvalidOperationException(message, ex);
+                }
             }
         }
 

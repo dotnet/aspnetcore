@@ -115,13 +115,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
             if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
             {
                 _logger.LogError($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', request rejected.");
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
+                return Task.CompletedTask;
             }
 
             // Handle shutdown from ANCM
@@ -132,14 +132,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 // Execute shutdown task on background thread without waiting for completion
                 var shutdownTask = Task.Run(() => _applicationLifetime.StopApplication());
                 httpContext.Response.StatusCode = StatusCodes.Status202Accepted;
-                return;
+                return Task.CompletedTask;
             }
 
             if (Debugger.IsAttached && string.Equals("DEBUG", httpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
             {
                 // The Visual Studio debugger tooling sends a DEBUG request to make IIS & AspNetCoreModule launch the process
                 // so the debugger can attach. Filter out this request from the app.
-                return;
+                return Task.CompletedTask;
             }
 
             var bodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 httpContext.Features.Set<IHttpUpgradeFeature?>(null);
             }
 
-            await _next(httpContext);
+            return _next(httpContext);
         }
 
         private static WindowsPrincipal? GetUser(HttpContext context)

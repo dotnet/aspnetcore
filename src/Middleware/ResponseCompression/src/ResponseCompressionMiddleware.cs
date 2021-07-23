@@ -44,14 +44,17 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <returns>A task that represents the execution of this middleware.</returns>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (!_provider.CheckRequestAcceptsCompression(context))
             {
-                await _next(context);
-                return;
+                return _next(context);
             }
+            return InvokeCore(context);
+        }
 
+        private async Task InvokeCore(HttpContext context)
+        {
             var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
             var originalCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
 

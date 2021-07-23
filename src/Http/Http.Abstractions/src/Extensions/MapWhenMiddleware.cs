@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
         /// <returns>A task that represents the execution of this middleware.</returns>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context == null)
             {
@@ -60,12 +60,9 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 
             if (_options.Predicate!(context))
             {
-                await _options.Branch!(context);
+                return _options.Branch!(context);
             }
-            else
-            {
-                await _next(context);
-            }
+            return _next(context);
         }
     }
 }
