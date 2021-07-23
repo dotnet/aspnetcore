@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// Executes the middleware.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (HttpMethods.IsPost(context.Request.Method))
             {
@@ -49,12 +49,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 {
                     if (context.Request.HasFormContentType)
                     {
-                        var form = await context.Request.ReadFormAsync();
-                        var methodType = form[_options.FormFieldName];
-                        if (!string.IsNullOrEmpty(methodType))
-                        {
-                            context.Request.Method = methodType;
-                        }
+                        return InvokeCore(context);
                     }
                 }
                 else
@@ -65,6 +60,17 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         context.Request.Method = xHttpMethodOverrideValue;
                     }
                 }
+            }
+            return _next(context);
+        }
+
+        private async Task InvokeCore(HttpContext context)
+        {
+            var form = await context.Request.ReadFormAsync();
+            var methodType = form[_options.FormFieldName!];
+            if (!string.IsNullOrEmpty(methodType))
+            {
+                context.Request.Method = methodType;
             }
             await _next(context);
         }
