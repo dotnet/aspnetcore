@@ -95,7 +95,6 @@ namespace Microsoft.AspNetCore.HttpLogging
                     _maxFileSize = loggerOptions.FileSizeLimit;
                     _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
                     _flushInterval = loggerOptions.FlushInterval;
-                    // We always move to a new file when options change, in case 
                 }
             });
 
