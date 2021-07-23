@@ -114,6 +114,11 @@ namespace Microsoft.AspNetCore.Builder
         {
             Debug.Assert(_builtApplication is not null);
 
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
             var implicitRouting = false;
 
             // The endpoints were already added on the outside

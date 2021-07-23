@@ -1,4 +1,4 @@
-﻿#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
+#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
 using Microsoft.AspNetCore.Authentication;
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
@@ -74,15 +74,16 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+#if (IndividualLocalAuth)
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
     app.UseMigrationsEndPoint();
-#endif
     app.UseWebAssemblyDebugging();
 }
 else
+#else
+if (!app.Environment.IsDevelopment())
+#endif
 {
     app.UseExceptionHandler("/Error");
 #if (RequiresHttps)

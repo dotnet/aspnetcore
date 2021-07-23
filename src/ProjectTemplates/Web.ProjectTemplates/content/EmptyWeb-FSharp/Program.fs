@@ -7,9 +7,6 @@ let main args =
     let builder = WebApplication.CreateBuilder(args)
     let app = builder.Build()
 
-    if app.Environment.IsDevelopment() then
-        app.UseDeveloperExceptionPage() |> ignore
-
     app.MapGet("/", Func<string>(fun () -> "Hello World!")) |> ignore
 
     app.Run()
