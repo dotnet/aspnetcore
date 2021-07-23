@@ -1,6 +1,6 @@
 # Servicing Process
 
-We maintain several on-going releases at once and produce patches for them. An essential part of our support committment to users is that we build high-quality patches that avoid breaking applications. This means we have to be extremely cautious with taking changes in patch releases. This document describes the "bar" (criteria for accepting servicing fixes) and the process for managing these changes.
+We maintain several on-going releases at once and produce patches for them. An essential part of our support committent to users is that we build high-quality patches that avoid breaking applications. This means we have to be extremely cautious with taking changes in patch releases. This document describes the "bar" (criteria for accepting servicing fixes) and the process for managing these changes.
 
 See the [.NET Core release lifecycle](https://dotnet.microsoft.com/platform/support/policy/dotnet-core#lifecycle) for more details on the currently-supported .NET releases.
 
