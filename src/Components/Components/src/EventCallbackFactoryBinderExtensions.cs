@@ -494,6 +494,174 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// For internal use only.
         /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateOnly> setter,
+            DateOnly existingValue,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, ConvertToDateOnly);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateOnly> setter,
+            DateOnly existingValue,
+            string format,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, format, ConvertToDateOnlyWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateOnly?> setter,
+            DateOnly? existingValue,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<DateOnly?>(factory, receiver, setter, culture, ConvertToNullableDateOnly);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateOnly?> setter,
+            DateOnly? existingValue,
+            string format,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<DateOnly?>(factory, receiver, setter, culture, format, ConvertToNullableDateOnlyWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<TimeOnly> setter,
+            TimeOnly existingValue,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, ConvertToTimeOnly);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<TimeOnly> setter,
+            TimeOnly existingValue,
+            string format,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, format, ConvertToTimeOnlyWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<TimeOnly?> setter,
+            TimeOnly? existingValue,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<TimeOnly?>(factory, receiver, setter, culture, ConvertToNullableTimeOnly);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<TimeOnly?> setter,
+            TimeOnly? existingValue,
+            string format,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<TimeOnly?>(factory, receiver, setter, culture, format, ConvertToNullableTimeOnlyWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="factory"></param>
         /// <param name="receiver"></param>
