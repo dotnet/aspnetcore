@@ -393,7 +393,7 @@ export class HttpConnection implements IConnection {
                 } catch (ex) {
                     this._logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
                     negotiate = undefined;
-                    transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
+                    transportExceptions.push(new FailedToStartTransportError(`${endpoint.transport} failed: ${ex}`, endpoint.transport));
 
                     if (this._connectionState !== ConnectionState.Connecting) {
                         const message = "Failed to select transport before stop() was called.";
@@ -447,9 +447,7 @@ export class HttpConnection implements IConnection {
                     if ((transport === HttpTransportType.WebSockets && !this._options.WebSocket) ||
                         (transport === HttpTransportType.ServerSentEvents && !this._options.EventSource)) {
                         this._logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
-                        const unsupportedTransportError = new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
-                        unsupportedTransportError.name = `UnsupportedTransport${HttpTransportType[transport]}Error`;
-                        return unsupportedTransportError;
+                        return new UnsupportedTransportError(`'${HttpTransportType[transport]}' is not supported in your environment.`, HttpTransportType[transport]);
                     } else {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
@@ -649,6 +647,20 @@ export class TransportSendQueue {
         }
 
         return result.buffer;
+    }
+}
+
+class UnsupportedTransportError extends Error {
+    constructor(public message: string, transport: string) {
+        super(message);
+        this.name = `UnsupportedTransport${transport}Error`;
+    }
+}
+
+class FailedToStartTransportError extends Error {
+    constructor(public message: string, transport: string) {
+        super(message);
+        this.name = `FailedToStartTransport${transport}Error`;
     }
 }
 
