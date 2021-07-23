@@ -31,8 +31,8 @@ allprojects {
 
 spotless {
     java {
-        licenseHeader '// Copyright (c) .NET Foundation. All rights reserved.\n' +
-                '// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.\n\n' // License header
+        licenseHeader '// Licensed to the .NET Foundation under one or more agreements.\n' +
+            '// The .NET Foundation licenses this file to you under the MIT license.\n\n' // License header
 
         importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''   // A sequence of package names
 

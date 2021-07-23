@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 const path = require("path");
 const webpack = require("./common/node_modules/webpack");
@@ -87,7 +87,7 @@ module.exports = function (modulePath, browserBaseName, options) {
           usedExports: true,
           innerGraph: true,
           minimize: true,
-          minimizer: [new TerserJsPlugin({        
+          minimizer: [new TerserJsPlugin({
               terserOptions: {
                   ecma: 2019,
                   compress: {},

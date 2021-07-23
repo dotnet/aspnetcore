@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             httpContext.Response.ContentType = "application/json"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails());
-            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type            
+            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type
             result.Formatters.Add(new TestJsonOutputFormatter());
             result.Formatters.Add(new TestStringOutputFormatter());
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             httpContext.Response.ContentType = "application/json"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails());
-            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type            
+            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type
             result.Formatters.Add(new TestJsonOutputFormatter());
             result.Formatters.Add(new TestStringOutputFormatter());
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var result = new ObjectResult(new ProblemDetails())
             {
                 ContentTypes = { "text/plain" }, // This will not be used
-            }; 
+            };
             result.Formatters.Add(new TestJsonOutputFormatter()); // This will be chosen based on the Accept Headers "application/json"
             result.Formatters.Add(new TestXmlOutputFormatter());
             result.Formatters.Add(new TestStringOutputFormatter());
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Assert
             MediaTypeAssert.Equal("application/problem+json; charset=utf-8", httpContext.Response.ContentType);
         }
-        
+
         [Fact]
         public async Task ExecuteAsync_ForProblemDetailsValue_UsesProblemDetailsXMLContentType_BasedOnAcceptHeader()
         {
@@ -221,8 +221,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var result = new ObjectResult(new ProblemDetails())
             {
                 ContentTypes = { "text/plain" }, // This will not be used
-            }; 
-            result.Formatters.Add(new TestJsonOutputFormatter()); 
+            };
+            result.Formatters.Add(new TestJsonOutputFormatter());
             result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the Accept Headers "application/xml"
             result.Formatters.Add(new TestStringOutputFormatter());
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Authentication
             => Task.FromResult(_requestHandlersCopy);
 
         /// <summary>
-        /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
+        /// Registers a scheme for use by <see cref="IAuthenticationService"/>.
         /// </summary>
         /// <param name="scheme">The scheme.</param>
         /// <returns>true if the scheme was added successfully.</returns>
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
+        /// Registers a scheme for use by <see cref="IAuthenticationService"/>.
         /// </summary>
         /// <param name="scheme">The scheme.</param>
         public virtual void AddScheme(AuthenticationScheme scheme)

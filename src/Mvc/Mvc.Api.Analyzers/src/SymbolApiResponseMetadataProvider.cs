@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -50,8 +50,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 method.ContainingAssembly.GetAttributes(symbolCache.ProducesErrorResponseTypeAttribute).FirstOrDefault();
 
             ITypeSymbol errorType = symbolCache.ProblemDetails;
-            if (errorTypeAttribute != null && 
-                errorTypeAttribute.ConstructorArguments.Length == 1 && 
+            if (errorTypeAttribute != null &&
+                errorTypeAttribute.ConstructorArguments.Length == 1 &&
                 errorTypeAttribute.ConstructorArguments[0].Kind == TypedConstantKind.Type &&
                 errorTypeAttribute.ConstructorArguments[0].Value is ITypeSymbol typeSymbol)
             {

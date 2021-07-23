@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public string ResponseMode { get; set; }
 
         /// <summary>
-        /// Gets or sets the additional provider parameters to use on the authorization flow. 
+        /// Gets or sets the additional provider parameters to use on the authorization flow.
         /// </summary>
         /// <remarks>
         /// These parameters are for the IdP and not for the application. Using those parameters in the application in any way on the login callback will likely introduce security issues as they should be treated as untrusted input.

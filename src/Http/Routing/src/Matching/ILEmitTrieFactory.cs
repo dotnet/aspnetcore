@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // vectorized algorithm introduces additional overhead for casing.
 
             // Vectorize by default on 64bit (allow override for testing)
-            return (IntPtr.Size == 8) && 
+            return (IntPtr.Size == 8) &&
 
             // Don't vectorize if all of the strings are small (prevents allocating unused locals)
             entries.Any(e => e.text.Length >= 4);
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // logic.
 
             // Now we generate an 'if' ladder with an entry for each of the unique
-            // characters in the group. 
+            // characters in the group.
             var groups = entries.GroupBy(e => GetUInt16Key(e.text, index));
             foreach (var group in groups)
             {
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var module = assembly.DefineDynamicModule(assemblyName, fileName);
             var type = module.DefineType("ILEmitTrie");
             var method = type.DefineMethod(
-                "GetDestination", 
+                "GetDestination",
                 MethodAttributes.Public | MethodAttributes.Static,
                 CallingConventions.Standard,
                 typeof(int),
@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             /// Used to covert casing. See comments where it's used.
             /// </summary>
             public LocalBuilder UInt64LowerIndicator { get; }
-            
+
             /// <summary>
             /// Used to covert casing. See comments where it's used.
             /// </summary>

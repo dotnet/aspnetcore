@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     {
         public static IEnumerable<SelectorModel> FlattenSelectors(ActionModel actionModel)
         {
-            // Loop through all attribute routes defined on the controller. 
+            // Loop through all attribute routes defined on the controller.
             // These perform a cross-product with all of the action-level attribute routes.
             var controllerSelectors = actionModel.Controller.Selectors
                 .Where(sm => sm.AttributeRouteModel != null)
@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             if (actionModel.Controller.Selectors.Count > 0)
             {
                 // This logic seems arbitrary but there's a good reason for it.
-                // 
+                //
                 // When we build the controller level selectors, any metadata or action constraints
-                // that aren't IRouteTemplateProvider will be included in all selectors. So we 
+                // that aren't IRouteTemplateProvider will be included in all selectors. So we
                 // pick any selector and then grab all of the stuff that isn't IRouteTemplateProvider
                 // then we've found all of the items that aren't routes.
                 //

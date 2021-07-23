@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SpaServices.Prerendering;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets or sets an <see cref="ISpaPrerendererBuilder"/> that the prerenderer will invoke before
         /// looking for the boot module file.
-        /// 
+        ///
         /// This is only intended to be used during development as a way of generating the JavaScript boot
         /// file automatically when the application runs. This property should be left as <c>null</c> in
         /// production applications.

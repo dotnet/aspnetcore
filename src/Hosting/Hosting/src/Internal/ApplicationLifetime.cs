@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading;
@@ -49,8 +49,8 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         public void StopApplication()
         {
-            // Lock on CTS to synchronize multiple calls to StopApplication. This guarantees that the first call 
-            // to StopApplication and its callbacks run to completion before subsequent calls to StopApplication, 
+            // Lock on CTS to synchronize multiple calls to StopApplication. This guarantees that the first call
+            // to StopApplication and its callbacks run to completion before subsequent calls to StopApplication,
             // which will no-op since the first call already requested cancellation, get a chance to execute.
             lock (_stoppingSource)
             {

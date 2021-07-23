@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components
         /// Determines whether binding will use <see cref="CultureInfo.InvariantCulture" /> or <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <param name="format">
-        /// An optional format to use when converting values. 
+        /// An optional format to use when converting values.
         /// </param>
         public BindInputElementAttribute(string? type, string? suffix, string? valueAttribute, string? changeAttribute, bool isInvariantCulture, string? format)
         {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the value of the element's <c>type</c> attribute.
         /// </summary>
         public string? Type { get; }
-        
+
         /// <summary>
         /// Gets the suffix value.
         /// </summary>

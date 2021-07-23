@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Http;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         private readonly IDataProtectionProvider _dp;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="dataProtection"></param>
         public WsFederationPostConfigureOptions(IDataProtectionProvider dataProtection)
@@ -47,13 +47,13 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                     typeof(WsFederationHandler).FullName!, name, "v1");
                 options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
-            
+
             if (!options.CallbackPath.HasValue && !string.IsNullOrEmpty(options.Wreply) && Uri.TryCreate(options.Wreply, UriKind.Absolute, out var wreply))
             {
                 // Wreply must be a very specific, case sensitive value, so we can't generate it. Instead we generate CallbackPath from it.
                 options.CallbackPath = PathString.FromUriComponent(wreply);
             }
-            
+
             if (string.IsNullOrEmpty(options.TokenValidationParameters.ValidAudience))
             {
                 options.TokenValidationParameters.ValidAudience = options.Wtrealm;
