@@ -271,6 +271,70 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
+        [Fact]
+        public async Task WritesToNewFileOnNewInstance()
+        {
+            var now = DateTimeOffset.Now;
+            if (now.Hour == 23)
+            {
+                // Don't bother trying to run this test when it's almost midnight.
+                return;
+            }
+
+            var path = Path.Combine(TempPath, Path.GetRandomFileName());
+            Directory.CreateDirectory(path);
+
+            try
+            {
+                var options = new W3CLoggerOptions()
+                {
+                    LogDirectory = path,
+                    FileSizeLimit = 5
+                };
+                var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
+                var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"));
+                var fileName3 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0002.txt"));
+
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    logger.EnqueueMessage("Message one");
+                    logger.EnqueueMessage("Message two");
+                    // Pause for a bit before disposing so logger can finish logging
+                    await WaitForFile(fileName2).DefaultTimeout();
+                }
+
+                // Even with a big enough FileSizeLimit, we still won't try to write to files from a previous instance.
+                options.FileSizeLimit = 10000;
+
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    logger.EnqueueMessage("Message three");
+                    // Pause for a bit before disposing so logger can finish logging
+                    await WaitForFile(fileName3).DefaultTimeout();
+                }
+
+                var actualFiles = new DirectoryInfo(path)
+                    .GetFiles()
+                    .Select(f => f.Name)
+                    .OrderBy(f => f)
+                    .ToArray();
+
+                Assert.Equal(3, actualFiles.Length);
+
+                Assert.True(File.Exists(fileName1));
+                Assert.True(File.Exists(fileName2));
+                Assert.True(File.Exists(fileName3));
+
+                Assert.Equal("Message one" + Environment.NewLine, File.ReadAllText(fileName1));
+                Assert.Equal("Message two" + Environment.NewLine, File.ReadAllText(fileName2));
+                Assert.Equal("Message three" + Environment.NewLine, File.ReadAllText(fileName3));
+            }
+            finally
+            {
+                Helpers.DisposeDirectory(path);
+            }
+        }
+
         private async Task WaitForFile(string fileName)
         {
             while (!File.Exists(fileName))
