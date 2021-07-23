@@ -481,9 +481,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
-                    await _context.StreamContext.DisposeAsync();
-
+                    // Tells the connection to remove the stream from its active collection.
                     _context.StreamLifetimeHandler.OnStreamCompleted(this);
+
+                    // Dispose must happen after stream is no longer active.
+                    await _context.StreamContext.DisposeAsync();
                 }
             }
         }
