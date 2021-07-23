@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.CompilerServices;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Http.Features
         public int Revision { get; private set; }
 
         // cache is a public field because the code calling Fetch must
-        // be able to pass ref values that "dot through" the TCache struct memory, 
+        // be able to pass ref values that "dot through" the TCache struct memory,
         // if it was a Property then that getter would return a copy of the memory
         // preventing the use of "ref"
         /// <summary>

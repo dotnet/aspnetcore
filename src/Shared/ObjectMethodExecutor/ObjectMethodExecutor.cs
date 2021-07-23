@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.Internal
         /// which supplies an awaitable-of-object. This always works, but can incur several extra heap allocations
         /// as compared with using Execute and then using "await" on the result value typecasted to the known
         /// awaitable type. The possible extra heap allocations are for:
-        /// 
+        ///
         /// 1. The custom awaitable (though usually there's a heap allocation for this anyway, since normally
         ///    it's a reference type, and you normally create a new instance per call).
         /// 2. The custom awaiter (whether or not it's a value type, since if it's not, you need a new instance

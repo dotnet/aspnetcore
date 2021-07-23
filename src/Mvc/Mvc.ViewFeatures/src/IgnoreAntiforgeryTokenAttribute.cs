@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Filters are executed in an ordering determined by an ascending sort of the <see cref="Order"/> property.
         /// </para>
         /// <para>
-        /// The default Order for this attribute is 1000 because it must run after any filter which does authentication 
+        /// The default Order for this attribute is 1000 because it must run after any filter which does authentication
         /// or login in order to allow them to behave as expected (ie Unauthenticated or Redirect instead of 400).
         /// </para>
         /// <para>

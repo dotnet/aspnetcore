@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class IdentityServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds and configures the identity system for the specified User type. Role services are not added 
+        /// Adds and configures the identity system for the specified User type. Role services are not added
         /// by default but can be added with <see cref="IdentityBuilder.AddRoles{TRole}"/>.
         /// </summary>
         /// <typeparam name="TUser">The type representing a User in the system.</typeparam>
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             => services.AddIdentityCore<TUser>(o => { });
 
         /// <summary>
-        /// Adds and configures the identity system for the specified User type. Role services are not added by default 
+        /// Adds and configures the identity system for the specified User type. Role services are not added by default
         /// but can be added with <see cref="IdentityBuilder.AddRoles{TRole}"/>.
         /// </summary>
         /// <typeparam name="TUser">The type representing a User in the system.</typeparam>

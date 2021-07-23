@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         /// <summary>
-        /// Gets or sets the initial delay applied after the application starts before executing 
+        /// Gets or sets the initial delay applied after the application starts before executing
         /// <see cref="IHealthCheckPublisher"/> instances. The delay is applied once at startup, and does
         /// not apply to subsequent iterations. The default value is 5 seconds.
         /// </summary>
@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public Func<HealthCheckRegistration, bool>? Predicate { get; set; }
 
         /// <summary>
-        /// Gets or sets the timeout for executing the health checks an all <see cref="IHealthCheckPublisher"/> 
+        /// Gets or sets the timeout for executing the health checks an all <see cref="IHealthCheckPublisher"/>
         /// instances. Use <see cref="System.Threading.Timeout.InfiniteTimeSpan"/> to execute with no timeout.
         /// The default value is 30 seconds.
         /// </summary>

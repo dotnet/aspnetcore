@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                 }
                 else
                 {
-                    // Parse for literals, which will return on either the end of the test string 
+                    // Parse for literals, which will return on either the end of the test string
                     // or when it hits a special character
                     ParseLiteral(context, results);
                 }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
             // 1. {NAME} - Server Variable, create lambda to get the part of the context
             // 2. {R:1}  - IRule parameter
             // 3. {C:1}  - Condition Parameter
-            // 4. {function:xxx} - String function 
+            // 4. {function:xxx} - String function
             // (unless we support Reload)
             string? parameter;
             while (context.Next())
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                                 results.Add(new ToLowerSegment(pattern));
 
                                 // at this point, we expect our context to be on the ending closing brace,
-                                // because the ParseString() call will increment the context until it 
+                                // because the ParseString() call will increment the context until it
                                 // has processed the new string.
                                 if (context.Current != CloseBrace)
                                 {

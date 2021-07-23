@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -12,8 +12,8 @@ using Resources = Microsoft.AspNetCore.Mvc.ViewFeatures.Resources;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// A <see cref="RemoteAttributeBase"/> for razor page handler which configures Unobtrusive validation 
-    /// to send an Ajax request to the web site. The invoked handler should return JSON indicating 
+    /// A <see cref="RemoteAttributeBase"/> for razor page handler which configures Unobtrusive validation
+    /// to send an Ajax request to the web site. The invoked handler should return JSON indicating
     /// whether the value is valid.
     /// </summary>
     /// <remarks>Does no server-side validation of the final form submission.</remarks>
@@ -43,13 +43,13 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            
+
             var services = context.ActionContext.HttpContext.RequestServices;
             var factory = services.GetRequiredService<IUrlHelperFactory>();
             var urlHelper = factory.GetUrlHelper(context.ActionContext);
 
             var url = urlHelper.Page(PageName, PageHandler, RouteData);
-            
+
             if (url == null)
             {
                 throw new InvalidOperationException(Resources.RemoteAttribute_NoUrlFound);

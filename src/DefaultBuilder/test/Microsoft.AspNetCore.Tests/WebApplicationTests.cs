@@ -1,14 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -262,10 +256,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
-            builder.Configuration.AddInMemoryCollection(new[]
-            {
-                new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
-            });
+            builder.Configuration["FORWARDEDHEADERS_ENABLED"] = "true";
             await using var app = builder.Build();
 
             app.Run(context =>
@@ -275,6 +266,7 @@ namespace Microsoft.AspNetCore.Tests
             });
 
             await app.StartAsync();
+
             var client = app.GetTestClient();
             client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
             var result = await client.GetAsync("http://localhost/");
@@ -336,6 +328,44 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplication_CanCallUseRoutingWithouUseEndpoints()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/new", () => "new");
+
+            // Rewrite "/old" to "/new" before matching routes
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path == "/old")
+                {
+                    context.Request.Path = "/new";
+                }
+
+                return next(context);
+            });
+
+            app.UseRouting();
+
+            await app.StartAsync();
+
+            var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
+
+            var newEndpoint = Assert.Single(endpointDataSource.Endpoints);
+            var newRouteEndpoint = Assert.IsType<RouteEndpoint>(newEndpoint);
+            Assert.Equal("/new", newRouteEndpoint.RoutePattern.RawText);
+
+            var client = app.GetTestClient();
+
+            var oldResult = await client.GetAsync("http://localhost/old");
+            oldResult.EnsureSuccessStatusCode();
+
+            Assert.Equal("new", await oldResult.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public void WebApplicationCreate_RegistersEventSourceLogger()
         {
             var listener = new TestEventListener();
@@ -392,6 +422,27 @@ namespace Microsoft.AspNetCore.Tests
 
             var app = builder.Build();
             Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
+        }
+
+        [Fact]
+        public async Task WebApplicationBuilder_StartupFilterCanAddTerminalMiddleware()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IStartupFilter, TerminalMiddlewareStartupFilter>();
+            await using var app = builder.Build();
+
+            app.MapGet("/defined", () => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var definedResult = await client.GetAsync("http://localhost/defined");
+            definedResult.EnsureSuccessStatusCode();
+
+            var terminalResult = await client.GetAsync("http://localhost/undefined");
+            Assert.Equal(418, (int)terminalResult.StatusCode);
         }
 
         private class CustomHostLifetime : IHostLifetime
@@ -503,6 +554,22 @@ namespace Microsoft.AspNetCore.Tests
             {
                 public ICollection<string> Addresses { get; set; }
                 public bool PreferHostingUrls { get; set; }
+            }
+        }
+
+        private class TerminalMiddlewareStartupFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    next(app);
+                    app.Run(context =>
+                    {
+                        context.Response.StatusCode = 418; // I'm a teapot
+                        return Task.CompletedTask;
+                    });
+                };
             }
         }
     }

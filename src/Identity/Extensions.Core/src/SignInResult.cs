@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Identity
 {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Identity
         public static SignInResult Failed => _failed;
 
         /// <summary>
-        /// Returns a <see cref="SignInResult"/> that represents a sign-in attempt that failed because 
+        /// Returns a <see cref="SignInResult"/> that represents a sign-in attempt that failed because
         /// the user was locked out.
         /// </summary>
         /// <returns>A <see cref="SignInResult"/> that represents sign-in attempt that failed due to the
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Identity
         public static SignInResult LockedOut => _lockedOut;
 
         /// <summary>
-        /// Returns a <see cref="SignInResult"/> that represents a sign-in attempt that failed because 
+        /// Returns a <see cref="SignInResult"/> that represents a sign-in attempt that failed because
         /// the user is not allowed to sign-in.
         /// </summary>
         /// <returns>A <see cref="SignInResult"/> that represents sign-in attempt that failed due to the
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Identity
         public static SignInResult NotAllowed => _notAllowed;
 
         /// <summary>
-        /// Returns a <see cref="SignInResult"/> that represents a sign-in attempt that needs two-factor 
+        /// Returns a <see cref="SignInResult"/> that represents a sign-in attempt that needs two-factor
         /// authentication.
         /// </summary>
         /// <returns>A <see cref="SignInResult"/> that represents sign-in attempt that needs two-factor
@@ -80,9 +80,9 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>A string representation of value of the current <see cref="SignInResult"/> object.</returns>
         public override string ToString()
         {
-            return IsLockedOut ? "Lockedout" : 
-		   	       IsNotAllowed ? "NotAllowed" : 
-			       RequiresTwoFactor ? "RequiresTwoFactor" : 
+            return IsLockedOut ? "Lockedout" :
+		   	       IsNotAllowed ? "NotAllowed" :
+			       RequiresTwoFactor ? "RequiresTwoFactor" :
 			       Succeeded ? "Succeeded" : "Failed";
         }
     }

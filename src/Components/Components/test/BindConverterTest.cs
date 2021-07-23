@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.ComponentModel;
@@ -180,6 +180,62 @@ namespace Microsoft.AspNetCore.Components
 
             // Act
             var actual = BindConverter.FormatValue(value, "MM-yyyy", CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_DateOnly()
+        {
+            // Arrange
+            var value = DateOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString(CultureInfo.CurrentCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_DateOnly_Format()
+        {
+            // Arrange
+            var value = DateOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString("MM-yyyy", CultureInfo.InvariantCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value, "MM-yyyy", CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_TimeOnly()
+        {
+            // Arrange
+            var value = TimeOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString(CultureInfo.CurrentCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_TimeOnly_Format()
+        {
+            // Arrange
+            var value = TimeOnly.FromDateTime(DateTime.Now);
+            var expected = value.ToString("HH:mm", CultureInfo.InvariantCulture);
+
+            // Act
+            var actual = BindConverter.FormatValue(value, "HH:mm", CultureInfo.InvariantCulture);
 
             // Assert
             Assert.Equal(expected, actual);

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// <para>
     /// <see cref="ModelValidationState"/> of <see cref="ModelStateDictionary.Root"/> is used to determine the validity
     /// of <see cref="ModelStateDictionary"/>. <see cref="ModelStateDictionary.IsValid"/> is <see langword="true" />, when
-    /// the aggregate validity (<see cref="ModelStateDictionary.GetFieldValidationState(string)"/>) 
+    /// the aggregate validity (<see cref="ModelStateDictionary.GetFieldValidationState(string)"/>)
     /// of the root node is <see cref="Valid"/>.
     /// </para>
     /// </summary>

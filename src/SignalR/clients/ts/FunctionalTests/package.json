@@ -56,5 +56,5 @@
     "lodash": ">=4.7.14"
   },
   "author": "",
-  "license": "Apache-2.0"
+  "license": "MIT"
 }

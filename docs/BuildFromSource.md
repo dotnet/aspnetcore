@@ -359,7 +359,7 @@ Common properties include:
 
 ### Resx files
 
-If you need to make changes to a .resx file, run `dotnet msbuild t:/Resgen <path to csproj>`. This will update the generated C#.
+After making changes to a .resx file, the updated strings and accessor methods will automatically be included in the output assembly when the project is next built.
 
 ## Step 5: Use the result of your build
 

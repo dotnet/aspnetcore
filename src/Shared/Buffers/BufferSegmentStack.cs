@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -69,7 +69,7 @@ namespace System.IO.Pipelines
         /// </summary>
         /// <remarks>
         /// We use <see cref="SegmentAsValueType"/> as a wrapper to avoid paying the cost of covariant checks whenever
-        /// the underlying array that the <see cref="BufferSegmentStack"/> class uses is written to. 
+        /// the underlying array that the <see cref="BufferSegmentStack"/> class uses is written to.
         /// We've recognized this as a perf win in ETL traces for these stack frames:
         /// clr!JIT_Stelem_Ref
         ///   clr!ArrayStoreCheck

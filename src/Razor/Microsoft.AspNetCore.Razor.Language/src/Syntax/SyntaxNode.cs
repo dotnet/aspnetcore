@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return result;
         }
 
-        // Special case of above function where slot = 0, does not need GetChildPosition 
+        // Special case of above function where slot = 0, does not need GetChildPosition
         internal SyntaxNode GetRedAtZero(ref SyntaxNode field)
         {
             var result = field;
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return result;
         }
 
-        // special case of above function where slot = 0, does not need GetChildPosition 
+        // special case of above function where slot = 0, does not need GetChildPosition
         protected T GetRedAtZero<T>(ref T field) where T : SyntaxNode
         {
             var result = field;
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         }
 
         /// <summary>
-        /// Gets a list of ancestor nodes (including this node) 
+        /// Gets a list of ancestor nodes (including this node)
         /// </summary>
         public IEnumerable<SyntaxNode> AncestorsAndSelf()
         {

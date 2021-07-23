@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <remarks>
         /// <para>
         /// The <see cref="IsEffectivePolicy{TMetadata}(TMetadata)"/> method is used to implement a common convention
-        /// for filters that define an overriding behavior. When multiple filters may apply to the same 
-        /// cross-cutting concern, define a common interface for the filters (<typeparamref name="TMetadata"/>) and 
+        /// for filters that define an overriding behavior. When multiple filters may apply to the same
+        /// cross-cutting concern, define a common interface for the filters (<typeparamref name="TMetadata"/>) and
         /// implement the filters such that all of the implementations call this method to determine if they should
         /// take action.
         /// </para>
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </para>
         /// <para>
         /// This mechanism for overriding relies on the rules of order and scope that the filter system
-        /// provides to control ordering of filters. It is up to the implementor of filters to implement this 
+        /// provides to control ordering of filters. It is up to the implementor of filters to implement this
         /// protocol cooperatively. The filter system has no innate notion of overrides, this is a recommended
         /// convention.
         /// </para>
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
-        /// Returns the most effective (most specific) policy of type <typeparamref name="TMetadata"/> applied to 
+        /// Returns the most effective (most specific) policy of type <typeparamref name="TMetadata"/> applied to
         /// the action associated with the <see cref="FilterContext"/>.
         /// </summary>
         /// <typeparam name="TMetadata">The type of the filter policy.</typeparam>
