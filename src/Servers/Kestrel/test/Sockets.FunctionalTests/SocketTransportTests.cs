@@ -19,10 +19,12 @@ using Xunit;
 
 using KestrelHttpVersion = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion;
 using KestrelHttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sockets.FunctionalTests
 {
-    public class SocketTranspotTests : LoggedTestBase
+    public class SocketTransportTests : LoggedTestBase
     {
         [Fact]
         public async Task SocketTransportExposesSocketsFeature()
@@ -107,7 +109,14 @@ namespace Sockets.FunctionalTests
                         })
                         .Configure(app => { });
                 })
-                .ConfigureServices(AddTestLogging);
+                .ConfigureServices(AddTestLogging)
+                .ConfigureServices(services =>
+                {
+                    services.Configure<SocketTransportOptions>(options =>
+                    {
+                        options.DelaySocketOptions = true;
+                    });
+                });
 
             using var host = builder.Build();
             using var client = new HttpClient();
@@ -171,7 +180,14 @@ namespace Sockets.FunctionalTests
                         })
                         .Configure(app => { });
                 })
-                .ConfigureServices(AddTestLogging);
+                .ConfigureServices(AddTestLogging)
+                .ConfigureServices(services =>
+                {
+                    services.Configure<SocketTransportOptions>(options =>
+                    {
+                        options.DelaySocketOptions = true;
+                    });
+                });
 
             using var host = builder.Build();
             using var client = new HttpClient();

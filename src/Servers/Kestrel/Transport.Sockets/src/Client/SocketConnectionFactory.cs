@@ -79,7 +79,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 _socketSenderPool,
                 _inputOptions,
                 _outputOptions,
-                _options.WaitForDataBeforeAllocatingBuffer);
+                _options.WaitForDataBeforeAllocatingBuffer,
+                _options.DelaySocketOptions);
+
+            if (!_options.DelaySocketOptions)
+            {
+                socketConnection.EnsureStarted();
+            }
 
             return socketConnection;
         }

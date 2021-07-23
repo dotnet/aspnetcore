@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                                   SocketSenderPool socketSenderPool,
                                   PipeOptions inputOptions,
                                   PipeOptions outputOptions,
-                                  bool waitForData = true)
+                                  bool waitForData = true,
+                                  bool delaySocketOperations = false)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -71,7 +72,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _originalTransport = pair.Transport;
             Application = pair.Application;
 
-            Transport = new SocketDuplexPipe(this);
+            // If we're delaying socket operations wrap the transport into one that will wait until the first read/write
+            // to start the read/write loops.
+            Transport = delaySocketOperations ? new SocketDuplexPipe(this) : _originalTransport;
 
             InitializeFeatures();
         }
@@ -84,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override MemoryPool<byte> MemoryPool { get; }
 
-        private void EnsureStarted()
+        public void EnsureStarted()
         {
             if (_connectionStarted == 1 || Interlocked.CompareExchange(ref _connectionStarted, 1, 0) == 1)
             {

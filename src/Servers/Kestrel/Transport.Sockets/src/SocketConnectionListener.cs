@@ -134,9 +134,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         setting.SocketSenderPool,
                         setting.InputOptions,
                         setting.OutputOptions,
-                        waitForData: _options.WaitForDataBeforeAllocatingBuffer);
+                        waitForData: _options.WaitForDataBeforeAllocatingBuffer,
+                        delaySocketOperations: _options.DelaySocketOptions);
 
                     _settingsIndex = (_settingsIndex + 1) % _settingsCount;
+
+                    if (!_options.DelaySocketOptions)
+                    {
+                        connection.EnsureStarted();
+                    }
 
                     return connection;
                 }

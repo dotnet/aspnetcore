@@ -31,6 +31,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public bool WaitForDataBeforeAllocatingBuffer { get; set; } = true;
 
         /// <summary>
+        /// Delay socket read/write operations until the transport pipe is read from or written to.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
+        public bool DelaySocketOptions { get; set; }
+
+        /// <summary>
         /// Set to false to enable Nagle's algorithm for all connections.
         /// </summary>
         /// <remarks>
