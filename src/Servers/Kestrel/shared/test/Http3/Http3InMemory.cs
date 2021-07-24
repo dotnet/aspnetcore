@@ -1004,6 +1004,7 @@ namespace Microsoft.AspNetCore.Testing
 
             StreamId = streamId;
             _testBase.Logger.LogInformation($"Initializing stream {StreamId}");
+            ConnectionId = "TEST:" + StreamId.ToString();
 
             _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             Disposed = false;
