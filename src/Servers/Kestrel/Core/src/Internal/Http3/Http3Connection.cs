@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
             var streamContext = await _multiplexedContext.ConnectAsync(features);
             var httpConnectionContext = new Http3StreamContext(
-                connectionId: null!, // TODO getting stream ID from stream that isn't started throws an exception.
+                connectionId: streamContext.ConnectionId,
                 HttpProtocols.Http3,
                 connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
                 _context.ServiceContext,
