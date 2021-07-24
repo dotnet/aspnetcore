@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         }
     }
 
-    internal class ManifestStaticWebAssetFileProvider : IFileProvider
+    internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
     {
         private static readonly StringComparison _fsComparison = OperatingSystem.IsWindows() ?
             StringComparison.OrdinalIgnoreCase :
@@ -386,18 +386,28 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
         public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
 
-        private record StaticWebAssetsDirectoryContents(IEnumerable<IFileInfo> Files) : IDirectoryContents
+        private sealed class StaticWebAssetsDirectoryContents : IDirectoryContents
         {
+            private readonly IEnumerable<IFileInfo> _files;
+
+            public StaticWebAssetsDirectoryContents(IEnumerable<IFileInfo> files) =>
+                _files = files;
+
             public bool Exists => true;
 
-            public IEnumerator<IFileInfo> GetEnumerator() => Files.GetEnumerator();
+            public IEnumerator<IFileInfo> GetEnumerator() => _files.GetEnumerator();
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        private record StaticWebAssetsDirectoryInfo(string Name) : IFileInfo
+        private sealed class StaticWebAssetsDirectoryInfo : IFileInfo
         {
             private static readonly DateTimeOffset _lastModified = DateTimeOffset.FromUnixTimeSeconds(0);
+
+            public StaticWebAssetsDirectoryInfo(string name)
+            {
+                Name = name;
+            }
 
             public bool Exists => true;
 
@@ -409,32 +419,43 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
             public bool IsDirectory => true;
 
+            public string Name { get; }
+
             public Stream CreateReadStream() => throw new InvalidOperationException("Can not create a stream for a directory.");
         }
 
-        private record StaticWebAssetsFileInfo(string Name, IFileInfo Source) : IFileInfo
+        private sealed class StaticWebAssetsFileInfo : IFileInfo
         {
-            public bool Exists => Source.Exists;
+            private readonly IFileInfo _source;
 
-            public long Length => Source.Length;
+            public StaticWebAssetsFileInfo(string name, IFileInfo source)
+            {
+                Name = name;
+                _source = source;
+            }
+            public bool Exists => _source.Exists;
 
-            public string PhysicalPath => Source.PhysicalPath;
+            public long Length => _source.Length;
 
-            public DateTimeOffset LastModified => Source.LastModified;
+            public string PhysicalPath => _source.PhysicalPath;
 
-            public bool IsDirectory => Source.IsDirectory;
+            public DateTimeOffset LastModified => _source.LastModified;
 
-            public Stream CreateReadStream() => Source.CreateReadStream();
+            public bool IsDirectory => _source.IsDirectory;
+
+            public string Name { get; }
+
+            public Stream CreateReadStream() => _source.CreateReadStream();
         }
 
-        private class FileNameComparer : IEqualityComparer<IFileInfo>
+        private sealed class FileNameComparer : IEqualityComparer<IFileInfo>
         {
             public bool Equals(IFileInfo? x, IFileInfo? y) => string.Equals(x?.Name, y?.Name, _fsComparison);
 
             public int GetHashCode(IFileInfo obj) => obj.Name.GetHashCode(_fsComparison);
         }
 
-        internal class StaticWebAssetManifest
+        internal sealed class StaticWebAssetManifest
         {
             internal static readonly StringComparer PathComparer =
                 OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
@@ -449,7 +470,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             }
         }
 
-        internal class StaticWebAssetNode
+        internal sealed class StaticWebAssetNode
         {
             [JsonPropertyName("Asset")]
             public StaticWebAssetMatch? Match { get; set; }
@@ -466,7 +487,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             internal bool HasPatterns() => Patterns != null && Patterns.Length > 0;
         }
 
-        internal class StaticWebAssetMatch
+        internal sealed class StaticWebAssetMatch
         {
             [JsonPropertyName("ContentRootIndex")]
             public int ContentRoot { get; set; }
@@ -475,7 +496,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             public string Path { get; set; } = null!;
         }
 
-        internal class StaticWebAssetPattern
+        internal sealed class StaticWebAssetPattern
         {
             [JsonPropertyName("ContentRootIndex")]
             public int ContentRoot { get; set; }
@@ -485,7 +506,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             public string Pattern { get; set; } = null!;
         }
 
-        private class OSBasedCaseConverter : JsonConverter<Dictionary<string, StaticWebAssetNode>>
+        private sealed class OSBasedCaseConverter : JsonConverter<Dictionary<string, StaticWebAssetNode>>
         {
             public override Dictionary<string, StaticWebAssetNode> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
