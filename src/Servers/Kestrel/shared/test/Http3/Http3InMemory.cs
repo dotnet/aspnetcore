@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.Testing
         public long StreamId => _streamId;
 
         public bool Disposed => _testStreamContext.Disposed;
-
+        public Task OnDisposedTask => _testStreamContext.OnDisposedTask;
 
         public Http3RequestStream(Http3InMemory testBase, Http3Connection connection, TestStreamContext testStreamContext, Http3RequestHeaderHandler headerHandler)
             : base(testStreamContext)
@@ -951,6 +951,8 @@ namespace Microsoft.AspNetCore.Testing
         // Persistent state collection is not reset with a stream by design.
         private IDictionary<object, object> _persistentState;
 
+        private TaskCompletionSource _disposedTcs;
+
         public TestStreamContext(bool canRead, bool canWrite, Http3InMemory testBase)
         {
             Features = new FeatureCollection();
@@ -999,10 +1001,13 @@ namespace Microsoft.AspNetCore.Testing
 
             StreamId = streamId;
 
+            _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             Disposed = false;
         }
 
         public bool Disposed { get; private set; }
+
+        public Task OnDisposedTask => _disposedTcs.Task;
 
         public override string ConnectionId { get; set; }
 
@@ -1039,6 +1044,7 @@ namespace Microsoft.AspNetCore.Testing
         public override ValueTask DisposeAsync()
         {
             Disposed = true;
+            _disposedTcs.TrySetResult();
 
             if (!_isAborted &&
                 _transportPipeReader.IsCompletedSuccessfully &&

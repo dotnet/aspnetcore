@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
 
+            await requestStream.OnDisposedTask.DefaultTimeout();
             Assert.True(requestStream.Disposed);
         }
 
@@ -234,6 +235,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.OnStreamCompletedTask.DefaultTimeout();
 
+            await requestStream.OnDisposedTask.DefaultTimeout();
             Assert.True(requestStream.Disposed);
 
             requestStream = await Http3Api.CreateRequestStream();
@@ -250,6 +252,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.ExpectReceiveEndOfStream();
 
+            await requestStream.OnStreamCompletedTask.DefaultTimeout();
+
+            await requestStream.OnDisposedTask.DefaultTimeout();
             Assert.True(requestStream.Disposed);
 
             Assert.Same(streamContext1, streamContext2);
