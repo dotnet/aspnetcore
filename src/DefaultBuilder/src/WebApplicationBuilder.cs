@@ -121,36 +121,6 @@ namespace Microsoft.AspNetCore.Builder
             // instead in order to avoid duplicate service registration.
             _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost);
 
-            // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
-            _hostBuilder.ConfigureServices((context, services) =>
-            {
-                // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
-                // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
-                // until now, so we cannot clear these services even though some are redundant because
-                // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
-
-                // Ideally, we'd only call _hostBuilder.ConfigureWebHost(ConfigureWebHost) instead of
-                // _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost) to avoid some duplicate service descriptors,
-                // but we want to add services in the WebApplicationBuilder constructor so code can inspect
-                // WebApplicationBuilder.Services. At the same time, we want to be able which services are loaded
-                // to react to config changes (e.g. ForwardedHeadersStartupFilter).
-                foreach (var s in _services)
-                {
-                    services.Add(s);
-                }
-
-                // Add any services to the user visible service collection so that they are observable
-                // just in case users capture the Services property. Orchard does this to get a "blueprint"
-                // of the service collection
-
-                // Drop the reference to the existing collection and set the inner collection
-                // to the new one. This allows code that has references to the service collection to still function.
-                _services.InnerCollection = services;
-            });
-
-            // Run the other callbacks on the final host builder
-            _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
-
             _builtApplication = new WebApplication(_hostBuilder.Build());
 
             // Make builder.Configuration match the final configuration. To do that
@@ -235,6 +205,39 @@ namespace Microsoft.AspNetCore.Builder
         private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
         {
             genericWebHostBuilder.Configure(ConfigureApplication);
+
+            // This needs to go here to avoid adding the IHostedService that boots the server twice
+
+            // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
+            genericWebHostBuilder.ConfigureServices((context, services) =>
+            {
+                // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
+                // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
+                // until now, so we cannot clear these services even though some are redundant because
+                // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
+
+                // Ideally, we'd only call _hostBuilder.ConfigureWebHost(ConfigureWebHost) instead of
+                // _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost) to avoid some duplicate service descriptors,
+                // but we want to add services in the WebApplicationBuilder constructor so code can inspect
+                // WebApplicationBuilder.Services. At the same time, we want to be able which services are loaded
+                // to react to config changes (e.g. ForwardedHeadersStartupFilter).
+                foreach (var s in _services)
+                {
+                    services.Add(s);
+                }
+
+                // Add any services to the user visible service collection so that they are observable
+                // just in case users capture the Services property. Orchard does this to get a "blueprint"
+                // of the service collection
+
+                // Drop the reference to the existing collection and set the inner collection
+                // to the new one. This allows code that has references to the service collection to still function.
+                _services.InnerCollection = services;
+            });
+
+
+            // Run the other callbacks on the final host builder
+            _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
 
             _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
         }
