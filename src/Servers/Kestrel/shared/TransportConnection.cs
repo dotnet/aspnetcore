@@ -54,6 +54,11 @@ namespace Microsoft.AspNetCore.Connections
             }
         }
 
+        internal void ResetItems()
+        {
+            _items?.Clear();
+        }
+
         public override CancellationToken ConnectionClosed { get; set; }
 
         // DO NOT remove this override to ConnectionContext.Abort. Doing so would cause

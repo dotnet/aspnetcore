@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="eng\Common.props" />
 
   <PropertyGroup>
