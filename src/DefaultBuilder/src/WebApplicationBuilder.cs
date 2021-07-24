@@ -206,8 +206,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             genericWebHostBuilder.Configure(ConfigureApplication);
 
-            // This needs to go here to avoid adding the IHostedService that boots the server twice
-
+            // This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
             // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
             genericWebHostBuilder.ConfigureServices((context, services) =>
             {
@@ -234,7 +233,6 @@ namespace Microsoft.AspNetCore.Builder
                 // to the new one. This allows code that has references to the service collection to still function.
                 _services.InnerCollection = services;
             });
-
 
             // Run the other callbacks on the final host builder
             _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
