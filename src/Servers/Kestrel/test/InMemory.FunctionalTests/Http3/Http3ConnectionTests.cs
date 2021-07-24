@@ -207,6 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
             var headers = new[]
@@ -225,7 +226,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.SendHeadersAsync(headers);
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world 1"), endStream: true);
 
-            Assert.False(requestStream.Disposed);
+            Assert.False(requestStream.Disposed, "Request is in progress and shouldn't be disposed.");
 
             await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
@@ -236,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.OnStreamCompletedTask.DefaultTimeout();
 
             await requestStream.OnDisposedTask.DefaultTimeout();
-            Assert.True(requestStream.Disposed);
+            Assert.True(requestStream.Disposed, "Request is complete and should be disposed.");
 
             requestStream = await Http3Api.CreateRequestStream();
             var streamContext2 = requestStream.StreamContext;
@@ -244,7 +245,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.SendHeadersAsync(headers);
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world 2"), endStream: true);
 
-            Assert.False(requestStream.Disposed);
+            Assert.False(requestStream.Disposed, "Request is in progress and shouldn't be disposed.");
 
             await requestStream.ExpectHeadersAsync();
             responseData = await requestStream.ExpectDataAsync();
@@ -255,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.OnStreamCompletedTask.DefaultTimeout();
 
             await requestStream.OnDisposedTask.DefaultTimeout();
-            Assert.True(requestStream.Disposed);
+            Assert.True(requestStream.Disposed, "Request is complete and should be disposed.");
 
             Assert.Same(streamContext1, streamContext2);
         }

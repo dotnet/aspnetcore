@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Scheduler = PipeScheduler.Inline,
             };
 
-            Http3Api = new Http3InMemory(_serviceContext, _serviceContext.MockSystemClock, _mockTimeoutHandler.Object);
+            Http3Api = new Http3InMemory(_serviceContext, _serviceContext.MockSystemClock, _mockTimeoutHandler.Object, LoggerFactory);
         }
 
         public void AssertExpectedErrorMessages(string expectedErrorMessage)
