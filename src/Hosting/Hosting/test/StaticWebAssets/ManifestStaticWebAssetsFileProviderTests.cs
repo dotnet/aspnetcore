@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
 
             // Assert
             Assert.NotNull(file);
-            Assert.True(file.Exists);
-            Assert.True(file.IsDirectory);
+            Assert.False(file.Exists);
+            Assert.False(file.IsDirectory);
             Assert.Equal("", file.Name);
         }
 
@@ -153,36 +153,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
             // Assert
             Assert.NotNull(file);
             Assert.False(file.Exists);
-        }
-
-        [Fact]
-        public void CanFindIntermediateDirectoryBasedOnManifestEntry()
-        {
-            var (manifest, factory) = CreateTestManifest();
-
-            var fileProvider = new ManifestStaticWebAssetFileProvider(manifest, factory);
-
-            // Act
-            var file = fileProvider.GetFileInfo("_content");
-
-            // Assert
-            Assert.NotNull(file);
-            Assert.True(file.IsDirectory);
-        }
-
-        [Fact]
-        public void CanFindIntermediateDirectoryBasedOnPattern()
-        {
-            var (manifest, factory) = CreateTestManifest();
-
-            var fileProvider = new ManifestStaticWebAssetFileProvider(manifest, factory);
-
-            // Act
-            var file = fileProvider.GetFileInfo("_content/RazorClassLibrary/js");
-
-            // Assert
-            Assert.NotNull(file);
-            Assert.True(file.IsDirectory);
         }
 
         [Fact]

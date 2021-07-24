@@ -374,6 +374,8 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
                             {
                                 continue;
                             }
+
+                            return result;
                         }
                     }
                 }
