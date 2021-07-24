@@ -140,6 +140,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         public async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
         {
+            // Register the options with the event source so it can be logged (if necessary)
+            KestrelEventSource.Log.RegisterOptions(Options);
+
             try
             {
                 if (!BitConverter.IsLittleEndian)

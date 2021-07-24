@@ -257,6 +257,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
+        internal void Serialize(Dictionary<string, string?> config)
+        {
+            config[nameof(KeepAliveTimeout)] = KeepAliveTimeout.ToString();
+            config[nameof(MaxConcurrentConnections)] = MaxConcurrentConnections?.ToString();
+            config[nameof(MaxConcurrentUpgradedConnections)] = MaxConcurrentUpgradedConnections?.ToString();
+            config[nameof(MaxRequestBodySize)] = MaxRequestBodySize?.ToString();
+            config[nameof(MaxRequestBufferSize)] = MaxRequestBufferSize?.ToString();
+            config[nameof(MaxRequestHeaderCount)] = MaxRequestHeaderCount.ToString();
+            config[nameof(MaxRequestHeadersTotalSize)] = MaxRequestHeadersTotalSize.ToString();
+            config[nameof(MaxRequestLineSize)] = MaxRequestLineSize.ToString();
+            config[nameof(MaxResponseBufferSize)] = MaxResponseBufferSize.ToString();
+            config[nameof(MinRequestBodyDataRate)] = MinRequestBodyDataRate?.ToString();
+            config[nameof(MinResponseDataRate)] = MinResponseDataRate?.ToString();
+            config[nameof(RequestHeadersTimeout)] = RequestHeadersTimeout.ToString();
+
+            // HTTP2
+            Http2.Serialize(config);
+
+            // HTTP3
+            Http3.Serialize(config);
+        }
+
         /// <summary>
         /// Limits only applicable to HTTP/2 connections.
         /// </summary>

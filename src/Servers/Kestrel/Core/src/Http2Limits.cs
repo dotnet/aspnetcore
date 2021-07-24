@@ -195,5 +195,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 _keepAlivePingTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
             }
         }
+
+        internal void Serialize(Dictionary<string, string?> config)
+        {
+            config[nameof(MaxStreamsPerConnection)] = MaxStreamsPerConnection.ToString();
+            config[nameof(HeaderTableSize)] = HeaderTableSize.ToString();
+            config[nameof(MaxFrameSize)] = MaxFrameSize.ToString();
+            config[nameof(MaxRequestHeaderFieldSize)] = MaxRequestHeaderFieldSize.ToString();
+            config[nameof(InitialConnectionWindowSize)] = InitialConnectionWindowSize.ToString();
+            config[nameof(InitialStreamWindowSize)] = InitialStreamWindowSize.ToString();
+            config[nameof(KeepAlivePingDelay)] = KeepAlivePingDelay.ToString();
+            config[nameof(KeepAlivePingTimeout)] = KeepAlivePingTimeout.ToString();
+        }
     }
 }

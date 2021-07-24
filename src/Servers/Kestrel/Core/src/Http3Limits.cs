@@ -55,5 +55,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 _maxRequestHeaderFieldSize = value;
             }
         }
+
+        internal void Serialize(Dictionary<string, string?> config)
+        {
+            config[nameof(HeaderTableSize)] = HeaderTableSize.ToString();
+            config[nameof(MaxRequestHeaderFieldSize)] = MaxRequestHeaderFieldSize.ToString();
+        }
     }
 }

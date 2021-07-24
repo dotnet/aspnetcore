@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _httpRequestQueueLength;
         private long _currentUpgradedHttpRequests;
 
+        private readonly List<KestrelServerOptions> _options = new();
+
         private KestrelEventSource()
         {
         }
@@ -215,6 +217,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(11, Level = EventLevel.Informational)]
+        public void Configuration(int instanceId, Dictionary<string, string?> configuration)
+        {
+            // If the event source is already enabled, dump configuration
+            WriteEvent(11, instanceId, configuration);    
+        }
+
+        [NonEvent]
+        public void Configuration(KestrelServerOptions options)
+        {
+            var config = new Dictionary<string, string?>();
+
+            options.Serialize(config);
+
+            Configuration(options.GetHashCode(), config);
+        }
+
+        [NonEvent]
+        public void RegisterOptions(KestrelServerOptions options)
+        {
+            lock (_options)
+            {
+                _options.Add(options);
+            }
+
+            // If the event source is already enabled, dump configuration
+            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+            {
+                Configuration(options);
+            }
+        }
+
         [NonEvent]
         public void RequestQueuedStart(HttpProtocol httpProtocol, string httpVersion)
         {
@@ -297,6 +332,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     DisplayName = "Current Upgraded Requests (WebSockets)"
                 };
+
+                // Log the options here
+                lock (_options)
+                {
+                    foreach (var option in _options)
+                    {
+                        Configuration(option);
+                    }
+                }
             }
         }
 

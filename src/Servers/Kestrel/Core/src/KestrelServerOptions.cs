@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
@@ -197,6 +198,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EnsureDefaultCert();
 
             httpsOptions.ServerCertificate = DefaultCertificate;
+        }
+
+        internal void Serialize(Dictionary<string, string?> config)
+        {
+            config[nameof(AllowSynchronousIO)] = AllowSynchronousIO.ToString();
+            config[nameof(AddServerHeader)] = AddServerHeader.ToString();
+            config[nameof(AllowAlternateSchemes)] = AllowAlternateSchemes.ToString();
+            config[nameof(AllowResponseHeaderCompression)] = AllowResponseHeaderCompression.ToString();
+            config[nameof(EnableAltSvc)] = EnableAltSvc.ToString();
+            config[nameof(RequestHeaderEncodingSelector)] = RequestHeaderEncodingSelector is null ? "null" : "configured";
+            config[nameof(ResponseHeaderEncodingSelector)] = ResponseHeaderEncodingSelector is null ? "null" : "configured";
+
+            // Limits
+            Limits.Serialize(config);
         }
 
         private void EnsureDefaultCert()
