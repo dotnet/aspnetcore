@@ -1003,8 +1003,8 @@ namespace Microsoft.AspNetCore.Testing
             Features.Set<IPersistentStateFeature>(this);
 
             StreamId = streamId;
-            _testBase.Logger.LogInformation($"Initializing stream {StreamId}");
-            ConnectionId = "TEST:" + StreamId.ToString();
+            _testBase.Logger.LogInformation($"Initializing stream {streamId}");
+            ConnectionId = "TEST:" + streamId.ToString();
 
             _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             Disposed = false;

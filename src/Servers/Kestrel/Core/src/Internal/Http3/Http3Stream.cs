@@ -127,8 +127,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
         }
 
-        public void InitializeWithExistingContext(IDuplexPipe transport)
+        public void InitializeWithExistingContext(IDuplexPipe transport, string connectionId)
         {
+            _context.ConnectionId = connectionId;
             _context.Transport = transport;
             Initialize(_context);
         }
