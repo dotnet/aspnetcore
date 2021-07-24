@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 #line default
 #line hidden
 #nullable disable
+    [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorFileIdentifierAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         #line hidden

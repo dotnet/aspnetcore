@@ -40,6 +40,8 @@ using System;
 #line hidden
 #nullable disable
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"452979e8e4dd77a84a4c50425dd3a162e265990d", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml")]
+    [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorFileIdentifierAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_UsingDirectives : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998

@@ -9,6 +9,8 @@ namespace __GeneratedComponent
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
+    [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorFileIdentifierAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml")]
     public partial class AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 : Microsoft.AspNetCore.Components.ComponentBase, IDisposable
     {
         #pragma warning disable 1998

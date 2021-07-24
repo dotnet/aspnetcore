@@ -11,6 +11,7 @@ Document -
         UsingDirective - (31:1,1 [24] UsingDirectives.cshtml) - System.Collections
         UsingDirective - (58:2,1 [12] UsingDirectives.cshtml) - System
         UsingDirective - (73:3,1 [12] UsingDirectives.cshtml) - System
+        Attributes - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_UsingDirectives - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
