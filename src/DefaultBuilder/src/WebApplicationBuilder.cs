@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of services for the application to compose. This is useful for adding user provided or framework provided services.
         /// </summary>
-        public IServiceCollection Services { get; } = default!;
+        public IServiceCollection Services { get; }
 
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
@@ -142,9 +142,6 @@ namespace Microsoft.AspNetCore.Builder
                 // Add any services to the user visible service collection so that they are observable
                 // just in case users capture the Services property. Orchard does this to get a "blueprint"
                 // of the service collection
-
-                // Clear the original collection.
-                _services.Clear();
 
                 // Drop the reference to the existing collection and set the inner collection
                 // to the new one. This allows code that has references to the service collection to still function.
