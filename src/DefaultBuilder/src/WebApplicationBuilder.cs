@@ -23,10 +23,12 @@ namespace Microsoft.AspNetCore.Builder
         private readonly ConfigureHostBuilder _deferredHostBuilder;
         private readonly ConfigureWebHostBuilder _deferredWebHostBuilder;
         private readonly WebHostEnvironment _environment;
+        private readonly WebApplicationServiceCollection _services = new();
         private WebApplication? _builtApplication;
 
         internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
         {
+            Services = _services;
             // HACK: MVC and Identity do this horrible thing to get the hosting environment as an instance
             // from the service collection before it is built. That needs to be fixed...
             Environment = _environment = new WebHostEnvironment(callingAssembly);
@@ -45,9 +47,6 @@ namespace Microsoft.AspNetCore.Builder
             Logging = new LoggingBuilder(Services);
             WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
             Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services);
-
-            // Register Configuration as IConfiguration so updates can be observed even after the WebApplication is built.
-            Services.AddSingleton<IConfiguration>(Configuration);
 
             // Add default services
             _deferredHostBuilder.ConfigureDefaults(args);
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of services for the application to compose. This is useful for adding user provided or framework provided services.
         /// </summary>
-        public IServiceCollection Services { get; } = new ServiceCollection();
+        public IServiceCollection Services { get; }
 
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
@@ -103,11 +102,33 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A configured <see cref="WebApplication"/>.</returns>
         public WebApplication Build()
         {
+            // Copy the configuration sources into the final IConfigurationBuilder
+            _hostBuilder.ConfigureHostConfiguration(builder =>
+            {
+                foreach (var source in ((IConfigurationBuilder)Configuration).Sources)
+                {
+                    builder.Sources.Add(source);
+                }
+
+                foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
+                {
+                    builder.Properties[key] = value;
+                }
+            });
+
             // We call ConfigureWebHostDefaults AGAIN because config might be added like "ForwardedHeaders_Enabled"
             // which can add even more services. If not for that, we probably call _hostBuilder.ConfigureWebHost(ConfigureWebHost)
             // instead in order to avoid duplicate service registration.
             _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost);
-            return _builtApplication = new WebApplication(_hostBuilder.Build());
+
+            _builtApplication = new WebApplication(_hostBuilder.Build());
+
+            // Make builder.Configuration match the final configuration. To do that
+            // we clear the sources and add the built configuration as a source
+            ((IConfigurationBuilder)Configuration).Sources.Clear();
+            Configuration.AddConfiguration(_builtApplication.Configuration);
+
+            return _builtApplication;
         }
 
         private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
@@ -183,20 +204,10 @@ namespace Microsoft.AspNetCore.Builder
 
         private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
         {
-            _hostBuilder.ConfigureHostConfiguration(builder =>
-            {
-                // All the sources in builder.Sources should be in Configuration.Sources
-                // already thanks to the BootstrapHostBuilder.
-                builder.Sources.Clear();
+            genericWebHostBuilder.Configure(ConfigureApplication);
 
-                foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
-                {
-                    builder.Properties[key] = value;
-                }
-
-                builder.AddConfiguration(Configuration, shouldDisposeConfiguration: true);
-            });
-
+            // This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
+            // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
             genericWebHostBuilder.ConfigureServices((context, services) =>
             {
                 // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
@@ -209,24 +220,21 @@ namespace Microsoft.AspNetCore.Builder
                 // but we want to add services in the WebApplicationBuilder constructor so code can inspect
                 // WebApplicationBuilder.Services. At the same time, we want to be able which services are loaded
                 // to react to config changes (e.g. ForwardedHeadersStartupFilter).
-                foreach (var s in Services)
+                foreach (var s in _services)
                 {
                     services.Add(s);
                 }
 
                 // Add any services to the user visible service collection so that they are observable
                 // just in case users capture the Services property. Orchard does this to get a "blueprint"
-                // of the service collection. The order needs to be preserved here so we clear the original
-                // collection and add all of the services in order.
-                Services.Clear();
-                foreach (var s in services)
-                {
-                    Services.Add(s);
-                }
+                // of the service collection
+
+                // Drop the reference to the existing collection and set the inner collection
+                // to the new one. This allows code that has references to the service collection to still function.
+                _services.InnerCollection = services;
             });
 
-            genericWebHostBuilder.Configure(ConfigureApplication);
-
+            // Run the other callbacks on the final host builder
             _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
 
             _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
