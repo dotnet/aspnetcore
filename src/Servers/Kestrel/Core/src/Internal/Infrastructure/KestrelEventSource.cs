@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Diagnostics.Tracing;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -219,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(11, Level = EventLevel.Informational)]
-        public void Configuration(int instanceId, Dictionary<string, string?> configuration)
+        public void Configuration(int instanceId, string configuration)
         {
             // If the event source is already enabled, dump configuration
             WriteEvent(11, instanceId, configuration);    
@@ -232,7 +234,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             options.Serialize(config);
 
-            Configuration(options.GetHashCode(), config);
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            var writer = new Utf8JsonWriter(bufferWriter);
+
+            writer.WriteStartObject();
+            foreach (var (key, value) in config)
+            {
+                writer.WriteString(key, value);
+            }
+            writer.WriteEndObject();
+            writer.Flush();
+
+            var serializedConfig = Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
+
+            Configuration(options.GetHashCode(), serializedConfig);
         }
 
         [NonEvent]
