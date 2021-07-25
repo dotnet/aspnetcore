@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 .ConfigureServices(AddTestLogging);
 
             using (var host = builder.Build())
-            using (var client = new HttpClient())
+            using (var client = CreateClient())
             {
                 await host.StartAsync();
 
@@ -183,10 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var host = builder.Build();
             await host.StartAsync().DefaultTimeout();
 
-            var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
-            using (var client = new HttpClient(httpClientHandler))
+            using (var client = CreateClient())
             {
                 // Act
                 var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
@@ -221,41 +218,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         private static async Task CallHttp3AndHttp1EndpointsAsync(int http3Port, int http1Port)
         {
-            // HTTP/3
-            using (var client = new HttpClient())
+            using (var client = CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{http3Port}/");
-                request.Version = HttpVersion.Version30;
-                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                // HTTP/3
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{http3Port}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var response = await client.SendAsync(request).DefaultTimeout();
+                var response1 = await client.SendAsync(request1).DefaultTimeout();
 
                 // Assert
-                response.EnsureSuccessStatusCode();
-                Assert.Equal(HttpVersion.Version30, response.Version);
-                var responseText = await response.Content.ReadAsStringAsync().DefaultTimeout();
-                Assert.Equal("hello, world", responseText);
-            }
+                response1.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version30, response1.Version);
+                var responseText1 = await response1.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText1);
 
-            // HTTP/1.1
-            var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
-            using (var client = new HttpClient(httpClientHandler))
-            {
                 // HTTP/1.1
-                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{http1Port}/");
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{http1Port}/");
 
                 // Act
-                var response = await client.SendAsync(request).DefaultTimeout();
+                var response2 = await client.SendAsync(request2).DefaultTimeout();
 
                 // Assert
-                response.EnsureSuccessStatusCode();
-                Assert.Equal(HttpVersion.Version11, response.Version);
-                var responseText = await response.Content.ReadAsStringAsync().DefaultTimeout();
-                Assert.Equal("hello, world", responseText);
+                response2.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version11, response2.Version);
+                var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText2);
             }
+        }
+
+        private static HttpClient CreateClient()
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+            return new HttpClient(httpHandler);
         }
 
         public static IHostBuilder GetHostBuilder(long? maxReadBufferSize = null)
