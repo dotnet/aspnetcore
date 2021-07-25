@@ -37,10 +37,9 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
             }
             catch (Exception ex)
             {
-                Log.KeyRingFailedToLoadOnStartup(
-                                // This should be non-fatal, so swallow, log, and allow server startup to continue.
-                                // The KeyRingProvider may be able to try again on the first request.
-                                _logger, ex);
+                // This should be non-fatal, so swallow, log, and allow server startup to continue.
+                // The KeyRingProvider may be able to try again on the first request.
+                Log.KeyRingFailedToLoadOnStartup(_logger, ex);
             }
 
             return Task.CompletedTask;
