@@ -230,18 +230,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [NonEvent]
         public void Configuration(KestrelServerOptions options)
         {
-            var config = new Dictionary<string, string?>();
-
-            options.Serialize(config);
-
             var bufferWriter = new ArrayBufferWriter<byte>();
             var writer = new Utf8JsonWriter(bufferWriter);
 
             writer.WriteStartObject();
-            foreach (var (key, value) in config)
-            {
-                writer.WriteString(key, value);
-            }
+            options.Serialize(writer);
             writer.WriteEndObject();
             writer.Flush();
 

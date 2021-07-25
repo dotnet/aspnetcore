@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -196,16 +197,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        internal void Serialize(Dictionary<string, string?> config)
+        internal void Serialize(Utf8JsonWriter writer)
         {
-            config[nameof(MaxStreamsPerConnection)] = MaxStreamsPerConnection.ToString();
-            config[nameof(HeaderTableSize)] = HeaderTableSize.ToString();
-            config[nameof(MaxFrameSize)] = MaxFrameSize.ToString();
-            config[nameof(MaxRequestHeaderFieldSize)] = MaxRequestHeaderFieldSize.ToString();
-            config[nameof(InitialConnectionWindowSize)] = InitialConnectionWindowSize.ToString();
-            config[nameof(InitialStreamWindowSize)] = InitialStreamWindowSize.ToString();
-            config[nameof(KeepAlivePingDelay)] = KeepAlivePingDelay.ToString();
-            config[nameof(KeepAlivePingTimeout)] = KeepAlivePingTimeout.ToString();
+            writer.WritePropertyName(nameof(MaxStreamsPerConnection));
+            writer.WriteNumberValue(MaxStreamsPerConnection);
+
+            writer.WritePropertyName(nameof(HeaderTableSize));
+            writer.WriteNumberValue(HeaderTableSize);
+            
+            writer.WritePropertyName(nameof(MaxFrameSize));
+            writer.WriteNumberValue(MaxFrameSize);
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderFieldSize));
+            writer.WriteNumberValue(MaxRequestHeaderFieldSize);
+
+            writer.WritePropertyName(nameof(InitialConnectionWindowSize));
+            writer.WriteNumberValue(InitialConnectionWindowSize);
+
+            writer.WritePropertyName(nameof(InitialStreamWindowSize));
+            writer.WriteNumberValue(InitialStreamWindowSize);
+
+            writer.WriteString(nameof(KeepAlivePingDelay), KeepAlivePingDelay.ToString());
+            writer.WriteString(nameof(KeepAlivePingTimeout), KeepAlivePingTimeout.ToString());
         }
     }
 }

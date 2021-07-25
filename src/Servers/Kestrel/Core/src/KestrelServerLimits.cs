@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -257,26 +258,84 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        internal void Serialize(Dictionary<string, string?> config)
+        internal void Serialize(Utf8JsonWriter writer)
         {
-            config[nameof(KeepAliveTimeout)] = KeepAliveTimeout.ToString();
-            config[nameof(MaxConcurrentConnections)] = MaxConcurrentConnections?.ToString();
-            config[nameof(MaxConcurrentUpgradedConnections)] = MaxConcurrentUpgradedConnections?.ToString();
-            config[nameof(MaxRequestBodySize)] = MaxRequestBodySize?.ToString();
-            config[nameof(MaxRequestBufferSize)] = MaxRequestBufferSize?.ToString();
-            config[nameof(MaxRequestHeaderCount)] = MaxRequestHeaderCount.ToString();
-            config[nameof(MaxRequestHeadersTotalSize)] = MaxRequestHeadersTotalSize.ToString();
-            config[nameof(MaxRequestLineSize)] = MaxRequestLineSize.ToString();
-            config[nameof(MaxResponseBufferSize)] = MaxResponseBufferSize.ToString();
-            config[nameof(MinRequestBodyDataRate)] = MinRequestBodyDataRate?.ToString();
-            config[nameof(MinResponseDataRate)] = MinResponseDataRate?.ToString();
-            config[nameof(RequestHeadersTimeout)] = RequestHeadersTimeout.ToString();
+            writer.WriteString(nameof(KeepAliveTimeout), KeepAliveTimeout.ToString());
+
+            writer.WritePropertyName(nameof(MaxConcurrentConnections));
+            if (MaxConcurrentConnections is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxConcurrentConnections.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxConcurrentUpgradedConnections));
+            if (MaxConcurrentUpgradedConnections is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxConcurrentUpgradedConnections.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestBodySize));
+            if (MaxRequestBodySize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxRequestBodySize.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestBufferSize));
+            if (MaxRequestBufferSize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxRequestBufferSize.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderCount));
+            writer.WriteNumberValue(MaxRequestHeaderCount);
+
+            writer.WritePropertyName(nameof(MaxRequestHeadersTotalSize));
+            writer.WriteNumberValue(MaxRequestHeadersTotalSize);
+
+            writer.WritePropertyName(nameof(MaxRequestLineSize));
+            writer.WriteNumberValue(MaxRequestLineSize);
+
+            writer.WritePropertyName(nameof(MaxResponseBufferSize));
+            if (MaxResponseBufferSize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxResponseBufferSize.Value);
+            }
+
+            writer.WriteString(nameof(MinRequestBodyDataRate), MinRequestBodyDataRate?.ToString());
+            writer.WriteString(nameof(MinResponseDataRate), MinResponseDataRate?.ToString());
+            writer.WriteString(nameof(RequestHeadersTimeout), RequestHeadersTimeout.ToString());
 
             // HTTP2
-            Http2.Serialize(config);
+            writer.WritePropertyName(nameof(Http2));
+            writer.WriteStartObject();
+            Http2.Serialize(writer);
+            writer.WriteEndObject();
 
             // HTTP3
-            Http3.Serialize(config);
+            writer.WritePropertyName(nameof(Http3));
+            writer.WriteStartObject();
+            Http3.Serialize(writer);
+            writer.WriteEndObject();
         }
 
         /// <summary>

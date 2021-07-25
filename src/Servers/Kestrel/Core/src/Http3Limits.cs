@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -56,10 +57,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        internal void Serialize(Dictionary<string, string?> config)
+        internal void Serialize(Utf8JsonWriter writer)
         {
-            config[nameof(HeaderTableSize)] = HeaderTableSize.ToString();
-            config[nameof(MaxRequestHeaderFieldSize)] = MaxRequestHeaderFieldSize.ToString();
+            writer.WritePropertyName(nameof(HeaderTableSize));
+            writer.WriteNumberValue(HeaderTableSize);
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderFieldSize));
+            writer.WriteNumberValue(MaxRequestHeaderFieldSize);
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -200,18 +201,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             httpsOptions.ServerCertificate = DefaultCertificate;
         }
 
-        internal void Serialize(Dictionary<string, string?> config)
+        internal void Serialize(Utf8JsonWriter writer)
         {
-            config[nameof(AllowSynchronousIO)] = AllowSynchronousIO.ToString();
-            config[nameof(AddServerHeader)] = AddServerHeader.ToString();
-            config[nameof(AllowAlternateSchemes)] = AllowAlternateSchemes.ToString();
-            config[nameof(AllowResponseHeaderCompression)] = AllowResponseHeaderCompression.ToString();
-            config[nameof(EnableAltSvc)] = EnableAltSvc.ToString();
-            config[nameof(RequestHeaderEncodingSelector)] = RequestHeaderEncodingSelector is null ? "null" : "configured";
-            config[nameof(ResponseHeaderEncodingSelector)] = ResponseHeaderEncodingSelector is null ? "null" : "configured";
+            writer.WritePropertyName(nameof(AllowSynchronousIO));
+            writer.WriteBooleanValue(AllowSynchronousIO);
+
+            writer.WritePropertyName(nameof(AddServerHeader));
+            writer.WriteBooleanValue(AddServerHeader);
+
+            writer.WritePropertyName(nameof(AllowAlternateSchemes));
+            writer.WriteBooleanValue(AllowAlternateSchemes);
+
+            writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
+            writer.WriteBooleanValue(AllowResponseHeaderCompression);
+
+            writer.WritePropertyName(nameof(EnableAltSvc));
+            writer.WriteBooleanValue(EnableAltSvc);
+
+            writer.WriteString(nameof(RequestHeaderEncodingSelector), RequestHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
+            writer.WriteString(nameof(ResponseHeaderEncodingSelector), ResponseHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
 
             // Limits
-            Limits.Serialize(config);
+            writer.WritePropertyName(nameof(Limits));
+            writer.WriteStartObject();
+            Limits.Serialize(writer);
+            writer.WriteEndObject();
         }
 
         private void EnsureDefaultCert()
