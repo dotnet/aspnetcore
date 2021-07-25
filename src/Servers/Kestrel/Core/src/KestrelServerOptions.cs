@@ -218,6 +218,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             writer.WritePropertyName(nameof(EnableAltSvc));
             writer.WriteBooleanValue(EnableAltSvc);
 
+            writer.WritePropertyName(nameof(IsDevCertLoaded));
+            writer.WriteBooleanValue(IsDevCertLoaded);
+
             writer.WriteString(nameof(RequestHeaderEncodingSelector), RequestHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
             writer.WriteString(nameof(ResponseHeaderEncodingSelector), ResponseHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
 
@@ -226,6 +229,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             writer.WriteStartObject();
             Limits.Serialize(writer);
             writer.WriteEndObject();
+            
+            // ListenOptions
+            writer.WritePropertyName(nameof(ListenOptions));
+            writer.WriteStartArray();
+            foreach (var listenOptions in ListenOptions)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("Address", listenOptions.GetDisplayName());
+                writer.WritePropertyName(nameof(listenOptions.IsTls));
+                writer.WriteBooleanValue(listenOptions.IsTls);
+                writer.WriteString(nameof(listenOptions.Protocols), listenOptions.Protocols.ToString());
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
         }
 
         private void EnsureDefaultCert()
