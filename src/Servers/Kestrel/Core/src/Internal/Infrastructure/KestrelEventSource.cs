@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void RegisterOptions(KestrelServerOptions options)
+        public void AddServerOptions(KestrelServerOptions options)
         {
             lock (_options)
             {
@@ -255,6 +255,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             if (IsEnabled(EventLevel.Informational, EventKeywords.None))
             {
                 Configuration(options);
+            }
+        }
+
+        [NonEvent]
+        public void RemoveServerOptions(KestrelServerOptions options)
+        {
+            lock (_options)
+            {
+                _options.Remove(options);
             }
         }
 

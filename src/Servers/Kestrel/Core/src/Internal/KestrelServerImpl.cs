@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             // Register the options with the event source so it can be logged (if necessary)
-            KestrelEventSource.Log.RegisterOptions(Options);
+            KestrelEventSource.Log.AddServerOptions(Options);
         }
 
         // Graceful shutdown if possible
@@ -245,6 +245,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             _stoppedTcs.TrySetResult();
+
+            // Remove the options from the event source so we don't have a leak if
+            // the server is stopped and started again in the same process.
+            KestrelEventSource.Log.RemoveServerOptions(Options);
         }
 
         // Ungraceful shutdown
