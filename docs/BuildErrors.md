@@ -82,7 +82,7 @@ The `darc-int-...` feeds in NuGet.config are used only when building internally 
 
 ## Error: Generated code is not up to date in eng/ProjectReferences.props.
 
-After adding or moving project you need to update the two `DotNetProjects Include` lists in `eng/Build.props`
+After some project additions or moves, you may need to update the two `DotNetProjects Include` lists in `eng/Build.props`
 
 ## Warning: Requested Microsoft.AspNetCore.App v&hellip; does not exist
 
