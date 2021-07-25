@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -13,11 +9,12 @@ using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
-    internal struct StaticFileContext
+    internal partial struct StaticFileContext
     {
         private readonly HttpContext _context;
         private readonly StaticFileOptions _options;
@@ -287,7 +284,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             ApplyResponseHeaders(statusCode);
 
-            _logger.Handled(statusCode, SubPath);
+            Log.Handled(_logger, statusCode, SubPath);
             return Task.CompletedTask;
         }
 
@@ -313,7 +310,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                         }
 
                         await SendAsync();
-                        _logger.FileServed(SubPath, PhysicalPath);
+                        Log.FileServed(_logger, SubPath, PhysicalPath);
                         return;
                     }
                     catch (FileNotFoundException)
@@ -323,11 +320,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                     await next(context);
                     return;
                 case PreconditionState.NotModified:
-                    _logger.FileNotModified(SubPath);
+                    Log.FileNotModified(_logger, SubPath);
                     await SendStatusAsync(StatusCodes.Status304NotModified);
                     return;
                 case PreconditionState.PreconditionFailed:
-                    _logger.PreconditionFailed(SubPath);
+                    Log.PreconditionFailed(_logger, SubPath);
                     await SendStatusAsync(StatusCodes.Status412PreconditionFailed);
                     return;
                 default:
@@ -348,7 +345,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             catch (OperationCanceledException ex)
             {
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                _logger.WriteCancelled(ex);
+                Log.WriteCancelled(_logger, ex);
             }
         }
 
@@ -363,7 +360,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 ResponseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
                 ApplyResponseHeaders(StatusCodes.Status416RangeNotSatisfiable);
 
-                _logger.RangeNotSatisfiable(SubPath);
+                Log.RangeNotSatisfiable(_logger, SubPath);
                 return;
             }
 
@@ -375,13 +372,13 @@ namespace Microsoft.AspNetCore.StaticFiles
             try
             {
                 var logPath = !string.IsNullOrEmpty(_fileInfo.PhysicalPath) ? _fileInfo.PhysicalPath : SubPath;
-                _logger.SendingFileRange(_response.Headers.ContentRange, logPath);
+                Log.SendingFileRange(_logger, _response.Headers.ContentRange, logPath);
                 await _context.Response.SendFileAsync(_fileInfo, start, length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                _logger.WriteCancelled(ex);
+                Log.WriteCancelled(_logger, ex);
             }
         }
 
@@ -419,6 +416,39 @@ namespace Microsoft.AspNetCore.StaticFiles
             IsHead = 0b_001,
             IsGet = 0b_010,
             IsRange = 0b_100,
+        }
+
+        private partial class Log
+        {
+            public static void FileServed(ILogger logger, string virtualPath, string physicalPath)
+            {
+                if (string.IsNullOrEmpty(physicalPath))
+                {
+                    physicalPath = "N/A";
+                }
+                FileServedCore(logger, virtualPath, physicalPath);
+            }
+
+            [LoggerMessage(2, LogLevel.Information, "Sending file. Request path: '{VirtualPath}'. Physical path: '{PhysicalPath}'", EventName = "FileServed")]
+            private static partial void FileServedCore(ILogger logger, string virtualPath, string physicalPath);
+
+            [LoggerMessage(6, LogLevel.Information, "The file {Path} was not modified", EventName = "FileNotModified")]
+            public static partial void FileNotModified(ILogger logger, string path);
+
+            [LoggerMessage(7, LogLevel.Information, "Precondition for {Path} failed", EventName = "PreconditionFailed")]
+            public static partial void PreconditionFailed(ILogger logger, string path);
+
+            [LoggerMessage(8, LogLevel.Debug, "Handled. Status code: {StatusCode} File: {Path}", EventName = "Handled")]
+            public static partial void Handled(ILogger logger, int statusCode, string path);
+
+            [LoggerMessage(9, LogLevel.Warning, "Range not satisfiable for {Path}", EventName = "RangeNotSatisfiable")]
+            public static partial void RangeNotSatisfiable(ILogger logger, string path);
+
+            [LoggerMessage(10, LogLevel.Information, "Sending {Range} of file {Path}", EventName = "SendingFileRange")]
+            public static partial void SendingFileRange(ILogger logger, StringValues range, string path);
+
+            [LoggerMessage(14, LogLevel.Debug, "The file transmission was cancelled", EventName = "WriteCancelled")]
+            public static partial void WriteCancelled(ILogger logger, Exception ex);
         }
     }
 }

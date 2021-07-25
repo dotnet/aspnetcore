@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
     /// <summary>
     /// A key manager backed by an <see cref="IXmlRepository"/>.
     /// </summary>
-    public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
+    public sealed partial class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     {
         // Used for serializing elements to persistent storage
         internal static readonly XName KeyElementName = "key";
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 else
                 {
                     // Skip unknown elements.
-                    _logger.UnknownElementWithNameFoundInKeyringSkipping(element.Name);
+                    Log.UnknownElementWithNameFoundInKeyringSkipping(_logger, element.Name);
                 }
             }
 
@@ -216,11 +216,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     if (key != null)
                     {
                         key.SetRevoked();
-                        _logger.MarkedKeyAsRevokedInTheKeyring(revokedKeyId);
+                        Log.MarkedKeyAsRevokedInTheKeyring(_logger, revokedKeyId);
                     }
                     else
                     {
-                        _logger.TriedToProcessRevocationOfKeyButNoSuchKeyWasFound(revokedKeyId);
+                        Log.TriedToProcessRevocationOfKeyButNoSuchKeyWasFound(_logger, revokedKeyId);
                     }
                 }
             }
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     if (key.CreationDate < mostRecentMassRevocationDate)
                     {
                         key.SetRevoked();
-                        _logger.MarkedKeyAsRevokedInTheKeyring(key.KeyId);
+                        Log.MarkedKeyAsRevokedInTheKeyring(_logger, key.KeyId);
                     }
                 }
             }
@@ -266,8 +266,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 DateTimeOffset creationDate = (DateTimeOffset)keyElement.Element(CreationDateElementName)!;
                 DateTimeOffset activationDate = (DateTimeOffset)keyElement.Element(ActivationDateElementName)!;
                 DateTimeOffset expirationDate = (DateTimeOffset)keyElement.Element(ExpirationDateElementName)!;
-
-                _logger.FoundKey(keyId);
+                Log.FoundKey(_logger, keyId);
 
                 return new DeferredKey(
                     keyId: keyId,
@@ -299,14 +298,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 {
                     // this is a mass revocation of all keys as of the specified revocation date
                     DateTimeOffset massRevocationDate = (DateTimeOffset)revocationElement.Element(RevocationDateElementName)!;
-                    _logger.FoundRevocationOfAllKeysCreatedPriorTo(massRevocationDate);
+                    Log.FoundRevocationOfAllKeysCreatedPriorTo(_logger, massRevocationDate);
                     return massRevocationDate;
                 }
                 else
                 {
                     // only one key is being revoked
                     var keyId = XmlConvert.ToGuid(keyIdAsString);
-                    _logger.FoundRevocationOfKey(keyId);
+                    Log.FoundRevocationOfKey(_logger, keyId);
                     return keyId;
                 }
             }
@@ -314,7 +313,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             {
                 // Any exceptions that occur are fatal - we don't want to continue if we cannot process
                 // revocation information.
-                _logger.ExceptionWhileProcessingRevocationElement(revocationElement, ex);
+                Log.ExceptionWhileProcessingRevocationElement(_logger, revocationElement, ex);
                 throw;
             }
         }
@@ -328,8 +327,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             //   <key id="*" />
             //   <reason>...</reason>
             // </revocation>
-
-            _logger.RevokingAllKeysAsOfForReason(revocationDate, reason);
+            Log.RevokingAllKeysAsOfForReason(_logger, revocationDate, reason);
 
             var revocationElement = new XElement(RevocationElementName,
                 new XAttribute(VersionAttributeName, 1),
@@ -358,7 +356,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             if (!suppressLogging)
             {
-                _logger.KeyCacheExpirationTokenTriggeredByOperation(opName!);
+                Log.KeyCacheExpirationTokenTriggeredByOperation(_logger, opName!);
             }
 
             Interlocked.Exchange(ref _cacheExpirationTokenSource, new CancellationTokenSource())?.Cancel();
@@ -372,10 +370,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // include sensitive information in the exception message.
 
             // write sanitized <key> element
-            _logger.ExceptionWhileProcessingKeyElement(keyElement.WithoutChildNodes(), error);
-
+            Log.ExceptionWhileProcessingKeyElement(_logger, keyElement.WithoutChildNodes(), error);
             // write full <key> element
-            _logger.AnExceptionOccurredWhileProcessingElementDebug(keyElement, error);
+            Log.AnExceptionOccurredWhileProcessingElementDebug(_logger, keyElement, error);
 
         }
 
@@ -390,13 +387,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             //   </descriptor>
             // </key>
 
-            _logger.CreatingKey(keyId, creationDate, activationDate, expirationDate);
+            Log.CreatingKey(_logger, keyId, creationDate, activationDate, expirationDate);
 
             var newDescriptor = _authenticatedEncryptorConfiguration.CreateNewDescriptor()
                 ?? CryptoUtil.Fail<IAuthenticatedEncryptorDescriptor>("CreateNewDescriptor returned null.");
             var descriptorXmlInfo = newDescriptor.ExportToXml();
-
-            _logger.DescriptorDeserializerTypeForKeyIs(keyId, descriptorXmlInfo.DeserializerType.AssemblyQualifiedName!);
+            Log.DescriptorDeserializerTypeForKeyIs(_logger, keyId, descriptorXmlInfo.DeserializerType.AssemblyQualifiedName!);
 
             // build the <key> element
             var keyElement = new XElement(KeyElementName,
@@ -412,18 +408,18 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // If key escrow policy is in effect, write the *unencrypted* key now.
             if (_keyEscrowSink != null)
             {
-                _logger.KeyEscrowSinkFoundWritingKeyToEscrow(keyId);
+                Log.KeyEscrowSinkFoundWritingKeyToEscrow(_logger, keyId);
             }
             else
             {
-                _logger.NoKeyEscrowSinkFoundNotWritingKeyToEscrow(keyId);
+                Log.NoKeyEscrowSinkFoundNotWritingKeyToEscrow(_logger, keyId);
             }
             _keyEscrowSink?.Store(keyId, keyElement);
 
             // If an XML encryptor has been configured, protect secret key material now.
             if (KeyEncryptor == null)
             {
-                _logger.NoXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm(keyId);
+                Log.NoXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm(_logger, keyId);
             }
             var possiblyEncryptedKeyElement = KeyEncryptor?.EncryptIfNecessary(keyElement) ?? keyElement;
 
@@ -471,8 +467,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             //   <key id="{guid}" />
             //   <reason>...</reason>
             // </revocation>
-
-            _logger.RevokingKeyForReason(keyId, revocationDate, reason);
+            Log.RevokingKeyForReason(_logger, keyId, revocationDate, reason);
 
             var revocationElement = new XElement(RevocationElementName,
                 new XAttribute(VersionAttributeName, 1),
@@ -496,7 +491,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var azureWebSitesKeysFolder = _keyStorageDirectories.GetKeyStorageDirectoryForAzureWebSites();
             if (azureWebSitesKeysFolder != null)
             {
-                _logger.UsingAzureAsKeyRepository(azureWebSitesKeysFolder.FullName);
+                Log.UsingAzureAsKeyRepository(_logger, azureWebSitesKeysFolder.FullName);
 
                 // Cloud DPAPI isn't yet available, so we don't encrypt keys at rest.
                 // This isn't all that different than what Azure Web Sites does today, and we can always add this later.
@@ -522,11 +517,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                     if (encryptor != null)
                     {
-                        _logger.UsingProfileAsKeyRepositoryWithDPAPI(localAppDataKeysFolder.FullName);
+                        Log.UsingProfileAsKeyRepositoryWithDPAPI(_logger, localAppDataKeysFolder.FullName);
                     }
                     else
                     {
-                        _logger.UsingProfileAsKeyRepository(localAppDataKeysFolder.FullName);
+                        Log.UsingProfileAsKeyRepository(_logger, localAppDataKeysFolder.FullName);
                     }
                 }
                 else
@@ -546,16 +541,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                         // If the user profile isn't available, we can protect using DPAPI (to machine).
                         encryptor = new DpapiXmlEncryptor(protectToLocalMachine: true, loggerFactory: _loggerFactory);
                         repository = new RegistryXmlRepository(regKeyStorageKey!, _loggerFactory);
-
-                        _logger.UsingRegistryAsKeyRepositoryWithDPAPI(regKeyStorageKey!.Name);
+                        Log.UsingRegistryAsKeyRepositoryWithDPAPI(_logger, regKeyStorageKey!.Name);
                     }
                     else
                     {
                         // Final fallback - use an ephemeral repository since we don't know where else to go.
                         // This can only be used for development scenarios.
                         repository = new EphemeralXmlRepository(_loggerFactory);
-
-                        _logger.UsingEphemeralKeyRepository();
+                        Log.UsingEphemeralKeyRepository(_logger);
                     }
                 }
             }
@@ -579,6 +572,75 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     sink.Store(keyId, element);
                 }
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(15, LogLevel.Warning, "Unknown element with name '{Name}' found in keyring, skipping.", EventName = "UnknownElementWithNameFoundInKeyringSkipping")]
+            public static partial void UnknownElementWithNameFoundInKeyringSkipping(ILogger logger, XName name);
+
+            [LoggerMessage(16, LogLevel.Debug, "Marked key {KeyId:B} as revoked in the keyring.", EventName = "MarkedKeyAsRevokedInTheKeyring")]
+            public static partial void MarkedKeyAsRevokedInTheKeyring(ILogger logger, Guid keyId);
+
+            [LoggerMessage(17, LogLevel.Warning, "Tried to process revocation of key {KeyId:B}, but no such key was found in keyring. Skipping.", EventName = "TriedToProcessRevocationOfKeyButNoSuchKeyWasFound")]
+            public static partial void TriedToProcessRevocationOfKeyButNoSuchKeyWasFound(ILogger logger, Guid keyId);
+
+            [LoggerMessage(18, LogLevel.Debug, "Found key {KeyId:B}.", EventName = "FoundKey")]
+            public static partial void FoundKey(ILogger logger, Guid keyId);
+
+            [LoggerMessage(19, LogLevel.Debug, "Found revocation of all keys created prior to {RevocationDate:u}.", EventName = "FoundRevocationOfAllKeysCreatedPriorTo")]
+            public static partial void FoundRevocationOfAllKeysCreatedPriorTo(ILogger logger, DateTimeOffset revocationDate);
+
+            [LoggerMessage(20, LogLevel.Debug, "Found revocation of key {KeyId:B}.", EventName = "FoundRevocationOfKey")]
+            public static partial void FoundRevocationOfKey(ILogger logger, Guid keyId);
+
+            [LoggerMessage(21, LogLevel.Error, "An exception occurred while processing the revocation element '{RevocationElement}'. Cannot continue keyring processing.", EventName = "ExceptionWhileProcessingRevocationElement")]
+            public static partial void ExceptionWhileProcessingRevocationElement(ILogger logger, XElement revocationElement, Exception exception);
+
+            [LoggerMessage(22, LogLevel.Information, "Revoking all keys as of {RevocationDate:u} for reason '{Reason}'.", EventName = "RevokingAllKeysAsOfForReason")]
+            public static partial void RevokingAllKeysAsOfForReason(ILogger logger, DateTimeOffset revocationDate, string? reason);
+
+            [LoggerMessage(23, LogLevel.Debug, "Key cache expiration token triggered by '{OperationName}' operation.", EventName = "KeyCacheExpirationTokenTriggeredByOperation")]
+            public static partial void KeyCacheExpirationTokenTriggeredByOperation(ILogger logger, string operationName);
+
+            [LoggerMessage(24, LogLevel.Error, "An exception occurred while processing the key element '{Element}'.", EventName = "ExceptionOccurredWhileProcessingTheKeyElement")]
+            public static partial void ExceptionWhileProcessingKeyElement(ILogger logger, XElement element, Exception exception);
+
+            [LoggerMessage(25, LogLevel.Trace, "An exception occurred while processing the key element '{Element}'.", EventName = "ExceptionOccurredWhileProcessingTheKeyElementDebug")]
+            public static partial void AnExceptionOccurredWhileProcessingElementDebug(ILogger logger, XElement element, Exception exception);
+
+            [LoggerMessage(32, LogLevel.Debug, "Descriptor deserializer type for key {KeyId:B} is '{AssemblyQualifiedName}'.", EventName = "DescriptorDeserializerTypeForKeyIs")]
+            public static partial void DescriptorDeserializerTypeForKeyIs(ILogger logger, Guid keyId, string assemblyQualifiedName);
+
+            [LoggerMessage(33, LogLevel.Debug, "Key escrow sink found. Writing key {KeyId:B} to escrow.", EventName = "KeyEscrowSinkFoundWritingKeyToEscrow")]
+            public static partial void KeyEscrowSinkFoundWritingKeyToEscrow(ILogger logger, Guid keyId);
+
+            [LoggerMessage(34, LogLevel.Debug, "No key escrow sink found. Not writing key {KeyId:B} to escrow.", EventName = "NoKeyEscrowSinkFoundNotWritingKeyToEscrow")]
+            public static partial void NoKeyEscrowSinkFoundNotWritingKeyToEscrow(ILogger logger, Guid keyId);
+
+            [LoggerMessage(35, LogLevel.Warning, "No XML encryptor configured. Key {KeyId:B} may be persisted to storage in unencrypted form.", EventName = "NoXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm")]
+            public static partial void NoXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm(ILogger logger, Guid keyId);
+
+            [LoggerMessage(36, LogLevel.Information, "Revoking key {KeyId:B} at {RevocationDate:u} for reason '{Reason}'.", EventName = "RevokingKeyForReason")]
+            public static partial void RevokingKeyForReason(ILogger logger, Guid keyId, DateTimeOffset revocationDate, string? reason);
+
+            [LoggerMessage(58, LogLevel.Information, "Creating key {KeyId:B} with creation date {CreationDate:u}, activation date {ActivationDate:u}, and expiration date {ExpirationDate:u}.", EventName = "CreatingKey")]
+            public static partial void CreatingKey(ILogger logger, Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate);
+
+            [LoggerMessage(59, LogLevel.Warning, "Neither user profile nor HKLM registry available. Using an ephemeral key repository. Protected data will be unavailable when application exits.", EventName = "UsingEphemeralKeyRepository")]
+            public static partial void UsingEphemeralKeyRepository(ILogger logger);
+
+            [LoggerMessage(61, LogLevel.Information, "User profile not available. Using '{Name}' as key repository and Windows DPAPI to encrypt keys at rest.", EventName = "UsingRegistryAsKeyRepositoryWithDPAPI")]
+            public static partial void UsingRegistryAsKeyRepositoryWithDPAPI(ILogger logger, string name);
+
+            [LoggerMessage(62, LogLevel.Information, "User profile is available. Using '{FullName}' as key repository; keys will not be encrypted at rest.", EventName = "UsingProfileAsKeyRepository")]
+            public static partial void UsingProfileAsKeyRepository(ILogger logger, string fullName);
+
+            [LoggerMessage(63, LogLevel.Information, "User profile is available. Using '{FullName}' as key repository and Windows DPAPI to encrypt keys at rest.", EventName = "UsingProfileAsKeyRepositoryWithDPAPI")]
+            public static partial void UsingProfileAsKeyRepositoryWithDPAPI(ILogger logger, string fullName);
+
+            [LoggerMessage(64, LogLevel.Information, "Azure Web Sites environment detected. Using '{FullName}' as key repository; keys will not be encrypted at rest.", EventName = "UsingAzureAsKeyRepository")]
+            public static partial void UsingAzureAsKeyRepository(ILogger logger, string fullName);
         }
     }
 }

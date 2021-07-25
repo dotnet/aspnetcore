@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     /// <summary>
     /// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="CbcAuthenticatedEncryptor"/>.
     /// </summary>
-    public sealed class CngCbcAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
+    public sealed partial class CngCbcAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
         private readonly ILogger _logger;
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.HashAlgorithm));
             }
 
-            _logger.OpeningCNGAlgorithmFromProviderWithHMAC(configuration.HashAlgorithm, configuration.HashAlgorithmProvider);
+            Log.OpeningCNGAlgorithmFromProviderWithHMAC(_logger, configuration.HashAlgorithm, configuration.HashAlgorithmProvider);
             BCryptAlgorithmHandle? algorithmHandle = null;
 
             // Special-case cached providers
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
             }
 
-            _logger.OpeningCNGAlgorithmFromProviderWithChainingModeCBC(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
+            Log.OpeningCNGAlgorithmFromProviderWithChainingModeCBC(_logger, configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
 
             BCryptAlgorithmHandle? algorithmHandle = null;
 
@@ -135,6 +135,15 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             // all good!
             return algorithmHandle;
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(3, LogLevel.Debug, "Opening CNG algorithm '{HashAlgorithm}' from provider '{HashAlgorithmProvider}' with HMAC.", EventName = "OpeningCNGAlgorithmFromProviderWithHMAC")]
+            public static partial void OpeningCNGAlgorithmFromProviderWithHMAC(ILogger logger, string hashAlgorithm, string? hashAlgorithmProvider);
+
+            [LoggerMessage(4, LogLevel.Debug, "Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode CBC.", EventName = "OpeningCNGAlgorithmFromProviderWithChainingModeCBC")]
+            public static partial void OpeningCNGAlgorithmFromProviderWithChainingModeCBC(ILogger logger, string encryptionAlgorithm, string? encryptionAlgorithmProvider);
         }
     }
 }

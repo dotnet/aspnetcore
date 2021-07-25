@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// <remarks>
     /// This API is only supported on Windows 8 / Windows Server 2012 and higher.
     /// </remarks>
-    public sealed class DpapiNGXmlDecryptor : IXmlDecryptor
+    public sealed partial class DpapiNGXmlDecryptor : IXmlDecryptor
     {
         private readonly ILogger _logger;
 
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         {
             CryptoUtil.AssertPlatformIsWindows8OrLater();
 
-            _logger = services.GetLogger<DpapiNGXmlDecryptor>();
+            _logger = services?.GetLogger<DpapiNGXmlDecryptor>() ?? NullLogger.Instance;
         }
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 // </encryptedKey>
 
                 var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value")!);
-                if (_logger.IsDebugLevelEnabled())
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     string? protectionDescriptorRule;
                     try
@@ -71,7 +72,8 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                         // swallow all errors - it's just a log
                         protectionDescriptorRule = null;
                     }
-                    _logger.DecryptingSecretElementUsingWindowsDPAPING(protectionDescriptorRule);
+
+                    Log.DecryptingSecretElementUsingWindowsDPAPING(_logger, protectionDescriptorRule);
                 }
 
                 using (var secret = DpapiSecretSerializerHelper.UnprotectWithDpapiNG(protectedSecret))
@@ -83,9 +85,18 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             {
                 // It's OK for us to log the error, as we control the exception, and it doesn't contain
                 // sensitive information.
-                _logger.ExceptionOccurredTryingToDecryptElement(ex);
+                Log.ExceptionOccurredTryingToDecryptElement(_logger, ex);
                 throw;
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(42, LogLevel.Debug, "Decrypting secret element using Windows DPAPI-NG with protection descriptor rule '{DescriptorRule}'.", EventName = "DecryptingSecretElementUsingWindowsDPAPING", SkipEnabledCheck = true)]
+            public static partial void DecryptingSecretElementUsingWindowsDPAPING(ILogger logger, string? descriptorRule);
+
+            [LoggerMessage(43, LogLevel.Error, "An exception occurred while trying to decrypt the element.", EventName = "ExceptionOccurredTryingToDecryptElement")]
+            public static partial void ExceptionOccurredTryingToDecryptElement(ILogger logger, Exception exception);
         }
     }
 }

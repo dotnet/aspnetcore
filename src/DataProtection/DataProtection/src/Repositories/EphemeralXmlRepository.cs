@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
     /// An ephemeral XML repository backed by process memory. This class must not be used for
     /// anything other than dev scenarios as the keys will not be persisted to storage.
     /// </summary>
-    internal class EphemeralXmlRepository : IXmlRepository
+    internal partial class EphemeralXmlRepository : IXmlRepository
     {
         private readonly List<XElement> _storedElements = new List<XElement>();
 
         public EphemeralXmlRepository(ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<EphemeralXmlRepository>();
-            logger.UsingInmemoryRepository();
+            Log.UsingInmemoryRepository(logger);
         }
 
         public virtual IReadOnlyCollection<XElement> GetAllElements()
@@ -55,6 +55,12 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 _storedElements.Add(cloned);
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(50, LogLevel.Warning, "Using an in-memory repository. Keys will not be persisted to storage.", EventName = "UsingInMemoryRepository")]
+            public static partial void UsingInmemoryRepository(ILogger logger);
         }
     }
 }

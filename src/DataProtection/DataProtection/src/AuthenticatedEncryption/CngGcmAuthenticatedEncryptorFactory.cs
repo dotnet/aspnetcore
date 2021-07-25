@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     /// <summary>
     /// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="CngGcmAuthenticatedEncryptor"/>.
     /// </summary>
-    public sealed class CngGcmAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
+    public sealed partial class CngGcmAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
         private readonly ILogger _logger;
 
@@ -77,8 +77,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             }
 
             BCryptAlgorithmHandle? algorithmHandle = null;
-
-            _logger.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
+            Log.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(_logger, configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
             // Special-case cached providers
             if (configuration.EncryptionAlgorithmProvider == null)
             {
@@ -101,6 +100,12 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             // all good!
             return algorithmHandle;
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(9, LogLevel.Debug, "Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode GCM.", EventName = "OpeningCNGAlgorithmFromProviderWithChainingModeGCM")]
+            public static partial void OpeningCNGAlgorithmFromProviderWithChainingModeGCM(ILogger logger, string encryptionAlgorithm, string? encryptionAlgorithmProvider);
         }
     }
 }

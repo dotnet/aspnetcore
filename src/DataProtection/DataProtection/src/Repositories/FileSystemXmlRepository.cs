@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
     /// <summary>
     /// An XML repository backed by a file system.
     /// </summary>
-    public class FileSystemXmlRepository : IXmlRepository
+    public partial class FileSystemXmlRepository : IXmlRepository
     {
         private readonly ILogger _logger;
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 if (ContainerUtils.IsContainer && !ContainerUtils.IsVolumeMountedFolder(Directory))
                 {
                     // warn users that keys may be lost when running in docker without a volume mounted folder
-                    _logger.UsingEphemeralFileSystemLocationInContainer(Directory.FullName);
+                    Log.UsingEphemeralFileSystemLocationInContainer(_logger, Directory.FullName);
                 }
             }
             catch (Exception ex)
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private XElement ReadElementFromFile(string fullPath)
         {
-            _logger.ReadingDataFromFile(fullPath);
+            Log.ReadingDataFromFile(_logger, fullPath);
 
             using (var fileStream = File.OpenRead(fullPath))
             {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             if (!IsSafeFilename(friendlyName))
             {
                 var newFriendlyName = Guid.NewGuid().ToString();
-                _logger.NameIsNotSafeFileName(friendlyName, newFriendlyName);
+                Log.NameIsNotSafeFileName(_logger, friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
                 // Once the file has been fully written, perform the rename.
                 // Renames are atomic operations on the file systems we support.
-                _logger.WritingDataToFile(finalFilename);
+                Log.WritingDataToFile(_logger, finalFilename);
 
                 try
                 {
@@ -161,6 +161,21 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 File.Delete(tempFilename); // won't throw if the file doesn't exist
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(37, LogLevel.Debug, "Reading data from file '{FullPath}'.", EventName = "ReadingDataFromFile")]
+            public static partial void ReadingDataFromFile(ILogger logger, string fullPath);
+
+            [LoggerMessage(38, LogLevel.Debug, "The name '{FriendlyName}' is not a safe file name, using '{NewFriendlyName}' instead.", EventName = "NameIsNotSafeFileName")]
+            public static partial void NameIsNotSafeFileName(ILogger logger, string friendlyName, string newFriendlyName);
+
+            [LoggerMessage(39, LogLevel.Information, "Writing data to file '{FileName}'.", EventName = "WritingDataToFile")]
+            public static partial void WritingDataToFile(ILogger logger, string filename);
+
+            [LoggerMessage(60, LogLevel.Warning, "Storing keys in a directory '{path}' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed.", EventName = "UsingEphemeralFileSystemLocationInContainer")]
+            public static partial void UsingEphemeralFileSystemLocationInContainer(ILogger logger, string path);
         }
     }
 }

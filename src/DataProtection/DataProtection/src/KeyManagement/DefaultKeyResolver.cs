@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
     /// <summary>
     /// Implements policy for resolving the default key from a candidate keyring.
     /// </summary>
-    internal sealed class DefaultKeyResolver : IDefaultKeyResolver
+    internal sealed partial class DefaultKeyResolver : IDefaultKeyResolver
     {
         /// <summary>
         /// The window of time before the key expires when a new key should be created
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
             catch (Exception ex)
             {
-                _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptor), ex);
+                Log.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(_logger, key.KeyId, nameof(IKey.CreateEncryptor), ex);
                 return false;
             }
         }
@@ -81,12 +81,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             if (preferredDefaultKey != null)
             {
-                _logger.ConsideringKeyWithExpirationDateAsDefaultKey(preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
+                Log.ConsideringKeyWithExpirationDateAsDefaultKey(_logger, preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
 
                 // if the key has been revoked or is expired, it is no longer a candidate
                 if (preferredDefaultKey.IsRevoked || preferredDefaultKey.IsExpired(now) || !CanCreateAuthenticatedEncryptor(preferredDefaultKey))
                 {
-                    _logger.KeyIsNoLongerUnderConsiderationAsDefault(preferredDefaultKey.KeyId);
+                    Log.KeyIsNoLongerUnderConsiderationAsDefault(_logger, preferredDefaultKey.KeyId);
                     preferredDefaultKey = null;
                 }
             }
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                 if (callerShouldGenerateNewKey)
                 {
-                    _logger.DefaultKeyExpirationImminentAndRepository();
+                    Log.DefaultKeyExpirationImminentAndRepository(_logger);
                 }
 
                 fallbackKey = null;
@@ -129,8 +129,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                                                            select key)
                            where !key.IsRevoked && CanCreateAuthenticatedEncryptor(key)
                            select key).FirstOrDefault();
-
-            _logger.RepositoryContainsNoViableDefaultKey();
+            Log.RepositoryContainsNoViableDefaultKey(_logger);
 
             callerShouldGenerateNewKey = true;
             return null;
@@ -141,6 +140,24 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var retVal = default(DefaultKeyResolution);
             retVal.DefaultKey = FindDefaultKey(now, allKeys, out retVal.FallbackKey, out retVal.ShouldGenerateNewKey);
             return retVal;
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(12, LogLevel.Warning, "Key {KeyId:B} is ineligible to be the default key because its {MethodName} method failed.", EventName = "KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed")]
+            public static partial void KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(ILogger logger, Guid keyId, string methodName, Exception exception);
+
+            [LoggerMessage(13, LogLevel.Debug, "Considering key {KeyId:B} with expiration date {ExpirationDate:u} as default key.", EventName = "ConsideringKeyWithExpirationDateAsDefaultKey")]
+            public static partial void ConsideringKeyWithExpirationDateAsDefaultKey(ILogger logger, Guid keyId, DateTimeOffset expirationDate);
+
+            [LoggerMessage(14, LogLevel.Debug, "Key {KeyId:B} is no longer under consideration as default key because it is expired, revoked, or cannot be deciphered.", EventName = "KeyIsNoLongerUnderConsiderationAsDefault")]
+            public static partial void KeyIsNoLongerUnderConsiderationAsDefault(ILogger logger, Guid keyId);
+
+            [LoggerMessage(52, LogLevel.Debug, "Default key expiration imminent and repository contains no viable successor. Caller should generate a successor.", EventName = "DefaultKeyExpirationImminentAndRepository")]
+            public static partial void DefaultKeyExpirationImminentAndRepository(ILogger logger);
+
+            [LoggerMessage(53, LogLevel.Debug, "Repository contains no viable default key. Caller should generate a key with immediate activation.", EventName = "RepositoryContainsNoViableDefaultKey")]
+            public static partial void RepositoryContainsNoViableDefaultKey(ILogger logger);
         }
     }
 }

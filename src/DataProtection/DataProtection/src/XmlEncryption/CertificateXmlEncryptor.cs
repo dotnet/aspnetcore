@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// <summary>
     /// An <see cref="IXmlEncryptor"/> that can perform XML encryption by using an X.509 certificate.
     /// </summary>
-    public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, IXmlEncryptor
+    public sealed partial class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, IXmlEncryptor
     {
         private readonly Func<X509Certificate2> _certFactory;
         private readonly IInternalCertificateXmlEncryptor _encryptor;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 }
                 catch (Exception ex)
                 {
-                    _logger.ExceptionWhileTryingToResolveCertificateWithThumbprint(thumbprint, ex);
+                    Log.ExceptionWhileTryingToResolveCertificateWithThumbprint(_logger, thumbprint, ex);
 
                     throw;
                 }
@@ -131,8 +131,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         {
             var cert = _certFactory()
                 ?? CryptoUtil.Fail<X509Certificate2>("Cert factory returned null.");
-
-            _logger.EncryptingToX509CertificateWithThumbprint(cert.Thumbprint);
+            Log.EncryptingToX509CertificateWithThumbprint(_logger, cert.Thumbprint);
 
             try
             {
@@ -140,9 +139,21 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
             catch (Exception ex)
             {
-                _logger.AnErrorOccurredWhileEncryptingToX509CertificateWithThumbprint(cert.Thumbprint, ex);
+                Log.AnErrorOccurredWhileEncryptingToX509CertificateWithThumbprint(_logger, cert.Thumbprint, ex);
                 throw;
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(28, LogLevel.Error, "An error occurred while encrypting to X.509 certificate with thumbprint '{Thumbprint}'.", EventName = "ErrorOccurredWhileEncryptingToX509CertificateWithThumbprint")]
+            public static partial void AnErrorOccurredWhileEncryptingToX509CertificateWithThumbprint(ILogger logger, string thumbprint, Exception exception);
+
+            [LoggerMessage(29, LogLevel.Debug, "Encrypting to X.509 certificate with thumbprint '{Thumbprint}'.", EventName = "EncryptingToX509CertificateWithThumbprint")]
+            public static partial void EncryptingToX509CertificateWithThumbprint(ILogger logger, string thumbprint);
+
+            [LoggerMessage(30, LogLevel.Error, "An exception occurred while trying to resolve certificate with thumbprint '{Thumbprint}'.", EventName = "ExceptionOccurredWhileTryingToResolveCertificateWithThumbprint")]
+            public static partial void ExceptionWhileTryingToResolveCertificateWithThumbprint(ILogger logger, string thumbprint, Exception exception);
         }
     }
 }

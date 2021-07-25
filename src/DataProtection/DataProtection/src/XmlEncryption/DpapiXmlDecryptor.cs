@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// <summary>
     /// An <see cref="IXmlDecryptor"/> that decrypts XML elements that were encrypted with <see cref="DpapiXmlEncryptor"/>.
     /// </summary>
-    public sealed class DpapiXmlDecryptor : IXmlDecryptor
+    public sealed partial class DpapiXmlDecryptor : IXmlDecryptor
     {
         private readonly ILogger _logger;
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(encryptedElement));
             }
 
-            _logger.DecryptingSecretElementUsingWindowsDPAPI();
+            Log.DecryptingSecretElementUsingWindowsDPAPI(_logger);
 
             try
             {
@@ -66,9 +66,18 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             {
                 // It's OK for us to log the error, as we control the exception, and it doesn't contain
                 // sensitive information.
-                _logger.ExceptionOccurredTryingToDecryptElement(ex);
+                Log.ExceptionOccurredTryingToDecryptElement(_logger, ex);
                 throw;
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(43, LogLevel.Error, "An exception occurred while trying to decrypt the element.", EventName = "ExceptionOccurredTryingToDecryptElement")]
+            public static partial void ExceptionOccurredTryingToDecryptElement(ILogger logger, Exception exception);
+
+            [LoggerMessage(51, LogLevel.Debug, "Decrypting secret element using Windows DPAPI.", EventName = "DecryptingSecretElementUsingWindowsDPAPI")]
+            public static partial void DecryptingSecretElementUsingWindowsDPAPI(ILogger logger);
         }
     }
 }

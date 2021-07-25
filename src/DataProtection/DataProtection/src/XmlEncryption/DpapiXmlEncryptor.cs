@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// This API is only supported on Windows platforms.
     /// </remarks>
     [SupportedOSPlatform("windows")]
-    public sealed class DpapiXmlEncryptor : IXmlEncryptor
+    public sealed partial class DpapiXmlEncryptor : IXmlEncryptor
     {
         private readonly ILogger _logger;
         private readonly bool _protectToLocalMachine;
@@ -54,11 +54,11 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
             if (_protectToLocalMachine)
             {
-                _logger.EncryptingToWindowsDPAPIForLocalMachineAccount();
+                Log.EncryptingToWindowsDPAPIForLocalMachineAccount(_logger);
             }
             else
             {
-                _logger.EncryptingToWindowsDPAPIForCurrentUserAccount(WindowsIdentity.GetCurrent().Name);
+                Log.EncryptingToWindowsDPAPIForCurrentUserAccount(_logger, WindowsIdentity.GetCurrent().Name);
             }
 
             // Convert the XML element to a binary secret so that it can be run through DPAPI
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
             catch (Exception ex)
             {
-                _logger.ErrorOccurredWhileEncryptingToWindowsDPAPI(ex);
+                Log.ErrorOccurredWhileEncryptingToWindowsDPAPI(_logger, ex);
                 throw;
             }
 
@@ -87,6 +87,18 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                     Convert.ToBase64String(dpapiEncryptedData)));
 
             return new EncryptedXmlInfo(element, typeof(DpapiXmlDecryptor));
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(26, LogLevel.Debug, "Encrypting to Windows DPAPI for current user account ({Name}).", EventName = "EncryptingToWindowsDPAPIForCurrentUserAccount")]
+            public static partial void EncryptingToWindowsDPAPIForCurrentUserAccount(ILogger logger, string name);
+
+            [LoggerMessage(54, LogLevel.Error, "An error occurred while encrypting to Windows DPAPI.", EventName = "ErrorOccurredWhileEncryptingToWindowsDPAPI")]
+            public static partial void ErrorOccurredWhileEncryptingToWindowsDPAPI(ILogger logger, Exception exception);
+
+            [LoggerMessage(55, LogLevel.Debug, "Encrypting to Windows DPAPI for local machine account.", EventName = "EncryptingToWindowsDPAPIForLocalMachineAccount")]
+            public static partial void EncryptingToWindowsDPAPIForLocalMachineAccount(ILogger logger);
         }
     }
 }

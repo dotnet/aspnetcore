@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     /// <summary>
     /// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="ManagedAuthenticatedEncryptor"/>.
     /// </summary>
-    public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
+    public sealed partial class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
         private readonly ILogger _logger;
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.ValidationAlgorithmType));
             }
 
-            _logger.UsingManagedKeyedHashAlgorithm(configuration.ValidationAlgorithmType.FullName!);
+            Log.UsingManagedKeyedHashAlgorithm(_logger, configuration.ValidationAlgorithmType.FullName!);
             if (configuration.ValidationAlgorithmType == typeof(HMACSHA256))
             {
                 return () => new HMACSHA256();
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
             }
 
-            _logger.UsingManagedSymmetricAlgorithm(configuration.EncryptionAlgorithmType.FullName!);
+            Log.UsingManagedSymmetricAlgorithm(_logger, configuration.EncryptionAlgorithmType.FullName!);
 
             if (configuration.EncryptionAlgorithmType == typeof(Aes))
             {
@@ -126,6 +126,15 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             {
                 public Func<T> Creator { get; } = Activator.CreateInstance<T>;
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(10, LogLevel.Debug, "Using managed keyed hash algorithm '{FullName}'.", EventName = "UsingManagedKeyedHashAlgorithm")]
+            public static partial void UsingManagedKeyedHashAlgorithm(ILogger logger, string fullName);
+
+            [LoggerMessage(11, LogLevel.Debug, "Using managed symmetric algorithm '{FullName}'.", EventName = "UsingManagedSymmetricAlgorithm")]
+            public static partial void UsingManagedSymmetricAlgorithm(ILogger logger, string fullName);
         }
     }
 }

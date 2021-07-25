@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
     /// Default implementation of <see cref="ICorsService"/>.
     /// </summary>
-    public class CorsService : ICorsService
+    public partial class CorsService : ICorsService
     {
         private readonly CorsOptions _options;
         private readonly ILogger _logger;
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (isOptionsRequest && !isPreflightRequest)
             {
-                _logger.IsNotPreflightRequest();
+                Log.IsNotPreflightRequest(_logger);
             }
 
             var corsResult = new CorsResult
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return;
             }
 
-            var headers = response.Headers;
+           var headers = response.Headers;
             headers[CorsConstants.AccessControlAllowOrigin] = result.AllowedOrigin;
 
             if (result.SupportsCredentials)
@@ -196,9 +197,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (result.IsPreflightRequest)
             {
-                _logger.IsPreflightRequest();
+                Log.IsPreflightRequest(_logger);
 
-                // An HTTP response to a CORS-preflight request can include the following headers:
+                 // An HTTP response to a CORS-preflight request can include the following headers:
                 // `Access-Control-Allow-Methods`, `Access-Control-Allow-Headers`, `Access-Control-Max-Age`
                 if (result.AllowedHeaders.Count > 0)
                 {
@@ -248,19 +249,50 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             if (StringValues.IsNullOrEmpty(origin))
             {
-                _logger.RequestDoesNotHaveOriginHeader();
+                Log.RequestDoesNotHaveOriginHeader(_logger);
                 return false;
             }
 
-            _logger.RequestHasOriginHeader(origin);
+            Log.RequestHasOriginHeader(_logger, origin);
             if (policy.AllowAnyOrigin || policy.IsOriginAllowed(origin))
             {
-                _logger.PolicySuccess();
+                Log.PolicySuccess(_logger);
                 return true;
             }
-            _logger.PolicyFailure();
-            _logger.OriginNotAllowed(origin);
+            Log.PolicyFailure(_logger);
+            Log.OriginNotAllowed(_logger, origin);
             return false;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Debug, "The request is a preflight request.", EventName = "IsPreflightRequest")]
+            public static partial void IsPreflightRequest(ILogger logger);
+
+            [LoggerMessage(2, LogLevel.Debug, "The request has an origin header: '{origin}'.", EventName = "RequestHasOriginHeader")]
+            public static partial void RequestHasOriginHeader(ILogger logger, string origin);
+
+            [LoggerMessage(3, LogLevel.Debug, "The request does not have an origin header.", EventName = "RequestDoesNotHaveOriginHeader")]
+            public static partial void RequestDoesNotHaveOriginHeader(ILogger logger);
+
+            [LoggerMessage(4, LogLevel.Information, "CORS policy execution successful.", EventName = "PolicySuccess")]
+            public static partial void PolicySuccess(ILogger logger);
+
+            [LoggerMessage(5, LogLevel.Information, "CORS policy execution failed.", EventName = "PolicyFailure")]
+            public static partial void PolicyFailure(ILogger logger);
+
+            [LoggerMessage(6, LogLevel.Information,
+                "Request origin {origin} does not have permission to access the resource.",
+                EventName = "OriginNotAllowed")]
+            public static partial void OriginNotAllowed(ILogger logger, string origin);
+
+            // 7 - AccessControlMethodNotAllowed
+            // 8 - RequestHeaderNotAllowed
+
+            [LoggerMessage(12, LogLevel.Debug,
+                "This request uses the HTTP OPTIONS method but does not have an Access-Control-Request-Method header. This request will not be treated as a CORS preflight request.",
+                EventName = "IsNotPreflightRequest")]
+            public static partial void IsNotPreflightRequest(ILogger logger);
         }
     }
 }

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
-    internal class CertificateForwardingFeature : ITlsConnectionFeature
+    internal sealed partial class CertificateForwardingFeature : ITlsConnectionFeature
     {
         private readonly ILogger _logger;
         private readonly StringValues _header;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     }
                     catch (Exception e)
                     {
-                        _logger.NoCertificate(e);
+                        Log.NoCertificate(_logger, e);
                     }
                 }
                 return _certificate;
@@ -47,5 +47,11 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
             => Task.FromResult(ClientCertificate);
+
+        private static partial class Log
+        {
+            [LoggerMessage(0, LogLevel.Warning, "Could not read certificate from header.", EventName = "NoCertificate")]
+            public static partial void NoCertificate(ILogger logger, Exception exception);
+        }
     }
 }

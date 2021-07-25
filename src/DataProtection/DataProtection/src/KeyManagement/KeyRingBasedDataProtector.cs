@@ -11,10 +11,11 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
-    internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
+    internal sealed unsafe partial class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
     {
         // This magic header identifies a v0 protected data blob. It's the high 28 bits of the SHA1 hash of
         // "Microsoft.AspNet.DataProtection.KeyManagement.KeyRingBasedDataProtector" [US-ASCII], big-endian.
@@ -25,14 +26,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         private AdditionalAuthenticatedDataTemplate _aadTemplate;
         private readonly IKeyRingProvider _keyRingProvider;
-        private readonly ILogger? _logger;
+        private readonly ILogger _logger;
 
         public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
         {
             Debug.Assert(keyRingProvider != null);
 
             Purposes = ConcatPurposes(originalPurposes, newPurpose);
-            _logger = logger; // can be null
+            _logger = logger ?? NullLogger.Instance;
             _keyRingProvider = keyRingProvider;
             _aadTemplate = new AdditionalAuthenticatedDataTemplate(Purposes);
         }
@@ -104,9 +105,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 var defaultEncryptorInstance = currentKeyRing.DefaultAuthenticatedEncryptor;
                 CryptoUtil.Assert(defaultEncryptorInstance != null, "defaultEncryptorInstance != null");
 
-                if (_logger.IsDebugLevelEnabled())
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
+                    Log.PerformingProtectOperationToKeyWithPurposes(_logger, defaultKeyId, JoinPurposesForLog(Purposes));
                 }
 
                 // We'll need to apply the default key id to the template if it hasn't already been applied.
@@ -229,9 +230,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     throw Error.ProtectionProvider_BadVersion();
                 }
 
-                if (_logger.IsDebugLevelEnabled())
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.PerformingUnprotectOperationToKeyWithPurposes(keyIdFromPayload, JoinPurposesForLog(Purposes));
+                    Log.PerformingUnprotectOperationToKeyWithPurposes(_logger, keyIdFromPayload, JoinPurposesForLog(Purposes));
                 }
 
                 // Find the correct encryptor in the keyring.
@@ -248,9 +249,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                     if (requestedEncryptor == null)
                     {
-                        if (_logger.IsTraceLevelEnabled())
+                        if (_logger.IsEnabled(LogLevel.Trace))
                         {
-                            _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
+                            Log.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(_logger, keyIdFromPayload);
                         }
                         throw Error.Common_KeyNotFound(keyIdFromPayload);
                     }
@@ -268,17 +269,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 {
                     if (allowOperationsOnRevokedKeys)
                     {
-                        if (_logger.IsDebugLevelEnabled())
+                        if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(keyIdFromPayload);
+                            Log.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(_logger, keyIdFromPayload);
                         }
                         status = UnprotectStatus.DecryptionKeyWasRevoked;
                     }
                     else
                     {
-                        if (_logger.IsDebugLevelEnabled())
+                        if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
+                            Log.KeyWasRevokedUnprotectOperationCannotProceed(_logger, keyIdFromPayload);
                         }
                         throw Error.Common_KeyRevoked(keyIdFromPayload);
                     }
@@ -409,6 +410,24 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Ok,
             DefaultEncryptionKeyChanged,
             DecryptionKeyWasRevoked
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(5, LogLevel.Trace, "Performing unprotect operation to key {KeyId:B} with purposes {Purposes}.", EventName = "PerformingUnprotectOperationToKeyWithPurposes", SkipEnabledCheck = true)]
+            public static partial void PerformingUnprotectOperationToKeyWithPurposes(ILogger logger, Guid keyId, string purposes);
+
+            [LoggerMessage(6, LogLevel.Trace, "Key {KeyId:B} was not found in the key ring. Unprotect operation cannot proceed.", EventName = "KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed", SkipEnabledCheck = true)]
+            public static partial void KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(ILogger logger, Guid keyId);
+
+            [LoggerMessage(7, LogLevel.Debug, "Key {KeyId:B} was revoked. Caller requested unprotect operation proceed regardless.", EventName = "KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless", SkipEnabledCheck = true)]
+            public static partial void KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(ILogger logger, Guid keyId);
+
+            [LoggerMessage(8, LogLevel.Debug, "Key {KeyId:B} was revoked. Unprotect operation cannot proceed.", EventName = "KeyWasRevokedUnprotectOperationCannotProceed", SkipEnabledCheck = true)]
+            public static partial void KeyWasRevokedUnprotectOperationCannotProceed(ILogger logger, Guid keyId);
+
+            [LoggerMessage(31, LogLevel.Trace, "Performing protect operation to key {KeyId:B} with purposes {Purposes}.", EventName = "PerformingProtectOperationToKeyWithPurposes", SkipEnabledCheck = true)]
+            public static partial void PerformingProtectOperationToKeyWithPurposes(ILogger logger, Guid keyId, string purposes);
         }
     }
 }

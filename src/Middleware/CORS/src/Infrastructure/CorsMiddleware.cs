@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     /// <summary>
     /// A middleware for handling CORS.
     /// </summary>
-    public class CorsMiddleware
+    public partial class CorsMiddleware
     {
         // Property key is used by other systems, e.g. MVC, to check if CORS middleware has run
         private const string CorsMiddlewareWithEndpointInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             if (corsPolicy == null)
             {
-                Logger.NoCorsPolicyFound();
+                Log.NoCorsPolicyFound(Logger);
                 return _next(context);
             }
 
@@ -227,9 +227,18 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
             catch (Exception exception)
             {
-                middleware.Logger.FailedToSetCorsHeaders(exception);
+                Log.FailedToSetCorsHeaders(middleware.Logger, exception);
             }
             return Task.CompletedTask;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(9, LogLevel.Warning, "Failed to apply CORS Response headers.", EventName = "FailedToSetCorsHeaders")]
+            public static partial void FailedToSetCorsHeaders(ILogger logger, Exception? exception);
+
+            [LoggerMessage(10, LogLevel.Information, "No CORS policy found for the specified request.", EventName = "NoCorsPolicyFound")]
+            public static partial void NoCorsPolicyFound(ILogger logger);
         }
     }
 }

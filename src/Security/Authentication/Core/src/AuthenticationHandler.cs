@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authentication
     /// An opinionated abstraction for implementing <see cref="IAuthenticationHandler"/>.
     /// </summary>
     /// <typeparam name="TOptions">The type for the options used to configure the authentication handler.</typeparam>
-    public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler where TOptions : AuthenticationSchemeOptions, new()
+    public abstract partial class AuthenticationHandler<TOptions> : IAuthenticationHandler where TOptions : AuthenticationSchemeOptions, new()
     {
         private Task<AuthenticateResult>? _authenticateTask;
 
@@ -207,16 +207,16 @@ namespace Microsoft.AspNetCore.Authentication
                 var ticket = result.Ticket;
                 if (ticket?.Principal != null)
                 {
-                    Logger.AuthenticationSchemeAuthenticated(Scheme.Name);
+                    Log.AuthenticationSchemeAuthenticated(Logger, Scheme.Name);
                 }
                 else
                 {
-                    Logger.AuthenticationSchemeNotAuthenticated(Scheme.Name);
+                    Log.AuthenticationSchemeNotAuthenticated(Logger, Scheme.Name);
                 }
             }
             else
             {
-                Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Scheme.Name, result.Failure.Message);
+                Log.AuthenticationSchemeNotAuthenticatedWithFailure(Logger, Scheme.Name, result.Failure.Message);
             }
             return result;
         }
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             properties ??= new AuthenticationProperties();
             await HandleChallengeAsync(properties);
-            Logger.AuthenticationSchemeChallenged(Scheme.Name);
+            Log.AuthenticationSchemeChallenged(Logger, Scheme.Name);
         }
 
         /// <inheritdoc />
@@ -309,7 +309,25 @@ namespace Microsoft.AspNetCore.Authentication
 
             properties ??= new AuthenticationProperties();
             await HandleForbiddenAsync(properties);
-            Logger.AuthenticationSchemeForbidden(Scheme.Name);
+            Log.AuthenticationSchemeForbidden(Logger, Scheme.Name);
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(7, LogLevel.Information, "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}", EventName = "AuthenticationSchemeNotAuthenticatedWithFailure")]
+            public static partial void AuthenticationSchemeNotAuthenticatedWithFailure(ILogger logger, string authenticationScheme, string failureMessage);
+
+            [LoggerMessage(8, LogLevel.Debug, "AuthenticationScheme: {AuthenticationScheme} was successfully authenticated.", EventName = "AuthenticationSchemeAuthenticated")]
+            public static partial void AuthenticationSchemeAuthenticated(ILogger logger, string authenticationScheme);
+
+            [LoggerMessage(9, LogLevel.Debug, "AuthenticationScheme: {AuthenticationScheme} was not authenticated.", EventName = "AuthenticationSchemeNotAuthenticated")]
+            public static partial void AuthenticationSchemeNotAuthenticated(ILogger logger, string authenticationScheme);
+
+            [LoggerMessage(12, LogLevel.Information, "AuthenticationScheme: {AuthenticationScheme} was challenged.", EventName = "AuthenticationSchemeChallenged")]
+            public static partial void AuthenticationSchemeChallenged(ILogger logger, string authenticationScheme);
+
+            [LoggerMessage(13, LogLevel.Information, "AuthenticationScheme: {AuthenticationScheme} was forbidden.", EventName = "AuthenticationSchemeForbidden")]
+            public static partial void AuthenticationSchemeForbidden(ILogger logger, string authenticationScheme);
         }
     }
 }

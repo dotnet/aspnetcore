@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// <summary>
     /// An <see cref="IXmlEncryptor"/> that encrypts XML elements with a null encryptor.
     /// </summary>
-    public sealed class NullXmlEncryptor : IXmlEncryptor
+    public sealed partial class NullXmlEncryptor : IXmlEncryptor
     {
         private readonly ILogger _logger;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(plaintextElement));
             }
 
-            _logger.EncryptingUsingNullEncryptor();
+            Log.EncryptingUsingNullEncryptor(_logger);
 
             // <unencryptedKey>
             //   <!-- This key is not encrypted. -->
@@ -60,6 +60,12 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 new XElement(plaintextElement) /* copy ctor */);
 
             return new EncryptedXmlInfo(newElement, typeof(NullXmlDecryptor));
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(44, LogLevel.Warning, "Encrypting using a null encryptor; secret information isn't being protected.", EventName = "EncryptingUsingNullEncryptor")]
+            public static partial void EncryptingUsingNullEncryptor(ILogger logger);
         }
     }
 }

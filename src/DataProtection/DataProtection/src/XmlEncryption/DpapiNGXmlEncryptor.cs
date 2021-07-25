@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// This API is only supported on Windows 8 / Windows Server 2012 and higher.
     /// </remarks>
     [SupportedOSPlatform("windows")]
-    public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
+    public sealed partial class DpapiNGXmlEncryptor : IXmlEncryptor
     {
         private readonly ILogger _logger;
         private readonly NCryptDescriptorHandle _protectionDescriptorHandle;
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
 
             var protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
-            _logger.EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(protectionDescriptorRuleString);
+            Log.EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(_logger, protectionDescriptorRuleString);
 
             // Convert the XML element to a binary secret so that it can be run through DPAPI
             byte[] cngDpapiEncryptedData;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
             catch (Exception ex)
             {
-                _logger.ErrorOccurredWhileEncryptingToWindowsDPAPING(ex);
+                Log.ErrorOccurredWhileEncryptingToWindowsDPAPING(_logger, ex);
                 throw;
             }
 
@@ -111,6 +111,15 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 // use the SID to create an SDDL string
                 return string.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity?.User?.Value);
             }
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(27, LogLevel.Debug, "Encrypting to Windows DPAPI-NG using protection descriptor rule '{DescriptorRule}'.", EventName = "EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule")]
+            public static partial void EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(ILogger logger, string descriptorRule);
+
+            [LoggerMessage(56, LogLevel.Error, "An error occurred while encrypting to Windows DPAPI-NG.", EventName = "ErrorOccurredWhileEncryptingToWindowsDPAPING")]
+            public static partial void ErrorOccurredWhileEncryptingToWindowsDPAPING(ILogger logger, Exception exception);
         }
     }
 }

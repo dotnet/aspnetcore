@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +13,7 @@ namespace Microsoft.AspNetCore.StaticFiles
     /// <summary>
     /// Enables serving static files for a given request path
     /// </summary>
-    public class StaticFileMiddleware
+    public partial class StaticFileMiddleware
     {
         private readonly StaticFileOptions _options;
         private readonly PathString _matchUrl;
@@ -71,19 +68,19 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             if (!ValidateNoEndpoint(context))
             {
-                _logger.EndpointMatched();
+                Log.EndpointMatched(_logger);
             }
             else if (!ValidateMethod(context))
             {
-                _logger.RequestMethodNotSupported(context.Request.Method);
+                Log.RequestMethodNotSupported(_logger, context.Request.Method);
             }
             else if (!ValidatePath(context, _matchUrl, out var subPath))
             {
-                _logger.PathMismatch(subPath);
+                Log.PathMismatch(_logger, subPath);
             }
             else if (!LookupContentType(_contentTypeProvider, _options, subPath, out var contentType))
             {
-                _logger.FileTypeNotSupported(subPath);
+                Log.FileTypeNotSupported(_logger, subPath);
             }
             else
             {
@@ -126,7 +123,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             if (!fileContext.LookupFileInfo())
             {
-                _logger.FileNotFound(fileContext.SubPath);
+                Log.FileNotFound(_logger, fileContext.SubPath);
             }
             else
             {
@@ -135,6 +132,24 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
 
             return _next(context);
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Debug, "{Method} requests are not supported", EventName = "MethodNotSupported")]
+            public static partial void RequestMethodNotSupported(ILogger logger, string method);
+
+            [LoggerMessage(15, LogLevel.Debug, "Static files was skipped as the request already matched an endpoint.", EventName = "EndpointMatched")]
+            public static partial void EndpointMatched(ILogger logger);
+
+            [LoggerMessage(3, LogLevel.Debug, "The request path {Path} does not match the path filter", EventName = "PathMismatch")]
+            public static partial void PathMismatch(ILogger logger, string path);
+
+            [LoggerMessage(4, LogLevel.Debug, "The request path {Path} does not match a supported file type", EventName = "FileTypeNotSupported")]
+            public static partial void FileTypeNotSupported(ILogger logger, string path);
+
+            [LoggerMessage(5, LogLevel.Debug, "The request path {Path} does not match an existing file", EventName = "FileNotFound")]
+            public static partial void FileNotFound(ILogger logger, string path);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     /// <typeparam name="TOptions">The type for the options used to configure the authentication handler.</typeparam>
 
-    public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler
+    public abstract partial class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler
         where TOptions : RemoteAuthenticationOptions, new()
     {
         private const string CorrelationProperty = ".xsrf";
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (exception != null)
             {
-                Logger.RemoteAuthenticationError(exception.Message);
+                Log.RemoteAuthenticationError(Logger, exception.Message);
                 var errorContext = new RemoteFailureContext(Context, Scheme, Options, exception)
                 {
                     Properties = properties
@@ -153,12 +153,12 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (ticketContext.Result.Handled)
                 {
-                    Logger.SignInHandled();
+                    Log.SignInHandled(Logger);
                     return true;
                 }
                 else if (ticketContext.Result.Skipped)
                 {
-                    Logger.SignInSkipped();
+                    Log.SignInSkipped(Logger);
                     return false;
                 }
             }
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (!properties.Items.TryGetValue(CorrelationProperty, out var correlationId))
             {
-                Logger.CorrelationPropertyNotFound(Options.CorrelationCookie.Name!);
+                Log.CorrelationPropertyNotFound(Logger, Options.CorrelationCookie.Name!);
                 return false;
             }
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Authentication
             var correlationCookie = Request.Cookies[cookieName];
             if (string.IsNullOrEmpty(correlationCookie))
             {
-                Logger.CorrelationCookieNotFound(cookieName);
+                Log.CorrelationCookieNotFound(Logger, cookieName);
                 return false;
             }
 
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (!string.Equals(correlationCookie, CorrelationMarker, StringComparison.Ordinal))
             {
-                Logger.UnexpectedCorrelationCookieValue(cookieName, correlationCookie);
+                Log.UnexpectedCorrelationCookieValue(Logger, cookieName, correlationCookie);
                 return false;
             }
 
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <returns>The <see cref="HandleRequestResult"/>.</returns>
         protected virtual async Task<HandleRequestResult> HandleAccessDeniedErrorAsync(AuthenticationProperties properties)
         {
-            Logger.AccessDeniedError();
+            Log.AccessDeniedError(Logger);
             var context = new AccessDeniedContext(Context, Scheme, Options)
             {
                 AccessDeniedPath = Options.AccessDeniedPath,
@@ -300,11 +300,11 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (context.Result.Handled)
                 {
-                    Logger.AccessDeniedContextHandled();
+                    Log.AccessDeniedContextHandled(Logger);
                 }
                 else if (context.Result.Skipped)
                 {
-                    Logger.AccessDeniedContextSkipped();
+                    Log.AccessDeniedContextSkipped(Logger);
                 }
 
                 return context.Result;
@@ -325,6 +325,36 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             return HandleRequestResult.NoResult();
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(4, LogLevel.Information, "Error from RemoteAuthentication: {ErrorMessage}.", EventName = "RemoteAuthenticationFailed")]
+            public static partial void RemoteAuthenticationError(ILogger logger, string errorMessage);
+
+            [LoggerMessage(5, LogLevel.Debug, "The SigningIn event returned Handled.", EventName = "SignInHandled")]
+            public static partial void SignInHandled(ILogger logger);
+
+            [LoggerMessage(6, LogLevel.Debug, "The SigningIn event returned Skipped.", EventName = "SignInSkipped")]
+            public static partial void SignInSkipped(ILogger logger);
+
+            [LoggerMessage(14, LogLevel.Warning, "{CorrelationProperty} state property not found.", EventName = "CorrelationPropertyNotFound")]
+            public static partial void CorrelationPropertyNotFound(ILogger logger, string correlationProperty);
+
+            [LoggerMessage(15, LogLevel.Warning, "'{CorrelationCookieName}' cookie not found.", EventName = "CorrelationCookieNotFound")]
+            public static partial void CorrelationCookieNotFound(ILogger logger, string correlationCookieName);
+
+            [LoggerMessage(16, LogLevel.Warning, "The correlation cookie value '{CorrelationCookieName}' did not match the expected value '{CorrelationCookieValue}'.", EventName = "UnexpectedCorrelationCookieValue")]
+            public static partial void UnexpectedCorrelationCookieValue(ILogger logger, string CorrelationCookieName, string correlationCookieValue);
+
+            [LoggerMessage(17, LogLevel.Information, "Access was denied by the resource owner or by the remote server.", EventName = "AccessDenied")]
+            public static partial void AccessDeniedError(ILogger logger);
+
+            [LoggerMessage(18, LogLevel.Debug, "The AccessDenied event returned Handled.", EventName = "AccessDeniedContextHandled")]
+            public static partial void AccessDeniedContextHandled(ILogger logger);
+
+            [LoggerMessage(19, LogLevel.Debug, "The AccessDenied event returned Skipped.", EventName = "AccessDeniedContextSkipped")]
+            public static partial void AccessDeniedContextSkipped(ILogger logger);
         }
     }
 }

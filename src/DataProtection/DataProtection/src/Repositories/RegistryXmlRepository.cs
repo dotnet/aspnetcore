@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
     /// An XML repository backed by the Windows registry.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public class RegistryXmlRepository : IXmlRepository
+    public partial class RegistryXmlRepository : IXmlRepository
     {
         private static readonly Lazy<RegistryKey?> _defaultRegistryKeyLazy = new Lazy<RegistryKey?>(GetDefaultHklmStorageKey);
 
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private XElement? ReadElementFromRegKey(RegistryKey regKey, string valueName)
         {
-            _logger.ReadingDataFromRegistryKeyValue(regKey, valueName);
+            Log.ReadingDataFromRegistryKeyValue(_logger, regKey, valueName);
 
             var data = regKey.GetValue(valueName) as string;
             return (!string.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             if (!IsSafeRegistryValueName(friendlyName))
             {
                 var newFriendlyName = Guid.NewGuid().ToString();
-                _logger.NameIsNotSafeRegistryValueName(friendlyName, newFriendlyName);
+                Log.NameIsNotSafeRegistryValueName(_logger, friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }
 
@@ -159,6 +159,15 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             // data corruption if power is lost while the registry file is being flushed to the file system,
             // but the window for that should be small enough that we shouldn't have to worry about it.
             RegistryKey.SetValue(valueName, element.ToString(), RegistryValueKind.String);
+        }
+
+        private partial class Log
+        {
+            [LoggerMessage(40, LogLevel.Debug, "Reading data from registry key '{RegistryKeyName}', value '{Value}'.", EventName = "ReadingDataFromRegistryKeyValue")]
+            public static partial void ReadingDataFromRegistryKeyValue(ILogger logger, RegistryKey registryKeyName, string value);
+
+            [LoggerMessage(41, LogLevel.Debug, "The name '{FriendlyName}' is not a safe registry value name, using '{NewFriendlyName}' instead.", EventName = "NameIsNotSafeRegistryValueName")]
+            public static partial void NameIsNotSafeRegistryValueName(ILogger logger, string friendlyName, string newFriendlyName);
         }
     }
 }
