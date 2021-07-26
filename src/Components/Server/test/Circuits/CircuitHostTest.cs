@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             // Arrange
             var componentCount = 3;
-            var initializeTimeoutMilliseconds = 5000;
+            var initializeTimeout = TimeSpan.FromMilliseconds(5000);
             var cancellationToken = new CancellationToken();
             var serviceScope = new Mock<IServiceScope>();
             var descriptors = new List<ComponentDescriptor>();
@@ -233,10 +233,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             object initializeException = null;
             circuitHost.UnhandledException += (sender, eventArgs) => initializeException = eventArgs.ExceptionObject;
             var initializeTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
-            var didFinishInitializing = await Task.WhenAny(initializeTask, Task.Delay(initializeTimeoutMilliseconds)) == initializeTask;
-
-            // Assert: This was reached because the component finished rendering, not because the timeout occurred
-            Assert.True(didFinishInitializing, $"{nameof(TestCircuitHost.InitializeAsync)}() timed out after {initializeTimeoutMilliseconds}ms.");
+            await initializeTask.WaitAsync(initializeTimeout);
 
             // Assert: This was not reached only because an exception was thrown in InitializeAsync()
             Assert.True(initializeException is null, $"An exception was thrown in {nameof(TestCircuitHost.InitializeAsync)}(): {initializeException}");
@@ -404,7 +401,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 for (int i = 0; i < _renderTcsArray.Length; i++)
                 {
-                    _renderTcsArray[i] = new();
+                    _renderTcsArray[i] = new(TaskCreationOptions.RunContinuationsAsynchronously);
                 }
             }
 
