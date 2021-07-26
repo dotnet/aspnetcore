@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly WebHostEnvironment _environment;
         private readonly WebApplicationServiceCollection _services = new();
         private WebApplication? _builtApplication;
+        private IServiceCollection _serviceCollection = new ServiceCollection();
 
         internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
         {
@@ -72,7 +73,19 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of services for the application to compose. This is useful for adding user provided or framework provided services.
         /// </summary>
-        public IServiceCollection Services { get; }
+        public IServiceCollection Services
+        {
+            get
+            {
+                if (_builtApplication != null)
+                {
+                    throw new InvalidOperationException("Services cannot be modified after application is built.");
+                }
+                return _serviceCollection;
+            }
+
+            init => _serviceCollection = value;
+        }
 
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
