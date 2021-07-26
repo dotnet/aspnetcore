@@ -1,8 +1,9 @@
 # API Baselines
 
 This document contains information regarding API baseline files and how to work with them. For additional details on how these files works, consult:
--	https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/PublicApiAnalyzers.Help.md
--	https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/Microsoft.CodeAnalysis.PublicApiAnalyzers.md
+
+- <https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/PublicApiAnalyzers.Help.md>
+- <https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/Microsoft.CodeAnalysis.PublicApiAnalyzers.md>
 
 ## Add baseline files for new projects
 
@@ -25,7 +26,7 @@ This file contains new APIs since the last major version. Steps for working with
 
 A new entry needs to be added to the PublicAPI.Unshipped.txt file for a new API. For example:
 
-```
+```text
 #nullable enable
 Microsoft.AspNetCore.Builder.NewApplicationBuilder.New() -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 ```
@@ -34,7 +35,7 @@ Microsoft.AspNetCore.Builder.NewApplicationBuilder.New() -> Microsoft.AspNetCore
 
 A new entry needs to be added to the PublicAPI.Unshipped.txt file for a removed API. For example:
 
-```
+```text
 #nullable enable
 *REMOVED*Microsoft.Builder.OldApplicationBuilder.New() -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 ```
@@ -43,7 +44,7 @@ A new entry needs to be added to the PublicAPI.Unshipped.txt file for a removed 
 
 Two new entry needs to be added to the PublicAPI.Unshipped.txt file for an updated API, one to remove the old API and one for the new API. This also applies to APIs that are now nullable aware. For example:
 
-```
+```text
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Discriminator.get -> string!
 Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Discriminator.get -> string?
@@ -66,4 +67,4 @@ Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Dis
 
 ## Updating baselines after major releases
 
-This will be performed by the build team using scripts at https://github.com/dotnet/roslyn/tree/master/scripts/PublicApi (or an Arcade successor). The process moves the content of PublicAPI.Unshipped.txt into PublicAPI.Shipped.txt
+This will be performed by the build team using scripts at <https://github.com/dotnet/roslyn/tree/master/scripts/PublicApi> (or an Arcade successor). The process moves the content of PublicAPI.Unshipped.txt into PublicAPI.Shipped.txt

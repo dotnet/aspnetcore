@@ -10,7 +10,11 @@
 
   <ItemGroup>
     <Compile Include="$(KestrelSharedSourceRoot)test\DummyApplication.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\PipeWriterHttp2FrameExtensions.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\MockSystemClock.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\Http3\Http3InMemory.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeReader.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeWriter.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\PipeWriterHttp2FrameExtensions.cs" Link="Internal\PipeWriterHttp2FrameExtensions.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" />

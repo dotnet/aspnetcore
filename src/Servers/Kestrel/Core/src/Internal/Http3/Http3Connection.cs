@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
     {
+        private static readonly object StreamPersistentStateKey = new object();
+
         // Internal for unit testing
         internal readonly Dictionary<long, IHttp3Stream> _streams = new Dictionary<long, IHttp3Stream>();
         internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
@@ -257,36 +259,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         Debug.Assert(streamDirectionFeature != null);
                         Debug.Assert(streamIdFeature != null);
 
-                        var httpConnectionContext = new Http3StreamContext(
-                            streamContext.ConnectionId,
-                            protocols: default,
-                            connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
-                            _context.ServiceContext,
-                            streamContext.Features,
-                            _context.MemoryPool,
-                            streamContext.LocalEndPoint as IPEndPoint,
-                            streamContext.RemoteEndPoint as IPEndPoint,
-                            streamContext.Transport,
-                            _streamLifetimeHandler,
-                            streamContext,
-                            _clientSettings,
-                            _serverSettings);
-                        httpConnectionContext.TimeoutControl = _context.TimeoutControl;
-
                         if (!streamDirectionFeature.CanWrite)
                         {
                             // Unidirectional stream
-                            var stream = new Http3ControlStream<TContext>(application, httpConnectionContext);
+                            var stream = new Http3ControlStream<TContext>(application, CreateHttpStreamContext(streamContext));
                             _streamLifetimeHandler.OnStreamCreated(stream);
 
                             ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                         }
                         else
                         {
+                            var persistentStateFeature = streamContext.Features.Get<IPersistentStateFeature>();
+                            Debug.Assert(persistentStateFeature != null, $"Required {nameof(IPersistentStateFeature)} not on stream context.");
+
                             // Request stream
                             UpdateHighestStreamId(streamIdFeature.StreamId);
 
-                            var stream = new Http3Stream<TContext>(application, httpConnectionContext);
+                            Http3Stream<TContext> stream;
+
+                            // Check whether there is an existing HTTP/3 stream on the transport stream.
+                            // A stream will only be cached if the transport stream itself is reused.
+                            if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
+                            {
+                                stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
+                                persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
+                            }
+                            else
+                            {
+                                stream = (Http3Stream<TContext>)s!;
+                                stream.InitializeWithExistingContext(streamContext.Transport);
+                            }
+
                             _streamLifetimeHandler.OnStreamCreated(stream);
 
                             KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
@@ -371,6 +374,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
+        private Http3StreamContext CreateHttpStreamContext(ConnectionContext streamContext)
+        {
+            var httpConnectionContext = new Http3StreamContext(
+                streamContext.ConnectionId,
+                protocols: default,
+                connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
+                _context.ServiceContext,
+                streamContext.Features,
+                _context.MemoryPool,
+                streamContext.LocalEndPoint as IPEndPoint,
+                streamContext.RemoteEndPoint as IPEndPoint,
+                _streamLifetimeHandler,
+                streamContext,
+                _clientSettings,
+                _serverSettings);
+            httpConnectionContext.TimeoutControl = _context.TimeoutControl;
+            httpConnectionContext.Transport = streamContext.Transport;
+
+            return httpConnectionContext;
+        }
+
         private void UpdateConnectionState()
         {
             if (_isClosed != 0)
@@ -443,12 +467,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _context.MemoryPool,
                 streamContext.LocalEndPoint as IPEndPoint,
                 streamContext.RemoteEndPoint as IPEndPoint,
-                streamContext.Transport,
                 _streamLifetimeHandler,
                 streamContext,
                 _clientSettings,
                 _serverSettings);
             httpConnectionContext.TimeoutControl = _context.TimeoutControl;
+            httpConnectionContext.Transport = streamContext.Transport;
 
             return new Http3ControlStream<TContext>(application, httpConnectionContext);
         }

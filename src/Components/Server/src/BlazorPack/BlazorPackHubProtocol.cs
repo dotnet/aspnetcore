@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             => _worker.WriteMessage(message, output);
 
-        ///// <inheritdoc />
+        /// <inheritdoc />
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
             => _worker.GetMessageBytes(message);
     }
