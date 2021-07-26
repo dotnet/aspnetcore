@@ -1,0 +1,13 @@
+Source Location: (104:5,7 [176] x:\dir\subdir\Test\UseTestComponent.cshtml)
+|
+    (string, int) item1 = ("A string", 42);
+    static (string, int) item2 = ("Another string", 42);
+    List<(string, int)> items2 = new List<(string, int)>() { item2 };
+|
+Generated Location: (1561:54,7 [176] )
+|
+    (string, int) item1 = ("A string", 42);
+    static (string, int) item2 = ("Another string", 42);
+    List<(string, int)> items2 = new List<(string, int)>() { item2 };
+|
+
