@@ -122,7 +122,7 @@ namespace Interop.FunctionalTests.Http3
         // Verify HTTP/2 and HTTP/3 match behavior
         [ConditionalTheory]
         [MsQuicSupported]
-        [InlineData(HttpProtocols.Http3, Skip = "Blocked by https://github.com/dotnet/runtime/issues/56129")]
+        [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]
         public async Task POST_ClientCancellationUpload_RequestAbortRaised(HttpProtocols protocol)
         {
