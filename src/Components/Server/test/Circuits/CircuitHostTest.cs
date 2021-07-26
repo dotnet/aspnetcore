@@ -230,16 +230,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 descriptors: descriptors);
 
             // Act
-            var exceptionThrown = false;
-            circuitHost.UnhandledException += (_, _) => exceptionThrown = true;
+            object initializeException = null;
+            circuitHost.UnhandledException += (sender, eventArgs) => initializeException = eventArgs.ExceptionObject;
             var initializeTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
             var didFinishInitializing = await Task.WhenAny(initializeTask, Task.Delay(initializeTimeoutMilliseconds)) == initializeTask;
 
             // Assert: This was reached because the component finished rendering, not because the timeout occurred
-            Assert.True(didFinishInitializing, $"{nameof(TestCircuitHost.InitializeAsync)} timed out after {initializeTimeoutMilliseconds}ms.");
+            Assert.True(didFinishInitializing, $"{nameof(TestCircuitHost.InitializeAsync)}() timed out after {initializeTimeoutMilliseconds}ms.");
 
             // Assert: This was not reached only because an exception was thrown in InitializeAsync()
-            Assert.False(exceptionThrown);
+            Assert.True(initializeException is null, $"An exception was thrown in {nameof(TestCircuitHost.InitializeAsync)}(): {initializeException}");
         }
 
         [Fact]
@@ -387,10 +387,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private class RenderInParallelComponent : IComponent, IDisposable
         {
             private static TaskCompletionSource[] _renderTcsArray;
-            private static int _nextComponentId = 0;
             private static int _instanceCount = 0;
 
-            private readonly int _componentId;
+            private readonly int _id;
 
             public static void Setup(int numComponents)
             {
@@ -407,19 +406,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     _renderTcsArray[i] = new();
                 }
-
-                _nextComponentId = 0;
             }
 
             public RenderInParallelComponent()
             {
-                if (_nextComponentId >= _renderTcsArray.Length)
+                if (_instanceCount >= _renderTcsArray.Length)
                 {
-                    throw new InvalidOperationException("Created more test components than expected.");
+                    throw new InvalidOperationException("Created more test component instances than expected.");
                 }
 
-                _instanceCount++;
-                _componentId = _nextComponentId++;
+                _id = _instanceCount++;
             }
 
             public void Attach(RenderHandle renderHandle)
@@ -428,7 +424,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public async Task SetParametersAsync(ParameterView parameters)
             {
-                _renderTcsArray[_componentId].SetResult();
+                _renderTcsArray[_id].SetResult();
                 await Task.WhenAll(_renderTcsArray.Select(tcs => tcs.Task));
             }
 
