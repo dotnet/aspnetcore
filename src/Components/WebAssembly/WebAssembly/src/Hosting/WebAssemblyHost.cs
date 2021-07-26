@@ -163,13 +163,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     {
                         // Here, we add each root component but don't await the returned tasks so that the
                         // components can be processed in parallel.
-                        foreach (var rootComponent in rootComponents)
+                        var count = rootComponents.Count;
+                        var pendingRenders = new Task[count];
+                        for (var i = 0; i < count; i++)
                         {
-                            _ = renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Parameters, rootComponent.Selector);
+                            var (componentType, parameters, selector) = rootComponents[i];
+                            pendingRenders[i] = renderer.AddComponentAsync(componentType, parameters, selector);
                         }
 
                         // Now we wait for all components to finish rendering.
-                        await renderer.WaitForQuiescence();
+                        await Task.WhenAll(pendingRenders);
 
                         initializationTcs.SetResult();
                     }

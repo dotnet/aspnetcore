@@ -64,9 +64,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
         public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
            => base.RenderRootComponentAsync(componentId, parameters);
 
-        public new Task WaitForQuiescence()
-            => base.WaitForQuiescence();
-
         public new void RemoveRootComponent(int componentId)
            => base.RemoveRootComponent(componentId);
 

@@ -191,16 +191,17 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // Add any root components that were registered before the page attached. We don't await any of the
             // returned render tasks so that the components can be processed in parallel.
+            var pendingRenders = new List<Task>(_rootComponentsBySelector.Count);
             foreach (var (selector, rootComponent) in _rootComponentsBySelector)
             {
                 rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
                     rootComponent.ComponentType, selector);
-                _= _currentPageContext.Renderer.RenderRootComponentAsync(
-                    rootComponent.ComponentId.Value, rootComponent.Parameters);
+                pendingRenders.Add(_currentPageContext.Renderer.RenderRootComponentAsync(
+                    rootComponent.ComponentId.Value, rootComponent.Parameters));
             }
 
             // Now we wait for all components to finish rendering.
-            await _currentPageContext.Renderer.WaitForQuiescence();
+            await Task.WhenAll(pendingRenders);
         }
 
         private static Uri EnsureTrailingSlash(Uri uri)

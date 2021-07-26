@@ -46,9 +46,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             return RenderRootComponentAsync(componentId, parameters);
         }
 
-        public new Task WaitForQuiescence()
-            => base.WaitForQuiescence();
-
         protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
         {
             DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(

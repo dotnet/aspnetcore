@@ -52,9 +52,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return RenderRootComponentAsync(componentId, parameters);
         }
 
-        public new Task WaitForQuiescence()
-            => base.WaitForQuiescence();
-
         protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
         {
             var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);

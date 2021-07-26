@@ -283,11 +283,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="exception">The <see cref="Exception"/>.</param>
         protected abstract void HandleException(Exception exception);
 
-        /// <summary>
-        /// Waits for all pending tasks from child components to complete.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the completion of this operation.</returns>
-        protected internal async Task WaitForQuiescence()
+        private async Task WaitForQuiescence()
         {
             // If there's already a loop waiting for quiescence, just join it
             if (_ongoingQuiescenceTask is not null)
