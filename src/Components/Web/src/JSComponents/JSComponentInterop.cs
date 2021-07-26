@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable]
-        public int AddRootComponent(string identifier, string domElementSelector)
+        public virtual int AddRootComponent(string identifier, string domElementSelector)
         {
             if (!_allowedComponentTypes.TryGetValue(identifier, out var componentType))
             {
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable]
-        public void RemoveRootComponent(int componentId)
+        public virtual void RemoveRootComponent(int componentId)
             => Renderer.RemoveRootComponent(componentId);
 
         /// <inheritdoc />

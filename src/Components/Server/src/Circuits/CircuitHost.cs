@@ -105,6 +105,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     await OnCircuitOpenedAsync(cancellationToken);
                     await OnConnectionUpAsync(cancellationToken);
 
+                    // From this point onwards, JavaScript code can add root components if configured
+                    await Renderer.InitializeJSComponentSupportAsync(
+                        _options.RootComponents.JSComponents,
+                        JSRuntime.ReadJsonSerializerOptions());
+
                     // We add the root components *after* the circuit is flagged as open.
                     // That's because AddComponentAsync waits for quiescence, which can take
                     // arbitrarily long. In the meantime we might need to be receiving and

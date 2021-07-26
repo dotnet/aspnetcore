@@ -21,11 +21,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             MemoryPool<byte> memoryPool,
             IPEndPoint? localEndPoint,
             IPEndPoint? remoteEndPoint,
-            IDuplexPipe transport,
             IHttp3StreamLifetimeHandler streamLifetimeHandler,
             ConnectionContext streamContext,
             Http3PeerSettings clientPeerSettings,
-            Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint, transport)
+            Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
         {
             StreamLifetimeHandler = streamLifetimeHandler;
             StreamContext = streamContext;

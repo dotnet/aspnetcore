@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
             }
 
             var index = argsList.IndexOf("--config");
-            if (index >= 0 && index < argsList.Count -1)
+            if (index >= 0 && index < argsList.Count - 1)
             {
                 AspNetCoreBenchmarkAttribute.ConfigName = argsList[index + 1];
                 argsList.RemoveAt(index + 1);

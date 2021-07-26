@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services
@@ -66,6 +69,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         public new void RemoveRootComponent(int componentId)
            => base.RemoveRootComponent(componentId);
+
+        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
+        {
+            var interop = new JSComponentInterop(configuration, jsonOptions);
+            return InitializeJSComponentSupportAsync(interop);
+        }
 
         public void NotifyRenderCompleted(long batchId)
         {

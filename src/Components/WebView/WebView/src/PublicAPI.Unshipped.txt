@@ -3,6 +3,7 @@ Microsoft.AspNetCore.Components.WebView.WebViewManager
 Microsoft.AspNetCore.Components.WebView.WebViewManager.AddRootComponentAsync(System.Type! componentType, string! selector, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.WebView.WebViewManager.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.WebView.WebViewManager.JSComponentConfiguration.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.WebView.WebViewManager.MessageReceived(System.Uri! sourceUri, string! message) -> void
 Microsoft.AspNetCore.Components.WebView.WebViewManager.Navigate(string! url) -> void
 Microsoft.AspNetCore.Components.WebView.WebViewManager.RemoveRootComponentAsync(string! selector) -> System.Threading.Tasks.Task!

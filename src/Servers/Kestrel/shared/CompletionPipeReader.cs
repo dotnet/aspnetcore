@@ -58,5 +58,11 @@ namespace Microsoft.AspNetCore.Connections
         {
             return _inner.TryRead(out result);
         }
+
+        public void Reset()
+        {
+            IsCompleted = false;
+            CompleteException = null;
+        }
     }
 }
