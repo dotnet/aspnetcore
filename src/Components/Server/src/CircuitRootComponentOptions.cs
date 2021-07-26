@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Gets or sets the maximum number of root components added from JavaScript.
         /// </summary>
+        /// <value>Defaults to <c>100</c>.</value>
         public int MaxJSRootComponents { get; set; } = 100;
     }
 }
