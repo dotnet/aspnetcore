@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Lifetime;
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                         // Here, we add each root component but don't await the returned tasks so that the
                         // components can be processed in parallel.
                         var count = rootComponents.Count;
-                        var pendingRenders = ArrayPool<Task>.Shared.Rent(count);
+                        var pendingRenders = new Task[count];
                         for (var i = 0; i < count; i++)
                         {
                             var rootComponent = rootComponents[i];
