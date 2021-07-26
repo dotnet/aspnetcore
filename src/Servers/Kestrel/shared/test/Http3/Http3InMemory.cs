@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using static System.IO.Pipelines.DuplexPipe;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
         protected static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
         protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', 16 * 1024));
 
-        public Http3InMemory(ServiceContext serviceContext, MockSystemClock mockSystemClock, ITimeoutHandler timeoutHandler)
+        public Http3InMemory(ServiceContext serviceContext, MockSystemClock mockSystemClock, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
         {
             _serviceContext = serviceContext;
             _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler));
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Testing
             _mockSystemClock = mockSystemClock;
 
             _serverReceivedSettings = Channel.CreateUnbounded<KeyValuePair<Http3SettingType, long>>();
+            Logger = loggerFactory.CreateLogger<Http3InMemory>();
         }
 
         private class TestDebugger : IDebugger
@@ -72,6 +74,7 @@ namespace Microsoft.AspNetCore.Testing
         internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
         internal readonly ConcurrentQueue<TestStreamContext> _streamContextPool = new ConcurrentQueue<TestStreamContext>();
         protected Task _connectionTask;
+        internal ILogger Logger { get; }
 
         internal readonly ConcurrentDictionary<long, Http3StreamBase> _runningStreams = new ConcurrentDictionary<long, Http3StreamBase>();
         internal readonly Channel<KeyValuePair<Http3SettingType, long>> _serverReceivedSettings;
@@ -1000,6 +1003,8 @@ namespace Microsoft.AspNetCore.Testing
             Features.Set<IPersistentStateFeature>(this);
 
             StreamId = streamId;
+            _testBase.Logger.LogInformation($"Initializing stream {streamId}");
+            ConnectionId = "TEST:" + streamId.ToString();
 
             _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             Disposed = false;
@@ -1043,6 +1048,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public override ValueTask DisposeAsync()
         {
+            _testBase.Logger.LogInformation($"Disposing stream {StreamId}");
+
             Disposed = true;
             _disposedTcs.TrySetResult();
 

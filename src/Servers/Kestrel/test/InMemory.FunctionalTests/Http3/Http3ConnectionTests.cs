@@ -207,6 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
             var headers = new[]
@@ -219,45 +220,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await Http3Api.InitializeConnectionAsync(_echoApplication);
 
+            var streamContext1 = await MakeRequestAsync(0, headers);
+            var streamContext2 = await MakeRequestAsync(1, headers);
+
+            Assert.Same(streamContext1, streamContext2);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
+        public async Task StreamPool_VariableMultipleStreamsInSequence_PooledStreamReused(int count)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            await Http3Api.InitializeConnectionAsync(_echoApplication);
+
+            ConnectionContext first = null;
+            ConnectionContext last = null;
+            for (var i = 0; i < count; i++)
+            {
+                var streamContext = await MakeRequestAsync(i, headers);
+
+                first ??= streamContext;
+                last = streamContext;
+            }
+
+            Assert.Same(first, last);
+        }
+
+        private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers)
+        {
             var requestStream = await Http3Api.CreateRequestStream();
-            var streamContext1 = requestStream.StreamContext;
+            var streamContext = requestStream.StreamContext;
 
             await requestStream.SendHeadersAsync(headers);
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world 1"), endStream: true);
 
-            Assert.False(requestStream.Disposed);
+            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes($"Hello world {index}"));
 
             await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
-            Assert.Equal("Hello world 1", Encoding.ASCII.GetString(responseData.ToArray()));
+            Assert.Equal($"Hello world {index}", Encoding.ASCII.GetString(responseData.ToArray()));
 
-            await requestStream.ExpectReceiveEndOfStream();
+            Assert.False(requestStream.Disposed, "Request is in progress and shouldn't be disposed.");
 
-            await requestStream.OnStreamCompletedTask.DefaultTimeout();
-
-            await requestStream.OnDisposedTask.DefaultTimeout();
-            Assert.True(requestStream.Disposed);
-
-            requestStream = await Http3Api.CreateRequestStream();
-            var streamContext2 = requestStream.StreamContext;
-
-            await requestStream.SendHeadersAsync(headers);
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world 2"), endStream: true);
-
-            Assert.False(requestStream.Disposed);
-
-            await requestStream.ExpectHeadersAsync();
+            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes($"End {index}"), endStream: true);
             responseData = await requestStream.ExpectDataAsync();
-            Assert.Equal("Hello world 2", Encoding.ASCII.GetString(responseData.ToArray()));
+            Assert.Equal($"End {index}", Encoding.ASCII.GetString(responseData.ToArray()));
 
             await requestStream.ExpectReceiveEndOfStream();
 
             await requestStream.OnStreamCompletedTask.DefaultTimeout();
 
             await requestStream.OnDisposedTask.DefaultTimeout();
-            Assert.True(requestStream.Disposed);
+            Assert.True(requestStream.Disposed, "Request is complete and should be disposed.");
 
-            Assert.Same(streamContext1, streamContext2);
+            return streamContext;
         }
     }
 }

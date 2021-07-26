@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
             var mockSystemClock = new Microsoft.AspNetCore.Testing.MockSystemClock();
 
-            _http3 = new Http3InMemory(serviceContext, mockSystemClock, new DefaultTimeoutHandler());
+            _http3 = new Http3InMemory(serviceContext, mockSystemClock, new DefaultTimeoutHandler(), NullLoggerFactory.Instance);
 
             _http3.InitializeConnectionAsync(ProcessRequest).GetAwaiter().GetResult();
         }
