@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -76,5 +77,10 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <value>
         /// Defaults to <c>10</c>.</value>
         public int MaxBufferedUnacknowledgedRenderBatches { get; set; } = 10;
+
+        /// <summary>
+        /// Gets options for root components within the circuit.
+        /// </summary>
+        public CircuitRootComponentOptions RootComponents { get; } = new CircuitRootComponentOptions();
     }
 }

@@ -25,7 +25,11 @@ namespace TestServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor(options =>
+            {
+                options.RootComponents.MaxJSRootComponents = 5; // To make it easier to test
+                options.RootComponents.RegisterForJavaScript<BasicTestApp.DynamicallyAddedRootComponent>("my-dynamic-root-component");
+            });
             services.AddSingleton<ResourceRequestLog>();
 
             // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
