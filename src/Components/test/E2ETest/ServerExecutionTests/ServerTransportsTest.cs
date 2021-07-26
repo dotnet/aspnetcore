@@ -44,28 +44,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public void ErrorIfBrowserDoesNotSupportWebSockets()
-        {
-            Navigate("subdir/Transports");
-
-            Browser.Exists(By.Id("startWithWebSocketsDisabledInBrowserBtn")).Click();
-
-            var javascript = (IJavaScriptExecutor)Browser;
-            Browser.True(() => (bool)javascript.ExecuteScript("return window['__aspnetcore__testing__blazor__start__script__executed__'] === true;"));
-
-            AssertLogContainsMessages(
-                "Information: Starting up Blazor server-side application.",
-                "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: UnsupportedTransportWebSocketsError: 'WebSockets' is not supported in your environment.",
-                "Failed to start the circuit.");
-
-            // Ensure error ui is visible
-            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
-            Assert.NotNull(errorUiElem);
-            Assert.Contains("Unable to connect, please ensure you are using an updated browser that supports WebSockets.", errorUiElem.GetAttribute("innerHTML"));
-            Browser.Equal("block", () => errorUiElem.GetCssValue("display"));
-        }
-
-        [Fact]
         public void ErrorIfClientAttemptsLongPollingWithServerOnWebSockets()
         {
             Navigate("subdir/Transports");

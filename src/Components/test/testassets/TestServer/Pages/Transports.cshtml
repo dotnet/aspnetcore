@@ -10,7 +10,6 @@
 </div>
 
 <button id="startBlazorServerBtn" onclick="startBlazorServer()">Start Normally</button>
-<button id="startWithWebSocketsDisabledInBrowserBtn" onclick="startWithWebSocketsDisabledInBrowser()">Start with WebSockets Disabled in Browser</button>
 <button id="startWithLongPollingBtn" onclick="startWithLongPolling()">Start with Long Polling</button>
 <button id="startAndRejectWebSocketConnectionBtn" onclick="startAndRejectWebSocketConnection()">Start with WebSockets and Reject Connection</button>
 
@@ -27,11 +26,6 @@
         }).then(function () {
             window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
         });
-    }
-
-    function startWithWebSocketsDisabledInBrowser() {
-        WebSocket = null; // emulates browsers which don't support WebSockets
-        startBlazorServer();
     }
 
     function startWithLongPolling() {
