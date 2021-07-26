@@ -42,6 +42,7 @@ namespace Microsoft.JSInterop
                     new DotNetObjectReferenceJsonConverterFactory(this),
                     new JSObjectReferenceJsonConverter(this),
                     new JSStreamReferenceJsonConverter(this),
+                    new DotNetStreamReferenceJsonConverter(this),
                     new ByteArrayJsonConverter(this),
                 }
             };
@@ -260,6 +261,34 @@ namespace Microsoft.JSInterop
                 var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
                 TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
             }
+        }
+
+        /// <summary>
+        /// Transmits the stream data from .NET to JS. Subclasses should override this method and provide
+        /// an implementation that transports the data to JS and calls DotNet.jsCallDispatcher.supplyDotNetStream.
+        /// </summary>
+        /// <param name="streamId">An identifier for the stream.</param>
+        /// <param name="dotNetStreamReference">Reference to the .NET stream along with whether the stream should be left open.</param>
+        protected internal virtual Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
+        {
+            if (!dotNetStreamReference.LeaveOpen)
+            {
+                dotNetStreamReference.Stream.Dispose();
+            }
+
+            throw new NotSupportedException("The current JS runtime does not support sending streams from .NET to JS.");
+        }
+
+        internal long BeginTransmittingStream(DotNetStreamReference dotNetStreamReference)
+        {
+            // It's fine to share the ID sequence
+            var streamId = Interlocked.Increment(ref _nextObjectReferenceId);
+
+            // Fire and forget sending the stream so the client can proceed to
+            // reading the stream.
+            _ = TransmitStreamAsync(streamId, dotNetStreamReference);
+
+            return streamId;
         }
 
         internal long TrackObjectReference<TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class

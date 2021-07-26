@@ -9,7 +9,7 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
-import { getNextChunk } from './StreamingInterop';
+import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
 import { RootComponentsFunctions, setDynamicRootComponentManager } from './Rendering/JSRootComponents';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 
@@ -56,6 +56,7 @@ interface IBlazor {
     getSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
+    receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void,
     setDynamicRootComponentManager?: (instance: DotNet.DotNetObject) => void,
 
     // APIs invoked by hot reload
@@ -76,6 +77,7 @@ export const Blazor: IBlazor = {
     PageTitle,
     InputFile,
     getJSDataStreamChunk: getNextChunk,
+    receiveDotNetDataStream: receiveDotNetDataStream,
     setDynamicRootComponentManager,
   },
 };

@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -257,6 +258,38 @@ namespace Microsoft.AspNetCore.Components.Server
             _ = circuitHost.DispatchEvent(eventDescriptor, eventArgs);
         }
 
+        public ChannelReader<ArraySegment<byte>> SendDotNetStreamToJS(long streamId)
+        {
+            var channel = Channel.CreateUnbounded<ArraySegment<byte>>();
+            _ = WriteStreamDataAsync(channel.Writer, streamId);
+            return channel.Reader;
+
+            async Task WriteStreamDataAsync(ChannelWriter<ArraySegment<byte>> writer, long streamId)
+            {
+                Exception localException = null;
+
+                try
+                {
+                    var circuitHost = await GetActiveCircuitAsync();
+                    if (circuitHost == null)
+                    {
+                        return;
+                    }
+
+                    await circuitHost.SendDotNetStreamAsync(streamId, writer);
+                }
+                catch (Exception ex)
+                {
+                    localException = ex;
+                    Log.SendingDotNetStreamFailed(_logger, ex);
+                }
+                finally
+                {
+                    writer.Complete(localException);
+                }
+            }
+        }
+
         public async ValueTask OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
             var circuitHost = await GetActiveCircuitAsync();
@@ -340,6 +373,9 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, string, Exception> _invalidCircuitId =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidCircuitId"), "ConnectAsync received an invalid circuit id '{CircuitIdSecret}'");
 
+            private static readonly Action<ILogger, Exception> _sendingDotNetStreamFailed =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(9, "SendingDotNetStreamFailed"), "Sending the .NET stream data to JS failed");
+
             public static void ReceivedConfirmationForBatch(ILogger logger, long batchId) => _receivedConfirmationForBatch(logger, batchId, null);
 
             public static void CircuitAlreadyInitialized(ILogger logger, CircuitId circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
@@ -351,6 +387,8 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void InvalidInputData(ILogger logger, [CallerMemberName] string callSite = "") => _invalidInputData(logger, callSite, null);
 
             public static void CircuitInitializationFailed(ILogger logger, Exception exception) => _circuitInitializationFailed(logger, exception);
+
+            public static void SendingDotNetStreamFailed(ILogger logger, Exception exception) => _sendingDotNetStreamFailed(logger, exception);
 
             public static void CreatedCircuit(ILogger logger, CircuitId circuitId, string circuitSecret, string connectionId)
             {

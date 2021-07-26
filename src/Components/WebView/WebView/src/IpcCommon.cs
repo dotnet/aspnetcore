@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             NotifyUnhandledException,
             BeginInvokeJS,
             SendByteArrayToJS,
+            ReceiveDotNetDataStream,
         }
     }
 }

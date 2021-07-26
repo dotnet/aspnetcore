@@ -5,6 +5,7 @@ import { attachRootComponentToElement, renderBatch } from '../../Rendering/Rende
 import { setApplicationIsTerminated, tryDeserializeMessage } from './WebViewIpcCommon';
 import { sendRenderCompleted } from './WebViewIpcSender';
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { receiveDotNetDataStream } from '../../StreamingInterop';
 
 export function startIpcReceiver() {
   const messageHandlers = {
@@ -36,6 +37,8 @@ export function startIpcReceiver() {
     'SendByteArrayToJS': receiveBase64ByteArray,
 
     'Navigate': navigationManagerFunctions.navigateTo,
+
+    'ReceiveDotNetDataStream': receiveBase64DotNetDataStream,
   };
 
   (window.external as any).receiveMessage((message: string) => {
@@ -53,6 +56,11 @@ export function startIpcReceiver() {
 function receiveBase64ByteArray(id: number, base64Data: string) {
   const data = base64ToArrayBuffer(base64Data);
   DotNet.jsCallDispatcher.receiveByteArray(id, data);
+}
+
+function receiveBase64DotNetDataStream(streamId: number, base64Data: string, bytesRead: number, errorMessage: string) {
+  const data = base64ToArrayBuffer(base64Data);
+  receiveDotNetDataStream(streamId, data, bytesRead, errorMessage);
 }
 
 // https://stackoverflow.com/a/21797381

@@ -1,14 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
@@ -445,6 +450,64 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        public async Task SendDotNetStreamAsync(long streamId, ChannelWriter<ArraySegment<byte>> writer)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            DotNetStreamReference dotNetStreamReference = null;
+            byte[] buffer = null;
+
+            try
+            {
+                await Renderer.Dispatcher.InvokeAsync(async () =>
+                {
+                    if (!JSRuntime.TryClaimPendingStreamForSending(streamId, out dotNetStreamReference))
+                    {
+                        throw new InvalidOperationException($"The stream with ID {streamId} is not available. It may have timed out.");
+                    }
+
+                    buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
+
+                    int bytesRead;
+                    while ((bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer)) > 0)
+                    {
+                        // We have to stop sending if the circuit disconnects. It doesn't stop otherwise.
+                        if (_disposed)
+                        {
+                            break;
+                        }
+
+                        // Should the client stop reading mid-stream, a connection closure will occur after
+                        // a few seconds as the pipe will hit backpressure on the server side and then timeout.
+                        await writer.WriteAsync(new ArraySegment<byte>(buffer, 0, bytesRead));
+                    }
+
+                    Log.SendDotNetStreamSuccess(_logger, streamId);
+                });
+            }
+            catch (Exception ex)
+            {
+                // An error completing stream interop means that the user sent invalid data, a well-behaved
+                // client won't do this.
+                Log.SendDotNetStreamException(_logger, streamId, ex);
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Unable to send .NET stream."));
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+            finally
+            {
+                if (buffer is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+                }
+
+                if (dotNetStreamReference is not null && !dotNetStreamReference.LeaveOpen)
+                {
+                    dotNetStreamReference.Stream?.Dispose();
+                }
+            }
+        }
+
         // DispatchEvent is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
         public async Task DispatchEvent(JsonElement eventDescriptorJson, JsonElement eventArgsJson)
@@ -663,6 +726,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, long, Exception> _receiveByteArraySuccess;
             private static readonly Action<ILogger, long, Exception> _receiveByteArrayException;
             private static readonly Action<ILogger, long, Exception> _receiveJSDataChunkException;
+            private static readonly Action<ILogger, long, Exception> _sendDotNetStreamSuccess;
+            private static readonly Action<ILogger, long, Exception> _sendDotNetStreamException;
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
             private static readonly Action<ILogger, string, CircuitId, Exception> _locationChange;
@@ -708,6 +773,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId ReceiveByteArraySucceeded = new EventId(213, "ReceiveByteArraySucceeded");
                 public static readonly EventId ReceiveByteArrayException = new EventId(214, "ReceiveByteArrayException");
                 public static readonly EventId ReceiveJSDataChunkException = new EventId(215, "ReceiveJSDataChunkException");
+                public static readonly EventId SendDotNetStreamSucceeded = new EventId(216, "SendDotNetStreamSucceeded");
+                public static readonly EventId SendDotNetStreamException = new EventId(217, "SendDotNetStreamException");
             }
 
             static Log()
@@ -838,9 +905,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     "The ReceiveByteArray call with id '{id}' failed.");
 
                 _receiveJSDataChunkException = LoggerMessage.Define<long>(
+                   LogLevel.Debug,
+                   EventIds.ReceiveJSDataChunkException,
+                   "The ReceiveJSDataChunk call with stream id '{streamId}' failed.");
+
+                _sendDotNetStreamSuccess = LoggerMessage.Define<long>(
                     LogLevel.Debug,
-                    EventIds.ReceiveJSDataChunkException,
-                    "The ReceiveJSDataChunk call with stream id '{streamId}' failed.");
+                    EventIds.SendDotNetStreamSucceeded,
+                    "The SendDotNetStreamAsync call with id '{id}' succeeded.");
+
+                _sendDotNetStreamException = LoggerMessage.Define<long>(
+                    LogLevel.Debug,
+                    EventIds.SendDotNetStreamException,
+                    "The SendDotNetStreamAsync call with id '{id}' failed.");
 
                 _dispatchEventFailedToParseEventData = LoggerMessage.Define(
                     LogLevel.Debug,
@@ -904,9 +981,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void EndInvokeDispatchException(ILogger logger, Exception ex) => _endInvokeDispatchException(logger, ex);
             public static void EndInvokeJSFailed(ILogger logger, long asyncHandle, string arguments) => _endInvokeJSFailed(logger, asyncHandle, arguments, null);
             public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
-            internal static void ReceiveByteArraySuccess(ILogger logger, long id) => _receiveByteArraySuccess(logger, id, null);
-            internal static void ReceiveByteArrayException(ILogger logger, long id, Exception ex) => _receiveByteArrayException(logger, id, ex);
-            internal static void ReceiveJSDataChunkException(ILogger logger, long streamId, Exception ex) => _receiveJSDataChunkException(logger, streamId, ex);
+            public static void ReceiveByteArraySuccess(ILogger logger, long id) => _receiveByteArraySuccess(logger, id, null);
+            public static void ReceiveByteArrayException(ILogger logger, long id, Exception ex) => _receiveByteArrayException(logger, id, ex);
+            public static void ReceiveJSDataChunkException(ILogger logger, long streamId, Exception ex) => _receiveJSDataChunkException(logger, streamId, ex);
+            public static void SendDotNetStreamSuccess(ILogger logger, long id) => _sendDotNetStreamSuccess(logger, id, null);
+            public static void SendDotNetStreamException(ILogger logger, long streamId, Exception ex) => _sendDotNetStreamException(logger, streamId, ex);
             public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 
