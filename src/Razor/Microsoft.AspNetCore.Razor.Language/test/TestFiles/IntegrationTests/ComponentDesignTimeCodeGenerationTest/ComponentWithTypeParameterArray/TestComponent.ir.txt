@@ -1,0 +1,47 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (1:0,1 [38] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase -  - TItem
+            DesignTimeDirective - 
+                DirectiveToken - (52:1,11 [5] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                HtmlContent - (39:0,39 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (39:0,39 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (59:2,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (59:2,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                MarkupElement - (61:3,0 [13] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (65:3,4 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (65:3,4 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Item
+                HtmlContent - (74:3,13 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (74:3,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                MarkupElement - (78:5,0 [28] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    CSharpExpression - (82:5,4 [20] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (82:5,4 [20] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent(Items1)
+                HtmlContent - (106:5,28 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (106:5,28 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                CSharpCode - (111:7,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (111:7,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - foreach (var item in Items2)\n{\n    
+                MarkupElement - (148:9,4 [26] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    CSharpExpression - (152:9,8 [18] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (152:9,8 [18] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent(item)
+                CSharpCode - (174:9,30 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (174:9,30 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n}
+                HtmlContent - (177:10,1 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (177:10,1 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                MarkupElement - (181:12,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    CSharpExpression - (185:12,4 [22] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (185:12,4 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent(Items3())
+                HtmlContent - (211:12,30 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (211:12,30 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+            CSharpCode - (222:14,7 [248] x:\dir\subdir\Test\TestComponent.cshtml)
+                LazyIntermediateToken - (222:14,7 [248] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    [Parameter] public TItem[] Items1 { get; set; }\n    [Parameter] public List<TItem[]> Items2 { get; set; }\n    [Parameter] public Func<TItem[]> Items3 { get; set; }\n    [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }\n

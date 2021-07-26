@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -23,6 +23,10 @@ namespace Microsoft.CodeAnalysis.Razor
             if (parsed is IdentifierNameSyntax identifier)
             {
                 return Array.Empty<string>();
+            }
+            else if (parsed is ArrayTypeSyntax array)
+            {
+                return new[] { array.ElementType.ToString() };
             }
             else
             {
