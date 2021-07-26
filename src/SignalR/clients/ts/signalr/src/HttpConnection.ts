@@ -375,7 +375,8 @@ export class HttpConnection implements IConnection {
             const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
-                transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
+                transportExceptions.push(`${endpoint.transport} failed:`);
+                transportExceptions.push(transportOrError);
             } else if (this._isITransport(transportOrError)) {
                 this.transport = transportOrError;
                 if (!negotiate) {
