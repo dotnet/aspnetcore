@@ -189,10 +189,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var circuitHost = TestCircuitHost.Create(handlers: new[] { handler1.Object, handler2.Object });
 
             // Act
-            await circuitHost.InitializeAsync(
-                new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
-                null,
-                cancellationToken);
+            await circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
 
             // Assert
             handler1.VerifyAll();
@@ -220,10 +217,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             };
 
             // Act
-            var initializeAsyncTask = circuitHost.InitializeAsync(
-                new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
-                null,
-                new CancellationToken());
+            var initializeAsyncTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), new CancellationToken());
 
             // Assert: No synchronous exceptions
             handler.VerifyAll();
