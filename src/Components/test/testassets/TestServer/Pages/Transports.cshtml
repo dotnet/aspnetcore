@@ -25,9 +25,7 @@
                 builder.configureLogging("debug") // LogLevel.Debug
             }
         }).then(function () {
-            window['__aspnetcore__testing__blazor__started__'] = true;
-        }).catch(() => {
-            window['__aspnetcore__testing__blazor__error__'] = true;
+            window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
         });
     }
 
@@ -41,10 +39,10 @@
             logLevel: 1, // LogLevel.Debug
             configureSignalR: builder => {
                 builder.configureLogging("debug") // LogLevel.Debug
-                    .withUrl('_blazor', 4) // Long Polling
+                    .withUrl('_blazor', 4) // Long Polling (4)
             }
-        }).catch(() => {
-            window['__aspnetcore__testing__blazor__error__'] = true;
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
         });
     }
 
@@ -58,13 +56,11 @@
                         .withUrl('_blazor',
                         {
                             WebSocket: WebSocketNotAllowed,
-                            transport: 1,
-                        }) // WebSockets (1)
+                            transport: 1, // WebSockets (1)
+                        })
             }
         }).then(function () {
-            window['__aspnetcore__testing__blazor__started__'] = true;
-        }).catch(() => {
-            window['__aspnetcore__testing__blazor__error__'] = true;
+            window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
         });
     }
 </script>
