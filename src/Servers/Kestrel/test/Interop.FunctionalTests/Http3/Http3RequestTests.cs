@@ -122,7 +122,7 @@ namespace Interop.FunctionalTests.Http3
         // Verify HTTP/2 and HTTP/3 match behavior
         [ConditionalTheory]
         [MsQuicSupported]
-        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http3, Skip = "Blocked by https://github.com/dotnet/runtime/issues/56129")]
         [InlineData(HttpProtocols.Http2)]
         public async Task POST_ClientCancellationUpload_RequestAbortRaised(HttpProtocols protocol)
         {
@@ -159,11 +159,8 @@ namespace Interop.FunctionalTests.Http3
                 readAsyncTask.SetResult(body.ReadAsync(buffer).AsTask());
             }, protocol: protocol);
 
-            var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
             using (var host = builder.Build())
-            using (var client = new HttpClient(httpClientHandler))
+            using (var client = CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -231,11 +228,8 @@ namespace Interop.FunctionalTests.Http3
                 writeAsyncTask.SetResult(context.Response.Body.WriteAsync(TestData).AsTask());
             }, protocol: protocol);
 
-            var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
             using (var host = builder.Build())
-            using (var client = new HttpClient(httpClientHandler))
+            using (var client = CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 

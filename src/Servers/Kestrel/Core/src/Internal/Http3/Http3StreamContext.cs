@@ -6,9 +6,8 @@ using System.IO.Pipelines;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3StreamContext : HttpConnectionContext
     {

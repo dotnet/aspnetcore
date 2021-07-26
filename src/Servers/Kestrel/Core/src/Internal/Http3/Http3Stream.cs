@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
-using System.Net.Quic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -128,9 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
         }
 
-        public void InitializeWithExistingContext(IDuplexPipe transport, string connectionId)
+        public void InitializeWithExistingContext(IDuplexPipe transport)
         {
-            _context.ConnectionId = connectionId;
             _context.Transport = transport;
             Initialize(_context);
         }
@@ -441,6 +439,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
             }
+            // catch ConnectionResetException here?
             catch (Http3StreamErrorException ex)
             {
                 error = ex;
@@ -452,15 +451,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _errorCodeFeature.Error = (long)ex.ErrorCode;
 
                 _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
-            }
-            catch (ConnectionResetException ex)
-            {
-                // TODO: This is temporary. Don't want to tie HTTP/3 layer to one transport.
-                // This is here to check what other exceptions can cause ConnectionResetException.
-                Debug.Assert(ex.InnerException is QuicStreamAbortedException);
-
-                error = ex;
-                Abort(new ConnectionAbortedException(ex.Message, ex), (Http3ErrorCode)_errorCodeFeature.Error);
             }
             catch (Exception ex)
             {
@@ -677,13 +667,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override string CreateRequestId()
         {
-            // TODO include stream id.
-            return ConnectionId;
+            return _context.ConnectionContext.ConnectionId;
         }
 
         protected override MessageBody CreateMessageBody()
             => Http3MessageBody.For(this);
-
 
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
         {

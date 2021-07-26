@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             else
                             {
                                 stream = (Http3Stream<TContext>)s!;
-                                stream.InitializeWithExistingContext(streamContext.Transport, streamContext.ConnectionId);
+                                stream.InitializeWithExistingContext(streamContext.Transport);
                             }
 
                             _streamLifetimeHandler.OnStreamCreated(stream);
@@ -377,9 +377,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private Http3StreamContext CreateHttpStreamContext(ConnectionContext streamContext)
         {
             var httpConnectionContext = new Http3StreamContext(
-                streamContext.ConnectionId,
+                _multiplexedContext.ConnectionId,
                 protocols: default,
-                connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
+                streamContext,
                 _context.ServiceContext,
                 streamContext.Features,
                 _context.MemoryPool,
@@ -459,9 +459,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
             var streamContext = await _multiplexedContext.ConnectAsync(features);
             var httpConnectionContext = new Http3StreamContext(
-                connectionId: streamContext.ConnectionId,
+                _multiplexedContext.ConnectionId,
                 HttpProtocols.Http3,
-                connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
+                streamContext,
                 _context.ServiceContext,
                 streamContext.Features,
                 _context.MemoryPool,
