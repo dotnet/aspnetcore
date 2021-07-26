@@ -197,6 +197,52 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
+        public async Task InitializeAsync_RendersRootComponentsInParallel()
+        {
+            // To test that root components are run in parallel, we ensure that each root component
+            // finishes rendering (i.e. returns from SetParametersAsync()) only after all other
+            // root components have started rendering. If the root components were rendered
+            // sequentially, the 1st component would get stuck rendering forever because the
+            // 2nd component had not yet started rendering. We call RenderInParallelComponent.Setup()
+            // to configure how many components will be rendered in advance so that each component
+            // can be assigned a TaskCompletionSource and await the same array of tasks. A timeout
+            // is configured for circuitHost.InitializeAsync() so that the test can fail rather than
+            // hang forever.
+
+            // Arrange
+            var componentCount = 3;
+            var initializeTimeoutMilliseconds = 5000;
+            var cancellationToken = new CancellationToken();
+            var serviceScope = new Mock<IServiceScope>();
+            var descriptors = new List<ComponentDescriptor>();
+            RenderInParallelComponent.Setup(componentCount);
+            for (var i = 0; i < componentCount; i++)
+            {
+                descriptors.Add(new()
+                {
+                    ComponentType = typeof(RenderInParallelComponent),
+                    Parameters = ParameterView.Empty,
+                    Sequence = 0
+                });
+            }
+            var circuitHost = TestCircuitHost.Create(
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
+                descriptors: descriptors);
+
+            // Act
+            var exceptionThrown = false;
+            circuitHost.UnhandledException += (_, _) => exceptionThrown = true;
+            var initializeTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
+            var didFinishInitializing = await Task.WhenAny(initializeTask, Task.Delay(initializeTimeoutMilliseconds)) == initializeTask;
+
+            // Assert: This was reached because the component finished rendering, not because the timeout occurred
+            Assert.True(didFinishInitializing, $"{nameof(TestCircuitHost.InitializeAsync)} timed out after {initializeTimeoutMilliseconds}ms.");
+
+            // Assert: This was not reached only because an exception was thrown in InitializeAsync()
+            Assert.False(exceptionThrown);
+        }
+
+        [Fact]
         public async Task InitializeAsync_ReportsOwnAsyncExceptions()
         {
             // Arrange
@@ -335,6 +381,60 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 DidCallDispose = true;
                 throw new InvalidFilterCriteriaException();
+            }
+        }
+
+        private class RenderInParallelComponent : IComponent, IDisposable
+        {
+            private static TaskCompletionSource[] _renderTcsArray;
+            private static int _nextComponentId = 0;
+            private static int _instanceCount = 0;
+
+            private readonly int _componentId;
+
+            public static void Setup(int numComponents)
+            {
+                if (_instanceCount > 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot call '{nameof(Setup)}' when there are still " +
+                        $"{nameof(RenderInParallelComponent)} instances active.");
+                }
+
+                _renderTcsArray = new TaskCompletionSource[numComponents];
+
+                for (int i = 0; i < _renderTcsArray.Length; i++)
+                {
+                    _renderTcsArray[i] = new();
+                }
+
+                _nextComponentId = 0;
+            }
+
+            public RenderInParallelComponent()
+            {
+                if (_nextComponentId >= _renderTcsArray.Length)
+                {
+                    throw new InvalidOperationException("Created more test components than expected.");
+                }
+
+                _instanceCount++;
+                _componentId = _nextComponentId++;
+            }
+
+            public void Attach(RenderHandle renderHandle)
+            {
+            }
+
+            public async Task SetParametersAsync(ParameterView parameters)
+            {
+                _renderTcsArray[_componentId].SetResult();
+                await Task.WhenAll(_renderTcsArray.Select(tcs => tcs.Task));
+            }
+
+            public void Dispose()
+            {
+                _instanceCount--;
             }
         }
 
