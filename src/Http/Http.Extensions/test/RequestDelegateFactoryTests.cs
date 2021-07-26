@@ -897,6 +897,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(FromServiceActions))]
+        public async Task RequestDelegateRequiresServiceForAllFromServiceParameters(Delegate action)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new EmptyServiceProvider();
+
+            var requestDelegate = RequestDelegateFactory.Create(action);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
+        }
+
+        [Theory]
+        [MemberData(nameof(FromServiceActions))]
         public async Task RequestDelegatePopulatesParametersFromServiceWithAndWithoutAttribute(Delegate action)
         {
             var myOriginalService = new MyService();
@@ -1686,7 +1698,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 Assert.Equal(200, httpContext.Response.StatusCode);
                 Assert.False(httpContext.RequestAborted.IsCancellationRequested);
-            }           
+            }
         }
 
 #nullable disable

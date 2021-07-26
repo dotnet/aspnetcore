@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
         private static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
         private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
-        private static readonly ParameterExpression WasTryParseFailureExpr = Expression.Variable(typeof(bool), "wasTryParseFailure");
+        private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
         private static readonly ParameterExpression TempSourceStringExpr = TryParseMethodCache.TempSourceStringExpr;
 
         private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestServices));
@@ -168,8 +168,8 @@ namespace Microsoft.AspNetCore.Http
 
             var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
-            var responseWritingMethodCall = factoryContext.TryParseParams.Count > 0 ?
-                CreateTryParseCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
+            var responseWritingMethodCall = factoryContext.CheckParams.Count > 0 ?
+                CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
                 CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
 
             if (factoryContext.UsingTempSourceString)
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Http
                 {
                     if (serviceProviderIsService.IsService(parameter.ParameterType))
                     {
-                        return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr) ;
+                        return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
                     }
                 }
 
@@ -287,13 +287,14 @@ namespace Microsoft.AspNetCore.Http
             return AddResponseWritingToMethodCall(callMethod, methodInfo.ReturnType);
         }
 
-        // If we're calling TryParse and wasTryParseFailure indicates it failed, set a 400 StatusCode instead of calling the method.
-        private static Expression CreateTryParseCheckingResponseWritingMethodCall(
+        // If we're calling TryParse or validating parameter optionality and
+        // wasParamCheckFailure indicates it failed, set a 400 StatusCode instead of calling the method.
+        private static Expression CreateParamCheckingResponseWritingMethodCall(
             MethodInfo methodInfo, Expression? target, Expression[] arguments, FactoryContext factoryContext)
         {
             // {
             //     string tempSourceString;
-            //     bool wasTryParseFailure = false;
+            //     bool wasParamCheckFailure = false;
             //
             //     // Assume "int param1" is the first parameter, "[FromRoute] int? param2 = 42" is the second parameter ...
             //     int param1_local;
@@ -306,7 +307,7 @@ namespace Microsoft.AspNetCore.Http
             //     {
             //         if (!int.TryParse(tempSourceString, out param1_local))
             //         {
-            //             wasTryParseFailure = true;
+            //             wasParamCheckFailure = true;
             //             Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
             //         }
             //     }
@@ -314,7 +315,7 @@ namespace Microsoft.AspNetCore.Http
             //     tempSourceString = httpContext.RouteValue["param2"];
             //     // ...
             //
-            //     return wasTryParseFailure ?
+            //     return wasParamCheckFailure ?
             //         {
             //              httpContext.Response.StatusCode = 400;
             //              return Task.CompletedTask;
@@ -324,15 +325,15 @@ namespace Microsoft.AspNetCore.Http
             //         };
             // }
 
-            var localVariables = new ParameterExpression[factoryContext.TryParseParams.Count + 1];
-            var tryParseAndCallMethod = new Expression[factoryContext.TryParseParams.Count + 1];
+            var localVariables = new ParameterExpression[factoryContext.CheckParams.Count + 1];
+            var checkParamAndCallMethod = new Expression[factoryContext.CheckParams.Count + 1];
 
-            for (var i = 0; i < factoryContext.TryParseParams.Count; i++)
+            for (var i = 0; i < factoryContext.CheckParams.Count; i++)
             {
-                (localVariables[i], tryParseAndCallMethod[i]) = factoryContext.TryParseParams[i];
+                (localVariables[i], checkParamAndCallMethod[i]) = factoryContext.CheckParams[i];
             }
 
-            localVariables[factoryContext.TryParseParams.Count] = WasTryParseFailureExpr;
+            localVariables[factoryContext.CheckParams.Count] = WasParamCheckFailureExpr;
 
             var set400StatusAndReturnCompletedTask = Expression.Block(
                     Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
@@ -340,13 +341,13 @@ namespace Microsoft.AspNetCore.Http
 
             var methodCall = CreateMethodCall(methodInfo, target, arguments);
 
-            var checkWasTryParseFailure = Expression.Condition(WasTryParseFailureExpr,
+            var checkWasParamCheckFailure = Expression.Condition(WasParamCheckFailureExpr,
                 set400StatusAndReturnCompletedTask,
                 AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
 
-            tryParseAndCallMethod[factoryContext.TryParseParams.Count] = checkWasTryParseFailure;
+            checkParamAndCallMethod[factoryContext.CheckParams.Count] = checkWasParamCheckFailure;
 
-            return Expression.Block(localVariables, tryParseAndCallMethod);
+            return Expression.Block(localVariables, checkParamAndCallMethod);
         }
 
         private static Expression AddResponseWritingToMethodCall(Expression methodCall, Type returnType)
@@ -546,21 +547,21 @@ namespace Microsoft.AspNetCore.Http
                     // tempSourceString = httpContext.RouteValue["param1"] ?? httpContext.Query["param1"];
                     // if (tempSourceString == null)
                     // {
-                    //      wasTryParseFailure = true;
+                    //      wasParamCheckFailure = true;
                     //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");
                     // }
                     var checkRequiredStringParameterBlock = Expression.Block(
                         Expression.Assign(argument, valueExpression),
                         Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
                             Expression.Block(
-                                Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
+                                Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                                 Expression.Call(LogRequiredParameterNotProvidedMethod, 
                                     HttpContextExpr, Expression.Constant(parameter.ParameterType.Name), Expression.Constant(parameter.Name))
                             )
                         )
                     );
 
-                    factoryContext.TryParseParams.Add((argument, checkRequiredStringParameterBlock));
+                    factoryContext.CheckParams.Add((argument, checkRequiredStringParameterBlock));
                     return argument;
                 }
 
@@ -596,7 +597,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // string tempSourceString;
-            // bool wasTryParseFailure = false;
+            // bool wasParamCheckFailure = false;
             //
             // // Assume "int param1" is the first parameter and "[FromRoute] int? param2 = 42" is the second parameter.
             // int param1_local;
@@ -608,7 +609,7 @@ namespace Microsoft.AspNetCore.Http
             // {
             //     if (!int.TryParse(tempSourceString, out param1_local))
             //     {
-            //         wasTryParseFailure = true;
+            //         wasParamCheckFailure = true;
             //         Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
             //     }
             // }
@@ -623,7 +624,7 @@ namespace Microsoft.AspNetCore.Http
             //     }
             //     else
             //     {
-            //         wasTryParseFailure = true;
+            //         wasParamCheckFailure = true;
             //         Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
             //     }
             // }
@@ -639,7 +640,7 @@ namespace Microsoft.AspNetCore.Http
             var parameterNameConstant = Expression.Constant(parameter.Name);
 
             var failBlock = Expression.Block(
-                Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
+                Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                 Expression.Call(LogParameterBindingFailureMethod,
                     HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, TempSourceStringExpr));
 
@@ -650,13 +651,13 @@ namespace Microsoft.AspNetCore.Http
             //
             // if (tempSourceString == null)
             // {
-            //      wasTryParseFailure = true;
+            //      wasParamCheckFailure = true;
             //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");    
             // }
             var checkRequiredParaseableParameterBlock = Expression.Block(
                 Expression.IfThen(TempSourceStringNullExpr,
                     Expression.Block(
-                        Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
+                        Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                         Expression.Call(LogRequiredParameterNotProvidedMethod,
                             HttpContextExpr, parameterTypeNameConstant, parameterNameConstant)
                     )
@@ -677,7 +678,7 @@ namespace Microsoft.AspNetCore.Http
                     tryParseExpression,
                     Expression.Assign(argument, Expression.Constant(parameter.DefaultValue)));
 
-            var fullTryParseBlock = !isOptional
+            var fullParamCheckBlock = !isOptional
                 ? Expression.Block(
                     // tempSourceString = httpContext.RequestValue["id"];
                     Expression.Assign(TempSourceStringExpr, valueExpression),
@@ -691,7 +692,7 @@ namespace Microsoft.AspNetCore.Http
                     // if (tempSourceString != null) { ... }
                     ifNotNullTryParse);
 
-            factoryContext.TryParseParams.Add((argument, fullTryParseBlock));
+            factoryContext.CheckParams.Add((argument, fullParamCheckBlock));
 
             return argument;
         }
@@ -730,7 +731,7 @@ namespace Microsoft.AspNetCore.Http
                 // Todo body_local = Convert(bodyValue, ToDo);
                 // if (body_local == null)
                 // {
-                //      wasTryParseFailure = true;
+                //      wasParamCheckFailure = true;
                 //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body");
                 // }
                 var checkRequiredBodyBlock = Expression.Block(
@@ -738,13 +739,13 @@ namespace Microsoft.AspNetCore.Http
                     Expression.IfThen(
                     Expression.Equal(argument, Expression.Constant(null)),
                         Expression.Block(
-                            Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
+                            Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                             Expression.Call(LogRequiredParameterNotProvidedMethod, 
                                     HttpContextExpr, Expression.Constant(parameter.ParameterType.Name), Expression.Constant(parameter.Name))
                         )
                     )
                 );
-                factoryContext.TryParseParams.Add((argument, checkRequiredBodyBlock));
+                factoryContext.CheckParams.Add((argument, checkRequiredBodyBlock));
                 return argument;
             }
 
@@ -941,7 +942,7 @@ namespace Microsoft.AspNetCore.Http
             public List<string>? RouteParameters { get; set; }
 
             public bool UsingTempSourceString { get; set; }
-            public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();
+            public List<(ParameterExpression, Expression)> CheckParams { get; } = new();
         }
 
         private static partial class Log
