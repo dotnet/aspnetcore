@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// <summary>
     /// Intended for framework use only. Not supported for use from application code.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class CircuitJSComponentInterop : JSComponentInterop
     {
         private readonly CircuitOptions _circuitOptions;
