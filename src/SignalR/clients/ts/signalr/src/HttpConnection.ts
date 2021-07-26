@@ -405,7 +405,7 @@ export class HttpConnection implements IConnection {
         }
 
         if (transportExceptions.length > 0) {
-            return Promise.reject(new Error(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`));
+            return Promise.reject(new MultipleErrors(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`, transportExceptions));
         }
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
@@ -651,16 +651,30 @@ export class TransportSendQueue {
 }
 
 class UnsupportedTransportError extends Error {
+    public errorType: string;
+    public transport: string;
+
     constructor(public message: string, transport: string) {
         super(message);
-        this.name = `UnsupportedTransport${transport}Error`;
+        this.errorType = 'UnsupportedTransportError';
+        this.transport = transport;
     }
 }
 
 class FailedToStartTransportError extends Error {
+    public errorType: string;
+    public transport: string;
+
     constructor(public message: string, transport: string) {
         super(message);
-        this.name = `FailedToStartTransport${transport}Error`;
+        this.errorType = 'FailedToStartTransportError';
+        this.transport = transport;
+    }
+}
+
+class MultipleErrors extends Error {
+    constructor(public message: string, public innerErrors: Error[]) {
+        super(message);
     }
 }
 

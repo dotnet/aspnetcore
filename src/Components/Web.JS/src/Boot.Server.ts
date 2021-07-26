@@ -131,9 +131,9 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   } catch (ex) {
     unhandledError(connection, ex, logger);
 
-    if (ex.message.includes('UnsupportedTransportWebSocketsError')) {
+    if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === 'WebSockets')) {
       showErrorNotification('Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
-    } else if (ex.message.includes('FailedToStartTransportWebSocketsError')) {
+    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === 'WebSockets')) {
       showErrorNotification('Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
     }
   }
