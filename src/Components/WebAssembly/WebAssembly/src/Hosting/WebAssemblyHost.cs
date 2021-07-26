@@ -167,8 +167,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                         var pendingRenders = new Task[count];
                         for (var i = 0; i < count; i++)
                         {
-                            var (componentType, parameters, selector) = rootComponents[i];
-                            pendingRenders[i] = renderer.AddComponentAsync(componentType, parameters, selector);
+                            var rootComponent = rootComponents[i];
+                            pendingRenders[i] = renderer.AddComponentAsync(
+                                rootComponent.ComponentType,
+                                rootComponent.Parameters,
+                                rootComponent.Selector);
                         }
 
                         // Now we wait for all components to finish rendering.
