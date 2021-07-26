@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -204,13 +205,15 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // Add any root components that were registered before the page attached. We don't await any of the
             // returned render tasks so that the components can be processed in parallel.
-            var pendingRenders = new List<Task>(_rootComponentsBySelector.Count);
+            var pendingRenders = ArrayPool<Task>.Shared.Rent(_rootComponentsBySelector.Count);
+            var i = 0;
             foreach (var (selector, rootComponent) in _rootComponentsBySelector)
             {
                 rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
                     rootComponent.ComponentType, selector);
-                pendingRenders.Add(_currentPageContext.Renderer.RenderRootComponentAsync(
-                    rootComponent.ComponentId.Value, rootComponent.Parameters));
+                pendingRenders[i] = _currentPageContext.Renderer.RenderRootComponentAsync(
+                    rootComponent.ComponentId.Value, rootComponent.Parameters);
+                i++;
             }
 
             // Now we wait for all components to finish rendering.

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     // Here, we add each root component but don't await the returned tasks so that the
                     // components can be processed in parallel.
                     var count = Descriptors.Count;
-                    var pendingRenders = new Task[count];
+                    var pendingRenders = ArrayPool<Task>.Shared.Rent(count);
                     for (var i = 0; i < count; i++)
                     {
                         var (componentType, parameters, sequence) = Descriptors[i];
