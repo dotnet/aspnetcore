@@ -27,7 +27,8 @@ namespace TestServer
             services.AddMvc();
             services.AddServerSideBlazor(options =>
             {
-                options.MaxJSRootComponents = 5; // To make it easier to test
+                options.RootComponents.MaxJSRootComponents = 5; // To make it easier to test
+                options.RootComponents.RegisterForJavaScript<BasicTestApp.DynamicallyAddedRootComponent>("my-dynamic-root-component");
             });
             services.AddSingleton<ResourceRequestLog>();
 
@@ -66,11 +67,7 @@ namespace TestServer
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapBlazorHub().WithJSComponents(rootComponents =>
-                    {
-                        rootComponents.RegisterForJavaScript<BasicTestApp.DynamicallyAddedRootComponent>("my-dynamic-root-component");
-                    });
-
+                    endpoints.MapBlazorHub();
                     endpoints.MapControllerRoute("mvc", "{controller}/{action}");
                     endpoints.MapFallbackToPage("/_ServerHost");
                 });

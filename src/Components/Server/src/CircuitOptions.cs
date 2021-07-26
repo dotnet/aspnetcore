@@ -79,13 +79,8 @@ namespace Microsoft.AspNetCore.Components.Server
         public int MaxBufferedUnacknowledgedRenderBatches { get; set; } = 10;
 
         /// <summary>
-        /// Gets or sets the maximum number of root components added from JavaScript.
-        /// </summary>
-        public int MaxJSRootComponents { get; set; } = 100;
-
-        /// <summary>
         /// Gets options for root components within the circuit.
         /// </summary>
-        public IJSComponentConfiguration RootComponents { get; } = new CircuitJSComponentConfiguration();
+        public CircuitRootComponentOptions RootComponents { get; } = new CircuitRootComponentOptions();
     }
 }
