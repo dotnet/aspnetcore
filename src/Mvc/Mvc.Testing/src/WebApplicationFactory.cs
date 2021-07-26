@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     {
         private bool _disposed;
         private bool _disposedAsync;
-        private TestServer? _server;
+        private IServer? _server;
         private IHost? _host;
         private Action<IWebHostBuilder> _configuration;
         private readonly List<HttpClient> _clients = new();
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             get
             {
                 EnsureServer();
-                return _server;
+                return _server as TestServer ?? throw new InvalidOperationException("Server is not a TestServer");
             }
         }
 
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             get
             {
                 EnsureServer();
-                return _host?.Services ?? _server.Host.Services;
+                return _host?.Services ?? (_server is TestServer testServer ? testServer.Host.Services : throw new InvalidOperationException("Unable to resolve IServiceProvider"));
             }
         }
 
@@ -198,11 +199,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             hostBuilder.ConfigureWebHost(webHostBuilder =>
             {
                 SetContentRoot(webHostBuilder);
+                webHostBuilder.UseTestServer(); // Set the server first so it can be modified by the configuration callback
                 _configuration(webHostBuilder);
-                webHostBuilder.UseTestServer();
             });
             _host = CreateHost(hostBuilder);
-            _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+            _server = _host.Services.GetRequiredService<IServer>();
         }
 
         private void SetContentRoot(IWebHostBuilder builder)
@@ -466,10 +467,34 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         {
             EnsureServer();
 
+            (HttpMessageHandler, Uri?) CreateHandler()
+            {
+                if (_server is null)
+                {
+                    throw new InvalidOperationException("Server not available");
+                }
+
+                if (_server is TestServer testServer)
+                {
+                    return (testServer.CreateHandler(), null);
+                }
+
+                var httpAddress = _server.Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault(a => a.StartsWith("http://"));
+
+                if (httpAddress is null)
+                {
+                    throw new InvalidOperationException("Unable to find HTTP address");
+                }
+
+                return (new HttpClientHandler(), new Uri(httpAddress));
+            }
+
+            var (handler, uri) = CreateHandler();
+
             HttpClient client;
             if (handlers == null || handlers.Length == 0)
             {
-                client = _server.CreateClient();
+                client = new HttpClient(handler) { BaseAddress = uri };
             }
             else
             {
@@ -478,10 +503,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                     handlers[i - 1].InnerHandler = handlers[i];
                 }
 
-                var serverHandler = _server.CreateHandler();
-                handlers[^1].InnerHandler = serverHandler;
+                handlers[^1].InnerHandler = handler;
 
-                client = new HttpClient(handlers[0]);
+                client = new HttpClient(handlers[0]) { BaseAddress = uri };
             }
 
             _clients.Add(client);
@@ -502,7 +526,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 throw new ArgumentNullException(nameof(client));
             }
 
-            client.BaseAddress = new Uri("http://localhost");
+            client.BaseAddress ??= new Uri("http://localhost");
         }
 
         /// <summary>
@@ -516,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         public HttpClient CreateDefaultClient(Uri baseAddress, params DelegatingHandler[] handlers)
         {
             var client = CreateDefaultClient(handlers);
-            client.BaseAddress = baseAddress;
+            client.BaseAddress ??= baseAddress;
 
             return client;
         }
