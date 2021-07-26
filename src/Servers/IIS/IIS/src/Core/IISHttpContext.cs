@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 var pipe = new Pipe(
                     new PipeOptions(
                         _memoryPool,
-                        readerScheduler: PipeScheduler.ThreadPool,
+                        readerScheduler: PipeScheduler.Inline,
                         pauseWriterThreshold: PauseWriterThreshold,
                         resumeWriterThreshold: ResumeWriterTheshold,
                         minimumSegmentSize: MinAllocBufferSize));
