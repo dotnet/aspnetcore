@@ -368,7 +368,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = new HttpClient())
+            using (var client = CreateClient())
             {
                 await host.StartAsync();
 
