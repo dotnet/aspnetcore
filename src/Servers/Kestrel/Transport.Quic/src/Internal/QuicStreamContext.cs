@@ -189,6 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicStreamAbortedException ex)
             {
                 // Abort from peer.
+                Error = ex.ErrorCode;
                 _log.StreamAborted(this, ex);
 
                 // This could be ignored if _shutdownReason is already set.
@@ -304,6 +305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicStreamAbortedException ex)
             {
                 // Abort from peer.
+                Error = ex.ErrorCode;
                 _log.StreamAborted(this, ex);
 
                 // This could be ignored if _shutdownReason is already set.
