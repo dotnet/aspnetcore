@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -81,5 +82,10 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Gets or sets the maximum number of root components added from JavaScript.
         /// </summary>
         public int MaxJSRootComponents { get; set; } = 100;
+
+        /// <summary>
+        /// Gets options for root components within the circuit.
+        /// </summary>
+        public IJSComponentConfiguration RootComponents { get; } = new CircuitJSComponentConfiguration();
     }
 }
