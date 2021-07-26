@@ -75,7 +75,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = new HttpClient())
+            using (var client = CreateClient())
             {
                 await host.StartAsync();
 
@@ -130,7 +130,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = new HttpClient())
+            using (var client = CreateClient())
             {
                 await host.StartAsync();
 
@@ -186,7 +186,7 @@ namespace Interop.FunctionalTests.Http3
                 });
 
             using (var host = builder.Build())
-            using (var client = new HttpClient())
+            using (var client = CreateClient())
             {
                 await host.StartAsync();
 
@@ -213,6 +213,14 @@ namespace Interop.FunctionalTests.Http3
 
                 await host.StopAsync();
             }
+        }
+
+        private static HttpClient CreateClient()
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+            return new HttpClient(httpHandler);
         }
 
         private IHostBuilder CreateHttp3HostBuilder(RequestDelegate requestDelegate, Action<KestrelServerOptions> configureKestrel = null)
