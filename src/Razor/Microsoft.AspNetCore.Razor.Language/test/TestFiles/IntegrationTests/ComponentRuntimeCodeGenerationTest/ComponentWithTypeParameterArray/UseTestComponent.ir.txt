@@ -1,0 +1,26 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        UsingDirective - (1:0,1 [12] x:\dir\subdir\Test\UseTestComponent.cshtml) - Test
+        ClassDeclaration -  - public partial - UseTestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                Component - (13:1,0 [111] x:\dir\subdir\Test\UseTestComponent.cshtml) - TestComponent
+                    ComponentChildContent -  - ChildContent - context
+                        MarkupElement - (76:2,4 [30] x:\dir\subdir\Test\UseTestComponent.cshtml) - p
+                            CSharpExpression - (80:2,8 [22] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                                LazyIntermediateToken - (80:2,8 [22] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - context[0].description
+                    ComponentAttribute - (35:1,22 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Items1 - Items1 - AttributeStructure.DoubleQuotes
+                        LazyIntermediateToken - (35:1,22 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - items1
+                    ComponentAttribute - (49:1,36 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Items2 - Items2 - AttributeStructure.DoubleQuotes
+                        LazyIntermediateToken - (49:1,36 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - items2
+                    ComponentAttribute - (63:1,50 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Items3 - Items3 - AttributeStructure.DoubleQuotes
+                        LazyIntermediateToken - (63:1,50 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - items3
+            CSharpCode - (135:5,7 [208] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                LazyIntermediateToken - (135:5,7 [208] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - \n    static Tag tag = new Tag() { description = "A description."};\n    Tag[] items1 = new [] { tag };\n    List<Tag[]> items2 = new List<Tag[]>() { new [] { tag } };\n    Tag[] items3() => new [] { tag };\n
+    NamespaceDeclaration -  - __Blazor.Test.UseTestComponent
+        ClassDeclaration -  - internal static - TypeInference -  - 
+            ComponentTypeInferenceMethod -  - __Blazor.Test.UseTestComponent.TypeInference - CreateTestComponent_0
