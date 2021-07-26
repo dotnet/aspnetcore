@@ -135,6 +135,9 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
       showErrorNotification('Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
     } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === 'WebSockets')) {
       showErrorNotification('Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
+    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === 'LongPolling')) {
+      logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://docs.microsoft.com/en-us/aspnet/core/signalr/configuration?tabs=dotnet#advanced-http-configuration-options.');
+      showErrorNotification();
     } else {
       showErrorNotification();
     }

@@ -47,11 +47,11 @@
             logLevel: 1, // LogLevel.Debug
             configureSignalR: builder => {
                 builder.configureLogging("debug") // LogLevel.Debug
-                        .withUrl('_blazor',
-                        {
-                            WebSocket: WebSocketNotAllowed,
-                            transport: 1, // WebSockets (1)
-                        })
+                    .withUrl('_blazor',
+                    {
+                        WebSocket: WebSocketNotAllowed,
+                        transport: 1, // WebSockets (1)
+                    })
             }
         }).then(function () {
             window['__aspnetcore__testing__blazor__start__script__executed__'] = true;

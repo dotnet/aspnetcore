@@ -405,7 +405,7 @@ export class HttpConnection implements IConnection {
         }
 
         if (transportExceptions.length > 0) {
-            return Promise.reject(new MultipleErrors(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`, transportExceptions));
+            return Promise.reject(new AggregateErrors(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`, transportExceptions));
         }
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
@@ -462,7 +462,7 @@ export class HttpConnection implements IConnection {
                 }
             } else {
                 this._logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
-                return new Error(`'${HttpTransportType[transport]}' is disabled by the client.`);
+                return new DisabledTransportError(`'${HttpTransportType[transport]}' is disabled by the client.`, HttpTransportType[transport]);
             }
         }
     }
@@ -661,6 +661,17 @@ class UnsupportedTransportError extends Error {
     }
 }
 
+class DisabledTransportError extends Error {
+    public errorType: string;
+    public transport: string;
+
+    constructor(public message: string, transport: string) {
+        super(message);
+        this.errorType = 'DisabledTransportError';
+        this.transport = transport;
+    }
+}
+
 class FailedToStartTransportError extends Error {
     public errorType: string;
     public transport: string;
@@ -672,7 +683,7 @@ class FailedToStartTransportError extends Error {
     }
 }
 
-class MultipleErrors extends Error {
+class AggregateErrors extends Error {
     constructor(public message: string, public innerErrors: Error[]) {
         super(message);
     }
