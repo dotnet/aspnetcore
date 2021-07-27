@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
             using var httpClient = new HttpClient(socketsHandler);
 
-            using var httpRequsetMessage = new HttpRequestMessage()
+            using var httpRequestMessage = new HttpRequestMessage()
             {
                 RequestUri = new Uri("http://localhost/"),
                 Version = new Version(2, 0),
                 VersionPolicy = HttpVersionPolicy.RequestVersionExact,
             };
 
-            using var responseMessage = await httpClient.SendAsync(httpRequsetMessage);
+            using var responseMessage = await httpClient.SendAsync(httpRequestMessage);
 
             Assert.Equal("hello, world", await responseMessage.Content.ReadAsStringAsync());
 

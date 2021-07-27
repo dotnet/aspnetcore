@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,7 +17,9 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3
@@ -60,6 +64,113 @@ namespace Interop.FunctionalTests.Http3
         }
 
         private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task GET_MiddlewareIsRunWithConnectionLoggingScopeForHttpRequests(HttpProtocols protocol)
+        {
+            // Arrange
+            var expectedLogMessage = "Log from connection scope!";
+            string connectionIdFromFeature = null;
+
+            var mockScopeLoggerProvider = new MockScopeLoggerProvider(expectedLogMessage);
+            LoggerFactory.AddProvider(mockScopeLoggerProvider);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                connectionIdFromFeature = context.Features.Get<IConnectionIdFeature>().ConnectionId;
+
+                var logger = context.RequestServices.GetRequiredService<ILogger<Http3RequestTests>>();
+                logger.LogInformation(expectedLogMessage);
+
+                await context.Response.WriteAsync("hello, world");
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseMessage = await client.SendAsync(request).DefaultTimeout();
+
+                // Assert
+                Assert.Equal("hello, world", await responseMessage.Content.ReadAsStringAsync());
+
+                Assert.NotNull(connectionIdFromFeature);
+                Assert.NotNull(mockScopeLoggerProvider.LogScope);
+                Assert.Equal(connectionIdFromFeature, mockScopeLoggerProvider.LogScope[0].Value);
+            }
+        }
+
+        private class MockScopeLoggerProvider : ILoggerProvider, ISupportExternalScope
+        {
+            private readonly string _expectedLogMessage;
+            private IExternalScopeProvider _scopeProvider;
+
+            public MockScopeLoggerProvider(string expectedLogMessage)
+            {
+                _expectedLogMessage = expectedLogMessage;
+            }
+
+            public IReadOnlyList<KeyValuePair<string, object>> LogScope { get; private set; }
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return new MockScopeLogger(this);
+            }
+
+            public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+            {
+                _scopeProvider = scopeProvider;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            private class MockScopeLogger : ILogger
+            {
+                private readonly MockScopeLoggerProvider _loggerProvider;
+
+                public MockScopeLogger(MockScopeLoggerProvider parent)
+                {
+                    _loggerProvider = parent;
+                }
+
+                public IDisposable BeginScope<TState>(TState state)
+                {
+                    return _loggerProvider._scopeProvider?.Push(state);
+                }
+
+                public bool IsEnabled(LogLevel logLevel)
+                {
+                    return true;
+                }
+
+                public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+                {
+                    if (formatter(state, exception) != _loggerProvider._expectedLogMessage)
+                    {
+                        return;
+                    }
+
+                    _loggerProvider._scopeProvider?.ForEachScope(
+                        (scopeObject, loggerPovider) =>
+                        {
+                            loggerPovider.LogScope ??= scopeObject as IReadOnlyList<KeyValuePair<string, object>>;
+                        },
+                        _loggerProvider);
+                }
+            }
+        }
 
         [ConditionalFact]
         [MsQuicSupported]
@@ -232,8 +343,6 @@ namespace Interop.FunctionalTests.Http3
             using (var client = CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
-
-                var requestContent = new StreamingHttpContext();
 
                 var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Version = GetProtocol(protocol);
