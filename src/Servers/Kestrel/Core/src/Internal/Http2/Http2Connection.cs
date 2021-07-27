@@ -1307,7 +1307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else
                     {
-                        _currentHeadersStream.OnHeader(name, value, true);
+                        _currentHeadersStream.OnHeader(name, value, checkForNewlineChars : true);
                     }
                 }
             }

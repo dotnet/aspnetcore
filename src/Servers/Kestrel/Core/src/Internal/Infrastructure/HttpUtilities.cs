@@ -117,30 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             else
             {
-                var encoding = encodingSelector(name);
-
-                if (encoding is null)
-                {
-                    result = span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
-                }
-                else
-                {
-                    if (ReferenceEquals(encoding, Encoding.Latin1))
-                    {
-                        result = span.GetLatin1StringNonNullCharacters();
-                    }
-                    else
-                    {
-                        try
-                        {
-                            result = encoding.GetString(span);
-                        }
-                        catch (DecoderFallbackException ex)
-                        {
-                            throw new InvalidOperationException(ex.Message, ex);
-                        }
-                    }
-                }
+                result = span.GetRequestHeaderStringWithoutDefaultEncodingCore(name, encodingSelector);
             }
 
             // New Line characters (CR, LF) are considered invalid at this point.
@@ -150,6 +127,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             return result;
+        }
+
+        private static string GetRequestHeaderStringWithoutDefaultEncodingCore(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
+        {
+            var encoding = encodingSelector(name);
+
+            if (encoding is null)
+            {
+                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            }
+            else
+            {
+                if (ReferenceEquals(encoding, Encoding.Latin1))
+                {
+                    return span.GetLatin1StringNonNullCharacters();
+                }
+                else
+                {
+                    try
+                    {
+                        return encoding.GetString(span);
+                    }
+                    catch (DecoderFallbackException ex)
+                    {
+                        throw new InvalidOperationException(ex.Message, ex);
+                    }
+                }
+            }
         }
 
         public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)

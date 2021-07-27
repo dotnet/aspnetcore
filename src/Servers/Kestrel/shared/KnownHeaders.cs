@@ -1265,11 +1265,12 @@ $@"        private void Clear(long bitsToClear)
         }}
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars = false)
+        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value)
         {{
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
+            var checkForNewlineChars = true;
 
             // Does the HPack static index match any ""known"" headers
             {AppendHPackSwitch(GroupHPack(loop.Headers))}
