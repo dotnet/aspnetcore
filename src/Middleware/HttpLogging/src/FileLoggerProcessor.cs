@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     loggerOptions = options;
 
                     // Move to a new file if the fields have changed
-                    if (!_fields.Equals(loggerOptions.LoggingFields))
+                    if (_fields != loggerOptions.LoggingFields)
                     {
                         _fileNumber++;
                         if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
@@ -83,8 +83,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                             _maxFilesReached = true;
                             Log.MaxFilesReached(_logger, new ApplicationException());
                         }
+                        _fields = loggerOptions.LoggingFields;
                     }
-                    _fields = loggerOptions.LoggingFields;
 
                     if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
                     {
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         _maxFilesReached = true;
                         // Return early if log directory is already full
-                        Log.MaxFilesReached(_logger, new ApplicationException());
+                        Log.MaxFilesReached(_logger, null);
                         return;
                     }
                     fullName = GetFullName(today);
@@ -337,13 +337,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             public static void CreateDirectoryFailed(ILogger logger, string path, Exception ex) => _createDirectoryFailed(logger, path, ex);
 
-            private static readonly Action<ILogger, Exception> _maxFilesReached =
+            private static readonly Action<ILogger, Exception?> _maxFilesReached =
                 LoggerMessage.Define(
                     LogLevel.Warning,
                     new EventId(3, "MaxFilesReached"),
-                    "Limit of 10,000 files per day has been reached");
+                    $"Limit of {W3CLoggerOptions.MaxFileCount} files per day has been reached");
 
-            public static void MaxFilesReached(ILogger logger, Exception ex) => _maxFilesReached(logger, ex);
+            public static void MaxFilesReached(ILogger logger, Exception? ex) => _maxFilesReached(logger, ex);
         }
     }
 

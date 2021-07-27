@@ -335,6 +335,61 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
+        [Fact]
+        public async Task WritesToNewFileOnOptionsChange()
+        {
+            var now = DateTimeOffset.Now;
+            if (now.Hour == 23)
+            {
+                // Don't bother trying to run this test when it's almost midnight.
+                return;
+            }
+
+            var path = Path.Combine(TempPath, Path.GetRandomFileName());
+            Directory.CreateDirectory(path);
+
+            try
+            {
+                var options = new W3CLoggerOptions()
+                {
+                    LogDirectory = path,
+                    LoggingFields = W3CLoggingFields.Time,
+                    FileSizeLimit = 10000
+                };
+                var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
+                var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"));
+                var monitor = new OptionsWrapperMonitor<W3CLoggerOptions>(options);
+
+                await using (var logger = new FileLoggerProcessor(monitor, new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    logger.EnqueueMessage("Message one");
+                    options.LoggingFields = W3CLoggingFields.Date;
+                    monitor.InvokeChanged();
+                    logger.EnqueueMessage("Message two");
+                    // Pause for a bit before disposing so logger can finish logging
+                    await WaitForFile(fileName2).DefaultTimeout();
+                }
+
+                var actualFiles = new DirectoryInfo(path)
+                    .GetFiles()
+                    .Select(f => f.Name)
+                    .OrderBy(f => f)
+                    .ToArray();
+
+                Assert.Equal(2, actualFiles.Length);
+
+                Assert.True(File.Exists(fileName1));
+                Assert.True(File.Exists(fileName2));
+
+                Assert.Equal("Message one" + Environment.NewLine, File.ReadAllText(fileName1));
+                Assert.Equal("Message two" + Environment.NewLine, File.ReadAllText(fileName2));
+            }
+            finally
+            {
+                Helpers.DisposeDirectory(path);
+            }
+        }
+
         private async Task WaitForFile(string fileName)
         {
             while (!File.Exists(fileName))
