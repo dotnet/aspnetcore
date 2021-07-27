@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -33,6 +34,37 @@ namespace Microsoft.AspNetCore.Mvc
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
             IsResponseTypeSetByDefault = false;
+            ContentTypes = new();
+        }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
+        /// <param name="statusCode">The HTTP response status code.</param>
+        /// <param name="contentType">The content type associated with the response.</param>
+        /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
+        public ProducesResponseTypeAttribute(Type type, int statusCode, string? contentType, params string[] additionalContentTypes)
+        {
+            Type = type ?? throw new ArgumentNullException(nameof(type));
+            StatusCode = statusCode;
+            IsResponseTypeSetByDefault = false;
+
+            if (!string.IsNullOrEmpty(contentType))
+            {
+                MediaTypeHeaderValue.Parse(contentType);
+                for (var i = 0; i < additionalContentTypes.Length; i++)
+                {
+                    MediaTypeHeaderValue.Parse(additionalContentTypes[i]);
+                }
+
+                ContentTypes = GetContentTypes(contentType, additionalContentTypes);
+            }
+            else
+            {
+                ContentTypes = new();
+            }
+
         }
 
         /// <summary>
@@ -44,6 +76,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the HTTP status code of the response.
         /// </summary>
         public int StatusCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content types supported by the response.
+        /// </summary>
+        public MediaTypeCollection ContentTypes { get; set; }
 
         /// <summary>
         /// Used to distinguish a `Type` set by default in the constructor versus
@@ -58,9 +95,33 @@ namespace Microsoft.AspNetCore.Mvc
         internal bool IsResponseTypeSetByDefault { get; }
 
         /// <inheritdoc />
-        void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)
+        public void SetContentTypes(MediaTypeCollection contentTypes)
         {
-            // Users are supposed to use the 'Produces' attribute to set the content types that an action can support.
+            contentTypes.Clear();
+            foreach (var contentType in ContentTypes)
+            {
+                contentTypes.Add(contentType);
+            }
+        }
+
+        private MediaTypeCollection GetContentTypes(string contentType, string[] additionalContentTypes)
+        {
+            List<string> completeContentTypes = new(additionalContentTypes.Length + 1);
+            completeContentTypes.Add(contentType);
+            completeContentTypes.AddRange(additionalContentTypes);
+            MediaTypeCollection contentTypes = new();
+            foreach (var type in completeContentTypes)
+            {
+                var mediaType = new MediaType(type);
+                if (mediaType.HasWildcard)
+                {
+                    throw new InvalidOperationException("Content types with wild cards are not supported.");
+                }
+
+                contentTypes.Add(type);
+            }
+
+            return contentTypes;
         }
     }
 }
