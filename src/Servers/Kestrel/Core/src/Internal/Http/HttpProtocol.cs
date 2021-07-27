@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             IncrementRequestHeadersCount();
 
             string key = name.GetHeaderName();
-            var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector);
+            var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector, checkForNewlineChars : false);
             RequestTrailers.Append(key, valueStr);
         }
 

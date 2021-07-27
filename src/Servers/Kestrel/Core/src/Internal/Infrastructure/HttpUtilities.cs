@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
             => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
 
-        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector, bool checkForNewlineChars = false)
+        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector, bool checkForNewlineChars)
         {
             string result;
             if (ReferenceEquals(KestrelServerOptions.DefaultHeaderEncodingSelector, encodingSelector))

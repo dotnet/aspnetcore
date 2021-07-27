@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         {
             for (uint i = 0; i < Iterations; i++)
             {
-                HttpUtilities.GetRequestHeaderString(_utf8Bytes, _headerName, KestrelServerOptions.DefaultHeaderEncodingSelector);
+                HttpUtilities.GetRequestHeaderString(_utf8Bytes, _headerName, KestrelServerOptions.DefaultHeaderEncodingSelector, checkForNewlineChars : true);
             }
         }
 

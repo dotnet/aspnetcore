@@ -247,15 +247,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             byte[] encodedBytes = { 0x01, 0x0A, 0x0D };
             Assert.Throws<InvalidOperationException>(() =>
-                HttpUtilities.GetRequestHeaderString(encodedBytes.AsSpan(), HeaderNames.Accept, selector, true));
+                HttpUtilities.GetRequestHeaderString(encodedBytes.AsSpan(), HeaderNames.Accept, selector, checkForNewlineChars : true));
         }
 
         [Theory]
         [MemberData(nameof(ExceptionThrownForCRLFData))]
-        private void ExceptionNotThrownForCRLF_ByDefault(Func<string, Encoding> selector)
+        private void ExceptionNotThrownForCRLF(Func<string, Encoding> selector)
         {
             byte[] encodedBytes = { 0x01, 0x0A, 0x0D };
-            HttpUtilities.GetRequestHeaderString(encodedBytes.AsSpan(), HeaderNames.Accept, selector);
+            HttpUtilities.GetRequestHeaderString(encodedBytes.AsSpan(), HeaderNames.Accept, selector, checkForNewlineChars : false);
         }
     }
 }
