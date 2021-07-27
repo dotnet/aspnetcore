@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -78,6 +79,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34743")]
         public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
         {
             // Try adding a second without removing the first
