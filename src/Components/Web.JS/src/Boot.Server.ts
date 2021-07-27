@@ -1,6 +1,6 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
-import { HubConnectionBuilder, HubConnection, HttpTransportType } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection, HttpTransportType, AggregateErrors, DisabledTransportError, FailedToStartTransportError, UnsupportedTransportError } from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { showErrorNotification } from './BootErrors';
 import { shouldAutoStart } from './BootCommon';
@@ -131,11 +131,11 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   } catch (ex) {
     unhandledError(connection, ex, logger);
 
-    if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === 'WebSockets')) {
+    if (ex instanceof AggregateErrors && ex.innerErrors.some(e => e instanceof UnsupportedTransportError && e.transport === HttpTransportType.WebSockets)) {
       showErrorNotification('Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === 'WebSockets')) {
+    } else if (ex instanceof AggregateErrors  && ex.innerErrors.some(e => e instanceof FailedToStartTransportError && e.transport === HttpTransportType.WebSockets)) {
       showErrorNotification('Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === 'LongPolling')) {
+    } else if (ex instanceof AggregateErrors  && ex.innerErrors.some(e => e instanceof DisabledTransportError && e.transport === HttpTransportType.LongPolling)) {
       logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://aka.ms/blazor-server-websockets-error.');
       showErrorNotification();
     } else {

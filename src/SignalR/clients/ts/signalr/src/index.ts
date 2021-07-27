@@ -3,7 +3,7 @@
 
 // Everything that users need to access must be exported here. Including interfaces.
 export { AbortSignal } from "./AbortController";
-export { AbortError, HttpError, TimeoutError } from "./Errors";
+export { AbortError, HttpError, TimeoutError, AggregateErrors, DisabledTransportError, FailedToStartTransportError, UnsupportedTransportError } from "./Errors";
 export { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 export { DefaultHttpClient } from "./DefaultHttpClient";
 export { IHttpConnectionOptions } from "./IHttpConnectionOptions";
