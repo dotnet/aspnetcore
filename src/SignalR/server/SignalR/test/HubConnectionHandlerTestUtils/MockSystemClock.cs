@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             // Use a random DateTimeOffset to ensure tests that incorrectly use the current DateTimeOffset fail always instead of only rarely.
             // Pick a date between the min DateTimeOffset and a day before the max DateTimeOffset so there's room to advance the clock.
-            _nowTicks = NextLong(0, long.MaxValue - TimeSpan.FromDays(1).TotalMilliseconds);
+            _nowTicks = NextLong(0, long.MaxValue - (long)TimeSpan.FromDays(1).TotalMilliseconds);
         }
 
         public long CurrentTicks
