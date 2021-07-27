@@ -19,9 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     internal sealed class SocketConnectionContextFactory : ISocketConnectionContextFactory, IAsyncDisposable
     {
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly int _socketSendersCount;
-        private readonly SocketSenderPool[] _socketSenders;
-        private int _socketSenderIndex;
+        private readonly SocketSenderPool _socketSender;
         private readonly SocketTransportOptions _transportOptions;
         private readonly PipeScheduler _transportScheduler;
         private readonly ISocketsTrace _trace;
@@ -33,17 +31,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _transportOptions = transportOptions.Value;
             _memoryPool = _transportOptions.MemoryPoolFactory();
 
-            _transportScheduler = _transportOptions.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
+            _transportScheduler = _transportOptions.UnsafePreferInlineScheduling ? PipeScheduler.Inline :
+                (_transportOptions.IOQueueCount > 0) ? new IOQueue() : PipeScheduler.ThreadPool;
             // https://github.com/aspnet/KestrelHttpServer/issues/2573
             var awaiterScheduler = OperatingSystem.IsWindows() ? _transportScheduler : PipeScheduler.Inline;
-
-            var ioQueueCount = _transportOptions.IOQueueCount;
-            _socketSendersCount = (ioQueueCount > 0) ? ioQueueCount : 1;
-            _socketSenders = new SocketSenderPool[_socketSendersCount];
-            for (var i = 0; i < _socketSendersCount; i++)
-            {
-                _socketSenders[i] = new SocketSenderPool(awaiterScheduler);
-            }
+            _socketSender = new SocketSenderPool(awaiterScheduler);
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
@@ -56,30 +48,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// <param name="options">The <see cref="SocketConnectionOptions"/>.</param>
         /// <returns></returns>
         public ConnectionContext Create(Socket socket, SocketConnectionOptions options)
-        {
-            var setting = _socketSenders[_socketSenderIndex];
-
-            var connection = new SocketConnection(socket,
+            => new SocketConnection(socket,
                 _memoryPool,
                 _transportScheduler,
                 _trace,
-                setting,
+                _socketSender,
                 options.InputOptions,
                 options.OutputOptions,
                 waitForData: _transportOptions.WaitForDataBeforeAllocatingBuffer);
 
-            _socketSenderIndex = (_socketSenderIndex + 1) % _socketSendersCount;
-
-            return connection;
-        }
-
         public ValueTask DisposeAsync()
         {
             // Dispose any pooled senders
-            foreach (var sender in _socketSenders)
-            {
-                sender.Dispose();
-            }
+            _socketSender.Dispose();
 
             return default;
         }
