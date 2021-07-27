@@ -137,23 +137,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
             }
-            else
+            if (ReferenceEquals(encoding, Encoding.Latin1))
             {
-                if (ReferenceEquals(encoding, Encoding.Latin1))
-                {
-                    return span.GetLatin1StringNonNullCharacters();
-                }
-                else
-                {
-                    try
-                    {
-                        return encoding.GetString(span);
-                    }
-                    catch (DecoderFallbackException ex)
-                    {
-                        throw new InvalidOperationException(ex.Message, ex);
-                    }
-                }
+                return span.GetLatin1StringNonNullCharacters();
+            }
+            try
+            {
+                return encoding.GetString(span);
+            }
+            catch (DecoderFallbackException ex)
+            {
+                throw new InvalidOperationException(ex.Message, ex);
             }
         }
 
