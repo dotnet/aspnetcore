@@ -47,8 +47,7 @@
             logLevel: 1, // LogLevel.Debug
             configureSignalR: builder => {
                 builder.configureLogging("debug") // LogLevel.Debug
-                    .withUrl('_blazor',
-                    {
+                    .withUrl('_blazor', {
                         WebSocket: WebSocketNotAllowed,
                         transport: 1, // WebSockets (1)
                     })
