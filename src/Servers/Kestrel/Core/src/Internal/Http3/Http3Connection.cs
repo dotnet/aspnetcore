@@ -378,8 +378,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             var httpConnectionContext = new Http3StreamContext(
                 _multiplexedContext.ConnectionId,
-                protocols: default,
-                streamContext,
+                HttpProtocols.Http3,
+                _multiplexedContext,
                 _context.ServiceContext,
                 streamContext.Features,
                 _context.MemoryPool,
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var httpConnectionContext = new Http3StreamContext(
                 _multiplexedContext.ConnectionId,
                 HttpProtocols.Http3,
-                streamContext,
+                _multiplexedContext,
                 _context.ServiceContext,
                 streamContext.Features,
                 _context.MemoryPool,

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public HttpConnectionContext(
             string connectionId,
             HttpProtocols protocols,
-            ConnectionContext connectionContext,
+            BaseConnectionContext connectionContext,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
             MemoryPool<byte> memoryPool,

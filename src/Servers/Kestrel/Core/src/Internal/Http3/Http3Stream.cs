@@ -676,7 +676,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override string CreateRequestId()
         {
-            return _context.ConnectionContext.ConnectionId;
+            return _context.StreamContext.ConnectionId;
         }
 
         protected override MessageBody CreateMessageBody()

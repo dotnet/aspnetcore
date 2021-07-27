@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public static Http3StreamContext CreateHttp3StreamContext(
             string connectionId = null,
-            ConnectionContext connectionContext = null,
+            BaseConnectionContext connectionContext = null,
             ServiceContext serviceContext = null,
             IFeatureCollection connectionFeatures = null,
             MemoryPool<byte> memoryPool = null,
