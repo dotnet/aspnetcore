@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Builder;
@@ -18,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -531,6 +531,26 @@ namespace Microsoft.AspNetCore.Tests
 
             var terminalResult = await client.GetAsync("http://localhost/undefined");
             Assert.Equal(418, (int)terminalResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            // IWebHostEnvironment is added by ConfigureDefaults
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
+            // IWebHostEnvironment is added by ConfigureWebHostDefaults
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
+
+            await using var app = builder.Build();
+
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IConfigureOptions<LoggerFactoryOptions>>>());
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IWebHostEnvironment>>());
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IOptionsChangeTokenSource<HostFilteringOptions>>>());
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IServer>>());
         }
 
         private class Service : IService { }
