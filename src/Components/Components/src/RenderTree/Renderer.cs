@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             finally
             {
-                Debug.Assert(_pendingTasks.Count == 0);
+                Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
                 _pendingTasks = null;
                 _ongoingQuiescenceTask = null;
             }
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 // Child components SetParametersAsync are stored in the queue of pending tasks,
                 // which might trigger further renders.
-                while (_pendingTasks.Count > 0)
+                while (_pendingTasks?.Count > 0)
                 {
                     // Create a Task that represents the remaining ongoing work for the rendering process
                     var pendingWork = Task.WhenAll(_pendingTasks);
