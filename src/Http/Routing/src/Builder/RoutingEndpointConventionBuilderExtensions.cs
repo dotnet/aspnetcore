@@ -118,5 +118,18 @@ namespace Microsoft.AspNetCore.Builder
 
             return builder;
         }
+
+        /// <summary>
+        /// Sets the <see cref="EndpointNameMetadata"/> for all endpoints produced
+        /// on the target <see cref="IEndpointConventionBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+        /// <param name="endpointName">The endpoint name.</param>
+        /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+        public static TBuilder WithName<TBuilder>(this TBuilder builder, string endpointName) where TBuilder : IEndpointConventionBuilder
+        {
+            builder.WithMetadata(new EndpointNameMetadata(endpointName));
+            return builder;
+        }
     }
 }
