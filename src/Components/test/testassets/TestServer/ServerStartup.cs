@@ -38,7 +38,7 @@ namespace TestServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ResourceRequestLog resourceRequestLog)
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, ResourceRequestLog resourceRequestLog)
         {
             var enUs = new CultureInfo("en-US");
             CultureInfo.DefaultThreadCurrentCulture = enUs;
