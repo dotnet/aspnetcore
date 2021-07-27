@@ -1448,6 +1448,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, DateTime.UtcNow - reconnectStartTime, retryReason);
             }
 
+            // we incremented then saw that the next reconnect delay was null, meaning reconnect attempts are exhausted,
+            // so decrement to have the correct number for logs and exceptions
+            previousReconnectAttempts--;
+
             await _state.WaitConnectionLockAsync(token: default);
             try
             {
