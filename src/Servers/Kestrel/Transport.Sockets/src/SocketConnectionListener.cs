@@ -24,8 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Socket? _listenSocket;
         private readonly SocketTransportOptions _transportOptions;
         private readonly ISocketConnectionContextFactory _contextFactory;
-        private readonly PipeOptions _inputOptions;
-        private readonly PipeOptions _outputOptions;
+
 
         public EndPoint EndPoint { get; private set; }
 
@@ -41,15 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _contextFactory = contextFactory;
             _memoryPool = _transportOptions.MemoryPoolFactory();
             //var ioQueueCount = transportOptions.IOQueueCount;
-
-            var maxReadBufferSize = _transportOptions.MaxReadBufferSize ?? 0;
-            var maxWriteBufferSize = _transportOptions.MaxWriteBufferSize ?? 0;
-            var applicationScheduler = transportOptions.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
-
-            var transportScheduler = transportOptions.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
-            // https://github.com/aspnet/KestrelHttpServer/issues/2573
-            _inputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
-            _outputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
 
             //if (ioQueueCount > 0)
             //{
@@ -131,12 +121,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
                     var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
 
+                    var maxReadBufferSize = _transportOptions.MaxReadBufferSize ?? 0;
+                    var maxWriteBufferSize = _transportOptions.MaxWriteBufferSize ?? 0;
+                    var applicationScheduler = _transportOptions.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
+
+                    var transportScheduler = _transportOptions.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
+                    // https://github.com/aspnet/KestrelHttpServer/issues/2573
+
                     var connectionOptions = new SocketConnectionOptions()
                     {
                         // Only apply no delay to Tcp based endpoints
                         DelaySocketOperations = acceptSocket.LocalEndPoint is IPEndPoint,
-                        InputOptions = _inputOptions,
-                        OutputOptions = _outputOptions,
+                        InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
+                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
                         WaitForDataBeforeAllocatingBuffer = _transportOptions.WaitForDataBeforeAllocatingBuffer
                     };
                     return _contextFactory.Create(acceptSocket, connectionOptions);
