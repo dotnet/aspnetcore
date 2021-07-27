@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 {
-    public class Http3EndToEndTests : TestApplicationErrorLoggerLoggedTest
+    public class Http2EndToEndTests : TestApplicationErrorLoggerLoggedTest
     {
         [Fact]
         public async Task MiddlewareIsRunWithConnectionLoggingScopeForHttp2Requests()
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
             {
                 connectionIdFromFeature = context.Features.Get<IConnectionIdFeature>().ConnectionId;
 
-                var logger = context.RequestServices.GetRequiredService<ILogger<Http3EndToEndTests>>();
+                var logger = context.RequestServices.GetRequiredService<ILogger<Http2EndToEndTests>>();
                 logger.LogInformation(expectedLogMessage);
 
                 await context.Response.WriteAsync("hello, world");
