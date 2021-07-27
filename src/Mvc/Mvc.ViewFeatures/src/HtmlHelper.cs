@@ -22,36 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// </summary>
     public class HtmlHelper : IHtmlHelper, IViewContextAware
     {
-        /// <summary>
-        /// CSS class name for input validation.
-        /// </summary>
-        public static readonly string ValidationInputCssClassName = "input-validation-error";
-
-        /// <summary>
-        /// CSS class name for valid input validation.
-        /// </summary>
-        public static readonly string ValidationInputValidCssClassName = "input-validation-valid";
-
-        /// <summary>
-        /// CSS class name for field validation error.
-        /// </summary>
-        public static readonly string ValidationMessageCssClassName = "field-validation-error";
-
-        /// <summary>
-        /// CSS class name for valid field validation.
-        /// </summary>
-        public static readonly string ValidationMessageValidCssClassName = "field-validation-valid";
-
-        /// <summary>
-        /// CSS class name for validation summary errors.
-        /// </summary>
-        public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
-
-        /// <summary>
-        /// CSS class name for valid validation summary.
-        /// </summary>
-        public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
-
         private readonly IHtmlGenerator _htmlGenerator;
         private readonly ICompositeViewEngine _viewEngine;
         private readonly HtmlEncoder _htmlEncoder;

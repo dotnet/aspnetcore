@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Antiforgery;
@@ -36,13 +36,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 provider,
                 new ClientValidatorCache());
 
+            var validationCssClassNameProvider = new DefaultValidationCssClassNameProvider();
+
             var htmlGenerator = new DefaultHtmlGenerator(
                     Mock.Of<IAntiforgery>(),
                     optionsAccessor.Object,
                     provider,
                     urlHelperFactory,
                     new HtmlTestEncoder(),
-                    attributeProvider);
+                    attributeProvider,
+                    validationCssClassNameProvider);
             return htmlGenerator;
         }
     }
