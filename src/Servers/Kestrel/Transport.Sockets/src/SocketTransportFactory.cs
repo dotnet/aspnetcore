@@ -17,18 +17,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     /// </summary>
     public sealed class SocketTransportFactory : IConnectionListenerFactory
     {
-        private readonly SocketTransportOptions _transportOptions;
+        private readonly SocketTransportOptions _options;
         private readonly ISocketConnectionContextFactory _contextFactory;
         private readonly SocketsTrace _trace;
 
         public SocketTransportFactory(
-            IOptions<SocketTransportOptions> transportOptions,
+            IOptions<SocketTransportOptions> options,
             ILoggerFactory loggerFactory,
             ISocketConnectionContextFactory contextFactory)
         {
-            if (transportOptions == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(transportOptions));
+                throw new ArgumentNullException(nameof(options));
             }
 
             if (contextFactory == null)
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _transportOptions = transportOptions.Value;
+            _options = options.Value;
             _contextFactory = contextFactory;
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
-            var transport = new SocketConnectionListener(endpoint, _transportOptions, _contextFactory, _trace);
+            var transport = new SocketConnectionListener(endpoint, _options, _contextFactory, _trace);
             transport.Bind();
             return new ValueTask<IConnectionListener>(transport);
         }

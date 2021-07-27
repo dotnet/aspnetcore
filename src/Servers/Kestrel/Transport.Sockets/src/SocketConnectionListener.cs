@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly MemoryPool<byte> _memoryPool;
         private readonly int _settingsCount;
         private readonly Settings[] _settings;
-        private int _settingsIndex;
         private readonly ISocketsTrace _trace;
         private Socket? _listenSocket;
+        private int _settingsIndex;
         private readonly SocketTransportOptions _options;
         private readonly ISocketConnectionContextFactory _contextFactory;
 
