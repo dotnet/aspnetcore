@@ -128,9 +128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
         }
 
-        public void InitializeWithExistingContext(IDuplexPipe transport, string connectionId)
+        public void InitializeWithExistingContext(IDuplexPipe transport)
         {
-            _context.ConnectionId = connectionId;
             _context.Transport = transport;
             Initialize(_context);
         }
@@ -677,13 +676,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override string CreateRequestId()
         {
-            // TODO include stream id.
-            return ConnectionId;
+            return _context.StreamContext.ConnectionId;
         }
 
         protected override MessageBody CreateMessageBody()
             => Http3MessageBody.For(this);
-
 
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
         {

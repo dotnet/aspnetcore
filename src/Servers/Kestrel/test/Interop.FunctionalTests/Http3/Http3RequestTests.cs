@@ -159,11 +159,8 @@ namespace Interop.FunctionalTests.Http3
                 readAsyncTask.SetResult(body.ReadAsync(buffer).AsTask());
             }, protocol: protocol);
 
-            var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
             using (var host = builder.Build())
-            using (var client = new HttpClient(httpClientHandler))
+            using (var client = CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -231,11 +228,8 @@ namespace Interop.FunctionalTests.Http3
                 writeAsyncTask.SetResult(context.Response.Body.WriteAsync(TestData).AsTask());
             }, protocol: protocol);
 
-            var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
             using (var host = builder.Build())
-            using (var client = new HttpClient(httpClientHandler))
+            using (var client = CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -333,6 +327,59 @@ namespace Interop.FunctionalTests.Http3
 
                 // State persisted on first request was available on the second request
                 Assert.Equal(1, secondRequestState);
+
+                await host.StopAsync();
+            }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_MultipleRequests_ConnectionAndTraceIdsUpdated()
+        {
+            // Arrange
+            string connectionId = null;
+            string traceId = null;
+
+            var builder = CreateHostBuilder(context =>
+            {
+                connectionId = context.Connection.Id;
+                traceId = context.TraceIdentifier;
+
+                return Task.CompletedTask;
+            });
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync();
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response1 = await client.SendAsync(request1);
+                response1.EnsureSuccessStatusCode();
+
+                var connectionId1 = connectionId;
+                var traceId1 = traceId;
+
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.Version = HttpVersion.Version30;
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response2 = await client.SendAsync(request2);
+                response2.EnsureSuccessStatusCode();
+
+                var connectionId2 = connectionId;
+                var traceId2 = traceId;
+
+                // Assert
+                Assert.True(!string.IsNullOrEmpty(connectionId1), "ConnectionId should have a value.");
+                Assert.Equal(connectionId1, connectionId2); // ConnectionId unchanged
+
+                Assert.Equal($"{connectionId1}:00000000", traceId1);
+                Assert.Equal($"{connectionId2}:00000004", traceId2);
 
                 await host.StopAsync();
             }
