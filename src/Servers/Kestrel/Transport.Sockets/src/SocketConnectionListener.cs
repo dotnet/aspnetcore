@@ -125,10 +125,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
                     var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
 
+                    // Only apply no delay to Tcp based endpoints
+                    if (acceptSocket.LocalEndPoint is IPEndPoint)
+                    {
+                        acceptSocket.NoDelay = _options.NoDelay;
+                    }
+                    
                     var connectionOptions = new SocketConnectionOptions()
                     {
-                        // Only apply no delay to Tcp based endpoints
-                        DelaySocketOperations = acceptSocket.LocalEndPoint is IPEndPoint,
+                        DelaySocketOperations = acceptSocket.NoDelay,
                         InputOptions = setting.InputOptions,
                         OutputOptions = setting.OutputOptions,
                         WaitForDataBeforeAllocatingBuffer = _options.WaitForDataBeforeAllocatingBuffer
