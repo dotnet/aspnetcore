@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public void Scan()
         {
             var now = DateTimeOffset.UtcNow;
+            var ticks = Environment.TickCount64;
 
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
@@ -142,7 +143,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Capture the connection state
                 var lastSeenTick = connection.LastSeenTicksIfInactive;
 
-                var ticks = Environment.TickCount64;
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
                 if (!Debugger.IsAttached && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeoutTicks)
