@@ -74,7 +74,9 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
-  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather" Condition="'$(DoNotIncludeSharedFxHelix)' != 'true'">
+  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
+    Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
+    EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo"
@@ -87,7 +89,7 @@
     </PropertyGroup>
 
     <!-- Use package because .dotnet/ folder doesn't contain RuntimeList.xml file and SharedFxTests checks that. -->
-    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')"
+    <Unzip
        SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg"
        DestinationFolder="$(OutputPath)\SharedFx.Unzip" />
     <ItemGroup>

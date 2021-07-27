@@ -34,8 +34,6 @@ param(
     [ValidateSet('x64', 'x86', 'arm', 'arm64')]
     [string]$TargetArchitecture = "x64",
 
-    [switch]$DoNotIncludeSharedFx,
-
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
@@ -53,10 +51,9 @@ $env:SYSTEM_TEAMPROJECT="aspnetcore"
 
 Write-Host -ForegroundColor Yellow "If running tests that need the shared Fx, run './build -pack -all' before this."
 Write-Host -ForegroundColor Yellow "And if packing for a different platform, add '/p:CrossgenOutput=false'."
-Write-Host -ForegroundColor Yellow "If you don't need the shared Fx, pass -DoNotIncludeSharedFx to this script."
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
 dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" /p:IsRequiredCheck=true `
     /p:IsHelixDaily=true /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests `
     /p:_UseHelixOpenQueues=true /p:CrossgenOutput=false /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log `
-    /p:DoNotIncludeSharedFxHelix=$DoNotIncludeSharedFx @MSBuildArguments
+    /p:DoNotRequireSharedFxHelix=true @MSBuildArguments
