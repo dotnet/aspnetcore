@@ -13,22 +13,24 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class ConfigureHostBuilder : IHostBuilder
     {
-        private readonly List<Action<IHostBuilder>> _operations = new();
-
-        /// <inheritdoc />
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
-
-        private readonly WebHostEnvironment _environment;
         private readonly ConfigurationManager _configuration;
+        private readonly WebHostEnvironment _environment;
         private readonly IServiceCollection _services;
-
         private readonly HostBuilderContext _context;
 
-        internal ConfigureHostBuilder(ConfigurationManager configuration, WebHostEnvironment environment, IServiceCollection services)
+        private readonly List<Action<IHostBuilder>> _operations = new();
+
+        internal ConfigureHostBuilder(
+            ConfigurationManager configuration,
+            WebHostEnvironment environment,
+            IServiceCollection services,
+            IDictionary<object, object> properties)
         {
             _configuration = configuration;
             _environment = environment;
             _services = services;
+
+            Properties = properties;
 
             _context = new HostBuilderContext(Properties)
             {
@@ -36,6 +38,9 @@ namespace Microsoft.AspNetCore.Builder
                 HostingEnvironment = _environment
             };
         }
+
+        /// <inheritdoc />
+        public IDictionary<object, object> Properties { get; }
 
         IHost IHostBuilder.Build()
         {
@@ -48,7 +53,6 @@ namespace Microsoft.AspNetCore.Builder
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _configuration);
             _environment.ApplyConfigurationSettings(_configuration);
-
             return this;
         }
 
@@ -70,7 +74,6 @@ namespace Microsoft.AspNetCore.Builder
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_configuration);
             _environment.ApplyConfigurationSettings(_configuration);
-
             return this;
         }
 
@@ -79,7 +82,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _services);
-
             return this;
         }
 

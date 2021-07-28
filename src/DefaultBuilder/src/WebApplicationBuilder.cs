@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Builder
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
             // the correct defaults.
-            _bootstrapHostBuilder = new BootstrapHostBuilder(Configuration, _environment, Services);
+            _bootstrapHostBuilder = new BootstrapHostBuilder(Configuration, _environment, Services, _hostBuilder.Properties);
             _bootstrapHostBuilder.ConfigureDefaults(args);
             _bootstrapHostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
             {
@@ -58,16 +58,8 @@ namespace Microsoft.AspNetCore.Builder
             _bootstrapHostBuilder.RunDefaultCallbacks(_hostBuilder);
 
             Logging = new LoggingBuilder(Services);
+            Host = new ConfigureHostBuilder(Configuration, _environment, Services, _hostBuilder.Properties);
             WebHost = new ConfigureWebHostBuilder(Configuration, _environment, Services);
-            Host = new ConfigureHostBuilder(Configuration, _environment, Services);
-
-            // This is important because GenericWebHostBuilder does the following and we want to preserve the WebHostBuilderContext:
-            // context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
-            // context.Properties[typeof(WebHostOptions)] = options;
-            foreach (var (key, value) in _bootstrapHostBuilder.Properties)
-            {
-                _hostBuilder.Properties[key] = value;
-            }
         }
 
         /// <summary>
@@ -133,12 +125,6 @@ namespace Microsoft.AspNetCore.Builder
                 // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
                 // until now, so we cannot clear these services even though some are redundant because
                 // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
-
-                // Ideally, we'd only call _hostBuilder.ConfigureWebHost(ConfigureWebHost) instead of
-                // _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost) to avoid some duplicate service descriptors,
-                // but we want to add services in the WebApplicationBuilder constructor so code can inspect
-                // WebApplicationBuilder.Services. At the same time, we want to be able which services are loaded
-                // to react to config changes (e.g. ForwardedHeadersStartupFilter).
                 foreach (var s in _services)
                 {
                     services.Add(s);
