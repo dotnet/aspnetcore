@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var args = new List<string>();
 
             // Transform the host configuration into command line arguments
-            foreach (var section in _hostConfiguration.GetChildren())
+            foreach (var (key, value) in _hostConfiguration.AsEnumerable())
             {
-                args.Add($"--{section.Key}={section.Value}");
+                args.Add($"--{key}={value}");
             }
 
             // This will never be null if the case where Build is being called
