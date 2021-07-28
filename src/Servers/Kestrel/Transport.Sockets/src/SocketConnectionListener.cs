@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
                     var connectionOptions = new SocketConnectionOptions()
                     {
-                        DelaySocketOperations = acceptSocket.NoDelay,
+                        DelaySocketOperations = !acceptSocket.NoDelay,
                         InputOptions = setting.InputOptions,
                         OutputOptions = setting.OutputOptions,
                         WaitForDataBeforeAllocatingBuffer = _options.WaitForDataBeforeAllocatingBuffer,

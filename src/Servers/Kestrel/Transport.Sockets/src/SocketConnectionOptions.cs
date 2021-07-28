@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// Set to true to enable Nagle's algorithm for all socket connections.
         /// </summary>
         /// <remarks>
-        /// Defaults to false.
+        /// Defaults to true.
         /// </remarks>
-        public bool DelaySocketOperations { get; init; }
+        public bool DelaySocketOperations { get; init; } = true;
 
         /// <summary>
         /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
