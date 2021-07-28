@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -89,6 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return hasResult;
         }
 
+        [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             await TryStartAsync();
