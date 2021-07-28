@@ -92,6 +92,62 @@ namespace Microsoft.AspNetCore.Components
                 ex.Message);
         }
 
+        [Theory]
+        [InlineData("scheme://host/?name=Bob%20Joe&age=42", "scheme://host/?name=John%20Doe&age=42")]
+        [InlineData("scheme://host/?name=Sally%Smith&age=42&name=Emily", "scheme://host/?name=John%20Doe&age=42&name=John%20Doe")]
+        [InlineData("scheme://host/?name=&age=42", "scheme://host/?name=John%20Doe&age=42")]
+        [InlineData("scheme://host/?name=", "scheme://host/?name=John%20Doe")]
+        public void UriWithQueryParameter_ReplacesWhenParameterExists(string baseUri, string expectedUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+            var actualUri = navigationManager.UriWithQueryParameter("name", "John Doe");
+
+            Assert.Equal(expectedUri, actualUri);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/?age=42", "scheme://host/?age=42&name=John%20Doe")]
+        [InlineData("scheme://host/", "scheme://host/?name=John%20Doe")]
+        [InlineData("scheme://host/?", "scheme://host/?name=John%20Doe")]
+        public void UriWithQueryParameter_AppendsWhenParamterDoesNotExist(string baseUri, string expectedUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+            var actualUri = navigationManager.UriWithQueryParameter("name", "John Doe");
+
+            Assert.Equal(expectedUri, actualUri);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/?name=Bob%20Joe&age=42", "scheme://host/?age=42")]
+        [InlineData("scheme://host/?name=Sally%Smith&age=42&name=Emily", "scheme://host/?age=42")]
+        [InlineData("scheme://host/?name=&age=42", "scheme://host/?age=42")]
+        [InlineData("scheme://host/?name=", "scheme://host/")]
+        public void UriWithQueryParameter_RemovesWhenParameterValueIsNull(string baseUri, string expectedUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+            var actualUri = navigationManager.UriWithQueryParameter("name", (string)null);
+
+            Assert.Equal(expectedUri, actualUri);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/?name=Bob%20Joe&age=42", "scheme://host/?age=25&eye-color=green")]
+        [InlineData("scheme://host/?age=42&eye-color=87", "scheme://host/?age=25&eye-color=green")]
+        [InlineData("scheme://host/?", "scheme://host/?age=25&eye-color=green")]
+        [InlineData("scheme://host/", "scheme://host/?age=25&eye-color=green")]
+        public void UriWithQueryParameters_CanAddUpdateAndRemove(string baseUri, string expectedUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+            var actualUri = navigationManager.UriWithQueryParameters(new Dictionary<string, object>
+            {
+                ["name"] = null,        // Remove
+                ["age"] = (int?)25,     // Add/update
+                ["eye-color"] = "green",// Add/update
+            });
+
+            Assert.Equal(expectedUri, actualUri);
+        }
+
         private class TestNavigationManager : NavigationManager
         {
             public TestNavigationManager()
