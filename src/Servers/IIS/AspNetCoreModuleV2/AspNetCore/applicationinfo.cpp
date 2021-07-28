@@ -240,15 +240,15 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
             return;
         }
         app = m_pApplication.get();
+
+        LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
+        app->Stop(fServerInitiated);
+
+        m_pApplication = nullptr;
+        m_pApplicationFactory = nullptr;
     }
 
-    LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
-    app->Stop(fServerInitiated);
-
-    SRWExclusiveLock lock(m_applicationLock);
-
-    m_pApplication = nullptr;
-    m_pApplicationFactory = nullptr;
+    
 }
 
 std::filesystem::path
