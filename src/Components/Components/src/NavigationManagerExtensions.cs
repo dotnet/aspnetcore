@@ -450,13 +450,13 @@ namespace Microsoft.AspNetCore.Components
             }
 
             if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
-			{
+            {
                 // There was no existing query, so there is no need to allocate a new dictionary to cache
                 // encoded parameter values and track which parameters have been added.
                 return UriWithAppendedQueryParameters(uri, parameters);
-			}
+            }
 
-            // Build a dictionary mapping encoded parameter names to a class containing their encoded values
+            // Build a dictionary mapping encoded parameter names to an object containing their encoded values
             // and whether they've replaced an existing parameter.
             var parameterDataByEncodedName = new Dictionary<ReadOnlyMemory<char>, ParameterData>(
                 new EncodedParameterNameEqualityComparer());
