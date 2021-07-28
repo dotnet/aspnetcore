@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,16 +13,20 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private readonly ConfigurationManager _configuration;
         private readonly WebHostEnvironment _environment;
-
+        private readonly IServiceCollection _serviceCollection;
         private readonly HostBuilderContext _hostContext;
 
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
+        private readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new();
 
-        public BootstrapHostBuilder(ConfigurationManager configuration, WebHostEnvironment webHostEnvironment)
+        private readonly List<Action<IHostBuilder>> _remainingOperations = new();
+
+        public BootstrapHostBuilder(ConfigurationManager configuration, WebHostEnvironment webHostEnvironment, IServiceCollection serviceCollection)
         {
             _configuration = configuration;
             _environment = webHostEnvironment;
+            _serviceCollection = serviceCollection;
 
             _hostContext = new HostBuilderContext(Properties)
             {
@@ -51,6 +53,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
             // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
+            if (configureDelegate is null)
+            {
+                throw new ArgumentNullException(nameof(configureDelegate));
+            }
+
+            _remainingOperations.Add(hostBuilder => hostBuilder.ConfigureContainer<TContainerBuilder>(configureDelegate));
             return this;
         }
 
@@ -60,15 +68,10 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public string? GetSetting(string key)
-        {
-            return _configuration[key];
-        }
-
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
         {
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via ConfigureLogging
-            // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
+            _configureServicesActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
             return this;
         }
 
@@ -76,6 +79,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
             // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
+            if (factory is null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _remainingOperations.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
             return this;
         }
 
@@ -83,10 +92,16 @@ namespace Microsoft.AspNetCore.Hosting
         {
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider
             // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
+            if (factory is null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _remainingOperations.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
             return this;
         }
 
-        internal void RunConfigurationCallbacks()
+        public void RunDefaultCallbacks(HostBuilder innerBuilder)
         {
             foreach (var configureHostAction in _configureHostActions)
             {
@@ -103,6 +118,16 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             _environment.ApplyConfigurationSettings(_configuration);
+
+            foreach (var configureServicesAction in _configureServicesActions)
+            {
+                configureServicesAction(_hostContext, _serviceCollection);
+            }
+
+            foreach (var callback in _remainingOperations)
+            {
+                callback(innerBuilder);
+            }
         }
     }
 }

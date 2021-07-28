@@ -243,20 +243,8 @@ namespace Microsoft.AspNetCore
                             new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
 
                 services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
-
-                if (string.Equals("true", hostingContext.Configuration["ForwardedHeaders_Enabled"], StringComparison.OrdinalIgnoreCase))
-                {
-                    services.Configure<ForwardedHeadersOptions>(options =>
-                    {
-                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                        // Only loopback proxies are allowed by default. Clear that restriction because forwarders are
-                        // being enabled by explicit configuration.
-                        options.KnownNetworks.Clear();
-                        options.KnownProxies.Clear();
-                    });
-
-                    services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
-                }
+                services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
+                services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
                 services.AddRouting();
             })

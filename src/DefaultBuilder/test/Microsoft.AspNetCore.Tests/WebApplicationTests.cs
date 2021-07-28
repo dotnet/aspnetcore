@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Builder;
@@ -533,8 +532,49 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(418, (int)terminalResult.StatusCode);
         }
 
+        [Fact]
+        public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            // IWebHostEnvironment is added by ConfigureDefaults
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
+            // IWebHostEnvironment is added by ConfigureWebHostDefaults
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
+            Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
+
+            await using var app = builder.Build();
+
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IConfigureOptions<LoggerFactoryOptions>>>());
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IWebHostEnvironment>>());
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IOptionsChangeTokenSource<HostFilteringOptions>>>());
+            Assert.Single(app.Services.GetRequiredService<IEnumerable<IServer>>());
+        }
+
+        [Fact]
+        public void WebApplicationBuilder_EnablesServiceScopeValidationByDefaultInDevelopment()
+        {
+            // The environment cannot be reconfigured after the builder is created currently.
+            var builder = WebApplication.CreateBuilder(new[] { "--environment", "Development" });
+
+            builder.Services.AddScoped<Service>();
+            builder.Services.AddSingleton<Service2>();
+
+            // This currently throws an AggregateException, but any Exception from Build() is enough to make this test pass.
+            // If this is throwing for any reason other than service scope validation, we'll likely see it in other tests.
+            Assert.ThrowsAny<Exception>(() => builder.Build());
+        }
+
         private class Service : IService { }
         private interface IService { }
+
+        private class Service2
+        {
+            public Service2(Service service)
+            {
+            }
+        }
 
         private sealed class HostingListener : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>, IDisposable
         {

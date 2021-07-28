@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Moq;
 using Xunit;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Tests
 {
@@ -55,8 +56,18 @@ namespace Microsoft.AspNetCore.Tests
 
             var settings = new Dictionary<string, string>();
             var webHostBuilderEnvironment = new WebHostEnvironment();
+            var hostBuilder = new HostBuilder()
+            {
+                Properties =
+                {
+                    [typeof(WebHostBuilderContext)] = new WebHostBuilderContext
+                    {
+                        HostingEnvironment = webHostBuilderEnvironment,
+                    },
+                },
+            };
 
-            originalEnvironment.ApplyEnvironmentSettings(new TestWebHostBuilder(settings, webHostBuilderEnvironment));
+            originalEnvironment.ApplyEnvironmentSettings(new TestWebHostBuilder(settings), hostBuilder);
 
             Assert.Equal(WebHostDefaults.ApplicationKey, settings[WebHostDefaults.ApplicationKey]);
             Assert.Equal(WebHostDefaults.EnvironmentKey, settings[WebHostDefaults.EnvironmentKey]);
@@ -154,12 +165,10 @@ namespace Microsoft.AspNetCore.Tests
         private class TestWebHostBuilder : IWebHostBuilder
         {
             private readonly Dictionary<string, string> _settings;
-            private readonly IWebHostEnvironment _environment;
 
-            public TestWebHostBuilder(Dictionary<string, string> settingsDictionary, IWebHostEnvironment environment)
+            public TestWebHostBuilder(Dictionary<string, string> settingsDictionary)
             {
                 _settings = settingsDictionary;
-                _environment = environment;
             }
 
             public IWebHostEnvironment Environment { get; }
@@ -171,14 +180,7 @@ namespace Microsoft.AspNetCore.Tests
 
             public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
             {
-                var context = new WebHostBuilderContext
-                {
-                    HostingEnvironment = _environment,
-                };
-
-                configureDelegate(context, null!);
-
-                return this;
+                throw new NotImplementedException();
             }
 
             public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
