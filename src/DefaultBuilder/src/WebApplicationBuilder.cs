@@ -48,6 +48,10 @@ namespace Microsoft.AspNetCore.Builder
                 // Runs inline.
                 webHostBuilder.Configure(ConfigureApplication);
 
+                // We need to override the application name since the call to Configure will set it to
+                // be the calling assembly's name.
+                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _environment.ApplicationName);
+
                 // Store this so we can apply settings from _environment during build.
                 _capturedWebHostBuilder = webHostBuilder;
             });
