@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 #endif
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
