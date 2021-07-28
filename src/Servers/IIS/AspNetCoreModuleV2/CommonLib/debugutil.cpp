@@ -51,7 +51,7 @@ HRESULT
 PrintDebugHeader()
 {
     // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
-    LOG_INFOF(L"Initializing logs for '%ls'. %ls. %ls.",
+    LOG_INFOF(L"Initializing logs for '%ls'. %ls %ls.",
         GetModuleName().c_str(),
         GetProcessIdString().c_str(),
         GetVersionInfoString().c_str()
@@ -63,7 +63,7 @@ PrintDebugHeader()
 std::wstring
 GetProcessIdString()
 {
-    return format(L"Process Id: %u", GetCurrentProcessId());
+    return format(L"Process Id: %u.", GetCurrentProcessId());
 }
 
 std::wstring

@@ -86,11 +86,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             // Eventlog is already sorted based on time of event in ascending time.
             // Check results in reverse order.
             var processIdString = $"Process Id: {deploymentResult.HostProcess.Id}.";
-            // period removed in new handler to clean up logs
-            if (DeployerSelector.HasNewHandler)
-            {
-                processIdString = $"Process Id: {deploymentResult.HostProcess.Id}";
-            }
 
             // Event log messages round down to the nearest second, so subtract 5 seconds to make sure we get event logs
             var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-5);
