@@ -552,8 +552,29 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Single(app.Services.GetRequiredService<IEnumerable<IServer>>());
         }
 
+        [Fact]
+        public void WebApplicationBuilder_EnablesServiceScopeValidationByDefaultInDevelopment()
+        {
+            // The environment cannot be reconfigured after the builder is created currently.
+            var builder = WebApplication.CreateBuilder(new[] { "--environment", "Development" });
+
+            builder.Services.AddScoped<Service>();
+            builder.Services.AddSingleton<Service2>();
+
+            // This currently throws an AggregateException, but any Exception from Build() is enough to make this test pass.
+            // If this is throwing for any reason other than service scope validation, we'll likely see it in other tests.
+            Assert.ThrowsAny<Exception>(() => builder.Build());
+        }
+
         private class Service : IService { }
         private interface IService { }
+
+        private class Service2
+        {
+            public Service2(Service service)
+            {
+            }
+        }
 
         private sealed class HostingListener : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>, IDisposable
         {
