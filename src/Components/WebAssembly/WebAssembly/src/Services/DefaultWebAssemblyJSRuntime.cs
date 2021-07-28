@@ -103,9 +103,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <inheritdoc />
         protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
         {
-            return TransmitDataStreamToJS.TransmitStreamAsync(streamId, dotNetStreamReference, async(buffer, bytesRead, error) => {
-                await Instance.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, buffer, bytesRead, error);
-            });
+            return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
         }
     }
 }

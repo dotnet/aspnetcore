@@ -57,10 +57,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
         {
-            return TransmitDataStreamToJS.TransmitStreamAsync(streamId, dotNetStreamReference, (buffer, bytesRead, error) => {
-                _ipcSender.ReceiveDotNetDataStream(streamId, buffer, bytesRead, error);
-                return Task.CompletedTask;
-            });
+            return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
         }
     }
 }
