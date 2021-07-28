@@ -50,8 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                   metadataProvider,
                   CreateUrlHelperFactory(urlHelper),
                   new HtmlTestEncoder(),
-                  new DefaultValidationHtmlAttributeProvider(options, metadataProvider, new ClientValidatorCache()),
-                  new DefaultValidationCssClassNameProvider())
+                  new DefaultValidationHtmlAttributeProvider(options, metadataProvider, new ClientValidatorCache()))
         {
             _validationAttributes = validationAttributes;
         }

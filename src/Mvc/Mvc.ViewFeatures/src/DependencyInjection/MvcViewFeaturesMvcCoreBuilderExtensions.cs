@@ -194,7 +194,6 @@ namespace Microsoft.Extensions.DependencyInjection
             // ModelExpressionProvider caches results. Ensure that it's re-used when the requested type is IModelExpressionProvider.
             services.TryAddSingleton<IModelExpressionProvider>(s => s.GetRequiredService<ModelExpressionProvider>());
             services.TryAddSingleton<ValidationHtmlAttributeProvider, DefaultValidationHtmlAttributeProvider>();
-            services.TryAddSingleton<IValidationCssClassNameProvider, DefaultValidationCssClassNameProvider>();
 
             services.TryAddSingleton<IJsonHelper, SystemTextJsonHelper>();
 

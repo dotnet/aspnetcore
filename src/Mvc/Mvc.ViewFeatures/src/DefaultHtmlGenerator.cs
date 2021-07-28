@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly HtmlEncoder _htmlEncoder;
         private readonly ValidationHtmlAttributeProvider _validationAttributeProvider;
-        private readonly IValidationCssClassNameProvider _validationCssClassNameProvider;
+        private readonly HtmlHelperOptions _htmlHelperOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -54,15 +54,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="validationAttributeProvider">The <see cref="ValidationHtmlAttributeProvider"/>.</param>
-        /// <param name="validationCssClassNameProvider">The <see cref="IValidationCssClassNameProvider"/>.</param>
         public DefaultHtmlGenerator(
             IAntiforgery antiforgery,
             IOptions<MvcViewOptions> optionsAccessor,
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,
             HtmlEncoder htmlEncoder,
-            ValidationHtmlAttributeProvider validationAttributeProvider,
-            IValidationCssClassNameProvider validationCssClassNameProvider)
+            ValidationHtmlAttributeProvider validationAttributeProvider)
         {
             if (antiforgery == null)
             {
@@ -94,17 +92,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(validationAttributeProvider));
             }
 
-            if (validationCssClassNameProvider == null)
-            {
-                throw new ArgumentNullException(nameof(validationCssClassNameProvider));
-            }
-
             _antiforgery = antiforgery;
             _metadataProvider = metadataProvider;
             _urlHelperFactory = urlHelperFactory;
             _htmlEncoder = htmlEncoder;
             _validationAttributeProvider = validationAttributeProvider;
-            _validationCssClassNameProvider = validationCssClassNameProvider;
+            _htmlHelperOptions = optionsAccessor.Value.HtmlHelperOptions;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -674,7 +667,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 if (entry.Errors.Count > 0)
                 {
-                    tagBuilder.AddCssClass(_validationCssClassNameProvider.InputInvalid);
+                    tagBuilder.AddCssClass(_htmlHelperOptions.ValidationInputInvalidCssClassName);
                 }
             }
 
@@ -763,7 +756,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // If there are any errors for a named field, we add this CSS attribute.
             if (entry != null && entry.Errors.Count > 0)
             {
-                tagBuilder.AddCssClass(_validationCssClassNameProvider.InputInvalid);
+                tagBuilder.AddCssClass(_htmlHelperOptions.ValidationInputInvalidCssClassName);
             }
 
             // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
@@ -864,8 +857,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Only the style of the span is changed according to the errors if message is null or empty.
             // Otherwise the content and style is handled by the client-side validation.
             var className = (modelError != null) ?
-                _validationCssClassNameProvider.MessageInvalid :
-                _validationCssClassNameProvider.MessageValid;
+                _htmlHelperOptions.ValidationMessageInvalidCssClassName :
+                _htmlHelperOptions.ValidationMessageValidCssClassName;
             tagBuilder.AddCssClass(className);
 
             if (!string.IsNullOrEmpty(message))
@@ -976,11 +969,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (viewData.ModelState.IsValid)
             {
-                tagBuilder.AddCssClass(_validationCssClassNameProvider.SummaryValid);
+                tagBuilder.AddCssClass(_htmlHelperOptions.ValidationSummaryValidCssClassName);
             }
             else
             {
-                tagBuilder.AddCssClass(_validationCssClassNameProvider.SummaryInvalid);
+                tagBuilder.AddCssClass(_htmlHelperOptions.ValidationSummaryInvalidCssClassName);
             }
 
             if (messageTag != null)
@@ -1375,7 +1368,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // If there are any errors for a named field, we add the CSS attribute.
             if (viewContext.ViewData.ModelState.TryGetValue(fullName, out var entry) && entry.Errors.Count > 0)
             {
-                tagBuilder.AddCssClass(_validationCssClassNameProvider.InputInvalid);
+                tagBuilder.AddCssClass(_htmlHelperOptions.ValidationInputInvalidCssClassName);
             }
 
             AddValidationAttributes(viewContext, tagBuilder, modelExplorer, expression);

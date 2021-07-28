@@ -940,16 +940,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 metadataProvider,
                 new ClientValidatorCache());
 
-            var validationCssClassNameProvider = Mock.Of<IValidationCssClassNameProvider>();
-
             return new DefaultHtmlGenerator(
                 antiforgery.Object,
                 mvcViewOptionsAccessor.Object,
                 metadataProvider,
                 new UrlHelperFactory(),
                 htmlEncoder,
-                attributeProvider,
-                validationCssClassNameProvider);
+                attributeProvider);
         }
 
         // GetCurrentValues uses only the ModelStateDictionary and ViewDataDictionary from the passed ViewContext.

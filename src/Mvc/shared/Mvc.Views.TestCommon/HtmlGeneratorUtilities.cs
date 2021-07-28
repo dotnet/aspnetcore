@@ -36,16 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 provider,
                 new ClientValidatorCache());
 
-            var validationCssClassNameProvider = new DefaultValidationCssClassNameProvider();
-
             var htmlGenerator = new DefaultHtmlGenerator(
                     Mock.Of<IAntiforgery>(),
                     optionsAccessor.Object,
                     provider,
                     urlHelperFactory,
                     new HtmlTestEncoder(),
-                    attributeProvider,
-                    validationCssClassNameProvider);
+                    attributeProvider);
             return htmlGenerator;
         }
     }

@@ -33,6 +33,12 @@ namespace RazorWebSite
                     options.HtmlHelperOptions.IdAttributeDotReplacement = "!";
                     options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                     options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
+                    options.HtmlHelperOptions.ValidationInputValidCssClassName = "validationInputValid";
+                    options.HtmlHelperOptions.ValidationInputInvalidCssClassName = "validationInputInvalid";
+                    options.HtmlHelperOptions.ValidationMessageValidCssClassName = "validationMessageValid";
+                    options.HtmlHelperOptions.ValidationMessageInvalidCssClassName = "validationMessageInvalid";
+                    options.HtmlHelperOptions.ValidationSummaryValidCssClassName = "validationSummaryValid";
+                    options.HtmlHelperOptions.ValidationSummaryInvalidCssClassName = "validationSummaryInvalid";
                 })
                 .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
 
