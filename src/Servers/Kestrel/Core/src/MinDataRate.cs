@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         public override string ToString()
         {
-            return $"{BytesPerSecond} BPS, Grace Period: {GracePeriod}";
+            return $"Bytes per second: {BytesPerSecond}, Grace Period: {GracePeriod}";
         }
     }
 }
