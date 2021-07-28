@@ -157,10 +157,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
                     return null;
                 }
-                catch (SocketException e)
+                catch (SocketException)
                 {
                     // The connection got reset while it was in the backlog, so we try again.
-                    _trace.ConnectionReset(connectionId: "(null)" + e.ToString());
+                    _trace.ConnectionReset(connectionId: "(null)");
                 }
             }
         }
