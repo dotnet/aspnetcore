@@ -29,12 +29,11 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
         {
-            hostBuilder.UseQuic();
             return hostBuilder.ConfigureServices(services =>
             {
                 // Don't override an already-configured transport
                 services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
-                services.TryAddSingleton<SocketConnectionContextFactory>();
+                services.TryAddSingleton<ISocketConnectionContextFactory, SocketConnectionContextFactory>();
 
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                 services.AddSingleton<IServer, KestrelServerImpl>();
