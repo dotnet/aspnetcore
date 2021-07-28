@@ -275,6 +275,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            [LogLevel(LogLevel.Trace)]
             public async Task HasCorrectRetryNumberAfterRetriesExhausted()
             {
                 bool ExpectedErrors(WriteContext writeContext)
@@ -354,10 +355,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     Assert.Contains($"after {reconnectingCount} failed attempts", closeError.Message);
 
-                    var log = logCollector.GetLogs().SingleOrDefault(r => r.Write.EventId.Name == "ReconnectAttemptsExhausted");
-                    Assert.NotNull(log);
-                    Assert.Contains($"after {reconnectingCount} failed attempts", log.Write.Message);
-                    Assert.Equal(LogLevel.Information, log.Write.LogLevel);
+                    var logs = logCollector.GetLogs();
+                    var attemptsLog = logs.SingleOrDefault(r => r.Write.EventId.Name == "ReconnectAttemptsExhausted");
+                    Assert.NotNull(attemptsLog);
+                    Assert.Contains($"after {reconnectingCount} failed attempts", attemptsLog.Write.Message);
+                    Assert.Equal(LogLevel.Information, attemptsLog.Write.LogLevel);
+
+                    var waitingLog = logs.SingleOrDefault(r => r.Write.EventId.Name == "AwaitingReconnectRetryDelay");
+                    Assert.NotNull(waitingLog);
+                    Assert.Contains($"Reconnect attempt number 1 will start in ", waitingLog.Write.Message);
+                    Assert.Equal(LogLevel.Trace, waitingLog.Write.LogLevel);
                 }
             }
 

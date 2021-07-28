@@ -1354,7 +1354,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var previousReconnectAttempts = 0;
             var reconnectStartTime = DateTime.UtcNow;
             var retryReason = closeException;
-            var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, TimeSpan.Zero, retryReason);
+            var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts, TimeSpan.Zero, retryReason);
 
             // We still have the connection lock from the caller, HandleConnectionClose.
             _state.AssertInConnectionLock();
@@ -1384,7 +1384,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             while (nextRetryDelay != null)
             {
-                Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts, nextRetryDelay.Value);
+                Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts + 1, nextRetryDelay.Value);
 
                 try
                 {
@@ -1439,18 +1439,16 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         CompleteClose(GetOperationCanceledException("Connection stopped during reconnect attempt. Done reconnecting.", ex, _state.StopCts.Token));
                         return;
                     }
+
+                    previousReconnectAttempts++;
                 }
                 finally
                 {
                     _state.ReleaseConnectionLock();
                 }
 
-                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, DateTime.UtcNow - reconnectStartTime, retryReason);
+                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts + 1, DateTime.UtcNow - reconnectStartTime, retryReason);
             }
-
-            // we incremented then saw that the next reconnect delay was null, meaning reconnect attempts are exhausted,
-            // so decrement to have the correct number for logs and exceptions
-            previousReconnectAttempts--;
 
             await _state.WaitConnectionLockAsync(token: default);
             try
