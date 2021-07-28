@@ -26,6 +26,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 options.SenderPool,
                 options.InputOptions,
                 options.OutputOptions,
-                waitForData: options.WaitForDataBeforeAllocatingBuffer);
+                options.WaitForDataBeforeAllocatingBuffer);
     }
 }
