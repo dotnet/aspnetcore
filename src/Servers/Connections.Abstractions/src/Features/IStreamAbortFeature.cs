@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Connections.Features
 {
     /// <summary>
-    /// Supports aborting one side of a connection stream.
+    /// Supports aborting individual sides of a connection stream.
     /// </summary>
     public interface IStreamAbortFeature
     {

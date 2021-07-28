@@ -382,40 +382,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             Output.CancelPendingRead();
         }
 
-        public void AbortRead(long errorCode, ConnectionAbortedException abortReason)
-        {
-            lock (_shutdownLock)
-            {
-                if (_stream.CanRead)
-                {
-                    _shutdownReadReason = abortReason;
-                    _log.StreamAbortRead(this, abortReason.Message);
-                    _stream.AbortRead(errorCode);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unable to abort reading from a stream that doesn't support reading.");
-                }
-            }
-        }
-
-        public void AbortWrite(long errorCode, ConnectionAbortedException abortReason)
-        {
-            lock (_shutdownLock)
-            {
-                if (_stream.CanWrite)
-                {
-                    _shutdownWriteReason = abortReason;
-                    _log.StreamAbortWrite(this, abortReason.Message);
-                    _stream.AbortWrite(errorCode);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unable to abort writing to a stream that doesn't support writing.");
-                }
-            }
-        }
-
         private async ValueTask ShutdownWrite(Exception? shutdownReason)
         {
             try
