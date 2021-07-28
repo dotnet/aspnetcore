@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private readonly ConfigurationManager _configuration;
         private readonly WebHostEnvironment _environment;
-        private readonly IServiceCollection _serviceCollection;
+        private readonly IServiceCollection _services;
         private readonly HostBuilderContext _hostContext;
 
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
@@ -22,11 +22,17 @@ namespace Microsoft.AspNetCore.Hosting
 
         private readonly List<Action<IHostBuilder>> _remainingOperations = new();
 
-        public BootstrapHostBuilder(ConfigurationManager configuration, WebHostEnvironment webHostEnvironment, IServiceCollection serviceCollection)
+        public BootstrapHostBuilder(
+            ConfigurationManager configuration,
+            WebHostEnvironment webHostEnvironment,
+            IServiceCollection services,
+            IDictionary<object, object> properties)
         {
             _configuration = configuration;
             _environment = webHostEnvironment;
-            _serviceCollection = serviceCollection;
+            _services = services;
+
+            Properties = properties;
 
             _hostContext = new HostBuilderContext(Properties)
             {
@@ -35,7 +41,7 @@ namespace Microsoft.AspNetCore.Hosting
             };
         }
 
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
+        public IDictionary<object, object> Properties { get; }
 
         public IHost Build()
         {
@@ -121,7 +127,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             foreach (var configureServicesAction in _configureServicesActions)
             {
-                configureServicesAction(_hostContext, _serviceCollection);
+                configureServicesAction(_hostContext, _services);
             }
 
             foreach (var callback in _remainingOperations)
