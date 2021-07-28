@@ -20,11 +20,7 @@ namespace Microsoft.AspNetCore.Builder
         private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
 
         private readonly HostBuilder _hostBuilder = new();
-
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
-        private readonly ConfigureHostBuilder _deferredHostBuilder;
-        private readonly ConfigureWebHostBuilder _deferredWebHostBuilder;
-
         private readonly WebHostEnvironment _environment;
         private readonly WebApplicationServiceCollection _services = new();
 
@@ -52,11 +48,11 @@ namespace Microsoft.AspNetCore.Builder
                 // This runs inline.
                 _bootstrapWebHostBuilder = webHostBuilder;
             });
-            _bootstrapHostBuilder.RunDefaultCallbacks();
+            _bootstrapHostBuilder.RunDefaultCallbacks(_hostBuilder);
 
             Logging = new LoggingBuilder(Services);
-            WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
-            Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services);
+            WebHost = new ConfigureWebHostBuilder(Configuration, _environment, Services);
+            Host = new ConfigureHostBuilder(Configuration, _environment, Services);
 
             // This is important because GenericWebHostBuilder does the following and we want to preserve the WebHostBuilderContext:
             // context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
@@ -123,7 +119,7 @@ namespace Microsoft.AspNetCore.Builder
             _bootstrapWebHostBuilder.Configure(ConfigureApplication);
             _environment.ApplyEnvironmentSettings(_bootstrapWebHostBuilder);
             // This has further modified the _bootstrapHostBuilder, so we need to run the newly added callbacks in the proper order.
-            _bootstrapHostBuilder.RunDelayedCallbacks(_hostBuilder);
+            _bootstrapHostBuilder.RunDefaultCallbacks(_hostBuilder);
 
             // This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
             // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
@@ -154,7 +150,7 @@ namespace Microsoft.AspNetCore.Builder
             });
 
             // Run the other callbacks on the final host builder
-            _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
+            Host.RunDeferredCallbacks(_hostBuilder);
 
             _builtApplication = new WebApplication(_hostBuilder.Build());
 

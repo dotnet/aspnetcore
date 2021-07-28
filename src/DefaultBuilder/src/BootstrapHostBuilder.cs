@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
         private readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new();
 
-        private readonly List<Action<IHostBuilder>> _delayUntilBuildActions = new();
+        private readonly List<Action<IHostBuilder>> _remainingOperations = new();
 
         public BootstrapHostBuilder(ConfigurationManager configuration, WebHostEnvironment webHostEnvironment, IServiceCollection serviceCollection)
         {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(configureDelegate));
             }
 
-            _delayUntilBuildActions.Add(hostBuilder => hostBuilder.ConfigureContainer<TContainerBuilder>(configureDelegate));
+            _remainingOperations.Add(hostBuilder => hostBuilder.ConfigureContainer<TContainerBuilder>(configureDelegate));
             return this;
         }
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            _delayUntilBuildActions.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
+            _remainingOperations.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
             return this;
         }
 
@@ -102,12 +102,17 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            _delayUntilBuildActions.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
+            _remainingOperations.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
             return this;
         }
 
-        public void RunDefaultCallbacks()
+        public void RunDefaultCallbacks(HostBuilder innerBuilder)
         {
+            // This is called twice. Once in the WebApplicationBuilde ctor and again in Build() after
+            // WebHostBuilderExtensions.Configure(ConfigureApplication) is called on a GenericWebHostBuilder
+            // that was captured in a ConfigureWebHostDeafaults() callback in the ctor.
+
+            // We clear the Lists so Actions run in the constructor don't get run again during Build().
             foreach (var configureHostAction in _configureHostActions)
             {
                 configureHostAction(_configuration);
@@ -131,19 +136,12 @@ namespace Microsoft.AspNetCore.Hosting
                 configureServicesAction(_hostContext, _serviceCollection);
             }
             _configureServicesActions.Clear();
-        }
 
-        public void RunDelayedCallbacks(IHostBuilder innerBuilder)
-        {
-            // This will only run callbacks added by WebApplicationBuilder.Build().
-            // Other callbacks were run and cleared in the WebApplicationBuilder ctor.
-            RunDefaultCallbacks();
-
-            foreach (var callback in _delayUntilBuildActions)
+            foreach (var callback in _remainingOperations)
             {
                 callback(innerBuilder);
             }
-            _delayUntilBuildActions.Clear();
+            _remainingOperations.Clear();
         }
     }
 }
