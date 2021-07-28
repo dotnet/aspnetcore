@@ -24,18 +24,18 @@ namespace Microsoft.AspNetCore.Components
                 int bytesRead;
                 while ((bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer)) > 0)
                 {
-                    await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", new object?[] { streamId, buffer, bytesRead, null });
+                    await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, buffer, bytesRead, null);
                 }
 
                 // Notify client that the stream has completed
-                await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", new object?[] { streamId, Array.Empty<byte>(), 0, null });
+                await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, null);
             }
             catch (Exception ex)
             {
                 try
                 {
                     // Attempt to notify the client of the error.
-                    await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", new object[] { streamId, Array.Empty<byte>(), 0, ex.Message });
+                    await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, ex.Message);
                 }
                 catch
                 {
