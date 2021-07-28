@@ -279,11 +279,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     return []; // No exports
   };
 
-  module.preRun.push(() => {
-    // By now, emscripten should be initialised enough that we can capture these methods for later use
-    mono_wasm_add_assembly = cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
-    MONO.loaded_files = [];
-
+  module.onRuntimeInitialized = () => {
     if (timeZoneResource) {
       loadTimezone(timeZoneResource);
     }
@@ -294,6 +290,12 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       // Use invariant culture if the app does not carry icu data.
       MONO.mono_wasm_setenv('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '1');
     }
+  };
+
+  module.preRun.push(() => {
+    // By now, emscripten should be initialised enough that we can capture these methods for later use
+    mono_wasm_add_assembly = cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
+    MONO.loaded_files = [];
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
     // Mono requires the assembly filenames to have a '.dll' extension, so supply such names regardless
