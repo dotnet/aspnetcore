@@ -119,28 +119,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 {
                     Debug.Assert(_listenSocket != null, "Bind must be called first.");
 
-
                     var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
 
                     // Only apply no delay to Tcp based endpoints
-                    var noDelay = false;
-// REVIEW: should this move to inside of _contextFactory.Create??
                     if (acceptSocket.LocalEndPoint is IPEndPoint)
                     {
                         acceptSocket.NoDelay = _options.NoDelay;
-                        noDelay = true;
                     }
 
                     var setting = _settings[_settingsIndex];
 
                     var connectionOptions = new SocketConnectionOptions()
                     {
-                        DelaySocketOperations = !noDelay,
+                        Scheduler = setting.Scheduler,
+//TODO: once https://github.com/dotnet/aspnetcore/pull/34639 is merged
+                        // DeferFirstOperation = _options.DeferFirstOperation,
                         InputOptions = setting.InputOptions,
                         OutputOptions = setting.OutputOptions,
                         WaitForDataBeforeAllocatingBuffer = _options.WaitForDataBeforeAllocatingBuffer,
                         MemoryPool = _memoryPool,
-                        SenderPool = setting.SocketSenderPool
+                        SenderPool = setting.SocketSenderPool,
+                        Trace = _trace
                     };
 
                     _settingsIndex = (_settingsIndex + 1) % _settingsCount;

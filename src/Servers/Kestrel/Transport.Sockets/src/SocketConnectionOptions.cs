@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public PipeOptions OutputOptions { get; init; } = new PipeOptions();
 
         /// <summary>
-        /// Set to true to enable Nagle's algorithm for all socket connections.
+        /// Delay socket read/write operations until the transport pipe is read from or written to.
         /// </summary>
         /// <remarks>
-        /// Defaults to true.
+        /// Defaults to false.
         /// </remarks>
-        public bool DelaySocketOperations { get; init; } = true;
+        public bool DeferFirstOperation { get; set; }
 
         /// <summary>
         /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
@@ -42,5 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         internal SocketSenderPool SenderPool { get; init; } = default!;
 
+        internal PipeScheduler Scheduler { get; init; } = default!;
+
+        internal ISocketsTrace Trace { get; init; } = default!;
     }
 }

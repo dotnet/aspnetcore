@@ -7,9 +7,10 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketConnectionContextFa
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket, Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options) -> Microsoft.AspNetCore.Connections.ConnectionContext!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket, Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options) -> Microsoft.AspNetCore.Connections.ConnectionContext!
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory() -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DelaySocketOperations.get -> bool
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DelaySocketOperations.init -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.InputOptions.get -> System.IO.Pipelines.PipeOptions!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.InputOptions.init -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.OutputOptions.get -> System.IO.Pipelines.PipeOptions!
@@ -23,5 +24,4 @@ static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseSockets(th
 static Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(System.Net.EndPoint! endpoint) -> System.Net.Sockets.Socket!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateBoundListenSocket.get -> System.Func<System.Net.EndPoint!, System.Net.Sockets.Socket!>!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateBoundListenSocket.set -> void
-~Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions!>! transportOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketConnectionContextFactory! contextFactory) -> void
