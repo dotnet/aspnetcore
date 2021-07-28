@@ -77,6 +77,9 @@ export class UnsupportedTransportError extends Error {
     /** The {@link @microsoft/signalr.HttpTransportType} this error occured on. */
     public transport: HttpTransportType;
 
+    /** The type name of this error. */
+    public errorType: string;
+
     /** Constructs a new instance of {@link @microsoft/signalr.UnsupportedTransportError}.
      *
      * @param {string} message A descriptive error message.
@@ -86,6 +89,7 @@ export class UnsupportedTransportError extends Error {
         const trueProto = new.target.prototype;
         super(message);
         this.transport = transport;
+        this.errorType = 'UnsupportedTransportError';
 
         // Workaround issue in Typescript compiler
         // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
@@ -102,6 +106,9 @@ export class DisabledTransportError extends Error {
     /** The {@link @microsoft/signalr.HttpTransportType} this error occured on. */
     public transport: HttpTransportType;
 
+    /** The type name of this error. */
+    public errorType: string;
+
     /** Constructs a new instance of {@link @microsoft/signalr.DisabledTransportError}.
      *
      * @param {string} message A descriptive error message.
@@ -111,6 +118,7 @@ export class DisabledTransportError extends Error {
         const trueProto = new.target.prototype;
         super(message);
         this.transport = transport;
+        this.errorType = 'DisabledTransportError';
 
         // Workaround issue in Typescript compiler
         // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
@@ -127,6 +135,9 @@ export class FailedToStartTransportError extends Error {
     /** The {@link @microsoft/signalr.HttpTransportType} this error occured on. */
     public transport: HttpTransportType;
 
+    /** The type name of this error. */
+    public errorType: string;
+
     /** Constructs a new instance of {@link @microsoft/signalr.FailedToStartTransportError}.
      *
      * @param {string} message A descriptive error message.
@@ -136,6 +147,7 @@ export class FailedToStartTransportError extends Error {
         const trueProto = new.target.prototype;
         super(message);
         this.transport = transport;
+        this.errorType = 'FailedToStartTransportError';
 
         // Workaround issue in Typescript compiler
         // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
