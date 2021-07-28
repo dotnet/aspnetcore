@@ -20,7 +20,11 @@ namespace CodeGenerator
                 "IPersistentStateFeature",
                 "IMemoryPoolFeature",
                 "IConnectionLifetimeFeature",
-                "IConnectionSocketFeature"
+                "IConnectionSocketFeature",
+                "IProtocolErrorCodeFeature",
+                "IStreamDirectionFeature",
+                "IStreamIdFeature",
+                "ITlsConnectionFeature"
             };
 
             var implementedFeatures = new[]

@@ -1338,8 +1338,7 @@ $@"        private void Clear(long bitsToClear)
     }}
 ")}}}";
 
-            // Temporary workaround for https://github.com/dotnet/runtime/issues/55688
-            return s.Replace("{{", "{").Replace("}}", "}");
+            return s;
         }
 
         private static string GetHeaderLookup()
