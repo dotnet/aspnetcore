@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     /// <summary>
     /// A factory for socket based connections contexts.
     /// </summary>
-    internal sealed class SocketConnectionContextFactory : ISocketConnectionContextFactory
+    public sealed class SocketConnectionContextFactory : ISocketConnectionContextFactory
     {
         private readonly SocketTransportOptions _transportOptions;
         private readonly PipeScheduler _transportScheduler;

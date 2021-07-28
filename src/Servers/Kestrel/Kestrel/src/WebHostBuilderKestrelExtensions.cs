@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 // Don't override an already-configured transport
                 services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+                services.TryAddSingleton<ISocketConnectionContextFactory, SocketConnectionContextFactory>();
 
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                 services.AddSingleton<IServer, KestrelServerImpl>();
