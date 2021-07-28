@@ -122,12 +122,25 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?name=Sally%Smith&age=42&name=Emily", "scheme://host/?age=42")]
         [InlineData("scheme://host/?name=&age=42", "scheme://host/?age=42")]
         [InlineData("scheme://host/?name=", "scheme://host/")]
+        [InlineData("scheme://host/", "scheme://host/")]
         public void UriWithQueryParameter_RemovesWhenParameterValueIsNull(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.UriWithQueryParameter("name", (string)null);
 
             Assert.Equal(expectedUri, actualUri);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData((string)null)]
+        public void UriWithQueryParameter_ThrowsWhenNameIsNullOrEmpty(string name)
+        {
+            var baseUri = "scheme://host/";
+            var navigationManager = new TestNavigationManager(baseUri);
+
+            var exception = Assert.Throws<ArgumentException>("name", () => navigationManager.UriWithQueryParameter(name, "test"));
+            Assert.StartsWith("Cannot have empty query parameter names.", exception.Message);
         }
 
         [Theory]
@@ -164,8 +177,33 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(expectedUri, actualUri);
         }
 
+        [Fact]
+        public void UriWithQueryParameterOfTValue_ThrowsWhenParameterValueTypeIsUnsupported()
+        {
+            var baseUri = "scheme://host/";
+            var navigationManager = new TestNavigationManager(baseUri);
+            var unsupportedParameterValues = new[] { new { Value = 3 } };
+
+            var exception = Assert.Throws<InvalidOperationException>(() => navigationManager.UriWithQueryParameter("value", unsupportedParameterValues));
+            Assert.StartsWith("Cannot format query parameters with values of type", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData((string)null)]
+        public void UriWithQueryParameterOfTValue_ThrowsWhenNameIsNullOrEmpty(string name)
+        {
+            var baseUri = "scheme://host/";
+            var navigationManager = new TestNavigationManager(baseUri);
+            var values = new string[] { "test" };
+
+            var exception = Assert.Throws<ArgumentException>("name", () => navigationManager.UriWithQueryParameter(name, values));
+            Assert.StartsWith("Cannot have empty query parameter names.", exception.Message);
+        }
+
         [Theory]
         [InlineData("scheme://host/?name=Bob%20Joe&age=42", "scheme://host/?age=25&eye-color=green")]
+        [InlineData("scheme://host/?name=Bob%20Joe&age=42&keepme=true", "scheme://host/?age=25&keepme=true&eye-color=green")]
         [InlineData("scheme://host/?age=42&eye-color=87", "scheme://host/?age=25&eye-color=green")]
         [InlineData("scheme://host/?", "scheme://host/?age=25&eye-color=green")]
         [InlineData("scheme://host/", "scheme://host/?age=25&eye-color=green")]
@@ -180,6 +218,36 @@ namespace Microsoft.AspNetCore.Components
             });
 
             Assert.Equal(expectedUri, actualUri);
+        }
+
+        [Fact]
+        public void UriWithQueryParameters_ThrowsWhenParameterValueTypeIsUnsupported()
+        {
+            var baseUri = "scheme://host/";
+            var navigationManager = new TestNavigationManager(baseUri);
+            var unsupportedParameterValues = new Dictionary<string, object>
+            {
+                ["value"] = new { Value = 3 }
+            };
+
+            var exception = Assert.Throws<InvalidOperationException>(() => navigationManager.UriWithQueryParameters(unsupportedParameterValues));
+            Assert.StartsWith("Cannot format query parameters with values of type", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/")]
+        [InlineData("scheme://host/?existing-param=test")]
+        public void UriWithQueryParameters_ThrowsWhenAnyParameterNameIsEmpty(string baseUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+            var values = new Dictionary<string, object>
+            {
+                ["name1"] = "value1",
+                [string.Empty] = "value2",
+            };
+
+            var exception = Assert.Throws<InvalidOperationException>(() => navigationManager.UriWithQueryParameters(values));
+            Assert.StartsWith("Cannot have empty query parameter names.", exception.Message);
         }
 
         private class TestNavigationManager : NavigationManager

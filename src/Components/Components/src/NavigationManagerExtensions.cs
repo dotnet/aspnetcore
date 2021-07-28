@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public static class NavigationManagerExtensions
     {
+        private const string EmptyQueryParameterExceptionMessage = "Cannot have empty query parameter names.";
+
         private delegate string QueryParameterFormatter(object value);
 
         // We don't include mappings for Nullable types because we explicitly check for null values
@@ -341,9 +343,9 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(navigationManager));
             }
 
-            if (name is null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(EmptyQueryParameterExceptionMessage, nameof(name));
             }
 
             var uri = navigationManager.Uri;
@@ -371,9 +373,9 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(navigationManager));
             }
 
-            if (name is null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(EmptyQueryParameterExceptionMessage, nameof(name));
             }
 
             var uri = navigationManager.Uri;
@@ -399,7 +401,11 @@ namespace Microsoft.AspNetCore.Components
                         continue;
                     }
 
-                    hasNextValue = AppendNextValue(pair.EncodedName.Span, valueEnumerator, formatter, ref newQueryStringBuilder);
+                    hasNextValue = AppendNextValue(
+                        pair.EncodedName.Span,
+                        valueEnumerator,
+                        formatter,
+                        ref newQueryStringBuilder);
                 }
                 else
                 {
@@ -409,7 +415,11 @@ namespace Microsoft.AspNetCore.Components
 
             while (hasNextValue)
             {
-                hasNextValue = AppendNextValue(encodedName, valueEnumerator, formatter, ref newQueryStringBuilder);
+                hasNextValue = AppendNextValue(
+                    encodedName,
+                    valueEnumerator,
+                    formatter,
+                    ref newQueryStringBuilder);
             }
 
             return newQueryStringBuilder.UriWithQueryString;
@@ -540,6 +550,11 @@ namespace Microsoft.AspNetCore.Components
                 QueryParameterNameComparer.Instance);
             foreach (var (name, value) in parameters)
             {
+                if (string.IsNullOrEmpty(name))
+                {
+                    throw new InvalidOperationException(EmptyQueryParameterExceptionMessage);
+                }
+
                 var encodedName = Uri.EscapeDataString(name).AsMemory();
                 var encodedValue = GetEncodedParameterValue(value);
 
@@ -611,6 +626,11 @@ namespace Microsoft.AspNetCore.Components
             // Build a new query from the existing URI, appending all parameters with non-null values.
             foreach (var (name, value) in parameters)
             {
+                if (string.IsNullOrEmpty(name))
+                {
+                    throw new InvalidOperationException(EmptyQueryParameterExceptionMessage);
+                }
+
                 var encodedName = Uri.EscapeDataString(name);
                 var encodedValue = GetEncodedParameterValue(value);
 
