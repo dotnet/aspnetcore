@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.Null(connection.ApplicationTask);
                 Assert.Null(connection.TransportTask);
                 Assert.Null(connection.Cancellation);
-                Assert.NotEqual(default, connection.LastSeenUtc);
+                Assert.NotEqual(default, connection.LastSeenTicks);
                 Assert.NotNull(connection.Transport);
                 Assert.NotNull(connection.Application);
             }
