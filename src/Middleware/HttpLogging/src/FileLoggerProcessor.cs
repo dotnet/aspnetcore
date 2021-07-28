@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
                         {
                             _maxFilesReached = true;
-                            Log.MaxFilesReached(_logger, new ApplicationException());
+                            Log.MaxFilesReached(_logger);
                         }
                         _fields = loggerOptions.LoggingFields;
                     }
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         _maxFilesReached = true;
                         // Return early if log directory is already full
-                        Log.MaxFilesReached(_logger, null);
+                        Log.MaxFilesReached(_logger);
                         return;
                     }
                     fullName = GetFullName(today);
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                             streamWriter = null;
                             _maxFilesReached = true;
                             // Return early if log directory is already full
-                            Log.MaxFilesReached(_logger, new ApplicationException());
+                            Log.MaxFilesReached(_logger);
                             return;
                         }
                         fullName = GetFullName(today);
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     new EventId(3, "MaxFilesReached"),
                     $"Limit of {W3CLoggerOptions.MaxFileCount} files per day has been reached");
 
-            public static void MaxFilesReached(ILogger logger, Exception? ex) => _maxFilesReached(logger, ex);
+            public static void MaxFilesReached(ILogger logger) => _maxFilesReached(logger, null);
         }
     }
 

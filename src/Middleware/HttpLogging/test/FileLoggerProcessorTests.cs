@@ -363,6 +363,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new FileLoggerProcessor(monitor, new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message one");
+                    await WaitForFile(fileName1).DefaultTimeout();
                     options.LoggingFields = W3CLoggingFields.Date;
                     monitor.InvokeChanged();
                     logger.EnqueueMessage("Message two");
